@@ -9,7 +9,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from caiman_plots import compute_correlations
 
-def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_refit, indices_ex, fname_save, srv):
+def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_refit, indices_ex, fname_save, anatomical_stack, srv, doplots):
 
     n_processes = 1
     dview = None
@@ -38,13 +38,14 @@ def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_ref
     if planar_extraction: #adjust images and some params for planar 
         
         sliceindz = np.arange(images.shape[-1])
-        if srv==0 and len(sliceindz)>20: #forced reduce while i'm working with the anatomical stack 
+        if anatomical_stack==1: #srv==0 and len(sliceindz)>20: #forced reduce while i'm working with the anatomical stack 
             sliceindz = np.arange(25, 27)
         
         indices_ex = indices_ex[:-1] #change from 3d to 2d 
 
         dims_mask_space = (dims[0], dims[1])
-        opts_dict_2d = {'dxy': opts.data['dxy'][:-1],
+        opts_dict_2d = {'indices': indices_ex, 
+            'dxy': opts.data['dxy'][:-1],
             'sigma_smooth_snmf' : opts.init['sigma_smooth_snmf'][:-1],
             'gSig' : opts.init['gSig'][:-1],
             'gSiz' : opts.init['gSiz'][:-1],
@@ -60,6 +61,7 @@ def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_ref
     countz = 0
     for si in sliceindz: #for each slice (or all slices if planar_extraction = false)
 
+        print(si)
         images_sliced = images[:,:,:,si]
         
         #if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -74,14 +76,14 @@ def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_ref
             print(Cn.shape)
             Cn[np.isnan(Cn)] = 0
             print('you may need to change the data rate to generate nb_view_components: use jupyter notebook --NotebookApp.iopub_data_rate_limit=1.0e10 before opening jupyter notebook')
-            if srv==0:
+            if doplots==1:
                 cnm.estimates.plot_contours(img=Cn)
                 cnm.estimates.view_components(img=Cn, idx=cnm.estimates.idx_components)
                 #cnm.estimates.view_components(img=None, idx=cnm.estimates.idx_components) #img=None for mean projection
         
         else:
             
-            if srv==0:
+            if doplots==1:
                 cnm.estimates.nb_view_components_3d(image_type='mean', dims=dims, axis=2)
                 #cnm.estimates.nb_view_components_3d(image_type='corr', dims=dims, Yr=Yr, denoised_color='red', max_projection=True);
 
@@ -120,7 +122,7 @@ def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_ref
             
             cnm2 = cnm
         
-        if srv==0:
+        if doplots==1:
             if planar_extraction:
                 cnm.estimates.view_components(img=Cn, idx=cnm.estimates.idx_components) #img=Cn for mean proj
             else:
@@ -134,9 +136,10 @@ def extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_ref
             
         if countz==0:
             
-            dims_mask = (dims_mask_space + (cnm2.estimates.A.shape[-1], ) )
-            dims_mask_b = (dims_mask_space + (cnm2.estimates.b.shape[-1], ) )
-            dims_timeseries = cnm2.estimates.C.shape
+            padnumroi = cnm2.estimates.A.shape[-1]*2 #extra since it can vary a little across fits (even above input k)
+            dims_mask = (dims_mask_space + (padnumroi, ) )
+            dims_mask_b = (dims_mask_space + (cnm2.estimates.b.shape[-1]*3, ) )
+            dims_timeseries = (padnumroi, cnm2.estimates.C.shape[1])
 
             stack_masks = np.zeros(dims_mask + (len(sliceindz), ) )
             stack_masks_b = np.zeros(dims_mask_b + (len(sliceindz), ) )

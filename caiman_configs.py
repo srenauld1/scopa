@@ -8,11 +8,11 @@ def configs():
     slx = slice(40, 181, 1) 
     slz = slice(0, 70, 1)
     indices_ex = [slx, sly, slz]
-    indices_ex = [slice(None), slice(None), slice(None)]
+    #indices_ex = [slice(None), slice(None), slice(None)]
 
-    p = 2                   # order of the autoregressive system - 0 from carl's code
+    p = 0                   # order of the autoregressive system - 0 from carl's code
     merge_thresh = 0.9
-    gSig = [4, 4, 4]  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    gSig = [3, 3, 3]  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
     nb = 2                  # temporal global background components - TUNE
 
     do_patches = False      # flag for processing in patches or not - turn on or off - Not used in Matlab
@@ -28,7 +28,7 @@ def configs():
         stride_cnmf = None       # will run CNMF on the whole FOV
         p_patch = p
         nb_patch = nb
-        k = 2              # number of neurons expected (in the whole FOV) - 40 from Carl's Code, seems to be too many
+        k = 40              # number of neurons expected (in the whole FOV) - 40 from Carl's Code, seems to be too many
 
     ###
     fr = 5.08 #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS

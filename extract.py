@@ -1,4 +1,6 @@
 
+#!/usr/bin/env python
+
 import sys
 import re
 import cv2
@@ -46,20 +48,35 @@ if (re.search("/Users/wienecke/", env_path[0])):
    anatomical_stack = True
    dimin = [80, 164, 140, 256] 
    flyback = 51
+   
+   anatomical_stack = False
+   dimin = [3047, 20, 140, 256] 
+   flyback = 5
+
    srv = 0
+   doplots = 0
 elif (re.search("/home/caw846/", env_path[0])):  
    data_path_prefix = '/n/scratch3/users/c/caw846/'
    anatomical_stack = False
    dimin = [3047, 20, 140, 256] 
    flyback = 5
    srv = 1
+   doplots = 0
+
+elif (re.search("/home/users/wienecke/", env_path[0])):  
+   data_path_prefix = '/scratch/users/wienecke/cx/'
+   anatomical_stack = False
+   dimin = [3047, 20, 140, 256] 
+   flyback = 5
+   srv = 1
+   doplots = 0
 
 
 planar_extraction = True 
 do_motion_correction = True
 do_refit = True
 
-recordingIDs = ['20230624-2', '20230627-2']
+recordingIDs = ['20230627-2']
 
 opts_dict, indices_ex = configs()
 
@@ -93,7 +110,7 @@ for recordingID in recordingIDs:
     Y = Y.reshape(dimin[0], dimin[1], dimin[2], dimin[3])
     Y = Y[:,:-flyback,:,:] #crop flyback frames
 
-    Y[20,:,:,:].play(magnification=2) 
+    #Y[20,:,:,:].play(magnification=2) 
 
     #cc, dview, n_processes = cm.cluster.setup_cluster(backend='local', n_processes=None, single_thread=False)
 
@@ -101,13 +118,14 @@ for recordingID in recordingIDs:
 
     Y = Y - np.min(Y) #make minimum zero (not certain this is the place for this, or whether it should occur at all)
 
-    fname = [f[:(len(f)-4)] + 'caimanreg_.tif']
+      #don't put caimanreg in separate underscore to prevent being recognized above 
+    fname = [path_date_stack + f.split('/')[-1].split('_')[0] + '_CAIMANREG' + f.split('/')[-1].split('_')[-3]+ '_' + f.split('/')[-1].split('_')[-2] + '_' + f.split('/')[-1].split('_')[-1]]
     fname_save = fname[0][:(len(f)-4)] + tmpdate + '_caimanrois_.mat'
 
     imwrite(fname[0], Y) #write as t x y z
     dims = Y.shape[1:]
     
-    fug = extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_refit, indices_ex, fname_save, srv)
+    fug = extract_2d(opts_dict, fname, do_motion_correction, planar_extraction, do_refit, indices_ex, fname_save, anatomical_stack, srv, doplots)
 
 
 
