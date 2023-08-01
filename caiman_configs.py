@@ -1,34 +1,35 @@
 import numpy as np
+from caiman_map2params import map2params
 
-def configs():
+def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
 
     only_init = False
 
-    sly = slice(0, 51, 1)
-    slx = slice(40, 181, 1) 
-    slz = slice(0, 70, 1)
-    indices_ex = [slx, sly, slz]
-    #indices_ex = [slice(None), slice(None), slice(None)]
+    strides_mc = (24, 24, 6)
+    overlaps_mc = (12, 12, 3)
+    max_shifts_mc = (4, 4, 2)
+    max_deviation_rigid = 3
+    pw_rigid = False
+    is3D_mc = True
+    nonneg_movie = True
+    min_mov = 0
+    shifts_opencv = True 
+    indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
 
+    do_slices = False
+
+    if do_slices:
+        sly = slice(6, 51, 1)
+        slx = slice(40, 181, 1) 
+        slz = slice(1, 9, 1) 
+        indices_ex = [slx, sly, slz]
+    else:
+        indices_ex = [slice(None), slice(None), slice(None)]
+        
     p = 0                   # order of the autoregressive system - 0 from carl's code
     merge_thresh = 0.9
-    gSig = [3, 3, 3]  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
-    nb = 2                  # temporal global background components - TUNE
-
-    do_patches = False      # flag for processing in patches or not - turn on or off - Not used in Matlab
-    if do_patches:          # PROCESS IN PATCHES AND THEN COMBINE
-        rf = 60             # half size of each patch
-        stride_cnmf = 40          # overlap between patches
-        p_patch = p
-        nb_patch = nb
-        k = 3              # number of components in each patch
-        indices_ex = [slice(None), slice(None), slice(None)]
-    else:                   # PROCESS THE WHOLE FOV AT ONCE
-        rf = None           # setting these parameters to None
-        stride_cnmf = None       # will run CNMF on the whole FOV
-        p_patch = p
-        nb_patch = nb
-        k = 40              # number of neurons expected (in the whole FOV) - 40 from Carl's Code, seems to be too many
+    gSig = [2, 2, 0.5] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    nb = 1
 
     ###
     fr = 5.08 #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
@@ -37,12 +38,23 @@ def configs():
 
     tsub = 1                # temporal downsampling
     ssub = 1               # spatial downsampling
+    p_ssub = 1 #patch downsampling in space 
+    p_tsub = 1 #patch downsampling in time
+    
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' #python Caiman defaults to greedy_roi, carl's code uses sparse_nmf, but sparse_nmf runs MUCH slower
+    
+    max_iter_snmf = 500
+    #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
+    perc_baseline_snmf = 20
+    lambda_gnmf = 3 #for method_init graphNMF
+    alpha_snmf = 1 #for method_init sparseNMF    
+    SC_kernel = 'heat' #NOT TUNABLE NOW       # kernel for graph affinity matrix
+    SC_sigma = 1              # std for SC kernel
+    SC_thr = 0                 # threshold for affinity matrix
+    SC_normalize = True        # standardize entries prior to computing affinity matrix
+    SC_use_NN = False          # sparsify affinity matrix by using only nearest neighbors
+    SC_nnn = 20                # number of nearest neighbors to use if SC_use_NN = True
 
-    method_init = 'greedy_roi' #'graph_nmf' #'greedy_roi' #python Caiman defaults to greedy_roi, carl's code uses sparse_nmf, but sparse_nmf runs MUCH slower
-    sigma_smooth_snmf = (0.5, 0.5, 0.5)
-    perc_baseline_snmf = 50
-
-    se = np.ones((3,)*len(gSig), dtype=np.uint8)  #se = np.ones((3,3,1), dtype=np.uint8)
     update_background_components = True   #use this??
 
     fudge_factor = 0.96        # (default is 0.96; Carl's value = 1) -- bias correction factor for discrete time constants
@@ -51,21 +63,81 @@ def configs():
 
     rolling_sum = True
 
-    min_SNR = 0  #2    # accept components with that peak-SNR or higher (if above this, acept)
-    SNR_lowest = 0         # minimum SNR for accepted components (if below this, reject)
-    rval_thr = 0  # 0.85  # space correlation threshold (if above this, accept)
-    rval_lowest = 0  # 0.6  # space correlation threshold (if above this, accept)
-    use_cnn = False      # use the CNN classifier affects if 2 below params are used
-    min_cnn_thr = 0 #0.99 # if cnn classifier predicts below this value, reject
-    cnn_lowest = 0  #0.1  # neurons with cnn probability lower than this value are rejected
+    #Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1)) 
+    # and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
+    # A component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
+    # can turn off CNN part withy use_CNN = false
+    SNR_lowest = 0#0.5#0  #0.5 default       # minimum SNR for accepted components 
+    min_SNR = 0#0  #2.5 default    # accept components with that peak-SNR or higher 
+    rval_lowest = -1  # -1 default 0.6  # space correlation threshold 
+    rval_thr = 0#0  # 0.8 default  # space correlation threshold 
+    use_cnn = False      # True default # use the CNN classifier affects if 2 below params are used
+    cnn_lowest = 0  #0.1 default  # neurons with cnn probability lower than this value are rejected
+    min_cnn_thr = 0 #0.9 default # if cnn classifier predicts below this value, reject
 
-    strides_mc = (24, 24, 6)
-    overlaps_mc = (12, 12, 3)
-    max_shifts_mc = (4, 4, 2)
-    max_deviation_rigid = 3
-    pw_rigid = False
-    is3D_mc = True
-    indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
+    stride_to_rf_ratio = 0.65
+
+    if index is not None:
+        map_index_2_params = map2params()
+        index = int(index)
+        print('reading parameters from the index file')
+        merge_thresh, m2p_gsig, nb = map_index_2_params.map_index(index)
+        gSig = [m2p_gsig, m2p_gsig, 0.5]  #keep z as 0.5 so z bounding box is 2 pixels, no EPG is larger than 2 z pixels (12 microns)
+
+        # if m2p_gsig==2:
+        #     k = 50
+        # elif m2p_gsig==3:
+        #     k = 20
+        # elif m2p_gsig==4:
+        #     k = 20
+        # elif m2p_gsig==5:
+        #     k = 20
+        # elif m2p_gsig==6:
+        #     k = 20
+    do_patches = True
+    roi_decimation_fac = 0.5
+    if do_patches:          # PROCESS IN PATCHES AND THEN COMBINE
+        rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
+        stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches
+        p_patch = p
+        nb_patch = nb
+        if do_planar_extraction==True:
+            k = int(np.round(rf*rf / (gSig[0]*gSig[1])))
+        else:
+            if rf*2<dims_spatial[-1]:
+                rfz = rf*2
+            else:
+                rfz = dims_spatial[-1]
+            k = int(np.round( (rf*2*rf*2*rfz) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
+        indices_ex = [slice(None), slice(None), slice(None)]
+    else:                   # PROCESS THE WHOLE FOV AT ONCE
+        rf = None
+        stride_cnmf = None       # will run CNMF on the whole FOV
+        p_patch = p
+        nb_patch = nb
+        k = 10              # number of neurons expected (in the whole FOV) - 40 from Carl's Code, seems to be too many
+
+    
+    dimstr = "3dex_"
+    if do_planar_extraction==True:        
+        dimstr = '2dex_'
+        indices_ex = indices_ex[:-1] #change from 3d to 2d 
+        dxy = dxy[:-1] #change from 3d to 2d 
+        sigma_smooth_snmf = sigma_smooth_snmf[:-1] #change from 3d to 2d 
+        gSig = gSig[:-1] #change from 3d to 2d 
+    
+    gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
+    se = np.ones((3,)*len(gSig), dtype=np.uint8)  #put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
+
+    sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning 
+    sigma_smooth_snmf.extend(gSig)
+    if do_planar_extraction==False:
+        sigma_smooth_snmf[-1] = 0.5#0.25
+
+    fnadd = '_' + str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + '_' + str(rf) + '_' + method_init.split('_')[0] + '_' + dimstr
+
+    if do_planar_extraction is not None: #it's none during motion correction, when we don't care about these params, rather than true/false
+        print("index is " + str(index) + " with filename string " + fnadd)
 
     opts_dict = {'strides': strides_mc,    # start a new patch for pw-rigid motion correction every x pixels
                 'overlaps': overlaps_mc,   # overlap between pathes (size of patch strides+overlaps)
@@ -73,6 +145,9 @@ def configs():
                 'max_deviation_rigid': max_deviation_rigid,  # maximum shifts deviation allowed for patch with respect to rigid shifts
                 'pw_rigid': pw_rigid,         # flag for performing non-rigid motion correction
                 'is3D': is3D_mc,
+                'nonneg_movie':nonneg_movie,
+                'min_mov':min_mov,
+                'shifts_opencv':shifts_opencv, 
                 'fr': fr,
                 'p': p,
                 'nb': nb,
@@ -81,10 +156,21 @@ def configs():
                 'indices': indices_mc,  #for some reason indices_mc is causing error, maybe needs list for mc and tuple for extraction?
                 'K': k, 
                 'gSig': gSig,
+                'gSiz': gSiz,
                 'stride': stride_cnmf,
                 'method_init': method_init,
                 'sigma_smooth_snmf': sigma_smooth_snmf,
                 'perc_baseline_snmf': perc_baseline_snmf,
+                'max_iter_snmf': max_iter_snmf,
+                'sigma_smooth_snmf': sigma_smooth_snmf,
+                'SC_kernel': SC_kernel, #NOT TUNABLE NOW       # kernel for graph affinity matrix
+                'SC_sigma': SC_sigma,            # std for SC kernel
+                'SC_thr': SC_thr,                 # threshold for affinity matrix
+                'SC_normalize': SC_normalize,        # standardize entries prior to computing affinity matrix
+                'SC_use_NN': SC_use_NN,          # sparsify affinity matrix by using only nearest neighbors
+                'SC_nnn': SC_nnn,                # number of nearest neighbors to use if SC_use_NN = True
+                'lambda_gnmf': lambda_gnmf, #for method_init graphNMF
+                'alpha_snmf': alpha_snmf, #for method_init sparseNMF
                 #'dims': dims,
                 'dxy': dxy,
                 'decay_time': decay_time,
@@ -96,6 +182,8 @@ def configs():
                 'only_init': only_init,
                 'ssub': ssub,
                 'tsub': tsub,
+                'p_ssub': p_ssub,
+                'p_tsub': p_tsub,
                 'SNR_lowest': SNR_lowest, 
                 'min_SNR': min_SNR,
                 'rval_thr': rval_thr,
@@ -108,4 +196,23 @@ def configs():
                 'cnn_lowest': cnn_lowest, 
                 'update_background_components': update_background_components}
 
-    return opts_dict, indices_ex
+
+    # # for reference here are the initialization defs for 3 methods, sparse_nmf apparently "has problems" according to gitter
+    
+    # # greedyROI(Y, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
+    #           rolling_sum=False, rolling_length=100, seed_method='auto')
+
+    # for graphnmf all these are tunable in cnmf params except remove_baseline, truncate, tol, and SC_kernel whose defaults are below
+    # note SC_kernel appears to be tunable because it's in params but it is not, heat is default
+    # # graphNMF(Y_ds, nr, max_iter_snmf=500, lambda_gnmf=1,
+    #          sigma_smooth=(.5, .5, .5), remove_baseline=True,
+    #          perc_baseline=20, nb=1, truncate=2, tol=1e-3, SC_kernel='heat',
+    #          SC_normalize=True, SC_thr=0, SC_sigma=1, SC_use_NN=False,
+    #          SC_nnn=20
+    
+    # for sparsenmf all these are tunable in cnmf params except remove_baseline and truncate, whose defaults are below
+    # # sparseNMF(Y_ds, nr, max_iter_snmf=500, alpha=10e2, sigma_smooth=(.5, .5, .5),
+    #           remove_baseline=True, perc_baseline=20, nb=1, truncate=2)
+    
+    
+    return opts_dict, indices_ex, fnadd
