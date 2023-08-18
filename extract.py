@@ -28,8 +28,6 @@ except NameError:
 
 from extract_models import extract_2d
 
-# import bokeh.plotting as bpl
-# bpl.output_notebook()
 
 logging.basicConfig(format=
                           "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s] [%(process)d] %(message)s",
@@ -39,6 +37,7 @@ logging.basicConfig(format=
 
 # export MKL_NUM_THREADS=1
 # export OPENBLAS_NUM_THREADS=1
+
 
 recordingIDs = ['20230624-2'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 trial = '*' # '*' for any trial in folder
@@ -57,16 +56,19 @@ elif (re.search("/home/caw846/", env_path[0])):
   pth_prefix = '/n/scratch3/users/c/caw846/'
 elif (re.search("/home/users/wienecke/", env_path[0])):
   pth_prefix = '/scratch/users/wienecke/cx/'
-elif (re.search('/content/CaImAn', env_path[0])):
-  pth_prefix = '../drive/MyDrive/stacksfin/'
+elif (re.search('/content', env_path[0])):
+  pth_prefix = '/content/drive/MyDrive/stacksfin/'
 
-if len(sys.argv)==1:
-    index = None #change here if you're running in visual studio debug mode (no arguments)
-elif len(sys.argv)==2:
-    index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon 
-elif len(sys.argv)==3:
-    index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon 
-    region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon 
+if (re.search('/content', env_path[0])): #not set up for arguments in colab
+  index = None
+else:
+  if len(sys.argv)==1:
+      index = None #change here if you're running in visual studio debug mode (no arguments)
+  elif len(sys.argv)==2:
+      index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon 
+  elif len(sys.argv)==3:
+      index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon 
+      region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon 
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 print(index)
@@ -91,7 +93,7 @@ for recordingID in recordingIDs:
   if anatomical_stack:
     fn_pattern = recordingID + '_hires_.tif'
   else:
-    fn_pattern = recordingID + '*_trial_00' + trial + '.tif'
+    fn_pattern = recordingID + '*_trial_00' + trial + '*.tif'
 
   pth_fldr = glob.glob(pth_fldr_pattern)[0]
 
@@ -111,6 +113,6 @@ for recordingID in recordingIDs:
       # if 'dview' in locals(): cm.stop_server(dview=dview)
       # cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
       
-      #extract_2d(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots)
+      extract_2d(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots)
 
 

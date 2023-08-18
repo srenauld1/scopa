@@ -9,7 +9,7 @@ import os
 from tifffile.tifffile import imwrite
 import matplotlib.pyplot as plt
 
-from ScanImageTiffReader import ScanImageTiffReader
+#from ScanImageTiffReader import ScanImageTiffReader
 import json
 
 import caiman as cm
