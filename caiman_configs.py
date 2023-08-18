@@ -17,7 +17,6 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
 
     do_slices = False
-
     if do_slices:
         sly = slice(6, 51, 1)
         slx = slice(40, 181, 1) 
@@ -27,8 +26,8 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
         indices_ex = [slice(None), slice(None), slice(None)]
         
     p = 0                   # order of the autoregressive system - 0 from carl's code
-    merge_thresh = 0.9
-    gSig = [2, 2, 0.5] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    merge_thresh = 0.7
+    gSig = [3, 3, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
     nb = 1
 
     ###
@@ -41,13 +40,19 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     p_ssub = 1 #patch downsampling in space 
     p_tsub = 1 #patch downsampling in time
     
+    thr_method = 'nrg' #or 'max'
+    maxthr = 0.1 #for  thr_method = 'max' keep pixels above this threshold
+    nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy 
+    extract_cc = True #true will throw away isolated pixels of some kind 
+    
     method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' #python Caiman defaults to greedy_roi, carl's code uses sparse_nmf, but sparse_nmf runs MUCH slower
     
-    max_iter_snmf = 500
+    max_iter_snmf = 1000
+    perc_baseline_snmf = 10
+    alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
-    perc_baseline_snmf = 20
-    lambda_gnmf = 3 #for method_init graphNMF
-    alpha_snmf = 1 #for method_init sparseNMF    
+
+    lambda_gnmf = 1 #for method_init graphNMF
     SC_kernel = 'heat' #NOT TUNABLE NOW       # kernel for graph affinity matrix
     SC_sigma = 1              # std for SC kernel
     SC_thr = 0                 # threshold for affinity matrix
@@ -55,6 +60,8 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     SC_use_NN = False          # sparsify affinity matrix by using only nearest neighbors
     SC_nnn = 20                # number of nearest neighbors to use if SC_use_NN = True
 
+
+    low_rank_background = True #true makes bankground nb, false makes it update with hals
     update_background_components = True   #use this??
 
     fudge_factor = 0.96        # (default is 0.96; Carl's value = 1) -- bias correction factor for discrete time constants
@@ -81,21 +88,15 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
         map_index_2_params = map2params()
         index = int(index)
         print('reading parameters from the index file')
-        merge_thresh, m2p_gsig, nb = map_index_2_params.map_index(index)
-        gSig = [m2p_gsig, m2p_gsig, 0.5]  #keep z as 0.5 so z bounding box is 2 pixels, no EPG is larger than 2 z pixels (12 microns)
+        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(index)
+        gSig = [m2p_gsig, m2p_gsig, 1]  #keep z as 0.5 so z bounding box is 2 pixels, no EPG is larger than 2 z pixels (12 microns)
 
-        # if m2p_gsig==2:
-        #     k = 50
-        # elif m2p_gsig==3:
-        #     k = 20
-        # elif m2p_gsig==4:
-        #     k = 20
-        # elif m2p_gsig==5:
-        #     k = 20
-        # elif m2p_gsig==6:
-        #     k = 20
-    do_patches = True
-    roi_decimation_fac = 0.5
+    if dims_spatial[0]<50 and dims_spatial[1]<50 and dims_spatial[2]<50: #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
+        do_patches = False
+    else:
+        do_patches = True
+
+    roi_decimation_fac = 1
     if do_patches:          # PROCESS IN PATCHES AND THEN COMBINE
         rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
         stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches
@@ -115,9 +116,8 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
         stride_cnmf = None       # will run CNMF on the whole FOV
         p_patch = p
         nb_patch = nb
-        k = 10              # number of neurons expected (in the whole FOV) - 40 from Carl's Code, seems to be too many
+        k = int(np.round( np.prod(dims_spatial) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
 
-    
     dimstr = "3dex_"
     if do_planar_extraction==True:        
         dimstr = '2dex_'
@@ -128,13 +128,16 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
     se = np.ones((3,)*len(gSig), dtype=np.uint8)  #put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
+    #medw = (3,)*len(gSig)
 
     sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning 
     sigma_smooth_snmf.extend(gSig)
     if do_planar_extraction==False:
         sigma_smooth_snmf[-1] = 0.5#0.25
 
-    fnadd = '_' + str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + '_' + str(rf) + '_' + method_init.split('_')[0] + '_' + dimstr
+    fnadd = '_' + str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + \
+        '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
+            + '_' + str(max_iter_snmf) + '_' + method_init.split('_')[0] + '_' + dimstr
 
     if do_planar_extraction is not None: #it's none during motion correction, when we don't care about these params, rather than true/false
         print("index is " + str(index) + " with filename string " + fnadd)
@@ -146,7 +149,7 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
                 'pw_rigid': pw_rigid,         # flag for performing non-rigid motion correction
                 'is3D': is3D_mc,
                 'nonneg_movie':nonneg_movie,
-                'min_mov':min_mov,
+                'min_mov': min_mov,
                 'shifts_opencv':shifts_opencv, 
                 'fr': fr,
                 'p': p,
@@ -194,7 +197,13 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
                 'ITER': ITER, 
                 'fudge_factor': fudge_factor, 
                 'cnn_lowest': cnn_lowest, 
-                'update_background_components': update_background_components}
+                'update_background_components': update_background_components, 
+                'low_rank_background' : low_rank_background,
+                'thr_method': thr_method,
+                'maxthr': maxthr,
+                'nrgthr': nrgthr,
+                #'medw': medw,
+                'extract_cc': extract_cc}
 
 
     # # for reference here are the initialization defs for 3 methods, sparse_nmf apparently "has problems" according to gitter
