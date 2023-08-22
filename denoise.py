@@ -1,21 +1,21 @@
 
 
 
-# import torch
+import torch
 
-# if torch.cuda.is_available():
-#     print('\033[1;31mGPU accessiable. Use GPU for computation.\033[0m')
-#     gpu_id = torch.cuda.current_device()
-#     total_memory = torch.cuda.get_device_properties(gpu_id).total_memory/1024/1024
-#     alloc_memory = torch.cuda.memory_allocated(0)/1024/1024
-#     print('GPU ID: ', gpu_id, '|', torch.cuda.get_device_name(), \
-#           '| Memory: {:.0f} MB'.format(total_memory))
-#     #nvcc--version
-#     print('PyTorch version: ', torch.__version__)
-# else:
-#     print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')
-#     print(' 1. Navigate to Edit → Notebook Settings')
-#     print(' 2. Select GPU from the Hardware Accelerator drop-down')
+if torch.cuda.is_available():
+    print('\033[1;31mGPU accessiable. Use GPU for computation.\033[0m')
+    gpu_id = torch.cuda.current_device()
+    total_memory = torch.cuda.get_device_properties(gpu_id).total_memory/1024/1024
+    alloc_memory = torch.cuda.memory_allocated(0)/1024/1024
+    print('GPU ID: ', gpu_id, '|', torch.cuda.get_device_name(), \
+          '| Memory: {:.0f} MB'.format(total_memory))
+    #nvcc--version
+    print('PyTorch version: ', torch.__version__)
+else:
+    print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')
+    print(' 1. Navigate to Edit → Notebook Settings')
+    print(' 2. Select GPU from the Hardware Accelerator drop-down')
 
 import sys
 import re
@@ -32,10 +32,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 
-# from deepcad.train_collection import training_class
-# from deepcad.test_collection import testing_class
-# from deepcad.movie_display import display, display_img
-# from deepcad.utils import get_first_filename
+from deepcad.train_collection import training_class
+from deepcad.test_collection import testing_class
+from deepcad.movie_display import display, display_img
+from deepcad.utils import get_first_filename
 
 import random
 from tqdm import tqdm
