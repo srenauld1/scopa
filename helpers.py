@@ -2,7 +2,6 @@
 import numpy as np
 import glob
 
-from caiman_draw_fov import select_fov
 from caiman_vis_custom import im_montage 
 from ast import literal_eval
 
@@ -45,11 +44,11 @@ def select_fov(img):
 
 
 
-def crop_fov(Y, fov_region, pth_tif_reg, dims_spacetime_original_noflyback):
+def crop_fov(Y, fov_region, pth_img, dims_spacetime_original_noflyback):
 
     try:
         
-        fn_croplim_pattern = pth_tif_reg[0][:-4] + fov_region + '_.npy' #find file matching fov subregion with some crop lim 
+        fn_croplim_pattern = pth_img[0][:-4] + fov_region + '_croplim_.npy' #find file matching fov subregion with some crop lim 
         fn_croplim = glob.glob(fn_croplim_pattern)
         if len(fn_croplim) > 1:
             raise Exception("too many crop files")
@@ -67,8 +66,8 @@ def crop_fov(Y, fov_region, pth_tif_reg, dims_spacetime_original_noflyback):
         ylimits, xlimits = select_fov(Ymtz)
         tlimits = (1, dims_spacetime_original_noflyback[0])
         croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) #make them 1-indexed for matlab later 
-        limits_str = fov_region # + '_' + str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-        fn_crop_lim = pth_tif_reg[0][:-4] + limits_str + '_.npy'
+        limits_str = fov_region + '_' + str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
+        fn_crop_lim = pth_img[0][:-4] + fov_region + '_croplim_.npy'
         with open(fn_crop_lim, 'wb') as fncrop:
             np.save(fncrop, croplim)
 

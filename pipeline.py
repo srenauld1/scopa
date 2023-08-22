@@ -19,7 +19,7 @@ from caiman_configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
 from helpers import crop_fov, tracefunc
 
-def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots):
+def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots):
 
     n_processes = 1
     dview = None
@@ -79,17 +79,16 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
     if do_extraction:
         
-        if do_motion_correction==False:
-            Y = cm.load(pth_tif_reg)     
-            Y = Y.reshape(dims_spacetime_original_noflyback)
-            Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
+        Y = cm.load(pth_tif_dn)     
+        Y = Y.reshape(dims_spacetime_original_noflyback)
+        Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
 
         if region_extraction == '':
             limits_str = ''
         else:
-            Y, limits_str = crop_fov(Y, region_extraction, pth_tif_reg, dims_spacetime_original_noflyback)
+            Y, limits_str = crop_fov(Y, region_extraction, pth_tif_dn, dims_spacetime_original_noflyback)
 
-        pth_tif_ex = [pth_tif_reg[0][:-4] + limits_str + '_caimanex_.tif']
+        pth_tif_ex = [pth_tif_dn[0][:-4] + limits_str + '_caimanex_.tif']
         imwrite(pth_tif_ex[0], Y) #must write it to memmap it, and must memmap it to use patches in extraction
         basename_memap = pth_tif_ex[0].split('/')[-1][:-4]
         border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 
