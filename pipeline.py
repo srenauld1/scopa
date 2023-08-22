@@ -19,14 +19,11 @@ from caiman_configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
 from helpers import crop_fov, tracefunc
 
-def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots):
+def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server):
 
     print("in full")
     n_processes = 1
     dview = None
-
-    opts_dict, indices_ex, fnadd = configs(index = None) #don't pass do_planar_extraction here because these configs are for mc
-    opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
     ##########################   MOTION CORRECTION   ##########################
 
@@ -49,11 +46,14 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         
         imwrite(pth_tif_reg_tmp[0], Y) #write as t x y z
 
-        # if 'dview' in locals(): cm.stop_server(dview=dview)
-        # cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+        if server:
+            if 'dview' in locals(): cm.stop_server(dview=dview)
+            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
 
-        opts.change_params({'fnames': pth_tif_reg_tmp, 'min_mov': min_mov}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
-    
+        opts_dict, indices_ex, fnadd = configs(index = None, fnames = pth_tif_reg_tmp, min_mov = min_mov) #don't pass do_planar_extraction here because these configs are for mc
+        opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+        #opts.change_params({'fnames': pth_tif_reg_tmp, 'min_mov': min_mov}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
+
         mc = cm.motion_correction.MotionCorrect(pth_tif_reg_tmp, dview=dview, **opts.get_group('motion'))
         #sys.setprofile(tracefunc)
         mc.motion_correct(save_movie=True)
@@ -114,11 +114,14 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         
         for ii in index_new:
 
-            try: #since some param combos will error
+            if 1: #since some param combos will error
                 
-                opts_dict, indices_ex, fnadd = configs(index = ii, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
-                opts.change_params(opts_dict) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
-                opts.change_params({'fnames': fn_mmap_ex}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
+
+                opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
+                opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+                
+                # opts.change_params(opts_dict) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
+                # opts.change_params({'fnames': fn_mmap_ex}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
             
                 if do_planar_extraction: #adjust images and some params for planar 
                     sliceindz = np.arange(Y.shape[-1])
@@ -142,8 +145,10 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                         print("3D EXTRACTION FOR ALL SLICES")
                         images_sliced = Y #keep images for loop over ii
 
-                    # if 'dview' in locals(): cm.stop_server(dview=dview)
-                    # cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+
+                    if server:
+                        if 'dview' in locals(): cm.stop_server(dview=dview)
+                        cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
 
                     cnm = cnmf.CNMF(n_processes, params=opts, dview=dview)
                     cnm = cnm.fit(images_sliced, indices = indices_ex)
@@ -152,10 +157,11 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     print(('NUMGOOD ' + str(len(cnm.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm.estimates.idx_components_bad))))
                     
                     cnm.estimates.select_components(use_object=True, save_discarded_components=False)
-                    
-                    # if 'dview' in locals(): cm.stop_server(dview=dview)
-                    # cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
-                    
+
+                    if server:
+                        if 'dview' in locals(): cm.stop_server(dview=dview)
+                        cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+
                     cnm2 = cnm.refit(images_sliced)
                     cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
                     print(('REFIT: NUMGOOD ' + str(len(cnm2.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm2.estimates.idx_components_bad))))
@@ -234,7 +240,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     print("norois")
                     pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_NOROIS_.mat']
 
-            except:
+            else:
                 
                 mdict = {}
                 pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_FAILURE_.mat']

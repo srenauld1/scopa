@@ -1,7 +1,7 @@
 import numpy as np
 from caiman_map2params import map2params
 
-def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
+def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = None, dims_spatial = (1,1,1)):
     
     only_init = False
 
@@ -12,7 +12,7 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     pw_rigid = False
     is3D_mc = True
     nonneg_movie = True
-    min_mov = 0
+    min_mov = min_mov
     shifts_opencv = True 
     indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
 
@@ -202,6 +202,7 @@ def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
                 'thr_method': thr_method,
                 'maxthr': maxthr,
                 'nrgthr': nrgthr,
+                'fnames': fnames,
                 #'medw': medw,
                 'extract_cc': extract_cc}
 

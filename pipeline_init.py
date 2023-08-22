@@ -46,7 +46,7 @@ logging.basicConfig(format=
 recdates = ['20230624'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 fly = '2'
 trial = '1' # '*' for any trial in folder
-do_motion_correction = True
+do_motion_correction = False
 do_denoise = False
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
@@ -56,8 +56,9 @@ anatomical_stack = False
 
 
 env_path = sys.path
-
+server = 1
 if (re.search("/Users/wienecke/", env_path[0])):
+  server = 0
   pth_prefix = '/Users/wienecke/Documents/ambrose/stacks/'
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no local gpu, make do_denoise false")
@@ -148,6 +149,6 @@ for recording_date in recdates:
           pth_tif_reg = [pth_prefix_fnsave + '_caimanreg_.tif']
           pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
 
-      pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots)
+      pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
 
 

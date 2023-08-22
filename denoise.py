@@ -1,23 +1,24 @@
 
 
 
-import torch
+# import torch
 
-if torch.cuda.is_available():
-    print('\033[1;31mGPU accessiable. Use GPU for computation.\033[0m')
-    gpu_id = torch.cuda.current_device()
-    total_memory = torch.cuda.get_device_properties(gpu_id).total_memory/1024/1024
-    alloc_memory = torch.cuda.memory_allocated(0)/1024/1024
-    print('GPU ID: ', gpu_id, '|', torch.cuda.get_device_name(), \
-          '| Memory: {:.0f} MB'.format(total_memory))
-    ! nvcc --version
-    print('PyTorch version: ', torch.__version__)
-else:
-    print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')
-    print(' 1. Navigate to Edit → Notebook Settings')
-    print(' 2. Select GPU from the Hardware Accelerator drop-down')
+# if torch.cuda.is_available():
+#     print('\033[1;31mGPU accessiable. Use GPU for computation.\033[0m')
+#     gpu_id = torch.cuda.current_device()
+#     total_memory = torch.cuda.get_device_properties(gpu_id).total_memory/1024/1024
+#     alloc_memory = torch.cuda.memory_allocated(0)/1024/1024
+#     print('GPU ID: ', gpu_id, '|', torch.cuda.get_device_name(), \
+#           '| Memory: {:.0f} MB'.format(total_memory))
+#     #nvcc--version
+#     print('PyTorch version: ', torch.__version__)
+# else:
+#     print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')
+#     print(' 1. Navigate to Edit → Notebook Settings')
+#     print(' 2. Select GPU from the Hardware Accelerator drop-down')
 
-
+import sys
+import re
 import os
 import glob
 import shutil
@@ -30,13 +31,11 @@ import scipy.io
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-%matplotlib inline
 
-
-from deepcad.train_collection import training_class
-from deepcad.test_collection import testing_class
-from deepcad.movie_display import display, display_img
-from deepcad.utils import get_first_filename
+# from deepcad.train_collection import training_class
+# from deepcad.test_collection import testing_class
+# from deepcad.movie_display import display, display_img
+# from deepcad.utils import get_first_filename
 
 import random
 from tqdm import tqdm
@@ -49,7 +48,6 @@ dims_spacetime_original_noflyback = [dims_spacetime_original[0], dims_spacetime_
 
 env_path = sys.path
 
-
 if (re.search("/Users/wienecke/", env_path[0])):
     if len(sys.argv)==1:
         pth_tif_reg = ['/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_caimanreg_.tif']
@@ -57,7 +55,7 @@ elif (re.search("/home/caw846/", env_path[0])):
     import mat73
 
 
-pth_prefix = '/'.join(pth_tif_reg[0].split('/')[:-2])
+pth_prefix = '/'.join(pth_tif_reg[0].split('/')[:-1])
 working_dir = '/'.join(pth_prefix.split('/')[:-2])
 datasets_path_processing = os.path.join(working_dir, 'denoising_in_progress')
 if not os.path.exists(datasets_path_processing):
