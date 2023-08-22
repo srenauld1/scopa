@@ -274,158 +274,151 @@ for f in stack_paths:
 
 
 
+if old_mat_files:
 
-#@title remove background and denoise (each z slice separately)
+mat = mat73.loadmat(pth_tif_reg)
+Y = mat['stackRaw_mc']
+Y = np.moveaxis(Y, [0, 2], [2, 0]) #put in order t y x
+Y = Y[..., np.newaxis]
 
-if do_denoise:
+else:
 
-  %matplotlib inline
+Y = cm.load(pth_tif_reg)
+Y = Y.reshape(dims_spacetime_original_noflyback)
+Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
-  if old_mat_files:
+size_pre_denoise = Y.shape
 
-    mat = mat73.loadmat(pth_tif_reg)
-    Y = mat['stackRaw_mc']
-    Y = np.moveaxis(Y, [0, 2], [2, 0]) #put in order t y x
-    Y = Y[..., np.newaxis]
+zind_all_dn = np.arange(Y.shape[-1])
 
-  else:
+for zii in zind_all_dn: #for each z slice
 
-    Y = cm.load(pth_tif_reg)
-    Y = Y.reshape(dims_spacetime_original_noflyback)
-    Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
+Ynew = Y[:,:,:,zii]
+print("denoising slice" + str(zii))
+print(Y.shape)
+print(Ynew.shape)
 
-  size_pre_denoise = Y.shape
-
-  zind_all_dn = np.arange(Y.shape[-1])
-
-  for zii in zind_all_dn: #for each z slice
-
-    Ynew = Y[:,:,:,zii]
-    print("denoising slice" + str(zii))
-    print(Y.shape)
-    print(Ynew.shape)
-
-    dnfolder = fn_reduced + '_' + str(zii)
-    tifname = dnfolder + '_.tif'
-    tiffolder_path = os.path.join(datasets_path_processing, dnfolder)
-    testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')
-    if not os.path.exists(tiffolder_path):
-      os.mkdir(tiffolder_path)
-    pth_tif_pdn = os.path.join(tiffolder_path, tifname)
-    print(pth_datafile)
-    print(pth_tif_pdn)
-    imwrite(pth_tif_pdn, Ynew.astype('float'), photometric='minisblack')
+dnfolder = fn_reduced + '_' + str(zii)
+tifname = dnfolder + '_.tif'
+tiffolder_path = os.path.join(datasets_path_processing, dnfolder)
+testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')
+if not os.path.exists(tiffolder_path):
+    os.mkdir(tiffolder_path)
+pth_tif_pdn = os.path.join(tiffolder_path, tifname)
+print(pth_datafile)
+print(pth_tif_pdn)
+imwrite(pth_tif_pdn, Ynew.astype('float'), photometric='minisblack')
 
 
-    #remove background line by line
-    br = BgRemover(pth_tif_pdn, half_wid=12)
-    br.draw_bg()
-    br.show_bg()
-    br.remove_bg()
-    br.show_spectrum(fs=180)
-    br.save_out()
+#remove background line by line
+br = BgRemover(pth_tif_pdn, half_wid=12)
+br.draw_bg()
+br.show_bg()
+br.remove_bg()
+br.show_spectrum(fs=180)
+br.save_out()
 
 
-    stack = io.imread(pth_tif_pdn)
-    Lt, Ly, Lx = stack.shape
-    print(Lt)
-    print(Ly)
-    print(Lx)
+stack = io.imread(pth_tif_pdn)
+Lt, Ly, Lx = stack.shape
+print(Lt)
+print(Ly)
+print(Lx)
 
-    n_epochs = 2                # number of training epochs
-    GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
-    manual_max_dataset_size = 4000
-    train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
-    patch_x = int(np.ceil(Lx/4)) # was /4   # the width, height, and length of 3D patches (use isotropic patch size by default)
-    patch_y = int(np.ceil(Ly/4)) # was /4
-    patch_t = 300                #100
-    overlap_factor = 0.4        # the overlap factor between two adjacent patches
-    num_workers = 0             # if you use Windows system, set this to 0.
+n_epochs = 2                # number of training epochs
+GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
+manual_max_dataset_size = 4000
+train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
+patch_x = int(np.ceil(Lx/4)) # was /4   # the width, height, and length of 3D patches (use isotropic patch size by default)
+patch_y = int(np.ceil(Ly/4)) # was /4
+patch_t = 300                #100
+overlap_factor = 0.4        # the overlap factor between two adjacent patches
+num_workers = 0             # if you use Windows system, set this to 0.
 
-    # Setup some parameters for result visualization during training period (optional)
-    save_test_images_per_epoch = True  # whether to save result images after each epoch
+# Setup some parameters for result visualization during training period (optional)
+save_test_images_per_epoch = True  # whether to save result images after each epoch
 
-    train_dict = {
-        # dataset dependent parameters
-        'patch_x': patch_x,                          # the width of 3D patches
-        'patch_y': patch_y,                          # the height of 3D patches
-        'patch_t': patch_t,                          # the time dimension (frames) of 3D patches
-        'overlap_factor':overlap_factor,             # the factor for image intensity scaling
-        'scale_factor': 1,                           # the factor for image intensity scaling
-        'select_img_num': train_datasets_size,       # select the number of images used for training (use 2000 frames in colab)
-        'train_datasets_size': train_datasets_size,  # datasets size for training (how many 3D patches)
-        'datasets_path': tiffolder_path,             # folder containing files for training
-        'pth_dir': tiffolder_path,                   # the path for pth file and result images
+train_dict = {
+    # dataset dependent parameters
+    'patch_x': patch_x,                          # the width of 3D patches
+    'patch_y': patch_y,                          # the height of 3D patches
+    'patch_t': patch_t,                          # the time dimension (frames) of 3D patches
+    'overlap_factor':overlap_factor,             # the factor for image intensity scaling
+    'scale_factor': 1,                           # the factor for image intensity scaling
+    'select_img_num': train_datasets_size,       # select the number of images used for training (use 2000 frames in colab)
+    'train_datasets_size': train_datasets_size,  # datasets size for training (how many 3D patches)
+    'datasets_path': tiffolder_path,             # folder containing files for training
+    'pth_dir': tiffolder_path,                   # the path for pth file and result images
 
-        # network related parameters
-        'n_epochs': n_epochs,                          # the number of training epochs
-        'lr': 0.00005,                                 # learning rate
-        'b1': 0.5,                                     # Adam: beta1
-        'b2': 0.999,                                   # Adam: beta2
-        'fmap': 8,  # was 16 by default                # model complexity
-        'GPU': GPU,                                    # GPU index
-        'num_workers': num_workers,                    # if you use Windows system, set this to 0.
-        'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
-        'save_test_images_per_epoch': save_test_images_per_epoch,  # whether to save result images after each epoch
-        'colab_display': True
-    }
+    # network related parameters
+    'n_epochs': n_epochs,                          # the number of training epochs
+    'lr': 0.00005,                                 # learning rate
+    'b1': 0.5,                                     # Adam: beta1
+    'b2': 0.999,                                   # Adam: beta2
+    'fmap': 8,  # was 16 by default                # model complexity
+    'GPU': GPU,                                    # GPU index
+    'num_workers': num_workers,                    # if you use Windows system, set this to 0.
+    'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
+    'save_test_images_per_epoch': save_test_images_per_epoch,  # whether to save result images after each epoch
+    'colab_display': True
+}
 
-    tc = training_class(train_dict)
-    tc.run()
+tc = training_class(train_dict)
+tc.run()
 
-    test_datasize = Lt
-    para_path_tmp = glob.glob(os.path.join(testfolder_path, '*.yaml'))[0]
-    denoise_model = para_path_tmp.split('/')[-2] #datetime.datetime.now().strftime("%Y%m%dT%H%M%S") #'stackraw2_202210240402'
-    para_path = glob.glob(os.path.join(tiffolder_path, denoise_model, '*.yaml'))[0]
+test_datasize = Lt
+para_path_tmp = glob.glob(os.path.join(testfolder_path, '*.yaml'))[0]
+denoise_model = para_path_tmp.split('/')[-2] #datetime.datetime.now().strftime("%Y%m%dT%H%M%S") #'stackraw2_202210240402'
+para_path = glob.glob(os.path.join(tiffolder_path, denoise_model, '*.yaml'))[0]
 
-    import yaml
+import yaml
 
-    with open(para_path, "r") as stream:
-        #para_dict = yaml.safe_load(stream)
-        patch_t = train_dict['patch_t']
-        patch_x = train_dict['patch_x']
-        patch_y = train_dict['patch_y']
-        fmap = train_dict['fmap']
-        overlap_factor = train_dict['overlap_factor']
+with open(para_path, "r") as stream:
+    #para_dict = yaml.safe_load(stream)
+    patch_t = train_dict['patch_t']
+    patch_x = train_dict['patch_x']
+    patch_y = train_dict['patch_y']
+    fmap = train_dict['fmap']
+    overlap_factor = train_dict['overlap_factor']
 
-    test_dict = {
-        # dataset dependent parameters
-        'patch_x': patch_x,               # the width of 3D patches
-        'patch_y': patch_y,               # the height of 3D patches
-        'patch_t': patch_t,               # the time dimension (frames) of 3D patches
-        'overlap_factor':overlap_factor,    # overlap factor
-        'scale_factor': 1,                  # the factor for image intensity scaling
-        'test_datasize': test_datasize,     # the number of frames to be tested
-        'datasets_path': tiffolder_path,     # folder containing all files to be tested
-        'pth_dir': tiffolder_path,                 # pth file root path
-        'denoise_model' : denoise_model,    # A folder containing all models to be tested
-        'output_dir' : tiffolder_path,         # result file root path
-        # network related parameters
-        'fmap': fmap,                         # number of feature maps
-        'GPU': GPU,                         # GPU index
-        'num_workers': num_workers,         # if you use Windows system, set this to 0.
-        'visualize_images_per_epoch': False,# whether to display inference performance after each epoch
-        'save_test_images_per_epoch': True, # whether to save inference image after each epoch in pth path
-        'colab_display': True
-    }
+test_dict = {
+    # dataset dependent parameters
+    'patch_x': patch_x,               # the width of 3D patches
+    'patch_y': patch_y,               # the height of 3D patches
+    'patch_t': patch_t,               # the time dimension (frames) of 3D patches
+    'overlap_factor':overlap_factor,    # overlap factor
+    'scale_factor': 1,                  # the factor for image intensity scaling
+    'test_datasize': test_datasize,     # the number of frames to be tested
+    'datasets_path': tiffolder_path,     # folder containing all files to be tested
+    'pth_dir': tiffolder_path,                 # pth file root path
+    'denoise_model' : denoise_model,    # A folder containing all models to be tested
+    'output_dir' : tiffolder_path,         # result file root path
+    # network related parameters
+    'fmap': fmap,                         # number of feature maps
+    'GPU': GPU,                         # GPU index
+    'num_workers': num_workers,         # if you use Windows system, set this to 0.
+    'visualize_images_per_epoch': False,# whether to display inference performance after each epoch
+    'save_test_images_per_epoch': True, # whether to save inference image after each epoch in pth path
+    'colab_display': True
+}
 
-    tc = testing_class(test_dict)
-    tc.run()
+tc = testing_class(test_dict)
+tc.run()
 
-    if tc.colab_display:
-        display_filename = tc.result_display
-        print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
-        print(display_filename)
-        # normalize the image and display
-        img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
-        plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
-        plt.axis('off')
-        plt.show()
+if tc.colab_display:
+    display_filename = tc.result_display
+    print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
+    print(display_filename)
+    # normalize the image and display
+    img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
+    plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
+    plt.axis('off')
+    plt.show()
 
-    outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
-    shutil.move(outtiff_path, datasets_path_complete)
-    shutil.rmtree(tiffolder_path)
-    shutil.rmtree('/'.join(tiffolder_path.split('/')[:-1]) + '/bg_remove')
+outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
+shutil.move(outtiff_path, datasets_path_complete)
+shutil.rmtree(tiffolder_path)
+shutil.rmtree('/'.join(tiffolder_path.split('/')[:-1]) + '/bg_remove')
 
 
 
