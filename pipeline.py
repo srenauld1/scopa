@@ -6,7 +6,7 @@ import scipy
 
 import glob
 import os
-from tifffile.tifffile import imwrite
+from tifffile.tifffile import imwrite, imread
 
 import matplotlib.pyplot as plt
 
@@ -21,6 +21,7 @@ from helpers import crop_fov, tracefunc
 
 def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots):
 
+    print("in full")
     n_processes = 1
     dview = None
 
@@ -79,7 +80,9 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
     if do_extraction:
         
-        Y = cm.load(pth_tif_dn)     
+        print("in extract")
+        
+        Y = cm.load(pth_tif_dn)  
         Y = Y.reshape(dims_spacetime_original_noflyback)
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
 
