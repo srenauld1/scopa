@@ -47,9 +47,13 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         imwrite(pth_tif_reg_tmp[0], Y) #write as t x y z
 
         if server:
-            if 'dview' in locals(): cm.stop_server(dview=dview)
-            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
-
+            try:
+                if 'dview' in locals(): cm.stop_server(dview=dview)
+                cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+            except:
+                if 'dview' in locals(): cm.stop_server(dview=dview)
+                cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                    
         opts_dict, indices_ex, fnadd = configs(index = None, fnames = pth_tif_reg_tmp, min_mov = min_mov) #don't pass do_planar_extraction here because these configs are for mc
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
         #opts.change_params({'fnames': pth_tif_reg_tmp, 'min_mov': min_mov}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
@@ -147,9 +151,13 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
 
                     if server:
-                        if 'dview' in locals(): cm.stop_server(dview=dview)
-                        cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
-
+                        try:
+                            if 'dview' in locals(): cm.stop_server(dview=dview)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                        except:
+                            if 'dview' in locals(): cm.stop_server(dview=dview)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                    
                     cnm = cnmf.CNMF(n_processes, params=opts, dview=dview)
                     cnm = cnm.fit(images_sliced, indices = indices_ex)
 
@@ -159,9 +167,13 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     cnm.estimates.select_components(use_object=True, save_discarded_components=False)
 
                     if server:
-                        if 'dview' in locals(): cm.stop_server(dview=dview)
-                        cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
-
+                        try:
+                            if 'dview' in locals(): cm.stop_server(dview=dview)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                        except:
+                            if 'dview' in locals(): cm.stop_server(dview=dview)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                    
                     cnm2 = cnm.refit(images_sliced)
                     cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
                     print(('REFIT: NUMGOOD ' + str(len(cnm2.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm2.estimates.idx_components_bad))))
