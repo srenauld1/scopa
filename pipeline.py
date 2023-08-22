@@ -7,6 +7,7 @@ import scipy
 import glob
 import os
 from tifffile.tifffile import imwrite
+
 import matplotlib.pyplot as plt
 
 #from ScanImageTiffReader import ScanImageTiffReader
@@ -14,14 +15,11 @@ import json
 
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
-from caiman_plots import compute_correlations
 from caiman_configs import configs
-from caiman_vis_custom import caiman_plots_all
+from caiman_vis_custom import caiman_plots_all, compute_correlations
+from helpers import crop_fov, tracefunc
 
-from tracefunctioncfrw import tracefunc
-from helpers import crop_fov
-
-def extract_2d(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots):
+def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots):
 
     n_processes = 1
     dview = None
@@ -65,13 +63,17 @@ def extract_2d(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_
         pth_mmap_reg = cm.save_memmap(mc.mmap_file, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # save in order C (motion_correct above has to save in order F)
         Y, dims_spatial, T = cm.load_memmap(pth_mmap_reg) #np.allclose(images, images2, rtol=1e-05, atol=1e-04, equal_nan=False)
         Y = np.reshape(Y.T, [T] + list(dims_spatial), order='F') 
-        print("MIN AFTER MOTION CORRECTION " + str(np.min(Y)))
+        min_mov_after_reg = int(np.min(Y))
+        Y = Y - min_mov_after_reg #make movie nonnegative (not sure this is necessary)
+        print("MIN AFTER MOTION CORRECTION " + str(min_mov_after_reg))
 
         os.remove(mc.mmap_file[0]) #remove the mmap file in F order 
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
-        Y = np.transpose(Y.astype('uint16'), (0, 3, 2, 1)) #put back in original t z y x scanimage order 
-        Y = Y.reshape(T * dims_spatial[2], dims_spatial[1], dims_spatial[0])
-        imwrite(pth_tif_reg[0], Y) #write the registered movie as tif for use in matlab, and caiman extraction below       
+        #write registered movied as uint16, below cm.load will convert to float32 automatically 
+        # Y_write = np.transpose(Y.astype('uint16'), (0, 3, 2, 1)) #put back in original t z y x scanimage order
+        # Y_write = np.transpose(Y_write.astype('uint16'), (0, 3, 2, 1)).reshape(T * dims_spatial[2], dims_spatial[1], dims_spatial[0])
+        imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(T * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif for use in matlab, and caiman extraction below
+        
 
     ##########################   EXTRACTION   ##########################
 

@@ -26,7 +26,7 @@ try:
 except NameError:
     pass
 
-from extract_models import extract_2d
+from pipeline import pipeline_full
 
 
 logging.basicConfig(format=
@@ -40,11 +40,11 @@ logging.basicConfig(format=
 
 
 recordingIDs = ['20230624-2'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-trial = '*' # '*' for any trial in folder
-do_motion_correction = False
+trial = '1' # '*' for any trial in folder
+do_motion_correction = True
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
-region_extraction = 'gal'
+region_extraction = 'pb'
 do_plots = 0
 anatomical_stack = False
 
@@ -113,6 +113,6 @@ for recordingID in recordingIDs:
       # if 'dview' in locals(): cm.stop_server(dview=dview)
       # cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
       
-      extract_2d(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots)
+      pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots)
 
 

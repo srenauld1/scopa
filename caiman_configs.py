@@ -2,7 +2,7 @@ import numpy as np
 from caiman_map2params import map2params
 
 def configs(index = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
-
+    
     only_init = False
 
     strides_mc = (24, 24, 6)
