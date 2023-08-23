@@ -28,7 +28,6 @@ except NameError:
 
 from pipeline import pipeline_full
 
-
 logging.basicConfig(format=
                           "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s] [%(process)d] %(message)s",
                     # filename="/tmp/caiman.log",
@@ -135,6 +134,7 @@ for recording_date in recdates:
       fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_mc_.mat'
       pth_fldr = glob.glob(pth_fldr_pattern)
 
+
   for ff in pth_fldr:
 
     print(ff)
@@ -167,6 +167,8 @@ for recording_date in recdates:
             pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
 
 
-        #pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
+        pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
+                      datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
+                      flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
 
 
