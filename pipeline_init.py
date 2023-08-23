@@ -44,13 +44,15 @@ logging.basicConfig(format=
 #OLD MAT FILES recdates ARE 6 DIGITS NOT 8 (YEAR IS 2 NOT 4)
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 recdates = ['20230624'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-fly = '2'
-trial = '1' # '*' for any trial in folder
+fly = '*'
+trial = '*' # '*' for any trial in folder
+region_extraction = 'pb'
+
 do_motion_correction = True
 do_denoise = False
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
-region_extraction = 'pb'
+
 do_plots = 0
 anatomical_stack = False
 
@@ -87,10 +89,22 @@ else:
   elif len(sys.argv)==3:
       index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon
       region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
+  elif len(sys.argv)>3:
+      index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon
+      region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
+      do_motion_correction = sys.argv[3].split(':')[-1]
+      do_denoise = sys.argv[4].split(':')[-1]
+      do_extraction = sys.argv[5].split(':')[-1]
+      do_planar_extraction = sys.argv[6].split(':')[-1] #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 print(index)
 print(region_extraction)
+print(do_motion_correction)
+print(do_denoise)
+print(do_extraction)
+print(do_planar_extraction)
+
 
 if anatomical_stack==True:
   dims_spacetime_original = [80, 164, 140, 256]
@@ -120,35 +134,39 @@ for recording_date in recdates:
       pth_fldr_pattern = pth_prefix + recording_date + '_' + fly + '/'
       fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_mc_.mat'
       pth_fldr = glob.glob(pth_fldr_pattern)
-  pth_fldr = pth_fldr[0]
 
-  for f in os.listdir(pth_fldr):
+  for ff in pth_fldr:
 
-    if fnmatch.fnmatch(f,fn_pattern):
+    print(ff)
+    
+    for f in os.listdir(ff):
 
-      pth_datafile = pth_fldr + f
-      print(pth_datafile)
+      if fnmatch.fnmatch(f,fn_pattern):
 
-      if old_mat_files:
-        fn_reduced = f[:-5]
-      else:
-        fn_reduced = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
+        pth_datafile = ff + f
+        print(pth_datafile)
 
-      pth_prefix_fnsave = pth_fldr + fn_reduced
-      if old_mat_files:
-        pth_tif_reg_tmp = []
-        pth_tif_reg = pth_datafile
-        pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
-      else:
-        if anatomical_stack:
-          pth_tif_reg_tmp = [pth_prefix_fnsave + '_hires_caimanregtmp_.tif']
-          pth_tif_reg = [pth_prefix_fnsave + '_hires_caimanreg_.tif']
-          pth_tif_dn = [pth_prefix_fnsave + 'hires_cmregcaddn_.tif']
+        if old_mat_files:
+          fn_reduced = f[:-5]
         else:
-          pth_tif_reg_tmp = [pth_prefix_fnsave + '_caimanregtmp_.tif']
-          pth_tif_reg = [pth_prefix_fnsave + '_caimanreg_.tif']
-          pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
+          fn_reduced = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
 
-      pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
+        pth_prefix_fnsave = ff + fn_reduced
+        if old_mat_files:
+          pth_tif_reg_tmp = []
+          pth_tif_reg = pth_datafile
+          pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
+        else:
+          if anatomical_stack:
+            pth_tif_reg_tmp = [pth_prefix_fnsave + '_hires_caimanregtmp_.tif']
+            pth_tif_reg = [pth_prefix_fnsave + '_hires_caimanreg_.tif']
+            pth_tif_dn = [pth_prefix_fnsave + 'hires_cmregcaddn_.tif']
+          else:
+            pth_tif_reg_tmp = [pth_prefix_fnsave + '_caimanregtmp_.tif']
+            pth_tif_reg = [pth_prefix_fnsave + '_caimanreg_.tif']
+            pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
+
+
+        #pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, dims_spacetime_original, dims_spacetime_original_noflyback, flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
 
 
