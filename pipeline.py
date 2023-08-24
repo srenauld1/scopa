@@ -21,7 +21,7 @@ from helpers import crop_fov, tracefunc
 
 def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
                       datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, server):
+                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server):
 
     print("in full")
     n_processes = 1
@@ -51,10 +51,10 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         if server:
             try:
                 if 'dview' in locals(): cm.stop_server(dview=dview)
-                cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
             except:
                 if 'dview' in locals(): cm.stop_server(dview=dview)
-                cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                     
         opts_dict, indices_ex, fnadd = configs(index = None, fnames = pth_tif_reg_tmp, min_mov = min_mov) #don't pass do_planar_extraction here because these configs are for mc
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
@@ -172,10 +172,10 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     if server:
                         try:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
-                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                         except:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
-                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                     
                     cnm = cnmf.CNMF(n_processes, params=opts, dview=dview)
                     cnm = cnm.fit(images_sliced, indices = indices_ex)
@@ -188,10 +188,10 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     if server:
                         try:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
-                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                         except:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
-                            cc, dview, n_processes = cm.cluster.setup_cluster(backend='ipyparallel', n_processes=None, single_thread=False)
+                            cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                     
                     cnm2 = cnm.refit(images_sliced)
                     cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)

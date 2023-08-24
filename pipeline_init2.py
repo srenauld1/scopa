@@ -59,17 +59,23 @@ anatomical_stack = False
 
 env_path = sys.path
 server = 1
+cluster_backend = 'ipyparallel'
 if (re.search("/Users/wienecke/", env_path[0])):
   server = 0
   pth_prefix = '/Users/wienecke/Documents/ambrose/stacks/'
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no local gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])):
+  
   pth_prefix = '/n/scratch3/users/c/caw846/stacks/'
+  cluster_backend = 'slurm'
+
 elif (re.search("/home/users/wienecke/", env_path[0])):
   pth_prefix = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])):
   pth_prefix = '/content/drive/MyDrive/stacks/'
+
+
 
 working_dir = '/'.join(pth_prefix.split('/')[:-2])
 datasets_path_processing = os.path.join(working_dir, 'denoising_in_progress')
@@ -170,6 +176,6 @@ for recording_date in recdates:
 
         pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
                       datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
+                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server)
 
 
