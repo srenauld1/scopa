@@ -88,9 +88,9 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt python3 ~/scopa/denoise_single.py" \
                   + " " + pth_tif_reg + " " + pth_tif_dn + " " + fn_reduced \
-                    + " " + old_mat_files + " " + dims_spacetime_original_noflyback[0] \
-                        + " " + dims_spacetime_original_noflyback[1] + " " + dims_spacetime_original_noflyback[2] \
-                            + " " + dims_spacetime_original_noflyback[3] + " " + datasets_path_processing \
+                    + " " + old_mat_files + " " + str(dims_spacetime_original_noflyback[0]) \
+                        + " " + str(dims_spacetime_original_noflyback[1]) + " " + str(dims_spacetime_original_noflyback[2]) \
+                            + " " + str(dims_spacetime_original_noflyback[3]) + " " + datasets_path_processing \
                                 + " " + datasets_path_complete)
 
     #denoise_single_recording(pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, dims_spacetime_original_noflyback, datasets_path_processing, datasets_path_complete)
