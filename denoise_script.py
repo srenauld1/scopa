@@ -1,5 +1,9 @@
 
 
+import sys 
+
+print("in denoise script")
+
 
 pth_tif_reg = sys.argv[1].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
 pth_tif_dn = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
@@ -30,7 +34,6 @@ else:
     print(' 1. Navigate to Edit → Notebook Settings')
     print(' 2. Select GPU from the Hardware Accelerator drop-down')
 
-import sys
 import re
 import os
 import glob
@@ -190,6 +193,7 @@ else:
     zind_all_dn = np.arange(Y.shape[-1])
 
 
+print(pth_tif_reg)
 for zii in zind_all_dn: #for each z slice
 
     Ynew = Y[:,:,:,zii]
