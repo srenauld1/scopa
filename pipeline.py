@@ -18,11 +18,10 @@ import caiman.source_extraction.cnmf as cnmf
 from caiman_configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
 from helpers import crop_fov, tracefunc
-from denoise import denoise_single_recording
 
 def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
                       datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                      flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server):
+                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, server):
 
     print("in full")
     n_processes = 1
@@ -82,9 +81,19 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         # Y_write = np.transpose(Y_write.astype('uint16'), (0, 3, 2, 1)).reshape(T * dims_spatial[2], dims_spatial[1], dims_spatial[0])
         imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(T * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif for use in matlab, and caiman extraction below
 
+        
     
-    
-    denoise_single_recording(pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, dims_spacetime_original_noflyback, datasets_path_processing, datasets_path_complete)
+    if do_denoise:
+
+        os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
+          conda run -n deepcadrt python3 ~/scopa/denoise_single.py" \
+                  + " " + pth_tif_reg + " " + pth_tif_dn + " " + fn_reduced \
+                    + " " + old_mat_files + " " + dims_spacetime_original_noflyback[0] \
+                        + " " + dims_spacetime_original_noflyback[1] + " " + dims_spacetime_original_noflyback[2] \
+                            + " " + dims_spacetime_original_noflyback[3] + " " + datasets_path_processing \
+                                + " " + datasets_path_complete)
+
+    #denoise_single_recording(pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, dims_spacetime_original_noflyback, datasets_path_processing, datasets_path_complete)
     
 
     ##########################   EXTRACTION   ##########################

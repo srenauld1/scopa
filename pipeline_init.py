@@ -1,7 +1,10 @@
 
-#####!/usr/bin/env python
+#!/usr/bin/env python
 
 import sys
+
+print(sys.executable)
+
 import re
 import cv2
 import datetime
@@ -10,7 +13,6 @@ import os
 import glob
 import logging
 import os
-
 
 try:
     cv2.setNumThreads(0)
@@ -46,7 +48,6 @@ recdates = ['20230624'] #date-fly, as it appears in the directory and raw file f
 fly = '*'
 trial = '*' # '*' for any trial in folder
 region_extraction = 'pb'
-
 do_motion_correction = True
 do_denoise = False
 do_extraction = True
@@ -91,10 +92,10 @@ else:
   elif len(sys.argv)>3:
       index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon
       region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
-      do_motion_correction = sys.argv[3].split(':')[-1]
-      do_denoise = sys.argv[4].split(':')[-1]
-      do_extraction = sys.argv[5].split(':')[-1]
-      do_planar_extraction = sys.argv[6].split(':')[-1] #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
+      do_motion_correction = int(sys.argv[3].split(':')[-1])
+      do_denoise = int(sys.argv[4].split(':')[-1])
+      do_extraction = int(sys.argv[5].split(':')[-1])
+      do_planar_extraction = int(sys.argv[6].split(':')[-1]) #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 print(index)
@@ -169,6 +170,6 @@ for recording_date in recdates:
 
         pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
                       datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                      flyback, anatomical_stack, do_motion_correction, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
+                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, server)
 
 
