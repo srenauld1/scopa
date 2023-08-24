@@ -84,7 +84,10 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         
     
     if do_denoise:
-
+        print("almost denoise")
+        os.system("ls; \
+                  ls -l")
+        print("done that")
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt2 python3 ~/scopa/denoise_script.py" \
                   + " " + pth_tif_reg[0] + " " + pth_tif_dn[0] + " " + fn_reduced \
@@ -94,7 +97,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                                 + " " + datasets_path_complete)
 
     #denoise_single_recording(pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, dims_spacetime_original_noflyback, datasets_path_processing, datasets_path_complete)
-    
+    print("past denoise")
 
     ##########################   EXTRACTION   ##########################
 
