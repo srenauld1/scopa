@@ -49,8 +49,8 @@ fly = '*'
 trial = '*' # '*' for any trial in folder
 region_extraction = 'pb'
 do_motion_correction = True
-do_denoise = False
-do_extraction = True
+do_denoise = True
+do_extraction = False
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 
 do_plots = 0
