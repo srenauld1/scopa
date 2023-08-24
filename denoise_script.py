@@ -40,23 +40,17 @@ import glob
 import shutil
 
 import numpy as np
-from skimage import io
 from tifffile.tifffile import imwrite, imread
 
-import scipy.io
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 
 from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
-from deepcad.movie_display import display, display_img
-from deepcad.utils import get_first_filename
+# from deepcad.movie_display import display, display_img
+# from deepcad.utils import get_first_filename
 
 import random
-from tqdm import tqdm
 from scipy import signal
-import datetime
 
 env_path = sys.path
 if (re.search("/Users/wienecke/", env_path[0])):
@@ -97,7 +91,7 @@ class BgRemover:
         self.uppath = '/'.join(img_path.split('/')[:-1])
         self.path = img_path
         self.half_wid = half_wid
-        self.img = io.imread(img_path).astype('float32')
+        self.img = imread(img_path).astype('float32')
         self.make_savedir()
 
     def make_savedir(self):
@@ -170,7 +164,7 @@ class BgRemover:
 
     def save_out(self):
         save_name = os.path.join(self.path[:-4] + '.tif')
-        io.imsave(save_name, self.out.astype('float'))
+        imwrite(save_name, self.out.astype('float'))
 
 
 
@@ -221,7 +215,7 @@ for zii in zind_all_dn: #for each z slice
     br.save_out()
 
 
-    stack = io.imread(pth_tif_pdn)
+    stack = imread(pth_tif_pdn)
     Lt, Ly, Lx = stack.shape
     print(Lt)
     print(Ly)
@@ -307,15 +301,15 @@ for zii in zind_all_dn: #for each z slice
     tc = testing_class(test_dict)
     tc.run()
 
-    if tc.colab_display:
-        display_filename = tc.result_display
-        print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
-        print(display_filename)
-        # normalize the image and display
-        img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
-        plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
-        plt.axis('off')
-        plt.show()
+    # if tc.colab_display:
+    #     display_filename = tc.result_display
+    #     print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
+    #     print(display_filename)
+    #     # normalize the image and display
+    #     img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
+    #     plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
+    #     plt.axis('off')
+    #     plt.show()
 
     outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
     shutil.move(outtiff_path, datasets_path_complete)

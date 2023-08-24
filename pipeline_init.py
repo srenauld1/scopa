@@ -68,7 +68,7 @@ if (re.search("/Users/wienecke/", env_path[0])):
 elif (re.search("/home/caw846/", env_path[0])):
   
   pth_prefix = '/n/scratch3/users/c/caw846/stacks/'
-  cluster_backend = 'slurm'
+  cluster_backend = 'SLURM'
 
 elif (re.search("/home/users/wienecke/", env_path[0])):
   pth_prefix = '/scratch/users/wienecke/stacks/'
