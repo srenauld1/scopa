@@ -48,8 +48,8 @@ recdates = ['20230624'] #date-fly, as it appears in the directory and raw file f
 fly = '*'
 trial = '*' # '*' for any trial in folder
 region_extraction = 'pb'
-do_motion_correction = True
-do_denoise = True
+do_motion_correction = False
+do_denoise = False
 do_extraction = False
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 
