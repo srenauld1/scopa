@@ -103,6 +103,9 @@ else:
       do_denoise = int(sys.argv[4].split(':')[-1])
       do_extraction = int(sys.argv[5].split(':')[-1])
       do_planar_extraction = int(sys.argv[6].split(':')[-1]) #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
+      recdates = [sys.argv[7].split(':')[-1]]  #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
+      fly = sys.argv[8].split(':')[-1] 
+      trial = sys.argv[9].split(':')[-1]  # '*' for any trial in folder
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 print(index)
