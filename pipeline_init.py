@@ -46,11 +46,11 @@ logging.basicConfig(format=
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 recdates = ['20230624'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 fly = '*'
-trial = '*' # '*' for any trial in folder
+trial = '1' # '*' for any trial in folder
 region_extraction = 'pb'
 do_motion_correction = False
 do_denoise = False
-do_extraction = False
+do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 
 do_plots = 0
@@ -66,7 +66,8 @@ if (re.search("/Users/wienecke/", env_path[0])):
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no local gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])):
-  
+  server = 0
+
   pth_prefix = '/n/scratch3/users/c/caw846/stacks/'
   cluster_backend = 'SLURM'
 

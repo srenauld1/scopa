@@ -26,8 +26,8 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
         indices_ex = [slice(None), slice(None), slice(None)]
         
     p = 0                   # order of the autoregressive system - 0 from carl's code
-    merge_thresh = 0.7
-    gSig = [3, 3, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    merge_thresh = 0.9
+    gSig = [2, 2, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
     nb = 1
 
     ###
@@ -48,7 +48,7 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
     method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' #python Caiman defaults to greedy_roi, carl's code uses sparse_nmf, but sparse_nmf runs MUCH slower
     
     max_iter_snmf = 1000
-    perc_baseline_snmf = 10
+    perc_baseline_snmf = 0
     alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
 

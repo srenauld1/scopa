@@ -66,7 +66,8 @@ if (re.search("/Users/wienecke/", env_path[0])):
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no local gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])):
-  
+  server = 0
+
   pth_prefix = '/n/scratch3/users/c/caw846/stacks/'
   cluster_backend = 'SLURM'
 
