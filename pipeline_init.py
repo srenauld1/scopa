@@ -47,13 +47,14 @@ logging.basicConfig(format=
 #OLD MAT FILES recdates ARE 6 DIGITS NOT 8 (YEAR IS 2 NOT 4)
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 recdates = ['20230624'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-fly = '2'
-trial = '1' # '*' for any trial in folder
+fly = '*'
+trial = '*' # '*' for any trial in folder
 region_extraction = 'pb'
 do_motion_correction = True
 do_denoise = False
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
+do_cropping_session = False
 
 do_plots = 0
 anatomical_stack = False
@@ -166,8 +167,11 @@ for recording_date in recdates:
           numvol = int(matty['SI']['hStackManager']['actualNumVolumes'])
           numslice_withflyback = int(matty['SI']['hStackManager']['numFramesPerVolumeWithFlyback'])
           flyback = numslice_withflyback - int(matty['SI']['hStackManager']['numFramesPerVolume'])
+          ypix = int(matty['SI']['hRoiManager']['linesPerFrame'])
           dims_spacetime_original[0] = numvol
           dims_spacetime_original[1] = numslice_withflyback
+          dims_spacetime_original[2] = ypix
+          dims_spacetime_original_noflyback = dims_spacetime_original
           dims_spacetime_original_noflyback[1] = numslice_withflyback - flyback
 
 
@@ -194,6 +198,6 @@ for recording_date in recdates:
 
         pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
                       datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server)
+                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server)
 
 
