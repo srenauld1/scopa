@@ -14,6 +14,8 @@ import glob
 import logging
 import os
 
+import mat73
+
 try:
     cv2.setNumThreads(0)
 except:
@@ -45,10 +47,10 @@ logging.basicConfig(format=
 #OLD MAT FILES recdates ARE 6 DIGITS NOT 8 (YEAR IS 2 NOT 4)
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 recdates = ['20230624'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-fly = '*'
+fly = '2'
 trial = '1' # '*' for any trial in folder
 region_extraction = 'pb'
-do_motion_correction = False
+do_motion_correction = True
 do_denoise = False
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
@@ -156,6 +158,18 @@ for recording_date in recdates:
 
         pth_datafile = ff + f
         print(pth_datafile)
+
+        metafile_pattern = pth_fldr[0] + 'registration_00' + trial + '/imagingData*.mat'
+        pth_md = glob.glob(metafile_pattern)
+        if pth_md:
+          matty = mat73.loadmat(pth_md[0])
+          numvol = int(matty['SI']['hStackManager']['actualNumVolumes'])
+          numslice_withflyback = int(matty['SI']['hStackManager']['numFramesPerVolumeWithFlyback'])
+          flyback = numslice_withflyback - int(matty['SI']['hStackManager']['numFramesPerVolume'])
+          dims_spacetime_original[0] = numvol
+          dims_spacetime_original[1] = numslice_withflyback
+          dims_spacetime_original_noflyback[1] = numslice_withflyback - flyback
+
 
         if old_mat_files:
           fn_reduced = f[:-5]

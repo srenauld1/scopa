@@ -37,7 +37,21 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         #    Ymeta=json.loads(reader.metadata())        
         
         Y = cm.load(pth_datafile)
+        
+        # if Y.shape[0]/19 % 1 == 0:
+        #     dims_spacetime_original[0] = Y.shape[0]/19
+        #     dims_spacetime_original[1] = 19
+        #     dims_spacetime_original_noflyback[0] = Y.shape[0]/19
+        #     dims_spacetime_original_noflyback[1] = 19 - flyback
+        # elif Y.shape[0]/14 % 1 == 0:
+        #     dims_spacetime_original[0] = Y.shape[0]/14
+        #     dims_spacetime_original[1] = 14
+        #     dims_spacetime_original_noflyback[0] = Y.shape[0]/14
+        #     dims_spacetime_original_noflyback[1] = 14 - flyback
+            
+        
         Y = Y.reshape(dims_spacetime_original[0], dims_spacetime_original[1], dims_spacetime_original[2], dims_spacetime_original[3])
+            
         Y = Y[:,:-flyback,:,:] #crop flyback frames
         #Y[540:600,4,:,:].play(magnification=2) #play in order t z y x
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
@@ -101,7 +115,8 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         
         print("in extract")
         
-        Y = cm.load(pth_tif_dn)  
+        #Y = cm.load(pth_tif_dn)  
+        Y = cm.load(pth_tif_reg)  
         Y = Y.reshape(dims_spacetime_original_noflyback)
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
 
