@@ -31,6 +31,7 @@ except NameError:
     pass
 
 from pipeline import pipeline_full
+from parse_command_line import parse_command_line
 
 logging.basicConfig(format=
                           "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s] [%(process)d] %(message)s",
@@ -46,19 +47,21 @@ logging.basicConfig(format=
 
 #OLD MAT FILES recdates ARE 6 DIGITS NOT 8 (YEAR IS 2 NOT 4)
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-recdates = ['20230624'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
+
+index = None
+recdates = ['*'] #list , as it appears in the directory and raw file filename (with hyphen not underscore)
 fly = '*'
 trial = '*' # '*' for any trial in folder
-region_extraction = 'pb'
-do_motion_correction = True
+region_extraction = ['pb', 'gar', 'gal', 'no'] #list
+do_motion_correction = False
 do_denoise = False
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 do_cropping_session = False
+array_index = 2
 
 do_plots = 0
 anatomical_stack = False
-
 
 env_path = sys.path
 server = 1
@@ -79,8 +82,6 @@ elif (re.search("/home/users/wienecke/", env_path[0])):
 elif (re.search('/content', env_path[0])):
   pth_prefix = '/content/drive/MyDrive/stacks/'
 
-
-
 working_dir = '/'.join(pth_prefix.split('/')[:-2])
 datasets_path_processing = os.path.join(working_dir, 'denoising_in_progress')
 if not os.path.exists(datasets_path_processing):
@@ -91,24 +92,17 @@ if not os.path.exists(datasets_path_complete):
 
 if (re.search('/content', env_path[0])): #not set up for arguments in colab
   index = None
-else:
-  if len(sys.argv)==1:
-      index = None #change here if you're running in visual studio debug mode (no arguments)
-  elif len(sys.argv)==2:
-      index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon
-  elif len(sys.argv)==3:
-      index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon
-      region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
-  elif len(sys.argv)>3:
-      index = int(sys.argv[1].split(':')[-1]) #for passing index as arg in command line, this won't error on local, even though there's no colon
-      region_extraction = sys.argv[2].split(':')[-1] #for passing index as arg in command line, this won't error on local, even though there's no colon
-      do_motion_correction = int(sys.argv[3].split(':')[-1])
-      do_denoise = int(sys.argv[4].split(':')[-1])
-      do_extraction = int(sys.argv[5].split(':')[-1])
-      do_planar_extraction = int(sys.argv[6].split(':')[-1]) #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
-      recdates = [sys.argv[7].split(':')[-1]]  #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-      fly = sys.argv[8].split(':')[-1] 
-      trial = sys.argv[9].split(':')[-1]  # '*' for any trial in folder
+
+print(sys.argv)
+
+if len(sys.argv)>1:
+   [index, region_extraction, do_motion_correction, 
+   do_denoise, do_extraction, do_planar_extraction, 
+   recdates,  fly, trial, do_cropping_session, 
+   array_index] = parse_command_line(index = index, region_extraction = region_extraction, do_motion_correction = do_motion_correction, 
+                       do_denoise = do_denoise, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
+                       recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, 
+                       array_index = array_index)
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 print(index)
@@ -117,7 +111,13 @@ print(do_motion_correction)
 print(do_denoise)
 print(do_extraction)
 print(do_planar_extraction)
+print(recdates)
+print(fly)
+print(trial)
+print(do_cropping_session)
+print(array_index)
 
+fuk = muk
 
 if anatomical_stack==True:
   dims_spacetime_original = [80, 164, 140, 256]
@@ -129,76 +129,82 @@ else:
   flyback = 5
   dims_spacetime_original_noflyback = [dims_spacetime_original[0], dims_spacetime_original[1]-flyback, dims_spacetime_original[2], dims_spacetime_original[3]]
 
+
+countz = 0
 for recording_date in recdates:
 
   tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") #create extraction ID, one for each recordingID
 
   if anatomical_stack:
     fn_pattern = recording_date + '_hires_.tif'
-    pth_fldr = glob.glob(pth_fldr_pattern)
+    pth_fldr = sorted(glob.glob(pth_fldr_pattern))
   else:
     old_mat_files = 0
     pth_fldr_pattern = pth_prefix + recording_date + '-' + fly + '_*/'
     fn_pattern = recording_date + '-' + fly + '*_trial_00' + trial + '_*.tif'
-    pth_fldr = glob.glob(pth_fldr_pattern)
+    pth_fldr = sorted(glob.glob(pth_fldr_pattern))
     if not pth_fldr:  #if no matches try another filename pattern
       old_mat_files = 1
       do_motion_correction = False
       pth_fldr_pattern = pth_prefix + recording_date + '_' + fly + '/'
       fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_mc_.mat'
-      pth_fldr = glob.glob(pth_fldr_pattern)
-
+      pth_fldr = sorted(glob.glob(pth_fldr_pattern))
 
   for ff in pth_fldr:
 
     print(ff)
     
-    for f in os.listdir(ff):
+    sorteddirlist = sorted(os.listdir(ff))
+
+    for f in sorteddirlist:
 
       if fnmatch.fnmatch(f,fn_pattern):
 
-        pth_datafile = ff + f
-        print(pth_datafile)
+        countz = countz + 1
+        if array_index is None or (array_index is not None and countz==array_index):
+          
+          pth_datafile = ff + f
+          print(pth_datafile)
 
-        metafile_pattern = pth_fldr[0] + 'registration_00' + trial + '/imagingData*.mat'
-        pth_md = glob.glob(metafile_pattern)
-        if pth_md:
-          matty = mat73.loadmat(pth_md[0])
-          numvol = int(matty['SI']['hStackManager']['actualNumVolumes'])
-          numslice_withflyback = int(matty['SI']['hStackManager']['numFramesPerVolumeWithFlyback'])
-          flyback = numslice_withflyback - int(matty['SI']['hStackManager']['numFramesPerVolume'])
-          ypix = int(matty['SI']['hRoiManager']['linesPerFrame'])
-          dims_spacetime_original[0] = numvol
-          dims_spacetime_original[1] = numslice_withflyback
-          dims_spacetime_original[2] = ypix
-          dims_spacetime_original_noflyback[0] = numvol
-          dims_spacetime_original_noflyback[1] =  numslice_withflyback - flyback
-          dims_spacetime_original_noflyback[2] = ypix
+          metafile_pattern = ff + 'registration_00' + f.split('_')[-2][-1] + '/imagingData*.mat'
+          pth_md = sorted(glob.glob(metafile_pattern))
+          if pth_md:
+            matty = mat73.loadmat(pth_md[0])
+            numvol = int(matty['SI']['hStackManager']['actualNumVolumes'])
+            numslice_withflyback = int(matty['SI']['hStackManager']['numFramesPerVolumeWithFlyback'])
+            flyback = numslice_withflyback - int(matty['SI']['hStackManager']['numFramesPerVolume'])
+            ypix = int(matty['SI']['hRoiManager']['linesPerFrame'])
+            dims_spacetime_original[0] = numvol
+            dims_spacetime_original[1] = numslice_withflyback
+            dims_spacetime_original[2] = ypix
+            dims_spacetime_original_noflyback[0] = numvol
+            dims_spacetime_original_noflyback[1] =  numslice_withflyback - flyback
+            dims_spacetime_original_noflyback[2] = ypix
 
 
-        if old_mat_files:
-          fn_reduced = f[:-5]
-        else:
-          fn_reduced = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
-
-        pth_prefix_fnsave = ff + fn_reduced
-        if old_mat_files:
-          pth_tif_reg_tmp = []
-          pth_tif_reg = pth_datafile
-          pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
-        else:
-          if anatomical_stack:
-            pth_tif_reg_tmp = [pth_prefix_fnsave + '_hires_caimanregtmp_.tif']
-            pth_tif_reg = [pth_prefix_fnsave + '_hires_caimanreg_.tif']
-            pth_tif_dn = [pth_prefix_fnsave + 'hires_cmregcaddn_.tif']
+          if old_mat_files:
+            fn_reduced = f[:-5]
           else:
-            pth_tif_reg_tmp = [pth_prefix_fnsave + '_caimanregtmp_.tif']
-            pth_tif_reg = [pth_prefix_fnsave + '_caimanreg_.tif']
-            pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
+            fn_reduced = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
+
+          pth_prefix_fnsave = ff + fn_reduced
+          if old_mat_files:
+            pth_tif_reg_tmp = []
+            pth_tif_reg = pth_datafile
+            pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
+          else:
+            if anatomical_stack:
+              pth_tif_reg_tmp = [pth_prefix_fnsave + '_hires_caimanregtmp_.tif']
+              pth_tif_reg = [pth_prefix_fnsave + '_hires_caimanreg_.tif']
+              pth_tif_dn = [pth_prefix_fnsave + 'hires_cmregcaddn_.tif']
+            else:
+              pth_tif_reg_tmp = [pth_prefix_fnsave + '_caimanregtmp_.tif']
+              pth_tif_reg = [pth_prefix_fnsave + '_caimanreg_.tif']
+              pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
 
 
-        pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
-                      datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                      flyback, anatomical_stack, do_motion_correction, do_denoise, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server)
+          pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
+                        datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
+                        flyback, anatomical_stack, do_motion_correction, do_denoise, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server)
 
 

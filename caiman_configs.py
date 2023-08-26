@@ -45,10 +45,10 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
     nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy 
     extract_cc = True #true will throw away isolated pixels of some kind 
     
-    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' #python Caiman defaults to greedy_roi, carl's code uses sparse_nmf, but sparse_nmf runs MUCH slower
-    
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, 
+
     max_iter_snmf = 1000
-    perc_baseline_snmf = 0
+    perc_baseline_snmf = 20
     alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
 
