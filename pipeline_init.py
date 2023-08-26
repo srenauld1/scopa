@@ -171,13 +171,9 @@ for recording_date in recdates:
           dims_spacetime_original[0] = numvol
           dims_spacetime_original[1] = numslice_withflyback
           dims_spacetime_original[2] = ypix
-          dims_spacetime_original_noflyback = dims_spacetime_original
-          dims_spacetime_original_noflyback[1] = numslice_withflyback - flyback
-          print(flyback)
-          print(flyback)
-          print(dims_spacetime_original)
-          print(numslice_withflyback)
-          print(dims_spacetime_original_noflyback)
+          dims_spacetime_original_noflyback[0] = numvol
+          dims_spacetime_original_noflyback[1] =  numslice_withflyback - flyback
+          dims_spacetime_original_noflyback[2] = ypix
 
 
         if old_mat_files:
