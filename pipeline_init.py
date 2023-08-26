@@ -117,8 +117,6 @@ print(trial)
 print(do_cropping_session)
 print(array_index)
 
-fuk = muk
-
 if anatomical_stack==True:
   dims_spacetime_original = [80, 164, 140, 256]
   flyback = 51

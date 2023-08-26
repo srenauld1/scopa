@@ -1,6 +1,6 @@
 #!/bin/bash
 
-##noglob \
+##noglob \  #noglob is for passing this directly to command line in zsh
 /Users/wienecke/mambaforge/envs/caiman/bin/python /Users/wienecke/Documents/scopa/pipeline_init.py \
 --index 0 \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
@@ -12,4 +12,4 @@
 --fly '*' \
 --trial '*' \
 --do_cropping_session 0 \
---array_index 1
+--array_index 3
