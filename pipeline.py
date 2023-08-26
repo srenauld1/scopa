@@ -141,6 +141,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                 os.remove(pth_tif_ex[0])
                 Ycrop, dims_spatial, T = cm.load_memmap(fn_mmap_ex) #np.allclose(images, images2, rtol=1e-05, atol=1e-04, equal_nan=False)
                 Ycrop = np.reshape(Ycrop.T, [T] + list(dims_spatial), order='F') 
+                print("in extract2")
 
                 if index is None:
                     index_new = [None] #make it iterable with brackets
@@ -151,6 +152,8 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     #index_new = np.flip(abs(np.arange(index, 1))) #why did i do it this way?
                 else: #positive index will redo everything above for each index
                     index_new = [index]
+                
+                print("in extract3")
                 
                 print("INDEX NEW " + str(index_new))
                 
