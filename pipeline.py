@@ -160,6 +160,9 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
                         opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+
+                        print("in ii loop")
+                        print(fnadd)
                         
                         # opts.change_params(opts_dict) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
                         # opts.change_params({'fnames': fn_mmap_ex}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
