@@ -111,7 +111,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
     ##########################   EXTRACTION   ##########################
 
-    if do_extraction:
+    if do_extraction or do_cropping_session:
         
         print("in extract")
 

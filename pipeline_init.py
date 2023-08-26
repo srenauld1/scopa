@@ -173,6 +173,11 @@ for recording_date in recdates:
           dims_spacetime_original[2] = ypix
           dims_spacetime_original_noflyback = dims_spacetime_original
           dims_spacetime_original_noflyback[1] = numslice_withflyback - flyback
+          print(flyback)
+          print(flyback)
+          print(dims_spacetime_original)
+          print(numslice_withflyback)
+          print(dims_spacetime_original_noflyback)
 
 
         if old_mat_files:
