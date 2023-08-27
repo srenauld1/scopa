@@ -115,9 +115,9 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         
         print("in extract")
 
-        pth_choose_infile = pth_tif_reg #or pth_tif_dn
+        #pth_choose_infile = pth_tif_reg #or pth_tif_dn
         
-        Y = cm.load(pth_choose_infile)  
+        Y = cm.load(pth_tif_reg)  
         Y = Y.reshape(dims_spacetime_original_noflyback)
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
 
@@ -129,11 +129,13 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                 limits_str = ''
                 Ycrop = Y.copy()
             else:
-                Ycrop, limits_str = crop_fov(Y, rx, pth_choose_infile, dims_spacetime_original_noflyback)
+                Ycrop, limits_str = crop_fov(Y, rx, pth_tif_reg, dims_spacetime_original_noflyback)
 
             if not do_cropping_session:
+                print("in extract22")
+
                 
-                pth_tif_ex = [pth_choose_infile[0][:-4] + limits_str + '_caimanex_.tif']
+                pth_tif_ex = [pth_tif_reg[0][:-4] + limits_str + '_caimanex_.tif']
                 imwrite(pth_tif_ex[0], Ycrop) #must write it to memmap it, and must memmap it to use patches in extraction
                 basename_memap = pth_tif_ex[0].split('/')[-1][:-4]
                 border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 

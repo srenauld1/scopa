@@ -35,8 +35,9 @@ from parse_command_line import parse_command_line
 
 logging.basicConfig(format=
                           "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s] [%(process)d] %(message)s",
-                    # filename="/tmp/caiman.log",
-                    #level=logging.INFO,
+                    filename="/n/scratch3/users/c/caw846/ctmp/caiman.log",
+                    #filename="/tmp/caiman.log",
+                    level=logging.INFO,
                     )
 
 # export MKL_NUM_THREADS=1
