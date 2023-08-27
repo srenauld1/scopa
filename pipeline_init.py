@@ -48,7 +48,7 @@ logging.basicConfig(format=
 #OLD MAT FILES recdates ARE 6 DIGITS NOT 8 (YEAR IS 2 NOT 4)
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 
-index = None
+index = 0
 recdates = ['*'] #list , as it appears in the directory and raw file filename (with hyphen not underscore)
 fly = '*'
 trial = '*' # '*' for any trial in folder
@@ -159,7 +159,7 @@ for recording_date in recdates:
       if fnmatch.fnmatch(f,fn_pattern):
 
         countz = countz + 1
-        if array_index is None or (array_index is not None and countz==array_index):
+        if array_index==0 or (array_index!=0 and countz==array_index):
           
           pth_datafile = ff + f
           print(pth_datafile)
