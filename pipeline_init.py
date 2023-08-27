@@ -59,7 +59,7 @@ do_denoise = False
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 do_cropping_session = False
-array_index = 2
+array_index = 0
 
 do_plots = 0
 anatomical_stack = False
