@@ -121,7 +121,8 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
         #pth_choose_infile = pth_tif_reg #or pth_tif_dn
         
-        Y = cm.load(pth_tif_reg)  
+        #Y = cm.load(pth_tif_reg)  
+        Y = imread(pth_tif_reg).astype('float32')
         print("in extract66")
 
         Y = Y.reshape(dims_spacetime_original_noflyback)
