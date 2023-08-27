@@ -153,7 +153,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                 
                 for ii in index_new:
 
-                    if 1: #since some param combos will error
+                    try: #since some param combos will error
 
                         opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
@@ -286,7 +286,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                             print("norois")
                             pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_NOROIS_.mat']
 
-                    else:
+                    except:
                         
                         mdict = {}
                         pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_FAILURE_.mat']
