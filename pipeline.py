@@ -137,9 +137,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                 os.remove(pth_tif_ex[0])
                 Ycrop, dims_spatial, T = cm.load_memmap(fn_mmap_ex) #np.allclose(images, images2, rtol=1e-05, atol=1e-04, equal_nan=False)
                 Ycrop = np.reshape(Ycrop.T, [T] + list(dims_spatial), order='F') 
-                print("in extract2")
                 print(Ycrop.shape)
-
 
                 if index is None:
                     index_new = [None] #make it iterable with brackets
@@ -150,9 +148,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                     #index_new = np.flip(abs(np.arange(index, 1))) #why did i do it this way?
                 else: #positive index will redo everything above for each index
                     index_new = [index]
-                
-                print("in extract3")
-                
+                                
                 print("INDEX NEW " + str(index_new))
                 
                 for ii in index_new:
@@ -161,9 +157,6 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
                         opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
-
-                        print("in ii loop")
-                        print(fnadd)
                         
                         # opts.change_params(opts_dict) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 
                         # opts.change_params({'fnames': fn_mmap_ex}) #i don't understand why i have to pass pth_tif_reg_tmp to motioncorrect and set in params object but i do 

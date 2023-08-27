@@ -4,6 +4,8 @@
 import sys
 
 print(sys.executable)
+env_path = sys.path
+
 
 import re
 import cv2
@@ -36,7 +38,7 @@ from parse_command_line import parse_command_line
 logging.basicConfig(format=
                     "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s]"\
                     "[%(process)d] %(message)s",
-                    filename="/n/scratch3/users/c/caw846/ctmp/caiman.log",
+                    #filename="/n/scratch3/users/c/caw846/ctmp/caiman.log",
                     level=logging.WARNING,
                     )
 
@@ -64,7 +66,6 @@ array_index = 0
 do_plots = 0
 anatomical_stack = False
 
-env_path = sys.path
 server = 1
 cluster_backend = 'ipyparallel'
 if (re.search("/Users/wienecke/", env_path[0])):
