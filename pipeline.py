@@ -114,7 +114,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
     if do_extraction or do_cropping_session:
 
         fukfn = ['20230627_2_2_caimanreg_gal_1_3047_216_235_94_111_10_13_caimanex_d1_20_d2_18_d3_4_order_C_frames_3047.mmap']
-        opts_dict, indices_ex, fnadd = configs(index = 0, fnames = fukfn, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
+        opts_dict, indices_ex, fnadd = configs(index = 0, fnames = fukfn, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spacetime_original)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         print("in extract")
