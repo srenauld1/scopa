@@ -112,7 +112,11 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
     ##########################   EXTRACTION   ##########################
 
     if do_extraction or do_cropping_session:
-        
+
+        fukfn = ['20230627_2_2_caimanreg_gal_1_3047_216_235_94_111_10_13_caimanex_d1_20_d2_18_d3_4_order_C_frames_3047.mmap']
+        opts_dict, indices_ex, fnadd = configs(index = 0, fnames = fukfn, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
+        opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+
         print("in extract")
 
         #pth_choose_infile = pth_tif_reg #or pth_tif_dn
@@ -132,9 +136,9 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                 Ycrop, limits_str = crop_fov(Y, rx, pth_tif_reg, dims_spacetime_original_noflyback)
 
             if not do_cropping_session:
+                
                 print("in extract22")
 
-                
                 pth_tif_ex = [pth_tif_reg[0][:-4] + limits_str + '_caimanex_.tif']
                 imwrite(pth_tif_ex[0], Ycrop) #must write it to memmap it, and must memmap it to use patches in extraction
                 basename_memap = pth_tif_ex[0].split('/')[-1][:-4]
@@ -163,8 +167,8 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
                     if 1: #since some param combos will error
 
-                        opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
-                        opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+                        # opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
+                        # opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         print("in ii loop")
                         print(fnadd)
@@ -203,8 +207,8 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                                     if 'dview' in locals(): cm.stop_server(dview=dview)
                                     cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                             
-                    #         cnm = cnmf.CNMF(n_processes, params=opts, dview=dview)
-                    #         cnm = cnm.fit(images_sliced, indices = indices_ex)
+                            cnm = cnmf.CNMF(n_processes, params=opts, dview=dview)
+                            cnm = cnm.fit(images_sliced, indices = indices_ex)
 
                     #         cnm.estimates.evaluate_components(images_sliced, cnm.params, dview=dview)
                     #         print(('NUMGOOD ' + str(len(cnm.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm.estimates.idx_components_bad))))
