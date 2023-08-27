@@ -37,19 +37,9 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
         # with ScanImageTiffReader(pth_datafile) as reader:
         #    Ymeta=json.loads(reader.metadata())        
         
-        Y = cm.load(pth_datafile)
-        
-        # if Y.shape[0]/19 % 1 == 0:
-        #     dims_spacetime_original[0] = Y.shape[0]/19
-        #     dims_spacetime_original[1] = 19
-        #     dims_spacetime_original_noflyback[0] = Y.shape[0]/19
-        #     dims_spacetime_original_noflyback[1] = 19 - flyback
-        # elif Y.shape[0]/14 % 1 == 0:
-        #     dims_spacetime_original[0] = Y.shape[0]/14
-        #     dims_spacetime_original[1] = 14
-        #     dims_spacetime_original_noflyback[0] = Y.shape[0]/14
-        #     dims_spacetime_original_noflyback[1] = 14 - flyback
-            
+        ##having trouble on O2 with cm.load 
+        # Y = cm.load(pth_datafile)
+        Y = imread(pth_datafile)
         
         Y = Y.reshape(dims_spacetime_original[0], dims_spacetime_original[1], dims_spacetime_original[2], dims_spacetime_original[3])
             
@@ -113,24 +103,14 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
     if do_extraction or do_cropping_session:
 
-        # fukfn = ['/n/scratch3/users/c/caw846/stacks/20230627-2_D05_syt7f_018_syt7f/20230627_2_2_caimanreg_gal_1_3047_216_235_94_111_10_13_caimanex_d1_20_d2_18_d3_4_order_C_frames_3047.mmap']
-        # opts_dict, indices_ex, fnadd = configs(index = 0, fnames = fukfn, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spacetime_original)
-        # opts = cnmf.params.CNMFParams(params_dict=opts_dict)
-
         print("in extract")
 
         #pth_choose_infile = pth_tif_reg #or pth_tif_dn
         
         #Y = cm.load(pth_tif_reg)  
         Y = imread(pth_tif_reg).astype('float32')
-        print("in extract66")
-
         Y = Y.reshape(dims_spacetime_original_noflyback)
-        print("in extract666")
-
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
-        print("in extract6666")
-
         print(Y.shape)
 
         for rx in region_extraction:
@@ -179,8 +159,8 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
 
                     if 1: #since some param combos will error
 
-                        # opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
-                        # opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+                        opts_dict, indices_ex, fnadd = configs(index = ii, fnames = fn_mmap_ex, do_planar_extraction=do_planar_extraction, dims_spatial = dims_spatial)
+                        opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         print("in ii loop")
                         print(fnadd)
