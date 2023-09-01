@@ -165,7 +165,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                             sliceindz = np.arange(Ycrop.shape[-1])
                             if anatomical_stack==1: #srv==0 and len(sliceindz)>20: #force arbitrary z reduction while working with the anatomical stack 
                                 sliceindz = np.arange(25, 27)
-                            dims_mask_space = (dims_spatial[1], dims_spatial[0])
+                            dims_mask_space = (dims_spatial[0], dims_spatial[1])
                         else:
                             sliceindz = [np.arange(Ycrop.shape[-1])] #all slices (not planar)
                             dims_mask_space = (dims_spatial[0], dims_spatial[1], dims_spatial[2])
@@ -181,7 +181,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                                 images_sliced = Ycrop[:,:,:,si]
                             else:
                                 print("3D EXTRACTION FOR ALL SLICES")
-                                images_sliced = Ycrop #keep images for loop over ii
+                                images_sliced = Ycrop.copy() #keep images for loop over ii
 
 
                             if server:

@@ -16,7 +16,7 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
     shifts_opencv = True 
     indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
 
-    do_slices = False
+    do_slices = False #my crop_fov is meant to replace this, so should always be false 
     if do_slices:
         sly = slice(6, 51, 1)
         slx = slice(40, 181, 1) 
@@ -51,6 +51,7 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
     perc_baseline_snmf = 20
     alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
+
 
     lambda_gnmf = 1 #for method_init graphNMF
     SC_kernel = 'heat' #NOT TUNABLE NOW       # kernel for graph affinity matrix
@@ -89,21 +90,22 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
         index = int(index)
         print('reading parameters from the index file')
         merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(index)
-        gSig = [m2p_gsig, m2p_gsig, 1]  #keep z as 0.5 so z bounding box is 2 pixels, no EPG is larger than 2 z pixels (12 microns)
+        gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5
 
     if dims_spatial[0]<50 and dims_spatial[1]<50 and dims_spatial[2]<50: #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
         do_patches = False
     else:
         do_patches = True
 
-    roi_decimation_fac = 1
+    roi_decimation_fac = 0.4
     if do_patches:          # PROCESS IN PATCHES AND THEN COMBINE
         rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
         stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches
         p_patch = p
         nb_patch = nb
         if do_planar_extraction==True:
-            k = int(np.round(rf*rf / (gSig[0]*gSig[1])))
+            k = int(np.round( (rf*2*rf*2) / ((gSig[0]*2+1)*(gSig[1]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
+            #k = int(np.round(rf*rf / (gSig[0]*gSig[1])))
         else:
             if rf*2<dims_spatial[-1]:
                 rfz = rf*2
@@ -123,23 +125,24 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
         dimstr = '2dex_'
         indices_ex = indices_ex[:-1] #change from 3d to 2d 
         dxy = dxy[:-1] #change from 3d to 2d 
-        sigma_smooth_snmf = sigma_smooth_snmf[:-1] #change from 3d to 2d 
         gSig = gSig[:-1] #change from 3d to 2d 
     
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
     se = np.ones((3,)*len(gSig), dtype=np.uint8)  #put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
     #medw = (3,)*len(gSig)
 
-    sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning 
+    sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning (when it is applied time is in 1st dim?)
     sigma_smooth_snmf.extend(gSig)
     if do_planar_extraction==False:
-        sigma_smooth_snmf[-1] = 0.5#0.25
+        sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1, if 3d extraction, make small for coarse z samples
 
     fnadd = '_' + str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + \
         '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
             + '_' + str(max_iter_snmf) + '_' + method_init.split('_')[0] + '_' + dimstr
 
-    if do_planar_extraction is not None: #it's none during motion correction, when we don't care about these params, rather than true/false
+    if do_planar_extraction is None: #it's none during motion correction, when we don't care about these params, rather than true/false
+        print("motion correction params configured")
+    else:
         print("index is " + str(index) + " with filename string " + fnadd)
 
     opts_dict = {'strides': strides_mc,    # start a new patch for pw-rigid motion correction every x pixels

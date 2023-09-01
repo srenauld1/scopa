@@ -52,14 +52,14 @@ logging.basicConfig(format=
 #recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
 
 index = 0
-recdates = ['*'] #list , as it appears in the directory and raw file filename (with hyphen not underscore)
+recdates = ['20230627'] #list , as it appears in the directory and raw file filename (with hyphen not underscore)
 fly = '*'
-trial = '*' # '*' for any trial in folder
+trial = '2' # '*' for any trial in folder
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list
 do_motion_correction = False
 do_denoise = False
 do_extraction = True
-do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
+do_planar_extraction = True #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 do_cropping_session = False
 array_index = 0
 
