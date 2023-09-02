@@ -90,7 +90,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
     
     if do_denoise:
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
-          conda run -n deepcadrt2 python3 ~/scopa/denoise_script.py" \
+          conda run -n deepcadrt python3 ~/scopa/denoise_script.py" \
                   + " " + pth_tif_reg[0] + " " + pth_tif_dn[0] + " " + fn_reduced \
                     + " " + str(old_mat_files) + " " + str(dims_spacetime_original_noflyback[0]) \
                         + " " + str(dims_spacetime_original_noflyback[1]) + " " + str(dims_spacetime_original_noflyback[2]) \
@@ -181,7 +181,7 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                                 images_sliced = Ycrop[:,:,:,si]
                             else:
                                 print("3D EXTRACTION FOR ALL SLICES")
-                                images_sliced = Ycrop.copy() #keep images for loop over ii
+                                images_sliced = Ycrop #can't .copy() for some reason #keep images for loop over ii
 
 
                             if server:
@@ -209,6 +209,10 @@ def pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_t
                                     cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
                             
                             cnm2 = cnm.refit(images_sliced)
+
+
+                            ###cnm2 = cnm
+
                             cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
                             print(('REFIT: NUMGOOD ' + str(len(cnm2.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm2.estimates.idx_components_bad))))
                             

@@ -59,7 +59,7 @@ region_extraction = ['pb', 'gar', 'gal', 'no'] #list
 do_motion_correction = False
 do_denoise = False
 do_extraction = True
-do_planar_extraction = True #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
+do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 do_cropping_session = False
 array_index = 0
 
@@ -173,6 +173,7 @@ for recording_date in recdates:
             numvol = int(matty['SI']['hStackManager']['actualNumVolumes'])
             numslice_withflyback = int(matty['SI']['hStackManager']['numFramesPerVolumeWithFlyback'])
             flyback = numslice_withflyback - int(matty['SI']['hStackManager']['numFramesPerVolume'])
+            xpix = int(matty['SI']['hRoiManager']['pixelsPerLine'])
             ypix = int(matty['SI']['hRoiManager']['linesPerFrame'])
             dims_spacetime_original[0] = numvol
             dims_spacetime_original[1] = numslice_withflyback

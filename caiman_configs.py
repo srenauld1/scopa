@@ -98,7 +98,7 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
         do_patches = True
 
     roi_decimation_fac = 0.4
-    if do_patches:          # PROCESS IN PATCHES AND THEN COMBINE
+    if do_patches: # PROCESS IN PATCHES AND THEN COMBINE
         rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
         stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches
         p_patch = p

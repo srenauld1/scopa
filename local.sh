@@ -8,8 +8,8 @@
 --do_denoise 0 \
 --do_extraction 1 \
 --do_planar_extraction 1 \
---recdates '20230627' \
+--recdates '*' \
 --fly '*' \
---trial '2' \
+--trial '*' \
 --do_cropping_session 0 \
 --array_index 0
