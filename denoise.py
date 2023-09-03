@@ -2,11 +2,21 @@
 
 
 ##########################################################################################################################################
-# apply line-by-line background subtraction
+# this script operates on individual input files 
+# apply line-by-line background subtraction 
 # then use deepcad to denoise 
 # background subtraction currently cannot be disabled (but would be simple to include the option)
- 
+# background subtraction finds, for each line, the contiguous block of pixels with the lowest intensity, then subtracts the mean of that block from the entire line   
+# the spectrum before and after background subtraction is saved
 
+# typically I call this script from pipeline.py, but it can be run on its own from the command line  
+
+# deepcad wants 3d data, and rather than reshaping the 4d array into 3d (denoising on all z slices at once), this script
+# operates on each z slice independently, since noise varies with z 
+
+# deepcad creates intermediate files that are saved in pth_denoising
+# each z slice of 4d volumetric input movie is passed to deepcad (and background subtraction), saved separately in pth_denoised, 
+# then reassmbled as single output file pth_out, which is placed in same folder as input file pth_in 
 
 ##########################################################################################################################################
 
@@ -48,12 +58,13 @@ import mat73
 from parse_command_line import parse_command_line_denoise
 
 
-pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_caimanreg_.tif'
-pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmregcaddn_.tif'
-pth_denoising = '/Users/wienecke/Documents/ambrose/denoising_in_progress'
-pth_denoised = '/Users/wienecke/Documents/ambrose/denoised'
-fn_prefix = '20230624_2_1'
-dims = [3047, 15, 140, 256]
+# some default values
+pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_caimanreg_.tif' #file the be denoised 
+pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmregcaddn_.tif' #output file
+pth_denoising = '/Users/wienecke/Documents/ambrose/denoising_in_progress' #path for intermediate files created by deepcad
+pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (denoised) 3d files, prior to reassembling 
+fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
+dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 
 
 [pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims] = parse_command_line_denoise(pth_in = pth_in, pth_out = pth_out, 
@@ -153,16 +164,16 @@ class BgRemover:
 
 
 
-if pth_tif_reg[0].endswith( '.mat'):
+if pth_in[0].endswith( '.mat'):
 
-    mat = mat73.loadmat(pth_tif_reg)
+    mat = mat73.loadmat(pth_in)
     Y = mat['stackRaw_mc']
     Y = np.moveaxis(Y, [0, 2], [2, 0]) #put in order t y x
     Y = Y[..., np.newaxis]
 
 else:
 
-    Y = imread(pth_tif_reg).astype('float32')  
+    Y = imread(pth_in).astype('float32')  
     Y = Y.reshape(dims)
     Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
@@ -171,8 +182,8 @@ else:
     zind_all_dn = np.arange(Y.shape[-1])
 
 
-print(pth_tif_reg)
-for zii in zind_all_dn: #for each z slice
+print(pth_in)
+for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this rather than using all z slices in reshaped data because noise varies across z)
 
     Ynew = Y[:,:,:,zii]
     print("denoising slice" + str(zii))
@@ -181,7 +192,7 @@ for zii in zind_all_dn: #for each z slice
 
     dnfolder = fn_prefix + '_' + str(zii)
     tifname = dnfolder + '_.tif'
-    tiffolder_path = os.path.join(datasets_path_processing, dnfolder)
+    tiffolder_path = os.path.join(pth_denoising, dnfolder)
     testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')
     if not os.path.exists(tiffolder_path):
         os.mkdir(tiffolder_path)
@@ -199,7 +210,7 @@ for zii in zind_all_dn: #for each z slice
     br.save_out()
 
 
-    stack = imread(pth_tif_pdn)
+    stack = imread(pth_tif_pdn) #read the background-subtracted movie
     Lt, Ly, Lx = stack.shape
     print(Lt)
     print(Ly)
@@ -209,10 +220,11 @@ for zii in zind_all_dn: #for each z slice
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     manual_max_dataset_size = 4000
     train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
-    patch_x = int(np.ceil(Lx/4)) # was /4   # the width, height, and length of 3D patches (use isotropic patch size by default)
-    patch_y = int(np.ceil(Ly/4)) # was /4
-    patch_t = 300                #100
+    patch_x = int(np.ceil(Lx/4)) # 
+    patch_y = int(np.ceil(Ly/4)) #
+    patch_t = 300                #
     overlap_factor = 0.4        # the overlap factor between two adjacent patches
+    intensity_scale_factor = 1 # the factor for image intensity scaling
     num_workers = 0             # if you use Windows system, set this to 0.
 
     # Setup some parameters for result visualization during training period (optional)
@@ -224,8 +236,8 @@ for zii in zind_all_dn: #for each z slice
         'patch_y': patch_y,                          # the height of 3D patches
         'patch_t': patch_t,                          # the time dimension (frames) of 3D patches
         'overlap_factor':overlap_factor,             # the factor for image intensity scaling
-        'scale_factor': 1,                           # the factor for image intensity scaling
-        'select_img_num': train_datasets_size,       # select the number of images used for training (use 2000 frames in colab)
+        'scale_factor': intensity_scale_factor,      # the factor for image intensity scaling
+        'select_img_num': train_datasets_size,       # select the number of images used for training 
         'train_datasets_size': train_datasets_size,  # datasets size for training (how many 3D patches)
         'datasets_path': tiffolder_path,             # folder containing files for training
         'pth_dir': tiffolder_path,                   # the path for pth file and result images
@@ -240,7 +252,7 @@ for zii in zind_all_dn: #for each z slice
         'num_workers': num_workers,                    # if you use Windows system, set this to 0.
         'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
         'save_test_images_per_epoch': save_test_images_per_epoch,  # whether to save result images after each epoch
-        'colab_display': True
+        'colab_display': False
     }
 
     tc = training_class(train_dict)
@@ -267,7 +279,7 @@ for zii in zind_all_dn: #for each z slice
         'patch_y': patch_y,               # the height of 3D patches
         'patch_t': patch_t,               # the time dimension (frames) of 3D patches
         'overlap_factor':overlap_factor,    # overlap factor
-        'scale_factor': 1,                  # the factor for image intensity scaling
+        'scale_factor': intensity_scale_factor,                  # the factor for image intensity scaling
         'test_datasize': test_datasize,     # the number of frames to be tested
         'datasets_path': tiffolder_path,     # folder containing all files to be tested
         'pth_dir': tiffolder_path,                 # pth file root path
@@ -279,43 +291,43 @@ for zii in zind_all_dn: #for each z slice
         'num_workers': num_workers,         # if you use Windows system, set this to 0.
         'visualize_images_per_epoch': False,# whether to display inference performance after each epoch
         'save_test_images_per_epoch': True, # whether to save inference image after each epoch in pth path
-        'colab_display': True
+        'colab_display': False
     }
 
     tc = testing_class(test_dict)
     tc.run()
 
-    # if tc.colab_display:
-    #     display_filename = tc.result_display
-    #     print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
-    #     print(display_filename)
-    #     # normalize the image and display
-    #     img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
-    #     plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
-    #     plt.axis('off')
-    #     plt.show()
+    if tc.colab_display:
+        display_filename = tc.result_display
+        print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
+        print(display_filename)
+        # normalize the image and display
+        img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
+        plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
+        plt.axis('off')
+        plt.show()
 
     outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
-    shutil.move(outtiff_path, datasets_path_complete)
+    shutil.move(outtiff_path, pth_denoised)
     shutil.rmtree(tiffolder_path)
     shutil.rmtree('/'.join(tiffolder_path.split('/')[:-1]) + '/bg_remove')
 
 
 
 Y = np.zeros(size_pre_denoise)
-pth_denoised_singles = glob.glob(datasets_path_complete + '/' + fn_prefix + '*')
+pth_denoised_singles = glob.glob(pth_denoised + '/' + fn_prefix + '*')
 countz = 0
-for f in pth_denoised_singles: #for each z slice
+for f in pth_denoised_singles: #loop over each denoised z slice and reassemble into array matching shape of original 4d volume  
     print(countz)
     Ynew = imread(f)
     print(Ynew.dtype)
     Y[:,:,:,countz] = Ynew
     countz+=1
 
-min_mov_after_dn = int(np.min(Y))
-Y = Y - min_mov_after_dn #make movie nonnegative (not sure this is necessary)
-print("MIN AFTER MOTION CORRECTION " + str(min_mov_after_dn))
+min_mov = int(np.min(Y))
+Y = Y - min_mov #make nonnegative for extraction later (not sure this is necessary)
+print("MIN AFTER DENOISING " + str(min_mov))
 Y = Y.astype('uint16')
 Y = np.transpose(Y, (0, 3, 1, 2))
 Y = Y.reshape(size_pre_denoise[0] * size_pre_denoise[3], size_pre_denoise[1], size_pre_denoise[2])
-imwrite(pth_tif_dn[0], Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+imwrite(pth_out[0], Y) #write the registered movie as tif for use in matlab, and caiman extraction below

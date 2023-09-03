@@ -1,10 +1,20 @@
+
+
 import numpy as np
 from map2params import map2params
 
+##########################################################################################################################################
+
+# configs for caiman motion correction and source extraction
+# this is not comprehensive, but should be the most likely params to require tuning 
+# below is more comprehensive for extraction than motion correction 
+
+##########################################################################################################################################
+
 def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_planar_extraction = None, dims_spatial = (1,1,1)):
     
-    only_init = False
 
+    #motion correction configs 
     strides_mc = (24, 24, 6)
     overlaps_mc = (12, 12, 3)
     max_shifts_mc = (4, 4, 2)
@@ -25,12 +35,14 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
     else:
         indices_ex = [slice(None), slice(None), slice(None)]
         
-    p = 0                   # order of the autoregressive system - 0 from carl's code
+    
+    only_init = False #only use the initialization run for extraction 
+
+    p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay 
     merge_thresh = 0.9
     gSig = [2, 2, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
-    nb = 1
+    nb = 1 #num background components 
 
-    ###
     fr = 5.08 #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
     decay_time = .4         # length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
     dxy = [1.33155792277, 1.33155792277, 0.16666666666666666] #for .751 um pixels # pixels per micron 
@@ -45,13 +57,12 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
     nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy 
     extract_cc = True #true will throw away isolated pixels of some kind 
     
-    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, 
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources  
 
     max_iter_snmf = 1000
     perc_baseline_snmf = 20
     alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
-
 
     lambda_gnmf = 1 #for method_init graphNMF
     SC_kernel = 'heat' #NOT TUNABLE NOW       # kernel for graph affinity matrix
@@ -65,8 +76,8 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
     low_rank_background = True #true makes bankground nb, false makes it update with hals
     update_background_components = True   #use this??
 
-    fudge_factor = 0.96        # (default is 0.96; Carl's value = 1) -- bias correction factor for discrete time constants
-    ITER = 5                # (default is 2; Carl's value=5) -- block coordinate descent iterations
+    fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
+    ITER = 5                # (default is 2; old value=5) -- block coordinate descent iterations
     bas_nonneg = False #True
 
     rolling_sum = True
@@ -75,6 +86,7 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
     # and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
     # A component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
     # can turn off CNN part withy use_CNN = false
+    # these values will result in no roi filtering 
     SNR_lowest = 0#0.5#0  #0.5 default       # minimum SNR for accepted components 
     min_SNR = 0#0  #2.5 default    # accept components with that peak-SNR or higher 
     rval_lowest = -1  # -1 default 0.6  # space correlation threshold 
@@ -85,7 +97,7 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
 
     stride_to_rf_ratio = 0.65
 
-    if index_extraction_param_set is not None:
+    if index_extraction_param_set is not None: #create param set whose index matches value in index_extraction_param_set
         map_index_2_params = map2params()
         index_extraction_param_set = int(index_extraction_param_set)
         print('reading parameters from the index_extraction_param_set file')
@@ -97,8 +109,9 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
     else:
         do_patches = True
 
-    roi_decimation_fac = 0.4
-    if do_patches: # PROCESS IN PATCHES AND THEN COMBINE
+    #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
+    roi_decimation_fac = 0.4 
+    if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
         rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
         stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches
         p_patch = p
@@ -114,7 +127,7 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
             k = int(np.round( (rf*2*rf*2*rfz) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
         indices_ex = [slice(None), slice(None), slice(None)]
     else:                   # PROCESS THE WHOLE FOV AT ONCE
-        rf = None
+        rf = None # will run CNMF on the whole FOV
         stride_cnmf = None       # will run CNMF on the whole FOV
         p_patch = p
         nb_patch = nb

@@ -24,9 +24,9 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
 
     ##########################   CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
-    if do_motion_correction:
+    if do_motion_correction and not do_cropping_session:
         
-        Y = imread(pth_datafile).astype('float32') ##having trouble on O2 with cm.load so just using imread 
+        Y = imread(pth_datafile).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
         
         Y = Y.reshape(md.dims[0], md.dims[1]+md.flyback, md.dims[2], md.dims[3])
             
@@ -44,7 +44,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
             if 'dview' in locals(): cm.stop_server(dview=dview)
             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
-        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = None, fnames = pth_tif_reg_tmp, min_mov = min_mov) #configs for motion correction
+        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = None, fnames = pth_tif_reg_tmp, min_mov = min_mov) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         #sys.setprofile(tracefunc)
@@ -70,7 +70,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
 
     ##########################   BACKGROUND SUBTRACTION AND DEEPCAD DENOISING   ##########################
 
-    if do_denoise:
+    if do_denoise and not do_cropping_session:
         os.system("/Users/wienecke/mambaforge/envs/caiman/bin/python3 /Users/wienecke/Documents/scopa/fktest.py" \
             + " --pth_in " + pth_tif_reg[0] \
             + " --pth_out " + pth_tif_dn[0] \
@@ -103,7 +103,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
                 limits_str = ''
                 Ycrop = Y.copy()
             else:
-                Ycrop, limits_str = crop_fov(Y, rx, pth_exin, md.dims)
+                Ycrop, limits_str = crop_fov(Y, rx, pth_exin, md.dims) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
 
             print(Ycrop.shape)
 

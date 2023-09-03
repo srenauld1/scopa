@@ -61,7 +61,9 @@ def crop_fov(Y, fov_region, pth_img, dims):
         
         Ymt = np.mean(Y, axis = 0)
         im_montage(Ymt)
-        print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges")
+        print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges \
+               WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
+              OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
         zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
         Ymtz = np.mean(Ymt[:,:,zlimits[0]:zlimits[1]], axis = 2)
         ylimits, xlimits = select_fov(Ymtz)
