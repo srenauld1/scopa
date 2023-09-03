@@ -34,9 +34,3 @@ class map2params():
     def map_index(self,index):
         assert 0 <= index <= self.max_index
         return self.map[index]
-
-# if __name__ == "__main__":
-#     M = map2params(stim_dim= 100)
-#     print(M.order)
-#     print(M.map_index(25))
-

@@ -1,23 +1,20 @@
 
 import argparse
+from ast import literal_eval
 
 
-def parse_command_line(index, region_extraction, do_motion_correction, 
-                       do_denoise, do_extraction, do_planar_extraction, 
+def parse_command_line(index_extraction_param_set, region_extraction, do_motion_correction, 
+                       do_denoise, use_denoised, do_extraction, do_planar_extraction, 
                        recdates, fly, trial, do_cropping_session, 
-                       array_index):
+                       recording_index):
     
-
-    print("in parse")
-
-
     CLI=argparse.ArgumentParser()
 
     CLI.add_argument(
-        "--index",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
         type=int,
-        default=index,  # default if nothing is provided
+        default=index_extraction_param_set,  # default if nothing is provided
     )
     CLI.add_argument(
         "--region_extraction",  # name on the CLI - drop the `--` for positional/required parameters
@@ -27,73 +24,141 @@ def parse_command_line(index, region_extraction, do_motion_correction,
     )
     CLI.add_argument(
         "--do_motion_correction",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1, 
         type=int,
         default=do_motion_correction,  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1, 
         type=int,
         default=do_denoise,  # default if nothing is provided
     )
     CLI.add_argument(
+        "--use_denoised",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,  
+        type=int,
+        default=use_denoised,  # default if nothing is provided
+    )
+    CLI.add_argument(
         "--do_extraction",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1, 
         type=int,
         default=do_extraction,  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_planar_extraction",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1,  
         type=int,
         default=do_planar_extraction,  # default if nothing is provided
     )
     CLI.add_argument(
         "--recdates",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*",  # 0 or more values expected => creates a list
+        nargs="*", 
         type=str,
         default=[recdates],  # default if nothing is provided
     )
     CLI.add_argument(
         "--fly",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1, 
         type=str,
         default=fly,  # default if nothing is provided
     )
     CLI.add_argument(
         "--trial",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1, 
         type=str,
         default=trial,  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_cropping_session",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        nargs=1, 
         type=int,
         default=do_cropping_session,  # default if nothing is provided
     )
     CLI.add_argument(
-        "--array_index",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
+        "--recording_index",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
         type=int,
-        default=array_index,  # default if nothing is provided
+        default=recording_index,  # default if nothing is provided
     )
 
     args = CLI.parse_args()
 
+    print("parsed command line arguments for pipeline_init.py")
     print(args)
     
-    index = args.index[0]
+    index_extraction_param_set = args.index_extraction_param_set[0]
     region_extraction = args.region_extraction #keep as list
     do_motion_correction = args.do_motion_correction[0]
     do_denoise = args.do_denoise[0]
+    use_denoised = args.use_denoised[0]
     do_extraction = args.do_extraction[0]
     do_planar_extraction = args.do_planar_extraction[0]
     recdates = args.recdates #keep as list
     fly = args.fly[0]
     trial = args.trial[0]
     do_cropping_session = args.do_cropping_session[0]
-    array_index = args.array_index[0]
+    recording_index = args.recording_index[0]
 
-    return index, region_extraction, do_motion_correction, do_denoise, do_extraction, do_planar_extraction, recdates,  fly, trial, do_cropping_session, array_index
+    return (index_extraction_param_set, region_extraction, do_motion_correction, 
+            do_denoise, use_denoised, do_extraction, do_planar_extraction, 
+            recdates, fly, trial, do_cropping_session, recording_index)
+
+
+
+
+def parse_command_line_denoise(pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims):
+    
+    CLI=argparse.ArgumentParser()
+
+    CLI.add_argument(
+        "--pth_in",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,
+        type=str,
+        default=pth_in,  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--pth_out",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,
+        type=str,
+        default=pth_out,  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--pth_denoising",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,
+        type=str,
+        default=pth_denoising,  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--pth_denoised",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=str,
+        default=pth_denoised,  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--fn_prefix",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,
+        type=str,
+        default=fn_prefix,  # default if nothing is provided
+    )    
+    CLI.add_argument(
+        "--dims",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs="*", 
+        type=str,
+        default=dims,  # default if nothing is provided
+    )
+
+    args = CLI.parse_args()
+
+    print("parsed command line arguments for denoise.py")
+    print(args)
+
+    pth_in = args.pth_in[0]
+    pth_out = args.pth_out[0]
+    pth_denoising = args.pth_denoising[0]
+    pth_denoised = args.pth_denoised[0]
+    fn_prefix = args.fn_prefix[0]
+    dims = list(map(int, args.dims))
+
+    return pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims

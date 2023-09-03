@@ -1,12 +1,33 @@
 
 #!/usr/bin/env python
 
+
+##########################################################################################################################################
+
+# this is the first part of the analysis pipeline for volumetric 2p imaging with behavior and visual stimuli 
+# the second part is in matlab, and operates on the output of this python pipeline 
+
+# pipeline_init.py cycles through all recordings in specified dir (if recording_index = 0), passing one trial at a time to pipeline in pipeline.py
+# if recording_index is not 0, the pipeline is run on the recording matching that index (based on the sorted list of all reocrdings in the specified dir)
+# this is convenient when recording_index is passed as a command line argument SLURM_ARRAY_TASK_ID the pipeline in slurm, 
+# allowing you to run a SLURM job array (running the pipeline on multiple recordings in parallel on O2 compute server)  
+# pipeline.py includes these options: 
+# --motion correction (with caiman NormCorre)
+# --background subtraction line-by-line (to remove stimulus bleedthrough), 
+# --denoising (using deepcad), 
+# --source extraction (using caiman cNMF)
+# ------the source extraction includes the option to operate on a rectangular subset of the full FOV ('region_extraction') 
+# ------if multiple region_extraction are provided, the extraction part of the pipeline loops over these   
+# ------the extraction part of the pipeline also includes the option to loop over all possible combinations of any subset of extraction parameters, defined in map2params.py
+# ------to do this, set index_extraction_param_set to a negative value, and all param combinations up to that index are looped over 
+# ------if index_extraction_param_set is positive, only that param set index is run (if 'None', onlt the default param set is run) 
+# these subroutines can be run at separate times; for example, motion correction for all files in a directory, then in another job, denoising for all those same files
+# the denoising requires motion corrected input tif, and the extraction requires either the motion correction output tif, or the denoising output tif
+# background subtraction is built in to the denoising script denoise.py, and currently cannot be disabled (but would be simple to include the option)
+##########################################################################################################################################
+
+
 import sys
-
-print(sys.executable)
-env_path = sys.path
-
-
 import re
 import cv2
 import datetime
@@ -15,25 +36,26 @@ import os
 import glob
 import logging
 import os
+from parse_command_line import parse_command_line
 
-import mat73
+from pipeline import pipeline
+from helpers import read_save_metadata
+
+print(sys.executable)
+env_path = sys.path
 
 try:
-    cv2.setNumThreads(0)
+    cv2.setNumThreads(0) #don't think this is necessary 
 except:
     pass
 
 try:
-    if __IPYTHON__:
-        # this is used for debugging purposes only. allows to reload classes
-        # when changed
+    if __IPYTHON__: #for debugging only. allows to reload classes when changed
         get_ipython().magic('load_ext autoreload')
         get_ipython().magic('autoreload 2')
 except NameError:
     pass
 
-from pipeline import pipeline_full
-from parse_command_line import parse_command_line
 
 logging.basicConfig(format=
                     "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s]"\
@@ -42,72 +64,64 @@ logging.basicConfig(format=
                     level=logging.WARNING,
                     )
 
-# export MKL_NUM_THREADS=1
-# export OPENBLAS_NUM_THREADS=1
+
+# export MKL_NUM_THREADS=1 #can't remember why i tried this, but i don't use it   
+# export OPENBLAS_NUM_THREADS=1 #can't remember why i tried this, but i don't use it  
 
 
-#@title choose files and initialize cnmf params object (entry point)
-
-#OLD MAT FILES recdates ARE 6 DIGITS NOT 8 (YEAR IS 2 NOT 4)
-#recdates = ['231028'] #date-fly, as it appears in the directory and raw file filename (with hyphen not underscore)
-
-index = 0
-recdates = ['20230627'] #list , as it appears in the directory and raw file filename (with hyphen not underscore)
-fly = '*'
-trial = '2' # '*' for any trial in folder
-region_extraction = ['pb', 'gar', 'gal', 'no'] #list
-do_motion_correction = False
-do_denoise = False
+index_extraction_param_set = 0 #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
+recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now)
+fly = '*' #string, fly index_extraction_param_set, '*' for any 
+trial = '2' #string, trial index_extraction_param_set, '*' for any 
+region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for rectangular fov subregions that are passed separately to source extraction, code use interactive plots to prompt user to draw xy rectangle and also define z range
+do_motion_correction = True #caiman normCorre 
+do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
 do_extraction = True
 do_planar_extraction = False #WARNING, CAN ONLY DO 3D WITH AT LEAST LENGTH 3 IN EACH DIMENSION, OR REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS
 do_cropping_session = False
-array_index = 0
+recording_index = 0
 
 do_plots = 0
-anatomical_stack = False
-
-server = 1
+do_cluster = 0 #leave as 0 bc cluster isn't working except on colab 
 cluster_backend = 'ipyparallel'
+
 if (re.search("/Users/wienecke/", env_path[0])):
-  server = 0
-  pth_prefix = '/Users/wienecke/Documents/ambrose/stacks/'
+  pth_allrec = '/Users/wienecke/Documents/ambrose/stacks/'
   if do_denoise: #need gpu, don't have one locally 
-     raise Exception("no local gpu, make do_denoise false")
+     raise Exception("no gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])):
-  server = 0
-
-  pth_prefix = '/n/scratch3/users/c/caw846/stacks/'
-  cluster_backend = 'SLURM'
-
+  pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
+  cluster_backend = 'SLURM' 
 elif (re.search("/home/users/wienecke/", env_path[0])):
-  pth_prefix = '/scratch/users/wienecke/stacks/'
+  pth_allrec = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])):
-  pth_prefix = '/content/drive/MyDrive/stacks/'
+  pth_allrec = '/content/drive/MyDrive/stacks/'
+  do_cluster = 1
+  index_extraction_param_set = None #not set up for arguments in colab 
 
-working_dir = '/'.join(pth_prefix.split('/')[:-2])
-datasets_path_processing = os.path.join(working_dir, 'denoising_in_progress')
-if not os.path.exists(datasets_path_processing):
-    os.mkdir(datasets_path_processing)
-datasets_path_complete = os.path.join(working_dir, 'denoised')
-if not os.path.exists(datasets_path_complete):
-    os.mkdir(datasets_path_complete)
+pth_super = '/'.join(pth_allrec.split('/')[:-2])
+pth_denoising = os.path.join(pth_super, 'denoising_in_progress')
+if not os.path.exists(pth_denoising):
+    os.mkdir(pth_denoising)
+pth_denoised = os.path.join(pth_super, 'denoised')
+if not os.path.exists(pth_denoised):
+    os.mkdir(pth_denoised)
 
-if (re.search('/content', env_path[0])): #not set up for arguments in colab
-  index = None
-
-print(sys.argv)
 
 if len(sys.argv)>1:
-   [index, region_extraction, do_motion_correction, 
-   do_denoise, do_extraction, do_planar_extraction, 
-   recdates,  fly, trial, do_cropping_session, 
-   array_index] = parse_command_line(index = index, region_extraction = region_extraction, do_motion_correction = do_motion_correction, 
-                       do_denoise = do_denoise, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
-                       recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, 
-                       array_index = array_index)
+  [index_extraction_param_set, region_extraction, do_motion_correction, 
+  do_denoise, use_denoised, do_extraction, do_planar_extraction, 
+  recdates,  fly, trial, do_cropping_session, 
+  recording_index] = parse_command_line(index_extraction_param_set = index_extraction_param_set, 
+                      region_extraction = region_extraction, do_motion_correction = do_motion_correction, 
+                      do_denoise = do_denoise, use_denoised = use_denoised, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
+                      recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, 
+                      recording_index = recording_index)
+
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
-print(index)
+print(index_extraction_param_set)
 print(region_extraction)
 print(do_motion_correction)
 print(do_denoise)
@@ -117,95 +131,57 @@ print(recdates)
 print(fly)
 print(trial)
 print(do_cropping_session)
-print(array_index)
-
-if anatomical_stack==True:
-  dims_spacetime_original = [80, 164, 140, 256]
-  flyback = 51
-  dims_spacetime_original_noflyback = [dims_spacetime_original[0], dims_spacetime_original[1]-flyback, dims_spacetime_original[2], dims_spacetime_original[3]]
-
-else:
-  dims_spacetime_original = [3047, 20, 140, 256] #manual
-  flyback = 5
-  dims_spacetime_original_noflyback = [dims_spacetime_original[0], dims_spacetime_original[1]-flyback, dims_spacetime_original[2], dims_spacetime_original[3]]
-
+print(recording_index)
 
 countz = 0
 for recording_date in recdates:
 
-  tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") #create extraction ID, one for each recordingID
+  tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
 
-  if anatomical_stack:
-    fn_pattern = recording_date + '_hires_.tif'
-    pth_fldr = sorted(glob.glob(pth_fldr_pattern))
-  else:
-    old_mat_files = 0
-    pth_fldr_pattern = pth_prefix + recording_date + '-' + fly + '_*/'
-    fn_pattern = recording_date + '-' + fly + '*_trial_00' + trial + '_*.tif'
-    pth_fldr = sorted(glob.glob(pth_fldr_pattern))
-    if not pth_fldr:  #if no matches try another filename pattern
-      old_mat_files = 1
-      do_motion_correction = False
-      pth_fldr_pattern = pth_prefix + recording_date + '_' + fly + '/'
-      fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_mc_.mat'
-      pth_fldr = sorted(glob.glob(pth_fldr_pattern))
+  pth_fldrs_pattern = pth_allrec + recording_date + '-' + fly + '_*/'
+  fn_pattern = recording_date + '-' + fly + '*_trial_00' + trial + '_*.tif'
+  pth_fldrs = sorted(glob.glob(pth_fldrs_pattern))
+  old_mat_files = 0
+  if not pth_fldrs:  #if no matches try another filename pattern (files from previous project)
+    old_mat_files = 1
+    pth_fldrs_pattern = pth_allrec + recording_date + '_' + fly + '/'
+    fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_mc_.mat'
+    pth_fldrs = sorted(glob.glob(pth_fldrs_pattern))
 
-  for ff in pth_fldr:
+  for pth_fldr in pth_fldrs:
 
-    print(ff)
+    print(pth_fldr)
     
-    sorteddirlist = sorted(os.listdir(ff))
+    pth_allfiles = sorted(os.listdir(pth_fldr))
 
-    for f in sorteddirlist:
+    for f in pth_allfiles:
 
-      if fnmatch.fnmatch(f,fn_pattern):
+      if fnmatch.fnmatch(f, fn_pattern):
 
         countz = countz + 1
-        if array_index==0 or (array_index!=0 and countz==array_index):
+        if recording_index==0 or (recording_index!=0 and countz==recording_index): #if 0, do all files, otherwise only file matching index
           
-          pth_datafile = ff + f
+          pth_datafile = pth_fldr + f
           print(pth_datafile)
 
-          metafile_pattern = ff + 'registration_00' + f.split('_')[-2][-1] + '/imagingData*.mat'
-          pth_md = sorted(glob.glob(metafile_pattern))
-          if pth_md:
-            matty = mat73.loadmat(pth_md[0])
-            numvol = int(matty['SI']['hStackManager']['actualNumVolumes'])
-            numslice_withflyback = int(matty['SI']['hStackManager']['numFramesPerVolumeWithFlyback'])
-            flyback = numslice_withflyback - int(matty['SI']['hStackManager']['numFramesPerVolume'])
-            xpix = int(matty['SI']['hRoiManager']['pixelsPerLine'])
-            ypix = int(matty['SI']['hRoiManager']['linesPerFrame'])
-            dims_spacetime_original[0] = numvol
-            dims_spacetime_original[1] = numslice_withflyback
-            dims_spacetime_original[2] = ypix
-            dims_spacetime_original_noflyback[0] = numvol
-            dims_spacetime_original_noflyback[1] =  numslice_withflyback - flyback
-            dims_spacetime_original_noflyback[2] = ypix
-
-
-          if old_mat_files:
-            fn_reduced = f[:-5]
-          else:
-            fn_reduced = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
-
-          pth_prefix_fnsave = ff + fn_reduced
-          if old_mat_files:
+          if old_mat_files: #for my old project 
+            fn_prefix = f[:-5]
             pth_tif_reg_tmp = []
             pth_tif_reg = pth_datafile
             pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
           else:
-            if anatomical_stack:
-              pth_tif_reg_tmp = [pth_prefix_fnsave + '_hires_caimanregtmp_.tif']
-              pth_tif_reg = [pth_prefix_fnsave + '_hires_caimanreg_.tif']
-              pth_tif_dn = [pth_prefix_fnsave + 'hires_cmregcaddn_.tif']
-            else:
-              pth_tif_reg_tmp = [pth_prefix_fnsave + '_caimanregtmp_.tif']
-              pth_tif_reg = [pth_prefix_fnsave + '_caimanreg_.tif']
-              pth_tif_dn = [pth_prefix_fnsave + '_cmregcaddn_.tif']
+            fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
+            pth_allrec_fnsave = pth_fldr + fn_prefix
+            pth_tif_reg_tmp = [pth_allrec_fnsave + '_caimanregtmp_.tif']
+            pth_tif_reg = [pth_allrec_fnsave + '_caimanreg_.tif']
+            pth_tif_dn = [pth_allrec_fnsave + '_cmregcaddn_.tif']
+            pth_tif_dn = [pth_allrec_fnsave + '_cmregcaddn_.tif']
+            pth_md = [pth_allrec_fnsave + '_metadatanew_.mat']
+            md = read_save_metadata(pth_datafile, pth_md)
 
-
-          pipeline_full(index, pth_datafile, pth_prefix_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_reduced, old_mat_files, 
-                        datasets_path_processing, datasets_path_complete, dims_spacetime_original, dims_spacetime_original_noflyback, 
-                        flyback, anatomical_stack, do_motion_correction, do_denoise, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, do_plots, cluster_backend, server)
+          pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_prefix, 
+                        pth_denoising, pth_denoised, md, do_motion_correction, do_denoise, use_denoised, 
+                        do_cropping_session, do_extraction, do_planar_extraction, region_extraction, 
+                        do_plots, cluster_backend, do_cluster)
 
 

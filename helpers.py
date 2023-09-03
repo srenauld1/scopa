@@ -5,10 +5,15 @@ import glob
 from caiman_vis_custom import im_montage 
 from ast import literal_eval
 
-import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.widgets  import RectangleSelector
-from matplotlib.animation import FuncAnimation, PillowWriter
+
+from ScanImageTiffReader import ScanImageTiffReader
+from ast import literal_eval
+import re
+import scipy.io as sio
+from numpy.core.records import fromarrays
+
 
 
 def select_fov(img):
@@ -24,10 +29,6 @@ def select_fov(img):
         rect = plt.Rectangle( (min(x1,x2),min(y1,y2)), np.abs(x1-x2), np.abs(y1-y2) )
         ax.add_patch(rect)
 
-    # rs = RectangleSelector(ax, line_select_callback,
-    #                        drawtype='box', useblit=False, button=[1], 
-    #                        minspanx=5, minspany=5, spancoords='pixels', 
-    #                        interactive=True)
     props = dict(facecolor='blue', alpha=0.2)
     rs = RectangleSelector(ax, line_select_callback, interactive=True, 
                             props=props, drag_from_anywhere=True,
@@ -44,7 +45,7 @@ def select_fov(img):
 
 
 
-def crop_fov(Y, fov_region, pth_img, dims_spacetime_original_noflyback):
+def crop_fov(Y, fov_region, pth_img, dims):
 
     try:
         
@@ -60,27 +61,57 @@ def crop_fov(Y, fov_region, pth_img, dims_spacetime_original_noflyback):
         
         Ymt = np.mean(Y, axis = 0)
         im_montage(Ymt)
-        print("what z slices do you want to keep? consider keeping first as padding if cells abut z edges")
-        zlimits = literal_eval(input ("choose z limits, format (firstframe,lastframe) one-indexed: "))
+        print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges")
+        zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
         Ymtz = np.mean(Ymt[:,:,zlimits[0]:zlimits[1]], axis = 2)
         ylimits, xlimits = select_fov(Ymtz)
-        tlimits = (1, dims_spacetime_original_noflyback[0])
-        croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) #make them 1-indexed for matlab later 
+        tlimits = (1, dims[0])
+        croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
         limits_str = fov_region + '_' + str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
         fn_crop_lim = pth_img[0][:-4] + fov_region + '_croplim_.npy'
         with open(fn_crop_lim, 'wb') as fncrop:
             np.save(fncrop, croplim)
 
-    slt = slice(croplim[0]-1, croplim[1], 1) #croplim are 1-indexed, and the second/upper is not included  
-    slx = slice(croplim[2]-1, croplim[3], 1) # slice(40, 181, 1) 
-    sly = slice(croplim[4]-1, croplim[5], 1) #slice(6, 51, 1)
-    slz = slice(croplim[6]-1, croplim[7], 1)  #slice(1, 9, 1) 
+    slt = slice(croplim[0]-1, croplim[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
+    slx = slice(croplim[2]-1, croplim[3], 1) 
+    sly = slice(croplim[4]-1, croplim[5], 1) 
+    slz = slice(croplim[6]-1, croplim[7], 1) 
     indices_crop = [slt, slx, sly, slz]
     Y = Y[tuple(indices_crop)]
 
     return Y, limits_str
 
 
+def read_save_metadata(pth_datafile, pth_md):
+
+    # use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
+    meta = ScanImageTiffReader(pth_datafile).metadata()   
+    mdt = {}
+    mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
+    mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
+    mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
+    mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta)[0])
+    mdt['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta)[0])
+    mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
+    mdt['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
+    fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta)[0].replace(" ",",").replace(";",","))
+    mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
+    mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
+    mdt['zwid'] = int(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
+    mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta)[0].replace(";",","))
+    mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
+    mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
+    mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta)[0])
+
+    md = fromarrays( [ mdt['numvol'], mdt['numslice_withflyback'], mdt['numslice'], mdt['xpix'], \
+        mdt['ypix'], mdt['flyback'], mdt['xfov'], mdt['yfov'], \
+        mdt['zwid'], mdt['zfov'], mdt['framerate'], mdt['volrate'] ], \
+        names = ['numvol', 'numslice_withflyback', 'numslice', 'xpix', 'ypix', 'flyback', \
+            'xfov', 'yfov', 'zwid', 'zfov', 'framerate', 'volrate' ] )
+
+    sio.savemat(pth_md[0], {'md': md}) #save for matlab part of pipeline 
+    
+    return mdt
 
 def tracefunc(frame, event, arg, indent=[0]): # can get line number with frame.f_lineno
   

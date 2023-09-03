@@ -1,7 +1,7 @@
 import numpy as np
-from caiman_map2params import map2params
+from map2params import map2params
 
-def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = None, dims_spatial = (1,1,1)):
+def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_planar_extraction = None, dims_spatial = (1,1,1)):
     
     only_init = False
 
@@ -85,11 +85,11 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
 
     stride_to_rf_ratio = 0.65
 
-    if index is not None:
+    if index_extraction_param_set is not None:
         map_index_2_params = map2params()
-        index = int(index)
-        print('reading parameters from the index file')
-        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(index)
+        index_extraction_param_set = int(index_extraction_param_set)
+        print('reading parameters from the index_extraction_param_set file')
+        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(index_extraction_param_set)
         gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5
 
     if dims_spatial[0]<50 and dims_spatial[1]<50 and dims_spatial[2]<50: #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
@@ -143,7 +143,7 @@ def configs(index = None, fnames = None, min_mov = 0, do_planar_extraction = Non
     if do_planar_extraction is None: #it's none during motion correction, when we don't care about these params, rather than true/false
         print("motion correction params configured")
     else:
-        print("index is " + str(index) + " with filename string " + fnadd)
+        print("index_extraction_param_set is " + str(index_extraction_param_set) + " with filename string " + fnadd)
 
     opts_dict = {'strides': strides_mc,    # start a new patch for pw-rigid motion correction every x pixels
                 'overlaps': overlaps_mc,   # overlap between pathes (size of patch strides+overlaps)
