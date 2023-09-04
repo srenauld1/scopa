@@ -11,7 +11,7 @@ from map2params import map2params
 
 ##########################################################################################################################################
 
-def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_planar_extraction = None, dims_spatial = (1,1,1)):
+def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_planar_extraction = None, dims_spatial = (1,1,1), md = None):
     
 
     #motion correction configs 

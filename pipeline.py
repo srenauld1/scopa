@@ -28,9 +28,9 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
         
         Y = imread(pth_datafile).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
         
-        Y = Y.reshape(md.dims[0], md.dims[1]+md.flyback, md.dims[2], md.dims[3])
+        Y = Y.reshape(md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
             
-        Y = Y[:,:-md.flyback,:,:] #crop md.flyback frames
+        Y = Y[:,:-md['flyback'],:,:] #crop md['flyback'] frames
         #Y[540:600,4,:,:].play(magnification=2) #play in order t z y x
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         
@@ -90,7 +90,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
             pth_exin = pth_tif_reg
 
         Y = imread(pth_exin).astype('float32')
-        Y = Y.reshape(md.dims)
+        Y = Y.reshape(md['dims'])
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         print(Y.shape)
 
@@ -103,7 +103,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
                 limits_str = ''
                 Ycrop = Y.copy()
             else:
-                Ycrop, limits_str = crop_fov(Y, rx, pth_exin, md.dims) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
+                Ycrop, limits_str = crop_fov(Y, rx, pth_exin, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
 
             print(Ycrop.shape)
 
@@ -133,7 +133,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
 
                     try: #since some param sets will error
 
-                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial) #param set for extraction
+                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial, md = md) #param set for extraction
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #adjust images and some params for planar 
