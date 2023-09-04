@@ -44,7 +44,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
             if 'dview' in locals(): cm.stop_server(dview=dview)
             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
-        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = None, fnames = pth_tif_reg_tmp, min_mov = min_mov) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = None, fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         #sys.setprofile(tracefunc)
@@ -133,7 +133,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
 
                     try: #since some param sets will error
 
-                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial, md = md) #param set for extraction
+                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial) #param set for extraction
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #adjust images and some params for planar 
