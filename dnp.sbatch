@@ -2,8 +2,8 @@
 #SBATCH --time=1:00:00
 #SBATCH -p gpu_requeue
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=10G #240G
-#SBATCH --job-name=DN3
+#SBATCH --mem-per-cpu=15G
+#SBATCH --job-name=DNP
 #SBATCH --gres=gpu:rtx6000
 #SBATCH --array=[1]
 #SBATCH --begin=now+10
