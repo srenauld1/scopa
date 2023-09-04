@@ -71,7 +71,8 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
     ##########################   BACKGROUND SUBTRACTION AND DEEPCAD DENOISING   ##########################
 
     if do_denoise and not do_cropping_session:
-        os.system("/Users/wienecke/mambaforge/envs/caiman/bin/python3 /Users/wienecke/Documents/scopa/fktest.py" \
+        os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
+          conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise_script.py" \
             + " --pth_in " + pth_tif_reg[0] \
             + " --pth_out " + pth_tif_dn[0] \
             + " --pth_denoising " + pth_denoising \
