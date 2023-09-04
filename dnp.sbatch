@@ -37,9 +37,9 @@ conda activate caiman
 --use_denoised 0 \
 --do_extraction 0 \
 --do_planar_extraction 0 \
---recdates '*' \
---fly '*' \
---trial '*' \
+--recdates '20230627' \
+--fly '2' \
+--trial '2' \
 --do_cropping_session 0 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 

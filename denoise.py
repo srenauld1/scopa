@@ -318,7 +318,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         plt.show()
 
     outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
-    pth_destination = pth_denoised + outtiff_path.split('/')[-1]
+    pth_destination = pth_denoised + '/' + outtiff_path.split('/')[-1]
     if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it (full denoised 4d recording is reassembled in pth_out)
         os.remove(pth_destination)
     shutil.move(outtiff_path, pth_denoised)
