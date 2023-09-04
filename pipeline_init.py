@@ -55,7 +55,7 @@
 
 # the recommended workflow is:
 # 1. run job array mcp.sbatch to motion correct recordings in parallel (automated)
-# 2. run job array dnp.sbatch to denoise the same batch of recordings in parallel (automated)
+# 2. run job array dnp.sbatch to denoise the same batch of recordings in parallel (automated) - depending on how many recordings in pth_allrec, may need to make recording_index = 0 to loop in sequence (not parallel) because of limited GPU resources 
 # 3. using ineractive job on O2 (visual studio), run pipeline_init.py, looping over all values in region_extraction and all recordings in the same batch of recordings (by making input params match those in cxp.sbatch and dnp.sbatch), letting user define all sub-FOV (interactive)
 # 4. using job array exp.sbatch, run extraction on all values in region_extraction for same batch of recordings, optionally using the motion-corrected and denoised or just motion-corrected data (automated)
 # 5. use matlab pipeline for further analysis using the output of this python pipeline 
@@ -123,7 +123,7 @@ logging.basicConfig(format=
 
 
 index_extraction_param_set = 0 #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
-recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now)
+recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '2' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
