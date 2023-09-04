@@ -43,9 +43,9 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0, do_pl
     gSig = [2, 2, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
     nb = 1 #num background components 
 
-    fr = 5.08 #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
+    fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
     decay_time = .4         # length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
-    dxy = [1.33155792277, 1.33155792277, 0.16666666666666666] #for .751 um pixels # pixels per micron 
+    dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron 
 
     tsub = 1                # temporal downsampling
     ssub = 1               # spatial downsampling
