@@ -70,11 +70,12 @@ from parse_command_line import parse_command_line_denoise
 # some default values
 pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_caimanreg_.tif' #file the be denoised 
 pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmregcaddn_.tif' #output file
-pth_denoising = '/Users/wienecke/Documents/ambrose/denoising_in_progress' #path for intermediate files created by deepcad
+pth_denoising = '/Users/wienecke/Documents/ambrose/denoising' #path for intermediate files created by deepcad
 pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (denoised) 3d files, prior to reassembling 
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 
+bg_patch_halfwidth = 12 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 
 [pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims] = parse_command_line_denoise(pth_in = pth_in, pth_out = pth_out, 
                     pth_denoising = pth_denoising, pth_denoised = pth_denoised, 
@@ -195,7 +196,7 @@ print(pth_in)
 for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this rather than using all z slices in reshaped data because noise varies across z)
 
     Ynew = Y[:,:,:,zii]
-    print("denoising slice" + str(zii))
+    print("denoising slice " + str(zii))
     print(Y.shape)
     print(Ynew.shape)
 
@@ -211,7 +212,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
 
 
     #remove background line by line
-    br = BgRemover(pth_tif_pdn, half_wid=12)
+    br = BgRemover(pth_tif_pdn, half_wid=bg_patch_halfwidth)
     br.draw_bg()
     br.show_bg()
     br.remove_bg()
@@ -317,6 +318,9 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         plt.show()
 
     outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
+    pth_destination = pth_denoised + outtiff_path.split('/')[-1]
+    if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it (full denoised 4d recording is reassembled in pth_out)
+        os.remove(pth_destination)
     shutil.move(outtiff_path, pth_denoised)
     shutil.rmtree(tiffolder_path)
     shutil.rmtree('/'.join(tiffolder_path.split('/')[:-1]) + '/bg_remove')

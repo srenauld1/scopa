@@ -154,7 +154,7 @@ elif (re.search('/content', env_path[0])):
   index_extraction_param_set = None #not set up for arguments in colab 
 
 pth_super = '/'.join(pth_allrec.split('/')[:-2])
-pth_denoising = os.path.join(pth_super, 'denoising_in_progress')
+pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising):
     os.mkdir(pth_denoising)
 pth_denoised = os.path.join(pth_super, 'denoised')

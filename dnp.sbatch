@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --time=1:00:00
+#SBATCH --time=3:00:00
 #SBATCH -p gpu_requeue
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=15G
 #SBATCH --job-name=DNP
-#SBATCH --gres=gpu:rtx6000
+#SBATCH --gres=gpu:teslaM40:1,vram:12G
 #SBATCH --array=[1]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
@@ -26,6 +26,8 @@ module load gcc/9.2.0
 module load cuda/11.7
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
+
+/n/cluster/bin/job_gpu_monitor.sh &
 
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
 --index_extraction_param_set 0 \
