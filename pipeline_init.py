@@ -62,6 +62,22 @@
 
 # these sbatch files are written to run on requeue-type partitions (using other people's resources), and will automatically requeue if preempted
 
+# before running any of the sbatch files mentioned above, caiman needs to be installed (follow instructions on their github)
+# after that you also need to run the following commands (to install an extra package in the caiman environment) 
+# module load miniconda3/4.10.3
+# source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+# conda activate caiman
+# pip install scanimage-tiff-reader
+
+# before running denoise.py (from within in dnp.sbatch or directly on command line), deepcad and torch need to be installed (instructions on their github)
+# after that you also need to run the following commands (to install a couple extra packages in the deepcad environment) 
+# module load miniconda3/4.10.3
+# source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+# conda activate deepcadrt
+# pip install mat73
+# pip install matplotlib 
+
+# carl wienecke 230902
 ##########################################################################################################################################
 
 import sys

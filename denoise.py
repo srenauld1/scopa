@@ -18,6 +18,14 @@
 # each z slice of 4d volumetric input movie is passed to deepcad (and background subtraction), saved separately in pth_denoised, 
 # then reassmbled as single output file pth_out, which is placed in same folder as input file pth_in 
 
+
+# before running denoise.py (in dnp.sbatch or directly on command line), deepcad and torch needs to be installed (instructions on their github)
+# after that you also need to run the following commands (to install a couple extra packages in the deepcad environment) 
+# module load miniconda3/4.10.3
+# source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+# conda activate deepcadrt
+# pip install mat73
+# pip install matplotlib 
 ##########################################################################################################################################
 
 print("indenoise")
