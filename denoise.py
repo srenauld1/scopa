@@ -187,7 +187,8 @@ else:
 
     size_pre_denoise = Y.shape
 
-    zind_all_dn = np.arange(Y.shape[-1])
+    zhack = 8
+    zind_all_dn = np.arange(zhack, Y.shape[-1])
 
 
 print(pth_in)
