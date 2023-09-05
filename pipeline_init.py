@@ -124,7 +124,7 @@ logging.basicConfig(format=
 
 index_extraction_param_set = 0 #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '*' #string, fly index_extraction_param_set, '*' for any 
+fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '2' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
 do_motion_correction = False #caiman normCorre 

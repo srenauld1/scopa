@@ -4,8 +4,8 @@ class map2params():
     def __init__(self):
         
         self.params = {}
-        self.params['m2p_merge_thresh'] = [.3]
-        self.params['m2p_gsig'] = [3] #[2, 3, 4]
+        self.params['m2p_merge_thresh'] = [.3, .9]
+        self.params['m2p_gsig'] = [3, 4] #[2, 3, 4]
         self.params['m2p_nb'] = [1]
         self.params['SC_sigma'] = [1, 2, 4]
         self.params['lambda_gnmf'] = [1, 2, 4]
