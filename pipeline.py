@@ -100,7 +100,7 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
             print(pth_exin)
             print(rx)
 
-            if region_extraction == ['']:
+            if rx == '':
                 limits_str = ''
                 Ycrop = Y.copy()
             else:
