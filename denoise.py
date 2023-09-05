@@ -205,8 +205,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')
     if os.path.exists(tiffolder_path): 
         shutil.rmtree(tiffolder_path) #just remove it because for some reason existing timestamped folders deepcad creates can cause error 
-    else:
-        os.mkdir(tiffolder_path)
+    os.mkdir(tiffolder_path)
     pth_tif_pdn = os.path.join(tiffolder_path, tifname)
     print(pth_tif_pdn)
     imwrite(pth_tif_pdn, Ynew.astype('float'), photometric='minisblack')
