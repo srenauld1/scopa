@@ -252,10 +252,11 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
                             print("norois")
                             pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_NOROIS_.mat']
 
-                    except:
+                    except Exception as error:
                         
                         mdict = {}
                         pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_FAILURE_.mat']
+                        print("An exception occurred:", type(error).__name__, "-", error) 
 
                     
                     sio.savemat(pth_mat_ex[0], mdict)
