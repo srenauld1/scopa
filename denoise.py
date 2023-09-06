@@ -3,11 +3,7 @@
 
 ##########################################################################################################################################
 # this script operates on individual input files 
-# apply line-by-line background subtraction 
-# then use deepcad to denoise 
-# background subtraction currently cannot be disabled (but would be simple to include the option)
-# background subtraction finds, for each line, the contiguous block of pixels with the lowest intensity, then subtracts the mean of that block from the entire line   
-# the spectrum before and after background subtraction is saved
+# using deepcad to denoise 
 
 # typically I call this script from pipeline.py, but it can be run on its own from the command line  
 
@@ -15,7 +11,7 @@
 # operates on each z slice independently, since noise varies with z 
 
 # deepcad creates intermediate files that are saved in pth_denoising
-# each z slice of 4d volumetric input movie is passed to deepcad (and background subtraction), saved separately in pth_denoised, 
+# each z slice of 4d volumetric input movie is passed to deepcad, saved separately in pth_denoised, 
 # then reassmbled as single output file pth_out, which is placed in same folder as input file pth_in 
 
 
@@ -48,7 +44,6 @@ import os
 import glob
 import shutil
 import numpy as np
-import random
 
 from tifffile.tifffile import imwrite, imread
 
@@ -59,7 +54,6 @@ from deepcad.test_collection import testing_class
 # from deepcad.movie_display import display, display_img
 # from deepcad.utils import get_first_filename
 
-from scipy import signal
 import mat73
 
 from parse_command_line import parse_command_line_denoise
@@ -73,7 +67,6 @@ pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 
-bg_patch_halfwidth = 12 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 
 [pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims] = parse_command_line_denoise(pth_in = pth_in, pth_out = pth_out, 
                     pth_denoising = pth_denoising, pth_denoised = pth_denoised, 
@@ -85,90 +78,6 @@ print(pth_denoising)
 print(pth_denoised)
 print(fn_prefix)
 print(dims)
-
-
-class BgRemover:
-
-
-    def __init__(self, img_path, half_wid=12):
-        self.uppath = '/'.join(img_path.split('/')[:-1])
-        self.path = img_path
-        self.half_wid = half_wid
-        self.img = imread(img_path).astype('float32')
-        self.make_savedir()
-
-    def make_savedir(self):
-        working_dir = os.path.dirname(self.uppath)
-        saving_dir = os.path.join(working_dir, 'bg_remove')
-        if not os.path.exists(saving_dir):
-            os.mkdir(saving_dir)
-        self.saving_dir = saving_dir
-        self.file_head = self.path.split('.')[0].split('/')[-1]
-
-    def draw_bg(self):
-        half_wid = self.half_wid
-        wid = 2*half_wid
-        kernel = np.ones(wid)/wid
-        template = np.mean(self.img, axis=0)
-        bg_ind = []
-        for line in template:
-            tmp = np.convolve(line, kernel, 'valid')
-            bg_center = np.argmin(tmp) + half_wid
-            bg_ind.append([bg_center-half_wid, bg_center+half_wid])
-        self.bg_ind = bg_ind
-
-    def show_bg(self):
-        bg_ind = self.bg_ind
-        show_bg = np.mean(self.img, axis=0)
-        mv = np.max(show_bg)
-        for i in range(show_bg.shape[0]):
-            show_bg[i, bg_ind[i][0]:bg_ind[i][1]] = mv
-        plt.imshow(show_bg)
-        plt.savefig(os.path.join(self.saving_dir, self.file_head+'_bg_patch.png'))
-        plt.close()
-
-    def remove_bg(self, offset=0):
-        bg_ind = self.bg_ind
-        out = self.img.copy()
-        for ind in range(out.shape[1]):
-            patch = self.img[:, ind, :]
-            bg_patch = self.img[:, ind, bg_ind[ind][0]:bg_ind[ind][1]]
-            bg = bg_patch.mean(axis=-1)
-            patch = patch-bg[None].T
-            out[:, ind, :] = patch
-        out = out + offset # compensate so that most of the pixels are above 0 (no need)
-        self.out = out
-
-    def show_spectrum(self, fs=354):
-        half_wid = self.half_wid
-        y_len, x_len = self.out.shape[1:3]
-        test_y = random.randint(0, y_len-1)
-        test_x = random.randint(0, x_len-2*half_wid-1) + half_wid
-
-        test_patch = self.img[:, test_y, test_x-half_wid:test_x+half_wid]
-        test = test_patch.mean(-1)
-        test = test/test.mean()
-
-        f, Pxx_den = signal.periodogram(test, fs)
-        plt.semilogy(f, Pxx_den)
-        plt.ylim([1e-7, 1])
-        plt.savefig(os.path.join(self.saving_dir, self.file_head + '_spectrum_withBG.png'))
-        plt.close()
-
-        test_patch = self.out[:, test_y, test_x-half_wid:test_x+half_wid]
-        test = test_patch.mean(-1)
-        test = test/test.mean()
-
-        f, Pxx_den = signal.periodogram(test, fs)
-        plt.semilogy(f, Pxx_den)
-        plt.ylim([1e-7, 1])
-        plt.savefig(os.path.join(self.saving_dir, self.file_head + '_spectrum_withoutBG.png'))
-        plt.close()
-
-    def save_out(self):
-        save_name = os.path.join(self.path[:-4] + '.tif')
-        imwrite(save_name, self.out.astype('float'))
-
 
 
 
@@ -207,20 +116,10 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     os.mkdir(tiffolder_path)
     pth_tif_pdn = os.path.join(tiffolder_path, tifname)
     print(pth_tif_pdn)
-    imwrite(pth_tif_pdn, Ynew.astype('float'), photometric='minisblack')
+    imwrite(pth_tif_pdn, Ynew.astype('float'), photometric='minisblack') #put the tif in the folder deepcad looks to for training data
 
 
-    #remove background line by line
-    br = BgRemover(pth_tif_pdn, half_wid=bg_patch_halfwidth)
-    br.draw_bg()
-    br.show_bg()
-    br.remove_bg()
-    br.show_spectrum(fs=180)
-    br.save_out()
-
-
-    stack = imread(pth_tif_pdn) #read the background-subtracted movie
-    Lt, Ly, Lx = stack.shape
+    Lt, Ly, Lx = Ynew.shape
     print(Lt)
     print(Ly)
     print(Lx)
@@ -269,7 +168,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
 
     test_datasize = Lt
     para_path_tmp = glob.glob(os.path.join(testfolder_path, '*.yaml'))[0]
-    denoise_model = para_path_tmp.split('/')[-2] #datetime.datetime.now().strftime("%Y%m%dT%H%M%S") #'stackraw2_202210240402'
+    denoise_model = para_path_tmp.split('/')[-2]
     para_path = glob.glob(os.path.join(tiffolder_path, denoise_model, '*.yaml'))[0]
 
     import yaml
@@ -316,7 +215,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         plt.axis('off')
         plt.show()
 
-    outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_02_*', '*output.tif'))[0]
+    outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_0' + str(n_epochs) + '_*', '*output.tif'))[0]
     pth_destination = pth_denoised + '/' + outtiff_path.split('/')[-1]
     if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it (full denoised 4d recording is reassembled in pth_out)
         os.remove(pth_destination)

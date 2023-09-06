@@ -16,8 +16,8 @@
 # for example, the line #SBATCH --array=[1-30] will run up to 30 jobs (or as many as recources allow) in parallel for recordings (date_fly_trial) with recording_index 1-30  
 
 # pipeline.py includes these options: 
-# --motion correction (with caiman NormCorre)
 # --background subtraction line-by-line (to remove stimulus bleedthrough), 
+# --motion correction (with caiman NormCorre)
 # --denoising (using deepcad), 
 # --source extraction (using caiman cNMF)
 # ------extraction can operate on 4d xyzt data (planar_extraction = False), or 3d data xyt (planar_extraction = True), where extraction operates on each z plane of the 4d data independently
@@ -28,7 +28,6 @@
 # ------if index_extraction_param_set is positive, only that param set index is run (if 'None', onlt the default param set is run) 
 # these subroutines can be run at separate times, or all in one sequence for example, motion correction for all files in a directory, then in another job, denoising for all those same files, then extraction
 # the denoising requires motion corrected input tif, and the extraction requires either the motion correction output tif, or the denoising output tif (depending on whether use_denoised is true of false)
-# background subtraction is built in to the denoising script denoise.py, and currently cannot be disabled (but would be simple to include the option)
 
 # input to pipeline are the big tif files output by ScanImage (precision is int16, not uint16), dimensions are tzyx
 # metadata is read from these same tif files 
@@ -62,14 +61,26 @@
 
 # these sbatch files are written to run on requeue-type partitions (using other people's resources), and will automatically requeue if preempted
 
-# before running any of the sbatch files mentioned above, caiman needs to be installed (follow instructions on their github)
+# before running any of the sbatch files mentioned above, caiman needs to be installed; to do that, log into O2 compute cluster and run these commands (you probably could use a lot less than -c 15 --mem=50G in the first command, but who cares)
+# srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
+# module purge
+# module load miniconda3/4.10.3
+# source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+# mamba create -n caiman -c conda-forge caiman
+
 # after that you also need to run the following commands (to install an extra package in the caiman environment) 
 # module load miniconda3/4.10.3
 # source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 # conda activate caiman
 # pip install scanimage-tiff-reader
 
-# before running denoise.py (from within in dnp.sbatch or directly on command line), deepcad and torch need to be installed (instructions on their github)
+# before running denoise.py (from within in dnp.sbatch or directly on command line), deepcad and torch need to be installed; to do that, run these commands on O2
+# srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
+# module purge
+# module load miniconda3/4.10.3
+# source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+# mamba create -n caiman -c conda-forge caiman
+
 # after that you also need to run the following commands (to install a couple extra packages in the deepcad environment) 
 # module load miniconda3/4.10.3
 # source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
@@ -122,11 +133,12 @@ logging.basicConfig(format=
 
 
 index_extraction_param_set = 0 #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
-recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '2' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
-do_motion_correction = False #caiman normCorre 
+do_background_subtraction = True
+do_motion_correction = True #caiman normCorre 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
 do_extraction = True #caiman source extraction 
@@ -134,6 +146,7 @@ do_planar_extraction = False #caiman source extraction for each plane independen
 do_cropping_session = False #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 recording_index = 0 #if 0, loop over all recordings in pth_allrec, if not 0, operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
+bg_patch_halfwidth = 8 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
 do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
@@ -162,11 +175,11 @@ if not os.path.exists(pth_denoised):
 
 
 if len(sys.argv)>1:
-  [index_extraction_param_set, region_extraction, do_motion_correction, 
+  [index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
   do_denoise, use_denoised, do_extraction, do_planar_extraction, 
   recdates,  fly, trial, do_cropping_session, 
   recording_index] = parse_command_line(index_extraction_param_set = index_extraction_param_set, 
-                      region_extraction = region_extraction, do_motion_correction = do_motion_correction, 
+                      region_extraction = region_extraction, do_background_subtraction = do_background_subtraction, do_motion_correction = do_motion_correction, 
                       do_denoise = do_denoise, use_denoised = use_denoised, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
                       recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, 
                       recording_index = recording_index)
@@ -218,6 +231,7 @@ for recording_date in recdates:
 
           if old_mat_files: #for my old project 
             fn_prefix = f[:-5]
+            pth_allrec_fnsave = pth_fldr + fn_prefix
             pth_tif_reg_tmp = []
             pth_tif_reg = pth_datafile
             pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
@@ -230,8 +244,8 @@ for recording_date in recdates:
             pth_md = [pth_allrec_fnsave + '_metadatanew_.mat']
             md = read_save_metadata(pth_datafile, pth_md)
 
-          pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_prefix, 
-                        pth_denoising, pth_denoised, md, do_motion_correction, do_denoise, use_denoised, 
+          pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
+                        pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, do_denoise, use_denoised, 
                         do_cropping_session, do_extraction, do_planar_extraction, region_extraction, 
                         do_plots, cluster_backend, do_cluster)
 

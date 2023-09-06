@@ -32,6 +32,7 @@ conda activate caiman
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
 --index_extraction_param_set 0 \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
+--do_background_subtraction 0 \
 --do_motion_correction 0 \
 --do_denoise 1 \
 --use_denoised 0 \

@@ -13,16 +13,17 @@ import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
 from helpers import crop_fov, tracefunc
+from subtract_background import bgremover
 
-def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, fn_prefix, 
-                      pth_denoising, pth_denoised, md, do_motion_correction, 
+def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
+                      pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
                       do_denoise, use_denoised, do_cropping_session, do_extraction, do_planar_extraction, 
                       region_extraction, do_plots, cluster_backend, do_cluster):
 
-    n_processes = 1
-    dview = None
-
-    ##########################   CAIMAN NORMCORRE MOTION CORRECTION   ##########################
+    n_processes = 1 #set this in case you don't (or can't) setup cluster 
+    dview = None #set this in case you don't (or can't) setup cluster
+    
+    ##########################   BACKGROUND SUBTRACTION AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
     if do_motion_correction and not do_cropping_session:
         
@@ -38,6 +39,23 @@ def pipeline(index_extraction_param_set, pth_datafile, pth_tif_reg_tmp, pth_tif_
         Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
         print("MIN BEFORE MOTION CORRECTION " + str(min_mov))
         
+        if do_background_subtraction:
+            
+            for zind in np.arange(5,6):#Y.shape[-1]): #for every z slice 
+
+                dimorder = 'txy'
+                pth_bgplot_save = pth_allrec_fnsave + '_' + str(zind)
+                br = bgremover(Y[:,:,:,zind], pth_bgplot_save, half_wid=bg_patch_halfwidth, dimorder=dimorder)
+                br.draw_patches()
+                br.remove_bg()
+                br.make_plots()
+                Y[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
+                    
+            min_mov = int(np.min(Y))
+            Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
+            print("MIN BEFORE MOTION CORRECTION, AFTER BG SUB " + str(min_mov))
+        
+                    
         imwrite(pth_tif_reg_tmp[0], Y) #write as t x y z
 
         if do_cluster:

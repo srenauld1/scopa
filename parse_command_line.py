@@ -3,7 +3,7 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(index_extraction_param_set, region_extraction, do_motion_correction, 
+def parse_command_line(index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
                        do_denoise, use_denoised, do_extraction, do_planar_extraction, 
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
@@ -21,6 +21,12 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_motion_
         nargs="*",  # 0 or more values expected => creates a list
         type=str,
         default=[region_extraction],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--do_background_subtraction",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=do_background_subtraction,  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_motion_correction",  # name on the CLI - drop the `--` for positional/required parameters
@@ -101,9 +107,9 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_motion_
     do_cropping_session = args.do_cropping_session[0]
     recording_index = args.recording_index[0]
 
-    return (index_extraction_param_set, region_extraction, do_motion_correction, 
-            do_denoise, use_denoised, do_extraction, do_planar_extraction, 
-            recdates, fly, trial, do_cropping_session, recording_index)
+    return (index_extraction_param_set, region_extraction, do_background_subtraction, 
+            do_motion_correction, do_denoise, use_denoised, do_extraction, 
+            do_planar_extraction, recdates, fly, trial, do_cropping_session, recording_index)
 
 
 
