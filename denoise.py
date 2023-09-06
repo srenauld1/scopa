@@ -66,8 +66,8 @@ from parse_command_line import parse_command_line_denoise
 
 
 # some default values
-pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_caimanreg_.tif' #file the be denoised 
-pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmregcaddn_.tif' #output file
+pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmnrg_.tif' #file the be denoised 
+pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmnrgcaddn_.tif' #output file
 pth_denoising = '/Users/wienecke/Documents/ambrose/denoising' #path for intermediate files created by deepcad
 pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (denoised) 3d files, prior to reassembling 
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
@@ -172,7 +172,7 @@ class BgRemover:
 
 
 
-if pth_in[0].endswith( '.mat'):
+if pth_in.endswith( '.mat'):
 
     mat = mat73.loadmat(pth_in)
     Y = mat['stackRaw_mc']
@@ -187,8 +187,7 @@ else:
 
     size_pre_denoise = Y.shape
 
-    zhack = 8
-    zind_all_dn = np.arange(zhack, Y.shape[-1])
+    zind_all_dn = np.arange(Y.shape[-1])
 
 
 print(pth_in)
@@ -337,10 +336,15 @@ for f in pth_denoised_singles: #loop over each denoised z slice and reassemble i
     Y[:,:,:,countz] = Ynew
     countz+=1
 
+if countz!=size_pre_denoise-1:
+    raise Exception("not all slices present")
+
 min_mov = int(np.min(Y))
 Y = Y - min_mov #make nonnegative for extraction later (not sure this is necessary)
 print("MIN AFTER DENOISING " + str(min_mov))
 Y = Y.astype('uint16')
 Y = np.transpose(Y, (0, 3, 1, 2))
+print(Y.shape)
 Y = Y.reshape(size_pre_denoise[0] * size_pre_denoise[3], size_pre_denoise[1], size_pre_denoise[2])
-imwrite(pth_out[0], Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+print(Y.shape)
+imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below

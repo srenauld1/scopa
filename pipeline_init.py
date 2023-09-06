@@ -88,7 +88,6 @@ import fnmatch
 import os
 import glob
 import logging
-import os
 from parse_command_line import parse_command_line
 
 from pipeline import pipeline
@@ -225,10 +224,9 @@ for recording_date in recdates:
           else:
             fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
             pth_allrec_fnsave = pth_fldr + fn_prefix
-            pth_tif_reg_tmp = [pth_allrec_fnsave + '_caimanregtmp_.tif']
-            pth_tif_reg = [pth_allrec_fnsave + '_caimanreg_.tif']
-            pth_tif_dn = [pth_allrec_fnsave + '_cmregcaddn_.tif']
-            pth_tif_dn = [pth_allrec_fnsave + '_cmregcaddn_.tif']
+            pth_tif_reg_tmp = [pth_allrec_fnsave + '_cmnrgtmp_.tif']
+            pth_tif_reg = [pth_allrec_fnsave + '_cmnrg_.tif']
+            pth_tif_dn = [pth_allrec_fnsave + '_cmnrgcaddn_.tif']
             pth_md = [pth_allrec_fnsave + '_metadatanew_.mat']
             md = read_save_metadata(pth_datafile, pth_md)
 
