@@ -9,6 +9,7 @@
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
+#SBATCH --requeue
 
 module purge
 module load python/3.10.11

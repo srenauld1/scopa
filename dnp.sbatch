@@ -9,13 +9,7 @@
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
-
-_requeue() {
-    echo "$(date): job $SLURM_JOBID re-queueing"
-    scontrol requeue $SLURM_JOBID
-}
-
-trap '_requeue' SIGUSR1 SIGTERM
+#SBATCH --requeue
 
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
