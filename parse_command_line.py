@@ -101,14 +101,20 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     print(args)
     
     index_extraction_param_set = args.index_extraction_param_set[0]
-    region_extraction = args.region_extraction #keep as list
+    if isinstance(args.region_extraction[0], list):
+        region_extraction = args.region_extraction[0] #keep as list
+    else:
+        region_extraction = args.region_extraction #keep as list
     do_motion_correction = args.do_motion_correction[0]
     do_denoise = args.do_denoise[0]
     denoise_slice_index = args.denoise_slice_index
     use_denoised = args.use_denoised[0]
     do_extraction = args.do_extraction[0]
     do_planar_extraction = args.do_planar_extraction[0]
-    recdates = args.recdates #keep as list
+    if isinstance(args.recdates[0], list):
+        recdates = args.recdates[0] #keep as list
+    else:
+        recdates = args.recdates #keep as list
     fly = args.fly[0]
     trial = args.trial[0]
     do_cropping_session = args.do_cropping_session[0]

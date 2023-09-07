@@ -20,11 +20,11 @@ elif (re.search('/content', env_path[0])):
 
 pth_super = '/'.join(pth_allrec.split('/')[:-2])
 
-patold = ['caimanreg', 'cmregcaddn', 'caimanex']
+patold = ['cnmr', 'cmregcaddn', 'caimanex']
 patnew = ['cmnrg', 'cmnrgcaddn', 'cmnex']
 
 for i,p in enumerate(patold):
-    fnall = sorted(glob.glob(pth_allrec + '*/*' + patold[i] + '*'))
+    fnall = sorted(glob.glob(pth_allrec + '*/*_' + patold[i] + '_*'))
 
     for f in fnall:
         print(f)
