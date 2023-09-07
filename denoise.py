@@ -235,7 +235,7 @@ for f in pth_denoised_singles: #loop over each denoised z slice and reassemble i
     Y[:,:,:,countz] = Ynew
     countz+=1
 
-if countz!=size_pre_denoise-1:
+if countz!=size_pre_denoise[3]-1:
     raise Exception("not all slices present")
 
 min_mov = int(np.min(Y))
