@@ -59,14 +59,15 @@ recdates = ['*'] #list of strings, as it appears in the directory and raw file f
 fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '2' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
-do_background_subtraction = True
-do_motion_correction = True #caiman normCorre 
+do_background_subtraction = False
+do_motion_correction = False #caiman normCorre 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+denoise_slice_index = 0 #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
-do_extraction = True #caiman source extraction 
+do_extraction = False #caiman source extraction 
 do_planar_extraction = False #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 do_cropping_session = False #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
-recording_index = 0 #if 0, loop over all recordings in pth_allrec, if not 0, operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
+recording_index = None #if None, loop over all recordings in pth_allrec, if not 0, operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 bg_patch_halfwidth = 8 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
@@ -98,11 +99,11 @@ if not os.path.exists(pth_denoised):
 
 if len(sys.argv)>1:
   [index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
-  do_denoise, use_denoised, do_extraction, do_planar_extraction, 
+  do_denoise, denoise_slice_index, use_denoised, do_extraction, do_planar_extraction, 
   recdates,  fly, trial, do_cropping_session, 
   recording_index] = parse_command_line(index_extraction_param_set = index_extraction_param_set, 
                       region_extraction = region_extraction, do_background_subtraction = do_background_subtraction, do_motion_correction = do_motion_correction, 
-                      do_denoise = do_denoise, use_denoised = use_denoised, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
+                      do_denoise = do_denoise, denoise_slice_index = denoise_slice_index, use_denoised = use_denoised, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
                       recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, 
                       recording_index = recording_index)
 
@@ -146,7 +147,7 @@ for recording_date in recdates:
       if fnmatch.fnmatch(f, fn_pattern):
 
         countz = countz + 1
-        if recording_index==0 or (recording_index!=0 and countz==recording_index): #if 0, do all files, otherwise only file matching index
+        if recording_index is None or (recording_index is not None and countz==recording_index): #if 0, do all files, otherwise only file matching index
           
           pth_datafile = pth_fldr + f
           print(pth_datafile)
@@ -167,8 +168,8 @@ for recording_date in recdates:
             md = read_save_metadata(pth_datafile, pth_md)
 
           pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
-                        pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, do_denoise, use_denoised, 
-                        do_cropping_session, do_extraction, do_planar_extraction, region_extraction, 
+                        pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, do_denoise, denoise_slice_index, 
+                        use_denoised, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, 
                         do_plots, cluster_backend, do_cluster)
 
 

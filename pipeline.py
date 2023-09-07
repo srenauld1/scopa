@@ -17,7 +17,7 @@ from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                       pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
-                      do_denoise, use_denoised, do_cropping_session, do_extraction, do_planar_extraction, 
+                      do_denoise, denoise_slice_index, use_denoised, do_cropping_session, do_extraction, do_planar_extraction, 
                       region_extraction, do_plots, cluster_backend, do_cluster):
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
@@ -96,7 +96,8 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fns
             + " --pth_denoising " + pth_denoising \
             + " --pth_denoised " + pth_denoised \
             + " --fn_prefix " + fn_prefix \
-            + " --dims " + ' '.join(map(str,  md['dims'])))
+            + " --dims " + ' '.join(map(str,  md['dims'])) \
+            + " --fn_prefix " + ' '.join(map(str,  denoise_slice_index)))
         
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################

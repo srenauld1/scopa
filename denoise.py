@@ -66,11 +66,11 @@ pth_denoising = '/Users/wienecke/Documents/ambrose/denoising' #path for intermed
 pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (denoised) 3d files, prior to reassembling 
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
+denoise_slice_index = [0]
 
-
-[pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims] = parse_command_line_denoise(pth_in = pth_in, pth_out = pth_out, 
+[pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index] = parse_command_line_denoise(pth_in = pth_in, pth_out = pth_out, 
                     pth_denoising = pth_denoising, pth_denoised = pth_denoised, 
-                    fn_prefix = fn_prefix, dims = dims)
+                    fn_prefix = fn_prefix, dims = dims, denoise_slice_index = denoise_slice_index)
 
 print(pth_in)
 print(pth_out)
@@ -78,6 +78,7 @@ print(pth_denoising)
 print(pth_denoised)
 print(fn_prefix)
 print(dims)
+print(denoise_slice_index)
 
 
 
@@ -96,7 +97,10 @@ else:
 
     size_pre_denoise = Y.shape
 
-    zind_all_dn = np.arange(Y.shape[-1])
+    if denoise_slice_index is None:
+        zind_all_dn = np.arange(Y.shape[-1])
+    else:
+        zind_all_dn = denoise_slice_index
 
 
 print(pth_in)
@@ -124,7 +128,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     print(Ly)
     print(Lx)
 
-    n_epochs = 5                # number of training epochs
+    n_epochs = 1                # number of training epochs
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     manual_max_dataset_size = 4000
     train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
