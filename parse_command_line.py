@@ -14,7 +14,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=index_extraction_param_set,  # default if nothing is provided
+        default=[index_extraction_param_set],  # default if nothing is provided
     )
     CLI.add_argument(
         "--region_extraction",  # name on the CLI - drop the `--` for positional/required parameters
@@ -26,19 +26,19 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         "--do_background_subtraction",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=do_background_subtraction,  # default if nothing is provided
+        default=[do_background_subtraction],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_motion_correction",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=do_motion_correction,  # default if nothing is provided
+        default=[do_motion_correction],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=do_denoise,  # default if nothing is provided
+        default=[do_denoise],  # default if nothing is provided
     )
     CLI.add_argument(
         "--denoise_slice_index",  # name on the CLI - drop the `--` for positional/required parameters
@@ -50,19 +50,19 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         "--use_denoised",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1,  
         type=int,
-        default=use_denoised,  # default if nothing is provided
+        default=[use_denoised],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_extraction",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=do_extraction,  # default if nothing is provided
+        default=[do_extraction],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_planar_extraction",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1,  
         type=int,
-        default=do_planar_extraction,  # default if nothing is provided
+        default=[do_planar_extraction],  # default if nothing is provided
     )
     CLI.add_argument(
         "--recdates",  # name on the CLI - drop the `--` for positional/required parameters
@@ -74,25 +74,25 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         "--fly",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=fly,  # default if nothing is provided
+        default=[fly],  # default if nothing is provided
     )
     CLI.add_argument(
         "--trial",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=trial,  # default if nothing is provided
+        default=[trial],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_cropping_session",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=do_cropping_session,  # default if nothing is provided
+        default=[do_cropping_session],  # default if nothing is provided
     )
     CLI.add_argument(
         "--recording_index",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=recording_index,  # default if nothing is provided
+        default=[recording_index],  # default if nothing is provided
     )
 
     args = CLI.parse_args()
