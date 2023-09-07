@@ -26,6 +26,7 @@ conda activate caiman
 for i in {0..2}
 do
     ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+    --do_denoise 1 \
     --denoise_slice_index $i \
     --recording_index $SLURM_ARRAY_TASK_ID &
 done
