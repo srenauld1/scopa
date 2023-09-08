@@ -112,13 +112,4 @@
  and it does not loop through recordings and region_extraction (one at a time, since the purpose of the ipynb pipeline is interactivity anyway)   
  as with the .py pipeline, the .ipynb pipeline needs to be run either for denoising or anything but denoising, for the same reasons 
  use the same environment configuration commands listed above for anything but denoising, 
- but for denoising in pipeline.ipynb, you must use a custom installation of jupyter (since O2 only has Jupyter installed against python 3.7, and deepcad requires 3.6)
- to install a python 3.6 jupyter notebook, run the following commands  
-
- srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
- module purge
- ml gcc/6.2.0
- ml python/3.6.0
- virtualenv jupytervenv
- source jupytervenv/bin/activate
- pip3 install jupyter jupyterlab
+ but for denoising in pipeline.ipynb, i have been unable to get the jupyter notebook to open on O2 (working on that still)

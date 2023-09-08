@@ -12,7 +12,7 @@
 
 # deepcad creates intermediate files that are saved in pth_denoising
 # each z slice of 4d volumetric input movie is passed to deepcad, saved separately in pth_denoised, 
-# then reassmbled as single output file pth_out, which is placed in same folder as input file pth_in 
+# outside this script, the separate denoised z slices are reassmbled as single output file pth_out, which is placed in same folder as input file pth_in 
 
 
 # before running denoise.py (in dnp.sbatch or directly on command line), deepcad and torch needs to be installed (instructions on their github)
@@ -110,9 +110,9 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     Ynew = Y[:,:,:,zii]
     dnfolder = fn_prefix + '_' + str(zii)
 
-    tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
-    sys.stdout = open(pth_denoising + '/' + tmpdate + '_stderrout.txt', 'w')
-    sys.stderr = sys.stdout
+    # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
+    # sys.stdout = open(pth_denoising + '/' + tmpdate + '_stderrout.txt', 'w')
+    # sys.stderr = sys.stdout
 
     print("denoising slice " + str(zii))
     print(Y.shape)
@@ -232,27 +232,3 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     shutil.move(outtiff_path, pth_denoised)
     shutil.rmtree(tiffolder_path)
 
-
-
-# Y = np.zeros(size_pre_denoise)
-# pth_denoised_singles = glob.glob(pth_denoised + '/' + fn_prefix + '*')
-# countz = 0
-# for f in pth_denoised_singles: #loop over each denoised z slice and reassemble into array matching shape of original 4d volume  
-#     print(countz)
-#     Ynew = imread(f)
-#     print(Ynew.dtype)
-#     Y[:,:,:,countz] = Ynew
-#     countz+=1
-
-# if countz!=size_pre_denoise[3]-1:
-#     raise Exception("not all slices present")
-
-# min_mov = int(np.min(Y))
-# Y = Y - min_mov #make nonnegative for extraction later (not sure this is necessary)
-# print("MIN AFTER DENOISING " + str(min_mov))
-# Y = Y.astype('uint16')
-# Y = np.transpose(Y, (0, 3, 1, 2))
-# print(Y.shape)
-# Y = Y.reshape(size_pre_denoise[0] * size_pre_denoise[3], size_pre_denoise[1], size_pre_denoise[2])
-# print(Y.shape)
-# imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below

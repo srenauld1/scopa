@@ -12,7 +12,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
-from helpers import crop_fov, tracefunc
+from helpers import crop_fov, tracefunc, stitch_denoised_slices
 from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
@@ -106,11 +106,13 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fns
     if do_extraction or do_cropping_session:
 
         if use_denoised: 
+            if not os.path.isfile(pth_tif_dn[0]): 
+                stitch_denoised_slices(pth_denoised, fn_prefix, pth_tif_dn[0], md['dims']) #stitch together denoised slices (tyx) into original size (tzyx)
             pth_exin = pth_tif_dn
         else:
             pth_exin = pth_tif_reg
 
-        Y = imread(pth_exin).astype('float32')
+        Y = imread(pth_exin[0]).astype('float32')
         Y = Y.reshape(md['dims'])
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         print(Y.shape)

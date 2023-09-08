@@ -15,6 +15,8 @@ import scipy.io as sio
 from numpy.core.records import fromarrays
 
 
+from tifffile.tifffile import imwrite, imread
+
 
 def select_fov(img):
 
@@ -46,7 +48,9 @@ def select_fov(img):
 
 
 def crop_fov(Y, fov_region, pth_img, dims):
-
+    
+    #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
+    
     try:
         
         fn_croplim_pattern = pth_img[0][:-4] + fov_region + '_croplim_.npy' #find file matching fov subregion with some crop lim 
@@ -114,6 +118,34 @@ def read_save_metadata(pth_datafile, pth_md):
     sio.savemat(pth_md[0], {'md': md}) #save for matlab part of pipeline 
     
     return mdt
+
+
+def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
+
+    #stitch together denoised slices (tyx) into original size (tzyx)
+    Y = np.zeros(dims_pre_denoise)
+    pth_denoised_singles = sorted(glob.glob(pth_denoised + '/' + fn_prefix + '*'))
+    for f in pth_denoised_singles: #loop over each denoised z slice and reassemble into array matching shape of original 4d volume  
+        sliceind = int(f.split('/')[-1].split('_')[3])
+        Ynew = imread(f)
+        print(Ynew.dtype)
+        print(sliceind)
+        Y[:,:,:,sliceind] = Ynew
+
+    if sliceind!=dims_pre_denoise[3]-1:
+        raise Exception("not all slices present")
+
+    min_mov = int(np.min(Y))
+    Y = Y - min_mov #make nonnegative for extraction later (not sure this is necessary)
+    print("MIN AFTER DENOISING " + str(min_mov))
+    Y = Y.astype('uint16')
+    Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
+    print(Y.shape)
+    Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[3], dims_pre_denoise[1], dims_pre_denoise[2])
+    print(Y.shape)
+    imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+
+
 
 def tracefunc(frame, event, arg, indent=[0]): # can get line number with frame.f_lineno
   
