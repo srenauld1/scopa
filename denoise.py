@@ -44,6 +44,8 @@ import os
 import glob
 import shutil
 import numpy as np
+import sys
+import datetime
 
 from tifffile.tifffile import imwrite, imread
 
@@ -80,7 +82,6 @@ print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
 
-
 if pth_in.endswith( '.mat'):
 
     mat = mat73.loadmat(pth_in)
@@ -107,11 +108,16 @@ print(zind_all_dn)
 for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this rather than using all z slices in reshaped data because noise varies across z)
 
     Ynew = Y[:,:,:,zii]
+    dnfolder = fn_prefix + '_' + str(zii)
+
+    tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
+    sys.stdout = open(dnfolder + '/' + tmpdate + '_stderrout.txt', 'w')
+    sys.stderr = sys.stdout
+
     print("denoising slice " + str(zii))
     print(Y.shape)
     print(Ynew.shape)
 
-    dnfolder = fn_prefix + '_' + str(zii)
     tifname = dnfolder + '_.tif'
     tiffolder_path = os.path.join(pth_denoising, dnfolder)
     testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')

@@ -122,10 +122,10 @@ print(trial)
 print(do_cropping_session)
 print(recording_index)
 
+
+
 countz = 0
 for recording_date in recdates:
-
-  tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
 
   pth_fldrs_pattern = pth_allrec + recording_date + '-' + fly + '_*/'
   fn_pattern = recording_date + '-' + fly + '*_trial_00' + trial + '_*.tif'
@@ -150,6 +150,11 @@ for recording_date in recdates:
         countz = countz + 1
         if recording_index is None or (recording_index is not None and countz==recording_index): #if 0, do all files, otherwise only file matching index
           
+
+          tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
+          sys.stdout = open(pth_fldr + '/' + tmpdate + '.txt', 'w')
+          sys.stderr = sys.stdout
+
           pth_datafile = pth_fldr + f
           print(pth_datafile)
 
