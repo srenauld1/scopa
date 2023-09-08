@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --time=2:00:00
 #SBATCH -p gpu_requeue
-#SBATCH --cpus-per-task=5
-#SBATCH --mem-per-cpu=20G
+#SBATCH --cpus-per-task=6
+#SBATCH --mem-per-cpu=15G
 #SBATCH --job-name=DNP3
-#SBATCH --gres=gpu:rtx6000:1
+#SBATCH --gres=gpu:a100:1,vram:80G
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
@@ -23,7 +23,7 @@ conda activate caiman
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-for i in {0..2}
+for i in {0..5}
 do
     ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
     --do_denoise 1 \

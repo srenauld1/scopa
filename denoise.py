@@ -110,9 +110,9 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     Ynew = Y[:,:,:,zii]
     dnfolder = fn_prefix + '_' + str(zii)
 
-    # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
-    # sys.stdout = open(dnfolder + '/' + tmpdate + '_stderrout.txt', 'w')
-    # sys.stderr = sys.stdout
+    tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
+    sys.stdout = open(dnfolder + '/' + tmpdate + '_stderrout.txt', 'w')
+    sys.stderr = sys.stdout
 
     print("denoising slice " + str(zii))
     print(Y.shape)
