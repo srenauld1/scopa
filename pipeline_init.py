@@ -63,8 +63,8 @@ do_background_subtraction = False
 do_motion_correction = False #caiman normCorre 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_slice_index = [0] #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-use_denoised = True #use the deepcad denoised data, or just the caiman registered data 
-do_extraction = True #caiman source extraction 
+use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
+do_extraction = False #caiman source extraction 
 do_planar_extraction = False #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 do_cropping_session = False #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 recording_index = 0 #if None, loop over all recordings in pth_allrec, if not 0, operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index

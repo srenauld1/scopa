@@ -5,10 +5,10 @@ class map2params():
         
         self.params = {}
         self.params['m2p_merge_thresh'] = [.3, .9]
-        self.params['m2p_gsig'] = [3, 4] #[2, 3, 4]
+        self.params['m2p_gsig'] = [2, 4] #[2, 3, 4]
         self.params['m2p_nb'] = [1]
-        self.params['SC_sigma'] = [1, 2, 4]
-        self.params['lambda_gnmf'] = [1, 2, 4]
+        self.params['SC_sigma'] = [1, 4]
+        self.params['lambda_gnmf'] = [1, 4]
         self.params['perc_baseline_snmf'] = [20,40] #10, 20, 40]
         self.params['max_iter_snmf'] = [1000]
 

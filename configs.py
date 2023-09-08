@@ -57,7 +57,7 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0,  md =
     nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy 
     extract_cc = True #true will throw away isolated pixels of some kind 
     
-    method_init = 'sparse_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources  
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources  
 
     max_iter_snmf = 1000
     perc_baseline_snmf = 20
@@ -71,7 +71,6 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0,  md =
     SC_normalize = True        # standardize entries prior to computing affinity matrix
     SC_use_NN = False          # sparsify affinity matrix by using only nearest neighbors
     SC_nnn = 20                # number of nearest neighbors to use if SC_use_NN = True
-
 
     low_rank_background = True #true makes bankground nb, false makes it update with hals
     update_background_components = True   #use this??
