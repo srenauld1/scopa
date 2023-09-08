@@ -151,9 +151,9 @@ for recording_date in recdates:
         if recording_index is None or (recording_index is not None and countz==recording_index): #if 0, do all files, otherwise only file matching index
           
 
-          tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
-          sys.stdout = open(pth_fldr + '/' + tmpdate + '.txt', 'w')
-          sys.stderr = sys.stdout
+          # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
+          # sys.stdout = open(pth_fldr + '/' + tmpdate + '.txt', 'w')
+          # sys.stderr = sys.stdout
 
           pth_datafile = pth_fldr + f
           print(pth_datafile)
