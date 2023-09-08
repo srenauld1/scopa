@@ -125,14 +125,16 @@ def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
     #stitch together denoised slices (tyx) into original size (tzyx)
     Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1])) #t y x z
     pth_denoised_singles = sorted(glob.glob(pth_denoised + '/' + fn_prefix + '*'))
+    countz = 0
     for f in pth_denoised_singles: #loop over each denoised z slice and reassemble into array matching shape of original 4d volume  
         sliceind = int(f.split('/')[-1].split('_')[3])
         Ynew = imread(f)
         print(Ynew.dtype)
         print(sliceind)
         Y[:,:,:,sliceind] = Ynew
+        countz = countz+1
 
-    if sliceind!=dims_pre_denoise[3]-1:
+    if countz!=dims_pre_denoise[3]-1:
         raise Exception("not all slices present")
 
     min_mov = int(np.min(Y))
