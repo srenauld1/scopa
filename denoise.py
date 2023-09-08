@@ -81,7 +81,6 @@ print(dims)
 print(denoise_slice_index)
 
 
-
 if pth_in.endswith( '.mat'):
 
     mat = mat73.loadmat(pth_in)

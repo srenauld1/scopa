@@ -107,7 +107,10 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         region_extraction = args.region_extraction #keep as list
     do_motion_correction = args.do_motion_correction[0]
     do_denoise = args.do_denoise[0]
-    denoise_slice_index = args.denoise_slice_index
+    if isinstance(args.denoise_slice_index[0], list):
+        denoise_slice_index = args.denoise_slice_index[0] #keep as list
+    else:
+        denoise_slice_index = args.denoise_slice_index #keep as list
     use_denoised = args.use_denoised[0]
     do_extraction = args.do_extraction[0]
     do_planar_extraction = args.do_planar_extraction[0]

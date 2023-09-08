@@ -97,7 +97,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fns
             + " --pth_denoised " + pth_denoised \
             + " --fn_prefix " + fn_prefix \
             + " --dims " + ' '.join(map(str,  md['dims'])) \
-            + " --fn_prefix " + ' '.join(map(str,  denoise_slice_index)))
+            + " --denoise_slice_index " + ' '.join(map(str,  denoise_slice_index)))
         
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
