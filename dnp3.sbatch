@@ -5,7 +5,7 @@
 #SBATCH --mem-per-cpu=15G
 #SBATCH --job-name=DNP3
 #SBATCH --gres=gpu:a100:1,vram:80G
-#SBATCH --array=[1]
+#SBATCH --array=[0]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -28,6 +28,9 @@ do
     ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
     --do_denoise 1 \
     --denoise_slice_index $i \
+    --recdates '20230627' \
+    --fly '2' \
+    --trial '2' \
     --recording_index $SLURM_ARRAY_TASK_ID &
 done
 
