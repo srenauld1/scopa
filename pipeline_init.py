@@ -59,8 +59,8 @@ recdates = ['20230627'] #list of strings, as it appears in the directory and raw
 fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '2' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
-do_background_subtraction = False
 do_motion_correction = False #caiman normCorre 
+do_background_subtraction = False #won't happen unless do_motion_correction = True 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_slice_index = [0] #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
