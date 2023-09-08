@@ -134,7 +134,7 @@ def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
         Y[:,:,:,sliceind] = Ynew
         countz = countz+1
 
-    if countz!=dims_pre_denoise[3]-1:
+    if countz!=dims_pre_denoise[1]-1:
         raise Exception("not all slices present")
 
     min_mov = int(np.min(Y))
