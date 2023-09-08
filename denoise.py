@@ -134,7 +134,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     print(Ly)
     print(Lx)
 
-    n_epochs = 1                # number of training epochs
+    n_epochs = 5                # number of training epochs
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     manual_max_dataset_size = 4000
     train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
