@@ -143,7 +143,7 @@ def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
     Y = Y.astype('uint16')
     Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
     print(Y.shape)
-    Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[3], dims_pre_denoise[1], dims_pre_denoise[2])
+    Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3])
     print(Y.shape)
     imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
 
