@@ -53,7 +53,7 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
     
     try:
         
-        fn_croplim_pattern = pth_prefix + '_' + fov_region + '_croplim_.npy' #find file matching fov subregion with some crop lim 
+        fn_croplim_pattern = pth_prefix + '_' + fov_region + '*_croplim_.npy' #find file matching fov subregion with some crop lim 
         fn_croplim = glob.glob(fn_croplim_pattern)
         if len(fn_croplim) > 1:
             raise Exception("too many crop files")
@@ -73,8 +73,8 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
         ylimits, xlimits = select_fov(Ymtz)
         tlimits = (1, dims[0])
         croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
-        limits_str = fov_region + '_' + str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-        fn_crop_lim = pth_prefix + '_' + fov_region + '_croplim_.npy'
+        limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
+        fn_crop_lim = pth_prefix + '_' + fov_region + '_' + limits_str + '_croplim_.npy'
         with open(fn_crop_lim, 'wb') as fncrop:
             np.save(fncrop, croplim)
 
