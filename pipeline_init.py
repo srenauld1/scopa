@@ -160,20 +160,20 @@ for recording_date in recdates:
 
           if old_mat_files: #for my old project 
             fn_prefix = f[:-5]
-            pth_allrec_fnsave = pth_fldr + fn_prefix
+            pth_prefix = pth_fldr + fn_prefix
             pth_tif_reg_tmp = []
             pth_tif_reg = pth_datafile
             pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
           else:
             fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
-            pth_allrec_fnsave = pth_fldr + fn_prefix
-            pth_tif_reg_tmp = [pth_allrec_fnsave + '_cmnrgtmp_.tif']
-            pth_tif_reg = [pth_allrec_fnsave + '_cmnrg_.tif']
-            pth_tif_dn = [pth_allrec_fnsave + '_cmnrgcaddn_.tif']
-            pth_md = [pth_allrec_fnsave + '_metadatanew_.mat']
+            pth_prefix = pth_fldr + fn_prefix
+            pth_tif_reg_tmp = [pth_prefix + '_cmnrgtmp_.tif']
+            pth_tif_reg = [pth_prefix + '_cmnrg_.tif']
+            pth_tif_dn = [pth_prefix + '_cmnrgcaddn_.tif']
+            pth_md = [pth_prefix + '_metadatanew_.mat']
             md = read_save_metadata(pth_datafile, pth_md)
 
-          pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
+          pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                         pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, do_denoise, denoise_slice_index, 
                         use_denoised, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, 
                         do_plots, cluster_backend, do_cluster)

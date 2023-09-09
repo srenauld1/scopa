@@ -15,7 +15,7 @@ from caiman_vis_custom import caiman_plots_all, compute_correlations
 from helpers import crop_fov, tracefunc, stitch_denoised_slices
 from subtract_background import bgremover
 
-def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fnsave, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
+def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                       pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
                       do_denoise, denoise_slice_index, use_denoised, do_cropping_session, do_extraction, do_planar_extraction, 
                       region_extraction, do_plots, cluster_backend, do_cluster):
@@ -44,7 +44,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fns
             for zind in np.arange(5,6):#Y.shape[-1]): #for every z slice 
 
                 dimorder = 'txy'
-                pth_bgplot_save = pth_allrec_fnsave + '_' + str(zind)
+                pth_bgplot_save = pth_prefix + '_' + str(zind)
                 br = bgremover(Y[:,:,:,zind], pth_bgplot_save, half_wid=bg_patch_halfwidth, dimorder=dimorder)
                 br.draw_patches()
                 br.remove_bg()
@@ -126,7 +126,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_allrec_fns
                 limits_str = ''
                 Ycrop = Y.copy()
             else:
-                Ycrop, limits_str = crop_fov(Y, rx, pth_exin, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
+                Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
 
             print(Ycrop.shape)
 
