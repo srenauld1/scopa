@@ -11,7 +11,7 @@ from map2params import map2params
 
 ##########################################################################################################################################
 
-def configs(index_extraction_param_set = None, fnames = None, min_mov = 0,  md = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
+def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,  md = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     
 
     #motion correction configs 
@@ -96,7 +96,7 @@ def configs(index_extraction_param_set = None, fnames = None, min_mov = 0,  md =
 
     stride_to_rf_ratio = 0.65
 
-    if index_extraction_param_set is not None: #create param set whose index matches value in index_extraction_param_set
+    if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         map_index_2_params = map2params()
         index_extraction_param_set = int(index_extraction_param_set)
         print('reading parameters from the index_extraction_param_set file')

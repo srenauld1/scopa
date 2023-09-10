@@ -54,7 +54,7 @@ logging.basicConfig(format=
 # export OPENBLAS_NUM_THREADS=1 #can't remember why i tried this, but i don't use it  
 
 
-index_extraction_param_set = 0 #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
+index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '2' #string, trial index_extraction_param_set, '*' for any 
@@ -62,12 +62,12 @@ region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names
 do_motion_correction = False #caiman normCorre 
 do_background_subtraction = False #won't happen unless do_motion_correction = True 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-denoise_slice_index = [0] #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+denoise_slice_index = 'all' #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
 do_extraction = False #caiman source extraction 
 do_planar_extraction = False #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 do_cropping_session = False #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
-recording_index = 0 #if None, loop over all recordings in pth_allrec, if not 0, operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
+recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all' (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 bg_patch_halfwidth = 8 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
@@ -86,7 +86,7 @@ elif (re.search("/home/users/wienecke/", env_path[0])):
 elif (re.search('/content', env_path[0])):
   pth_allrec = '/content/drive/MyDrive/stacks/'
   do_cluster = 1 #cluster worked on colab 
-  index_extraction_param_set = None #not set up for arguments in colab 
+  index_extraction_param_set = 'default' #not set up for arguments in colab 
 
 pth_super = '/'.join(pth_allrec.split('/')[:-2])
 pth_denoising = os.path.join(pth_super, 'denoising')
@@ -122,8 +122,6 @@ print(trial)
 print(do_cropping_session)
 print(recording_index)
 
-
-
 countz = 0
 for recording_date in recdates:
 
@@ -148,7 +146,7 @@ for recording_date in recdates:
       if fnmatch.fnmatch(f, fn_pattern):
 
         countz = countz + 1
-        if recording_index == 0 or (recording_index !=0 and countz==recording_index): #if 0, do all files, otherwise only file matching index
+        if recording_index == 'all' or (recording_index !='all' and countz==recording_index): #if 'all', do all files matching pattern, otherwise only file matching index
           
           # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
           # sys.stdout = open(pth_fldr + '/' + tmpdate + '.txt', 'w')
@@ -171,6 +169,7 @@ for recording_date in recdates:
             pth_tif_dn = [pth_prefix + '_cmnrgcaddn_.tif']
             pth_md = [pth_prefix + '_metadatanew_.mat']
             md = read_save_metadata(pth_datafile, pth_md)
+
 
           pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                         pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, do_denoise, denoise_slice_index, 

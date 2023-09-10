@@ -82,6 +82,8 @@ print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
 
+
+
 if pth_in.endswith( '.mat'):
 
     mat = mat73.loadmat(pth_in)
@@ -97,15 +99,28 @@ else:
 
     size_pre_denoise = Y.shape
 
-    if denoise_slice_index is None:
-        zind_all_dn = np.arange(Y.shape[-1])
+    fn_existing_denoised_slices = sorted(glob.glob(pth_denoised + '/' + fn_prefix + '*output.tif'))
+    if fn_existing_denoised_slices:
+        largest_denoised_slice_index = int(fn_existing_denoised_slices[-1].split('/')[-1].split('_')[3])
+        print(denoise_slice_index)
+        print("updating denoise slice index bc largest existing is " + str(largest_denoised_slice_index))
+        if denoise_slice_index=='all':
+            denoise_slice_index = np.arange(largest_denoised_slice_index + 1, Y.shape[-1])
+        else:
+            denoise_slice_index = [x + largest_denoised_slice_index for x in denoise_slice_index]
+        print(denoise_slice_index)
     else:
-        zind_all_dn = denoise_slice_index
+        if denoise_slice_index == 'all':
+            zind_all_dn = np.arange(size_pre_denoise[-1])
+        else:
+            zind_all_dn = denoise_slice_index
 
 
 print(pth_in)
 print(zind_all_dn)
 for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this rather than using all z slices in reshaped data because noise varies across z)
+
+    print("denoising slice " + str(zii))
 
     Ynew = Y[:,:,:,zii]
     dnfolder = fn_prefix + '_' + str(zii)
@@ -114,7 +129,6 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
     sys.stderr = sys.stdout
 
-    print("denoising slice " + str(zii))
     print(Y.shape)
     print(Ynew.shape)
 

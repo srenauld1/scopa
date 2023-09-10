@@ -62,7 +62,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             if 'dview' in locals(): cm.stop_server(dview=dview)
             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
-        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = None, fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = 'default', fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         #sys.setprofile(tracefunc)
@@ -142,8 +142,8 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                 Ycrop = np.reshape(Ycrop.T, [dim_time] + list(dims_spatial), order='F') 
                 print(Ycrop.shape)
 
-                if index_extraction_param_set is None:
-                    index_extraction_param_set_new = [None] #make it iterable with brackets
+                if index_extraction_param_set == 'default':
+                    index_extraction_param_set_new = ['default'] #make it iterable with brackets
                 elif index_extraction_param_set<0: #if negative, initiate loop over extraction params here, range [0 - index_extraction_param_set]
                     manual_start_ind = 0
                     index_extraction_param_set_new = np.arange(manual_start_ind, -index_extraction_param_set)
@@ -154,9 +154,10 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                 
                 for ii in index_extraction_param_set_new:
 
-                    try: #since some param sets will error
+                    try: #try, since some param sets will error
 
                         opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial) #param set for extraction
+                        fuk = muk
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #adjust images and some params for planar 

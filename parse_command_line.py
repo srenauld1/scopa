@@ -13,7 +13,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
-        type=int,
+        type=str,
         default=[index_extraction_param_set],  # default if nothing is provided
     )
     CLI.add_argument(
@@ -43,7 +43,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     CLI.add_argument(
         "--denoise_slice_index",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
-        type=int,
+        type=str,
         default=[denoise_slice_index],  # default if nothing is provided
     )
     CLI.add_argument(
@@ -91,7 +91,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     CLI.add_argument(
         "--recording_index",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
-        type=int,
+        type=str,
         default=[recording_index],  # default if nothing is provided
     )
 
@@ -100,7 +100,8 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     print("parsed command line arguments for pipeline_init.py")
     print(args)
     
-    index_extraction_param_set = args.index_extraction_param_set[0]
+    if args.index_extraction_param_set[0] != 'default':
+        index_extraction_param_set = int(args.index_extraction_param_set[0])
     if isinstance(args.region_extraction[0], list):
         region_extraction = args.region_extraction[0] #keep as list
     else:
@@ -121,7 +122,8 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     fly = args.fly[0]
     trial = args.trial[0]
     do_cropping_session = args.do_cropping_session[0]
-    recording_index = args.recording_index[0]
+    if args.recording_index[0] != 'all':
+        recording_index = int(args.recording_index[0])
 
     return (index_extraction_param_set, region_extraction, do_background_subtraction, 
             do_motion_correction, do_denoise, denoise_slice_index, use_denoised, do_extraction, 
@@ -188,6 +190,7 @@ def parse_command_line_denoise(pth_in, pth_out, pth_denoising, pth_denoised, fn_
     pth_denoised = args.pth_denoised[0]
     fn_prefix = args.fn_prefix[0]
     dims = list(map(int, args.dims))
-    denoise_slice_index = list(map(int, args.denoise_slice_index))
+    if denoise_slice_index != 'all':
+        denoise_slice_index = list(map(int, args.denoise_slice_index))
 
     return pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index
