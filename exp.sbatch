@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=5:00:00
+#SBATCH --time=11:55:00
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=30G
@@ -18,7 +18,7 @@ source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
---index_extraction_param_set -32 \
+--index_extraction_param_set -33 \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_background_subtraction 0 \
 --do_motion_correction 0 \
