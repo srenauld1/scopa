@@ -59,7 +59,7 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
             raise Exception("too many crop files")
         with open(fn_croplim[0], 'rb') as fnc:
             croplim = np.load(fnc)
-        limits_str = fov_region + '_' + str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
+        limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
 
     except:
         

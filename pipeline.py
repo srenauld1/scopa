@@ -132,7 +132,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
             if not do_cropping_session:
                 
-                pth_tif_ex = [pth_exin[0][:-4] + '_' + rx + '_' + limits_str + '_cmnex_.tif']
+                pth_tif_ex = [pth_exin[0][:-4] + rx + '_' + limits_str + '_cmnex_.tif']
                 imwrite(pth_tif_ex[0], Ycrop) #must imwrite it to memmap it, and must memmap it to use patches in extraction
                 basename_memap = pth_tif_ex[0].split('/')[-1][:-4]
                 border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 
