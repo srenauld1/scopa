@@ -1,0 +1,41 @@
+#!/bin/bash
+#SBATCH --time=2:00:00
+#SBATCH -p gpu_quad
+#SBATCH --cpus-per-task=15
+#SBATCH --mem-per-cpu=15G
+#SBATCH --job-name=DNP3
+#SBATCH --gres=gpu:a100:1,vram:80G
+#SBATCH --array=[0]
+#SBATCH --begin=now+10
+#SBATCH --dependency=singleton
+#SBATCH --signal=B:SIGUSR1@90
+#SBATCH --requeue
+
+echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
+
+module purge
+module load python/3.10.11
+module load miniconda3/4.10.3
+module load gcc/9.2.0
+module load cuda/11.7
+source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+conda activate caiman
+
+/n/cluster/bin/job_gpu_monitor.sh &
+
+for i in {0..14}
+do
+    ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+    --do_denoise 1 \
+    --denoise_slice_index $i \
+    --recdates '20230624' \
+    --fly '2' \
+    --trial '2' \
+    --recording_index $SLURM_ARRAY_TASK_ID &
+done
+
+wait
+sleep 1m
+date
+sleep 1m
+
