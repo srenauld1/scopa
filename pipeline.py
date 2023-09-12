@@ -157,7 +157,6 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                     try: #try, since some param sets will error
 
                         opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial) #param set for extraction
-                        fuk = muk
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #adjust images and some params for planar 
