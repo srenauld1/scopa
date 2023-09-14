@@ -47,13 +47,13 @@ def select_fov(img):
 
 
 
-def crop_fov(Y, fov_region, pth_prefix, dims):
+def crop_fov(Y, region_extraction, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
     
     try:
         
-        fn_croplim_pattern = pth_prefix + '_' + fov_region + '*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        fn_croplim_pattern = pth_prefix + '_' + region_extraction + '*_croplim_.npy' #find file matching fov subregion with some crop lim 
         fn_croplim = glob.glob(fn_croplim_pattern)
         if len(fn_croplim) > 1:
             raise Exception("too many crop files")
@@ -63,22 +63,30 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
 
     except:
         
-        Ymt = np.mean(Y, axis = 0)
-        if Ymt.shape[-1]==1: #only do z slice selection if the movie is volumetric 4d
-            zlimits = (1,1)
-            Ymtz = np.mean(Ymt, axis = 2)
+        if region_extraction == 'fullfov':
+       
+            croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
+            limits_str = '1_' + str(dims[0]) + '_1_' + str(dims[3]) + '_1_' + str(dims[2]) + '_1_' + str(dims[1])
+       
         else:
-            im_montage(Ymt)
-            print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges \
-                WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
-                OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
-            zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
-            Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]-1], axis = 2)
-        ylimits, xlimits = select_fov(Ymtz)
-        tlimits = (1, dims[0])
-        croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
+       
+            Ymt = np.mean(Y, axis = 0)
+            if Ymt.shape[-1]==1: #only do z slice selection if the movie is volumetric 4d
+                zlimits = (1,1)
+                Ymtz = np.mean(Ymt, axis = 2)
+            else:
+                im_montage(Ymt)
+                print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges \
+                    WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
+                    OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
+                zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
+                Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]-1], axis = 2)
+            ylimits, xlimits = select_fov(Ymtz)
+            tlimits = (1, dims[0])
+            croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
+            
         limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-        fn_crop_lim = pth_prefix + '_' + fov_region + '_' + limits_str + '_croplim_.npy'
+        fn_crop_lim = pth_prefix + '_' + region_extraction + '_' + limits_str + '_croplim_.npy'
         with open(fn_crop_lim, 'wb') as fncrop:
             np.save(fncrop, croplim)
 
@@ -92,26 +100,47 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
     return Y, limits_str
 
 
-def read_save_metadata(pth_datafile, pth_md, pth_md_npy):
+def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
 
-    # use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
-    meta = ScanImageTiffReader(pth_datafile).metadata()   
     mdt = {}
-    mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
-    mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
-    mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
-    mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta)[0])
-    mdt['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta)[0])
-    mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
-    mdt['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
-    fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta)[0].replace(" ",",").replace(";",","))
-    mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
-    mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
-    mdt['zwid'] = int(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
-    mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta)[0].replace(";",","))
-    mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
-    mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
-    mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta)[0])
+
+    if mat_file_shape is None:
+
+        # use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
+        meta = ScanImageTiffReader(pth_datafile).metadata()   
+        mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
+        mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
+        mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
+        mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta)[0])
+        mdt['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta)[0])
+        mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
+        mdt['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
+        fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta)[0].replace(" ",",").replace(";",","))
+        mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
+        mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
+        mdt['zwid'] = int(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
+        mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta)[0].replace(";",","))
+        mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
+        mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
+        mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta)[0])
+    
+    else:
+
+        mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is 1 because old project is not volumetric 
+        mdt['framerate'] = 20
+        mdt['volrate'] = 20
+        mdt['xpix'] = 256
+        mdt['xfov'] = 74
+        mdt['ypix'] = 128
+        mdt['yfov'] = 37
+        mdt['numslice'] = 1
+        mdt['numslice_withflyback'] = 1
+        mdt['numvol'] = mat_file_shape[0]
+        mdt['zfov'] = 1  #set to 1 to avoid division by zero later, even though it's not really 1
+        mdt['flyback'] = 0
+        mdt['zwid'] = 0
+        mdt['zstartpos'] = 0
+
 
     md = fromarrays( [ mdt['numvol'], mdt['numslice_withflyback'], mdt['numslice'], mdt['xpix'], \
         mdt['ypix'], mdt['flyback'], mdt['xfov'], mdt['yfov'], \
@@ -119,9 +148,9 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy):
         names = ['numvol', 'numslice_withflyback', 'numslice', 'xpix', 'ypix', 'flyback', \
             'xfov', 'yfov', 'zwid', 'zfov', 'framerate', 'volrate' ] )
 
-    sio.savemat(pth_md[0], {'md': md}) #save for matlab part of pipeline 
+    sio.savemat(pth_md, {'md': md}) #save for matlab part of pipeline 
     
-    with open(pth_md_npy, 'wb') as fnmd:
+    with open(pth_md_npy, 'wb') as fnmd: #and save as npy file for rest of python pipeline
         np.save(fnmd, mdt)
 
     return mdt
@@ -144,15 +173,15 @@ def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
     if countz!=dims_pre_denoise[1]:
         raise Exception("not all slices present")
 
-    min_mov = np.min(Y)
-    Y = Y - min_mov #make nonnegative for extraction later (not sure this is necessary)
-    print("MIN AFTER DENOISING " + str(min_mov))
+    mnmv = np.min(Y)
+    Y = Y - mnmv #make nonnegative before writing to uint16
+    print("MIN AFTER DENOISING " + str(mnmv))
     Y = Y.astype('uint16')
     Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
     print(Y.shape)
     Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
     print(Y.shape)
-    imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+    imwrite(pth_out, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
 

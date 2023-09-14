@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from map2params import map2params
+from map2params import map2params, map2params_t5
 
 ##########################################################################################################################################
 
@@ -11,29 +11,33 @@ from map2params import map2params
 
 ##########################################################################################################################################
 
-def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,  md = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
+def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,  
+            md = None, do_planar_extraction = None, dims_spatial_ex = 0):
     
-    #md['dims'] is dims of original fov, dims_spatial is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
+    #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
 
     #motion correction configs 
 
-    max_deviation_rigid = 3
     pw_rigid = False
     nonneg_movie = True
     min_mov = min_mov
     shifts_opencv = True #true uses intercubic interp, false uses fourier, but i think something else overrides this setting elsewhere 
+    upsample_factor_grid = 4 #default 4
+    niter_rig = 1 #default 1
+    max_deviation_rigid = 3
+    
     if md['dims'][1]==1:
         is3D_mc = False
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24)
         overlaps_mc = (12, 12)
-        max_shifts_mc = (4, 4)
+        max_shifts_mc = (8, 8)
     else:
         is3D_mc = True
         indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24, 6)
         overlaps_mc = (12, 12, 3)
-        max_shifts_mc = (4, 4, 2)
+        max_shifts_mc = (8, 8, 2)
 
     do_slices = False #my crop_fov is meant to replace this, so should always be false 
     if do_slices:
@@ -106,13 +110,18 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0, 
     stride_to_rf_ratio = 0.65
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
-        map_index_2_params = map2params()
+        if md['dims'][1]==1:
+            print("USING ALTERNATE MAP2PARAMS FOR OLD PROJECT")
+            map_index_2_params = map2params_t5()
+        else:
+            map_index_2_params = map2params()
+            
         index_extraction_param_set = int(index_extraction_param_set)
         print('reading parameters from the index_extraction_param_set file')
         merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(index_extraction_param_set)
         gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5
 
-    if dims_spatial[0]<50 and dims_spatial[1]<50 and dims_spatial[2]<50: #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
+    if np.all(np.array(dims_spatial_ex)<50): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
         do_patches = False
     else:
         do_patches = True
@@ -128,10 +137,10 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0, 
             k = int(np.round( (rf*2*rf*2) / ((gSig[0]*2+1)*(gSig[1]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
             #k = int(np.round(rf*rf / (gSig[0]*gSig[1])))
         else:
-            if rf*2<dims_spatial[-1]:
+            if rf*2<dims_spatial_ex[2]:
                 rfz = rf*2
             else:
-                rfz = dims_spatial[-1]
+                rfz = dims_spatial_ex[2]
             k = int(np.round( (rf*2*rf*2*rfz) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
         indices_ex = [slice(None), slice(None), slice(None)]
     else:                   # PROCESS THE WHOLE FOV AT ONCE
@@ -139,11 +148,11 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0, 
         stride_cnmf = None       # will run CNMF on the whole FOV
         p_patch = p
         nb_patch = nb
-        k = int(np.round( np.prod(dims_spatial) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
+        k = int(np.round( np.prod(dims_spatial_ex) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
 
-    dimstr = "3dex_"
+    dimstr = "3dex"
     if do_planar_extraction==True:        
-        dimstr = '2dex_'
+        dimstr = '2dex'
         indices_ex = indices_ex[:-1] #change from 3d to 2d 
         dxy = dxy[:-1] #change from 3d to 2d 
         gSig = gSig[:-1] #change from 3d to 2d 
@@ -157,7 +166,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0, 
     if do_planar_extraction==False:
         sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1, if 3d extraction, make small for coarse z samples
 
-    fnadd = '_' + str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + \
+    fnadd = str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + \
         '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
             + '_' + str(max_iter_snmf) + '_' + method_init.split('_')[0] + '_' + dimstr
 
@@ -175,6 +184,8 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0, 
                 'nonneg_movie':nonneg_movie,
                 'min_mov': min_mov,
                 'shifts_opencv':shifts_opencv, 
+                'niter_rig':niter_rig, 
+                'upsample_factor_grid':upsample_factor_grid, 
                 'fr': fr,
                 'p': p,
                 'nb': nb,

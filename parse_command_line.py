@@ -4,7 +4,7 @@ from ast import literal_eval
 
 
 def parse_command_line(index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
-                       do_denoise, denoise_slice_index, use_denoised, do_extraction, do_planar_extraction, 
+                       do_denoise, denoise_slice_index, do_extraction, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
     
@@ -47,12 +47,6 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         default=[denoise_slice_index],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--use_denoised",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[use_denoised],  # default if nothing is provided
-    )
-    CLI.add_argument(
         "--do_extraction",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
@@ -63,6 +57,18 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         nargs=1,  
         type=int,
         default=[do_planar_extraction],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--use_background_subtracted",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,  
+        type=int,
+        default=[use_background_subtracted],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--use_denoised",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,  
+        type=int,
+        default=[use_denoised],  # default if nothing is provided
     )
     CLI.add_argument(
         "--recdates",  # name on the CLI - drop the `--` for positional/required parameters
@@ -112,9 +118,10 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         denoise_slice_index = args.denoise_slice_index[0] #keep as list
     else:
         denoise_slice_index = args.denoise_slice_index #keep as list
-    use_denoised = args.use_denoised[0]
     do_extraction = args.do_extraction[0]
     do_planar_extraction = args.do_planar_extraction[0]
+    use_denoised = args.use_denoised[0]
+    use_background_subtracted = args.use_background_subtracted[0]
     if isinstance(args.recdates[0], list):
         recdates = args.recdates[0] #keep as list
     else:
@@ -126,8 +133,9 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         recording_index = int(args.recording_index[0])
 
     return (index_extraction_param_set, region_extraction, do_background_subtraction, 
-            do_motion_correction, do_denoise, denoise_slice_index, use_denoised, do_extraction, 
-            do_planar_extraction, recdates, fly, trial, do_cropping_session, recording_index)
+            do_motion_correction, do_denoise, denoise_slice_index, do_extraction, 
+            do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
+            fly, trial, do_cropping_session, recording_index)
 
 
 

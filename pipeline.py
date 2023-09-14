@@ -17,8 +17,8 @@ from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                       pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
-                      do_denoise, denoise_slice_index, use_denoised, do_cropping_session, do_extraction, do_planar_extraction, 
-                      region_extraction, do_plots, cluster_backend, do_cluster):
+                      do_denoise, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
+                      use_background_subtracted, use_denoised, region_extraction, do_plots, cluster_backend, do_cluster):
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
@@ -37,16 +37,16 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         #Y[540:600,4,:,:].play(magnification=2) #play in order t z y x
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         
-        min_mov = np.min(Y)
-        Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
-        print("MIN BEFORE MOTION CORRECTION " + str(min_mov))
+        mnmv = np.min(Y)
+        Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+        print("MIN BEFORE MOTION CORRECTION " + str(mnmv))
         
         if do_background_subtraction:
-            
-            if Y.shape[-1]==1: #if it's not volumetric
+                        
+            if Y.shape[3]==1: #if it's not volumetric
                 zindall = [0]
             else:
-                zindall = np.arange(Y.shape[-1])
+                zindall = np.arange(Y.shape[3])
 
             for zind in zindall: #for every z slice 
 
@@ -58,12 +58,12 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                 br.make_plots()
                 Y[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
                     
-            min_mov = np.min(Y)
-            Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
-            print("MIN BEFORE MOTION CORRECTION, AFTER BG SUB " + str(min_mov))
+            mnmv = np.min(Y)
+            Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+            print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
         
                     
-        imwrite(pth_tif_reg_tmp[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+        imwrite(pth_tif_reg_tmp, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
 
         if do_cluster:
             if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -74,27 +74,27 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         #sys.setprofile(tracefunc)
-        mc = cm.motion_correction.MotionCorrect(pth_tif_reg_tmp, dview=dview, **opts.get_group('motion'))
+        mc = cm.motion_correction.MotionCorrect([pth_tif_reg_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True)
-        os.remove(pth_tif_reg_tmp[0])
+        os.remove(pth_tif_reg_tmp)
 
         border_to_0 = 0 if mc.border_nan == 'copy' else mc.border_to_0 
-        basename_memap = pth_tif_reg[0].split('/')[-1][:-4]
+        basename_memap = pth_tif_reg.split('/')[-1][:-4]
         pth_mmap_reg = cm.save_memmap(mc.mmap_file, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # save in order C (motion_correct above has to save in order F)
-        Y, dims_spatial, dim_time = cm.load_memmap(pth_mmap_reg) 
-        Y = np.reshape(Y.T, [dim_time] + list(dims_spatial), order='F') 
+        Y, dims_spatial_rg, dim_time_rg = cm.load_memmap(pth_mmap_reg) 
+        Y = np.reshape(Y.T, [dim_time_rg] + list(dims_spatial_rg), order='F') 
         
-        min_mov_after_reg = np.min(Y)
-        Y = Y - min_mov_after_reg #make movie nonnegative for extraction (not sure this is necessary)
-        print("MIN AFTER MOTION CORRECTION " + str(min_mov_after_reg))
+        mnmv = np.min(Y)
+        Y = Y - mnmv #make nonnegative before writing to uint16
+        print("MIN AFTER MOTION CORRECTION " + str(mnmv))
 
         os.remove(mc.mmap_file[0]) #remove the mmap file in F order 
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
         
         if md['dims'][1]==1:
-            imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+            imwrite(pth_tif_reg, np.transpose(Y.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
         else:
-            imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+            imwrite(pth_tif_reg, np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
     ##########################   BACKGROUND SUBTRACTION AND DEEPCAD DENOISING   ##########################
@@ -102,8 +102,8 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
     if do_denoise and not do_cropping_session:
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise.py" \
-            + " --pth_in " + pth_tif_reg[0] \
-            + " --pth_out " + pth_tif_dn[0] \
+            + " --pth_in " + pth_tif_reg \
+            + " --pth_out " + pth_tif_dn \
             + " --pth_denoising " + pth_denoising \
             + " --pth_denoised " + pth_denoised \
             + " --fn_prefix " + fn_prefix \
@@ -117,13 +117,13 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
     if do_extraction or do_cropping_session:
 
         if use_denoised: 
-            if not os.path.isfile(pth_tif_dn[0]): 
-                stitch_denoised_slices(pth_denoised, fn_prefix, pth_tif_dn[0], md['dims']) #stitch together denoised slices (tyx) into original size (tzyx)
+            if not os.path.isfile(pth_tif_dn): 
+                stitch_denoised_slices(pth_denoised, fn_prefix, pth_tif_dn, md['dims']) #stitch together denoised slices (tyx) into original size (tzyx)
             pth_exin = pth_tif_dn
         else:
             pth_exin = pth_tif_reg
 
-        Y = imread(pth_exin[0]).astype('float32')
+        Y = imread(pth_exin).astype('float32')
         Y = Y.reshape(md['dims'])
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         print(Y.shape)
@@ -133,24 +133,24 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             print(pth_exin)
             print(rx)
 
-            if rx == '':
-                limits_str = ''
-                Ycrop = Y.copy()
-            else:
-                Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
+            Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
 
             print(Ycrop.shape)
 
             if not do_cropping_session:
                 
-                pth_tif_ex = [pth_exin[0][:-4] + rx + '_' + limits_str + '_cmnex_.tif']
-                imwrite(pth_tif_ex[0], Ycrop) #must imwrite it to memmap it, and must memmap it to use patches in extraction
-                basename_memap = pth_tif_ex[0].split('/')[-1][:-4]
+                pth_tif_ex = pth_exin[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
+                imwrite(pth_tif_ex, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
+                basename_memap = pth_tif_ex.split('/')[-1][:-4]
                 border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 
-                fn_mmap_ex = cm.save_memmap(pth_tif_ex, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
-                os.remove(pth_tif_ex[0])
-                Ycrop, dims_spatial, dim_time = cm.load_memmap(fn_mmap_ex)
-                Ycrop = np.reshape(Ycrop.T, [dim_time] + list(dims_spatial), order='F') 
+                fn_mmap_ex = cm.save_memmap([pth_tif_ex], base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
+                os.remove(pth_tif_ex)
+                Ycrop, dims_spatial_ex, dim_time_ex = cm.load_memmap(fn_mmap_ex) #if 3d mmap should be 3d, but Ycrop gets singleton 4th dim (z) added below so the code is more readable
+                Ycrop = np.reshape(Ycrop.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
+                
+                if len(Ycrop.shape)==3: #if it's not volumetric
+                    Ycrop = Ycrop[...,np.newaxis] #add singleton 4th dim (z) so the code is more readable 
+                
                 print(Ycrop.shape)
 
                 if index_extraction_param_set == 'default':
@@ -167,15 +167,15 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
                     try: #try, since some param sets will error
 
-                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial = dims_spatial) #param set for extraction
+                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial_ex = dims_spatial_ex) #param set for extraction
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #adjust images and some params for planar 
-                            sliceindz = np.arange(Ycrop.shape[-1])
-                            dims_roimask_spatial = (dims_spatial[0], dims_spatial[1])
+                            sliceindz = np.arange(Ycrop.shape[3])
+                            dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1])
                         else:
-                            sliceindz = [np.arange(Ycrop.shape[-1])] #all slices (not planar)
-                            dims_roimask_spatial = (dims_spatial[0], dims_spatial[1], dims_spatial[2])
+                            sliceindz = [np.arange(Ycrop.shape[3])] #all slices in one list (not planar)
+                            dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1], dims_spatial_ex[2])
 
                         countz = 0
                         for si in sliceindz: #for each slice (or all slices if do_planar_extraction = false)
@@ -218,12 +218,12 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                             cnm2.estimates.select_components(use_object=True, save_discarded_components=False)
 
                             if do_plots:
-                                caiman_plots_all(cnm2, opts, images_sliced, dims_spatial, do_planar_extraction)
+                                caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction)
 
                             if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                                padnum = 10
-                                padnum_b = 3
+                                padnum = 0
+                                padnum_b = 0
                                 numroi_stack_pad = cnm2.estimates.A.shape[-1] + padnum #extra since it can vary a little across fits (even above input k)
                                 dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
                                 dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1] + padnum_b, ) )
@@ -279,19 +279,19 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                         #mdict['idxbad'] = stack_idx_bad
                         
                         if np.any(stack_masks):
-                            pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_.mat']
+                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + 'rois_.mat'
                         else:
                             mdict = {}
                             print("norois")
-                            pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_NOROIS_.mat']
+                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + 'rois_NOROIS_.mat'
 
                     except Exception as error:
                         
                         mdict = {}
-                        pth_mat_ex = [pth_tif_ex[0][:-5] + fnadd + 'rois_FAILURE_.mat']
+                        pth_mat_ex = pth_tif_ex[:-8] + fnadd + 'rois_FAILURE_.mat'
                         print("An exception occurred:", type(error).__name__, "-", error) 
 
                     
-                    sio.savemat(pth_mat_ex[0], mdict)
+                    sio.savemat(pth_mat_ex, mdict)
 
                     if dview is not None: cm.stop_server(dview=dview)

@@ -23,9 +23,10 @@ conda activate caiman
 --do_background_subtraction 0 \
 --do_motion_correction 0 \
 --do_denoise 0 \
---use_denoised 1 \
 --do_extraction 1 \
 --do_planar_extraction 0 \
+--use_background_subtracted 0 \
+--use_denoised 0 \
 --recdates '20230627' \
 --fly '2' \
 --trial '2' \

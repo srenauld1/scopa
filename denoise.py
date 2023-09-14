@@ -62,8 +62,8 @@ from parse_command_line import parse_command_line_denoise
 
 
 # some default values
-pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmnrg_.tif' #file the be denoised 
-pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmnrgcaddn_.tif' #output file
+pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmrg_.tif' #file the be denoised 
+pth_out = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmrg_dcdn_.tif' #output file
 pth_denoising = '/Users/wienecke/Documents/ambrose/denoising' #path for intermediate files created by deepcad
 pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (denoised) 3d files, prior to reassembling 
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
