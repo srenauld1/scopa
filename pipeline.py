@@ -278,16 +278,16 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                         #mdict['idxbad'] = stack_idx_bad
                         
                         if np.any(stack_masks):
-                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + 'rois_.mat'
+                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_.mat'
                         else:
                             mdict = {}
                             print("norois")
-                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + 'rois_NOROIS_.mat'
+                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_NOROIS_.mat'
 
                     except Exception as error:
                         
                         mdict = {}
-                        pth_mat_ex = pth_tif_ex[:-8] + fnadd + 'rois_FAILURE_.mat'
+                        pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_FAILURE_.mat'
                         print("An exception occurred:", type(error).__name__, "-", error) 
 
                     
