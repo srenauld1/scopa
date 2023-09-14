@@ -46,7 +46,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             if Y.shape[-1]==1: #if it's not volumetric
                 zindall = [0]
             else:
-                zindall = Y.shape[-1]
+                zindall = np.arange(Y.shape[-1])
 
             for zind in zindall: #for every z slice 
 
@@ -63,12 +63,13 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             print("MIN BEFORE MOTION CORRECTION, AFTER BG SUB " + str(min_mov))
         
                     
-        imwrite(pth_tif_reg_tmp[0], Y) #write as t x y z
+        imwrite(pth_tif_reg_tmp[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
 
         if do_cluster:
             if 'dview' in locals(): cm.stop_server(dview=dview)
             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
+        min_mov = np.min(Y)
         opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = 'default', fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
@@ -90,7 +91,10 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         os.remove(mc.mmap_file[0]) #remove the mmap file in F order 
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
         
-        imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+        if md['dims'][1]==1:
+            imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+        else:
+            imwrite(pth_tif_reg[0], np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time * dims_spatial[2], dims_spatial[1], dims_spatial[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
     ##########################   BACKGROUND SUBTRACTION AND DEEPCAD DENOISING   ##########################

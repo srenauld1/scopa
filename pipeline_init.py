@@ -63,8 +63,8 @@ recdates = ['221120'] #list of strings, as it appears in the directory and raw f
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
-do_motion_correction = False #caiman normCorre 
-do_background_subtraction = False #won't happen unless do_motion_correction = True 
+do_motion_correction = True #caiman normCorre 
+do_background_subtraction = True #won't happen unless do_motion_correction = True 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_slice_index = 'all' #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
@@ -190,7 +190,7 @@ for recording_date in recdates:
                 min_mov = np.min(Y)
                 Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
                 print("MIN OF STACKRAW_MC DENOISED MAT FILE " + str(min_mov))
-                Y = np.transpose(Y, (2, 1, 0)) #put in order t x y
+                Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y)
                 pth_datafile = pth_datafile[:-4] + '.tif'
                 imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
               else:
@@ -203,8 +203,15 @@ for recording_date in recdates:
 
 
               md = {}
-              md['dims'] = [Y.shape[0], 1, Y.shape[2], Y.shape[1]] #z size (2nd dim) is 1 because old project is not volumetric 
+              md['dims'] = [Y.shape[0], 1, Y.shape[1], Y.shape[2]] #z size (2nd dim) is 1 because old project is not volumetric 
               md['flyback'] = 0
+              md['volrate'] = 20
+              md['xpix'] = 256
+              md['xfov'] = 74
+              md['ypix'] = 128
+              md['yfov'] = 37
+              md['numslice'] = 1
+              md['zfov'] = 1 
               sio.savemat(pth_md[0], {'md': md}) #save for matlab part of pipeline 
               with open(pth_md_npy, 'wb') as fnmd:
                 np.save(fnmd, md)
