@@ -61,8 +61,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             mnmv = np.min(Y)
             Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
             print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
-        
-                    
+                            
         imwrite(pth_tif_reg_tmp, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
 
         if do_cluster:
