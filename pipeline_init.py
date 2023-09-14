@@ -16,9 +16,13 @@ import os
 import glob
 import logging
 from parse_command_line import parse_command_line
-
+import mat73
+import numpy as np
 from pipeline import pipeline
 from helpers import read_save_metadata
+from tifffile.tifffile import imwrite
+import scipy.io as sio
+
 
 print(sys.executable)
 env_path = sys.path
@@ -55,16 +59,16 @@ logging.basicConfig(format=
 
 
 index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
-recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '2' #string, fly index_extraction_param_set, '*' for any 
-trial = '2' #string, trial index_extraction_param_set, '*' for any 
+recdates = ['221120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = '*' #string, fly index_extraction_param_set, '*' for any 
+trial = '*' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use [''] to extract from entire FOV
 do_motion_correction = False #caiman normCorre 
 do_background_subtraction = False #won't happen unless do_motion_correction = True 
 do_denoise = False #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_slice_index = 'all' #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 use_denoised = False #use the deepcad denoised data, or just the caiman registered data 
-do_extraction = False #caiman source extraction 
+do_extraction = True #caiman source extraction 
 do_planar_extraction = False #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 do_cropping_session = False #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all' (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
@@ -131,8 +135,8 @@ for recording_date in recdates:
   old_mat_files = 0
   if not pth_fldrs:  #if no matches try another filename pattern (files from previous project)
     old_mat_files = 1
-    pth_fldrs_pattern = pth_allrec + recording_date + '_' + fly + '/'
-    fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_mc_.mat'
+    pth_fldrs_pattern = pth_allrec + recording_date + '_' + fly + '_*/'
+    fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackRaw_*_.mat'
     pth_fldrs = sorted(glob.glob(pth_fldrs_pattern))
 
   for pth_fldr in pth_fldrs:
@@ -155,25 +159,68 @@ for recording_date in recdates:
           pth_datafile = pth_fldr + f
           print(pth_datafile)
 
-          if old_mat_files: #for my old project 
-            fn_prefix = f[:-5]
-            pth_prefix = pth_fldr + fn_prefix
-            pth_tif_reg_tmp = []
-            pth_tif_reg = pth_datafile
-            pth_tif_dn = pth_datafile[:-4] + 'dn_.tif'
+          if old_mat_files:
+            fn_prefix = '_'.join(f.split('_')[:3])
           else:
             fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
-            pth_prefix = pth_fldr + fn_prefix
-            pth_tif_reg_tmp = [pth_prefix + '_cmnrgtmp_.tif']
-            pth_tif_reg = [pth_prefix + '_cmnrg_.tif']
-            pth_tif_dn = [pth_prefix + '_cmnrgcaddn_.tif']
-            pth_md = [pth_prefix + '_metadatanew_.mat']
-            md = read_save_metadata(pth_datafile, pth_md)
+          
+          pth_prefix = pth_fldr + fn_prefix
+          pth_tif_dn = [pth_prefix + '_cmnrgcaddn_.tif']          
+          pth_tif_reg_tmp = [pth_prefix + '_cmnrgtmp_.tif']
+          pth_tif_reg = [pth_prefix + '_cmnrg_.tif']
+          pth_md = [pth_prefix + '_metadatanew_.mat']
+          pth_md_npy = pth_md[0][:-4] + '.npy'
+
+          if old_mat_files: #for my old project 
+
+            do_background_subtraction = 1
+            do_denoise = 1
+            use_denoised = 1
+            do_motion_correction = 1
+            do_planar_extraction = 1
+            region_extraction = ['pre', 'post'] 
+
+            if os.path.isfile(pth_md_npy): #denoise file is default right now for old project
+                md = np.load(pth_md_npy, allow_pickle='TRUE').item() #if it exists, the md file will too 
+                pth_datafile = pth_datafile[:-4] + '.tif'
+            else:
+              mat = mat73.loadmat(pth_datafile)
+              if do_motion_correction:
+                Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
+                min_mov = np.min(Y)
+                Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
+                print("MIN OF STACKRAW_MC DENOISED MAT FILE " + str(min_mov))
+                Y = np.transpose(Y, (2, 1, 0)) #put in order t x y
+                pth_datafile = pth_datafile[:-4] + '.tif'
+                imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
+              else:
+                Y = mat['stackRaw_mc'] # Y = mat['stackRaw_mc']
+                min_mov = np.min(Y)
+                Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
+                print("MIN OF STACKRAW_MC DENOISED MAT FILE " + str(min_mov))
+                Y = np.transpose(Y, (2, 0, 1)) #put in order t x y
+                imwrite(pth_tif_dn[0], Y.astype('uint16')) #write as t x y z (singleton z at end)
+
+
+              md = {}
+              md['dims'] = [Y.shape[0], 1, Y.shape[2], Y.shape[1]] #z size (2nd dim) is 1 because old project is not volumetric 
+              md['flyback'] = 0
+              sio.savemat(pth_md[0], {'md': md}) #save for matlab part of pipeline 
+              with open(pth_md_npy, 'wb') as fnmd:
+                np.save(fnmd, md)
+
+          else:
+            
+            fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
+            if os.path.isfile(pth_md_npy):
+               md = np.load(pth_md_npy, allow_pickle='TRUE').item()
+            else:
+               md = read_save_metadata(pth_datafile, pth_md, pth_md_npy)
 
 
           pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
-                        pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, do_denoise, denoise_slice_index, 
-                        use_denoised, do_cropping_session, do_extraction, do_planar_extraction, region_extraction, 
-                        do_plots, cluster_backend, do_cluster)
+                        pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
+                        do_denoise, denoise_slice_index, use_denoised, do_cropping_session, do_extraction, do_planar_extraction, 
+                        region_extraction, do_plots, cluster_backend, do_cluster)
 
 

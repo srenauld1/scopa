@@ -64,12 +64,16 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
     except:
         
         Ymt = np.mean(Y, axis = 0)
-        im_montage(Ymt)
-        print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges \
-               WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
-              OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
-        zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
-        Ymtz = np.mean(Ymt[:,:,zlimits[0]:zlimits[1]], axis = 2)
+        if Ymt.shape[-1]==1: #only do z slice selection if the movie is volumetric 4d
+            zlimits = (1,1)
+            Ymtz = np.mean(Ymt, axis = 2)
+        else:
+            im_montage(Ymt)
+            print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges \
+                WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
+                OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
+            zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
+            Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]-1], axis = 2)
         ylimits, xlimits = select_fov(Ymtz)
         tlimits = (1, dims[0])
         croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
@@ -88,7 +92,7 @@ def crop_fov(Y, fov_region, pth_prefix, dims):
     return Y, limits_str
 
 
-def read_save_metadata(pth_datafile, pth_md):
+def read_save_metadata(pth_datafile, pth_md, pth_md_npy):
 
     # use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
     meta = ScanImageTiffReader(pth_datafile).metadata()   
@@ -117,6 +121,9 @@ def read_save_metadata(pth_datafile, pth_md):
 
     sio.savemat(pth_md[0], {'md': md}) #save for matlab part of pipeline 
     
+    with open(pth_md_npy, 'wb') as fnmd:
+        np.save(fnmd, mdt)
+
     return mdt
 
 
@@ -137,13 +144,13 @@ def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
     if countz!=dims_pre_denoise[1]:
         raise Exception("not all slices present")
 
-    min_mov = int(np.min(Y))
+    min_mov = np.min(Y)
     Y = Y - min_mov #make nonnegative for extraction later (not sure this is necessary)
     print("MIN AFTER DENOISING " + str(min_mov))
     Y = Y.astype('uint16')
     Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
     print(Y.shape)
-    Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3])
+    Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
     print(Y.shape)
     imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
 

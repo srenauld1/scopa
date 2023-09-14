@@ -13,6 +13,7 @@ from map2params import map2params
 
 def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,  md = None, do_planar_extraction = None, dims_spatial = (1,1,1)):
     
+    #md['dims'] is dims of original fov, dims_spatial is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
 
     #motion correction configs 
     strides_mc = (24, 24, 6)
@@ -20,10 +21,13 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0, 
     max_shifts_mc = (4, 4, 2)
     max_deviation_rigid = 3
     pw_rigid = False
-    is3D_mc = True
+    if md['dims'][1]==1:
+        is3D_mc = False
+    else:
+        is3D_mc = True
     nonneg_movie = True
     min_mov = min_mov
-    shifts_opencv = True 
+    shifts_opencv = True #true uses intercubic interp, false uses fourier, but i think something else overrides this setting elsewhere 
     indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
 
     do_slices = False #my crop_fov is meant to replace this, so should always be false 

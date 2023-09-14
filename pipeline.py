@@ -31,19 +31,26 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         
         Y = Y.reshape(md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
             
-        Y = Y[:,:-md['flyback'],:,:] #crop md['flyback'] frames
+        if md['flyback']!=0:    
+            Y = Y[:,:-md['flyback'],:,:] #crop md['flyback'] frames
+
         #Y[540:600,4,:,:].play(magnification=2) #play in order t z y x
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         
-        min_mov = int(np.min(Y))
+        min_mov = np.min(Y)
         Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
         print("MIN BEFORE MOTION CORRECTION " + str(min_mov))
         
         if do_background_subtraction:
             
-            for zind in np.arange(5,6):#Y.shape[-1]): #for every z slice 
+            if Y.shape[-1]==1: #if it's not volumetric
+                zindall = [0]
+            else:
+                zindall = Y.shape[-1]
 
-                dimorder = 'txy'
+            for zind in zindall: #for every z slice 
+
+                dimorder = 'txy' 
                 pth_bgplot_save = pth_prefix + '_' + str(zind)
                 br = bgremover(Y[:,:,:,zind], pth_bgplot_save, half_wid=bg_patch_halfwidth, dimorder=dimorder)
                 br.draw_patches()
@@ -51,7 +58,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
                 br.make_plots()
                 Y[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
                     
-            min_mov = int(np.min(Y))
+            min_mov = np.min(Y)
             Y = Y - min_mov #make movie nonnegative (not sure this is necessary)
             print("MIN BEFORE MOTION CORRECTION, AFTER BG SUB " + str(min_mov))
         
@@ -76,7 +83,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         Y, dims_spatial, dim_time = cm.load_memmap(pth_mmap_reg) 
         Y = np.reshape(Y.T, [dim_time] + list(dims_spatial), order='F') 
         
-        min_mov_after_reg = int(np.min(Y))
+        min_mov_after_reg = np.min(Y)
         Y = Y - min_mov_after_reg #make movie nonnegative for extraction (not sure this is necessary)
         print("MIN AFTER MOTION CORRECTION " + str(min_mov_after_reg))
 
