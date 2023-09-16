@@ -46,6 +46,7 @@ import shutil
 import numpy as np
 import sys
 import datetime
+import re
 
 from tifffile.tifffile import imwrite, imread
 
@@ -84,9 +85,9 @@ print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
 
-#@title denoise (each z slice independently)
-denoise_slice_index = 'all'
-do_volume = 1
+env_path = sys.path
+
+do_volume = 1 #DENOISE ALL Z SLICES TOGETHER (BETTER IF YOU DON'T HAVE MANY FRAMES)
 
 if pth_in.endswith( '.mat'):
 
@@ -99,14 +100,7 @@ else:
 
     Y = imread(pth_in).astype('float32')
     Y = Y.reshape(dims)
-    
-    if do_volume: #swap t and z, then collapse, then create fake singleton z in 4th dim (just a few training pairs will be mismatched then, right?)
-        Y = np.transpose(Y, (1, 0, 2, 3)) 
-        Y = Y.reshape(dims[1]*dims[0], dims[2], dims[3]) 
-        Y = Y[..., np.newaxis]
-        denoise_slice_index = 'all' #override whatever value this has if collapsing t and z 
-    else: #otherwise just transpose to put real z at end, and denoise each slice 
-        Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
+    Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
     size_pre_denoise = Y.shape
 
@@ -129,45 +123,60 @@ else:
 
 print(pth_in)
 print(zind_all_dn)
-print(Y.shape)
-for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this rather than using all z slices in reshaped data because noise varies across z)
 
-    print("denoising slice " + str(zii))
-
+pth_trainset_all = ['']*len(zind_all_dn)
+pth_testset_all = ['']*len(zind_all_dn)
+countz = -1
+for zii in zind_all_dn: #organize slices into separate tifs, in one folder (train on all slices) or separate (train on z subset)
+    
     Ynew = Y[:,:,:,zii]
-    dnfolder = fn_prefix + '_' + str(zii)
+    Lt, Ly, Lx = Ynew.shape #don't need to index these they should be the same
+    if countz>-1 and prev_shape != Ynew.shape:
+        raise Exception("dims changed")
+    prev_shape = Ynew.shape
+    print(Lt)
+    print(Ly)
+    print(Lx)
+    #manual_max_dataset_size = 6000
+    #train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
+    train_datasets_size = int(np.ceil(Lt*.8))  # datasets size for training (how many 3D patches)
+    train_datasets_size = 40000
+    patch_x = int(np.ceil(Lx/4)) #
+    patch_y = int(np.ceil(Ly/4)) #
+    patch_t = 300  
+    
+    if do_volume:
+        dnfolder_insert = 'all'
+        countz = 0
+        pth_trainset_all = ['']
+        pth_testset_all = ['']
+    else:
+        dnfolder_insert = str(zii)
+        countz = countz + 1
+
+    dnfolder = fn_prefix + '_' + dnfolder_insert
+    tifname = fn_prefix + '_' + str(zii) + '_.tif'
 
     # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
     # sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
     # sys.stderr = sys.stdout
 
-    print(Y.shape)
-    print(Ynew.shape)
-
-    tifname = dnfolder + '_.tif'
-    tiffolder_path = os.path.join(pth_denoising, dnfolder)
-    testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')
-    if os.path.exists(tiffolder_path):
-        shutil.rmtree(tiffolder_path) #just remove it because for some reason existing timestamped folders deepcad creates can cause error
-    os.mkdir(tiffolder_path)
-    pth_tif_pdn = os.path.join(tiffolder_path, tifname)
+    pth_trainset_all[countz] = os.path.join(pth_denoising, dnfolder)
+    pth_testset_all[countz] = os.path.join(pth_trainset_all[countz], dnfolder + '_*')
+    if os.path.exists(pth_trainset_all[countz]):
+        shutil.rmtree(pth_trainset_all[countz]) #just remove it because for some reason existing timestamped folders deepcad creates can cause error
+    os.mkdir(pth_trainset_all[countz])
+    pth_tif_pdn = os.path.join(pth_trainset_all[countz], tifname)
     print(pth_tif_pdn)
-    imwrite(pth_tif_pdn, Ynew.astype('float'), photometric='minisblack') #put the tif in the folder deepcad looks to for training data
+    imwrite(pth_tif_pdn, Ynew.astype('float32'), photometric='minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
-    Lt, Ly, Lx = Ynew.shape
-    print(Lt)
-    print(Ly)
-    print(Lx)
+for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
+    
+    print(pth_trainset)
 
-    n_epochs = 40                # number of training epochs
+    n_epochs = 10                # number of training epochs
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
-    #manual_max_dataset_size = 6000
-    #train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
-    train_datasets_size = int(np.ceil(Lt*.8))  # datasets size for training (how many 3D patches)
-    patch_x = int(np.ceil(Lx/4)) #
-    patch_y = int(np.ceil(Ly/4)) #
-    patch_t = 300                #
     overlap_factor = 0.4        # the overlap factor between two adjacent patches
     intensity_scale_factor = 1 # the factor for image intensity scaling
     num_workers = 0             # if you use Windows system, set this to 0.
@@ -184,15 +193,15 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         'scale_factor': intensity_scale_factor,      # the factor for image intensity scaling
         'select_img_num': train_datasets_size,       # select the number of images used for training
         'train_datasets_size': train_datasets_size,  # datasets size for training (how many 3D patches)
-        'datasets_path': tiffolder_path,             # folder containing files for training
-        'pth_dir': tiffolder_path,                   # the path for pth file and result images
+        'datasets_path': pth_trainset,             # folder containing files for training
+        'pth_dir': pth_trainset,                   # the path for pth file and result images
 
         # network related parameters
         'n_epochs': n_epochs,                          # the number of training epochs
         'lr': 0.00005,                                 # learning rate
         'b1': 0.5,                                     # Adam: beta1
         'b2': 0.9, #0.999                                   # Adam: beta2
-        'fmap': 16,  # was 16 by default                # model complexity
+        'fmap': 8,  # was 16 by default                # model complexity
         'GPU': GPU,                                    # GPU index
         'num_workers': num_workers,                    # if you use Windows system, set this to 0.
         'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
@@ -204,9 +213,9 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     tc.run()
 
     test_datasize = Lt
-    para_path_tmp = glob.glob(os.path.join(testfolder_path, '*.yaml'))[0]
+    para_path_tmp = glob.glob(os.path.join(pth_testset, '*.yaml'))[0]
     denoise_model = para_path_tmp.split('/')[-2]
-    para_path = glob.glob(os.path.join(tiffolder_path, denoise_model, '*.yaml'))[0]
+    para_path = glob.glob(os.path.join(pth_trainset, denoise_model, '*.yaml'))[0]
 
     import yaml
 
@@ -226,10 +235,10 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         'overlap_factor':overlap_factor,    # overlap factor
         'scale_factor': intensity_scale_factor,                  # the factor for image intensity scaling
         'test_datasize': test_datasize,     # the number of frames to be tested
-        'datasets_path': tiffolder_path,     # folder containing all files to be tested
-        'pth_dir': tiffolder_path,                 # pth file root path
+        'datasets_path': pth_trainset,     # folder containing all files to be tested
+        'pth_dir': pth_trainset,                 # pth file root path
         'denoise_model' : denoise_model,    # A folder containing all models to be tested
-        'output_dir' : tiffolder_path,         # result file root path
+        'output_dir' : pth_trainset,         # result file root path
         # network related parameters
         'fmap': fmap,                         # number of feature maps
         'GPU': GPU,                         # GPU index
@@ -243,13 +252,14 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     tc.run()
 
 
-    outtiff_path = natsorted(glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_*', '*output.tif')))
+    outtiff_path = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*', '*output.tif')))
     outtiff_path = outtiff_path[-1] #for now just take the last one 
     pth_destination = pth_denoised + '/' + outtiff_path.split('/')[-1]
     if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it (full denoised 4d recording is reassembled in pth_out)
         os.remove(pth_destination)
     shutil.copy(outtiff_path, pth_denoised)
-    #shutil.rmtree(tiffolder_path)
+    #shutil.rmtree(pth_trainset)
+
 
     if tc.colab_display and re.search('/content', env_path[0]):
         display_filename = tc.result_display
@@ -260,5 +270,4 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
         plt.axis('off')
         plt.show()
-
 
