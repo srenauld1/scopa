@@ -21,6 +21,7 @@ import numpy as np
 from pipeline import pipeline
 from helpers import read_save_metadata
 from tifffile.tifffile import imwrite
+from natsort import natsorted
 
 
 print(sys.executable)
@@ -134,19 +135,19 @@ for recording_date in recdates:
 
   pth_fldrs_pattern = pth_allrec + recording_date + '-' + fly + '_*/'
   fn_pattern = recording_date + '-' + fly + '*_trial_00' + trial + '_*.tif'
-  pth_fldrs = sorted(glob.glob(pth_fldrs_pattern))
+  pth_fldrs = natsorted(glob.glob(pth_fldrs_pattern))
   old_mat_files = 0
   if not pth_fldrs:  #if no matches try another filename pattern (files from previous project)
     old_mat_files = 1
     pth_fldrs_pattern = pth_allrec + recording_date + '_' + fly + '_*/'
     fn_pattern = recording_date + '_' + fly + '_' + trial + '_stackraw_.mat'
-    pth_fldrs = sorted(glob.glob(pth_fldrs_pattern))
+    pth_fldrs = natsorted(glob.glob(pth_fldrs_pattern))
 
   for pth_fldr in pth_fldrs:
 
     print(pth_fldr)
     
-    pth_allfiles = sorted(os.listdir(pth_fldr))
+    pth_allfiles = natsorted(os.listdir(pth_fldr))
 
     for f in pth_allfiles:
 

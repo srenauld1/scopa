@@ -51,6 +51,8 @@ from tifffile.tifffile import imwrite, imread
 
 import matplotlib.pyplot as plt
 
+from natsort import natsorted
+
 from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 # from deepcad.movie_display import display, display_img
@@ -82,7 +84,9 @@ print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
 
-
+#@title denoise (each z slice independently)
+denoise_slice_index = 'all'
+do_volume = 1
 
 if pth_in.endswith( '.mat'):
 
@@ -93,22 +97,29 @@ if pth_in.endswith( '.mat'):
 
 else:
 
-    Y = imread(pth_in).astype('float32')  
+    Y = imread(pth_in).astype('float32')
     Y = Y.reshape(dims)
-    Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
+    
+    if do_volume: #swap t and z, then collapse, then create fake singleton z in 4th dim (just a few training pairs will be mismatched then, right?)
+        Y = np.transpose(Y, (1, 0, 2, 3)) 
+        Y = Y.reshape(dims[1]*dims[0], dims[2], dims[3]) 
+        Y = Y[..., np.newaxis]
+        denoise_slice_index = 'all' #override whatever value this has if collapsing t and z 
+    else: #otherwise just transpose to put real z at end, and denoise each slice 
+        Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
     size_pre_denoise = Y.shape
 
-    fn_existing_denoised_slices = sorted(glob.glob(pth_denoised + '/' + fn_prefix + '*output.tif'))
-    if fn_existing_denoised_slices:
+    fn_existing_denoised_slices = natsorted(glob.glob(pth_denoised + '/' + fn_prefix + '*output.tif'))
+    if 0:#fn_existing_denoised_slices:
         largest_denoised_slice_index = int(fn_existing_denoised_slices[-1].split('/')[-1].split('_')[3])
         print(denoise_slice_index)
         print("updating denoise slice index bc largest existing is " + str(largest_denoised_slice_index))
         if denoise_slice_index=='all':
-            denoise_slice_index = np.arange(largest_denoised_slice_index + 1, Y.shape[-1])
+            zind_all_dn = np.arange(largest_denoised_slice_index + 1, Y.shape[-1])
         else:
-            denoise_slice_index = [x + largest_denoised_slice_index for x in denoise_slice_index]
-        print(denoise_slice_index)
+            zind_all_dn = [x + largest_denoised_slice_index for x in denoise_slice_index]
+        print(zind_all_dn)
     else:
         if denoise_slice_index == 'all':
             zind_all_dn = np.arange(size_pre_denoise[-1])
@@ -118,6 +129,7 @@ else:
 
 print(pth_in)
 print(zind_all_dn)
+print(Y.shape)
 for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this rather than using all z slices in reshaped data because noise varies across z)
 
     print("denoising slice " + str(zii))
@@ -125,9 +137,9 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     Ynew = Y[:,:,:,zii]
     dnfolder = fn_prefix + '_' + str(zii)
 
-    tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
-    sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
-    sys.stderr = sys.stdout
+    # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    # sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
+    # sys.stderr = sys.stdout
 
     print(Y.shape)
     print(Ynew.shape)
@@ -135,8 +147,8 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     tifname = dnfolder + '_.tif'
     tiffolder_path = os.path.join(pth_denoising, dnfolder)
     testfolder_path = os.path.join(tiffolder_path, dnfolder + '_*')
-    if os.path.exists(tiffolder_path): 
-        shutil.rmtree(tiffolder_path) #just remove it because for some reason existing timestamped folders deepcad creates can cause error 
+    if os.path.exists(tiffolder_path):
+        shutil.rmtree(tiffolder_path) #just remove it because for some reason existing timestamped folders deepcad creates can cause error
     os.mkdir(tiffolder_path)
     pth_tif_pdn = os.path.join(tiffolder_path, tifname)
     print(pth_tif_pdn)
@@ -148,11 +160,12 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
     print(Ly)
     print(Lx)
 
-    n_epochs = 5                # number of training epochs
+    n_epochs = 40                # number of training epochs
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
-    manual_max_dataset_size = 4000
-    train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
-    patch_x = int(np.ceil(Lx/4)) # 
+    #manual_max_dataset_size = 6000
+    #train_datasets_size = np.max([manual_max_dataset_size, int(np.ceil(Lt/4))])  # datasets size for training (how many 3D patches)
+    train_datasets_size = int(np.ceil(Lt*.8))  # datasets size for training (how many 3D patches)
+    patch_x = int(np.ceil(Lx/4)) #
     patch_y = int(np.ceil(Ly/4)) #
     patch_t = 300                #
     overlap_factor = 0.4        # the overlap factor between two adjacent patches
@@ -169,7 +182,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         'patch_t': patch_t,                          # the time dimension (frames) of 3D patches
         'overlap_factor':overlap_factor,             # the factor for image intensity scaling
         'scale_factor': intensity_scale_factor,      # the factor for image intensity scaling
-        'select_img_num': train_datasets_size,       # select the number of images used for training 
+        'select_img_num': train_datasets_size,       # select the number of images used for training
         'train_datasets_size': train_datasets_size,  # datasets size for training (how many 3D patches)
         'datasets_path': tiffolder_path,             # folder containing files for training
         'pth_dir': tiffolder_path,                   # the path for pth file and result images
@@ -178,13 +191,13 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         'n_epochs': n_epochs,                          # the number of training epochs
         'lr': 0.00005,                                 # learning rate
         'b1': 0.5,                                     # Adam: beta1
-        'b2': 0.999,                                   # Adam: beta2
-        'fmap': 8,  # was 16 by default                # model complexity
+        'b2': 0.9, #0.999                                   # Adam: beta2
+        'fmap': 16,  # was 16 by default                # model complexity
         'GPU': GPU,                                    # GPU index
         'num_workers': num_workers,                    # if you use Windows system, set this to 0.
         'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
         'save_test_images_per_epoch': save_test_images_per_epoch,  # whether to save result images after each epoch
-        'colab_display': False
+        'colab_display': True
     }
 
     tc = training_class(train_dict)
@@ -221,28 +234,31 @@ for zii in zind_all_dn: #deepcad wants 3d data, so for each z slice (doing this 
         'fmap': fmap,                         # number of feature maps
         'GPU': GPU,                         # GPU index
         'num_workers': num_workers,         # if you use Windows system, set this to 0.
-        'visualize_images_per_epoch': False,# whether to display inference performance after each epoch
-        'save_test_images_per_epoch': True, # whether to save inference image after each epoch in pth path
-        'colab_display': False
+        'visualize_images_per_epoch': False, # whether to display inference performance after each epoch
+        'save_test_images_per_epoch': save_test_images_per_epoch, # whether to save inference image after each epoch in pth path
+        'colab_display': True
     }
 
     tc = testing_class(test_dict)
     tc.run()
 
-    if tc.colab_display:
+
+    outtiff_path = natsorted(glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_*', '*output.tif')))
+    outtiff_path = outtiff_path[-1] #for now just take the last one 
+    pth_destination = pth_denoised + '/' + outtiff_path.split('/')[-1]
+    if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it (full denoised 4d recording is reassembled in pth_out)
+        os.remove(pth_destination)
+    shutil.copy(outtiff_path, pth_denoised)
+    #shutil.rmtree(tiffolder_path)
+
+    if tc.colab_display and re.search('/content', env_path[0]):
         display_filename = tc.result_display
         print('\033[1;31mDisplaying denoised file of the last epoch-----> \033[0m')
-        print(display_filename)
+        print(pth_destination)
         # normalize the image and display
-        img = display_img(display_filename,norm_min_percent=1, norm_max_percent=99)
+        img = display_img(pth_destination,norm_min_percent=1, norm_max_percent=99)
         plt.imshow(img,cmap=plt.cm.gray,vmin=0,vmax=255)
         plt.axis('off')
         plt.show()
 
-    outtiff_path = glob.glob(os.path.join(tiffolder_path, 'DataFolderIs_*', 'E_0' + str(n_epochs) + '_*', '*output.tif'))[0]
-    pth_destination = pth_denoised + '/' + outtiff_path.split('/')[-1]
-    if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it (full denoised 4d recording is reassembled in pth_out)
-        os.remove(pth_destination)
-    shutil.move(outtiff_path, pth_denoised)
-    shutil.rmtree(tiffolder_path)
 
