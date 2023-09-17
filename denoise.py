@@ -162,15 +162,15 @@ for zii in zind_all_dn: #organize slices into separate tifs, in one folder (trai
     # sys.stderr = sys.stdout
 
     pth_trainset_all[countz] = os.path.join(pth_denoising, dnfolder)
-    pth_testset_all[countz] = os.path.join(pth_trainset_all[countz], dnfolder + '_*')
-    if os.path.exists(pth_trainset_all[countz]):
+    if zii==0 or (do_volume==0 and os.path.exists(pth_trainset_all[countz])):
         shutil.rmtree(pth_trainset_all[countz]) #just remove it because for some reason existing timestamped folders deepcad creates can cause error
-    os.mkdir(pth_trainset_all[countz])
+    if not os.path.exists(pth_trainset_all[countz]):
+        os.mkdir(pth_trainset_all[countz])
+    pth_testset_all[countz] = os.path.join(pth_trainset_all[countz], dnfolder + '_*')
     pth_tif_pdn = os.path.join(pth_trainset_all[countz], tifname)
     print(pth_tif_pdn)
     imwrite(pth_tif_pdn, Ynew.astype('float32'), photometric='minisblack' ) #put the tif in the folder deepcad looks to for training data
-
-
+      
 for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
     
     print(pth_trainset)
