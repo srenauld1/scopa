@@ -140,7 +140,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
 
 
 
-def parse_command_line_denoise(pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index):
+def parse_command_line_denoise(pth_in, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index):
     
     CLI=argparse.ArgumentParser()
 
@@ -149,12 +149,6 @@ def parse_command_line_denoise(pth_in, pth_out, pth_denoising, pth_denoised, fn_
         nargs=1,
         type=str,
         default=pth_in,  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--pth_out",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,
-        type=str,
-        default=pth_out,  # default if nothing is provided
     )
     CLI.add_argument(
         "--pth_denoising",  # name on the CLI - drop the `--` for positional/required parameters
@@ -193,7 +187,6 @@ def parse_command_line_denoise(pth_in, pth_out, pth_denoising, pth_denoised, fn_
     print(args)
 
     pth_in = args.pth_in[0]
-    pth_out = args.pth_out[0]
     pth_denoising = args.pth_denoising[0]
     pth_denoised = args.pth_denoised[0]
     fn_prefix = args.fn_prefix[0]
@@ -201,4 +194,4 @@ def parse_command_line_denoise(pth_in, pth_out, pth_denoising, pth_denoised, fn_
     if denoise_slice_index != 'all':
         denoise_slice_index = list(map(int, args.denoise_slice_index))
 
-    return pth_in, pth_out, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index
+    return pth_in, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index

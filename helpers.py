@@ -167,6 +167,8 @@ def stitch_denoised_slices(pth_denoised, fn_prefix, pth_out, dims_pre_denoise):
     for f in pth_denoised_singles: #loop over each denoised z slice and reassemble into array matching shape of original 4d volume  
         sliceind = int(f.split('/')[-1].split('_')[3])
         Ynew = imread(f)
+        if Ynew.dtype!='uint16':
+            raise Exception("denoising should operate on uint16 for this pipeline, or adjust it")
         print(Ynew.dtype)
         print(sliceind)
         Y[:,:,:,sliceind] = Ynew
