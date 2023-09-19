@@ -115,9 +115,16 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
     if do_extraction or do_cropping_session:
 
-        if use_denoised: 
-            if not os.path.isfile(pth_tif_dn): 
-                stitch_denoised_slices(pth_denoised, fn_prefix, pth_tif_dn, md['dims']) #stitch together denoised slices (tyx) into original size (tzyx)
+
+        if use_denoised:
+            fn_dn_add = ''
+            pth_tif_dn = pth_tif_dn + fn_dn_add
+            do_volume = 1 #whether to use data from denoising that operated on entire volume, or z stack subset (must exist, ie must match a do_volume value that was previously used/saved at some point in denoise.py)
+            epoch_choose = 5 #which epoch to stitch (must exist, ie must be one of epochs_choose in denoise.py)
+            force_stitch = 1 #stitch regardless of whether the file already exists (e.g. to use a different run)
+
+            if not os.path.isfile(pth_tif_dn) or force_stitch:
+                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], do_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
             pth_exin = pth_tif_dn
         else:
             pth_exin = pth_tif_reg

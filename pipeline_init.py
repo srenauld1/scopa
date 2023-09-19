@@ -77,7 +77,7 @@ use_denoised = 1 #use the deepcad denoised data, or just the caiman registered d
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all' (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
-bg_patch_halfwidth = 8 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
+bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
 do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0

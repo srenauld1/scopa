@@ -308,7 +308,7 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 ################################## COPY DENOISING MODEL OUTPUT TO DIFFERENT DIRECTORY (FOR EACH MODEL, PUT ALL Z-SLICE TIFS IN ONE FOLDER) ########################## 
         
 # countz = 0
-# for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
+# for pth_trainset in pth_trainset_all:
 #     countz = countz + 1
 # fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder  
 
