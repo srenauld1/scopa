@@ -197,8 +197,8 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 
         print(pth_trainset)
 
-        n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-        epochs_choose = [3, 5] #[int(n_epochs/2), n_epochs] #list, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
+        n_epochs = 2  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+        epochs_choose = [1,2] #[int(n_epochs/2), n_epochs] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
         train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
         select_img_num = 1e10 # number of images to take from the beginning of each stack (make larger than Lt use the full stack)
         patch_x = 110 #int(np.ceil(Lx/4)) #extent of patch in x
@@ -307,29 +307,29 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 
 ################################## COPY DENOISING MODEL OUTPUT TO DIFFERENT DIRECTORY (FOR EACH MODEL, PUT ALL Z-SLICE TIFS IN ONE FOLDER) ########################## 
         
-countz = 0
-for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
-    countz = countz + 1
-fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder  
+# countz = 0
+# for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
+#     countz = countz + 1
+# fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder  
 
-for fldr_outtiff in fldr_outtiff_all:
+# for fldr_outtiff in fldr_outtiff_all:
 
-    pth_outtiff_all = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
+#     pth_outtiff_all = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
-    fldr_destination = pth_denoised + '/' +  fn_prefix + '_' + fldr_outtiff.split('/')[-1].split('_')[1] + '_' + fldr_outtiff.split('/')[-1].split('_')[3] + '_' + str(patch_x) + '_' + str(patch_y) + '_' + str(patch_t) + '_' + str(overlap_factor) + '_' + str(do_volume)    
-    # don't delete fldr_destination because you might have to do separate z slices on separate sbatch jobs, depending on resources
-    # if countz==1 and os.path.exists(fldr_destination): #delete on the first loop (countz==1) if exists
-    #   shutil.rmtree(fldr_destination)
-    if not os.path.exists(fldr_destination):
-        os.mkdir(fldr_destination)
+#     fldr_destination = pth_denoised + '/' +  fn_prefix + '_' + fldr_outtiff.split('/')[-1].split('_')[1] + '_' + fldr_outtiff.split('/')[-1].split('_')[3] + '_' + str(patch_x) + '_' + str(patch_y) + '_' + str(patch_t) + '_' + str(overlap_factor) + '_' + str(do_volume)    
+#     # don't delete fldr_destination because you might have to do separate z slices on separate sbatch jobs, depending on resources
+#     # if countz==1 and os.path.exists(fldr_destination): #delete on the first loop (countz==1) if exists
+#     #   shutil.rmtree(fldr_destination)
+#     if not os.path.exists(fldr_destination):
+#         os.mkdir(fldr_destination)
 
-    for pth_outtiff in pth_outtiff_all: #copy all output tiffs (3d data) to a new folder, later to be reassembled into a 4d volume in stitch_denoised_slices
+#     for pth_outtiff in pth_outtiff_all: #copy all output tiffs (3d data) to a new folder, later to be reassembled into a 4d volume in stitch_denoised_slices
 
-        pth_destination = fldr_destination + '/' + pth_outtiff.split('/')[-1]
-        if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it
-            os.remove(pth_destination)
-        shutil.copy(pth_outtiff, fldr_destination + '/')
-        #shutil.rmtree(pth_trainset) #remove path when finished
+#         pth_destination = fldr_destination + '/' + pth_outtiff.split('/')[-1]
+#         if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it
+#             os.remove(pth_destination)
+#         shutil.copy(pth_outtiff, fldr_destination + '/')
+#         #shutil.rmtree(pth_trainset) #remove path when finished
 
 
 
