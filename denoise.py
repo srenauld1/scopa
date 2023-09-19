@@ -197,8 +197,8 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 
         print(pth_trainset)
 
-        n_epochs = 10  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-        epochs_choose = [int(n_epochs/2), n_epochs] #list, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
+        n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+        epochs_choose = [3, 5] #[int(n_epochs/2), n_epochs] #list, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
         train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
         select_img_num = 1e10 # number of images to take from the beginning of each stack (make larger than Lt use the full stack)
         patch_x = 110 #int(np.ceil(Lx/4)) #extent of patch in x
