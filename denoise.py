@@ -317,9 +317,11 @@ for fldr_outtiff in fldr_outtiff_all:
     pth_outtiff_all = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
     fldr_destination = pth_denoised + '/' +  fn_prefix + '_' + fldr_outtiff.split('/')[-1].split('_')[1] + '_' + fldr_outtiff.split('/')[-1].split('_')[3] + '_' + str(patch_x) + '_' + str(patch_y) + '_' + str(patch_t) + '_' + str(overlap_factor) + '_' + str(do_volume)    
-    if countz==1 and os.path.exists(fldr_destination): #delete on the first loop (countz==1) if exists
-        shutil.rmtree(fldr_destination)
-    os.mkdir(fldr_destination)
+    # don't delete fldr_destination because you might have to do separate z slices on separate sbatch jobs, depending on resources
+    # if countz==1 and os.path.exists(fldr_destination): #delete on the first loop (countz==1) if exists
+    #   shutil.rmtree(fldr_destination)
+    if not os.path.exists(fldr_destination):
+        os.mkdir(fldr_destination)
 
     for pth_outtiff in pth_outtiff_all: #copy all output tiffs (3d data) to a new folder, later to be reassembled into a 4d volume in stitch_denoised_slices
 
