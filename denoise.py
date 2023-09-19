@@ -29,6 +29,7 @@
 # conda activate deepcadrt
 # pip install mat73
 # pip install matplotlib 
+# pip install natsort 
 
 ##########################################################################################################################################
 
@@ -58,14 +59,10 @@ import datetime
 
 from tifffile.tifffile import imwrite, imread
 
-import matplotlib.pyplot as plt
-
 from natsort import natsorted
 
 from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
-
-import mat73
 
 from parse_command_line import parse_command_line_denoise
 
