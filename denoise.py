@@ -304,33 +304,3 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 
         tc = testing_class(test_dict)
         tc.run()
-
-################################## COPY DENOISING MODEL OUTPUT TO DIFFERENT DIRECTORY (FOR EACH MODEL, PUT ALL Z-SLICE TIFS IN ONE FOLDER) ########################## 
-        
-# countz = 0
-# for pth_trainset in pth_trainset_all:
-#     countz = countz + 1
-# fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder  
-
-# for fldr_outtiff in fldr_outtiff_all:
-
-#     pth_outtiff_all = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
-
-#     fldr_destination = pth_denoised + '/' +  fn_prefix + '_' + fldr_outtiff.split('/')[-1].split('_')[1] + '_' + fldr_outtiff.split('/')[-1].split('_')[3] + '_' + str(patch_x) + '_' + str(patch_y) + '_' + str(patch_t) + '_' + str(overlap_factor) + '_' + str(do_volume)    
-#     # don't delete fldr_destination because you might have to do separate z slices on separate sbatch jobs, depending on resources
-#     # if countz==1 and os.path.exists(fldr_destination): #delete on the first loop (countz==1) if exists
-#     #   shutil.rmtree(fldr_destination)
-#     if not os.path.exists(fldr_destination):
-#         os.mkdir(fldr_destination)
-
-#     for pth_outtiff in pth_outtiff_all: #copy all output tiffs (3d data) to a new folder, later to be reassembled into a 4d volume in stitch_denoised_slices
-
-#         pth_destination = fldr_destination + '/' + pth_outtiff.split('/')[-1]
-#         if os.path.isfile(pth_destination): #if completed file (for single z slice) exist from previous run, delete it
-#             os.remove(pth_destination)
-#         shutil.copy(pth_outtiff, fldr_destination + '/')
-#         #shutil.rmtree(pth_trainset) #remove path when finished
-
-
-
-
