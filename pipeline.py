@@ -23,7 +23,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
     
-    ##########################   BACKGROUND SUBTRACTION AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
+    ##########################   BACKGROUND SUBTRACTION (PROBLEMATIC) AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
     if do_motion_correction and not do_cropping_session:
         
@@ -96,9 +96,10 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             imwrite(pth_tif_reg, np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
-    ##########################   BACKGROUND SUBTRACTION AND DEEPCAD DENOISING   ##########################
+    ##########################   DEEPCAD DENOISING   ##########################
 
     if do_denoise and not do_cropping_session:
+        print("entering denoise.py")
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise.py" \
             + " --pth_in " + pth_tif_reg \
