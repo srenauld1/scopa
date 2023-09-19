@@ -9,14 +9,15 @@
 # deepcad wants 3d data, and rather than reshaping the 4d array into 3d (denoising on all z slices at once), this script either
 # operates on each z slice independently (if do_volume = 0), or all z slices (if do_volume = 1) . . . currently not set up to do anything in between 
 
-# since noise varies with z, default is do_volume = 1, but if individual z slices are being underfit (denoised output is blurry), 
+# since noise varies with z, default is do_volume = 0, 
+# but if individual z slices are being underfit (denoised output is blurry), 
 # and increasing any or all of patch size, overlap, or train_dataset_size does not help with the underfitting, then you may need more data, 
 # so consider fitting a z slices with do_volume = 1 . . . or you can adapt the code (should be simple) to fit some subset, e.g. every pair of z slices
  
 # deepcad creates intermediate files that are saved in pth_denoising
-# if do_volume = 0, each z slice of 4d volumetric input movie is saved as a separate tif in a separate folder, each passed to deepcad, saved separately in pth_denoised, 
+# if do_volume = 0, each z slice of 4d volumetric input movie is saved as a separate tif in a separate folder, each passed to deepcad, saved separately in a unique pth_trainset, 
 
-#if do_volume = 1, each z slice is saved as a separate tif in the same folder  
+#if do_volume = 1, each z slice is saved as a separate tif in the same folder, pth_trainset_all
 
 # regardless of do_volume, denoised z slices are saved in separate tifs, 
 # and outside this script the separate denoised z slices are reassmbled as single output file, which is placed in same folder as input file pth_in 
@@ -53,6 +54,7 @@ import shutil
 import numpy as np
 import sys
 import fnmatch
+import datetime
 
 from tifffile.tifffile import imwrite, imread
 
@@ -68,21 +70,18 @@ import mat73
 from parse_command_line import parse_command_line_denoise
 
 
-# some default values
 pth_in = '/Users/wienecke/Documents/ambrose/stacks/20230624-2_D05_syt7f_018_syt7f/20230624_2_1_cmrg_.tif' #file the be denoised 
 pth_denoising = '/Users/wienecke/Documents/ambrose/denoising' #path for intermediate files created by deepcad
-pth_denoised = '/Users/wienecke/Documents/ambrose/denoised' #path for finished (denoised) 3d files, prior to reassembling 
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 denoise_slice_index = [0]
 
-[pth_in, pth_denoising, pth_denoised, fn_prefix, dims, denoise_slice_index] = parse_command_line_denoise(pth_in = pth_in,
-                    pth_denoising = pth_denoising, pth_denoised = pth_denoised, 
-                    fn_prefix = fn_prefix, dims = dims, denoise_slice_index = denoise_slice_index)
+[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index] = parse_command_line_denoise(pth_in = pth_in,
+                    pth_denoising = pth_denoising, fn_prefix = fn_prefix, dims = dims, 
+                    denoise_slice_index = denoise_slice_index)
 
 print(pth_in)
 print(pth_denoising)
-print(pth_denoised)
 print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
@@ -99,8 +98,8 @@ env_path = sys.path
 # however, the code below does not have this resuming training functionality yet, 
 # so to ensure models don't get mixed, there is a line that removes any existing training folder before training  (shutil.rmtree(pth_trainset_all[countz])
 
-do_volume = 0
-
+do_volume = 0 #whether to denoise all slices together or denoise slice subset (recommend do_volume = 0)
+epochs_choose = [1,2] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
 denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16  
 
 Y = imread(pth_in).astype(denoise_dtype)
@@ -109,8 +108,8 @@ Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
 size_pre_denoise = Y.shape
 
-fn_existing_denoised_slices = natsorted(glob.glob(pth_denoised + '/' + fn_prefix + '*output.tif'))
-if 0:#skip this for now until we know more, was previously this: if fn_existing_denoised_slices:
+fn_existing_denoised_slices = []
+if 0: #skip this for now until we know more, was previously this: if fn_existing_denoised_slices:
     largest_denoised_slice_index = int(fn_existing_denoised_slices[-1].split('/')[-1].split('_')[3])
     print(denoise_slice_index)
     print("updating denoise slice index bc largest existing is " + str(largest_denoised_slice_index))
@@ -156,6 +155,10 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
     dnfolder = fn_prefix + '_' + dnfolder_insert
     tifname = fn_prefix + '_' + str(zii) + '_.tif'
 
+    tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
+    sys.stderr = sys.stdout
+
     pth_trainset_all[countz] = pth_denoising + '/' + dnfolder #dir containing all tif files for training
     pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test 
     pth_tif_pdn = pth_trainset_all[countz] + '/' + tifname
@@ -198,7 +201,6 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
         print(pth_trainset)
 
         n_epochs = 2  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-        epochs_choose = [1,2] #[int(n_epochs/2), n_epochs] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
         train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
         select_img_num = 1e10 # number of images to take from the beginning of each stack (make larger than Lt use the full stack)
         patch_x = 110 #int(np.ceil(Lx/4)) #extent of patch in x

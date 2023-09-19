@@ -16,7 +16,7 @@ from helpers import crop_fov, tracefunc, stitch_denoised_slices
 from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
-                      pth_denoising, pth_denoised, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
+                      pth_denoising, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
                       do_denoise, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
                       use_background_subtracted, use_denoised, region_extraction, do_plots, cluster_backend, do_cluster):
 
@@ -104,11 +104,9 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             + " --pth_in " + pth_tif_reg \
             + " --pth_out " + pth_tif_dn \
             + " --pth_denoising " + pth_denoising \
-            + " --pth_denoised " + pth_denoised \
             + " --fn_prefix " + fn_prefix \
             + " --dims " + ' '.join(map(str,  md['dims'])) \
             + " --denoise_slice_index " + ' '.join(map(str,  denoise_slice_index)))
-            #+ " 2> " fn_prefix + "_stderr.txt 1> " fn_prefix + "_stdout.txt")
         
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
