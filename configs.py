@@ -127,7 +127,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         do_patches = True
 
     #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
-    roi_decimation_fac = 0.4 
+    roi_decimation_fac = 0.4 #1 is roughly maximum number of rois in patch assuming equal spacing and allowing overlap 
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
         rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
         stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches

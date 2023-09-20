@@ -103,7 +103,6 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise.py" \
             + " --pth_in " + pth_tif_reg \
-            + " --pth_out " + pth_tif_dn \
             + " --pth_denoising " + pth_denoising \
             + " --fn_prefix " + fn_prefix \
             + " --dims " + ' '.join(map(str,  md['dims'])) \
