@@ -75,7 +75,7 @@ do_planar_extraction = 0 #caiman source extraction for each plane independently 
 use_background_subtracted = 0 #won't happen unless do_motion_correction = True 
 use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data 
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
-recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all' (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
+recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
@@ -127,7 +127,7 @@ print(trial)
 print(do_cropping_session)
 print(recording_index)
 
-countz = 0
+countz = -1 #so first one is zero, since recording_index is zero indexed 
 for recording_date in recdates:
 
   pth_fldrs_pattern = pth_allrec + recording_date + '-' + fly + '_*/'
@@ -149,8 +149,9 @@ for recording_date in recdates:
     for f in pth_allfiles:
 
       if fnmatch.fnmatch(f, fn_pattern):
-
+        
         countz = countz + 1
+
         if recording_index == 'all' or (recording_index !='all' and countz==recording_index): #if 'all', do all files matching pattern, otherwise only file matching index
           
           # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
