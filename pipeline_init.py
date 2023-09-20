@@ -69,7 +69,8 @@ region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names
 do_motion_correction = 0 #caiman normCorre 
 do_background_subtraction = 0 #won't happen unless do_motion_correction = True 
 do_denoise = 0 #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-denoise_slice_index = 'all' #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+denoise_volume = 0 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately
+denoise_slice_index = 'all' #which z slices to denoise
 do_extraction = 1 #caiman source extraction 
 do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #won't happen unless do_motion_correction = True 
@@ -104,11 +105,11 @@ if not os.path.exists(pth_denoising):
 
 if len(sys.argv)>1:
   [index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
-  do_denoise, denoise_slice_index, do_extraction, do_planar_extraction, use_denoised, use_background_subtracted,
+  do_denoise, denoise_volume, denoise_slice_index, do_extraction, do_planar_extraction, use_denoised, use_background_subtracted,
   recdates, fly, trial, do_cropping_session, 
   recording_index] = parse_command_line(index_extraction_param_set = index_extraction_param_set, 
                       region_extraction = region_extraction, do_background_subtraction = do_background_subtraction, do_motion_correction = do_motion_correction, 
-                      do_denoise = do_denoise, denoise_slice_index = denoise_slice_index, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
+                      do_denoise = do_denoise, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extraction = do_extraction, do_planar_extraction = do_planar_extraction, 
                       use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, 
                       recording_index = recording_index)
 
@@ -118,6 +119,7 @@ print(index_extraction_param_set)
 print(region_extraction)
 print(do_motion_correction)
 print(do_denoise)
+print(denoise_volume)
 print(denoise_slice_index)
 print(do_extraction)
 print(do_planar_extraction)
@@ -208,7 +210,7 @@ for recording_date in recdates:
 
           pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                         pth_denoising, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
-                        do_denoise, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
+                        do_denoise, denoise_volume, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
                         use_background_subtracted, use_denoised, region_extraction, do_plots, cluster_backend, do_cluster)
 
 

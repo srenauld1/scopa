@@ -12,12 +12,12 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
-from helpers import crop_fov, tracefunc, stitch_denoised_slices
+from helpers import crop_fov, tracefunc, stitch_denoised_slices, separate_z_slices_before_denoising
 from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
                       pth_denoising, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
-                      do_denoise, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
+                      do_denoise, denoise_volume, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
                       use_background_subtracted, use_denoised, region_extraction, do_plots, cluster_backend, do_cluster):
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
@@ -99,16 +99,19 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
     ##########################   DEEPCAD DENOISING   ##########################
 
     # prepare files for denoising by writing each z slice to separate tif
-    # and put them in separate folders (since default in denoise.py is do_volume = 0 )
-    # if using do_volume = 1, just move all separate tifs into one folder (might build this if clause) 
+    # and put them in separate folders (since default in denoise.py is denoise_volume = 0 )
+    # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
     # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
 
+    separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+    
     if do_denoise and not do_cropping_session:
 
         print("entering denoise.py")
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise.py" \
             + " --pth_in " + pth_tif_reg \
+            + " --denoise_volume " + denoise_volume \
             + " --pth_denoising " + pth_denoising \
             + " --fn_prefix " + fn_prefix \
             + " --dims " + ' '.join(map(str,  md['dims'])) \
@@ -123,12 +126,11 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         if use_denoised:
             fn_dn_add = ''
             pth_tif_dn = pth_tif_dn + fn_dn_add
-            do_volume = 1 #whether to use data from denoising that operated on entire volume, or z stack subset (must exist, ie must match a do_volume value that was previously used/saved at some point in denoise.py)
             epoch_choose = 5 #which epoch to stitch (must exist, ie must be one of epochs_choose in denoise.py)
             force_stitch = 1 #stitch regardless of whether the file already exists (e.g. to use a different run)
 
             if not os.path.isfile(pth_tif_dn) or force_stitch:
-                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], do_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
             pth_exin = pth_tif_dn
         else:
             pth_exin = pth_tif_reg

@@ -4,7 +4,7 @@ from ast import literal_eval
 
 
 def parse_command_line(index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
-                       do_denoise, denoise_slice_index, do_extraction, do_planar_extraction, use_denoised, use_background_subtracted,
+                       do_denoise, denoise_volume, denoise_slice_index, do_extraction, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
     
@@ -39,6 +39,12 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         nargs=1, 
         type=int,
         default=[do_denoise],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--denoise_volume",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[denoise_volume],  # default if nothing is provided
     )
     CLI.add_argument(
         "--denoise_slice_index",  # name on the CLI - drop the `--` for positional/required parameters
@@ -114,6 +120,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         region_extraction = args.region_extraction #keep as list
     do_motion_correction = args.do_motion_correction[0]
     do_denoise = args.do_denoise[0]
+    denoise_volume = args.denoise_volume[0]
     if isinstance(args.denoise_slice_index[0], list):
         denoise_slice_index = args.denoise_slice_index[0] #keep as list
     else:
@@ -133,14 +140,14 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         recording_index = int(args.recording_index[0])
 
     return (index_extraction_param_set, region_extraction, do_background_subtraction, 
-            do_motion_correction, do_denoise, denoise_slice_index, do_extraction, 
+            do_motion_correction, do_denoise, denoise_volume, denoise_slice_index, do_extraction, 
             do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
             fly, trial, do_cropping_session, recording_index)
 
 
 
 
-def parse_command_line_denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index):
+def parse_command_line_denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume):
     
     CLI=argparse.ArgumentParser()
 
@@ -149,6 +156,12 @@ def parse_command_line_denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_s
         nargs=1,
         type=str,
         default=pth_in,  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--denoise_volume",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[denoise_volume],  # default if nothing is provided
     )
     CLI.add_argument(
         "--pth_denoising",  # name on the CLI - drop the `--` for positional/required parameters
@@ -181,10 +194,11 @@ def parse_command_line_denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_s
     print(args)
 
     pth_in = args.pth_in[0]
+    denoise_volume = args.denoise_volume[0]
     pth_denoising = args.pth_denoising[0]
     fn_prefix = args.fn_prefix[0]
     dims = list(map(int, args.dims))
     if denoise_slice_index != 'all':
         denoise_slice_index = list(map(int, args.denoise_slice_index))
 
-    return pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index
+    return pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume

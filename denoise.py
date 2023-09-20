@@ -7,19 +7,21 @@
 # typically I call this script from pipeline.py, but it can be run on its own from the command line  
 
 # deepcad wants 3d data, and rather than reshaping the 4d array into 3d (denoising on all z slices at once), this script either
-# operates on each z slice independently (if do_volume = 0), or all z slices (if do_volume = 1) . . . currently not set up to do anything in between 
+# operates on each z slice independently (if denoise_volume = 0), or all z slices (if denoise_volume = 1) . . . currently not set up to do anything in between 
 
-# since noise varies with z, default is do_volume = 0, 
+# since noise varies with z, default is denoise_volume = 0, 
 # but if individual z slices are being underfit (denoised output is blurry), 
 # and increasing any or all of patch size, overlap, or train_dataset_size does not help with the underfitting, then you may need more data, 
-# so consider fitting a z slices with do_volume = 1 . . . or you can adapt the code (should be simple) to fit some subset, e.g. every pair of z slices
+# so consider fitting a z slices with denoise_volume = 1 . . . or you can adapt the code (should be simple) to fit some subset, e.g. every pair of z slices
  
 # deepcad creates intermediate files that are saved in pth_denoising
-# if do_volume = 0, each z slice of 4d volumetric input movie is saved as a separate tif in a separate folder, each passed to deepcad, saved separately in a unique pth_trainset, 
+ #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately
+# denoise_slice_index lists which z slices to denoise
+# if denoise_volume = 0, each z slice of 4d volumetric input movie is saved as a separate tif in a separate folder, each passed to deepcad, saved separately in a unique pth_trainset, 
 
-#if do_volume = 1, each z slice is saved as a separate tif in the same folder, pth_trainset_all
+#if denoise_volume = 1, each z slice is saved as a separate tif in the same folder, pth_trainset_all
 
-# regardless of do_volume, denoised z slices are saved in separate tifs, 
+# regardless of denoise_volume, denoised z slices are saved in separate tifs, 
 # and outside this script the separate denoised z slices are reassmbled as single output file, which is placed in same folder as input file pth_in 
 
 # before running denoise.py (in dnp.sbatch or directly on command line), deepcad and torch needs to be installed (instructions on their github)
@@ -72,16 +74,18 @@ pth_denoising = '/Users/wienecke/Documents/ambrose/denoising' #path for intermed
 fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 denoise_slice_index = [0]
+denoise_volume = 0
 
-[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index] = parse_command_line_denoise(pth_in = pth_in,
+[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume] = parse_command_line_denoise(pth_in = pth_in,
                     pth_denoising = pth_denoising, fn_prefix = fn_prefix, dims = dims, 
-                    denoise_slice_index = denoise_slice_index)
+                    denoise_slice_index = denoise_slice_index, denoise_volume = denoise_volume)
 
 print(pth_in)
 print(pth_denoising)
 print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
+print(denoise_volume)
 
 env_path = sys.path
 
@@ -95,13 +99,8 @@ env_path = sys.path
 # however, the code below does not have this resuming training functionality yet, 
 # so to ensure models don't get mixed, there is a line that removes any existing training folder before training  (shutil.rmtree(pth_trainset_all[countz])
 
-do_volume = 0 #whether to denoise all slices together or denoise slice subset (recommend do_volume = 0)
 epochs_choose = [1,2] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
 denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16  
-
-Y = imread(pth_in).astype(denoise_dtype)
-Y = Y.reshape(dims)
-Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
 fn_existing_denoised_slices = []
 if 0: #skip this for now until we know more, was previously this: if fn_existing_denoised_slices:
@@ -123,7 +122,7 @@ else:
 print(pth_in)
 print(zind_all_dn)
 
-if do_volume: #if training on all slices, put them all in one folder 
+if denoise_volume: #if training on all slices, put them all in one folder 
     pth_trainset_all = ['']
     pth_testset_all = ['']
 else: #if training on subset of slices, put each subset in separate folder 
@@ -131,15 +130,16 @@ else: #if training on subset of slices, put each subset in separate folder
     pth_testset_all = ['']*len(zind_all_dn)
 
 countz = -1
-for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if do_volume=1, ie train on all slices) or separate folders (if do_volume=0, ie train on z subset)
+for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if denoise_volume=1, ie train on all slices) or separate folders (if denoise_volume=0, ie train on z subset)
 
-    Ynew = Y[:,:,:,zii]
+    Ynew = imread(pth_in).astype(denoise_dtype)
+
     Lt, Ly, Lx = Ynew.shape #don't need to index these they should be the same for all stacks
     if countz>-1 and prev_shape != Ynew.shape:
         raise Exception("dims changed")
     prev_shape = Ynew.shape
 
-    if do_volume:
+    if denoise_volume:
         dnfolder_insert = 'all'
         countz = 0 #constant 0 because every slice goes to the same directory
     else:
@@ -158,7 +158,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
     pth_tif_pdn = pth_trainset_all[countz] + '/' + tifname
 
     if os.path.exists(pth_trainset_all[countz]):
-        if zii==0 or do_volume==0: #if you're on the first zii (regardless of do_volume value), or for all zii if do_volume==0 
+        if zii==0 or denoise_volume==0: #if you're on the first zii (regardless of denoise_volume value), or for all zii if denoise_volume==0 
             shutil.rmtree(pth_trainset_all[countz]) #REMOVE any existing training folder before training, to ensure models don't get mixed (until "resume training" functionality is written) 
     if not os.path.exists(pth_trainset_all[countz]): #don't make this "else" connected to "if" above because you have to evaluate it  
         os.mkdir(pth_trainset_all[countz])
