@@ -96,15 +96,14 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             imwrite(pth_tif_reg, np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
-    ##########################   DEEPCAD DENOISING   ##########################
-
     # prepare files for denoising by writing each z slice to separate tif
     # and put them in separate folders (since default in denoise.py is denoise_volume = 0 )
     # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
     # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
-
     separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
-    
+
+    ##########################   DEEPCAD DENOISING   ##########################
+
     if do_denoise and not do_cropping_session:
 
         print("entering denoise.py")

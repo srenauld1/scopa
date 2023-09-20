@@ -132,13 +132,6 @@ else: #if training on subset of slices, put each subset in separate folder
 countz = -1
 for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if denoise_volume=1, ie train on all slices) or separate folders (if denoise_volume=0, ie train on z subset)
 
-    Ynew = imread(pth_in).astype(denoise_dtype)
-
-    Lt, Ly, Lx = Ynew.shape #don't need to index these they should be the same for all stacks
-    if countz>-1 and prev_shape != Ynew.shape:
-        raise Exception("dims changed")
-    prev_shape = Ynew.shape
-
     if denoise_volume:
         dnfolder_insert = 'all'
         countz = 0 #constant 0 because every slice goes to the same directory
@@ -149,22 +142,17 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
     dnfolder = fn_prefix + '_' + dnfolder_insert
     tifname = fn_prefix + '_' + str(zii) + '_.tif'
 
-    # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-    # sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
-    # sys.stderr = sys.stdout
-
     pth_trainset_all[countz] = pth_denoising + '/' + dnfolder #dir containing all tif files for training
     pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test 
     pth_tif_pdn = pth_trainset_all[countz] + '/' + tifname
 
-    if os.path.exists(pth_trainset_all[countz]):
-        if zii==0 or denoise_volume==0: #if you're on the first zii (regardless of denoise_volume value), or for all zii if denoise_volume==0 
-            shutil.rmtree(pth_trainset_all[countz]) #REMOVE any existing training folder before training, to ensure models don't get mixed (until "resume training" functionality is written) 
-    if not os.path.exists(pth_trainset_all[countz]): #don't make this "else" connected to "if" above because you have to evaluate it  
-        os.mkdir(pth_trainset_all[countz])
-    
     print(pth_tif_pdn)
-    imwrite(pth_tif_pdn, Ynew.astype(denoise_dtype), photometric='minisblack' ) #put the tif in the folder deepcad looks to for training data
+    Ynew = imread(pth_tif_pdn)
+    Lt, Ly, Lx = Ynew.shape #don't need to index these they should be the same for all stacks
+    if Ynew.dtype!=denoise_dtype:
+        raise Exception("dtype doens't match intended")
+    if Ynew.shape != (dims[0], dims[2], dims[3]):
+        raise Exception("dims changed")
 
 
 

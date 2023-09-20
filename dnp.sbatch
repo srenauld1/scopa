@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --time=00:15:00
-#SBATCH -p gpu_quad
+#SBATCH --time=00:30:00
+#SBATCH -p gpu_requeue
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=15G
 #SBATCH --job-name=DNP
