@@ -152,9 +152,9 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
     dnfolder = fn_prefix + '_' + dnfolder_insert
     tifname = fn_prefix + '_' + str(zii) + '_.tif'
 
-    tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
-    sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
-    sys.stderr = sys.stdout
+    # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S")
+    # sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
+    # sys.stderr = sys.stdout
 
     pth_trainset_all[countz] = pth_denoising + '/' + dnfolder #dir containing all tif files for training
     pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test 
