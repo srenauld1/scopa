@@ -161,7 +161,7 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
 
 def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims, denoise_volume): 
 
-    Y = imread(pth_tif_reg)
+    Y = imread(pth_input)
     Y = Y.reshape(md['dims'])
     Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
     if Y.dtype!='uint16':
