@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=00:59:00
+#SBATCH --time=11:50:00
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=13G
@@ -21,7 +21,7 @@ conda activate caiman
 --index_extraction_param_set 'default' \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_background_subtraction 0 \
---do_motion_correction 0 \
+--do_motion_correction 1 \
 --do_denoise 0 \
 --do_extraction 0 \
 --do_planar_extraction 0 \
