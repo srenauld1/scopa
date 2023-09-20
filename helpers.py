@@ -162,16 +162,16 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
 def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims, denoise_volume): 
 
     Y = imread(pth_input)
-    Y = Y.reshape(md['dims'])
+    Y = Y.reshape(dims)
     Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
     if Y.dtype!='uint16':
         raise Exception("dtype should be uint16 (arbitrary choice for this pipeline)")
-    zind_all_dn = np.arange(md['dims'][1])
+    zind_all_dn = np.arange(dims[1])
 
     for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if denoise_volume=1, ie train on all slices) or separate folders (if denoise_volume=0, ie train on z subset)
 
         Ynew = Y[:,:,:,zii]
-        if Ynew.shape != (md['dims'][0], md['dims'][2], md['dims'][3]):
+        if Ynew.shape != (dims[0], dims[2], dims[3]):
             raise Exception("dims changed")
         if denoise_volume:
             dnfolder_insert = 'all'
