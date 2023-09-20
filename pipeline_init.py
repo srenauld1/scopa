@@ -62,7 +62,7 @@ logging.basicConfig(format=
 
 
 index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
-recdates = ['221120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
@@ -70,10 +70,10 @@ do_motion_correction = 0 #caiman normCorre
 do_background_subtraction = 0 #won't happen unless do_motion_correction = True 
 do_denoise = 0 #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_slice_index = 'all' #deepcad (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-do_extraction = 0 #caiman source extraction 
+do_extraction = 1 #caiman source extraction 
 do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #won't happen unless do_motion_correction = True 
-use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data 
+use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data 
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 

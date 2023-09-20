@@ -51,13 +51,13 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     
     only_init = False #only use the initialization run for extraction 
 
-    p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay 
+    p = 1                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low framerate), 2 for non-instantaneous rise and decay 
     merge_thresh = 0.9
-    gSig = [2, 2, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    gSig = [2, 2, 1] #radius (half-size) of average neurons (in pixels), gsiz (neuron bounding box diameter) is forced to be odd, so gsiz min is 3 (ie for gsig 0.5 and 1, gsiz is 3)       
     nb = 1 #num background components 
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
-    decay_time = .4         # length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
+    decay_time = .4         # length of calcium transient (gcamp7f)
     dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron 
 
     tsub = 1                # temporal downsampling
@@ -126,16 +126,18 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     else:
         do_patches = True
 
-    #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
+    #patch size is automatically set to close to minimum for a given neuron size (gSig), and allowing stride to be a little larger than neuron size 
+    #making stride_to_rf_ratio a little smalletr than 0.65 can make patches smaller 
+    #stride should be roughly the neuron diameter 
+    # #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
     roi_decimation_fac = 0.4 #1 is roughly maximum number of rois in patch assuming equal spacing and allowing overlap 
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
         rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
-        stride_cnmf = int(np.round(rf * stride_to_rf_ratio))         # overlap between patches
+        stride_cnmf = int(np.round(rf * stride_to_rf_ratio)) # overlap between patches, caiman calls it stride but it should be called patch_overlap 
         p_patch = p
         nb_patch = nb
         if do_planar_extraction==True:
             k = int(np.round( (rf*2*rf*2) / ((gSig[0]*2+1)*(gSig[1]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
-            #k = int(np.round(rf*rf / (gSig[0]*gSig[1])))
         else:
             if rf*2<dims_spatial_ex[2]:
                 rfz = rf*2
@@ -143,12 +145,12 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
                 rfz = dims_spatial_ex[2]
             k = int(np.round( (rf*2*rf*2*rfz) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
         indices_ex = [slice(None), slice(None), slice(None)]
-    else:                   # PROCESS THE WHOLE FOV AT ONCE
-        rf = None # will run CNMF on the whole FOV
+    else:   # PROCESS THE WHOLE FOV AT ONCE
+        rf = None # making rf = None will run CNMF on the whole FOV
         stride_cnmf = None       # will run CNMF on the whole FOV
         p_patch = p
         nb_patch = nb
-        k = int(np.round( np.prod(dims_spatial_ex) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
+        k = int(np.round( np.prod(dims_spatial_ex) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in fov (in dims_spatial_ex)
 
     dimstr = "3dex"
     if do_planar_extraction==True:        
@@ -164,7 +166,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning (when it is applied time is in 1st dim?)
     sigma_smooth_snmf.extend(gSig)
     if do_planar_extraction==False:
-        sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1, if 3d extraction, make small for coarse z samples
+        sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1 . . . may want to make small for coarse z samples (if 3d extraction)
 
     fnadd = str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + \
         '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \

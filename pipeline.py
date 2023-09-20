@@ -98,7 +98,13 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
     ##########################   DEEPCAD DENOISING   ##########################
 
+    # prepare files for denoising by writing each z slice to separate tif
+    # and put them in separate folders (since default in denoise.py is do_volume = 0 )
+    # if using do_volume = 1, just move all separate tifs into one folder (might build this if clause) 
+    # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
+
     if do_denoise and not do_cropping_session:
+
         print("entering denoise.py")
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
           conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise.py" \
@@ -226,11 +232,9 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
                             if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                                padnum = 0
-                                padnum_b = 0
-                                numroi_stack_pad = cnm2.estimates.A.shape[-1] + padnum #extra since it can vary a little across fits (even above input k)
+                                numroi_stack_pad = cnm2.estimates.A.shape[-1]
                                 dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
-                                dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1] + padnum_b, ) )
+                                dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
                                 dims_timeseries_stack = ( numroi_stack_pad, cnm2.estimates.C.shape[1] )
 
                                 stack_masks = np.zeros(dims_roimask_stack + (len(sliceindz), ) )

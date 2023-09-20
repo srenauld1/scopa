@@ -103,8 +103,6 @@ Y = imread(pth_in).astype(denoise_dtype)
 Y = Y.reshape(dims)
 Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
 
-size_pre_denoise = Y.shape
-
 fn_existing_denoised_slices = []
 if 0: #skip this for now until we know more, was previously this: if fn_existing_denoised_slices:
     largest_denoised_slice_index = int(fn_existing_denoised_slices[-1].split('/')[-1].split('_')[3])
@@ -117,7 +115,7 @@ if 0: #skip this for now until we know more, was previously this: if fn_existing
     print(zind_all_dn)
 else:
     if denoise_slice_index == 'all':
-        zind_all_dn = np.arange(size_pre_denoise[-1])
+        zind_all_dn = np.arange(dims[1])
     else:
         zind_all_dn = denoise_slice_index
 
@@ -131,7 +129,6 @@ if do_volume: #if training on all slices, put them all in one folder
 else: #if training on subset of slices, put each subset in separate folder 
     pth_trainset_all = ['']*len(zind_all_dn)
     pth_testset_all = ['']*len(zind_all_dn)
-
 
 countz = -1
 for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if do_volume=1, ie train on all slices) or separate folders (if do_volume=0, ie train on z subset)
