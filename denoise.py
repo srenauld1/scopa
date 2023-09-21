@@ -157,10 +157,10 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
     pth_tif_pdn = glob.glob(pth_trainset_all[countz] + '/' + tifname) 
     print(pth_tif_pdn)
     for ofi in pth_tif_pdn: #these should be the same for all files
-        Lt = ofi.split('/')[-1].split('_')[-4]
-        Ly = ofi.split('/')[-1].split('_')[-3]
-        Lx = ofi.split('/')[-1].split('_')[-2]
-        denoise_dtype = ofi.split('/')[-1].split('_')[-1]
+        Lt = int(ofi.split('/')[-1].split('_')[-5])
+        Ly = int(ofi.split('/')[-1].split('_')[-4])
+        Lx = int(ofi.split('/')[-1].split('_')[-3])
+        denoise_input_dtype = ofi.split('/')[-1].split('_')[-2]
     
     denoise_input_shape = (Lt, Ly, Lx)
     print(denoise_input_shape)

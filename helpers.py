@@ -180,7 +180,7 @@ def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims
         else:
             dnfolder_insert = str(zii)
         dnfolder = fn_prefix + '_' + dnfolder_insert
-        tifname = fn_prefix + '_' + str(zii) + '_' + Lt + '_' + Ly  + '_' + Lx + '_' + denoise_input_dtype + '_.tif'
+        tifname = fn_prefix + '_' + str(zii) + '_' + str(Lt) + '_' + str(Ly)  + '_' + str(Lx) + '_' + denoise_input_dtype + '_.tif'
         pth_trainset = pth_denoising + '/' + dnfolder #dir containing all tif files for training
         pth_tif_pdn = pth_trainset + '/' + tifname
         if os.path.exists(pth_trainset) and (zii==0 or denoise_volume==0): #if you're on the first zii (regardless of denoise_volume value), or for all zii if denoise_volume==0 
