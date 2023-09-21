@@ -51,7 +51,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     
     only_init = False #only use the initialization run for extraction 
 
-    p = 1                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low framerate), 2 for non-instantaneous rise and decay 
+    p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low framerate), 2 for non-instantaneous rise and decay 
     merge_thresh = 0.9
     gSig = [2, 2, 1] #radius (half-size) of average neurons (in pixels), gsiz (neuron bounding box diameter) is forced to be odd, so gsiz min is 3 (ie for gsig 0.5 and 1, gsiz is 3)       
     nb = 1 #num background components 
@@ -136,7 +136,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         do_patches = True
 
     # #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
-    roi_decimation_fac = 0.4 #1 is space filling, caiman demo is effectively around .33
+    roi_decimation_fac = 0.02 #1 is space filling, caiman demo is effectively around .33
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
         
         if do_planar_extraction==True:
@@ -144,8 +144,8 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         else:
             maxsig = np.max(gSig)
 
-        rf = int(np.ceil((maxsig*2+1) / stride_to_rf_ratio)) + 1
-        stride_cnmf = int(np.ceil(rf * stride_to_rf_ratio)) + 1
+        rf = 60#int(np.ceil((maxsig*2+1) / stride_to_rf_ratio)) + 1
+        stride_cnmf = 10#int(np.ceil(rf * stride_to_rf_ratio)) + 1
         
         p_patch = p
         nb_patch = nb
