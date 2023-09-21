@@ -74,7 +74,7 @@ do_denoise = 0 #deepcad (from the more recent deepcadrt, although this is not re
 denoise_volume = 0 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately, not a command line arg because it should be constant across the 3 sbatch files of the pipeline (mcp, dnp, and exp) 
 denoise_slice_index = 'all' #which z slices to denoise
 
-do_extraction = 1 #caiman source extraction 
+do_extraction = 0 #caiman source extraction 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #won't happen unless do_motion_correction = True 

@@ -222,8 +222,8 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
             'colab_display': True #if colab_display is true and save_test_images_per_epoch is false, it will error between training and testing
         }
 
-        tc = training_class(train_dict)
-        tc.run()
+        # tc = training_class(train_dict)
+        # tc.run()
 
 
 ############################################# TEST (DENOISE) RECORDINGS WITH CHOSEN MODEL ########################## 
@@ -232,59 +232,59 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
         # and will output denoised versions of those tifs and save in output_dir
         # but, to override default behavior, here i move all pth files except those listed in epochs_choose (which can still be all of them)
         
-        pth_para = natsorted(glob.glob(pth_testset + '/' + '*.yaml'))[-1] #yaml file contains parameters used for training, to be loaded and reused for testing, since there is one yaml per folder, taking the last glob output takes the yaml in the most recent folder (the current run because of datetime in name)
-        pth_pth_all = natsorted(glob.glob(pth_testset + '/' + '*.pth')) #paths to pth files (trained models, one for each epoch )
+        # pth_para = natsorted(glob.glob(pth_testset + '/' + '*.yaml'))[-1] #yaml file contains parameters used for training, to be loaded and reused for testing, since there is one yaml per folder, taking the last glob output takes the yaml in the most recent folder (the current run because of datetime in name)
+        # pth_pth_all = natsorted(glob.glob(pth_testset + '/' + '*.pth')) #paths to pth files (trained models, one for each epoch )
         
-        pth_pth_keep_pattern = []
-        for eci, epoch_choose in enumerate(epochs_choose):
-            pth_pth_keep_pattern.append('E_' + "{:02d}".format(epoch_choose) + '_*.pth')
-        fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
+        # pth_pth_keep_pattern = []
+        # for eci, epoch_choose in enumerate(epochs_choose):
+        #     pth_pth_keep_pattern.append('E_' + "{:02d}".format(epoch_choose) + '_*.pth')
+        # fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
 
-        for ppi,pth_pth in enumerate(pth_pth_all): #make sure there aren't multiple train folders before you move pth files below
-            pth_fldr_pth = '/'.join(pth_pth.split('/')[:-1])
-        if ppi>0 and pth_fldr_pth != pthcheck_prev:
-            print(pthcheck_prev)
-            print(pth_fldr_pth)
-            raise Exception("multiple training folders, not allowed until resume training functionality exists")
-        pthcheck_prev = pth_fldr_pth
+        # for ppi,pth_pth in enumerate(pth_pth_all): #make sure there aren't multiple train folders before you move pth files below
+        #     pth_fldr_pth = '/'.join(pth_pth.split('/')[:-1])
+        # if ppi>0 and pth_fldr_pth != pthcheck_prev:
+        #     print(pthcheck_prev)
+        #     print(pth_fldr_pth)
+        #     raise Exception("multiple training folders, not allowed until resume training functionality exists")
+        # pthcheck_prev = pth_fldr_pth
         
-        for pth_pth in pth_pth_all: #move all pth files besides the ones you want to test with 
-            fn_pth = pth_pth.split('/')[-1]
-        if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
-            if not os.path.exists(fldr_unused_pth):
-                os.mkdir(fldr_unused_pth)
-            shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with 
+        # for pth_pth in pth_pth_all: #move all pth files besides the ones you want to test with 
+        #     fn_pth = pth_pth.split('/')[-1]
+        # if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
+        #     if not os.path.exists(fldr_unused_pth):
+        #         os.mkdir(fldr_unused_pth)
+        #     shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with 
         
-        fldr_pth = pth_fldr_pth.split('/')[-1] #folder with all the pth files 
+        # fldr_pth = pth_fldr_pth.split('/')[-1] #folder with all the pth files 
 
 
-        with open(pth_para, "r") as stream: #read the params from training to apply to testing 
-            patch_t = train_dict['patch_t']
-            patch_x = train_dict['patch_x']
-            patch_y = train_dict['patch_y']
-            fmap = train_dict['fmap']
-            overlap_factor = train_dict['overlap_factor']
+        # with open(pth_para, "r") as stream: #read the params from training to apply to testing 
+        #     patch_t = train_dict['patch_t']
+        #     patch_x = train_dict['patch_x']
+        #     patch_y = train_dict['patch_y']
+        #     fmap = train_dict['fmap']
+        #     overlap_factor = train_dict['overlap_factor']
 
-        test_dict = {
-            # dataset dependent parameters
-            'patch_x': patch_x,               # the width of 3D patches
-            'patch_y': patch_y,               # the height of 3D patches
-            'patch_t': patch_t,               # the time dimension (frames) of 3D patches
-            'overlap_factor':overlap_factor,    # overlap factor
-            'scale_factor': intensity_scale_factor, # the factor for image intensity scaling
-            'test_datasize': num_frames_of_each_tif_to_denoise,     # the number of frames in each tif to be denoised/tested, measured from start
-            'datasets_path': pth_trainset,     # folder containing all files to be tested
-            'pth_dir': pth_trainset,                 # pth file root path
-            'denoise_model' : fldr_pth,    # A folder containing all models (pth files) to be tested
-            'output_dir' : pth_trainset,         # result file root path
-            # network related parameters
-            'fmap': fmap,                         # number of feature maps
-            'GPU': GPU,                         # GPU index
-            'num_workers': num_workers,         # if you use Windows system, set this to 0.
-            'visualize_images_per_epoch': False, # whether to display inference performance after each epoch
-            'save_test_images_per_epoch': save_test_images_per_epoch, # whether to save inference image after each epoch in pth path
-            'colab_display': True #if colab_display is true and save_test_images_per_epoch is false, it will error between training and testing
-        }
+        # test_dict = {
+        #     # dataset dependent parameters
+        #     'patch_x': patch_x,               # the width of 3D patches
+        #     'patch_y': patch_y,               # the height of 3D patches
+        #     'patch_t': patch_t,               # the time dimension (frames) of 3D patches
+        #     'overlap_factor':overlap_factor,    # overlap factor
+        #     'scale_factor': intensity_scale_factor, # the factor for image intensity scaling
+        #     'test_datasize': num_frames_of_each_tif_to_denoise,     # the number of frames in each tif to be denoised/tested, measured from start
+        #     'datasets_path': pth_trainset,     # folder containing all files to be tested
+        #     'pth_dir': pth_trainset,                 # pth file root path
+        #     'denoise_model' : fldr_pth,    # A folder containing all models (pth files) to be tested
+        #     'output_dir' : pth_trainset,         # result file root path
+        #     # network related parameters
+        #     'fmap': fmap,                         # number of feature maps
+        #     'GPU': GPU,                         # GPU index
+        #     'num_workers': num_workers,         # if you use Windows system, set this to 0.
+        #     'visualize_images_per_epoch': False, # whether to display inference performance after each epoch
+        #     'save_test_images_per_epoch': save_test_images_per_epoch, # whether to save inference image after each epoch in pth path
+        #     'colab_display': True #if colab_display is true and save_test_images_per_epoch is false, it will error between training and testing
+        # }
 
-        tc = testing_class(test_dict)
-        tc.run()
+        # tc = testing_class(test_dict)
+        # tc.run()
