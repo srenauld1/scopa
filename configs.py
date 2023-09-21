@@ -107,8 +107,17 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     cnn_lowest = 0  #0.1 default  # neurons with cnn probability lower than this value are rejected
     min_cnn_thr = 0 #0.9 default # if cnn classifier predicts below this value, reject
 
-    stride_to_rf_ratio = 0.65
-
+    #stride_to_rf_ratio (along with gSig) is for automatic calculation of rf, stride, and k, 
+    # keep stride_to_rf_ratio in approxoimate range 0.3 - 0.8, give or take (don't stay >0 and <=1)
+    # smaller stride_to_rf_ratio means larger patch with smaller patch overlap (caiman mistakenly calls patch overlap "stride")
+    # caiman says patch dia should be 3-4 times neuron dia and patch stride should be at least neuron dia
+    # this calculation is just based on the largest dim of neuron, to be conservative 
+    # if gsig is very diofferent across dims you may consider a different automated calculation of rf and stride and k 
+    #, example: when stride_to_rf_ratio = 0.3, patch is ~7 times larger and stride is 50% larger 
+    # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger 
+    # since, patch dia = ceil(neuron_dia/stride_to_rf_ratio)+1)*2 and patch stride = ceil(ceil(neuron_dia/stride_to_rf_ratio)+1)*stride_to_rf_ratio)+1
+    stride_to_rf_ratio = 0.65 
+    
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
             print("USING ALTERNATE MAP2PARAMS FOR OLD PROJECT")
@@ -126,14 +135,18 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     else:
         do_patches = True
 
-    #patch size is automatically set to close to minimum for a given neuron size (gSig), and allowing stride to be a little larger than neuron size 
-    #making stride_to_rf_ratio a little smalletr than 0.65 can make patches smaller 
-    #stride should be roughly the neuron diameter 
     # #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
-    roi_decimation_fac = 0.4 #1 is roughly maximum number of rois in patch assuming equal spacing and allowing overlap 
+    roi_decimation_fac = 0.4 #1 is space filling, caiman demo is effectively around .33
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
-        rf = int(np.ceil((np.max(gSig)*2+1) / stride_to_rf_ratio)) + 1
-        stride_cnmf = int(np.round(rf * stride_to_rf_ratio)) # overlap between patches, caiman calls it stride but it should be called patch_overlap 
+        
+        if do_planar_extraction==True:
+            maxsig = np.max(gSig[0:2])
+        else:
+            maxsig = np.max(gSig)
+
+        rf = int(np.ceil((maxsig*2+1) / stride_to_rf_ratio)) + 1
+        stride_cnmf = int(np.ceil(rf * stride_to_rf_ratio)) + 1
+        
         p_patch = p
         nb_patch = nb
         if do_planar_extraction==True:
