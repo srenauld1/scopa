@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --time=01:00:00
 #SBATCH -p gpu_requeue
-#SBATCH --cpus-per-task=3
+#SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=15G
 #SBATCH --job-name=DNP
-#SBATCH --gres=gpu:a100:1,vram:80G
+#SBATCH --gres=gpu:rtx6000:1
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
