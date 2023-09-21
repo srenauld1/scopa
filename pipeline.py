@@ -101,7 +101,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
         # (since default in denoise.py is denoise_volume = 0 )
         # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
         # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
-        denoise_input_shape, denoise_input_dtype = separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+    separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
 
     ##########################   DEEPCAD DENOISING   ##########################
 
@@ -115,8 +115,6 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
             + " --pth_denoising " + pth_denoising \
             + " --fn_prefix " + fn_prefix \
             + " --dims " + ' '.join(map(str,  md['dims'])) \
-            + " --denoise_input_shape " + ' '.join(map(str,  denoise_input_shape)) \
-            + " --denoise_input_dtype " + denoise_input_dtype \
             + " --denoise_slice_index " + ' '.join(map(str,  denoise_slice_index)))
         
 

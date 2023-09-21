@@ -75,12 +75,10 @@ fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 denoise_slice_index = [0]
 denoise_volume = 0
-denoise_input_shape = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
-denoise_input_dtype = 'uint16'
 
-[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume, denoise_input_shape, denoise_input_dtype] = parse_command_line_denoise(pth_in = pth_in,
+[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume] = parse_command_line_denoise(pth_in = pth_in,
                     pth_denoising = pth_denoising, fn_prefix = fn_prefix, dims = dims, 
-                    denoise_slice_index = denoise_slice_index, denoise_volume = denoise_volume, denoise_input_shape = denoise_input_shape, denoise_input_dtype = denoise_input_dtype)
+                    denoise_slice_index = denoise_slice_index, denoise_volume = denoise_volume)
 
 print(pth_in)
 print(pth_denoising)
@@ -88,8 +86,6 @@ print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
 print(denoise_volume)
-print(denoise_input_shape)
-print(denoise_input_dtype)
 
 env_path = sys.path
 
@@ -144,7 +140,7 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
         countz = countz + 1
 
     dnfolder = fn_prefix + '_' + dnfolder_insert
-    tifname = fn_prefix + '_' + str(zii) + '_.tif'
+    tifname = fn_prefix + '_' + str(zii) + '*_.tif'
 
     # tmpdate = datetime.datetime.now().strftime("%Y%m%dT%H%M%S") 
     # sys.stdout = open(pth_denoising + '/' + dnfolder + '_' + tmpdate + '_stderrout.txt', 'w')
@@ -158,11 +154,17 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
         for ofi in oldfldrs:
             shutil.rmtree(ofi)
 
-    # pth_tif_pdn = pth_trainset_all[countz] + '/' + tifname
-    # print(pth_tif_pdn)
-    # Ynew = imread(pth_tif_pdn)
+    pth_tif_pdn = glob.glob(pth_trainset_all[countz] + '/' + tifname) 
+    print(pth_tif_pdn)
+    for ofi in pth_tif_pdn: #these should be the same for all files
+        Lt = ofi.split('/')[-1].split('_')[-4]
+        Ly = ofi.split('/')[-1].split('_')[-3]
+        Lx = ofi.split('/')[-1].split('_')[-2]
+        denoise_dtype = ofi.split('/')[-1].split('_')[-1]
     
-    Lt, Ly, Lx = tuple(denoise_input_shape) #don't need to index these they should be the same for all stacks
+    denoise_input_shape = (Lt, Ly, Lx)
+    print(denoise_input_shape)
+    print(denoise_input_dtype)
     if denoise_input_dtype!=denoise_dtype:
         raise Exception("dtype doens't match intended")
     if denoise_input_shape != (dims[0], dims[2], dims[3]):
