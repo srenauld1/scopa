@@ -73,7 +73,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources  
 
     max_iter_snmf = 1000
-    perc_baseline_snmf = 20
+    perc_baseline_snmf = 1
     alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
 

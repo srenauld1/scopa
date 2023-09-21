@@ -75,10 +75,12 @@ fn_prefix = '20230624_2_1' #filename prefix (date_fly_trial)
 dims = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
 denoise_slice_index = [0]
 denoise_volume = 0
+denoise_input_shape = [3047, 15, 140, 256] # input motion dimensions (and output movie dimensions)
+denoise_input_dtype = 'uint16'
 
-[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume] = parse_command_line_denoise(pth_in = pth_in,
+[pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume, denoise_input_shape, denoise_input_dtype] = parse_command_line_denoise(pth_in = pth_in,
                     pth_denoising = pth_denoising, fn_prefix = fn_prefix, dims = dims, 
-                    denoise_slice_index = denoise_slice_index, denoise_volume = denoise_volume)
+                    denoise_slice_index = denoise_slice_index, denoise_volume = denoise_volume, denoise_input_shape = denoise_input_shape, denoise_input_dtype = denoise_input_dtype)
 
 print(pth_in)
 print(pth_denoising)
@@ -86,6 +88,8 @@ print(fn_prefix)
 print(dims)
 print(denoise_slice_index)
 print(denoise_volume)
+print(denoise_input_shape)
+print(denoise_input_dtype)
 
 env_path = sys.path
 
@@ -148,14 +152,20 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
 
     pth_trainset_all[countz] = pth_denoising + '/' + dnfolder #dir containing all tif files for training
     pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test 
-    pth_tif_pdn = pth_trainset_all[countz] + '/' + tifname
+    
+    oldfldrs = glob.glob(pth_testset_all[countz]) #delete folders from old runs until you have resume training functionality written
+    if oldfldrs:    
+        for ofi in oldfldrs:
+            shutil.rmtree(ofi)
 
-    print(pth_tif_pdn)
-    Ynew = imread(pth_tif_pdn)
-    Lt, Ly, Lx = Ynew.shape #don't need to index these they should be the same for all stacks
-    if Ynew.dtype!=denoise_dtype:
+    # pth_tif_pdn = pth_trainset_all[countz] + '/' + tifname
+    # print(pth_tif_pdn)
+    # Ynew = imread(pth_tif_pdn)
+    
+    Lt, Ly, Lx = tuple(denoise_input_shape) #don't need to index these they should be the same for all stacks
+    if denoise_input_dtype!=denoise_dtype:
         raise Exception("dtype doens't match intended")
-    if Ynew.shape != (dims[0], dims[2], dims[3]):
+    if denoise_input_shape != (dims[0], dims[2], dims[3]):
         raise Exception("dims changed")
 
 
