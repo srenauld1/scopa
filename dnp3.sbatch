@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --time=01:00:00
 #SBATCH -p gpu_quad
-#SBATCH --cpus-per-task=3
+#SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=15G
 #SBATCH --job-name=DNP3
 #SBATCH --gres=gpu:rtx8000:1,vram:48G
