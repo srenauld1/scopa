@@ -3,7 +3,7 @@
 #SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=3
 #SBATCH --mem-per-cpu=15G
-#SBATCH --job-name=DNP2
+#SBATCH --job-name=DNP3
 #SBATCH --gres=gpu:rtx8000:1,vram:48G
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
