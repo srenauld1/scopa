@@ -255,7 +255,6 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
         pth_pth_keep_pattern = []
         for eci, epoch_choose in enumerate(epochs_choose):
             pth_pth_keep_pattern.append('E_' + "{:02d}".format(epoch_choose) + '_*.pth')
-        fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
 
         for ppi,pth_pth in enumerate(pth_pth_all): #make sure there aren't multiple train folders before you move pth files below
             pth_fldr_pth = '/'.join(pth_pth.split('/')[:-1])
@@ -264,7 +263,9 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
             print(pth_fldr_pth)
             raise Exception("multiple training folders, not allowed until resume training functionality exists")
         pthcheck_prev = pth_fldr_pth
-        
+
+        fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
+
         for pth_pth in pth_pth_all: #move all pth files besides the ones you want to test with 
             fn_pth = pth_pth.split('/')[-1]
         if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
