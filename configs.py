@@ -49,7 +49,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         indices_ex = [slice(None), slice(None), slice(None)]
         
     
-    only_init = False #only use the initialization run for extraction 
+    only_init = True #only use the initialization run for extraction 
 
     p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low framerate), 2 for non-instantaneous rise and decay 
     merge_thresh = 0.9
