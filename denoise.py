@@ -202,8 +202,8 @@ for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
         n_epochs = 2  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
         train_datasets_size = 300 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
         select_img_num = 1e10 # number of images to take from the beginning of each stack (make larger than Lt use the full stack)
-        patch_x = 110 #int(np.ceil(Lx/4)) #extent of patch in x
-        patch_y = 110 #int(np.ceil(Ly/4)) #extent of patch in y
+        patch_x = 30 #int(np.ceil(Lx/4)) #extent of patch in x
+        patch_y = 30 #int(np.ceil(Ly/4)) #extent of patch in y
         overlap_factor = 0.9 #0.9        # the overlap factor between two adjacent patches
         patch_t = 300 #extent of patch in t
         intensity_scale_factor = 1 # the factor for image intensity scaling
