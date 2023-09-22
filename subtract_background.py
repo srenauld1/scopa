@@ -7,9 +7,12 @@ from scipy import signal
 
 ##########################################################################################################################################
 
-# background subtraction currently cannot be disabled (but would be simple to include the option)
-# background subtraction finds, for each line, the contiguous block of pixels with the lowest intensity, then subtracts the mean of that block from the entire line   
+# background subtraction finds, for each line, for each frame, for each z slice, the contiguous block of pixels with the lowest intensity, 
+# then subtracts the mean of that block from the entire line   
 # the spectrum before and after background subtraction is saved
+
+#WARNING, THIS APPROACH ONLY WORKS WELL IF THERE IS A REGION THAT IS CLEARLY BACKGROUND 
+#YOU CAN ADJUST half_wid to fit that region 
 
 ##########################################################################################################################################
 

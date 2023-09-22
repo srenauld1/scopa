@@ -3,8 +3,8 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(index_extraction_param_set, region_extraction, do_background_subtraction, do_motion_correction, 
-                       do_denoise, denoise_volume, denoise_slice_index, do_extraction, do_planar_extraction, use_denoised, use_background_subtracted,
+def parse_command_line(index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
+                       do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
     
@@ -29,10 +29,10 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         default=[do_background_subtraction],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--do_motion_correction",  # name on the CLI - drop the `--` for positional/required parameters
+        "--do_register",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[do_motion_correction],  # default if nothing is provided
+        default=[do_register],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
@@ -53,10 +53,10 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         default=[denoise_slice_index],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--do_extraction",  # name on the CLI - drop the `--` for positional/required parameters
+        "--do_extract",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[do_extraction],  # default if nothing is provided
+        default=[do_extract],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_planar_extraction",  # name on the CLI - drop the `--` for positional/required parameters
@@ -118,14 +118,14 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         region_extraction = args.region_extraction[0] #keep as list
     else:
         region_extraction = args.region_extraction #keep as list
-    do_motion_correction = args.do_motion_correction[0]
+    do_register = args.do_register[0]
     do_denoise = args.do_denoise[0]
     denoise_volume = args.denoise_volume[0]
     if isinstance(args.denoise_slice_index[0], list):
         denoise_slice_index = args.denoise_slice_index[0] #keep as list
     else:
         denoise_slice_index = args.denoise_slice_index #keep as list
-    do_extraction = args.do_extraction[0]
+    do_extract = args.do_extract[0]
     do_planar_extraction = args.do_planar_extraction[0]
     use_denoised = args.use_denoised[0]
     use_background_subtracted = args.use_background_subtracted[0]
@@ -140,7 +140,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
         recording_index = int(args.recording_index[0])
 
     return (index_extraction_param_set, region_extraction, do_background_subtraction, 
-            do_motion_correction, do_denoise, denoise_volume, denoise_slice_index, do_extraction, 
+            do_register, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
             do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
             fly, trial, do_cropping_session, recording_index)
 

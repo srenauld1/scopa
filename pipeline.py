@@ -1,12 +1,10 @@
 
-import sys
 import numpy as np
 import scipy.io as sio
-import scipy
-
 import glob
 import os
 from tifffile.tifffile import imwrite, imread
+
 
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
@@ -16,8 +14,8 @@ from helpers import crop_fov, tracefunc, stitch_denoised_slices, separate_z_slic
 from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 
-                      pth_denoising, md, do_background_subtraction, bg_patch_halfwidth, do_motion_correction, 
-                      do_denoise, denoise_volume, denoise_slice_index, do_cropping_session, do_extraction, do_planar_extraction, 
+                      pth_denoising, md, do_background_subtraction, bg_patch_halfwidth, do_register, 
+                      do_denoise, denoise_volume, denoise_slice_index, do_cropping_session, do_extract, do_planar_extraction, 
                       use_background_subtracted, use_denoised, region_extraction, do_plots, cluster_backend, do_cluster):
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
@@ -25,7 +23,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
     
     ##########################   BACKGROUND SUBTRACTION (PROBLEMATIC) AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
-    if do_motion_correction and not do_cropping_session:
+    if do_register and not do_cropping_session:
         
         Y = imread(pth_datafile).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
         
@@ -107,9 +105,8 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
     if do_denoise and not do_cropping_session:
 
-        print("entering denoise.py")
         os.system("source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh; \
-          conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise.py" \
+          conda run -n deepcadrt ~/.conda/envs/deepcadrt/bin/python3 ~/scopa/denoise_auto.py" \
             + " --pth_in " + pth_tif_reg \
             + " --denoise_volume " + str(denoise_volume) \
             + " --pth_denoising " + pth_denoising \
@@ -120,7 +117,7 @@ def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pt
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
-    if do_extraction or do_cropping_session:
+    if do_extract or do_cropping_session:
 
 
         if use_denoised:
