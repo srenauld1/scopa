@@ -13,22 +13,22 @@
 # export MKL_NUM_THREADS=1 #can't remember why i tried this, but i don't use it   
 # export OPENBLAS_NUM_THREADS=1 #can't remember why i tried this, but i don't use it  
 
-virtenv = 'caiman' 
+virtenv = 'deepcad' 
 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '*' #string, fly index_extraction_param_set, '*' for any 
-trial = '*' #string, trial index_extraction_param_set, '*' for any 
+fly = '2' #string, fly index_extraction_param_set, '*' for any 
+trial = '2' #string, trial index_extraction_param_set, '*' for any 
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 do_register = 0 #caiman normCorre registration 
 do_background_subtraction = 0 #won't happen unless do_register = True 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 
-do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+do_denoise = 1 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_volume = 0 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately, not a command line arg because it should be constant across the 3 sbatch files of the pipeline (mcp, dnp, and exp) 
 denoise_slice_index = 'all' #which z slices to denoise
 
-do_extract = 1 #caiman source extraction 
+do_extract = 0 #caiman source extraction 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #won't happen unless do_register = True 
@@ -42,6 +42,7 @@ cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
 
+import sys
 if len(sys.argv)>1:
   [virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_denoise, denoise_volume, 
    denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
@@ -52,7 +53,6 @@ if len(sys.argv)>1:
                        do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                        recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, recording_index = recording_index)
 
-import sys
 import re
 import cv2
 import os
