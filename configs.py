@@ -73,7 +73,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources  
 
     max_iter_snmf = 1000
-    perc_baseline_snmf = 1
+    perc_baseline_snmf = 99
     alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
 
@@ -90,7 +90,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
 
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
     ITER = 5                # (default is 2; old value=5) -- block coordinate descent iterations
-    bas_nonneg = False #True
+    bas_nonneg = True #this appears to be irrelevant unless the function deconvolve is called on extracted traces
 
     rolling_sum = True
 

@@ -152,7 +152,8 @@ for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate
     oldfldrs = glob.glob(pth_testset_all[countz]) #delete folders from old runs until you have resume training functionality written
     if oldfldrs:    
         for ofi in oldfldrs:
-            shutil.rmtree(ofi)
+            if os.path.isdir(ofi):
+                shutil.rmtree(ofi)
 
     pth_tif_pdn = glob.glob(pth_trainset_all[countz] + '/' + tifname) 
     print(pth_tif_pdn)
