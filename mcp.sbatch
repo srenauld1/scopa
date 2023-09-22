@@ -18,6 +18,7 @@ source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+--virtenv 'caiman' \
 --index_extraction_param_set 'default' \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_background_subtraction 0 \

@@ -7,7 +7,50 @@
 
 ##########################################################################################################################################
 
+# caiman note on starting cluster
+# The default backend mode for parallel processing is through the multiprocessing package. 
+# To make sure that this package is viewable from everywhere before starting the notebook these commands need to be executed from the terminal (in Linux and Windows):
+# export MKL_NUM_THREADS=1 #can't remember why i tried this, but i don't use it   
+# export OPENBLAS_NUM_THREADS=1 #can't remember why i tried this, but i don't use it  
+
 virtenv = 'caiman' 
+
+recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = '*' #string, fly index_extraction_param_set, '*' for any 
+trial = '*' #string, trial index_extraction_param_set, '*' for any 
+recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
+
+do_register = 0 #caiman normCorre registration 
+do_background_subtraction = 0 #won't happen unless do_register = True 
+bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
+
+do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+denoise_volume = 0 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately, not a command line arg because it should be constant across the 3 sbatch files of the pipeline (mcp, dnp, and exp) 
+denoise_slice_index = 'all' #which z slices to denoise
+
+do_extract = 1 #caiman source extraction 
+region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
+use_background_subtracted = 0 #won't happen unless do_register = True 
+use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data 
+index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
+
+do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
+
+do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
+cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
+
+do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
+
+if len(sys.argv)>1:
+  [virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_denoise, denoise_volume, 
+   denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
+   do_cropping_session, recording_index] = \
+    parse_command_line(virtenv = virtenv, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_denoise = do_denoise, 
+                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extract = do_extract, 
+                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
+                       recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, recording_index = recording_index)
 
 import sys
 import re
@@ -50,42 +93,8 @@ if virtenv == 'caiman':
 elif virtenv == 'deepcad':
     from denoise import denoise
 
-
 print(sys.executable)
 env_path = sys.path
-
-# caiman note on starting cluster
-# The default backend mode for parallel processing is through the multiprocessing package. 
-# To make sure that this package is viewable from everywhere before starting the notebook these commands need to be executed from the terminal (in Linux and Windows):
-# export MKL_NUM_THREADS=1 #can't remember why i tried this, but i don't use it   
-# export OPENBLAS_NUM_THREADS=1 #can't remember why i tried this, but i don't use it  
-
-recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '*' #string, fly index_extraction_param_set, '*' for any 
-trial = '*' #string, trial index_extraction_param_set, '*' for any 
-recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
-
-do_register = 0 #caiman normCorre registration 
-do_background_subtraction = 0 #won't happen unless do_register = True 
-bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
-
-do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-denoise_volume = 0 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately, not a command line arg because it should be constant across the 3 sbatch files of the pipeline (mcp, dnp, and exp) 
-denoise_slice_index = 'all' #which z slices to denoise
-
-do_extract = 1 #caiman source extraction 
-region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
-do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
-use_background_subtracted = 0 #won't happen unless do_register = True 
-use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data 
-index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
-
-do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
-
-do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
-cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
-
-do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
 
 if (re.search("/Users/wienecke/", env_path[0])):
   pth_allrec = '/Users/wienecke/Documents/ambrose/stacks/'
@@ -106,16 +115,6 @@ pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising):
     os.mkdir(pth_denoising)
 
-
-if len(sys.argv)>1:
-  [index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_denoise, denoise_volume, 
-   denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
-   do_cropping_session, recording_index] = \
-    parse_command_line(index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
-                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_denoise = do_denoise, 
-                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extract = do_extract, 
-                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
-                       recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, recording_index = recording_index)
 
 
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")

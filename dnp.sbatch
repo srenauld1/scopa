@@ -27,6 +27,7 @@ for i in {0..14}
 do
     sleep 20s
     ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+    --virtenv 'deepcad' \
     --do_denoise 1 \
     --denoise_slice_index $i \
     --recdates '20230627' \

@@ -3,13 +3,20 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
+def parse_command_line(virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
                        do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
     
     CLI=argparse.ArgumentParser()
 
+
+    CLI.add_argument(
+        "--virtenv",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,
+        type=str,
+        default=virtenv,  # default if nothing is provided
+    )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
@@ -111,7 +118,8 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
 
     print("parsed command line arguments for pipeline_init.py")
     print(args)
-    
+
+    virtenv = args.virtenv[0]
     if args.index_extraction_param_set[0] != 'default':
         index_extraction_param_set = int(args.index_extraction_param_set[0])
     if isinstance(args.region_extraction[0], list):
@@ -139,7 +147,7 @@ def parse_command_line(index_extraction_param_set, region_extraction, do_backgro
     if args.recording_index[0] != 'all':
         recording_index = int(args.recording_index[0])
 
-    return (index_extraction_param_set, region_extraction, do_background_subtraction, 
+    return (virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, 
             do_register, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
             do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
             fly, trial, do_cropping_session, recording_index)
