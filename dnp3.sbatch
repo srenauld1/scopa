@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --time=06:00:00
+#SBATCH --time=00:20:00
 #SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=5
-#SBATCH --mem-per-cpu=5G
+#SBATCH --mem-per-cpu=2G
 #SBATCH --job-name=DNP3
-#SBATCH --gres=gpu:a100:1,vram:80G
+#SBATCH --gres=gpu:rtx8000:1,vram:48G
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
@@ -19,14 +19,14 @@ module load miniconda3/4.10.3
 module load gcc/9.2.0
 module load cuda/11.7
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-conda activate caiman
+conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
 for i in {0..14}
 do
     sleep 20s
-    ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+    ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
     --virtenv 'deepcad' \
     --do_denoise 1 \
     --denoise_slice_index $i \

@@ -125,9 +125,8 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         else:
             map_index_2_params = map2params()
             
-        index_extraction_param_set = int(index_extraction_param_set)
-        print('reading parameters from the index_extraction_param_set file')
-        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(index_extraction_param_set)
+        print('indexing into param set')
+        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(int(index_extraction_param_set))
         gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5
 
     if np.all(np.array(dims_spatial_ex)<50): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
