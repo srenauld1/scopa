@@ -43,6 +43,8 @@ cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
 
 import sys
+from parse_command_line import parse_command_line
+
 if len(sys.argv)>1:
   [virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_denoise, denoise_volume, 
    denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
@@ -57,7 +59,6 @@ import re
 import cv2
 import os
 import logging
-from parse_command_line import parse_command_line
 from choose_files import choose_files
 
 if virtenv == 'caiman':
