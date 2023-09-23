@@ -10,7 +10,8 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from caiman_vis_custom import caiman_plots_all, compute_correlations
-from helpers import crop_fov, tracefunc, stitch_denoised_slices, separate_z_slices_before_denoising
+from helpers import tracefunc, stitch_denoised_slices, separate_z_slices_before_denoising
+from crop_fov import crop_fov
 from subtract_background import bgremover
 
 def pipeline(index_extraction_param_set, pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, 

@@ -116,22 +116,7 @@ pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising):
     os.mkdir(pth_denoising)
 
-
-
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
-print(index_extraction_param_set)
-print(region_extraction)
-print(do_register)
-print(do_denoise)
-print(denoise_volume)
-print(denoise_slice_index)
-print(do_extract)
-print(do_planar_extraction)
-print(recdates)
-print(fly)
-print(trial)
-print(do_cropping_session)
-print(recording_index)
 
 if do_denoise:
   print("forcing do_register and do_extract to zero because do_denoise is true")

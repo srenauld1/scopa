@@ -12,6 +12,7 @@ from skimage.util import montage
     
 from caiman.summary_images import local_correlations_movie_offline
 
+
 def im_montage(images):
 
     numim = images.shape[-1]

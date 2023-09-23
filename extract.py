@@ -9,8 +9,8 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from caiman_vis_custom import caiman_plots_all
-from helpers import crop_fov, stitch_denoised_slices, tracefunc
-
+from helpers import stitch_denoised_slices, tracefunc
+from crop_fov import crop_fov
 
 
 def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_tif_dn, pth_denoising, 
