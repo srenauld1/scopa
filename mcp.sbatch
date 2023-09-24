@@ -22,7 +22,7 @@ conda activate caiman
 --index_extraction_param_set 'default' \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_background_subtraction 0 \
---do_register 0 \
+--do_register 1 \
 --do_denoise 0 \
 --do_extract 0 \
 --do_planar_extraction 0 \

@@ -21,7 +21,7 @@ bg_patch_halfwidth = 3 #half width of patch over which mean is computed for back
 
 do_denoise = 1 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_volume = 1 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately, not a command line arg because it should be constant across the 3 sbatch files of the pipeline (mcp, dnp, and exp) 
-denoise_slice_index = 'all' #which z slices to denoise
+denoise_slice_index = 'all' #which z slices to denoise (not the same as which to train on)
 
 do_extract = 0 #caiman source extraction 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
@@ -136,9 +136,6 @@ if do_register or do_extract:
 if do_register:
     register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
     do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster)
-  
-from helpers import separate_z_slices_before_denoising 
-separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
 
 if do_denoise:
     denoise(pth_tif_reg, pth_denoising, fn_prefix, md['dims'], denoise_slice_index, denoise_volume)
