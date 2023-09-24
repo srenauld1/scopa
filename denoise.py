@@ -112,13 +112,14 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
     print(denoise_slice_index)
     print(denoise_volume)
 
-    n_epochs = 2  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-    train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
+    n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+    epochs_choose = [5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
+    train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
     select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
-    patch_x = 110 #int(np.ceil(Lx/4)) #extent of patch in x
-    patch_y = 110 #int(np.ceil(Ly/4)) #extent of patch in y
-    overlap_factor = 0.9 #0.9        # the overlap factor between two adjacent patches
-    patch_t = 300 #extent of patch in t
+    patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
+    patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
+    patch_t = 102 # 300 #extent of patch in t
+    overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
     intensity_scale_factor = 1 # the factor for image intensity scaling
     num_frames_of_each_tif_to_denoise_for_visualization_during_training = 400 #for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save  
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
@@ -126,7 +127,6 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
     save_test_images_per_epoch = True  # whether to save result images after each epoch
     num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised 
 
-    epochs_choose = [1,2] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
     denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16  
 
     fn_existing_denoised_slices = []

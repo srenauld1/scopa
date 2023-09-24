@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH --time=02:00:00
-#SBATCH -p gpu_requeue
+#SBATCH --time=04:00:00
+#SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=3
 #SBATCH --mem-per-cpu=5G
 #SBATCH --job-name=DNP2
@@ -23,11 +23,9 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-
 ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
 --virtenv 'deepcad' \
 --do_denoise 1 \
---do_volume 1 \
 --denoise_slice_index 'all' \
 --recdates '20230627' \
 --fly '2' \
