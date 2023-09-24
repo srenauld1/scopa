@@ -7,11 +7,6 @@
 
 ##########################################################################################################################################
 
-# caiman note on starting cluster
-# The default backend mode for parallel processing is through the multiprocessing package. 
-# To make sure that this package is viewable from everywhere before starting the notebook these commands need to be executed from the terminal (in Linux and Windows):
-# export MKL_NUM_THREADS=1 #can't remember why i tried this, but i don't use it   
-# export OPENBLAS_NUM_THREADS=1 #can't remember why i tried this, but i don't use it  
 
 virtenv = 'deepcad' 
 
@@ -37,10 +32,17 @@ index_extraction_param_set = 'default' #specifies the extraction param set (set 
 
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
+
+# caiman note on starting cluster
+# The default backend mode for parallel processing is through the multiprocessing package. 
+# To make sure that this package is viewable from everywhere before starting the notebook 
+# these commands need to be executed from the terminal (in Linux and Windows):
+# export MKL_NUM_THREADS=1 
+# export OPENBLAS_NUM_THREADS=1 
 do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
-do_plots = 0 #plots were for old version of this pipeline, and I haven't verified that plots run without error, so I leave this 0
+do_plots = 0 #plots were for old version of this pipeline, 
 
 import sys
 from parse_command_line import parse_command_line

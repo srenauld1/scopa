@@ -4,8 +4,6 @@
 ##########################################################################################################################################
 # using deepcad to denoise 
 
-# typically I call this script from pipeline.py, but it can be run on its own from the command line  
-
 # deepcad wants 3d data, and rather than reshaping the 4d array into 3d (denoising on all z slices at once), this script either
 # operates on each z slice independently (if denoise_volume = 0), or all z slices (if denoise_volume = 1) . . . currently not set up to do anything in between 
 
@@ -15,25 +13,18 @@
 # so consider fitting a z slices with denoise_volume = 1 . . . or you can adapt the code (should be simple) to fit some subset, e.g. every pair of z slices
  
 # deepcad creates intermediate files that are saved in pth_denoising
- #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately
+
+# denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, 
+# denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately
 # denoise_slice_index lists which z slices to denoise
 # if denoise_volume = 0, each z slice of 4d volumetric input movie is saved as a separate tif in a separate folder, each passed to deepcad, saved separately in a unique pth_trainset, 
 
-#if denoise_volume = 1, each z slice is saved as a separate tif in the same folder, pth_trainset_all
+#if denoise_volume = 1, each z slice is saved as a separate tif in the same folder, pth_trainset
 
 # regardless of denoise_volume, denoised z slices are saved in separate tifs, 
 # and outside this script the separate denoised z slices are reassmbled as single output file, which is placed in same folder as input file pth_in 
 
-# before running denoise.py (in dnp.sbatch or directly on command line), deepcad and torch needs to be installed (instructions on their github)
-# after that you also need to run the following commands (to install a couple extra packages in the deepcad environment) 
-# module load miniconda3/4.10.3
-# source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-# conda activate deepcadrt
-# pip install mat73
-# pip install matplotlib 
-# pip install natsort 
-
-
+# before denoising, deepcad and torch needs to be installed (see readme.md in this repo scopa)
 
 # TRAIN MEANS LEARNING A MODEL THAT DESCRIBES AN INPUT MOVIE'S SIGNAL AND NOISE
 # TEST MEANS PASSING A MOVIE THROUGH THAT MODEL TO DENOISE IT, THE OUTPUT FROM THE TESTING PHASE IS THE DENOISED MOVIE 
@@ -43,7 +34,29 @@
 # because the deepcad code appends a timestamp to the .pth file's enclosing folder, so a new folder will be created when you resume
 # it should still work, but you will have epochs spread across multiple folders
 # however, the code below does not have this resuming training functionality yet, 
-# so to ensure models don't get mixed, there is a line that removes any existing training folder before training  (shutil.rmtree(pth_trainset_all[countz])
+# so (WARNING) to ensure models don't get mixed, there is a line that removes any existing training folder before training (shutil.rmtree(pth_trainset_all[countz])
+
+
+
+# # note train_datasets_size is number of 3d xyt patches to train the model on (so can exceed number of frames), and also is slightly different from what actually gets used 
+# # while test_datasize during training is number of frames to denoise during optional visualization/saving after each epoch (so I assign it variable name num_frames_of_each_tif_to_denoise_for_visualization_during_training)
+# # while test_datasize during testing is number of frames to denoise using the model (so I assign it variable name num_frames_of_each_tif_to_denoise)
+# # and select_img_num is number of frames in each tif file to include in training, counted from the beginning of each stack (tif) (this param is not used in testing, but test_datasize is analogous)
+
+# # overlap factor applies to patch x and y, but not patch t
+# # patch t spacing is based on how many xy patches there are in each frame, train_datasets_size, and patch_t, it is automatically calculated to evenly distribute the patches in time
+
+# # deepcad's demo "best model" for int16 stack shape (6955,492,492) is train_datasets_size = 6000, n_epochs = 20, patch_x,y,t = 150, overlap_factor = 0.4 
+# # here is their demo data:
+# # fn_demo ='fish_localbrain' # select the demo file you want to train (e.g. 'ATP_3D', 'fish_localbrain', 'NP_3D', ...)
+# # pth_demo, _ = download_demo(download_filename=fn_demo)
+# # demodata = imread(pth_demo + '/fish_localbrain.tif')
+
+# # the model should not converge (loss should not decrease across epochs) since the source and target are both original noisy images
+# # so do not use the loss to guide you in tuning parameters. just inspect the results. 
+# # in general the last epoch is the one to use, 
+# # but if it looks just smoothed, it's underfit (so try more epochs or larger train_dataset_size), and if it looks too sharp/punctate, it's overfit (so try fewer epochs or smaller train_dataset_size)
+# # epochs are continuous (not independent), so if training is interrupted, reload the last completed epoch on the .pth file and resume training (code is not yet written to do this, see above)
 
 
 
@@ -69,9 +82,7 @@ import os
 import glob
 import shutil
 import numpy as np
-import sys
 import fnmatch
-from tifffile.tifffile import imwrite, imread
 from natsort import natsorted
 
 from deepcad.train_collection import training_class
@@ -171,26 +182,6 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
 
 
     ########################### TRAIN ########################## 
-
-    # # note train_datasets_size is number of 3d xyt patches to train the model on (so can exceed number of frames), and also is slightly different from what actually gets used 
-    # # while test_datasize during training is number of frames to denoise during optional visualization/saving after each epoch (so I assign it variable name num_frames_of_each_tif_to_denoise_for_visualization_during_training)
-    # # while test_datasize during testing is number of frames to denoise using the model (so I assign it variable name num_frames_of_each_tif_to_denoise)
-    # # and select_img_num is number of frames in each tif file to include in training, counted from the beginning of each stack (tif) (this param is not used in testing, but test_datasize is analogous)
-
-    # # overlap factor applies to patch x and y, but not patch t
-    # # patch t spacing is based on how many xy patches there are in each frame, train_datasets_size, and patch_t, it is automatically calculated to evenly distribute the patches in time
-
-    # # deepcad's demo "best model" for int16 stack shape (6955,492,492) is train_datasets_size = 6000, n_epochs = 20, patch_x,y,t = 150, overlap_factor = 0.4 
-    # # here is their demo data:
-    # # fn_demo ='fish_localbrain' # select the demo file you want to train (e.g. 'ATP_3D', 'fish_localbrain', 'NP_3D', ...)
-    # # pth_demo, _ = download_demo(download_filename=fn_demo)
-    # # demodata = imread(pth_demo + '/fish_localbrain.tif')
-
-    # # the model should not converge (loss should not decrease across epochs) since the source and target are both original noisy images
-    # # so do not use the loss to guide you in tuning parameters. just inspect the results. 
-    # # in general the last epoch is the one to use, 
-    # # but if it looks just smoothed, it's underfit (so try more epochs or larger train_dataset_size), and if it looks too sharp/punctate, it's overfit (so try fewer epochs or smaller train_dataset_size)
-    # # epochs are continuous (not independent), so if training is interrupted, reload the last completed epoch on the .pth file and resume training (code is not yet written to do this, see above)
 
     for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 
