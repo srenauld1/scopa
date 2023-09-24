@@ -44,7 +44,7 @@
 # # and select_img_num is number of frames in each tif file to include in training, counted from the beginning of each stack (tif) (this param is not used in testing, but test_datasize is analogous)
 
 # # overlap factor applies to patch x and y, but not patch t
-# # patch t spacing is based on how many xy patches there are in each frame, train_datasets_size, and patch_t, it is automatically calculated to evenly distribute the patches in time
+# # patch t spacing/overlap is based on how many xy patches there are in each frame, train_datasets_size, and patch_t, it is automatically calculated to evenly distribute the patches in time
 
 # # deepcad's demo "best model" for int16 stack shape (6955,492,492) is train_datasets_size = 6000, n_epochs = 20, patch_x,y,t = 150, overlap_factor = 0.4 
 # # here is their demo data:
@@ -59,6 +59,20 @@
 # # epochs are continuous (not independent), so if training is interrupted, reload the last completed epoch on the .pth file and resume training (code is not yet written to do this, see above)
 
 
+#     gap_t (stride in time) is given by 
+#     train_datasets_size = 6000; 
+#     numstacks = 1; 
+#     patch_t = 300; 
+#     xfull = 256;
+#     yfull = 140;
+#     tfull = 3047;
+#     xnum = floor((xfull - 110) / 10) + 1;
+#     ynum = floor((yfull - 110) / 10) + 1;
+#     tnum = ceil(train_datasets_size / xnum / ynum / numstacks); 
+#     gap_t = floor((tfull - patch_t * 2) / (tnum - 1))
+
+# overlap in each dim xyt should be at least 90 to avoid stitching artifacts 
+# overlap_t = patch_t - gap_t
 
 ##########################################################################################################################################
 
