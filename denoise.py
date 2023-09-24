@@ -98,7 +98,7 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
     print(denoise_slice_index)
     print(denoise_volume)
 
-    n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+    n_epochs = 2  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
     train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
     select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
     patch_x = 110 #int(np.ceil(Lx/4)) #extent of patch in x
