@@ -23,14 +23,18 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
---virtenv 'deepcad' \
---do_denoise 1 \
---denoise_slice_index 'all' \
---recdates '20230627' \
---fly '2' \
---trial '2' \
---recording_index $SLURM_ARRAY_TASK_ID &
+for i in {0..12}
+do
+    sleep 20s
+    ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
+    --virtenv 'deepcad' \
+    --do_denoise 1 \
+    --denoise_slice_index 'all' \
+    --recdates '2023062*' \
+    --fly '*' \
+    --trial '*' \
+    --recording_index $i &
+done
 
 wait
 sleep 1m
