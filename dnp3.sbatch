@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --time=00:20:00
+#SBATCH --time=03:00:00
 #SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=5
-#SBATCH --mem-per-cpu=2G
-#SBATCH --job-name=DNP3
-#SBATCH --gres=gpu:rtx8000:1,vram:48G
+#SBATCH --mem-per-cpu=12G
+#SBATCH --job-name=DNP
+#SBATCH --gres=teslaV100s:1,vram:32G
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
@@ -23,17 +23,17 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-for i in {0..14}
+for i in {8..12}
 do
     sleep 20s
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
     --virtenv 'deepcad' \
     --do_denoise 1 \
-    --denoise_slice_index $i \
-    --recdates '20230627' \
-    --fly '2' \
-    --trial '2' \
-    --recording_index $SLURM_ARRAY_TASK_ID &
+    --denoise_slice_index 'all' \
+    --recdates '2023062*' \
+    --fly '*' \
+    --trial '*' \
+    --recording_index $i &
 done
 
 wait
