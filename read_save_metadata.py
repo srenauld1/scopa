@@ -5,6 +5,7 @@ from ScanImageTiffReader import ScanImageTiffReader
 from ast import literal_eval
 import re
 import scipy.io as sio
+import numpy as np
 from numpy.core.records import fromarrays
 
 
