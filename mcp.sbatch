@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=00:50:00
+#SBATCH --time=01:00:00
 #SBATCH -p short
-#SBATCH --cpus-per-task=3
+#SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=13G
-#SBATCH --array=[0]
+#SBATCH --array=[0-4]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -29,8 +29,8 @@ conda activate caiman
 --use_background_subtracted 0 \
 --use_denoised 0 \
 --recdates '20230627' \
---fly '2' \
---trial '2' \
+--fly '*' \
+--trial '*' \
 --do_cropping_session 0 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 

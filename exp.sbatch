@@ -19,7 +19,7 @@ conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
 --virtenv 'caiman' \
---index_extraction_param_set -33 \
+--index_extraction_param_set 'default' \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_background_subtraction 0 \
 --do_register 0 \
@@ -27,10 +27,10 @@ conda activate caiman
 --do_extract 1 \
 --do_planar_extraction 0 \
 --use_background_subtracted 0 \
---use_denoised 0 \
---recdates '20230627' \
---fly '2' \
---trial '2' \
+--use_denoised 1 \
+--recdates '2023062*' \
+--fly '*' \
+--trial '*' \
 --do_cropping_session 0 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
