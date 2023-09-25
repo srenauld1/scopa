@@ -134,13 +134,13 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
         largest_denoised_slice_index = int(fn_existing_denoised_slices[-1].split('/')[-1].split('_')[3])
         print(denoise_slice_index)
         print("updating denoise slice index bc largest existing is " + str(largest_denoised_slice_index))
-        if denoise_slice_index=='all':
+        if denoise_slice_index==['all']:
             zind_all_dn = np.arange(largest_denoised_slice_index + 1, Y.shape[-1])
         else:
             zind_all_dn = [x + largest_denoised_slice_index for x in denoise_slice_index]
         print(zind_all_dn)
     else:
-        if denoise_slice_index == 'all':
+        if denoise_slice_index == ['all']:
             zind_all_dn = np.arange(dims[1])
         else:
             zind_all_dn = denoise_slice_index
