@@ -244,6 +244,7 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
             for eci, epoch_choose in enumerate(epochs_choose):
                 pth_pth_keep_pattern.append('E_' + "{:02d}".format(epoch_choose) + '_*.pth')
 
+            pthcheck_prev = ''
             for ppi,pth_pth in enumerate(pth_pth_all): #make sure there aren't multiple train folders before you move pth files below
                 pth_fldr_pth = '/'.join(pth_pth.split('/')[:-1])
             if ppi>0 and pth_fldr_pth != pthcheck_prev:
