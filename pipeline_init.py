@@ -134,7 +134,6 @@ if do_register or do_extract:
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
-
 if do_register:
     register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
     do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster)
