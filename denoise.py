@@ -112,6 +112,12 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
     print(denoise_slice_index)
     print(denoise_volume)
 
+
+    if type(denoise_slice_index)!=list:
+      print("warning, converting denoise_slice_index to list, now it is ")
+      denoise_slice_index = [denoise_slice_index]
+      print(denoise_slice_index)
+
     n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
     epochs_choose = [5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
     train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 

@@ -12,9 +12,14 @@ from subtract_background import bgremover
 def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
              do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster):
 
-    n_processes = 1 #set this in case you don't (or can't) setup cluster 
-    dview = None #set this in case you don't (or can't) setup cluster
-    
+    if do_cluster:
+        if 'dview' in locals(): cm.stop_server(dview=dview)
+        cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
+    else:
+        n_processes = 1 #set this in case you don't (or can't) setup cluster 
+        dview = None #set this in case you don't (or can't) setup cluster
+        
+
     ##########################   BACKGROUND SUBTRACTION AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
     Y = imread(pth_datafile).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
@@ -53,10 +58,6 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, 
         print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
                         
     imwrite(pth_tif_reg_tmp, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
-
-    if do_cluster:
-        if 'dview' in locals(): cm.stop_server(dview=dview)
-        cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
     min_mov = np.min(Y)
     opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = 'default', fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)

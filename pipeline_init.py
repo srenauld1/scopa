@@ -121,9 +121,10 @@ if not os.path.exists(pth_denoising):
 print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 
 if do_denoise:
-  print("forcing do_register and do_extract to zero because do_denoise is true")
+  print("forcing do_register and do_extract and do_cluster to zero because do_denoise is true")
   do_register = 0
   do_extract = 0
+  do_cluster = 0
 
 if do_register or do_extract:
   print("forcing do_denoise to zero because either do_register or do_extract is true")
@@ -132,6 +133,7 @@ if do_register or do_extract:
 [pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, md] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
+
 
 if do_register:
     register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
