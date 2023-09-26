@@ -1,10 +1,10 @@
 #!/bin/bash
-#SBATCH --time=03:00:00
+#SBATCH --time=02:00:00
 #SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=12G
 #SBATCH --job-name=DNP
-#SBATCH --gres=teslaV100s:1,vram:32G
+#SBATCH --gres=gpu:a100:1,vram:80G
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
