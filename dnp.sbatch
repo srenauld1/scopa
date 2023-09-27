@@ -23,7 +23,7 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-for i in {0..1}
+for i in {0..14}
 do
     sleep 20s
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
@@ -33,7 +33,7 @@ do
     --denoise_slice_index 'all' \
     --recdates '20230627' \
     --fly '2' \
-    --trial '*' \
+    --trial '1' \
     --recording_index $i &
 done
 

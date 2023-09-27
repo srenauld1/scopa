@@ -61,47 +61,51 @@
 
  the resources required for denoising are very different than the resrouces required for the rest of the pipeline, so denoising should be run in a sepaate sbatch job  
  
+
+ the pipeline also exists as a jupyter notebook (pipeline_nb.ipynb)
+ it is mostly the same but the fov selection plots use different packages, 
+ and it uses fewer loops and is less automated 
+ BUT, i've been unable to get the denoising working in the ipynb version of the pipeline on O2 (it does work on google colab)
+
+
+ #########
+
  the recommended workflow is:
 
- 1. run job array mcp.sbatch to motion correct recordings in parallel (automated)
- 2. run job array dnp.sbatch to denoise the same batch of recordings in parallel (automated) - depending on how many recordings in pth_allrec, may need to make recording_index = 0 to loop in series (not parallel) because of limited GPU resources 
- 3. using ineractive job on O2 (visual studio), run pipeline_init.py, looping over all values in region_extraction and all recordings in the same batch, letting user define all sub-FOV (interactive)
- 4. using job array exp.sbatch, run extraction on all values in region_extraction for same batch of recordings, optionally using the motion-corrected and denoised or just motion-corrected data (automated)
- 5. use matlab pipeline for further analysis using the output of this python pipeline 
+        1. run job array mcp.sbatch to motion correct recordings in parallel (automated)
+        2. run job array dnp.sbatch to denoise the same batch of recordings in parallel (automated) - depending on how many recordings in pth_allrec, may need to make recording_index = 0 to loop in series (not parallel) because of limited GPU resources 
+        3. using ineractive job on O2 (visual studio), run pipeline_init.py, looping over all values in region_extraction and all recordings in the same batch, letting user define all sub-FOV (interactive)
+        4. using job array exp.sbatch, run extraction on all values in region_extraction for same batch of recordings, optionally using the motion-corrected and denoised or just motion-corrected data (automated)
+        5. use matlab pipeline for further analysis using the output of this python pipeline 
 
- these sbatch files are written to run on requeue-type partitions (using other people's resources), and will automatically requeue if preempted
+############
 
- before running any of the sbatch files mentioned above, caiman needs to be installed; to do that, log into O2 compute cluster and run these commands (you probably could use a lot less than -c 15 --mem=50G in the first command, but who cares)
- srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
- module purge
- module load miniconda3/4.10.3
- source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
- mamba create -n caiman -c conda-forge caiman
+INSTALLING THINGS
 
- after that you also need to run the following commands (to install an extra package in the caiman environment) 
- module load miniconda3/4.10.3
- source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
- conda activate caiman
- pip install scanimage-tiff-reader
- pip install mat73
+ before running register and extract, caiman and a few other packages need to be installed; to do that, log into O2 compute cluster and run these commands from your home folder (you probably could use a lot less than -c 15 --mem=50G in the first command, but who cares)
 
- before running denoise.py (from within in dnp.sbatch or directly on command line), deepcad and torch need to be installed; to do that, run these commands on O2
- srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
- module purge
- module load miniconda3/4.10.3
- source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
- mamba create -n caiman -c conda-forge caiman
+            srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
+            module purge
+            module load miniconda3/4.10.3
+            source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+            mamba create -n caiman -c conda-forge caiman
+            conda activate caiman
+            pip install scanimage-tiff-reader
+            pip install mat73
 
- after that you also need to run the following commands (to install a couple extra packages in the deepcad environment) 
- module load miniconda3/4.10.3
- source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
- conda activate deepcadrt
- pip install mat73
- pip install matplotlib 
- pip install scanimage-tiff-reader
+ before running denoise, deepcad and torch (and a few other packages) need to be installed; to do that, run these commands on O2 from your home folder 
+ 
+            srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
+            module purge
+            module load miniconda3/4.10.3
+            source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+            conda create -n deepcadrt python=3.9
+            conda activate deepcadrt
+            conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
+            pip install deepcad
+            pip install mat73
+            pip install matplotlib 
+            pip install scanimage-tiff-reader
 
+if any conda command above is taking too long or not working, you can try substituting "mamba" for "conda"
 
- the pipeline also exists as a jupyter notebook (pipeline_nb_o2.ipynb)
- it is mostly the same but the fov selection plots use different packages, 
- and it does not loop through recordings and region_extraction (one at a time)
- BUT, i've been unable to get the denoising working in the ipynb version of the pipeline on O2 (it does work on google colab)
