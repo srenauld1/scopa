@@ -136,8 +136,7 @@ if do_register or do_extract:
 if do_register:
     register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
     do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster)
-from helpers import separate_z_slices_before_denoising
-separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+
 if do_denoise:
     denoise(pth_tif_reg, pth_denoising, fn_prefix, md['dims'], denoise_slice_index, denoise_volume)
 

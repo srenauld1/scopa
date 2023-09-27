@@ -123,18 +123,18 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
     
     if denoise_volume:
         train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
-        select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
+        select_img_num = 1e10 # number of frames to take from the beginning of each stack (make Lt or greater to use all frames)
         patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
         patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
         patch_t = 102 # 300 #extent of patch in t
         overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
     else:
-        train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
-        select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
-        patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
-        patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
-        patch_t = 102 # 300 #extent of patch in t
-        overlap_factor = 0.8 #0.9   
+        train_datasets_size = 6000
+        patch_x = 110
+        patch_y = 110
+        patch_t = 102 #102 is about 20 sec for my framerate, may want to adjust for yours
+        overlap_factor = 0.85
+
     
 
     intensity_scale_factor = 1 # the factor for image intensity scaling
