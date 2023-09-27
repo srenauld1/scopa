@@ -99,16 +99,15 @@ elif virtenv == 'deepcad':
 print(sys.executable)
 env_path = sys.path
 
-if (re.search("/Users/wienecke/", env_path[0])):
+if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
   pth_allrec = '/Users/wienecke/Documents/ambrose/stacks/'
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no gpu, make do_denoise false")
-elif (re.search("/home/caw846/", env_path[0])):
+elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
   pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
-  cluster_backend = 'SLURM' #this failed on O2, and so did cluster_backend = 'ipyparallel' 
-elif (re.search("/home/users/wienecke/", env_path[0])):
+elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
   pth_allrec = '/scratch/users/wienecke/stacks/'
-elif (re.search('/content', env_path[0])):
+elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
   pth_allrec = '/content/drive/MyDrive/stacks/'
   do_cluster = 1 #cluster worked on colab 
   index_extraction_param_set = 'default' #not set up for arguments in colab 
@@ -137,7 +136,8 @@ if do_register or do_extract:
 if do_register:
     register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
     do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster)
-
+from helpers import separate_z_slices_before_denoising
+separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
 if do_denoise:
     denoise(pth_tif_reg, pth_denoising, fn_prefix, md['dims'], denoise_slice_index, denoise_volume)
 
