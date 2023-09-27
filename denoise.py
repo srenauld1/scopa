@@ -120,12 +120,23 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
 
     n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
     epochs_choose = [5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
-    train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
-    select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
-    patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
-    patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
-    patch_t = 102 # 300 #extent of patch in t
-    overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
+    
+    if denoise_volume:
+        train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
+        select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
+        patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
+        patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
+        patch_t = 102 # 300 #extent of patch in t
+        overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
+    else:
+        train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
+        select_img_num = 1e10 # number of images to take from the beginning of each stack (make Lt or greater to use all frames)
+        patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
+        patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
+        patch_t = 102 # 300 #extent of patch in t
+        overlap_factor = 0.8 #0.9   
+    
+
     intensity_scale_factor = 1 # the factor for image intensity scaling
     num_frames_of_each_tif_to_denoise_for_visualization_during_training = 400 #for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save  
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
