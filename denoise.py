@@ -123,7 +123,6 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
     
     if denoise_volume:
         train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
-        select_img_num = 1e10 # number of frames to take from the beginning of each stack (make Lt or greater to use all frames)
         patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
         patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
         patch_t = 102 # 300 #extent of patch in t
@@ -135,8 +134,7 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
         patch_t = 102 #102 is about 20 sec for my framerate, may want to adjust for yours
         overlap_factor = 0.85
 
-    
-
+    select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)
     intensity_scale_factor = 1 # the factor for image intensity scaling
     num_frames_of_each_tif_to_denoise_for_visualization_during_training = 400 #for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save  
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
