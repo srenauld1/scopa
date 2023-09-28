@@ -20,8 +20,8 @@ do_background_subtraction = 0 #won't happen unless do_register = True
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 
 do_denoise = 1 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-denoise_volume = 1 #denoise_volume = 1 trains on all z slices listed in denoise_slice_index together, denoise_volume = 0 trains on each z slice listed in denoise_slice_index separately, not a command line arg because it should be constant across the 3 sbatch files of the pipeline (mcp, dnp, and exp) 
-denoise_slice_index = 'all' #which z slices to denoise (not the same as which to train on)
+denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
+denoise_slice_index = 'all' #either 'all' (all z slices) or a single number (a single z slice) . . . this is which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 
 do_extract = 0 #caiman source extraction 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
@@ -117,17 +117,21 @@ pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising):
     os.mkdir(pth_denoising)
 
-print("STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY, STARTING EXTRACT.PY")
 
-if do_denoise:
-  print("forcing do_register and do_extract and do_cluster to zero because do_denoise is true")
+if do_denoise and virtenv=='deepcad':
+  print("forcing do_register and do_extract and do_cluster to zero because you're trying to denoise")
   do_register = 0
   do_extract = 0
   do_cluster = 0
-
-if do_register or do_extract:
+  if denoise_volume==0 and len(denoise_slice_index)>1 and (denoise_slice_index != ['all'] or denoise_slice_index!='all'):
+      raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all")
+  if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
+      raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range)")
+elif (do_register or do_extract) and virtenv=='caiman':
   print("forcing do_denoise to zero because either do_register or do_extract is true")
   do_denoise = 0
+else:
+  raise Exception("virtenv is not set correctly")
 
 [pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, md] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
@@ -138,7 +142,7 @@ if do_register:
     do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster)
 
 if do_denoise:
-    denoise(pth_tif_reg, pth_denoising, fn_prefix, md['dims'], denoise_slice_index, denoise_volume)
+    denoise(pth_denoising, fn_prefix, md['dims'], denoise_slice_index, denoise_volume)
 
 if do_extract or do_cropping_session:
     extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_tif_dn, pth_denoising, 

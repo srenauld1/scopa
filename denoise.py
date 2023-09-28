@@ -22,7 +22,7 @@
 #if denoise_volume = 1, each z slice is saved as a separate tif in the same folder, pth_trainset
 
 # regardless of denoise_volume, denoised z slices are saved in separate tifs, 
-# and outside this script the separate denoised z slices are reassmbled as single output file, which is placed in same folder as input file pth_in 
+# and outside this script the separate denoised z slices are reassmbled as single output file, which is placed in same folder as original tif 
 
 # before denoising, deepcad and torch needs to be installed (see readme.md in this repo scopa)
 
@@ -58,21 +58,83 @@
 # # but if it looks just smoothed, it's underfit (so try more epochs or larger train_dataset_size), and if it looks too sharp/punctate, it's overfit (so try fewer epochs or smaller train_dataset_size)
 # # epochs are continuous (not independent), so if training is interrupted, reload the last completed epoch on the .pth file and resume training (code is not yet written to do this, see above)
 
-
-#     gap_t (stride in time) is given by 
-#     train_datasets_size = 6000; 
-#     numstacks = 1; 
-#     patch_t = 300; 
-#     xfull = 256;
-#     yfull = 140;
-#     tfull = 3047;
-#     xnum = floor((xfull - 110) / 10) + 1;
-#     ynum = floor((yfull - 110) / 10) + 1;
-#     tnum = ceil(train_datasets_size / xnum / ynum / numstacks); 
-#     gap_t = floor((tfull - patch_t * 2) / (tnum - 1))
+## patch overlap is not essential for denoising, it is just a way to augment the data, if you have enough data, your patches do not have to overlap, 
+#this can happen automatically in patch_t, but i'm not sure if you can set patch_x or y to 0 or negative to prevent overlap 
 
 # overlap in each dim xyt should be at least 90 to avoid stitching artifacts 
 # overlap_t = patch_t - gap_t
+
+#here's a matlab script to show how input params interact in the deepcad code 
+'''
+%purpose of this matlab script is to adjust these params:
+%       num_slurm_tasks_on_one_gpu
+%       train_datasets_size
+%       patch_x
+%       patch_y
+%       patch_t,
+% to meet these requirements/recommendations:
+%       overlap_x, y, and t at least 90 (comment in deepcad code says patch overlap should be at least 90 pixels in xyt)
+%while also monitoring size of set of 3d patches (for submitting slurm job that won't fail)
+% for running a single slurm job for denoising
+
+
+%do_volume = 1 trains on entire volume at once, do_volume = 0 trains on individual z slices 
+do_volume = 1;
+
+stack_size_x = 256;
+stack_size_y = 140;
+stack_size_t = 3047;
+stack_size_z = 15;
+volume_rate = 5.08; %hz
+
+
+bytes_per_element = 2;  %2 for uint16, which is what i use, but deepcad can operate on float32 and float64 too
+
+if do_volume
+    num_slurm_tasks_on_one_gpu = 1;
+    numstacks_trained_simultaneously = stack_size_z;
+else
+    num_slurm_tasks_on_one_gpu = 10;  %adjust this
+    numstacks_trained_simultaneously = 1;
+end
+
+if do_volume
+
+    train_datasets_size = 25000;
+    patch_t_seconds = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+    patch_x = 120;
+    patch_y = 120;
+    patch_t = ceil(patch_t_seconds*volume_rate);
+    overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
+
+else
+
+    train_datasets_size = 6000;
+    patch_x = 110;
+    patch_y = 110;
+    patch_t_seconds = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+    patch_t = ceil(patch_t_seconds*volume_rate);
+    overlap_factor = 0.85; %smaller means more temporal overlap, less spatial (balance point depends on other params)
+
+end
+
+gap_x = floor(patch_x * (1 - overlap_factor)) ;
+gap_y = floor(patch_y * (1 - overlap_factor)) ;
+xnum = floor((stack_size_x - patch_x) / gap_x) + 1;
+ynum = floor((stack_size_y - patch_y) / gap_y) + 1;
+tnum = ceil(train_datasets_size / xnum / ynum / numstacks_trained_simultaneously);
+gap_t = floor((stack_size_t - patch_t * 2) / (tnum - 1));
+overlap_x = patch_x*overlap_factor; %should be at least 90
+overlap_y = patch_y*overlap_factor; %should be at least 90
+overlap_t = patch_t - gap_t; %should be at least 90
+
+train_data_size = patch_x * patch_y * patch_t * bytes_per_element * train_datasets_size * num_slurm_tasks_on_one_gpu / 1e9 ;% should be under 80 for using one a100 in slurm job
+
+[overlap_x overlap_y overlap_t]
+
+train_data_size
+
+'''
 
 ##########################################################################################################################################
 
@@ -103,39 +165,49 @@ from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 
 
-def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume):
+def denoise(pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume):
 
-    print(pth_in)
+    if int(fn_prefix.split('_')[0])>20230101: #if it's not my old grad school project 
+        carls_old_project = 0
+        numstacks_all_refers_to = dims[1] # then 'all' is number of z slices (dims[1])
+    else: #if it's my old grad project 
+        carls_old_project = 1
+        if denoise_volume:
+            pretend_trial = '1' # pretend they all come from same trial
+            dnfolder = fn_prefix.split('_')[0] + '_' + fn_prefix.split('_')[1] + '_' + pretend_trial + '_all' #for these non-volumetric grad recordings, if do_volume == 1, rename all trials "1", and each trial a different z slice
+            numstacks_all_refers_to = len(glob.glob(pth_denoising + '/' + dnfolder + '/*tif')) #and 'all' means all stacks in dnfolder (which is really all trials)
+        else: #if not denoise_volume, all is just one stack 
+            numstacks_all_refers_to = 1
+
+    print("all means this many stacks: ")
+    print(numstacks_all_refers_to)
+
     print(pth_denoising)
     print(fn_prefix)
     print(dims)
     print(denoise_slice_index)
     print(denoise_volume)
 
-
-    if type(denoise_slice_index)!=list:
-      print("warning, converting denoise_slice_index to list, now it is ")
-      denoise_slice_index = [denoise_slice_index]
-      print(denoise_slice_index)
-
     n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-    epochs_choose = [5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit 
-    
+    epochs_choose = [1, 2, 3, 4, 5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
+
     if denoise_volume:
         
-        # train_datasets_size = 13000
-        # patch_x = 120
-        # patch_y = 120
-        # patch_t = 200
-        # overlap_factor = 0.8
-
-        train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
-        patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
-        patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
-        patch_t = 102 # 300 #extent of patch in t
-        overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
-    
+        if carls_old_project:
+            train_datasets_size = 13000
+            patch_x = 120
+            patch_y = 120
+            patch_t = 200
+            overlap_factor = 0.8
+        else:
+            train_datasets_size = 25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used 
+            patch_x = 120 # 110 #int(np.ceil(Lx/4)) #extent of patch in x
+            patch_y = 120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
+            patch_t = 102 # 300 #extent of patch in t
+            overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
+        
     else:
+        
         train_datasets_size = 6000
         patch_x = 110
         patch_y = 110
@@ -144,38 +216,26 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
 
     select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)
     intensity_scale_factor = 1 # the factor for image intensity scaling
-    num_frames_of_each_tif_to_denoise_for_visualization_during_training = 400 #for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save  
+    num_frames_of_each_tif_to_denoise_for_visualization_during_training = 400 #for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     num_workers = 0             # if you use Windows system, set this to 0.
     save_test_images_per_epoch = True  # whether to save result images after each epoch
-    num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised 
+    num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised
 
-    denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16  
+    denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16
 
-    fn_existing_denoised_slices = []
-    if 0: #skip this for now until we know more, was previously this: if fn_existing_denoised_slices:
-        largest_denoised_slice_index = int(fn_existing_denoised_slices[-1].split('/')[-1].split('_')[3])
-        print(denoise_slice_index)
-        print("updating denoise slice index bc largest existing is " + str(largest_denoised_slice_index))
-        if denoise_slice_index==['all']:
-            zind_all_dn = np.arange(largest_denoised_slice_index + 1, Y.shape[-1])
-        else:
-            zind_all_dn = [x + largest_denoised_slice_index for x in denoise_slice_index]
-        print(zind_all_dn)
+
+    if denoise_slice_index == ['all'] or denoise_slice_index=='all': 
+        zind_all_dn = np.arange(numstacks_all_refers_to)
     else:
-        if denoise_slice_index == ['all']:
-            zind_all_dn = np.arange(dims[1])
-        else:
-            zind_all_dn = denoise_slice_index
+        zind_all_dn = denoise_slice_index
 
-
-    print(pth_in)
     print(zind_all_dn)
 
-    if denoise_volume: #if training on all slices, put them all in one folder 
+    if denoise_volume: #if training on all slices , put them all in one folder
         pth_trainset_all = ['']
         pth_testset_all = ['']
-    else: #if training on subset of slices, put each subset in separate folder 
+    else: #if training on subset of slices, put each subset in separate folder (but right now subset must be single slice, which can be looped over if slice index is 'all')
         pth_trainset_all = ['']*len(zind_all_dn)
         pth_testset_all = ['']*len(zind_all_dn)
 
@@ -193,22 +253,23 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
         tifname = fn_prefix + '_' + str(zii) + '*_.tif'
 
         pth_trainset_all[countz] = pth_denoising + '/' + dnfolder #dir containing all tif files for training
-        pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test 
-        
+        pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test
+
         oldfldrs = glob.glob(pth_testset_all[countz]) #delete folders from old runs until you have resume training functionality written
-        if oldfldrs:    
+        if oldfldrs:
             for ofi in oldfldrs:
                 if os.path.isdir(ofi):
                     shutil.rmtree(ofi)
 
-        pth_tif_pdn = glob.glob(pth_trainset_all[countz] + '/' + tifname) 
+        print(pth_trainset_all[countz] + '/' + tifname)
+        pth_tif_pdn = glob.glob(pth_trainset_all[countz] + '/' + tifname)
         print(pth_tif_pdn)
         for ofi in pth_tif_pdn: #these should be the same for all files
             Lt = int(ofi.split('/')[-1].split('_')[-5])
             Ly = int(ofi.split('/')[-1].split('_')[-4])
             Lx = int(ofi.split('/')[-1].split('_')[-3])
             denoise_input_dtype = ofi.split('/')[-1].split('_')[-2]
-        
+
         denoise_input_shape = (Lt, Ly, Lx)
         print(denoise_input_shape)
         print(denoise_input_dtype)
@@ -218,7 +279,7 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
             raise Exception("dims changed")
 
 
-    ########################### TRAIN ########################## 
+    ########################### TRAIN ##########################
 
     for pth_trainset, pth_testset in zip(pth_trainset_all, pth_testset_all):
 
@@ -233,7 +294,7 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
                 'scale_factor': intensity_scale_factor,      # the factor for image intensity scaling
                 'select_img_num': select_img_num, # number of images to take from the beginning of each stack (make larger than Lt use the full stack)
                 'train_datasets_size': train_datasets_size,  # datasets size for training (how many 3D patches)
-                'test_datasize': num_frames_of_each_tif_to_denoise_for_visualization_during_training,    
+                'test_datasize': num_frames_of_each_tif_to_denoise_for_visualization_during_training,
                 'datasets_path': pth_trainset,             # folder containing files for training
                 'pth_dir': pth_trainset,                   # the path for pth file (saved models) and optional test images saved after each epoch if save_test_images_per_epoch=True
 
@@ -242,7 +303,7 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
                 'lr': 0.00005,                                 # learning rate
                 'b1': 0.5,                                     # Adam: beta1
                 'b2': 0.9,                                   # Adam: beta2
-                'fmap': 16,    # model complexity, 16 by default, deepcad author says it should not require adjustment 
+                'fmap': 16,    # model complexity, 16 by default, deepcad author says it should not require adjustment
                 'GPU': GPU,                                    # GPU index
                 'num_workers': num_workers,                    # if you use Windows system, set this to 0.
                 'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
@@ -254,15 +315,15 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
             tc.run()
 
 
-    ############################################# TEST (DENOISE) RECORDINGS WITH CHOSEN MODEL ########################## 
+    ############################################# TEST (DENOISE) RECORDINGS WITH CHOSEN MODEL ##########################
 
             # deepcad defaults to denoising all tifs in datasets_path with all models (.pth files) in folder denoise_model
             # and will output denoised versions of those tifs and save in output_dir
             # but, to override default behavior, here i move all pth files except those listed in epochs_choose (which can still be all of them)
-            
+
             pth_para = natsorted(glob.glob(pth_testset + '/' + '*.yaml'))[-1] #yaml file contains parameters used for training, to be loaded and reused for testing, since there is one yaml per folder, taking the last glob output takes the yaml in the most recent folder (the current run because of datetime in name)
             pth_pth_all = natsorted(glob.glob(pth_testset + '/' + '*.pth')) #paths to pth files (trained models, one for each epoch )
-            
+
             pth_pth_keep_pattern = []
             for eci, epoch_choose in enumerate(epochs_choose):
                 pth_pth_keep_pattern.append('E_' + "{:02d}".format(epoch_choose) + '_*.pth')
@@ -278,18 +339,18 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
 
             fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
 
-            for pth_pth in pth_pth_all: #move all pth files besides the ones you want to test with 
+            for pth_pth in pth_pth_all: #move all pth files besides the ones you want to test with
                 fn_pth = pth_pth.split('/')[-1]
                 if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
                     if not os.path.exists(fldr_unused_pth):
                         os.mkdir(fldr_unused_pth)
-                    shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with 
-                
-            fldr_pth = pth_fldr_pth.split('/')[-1] #folder with all the pth files 
+                    shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with
+
+            fldr_pth = pth_fldr_pth.split('/')[-1] #folder with all the pth files
 
 
 
-            with open(pth_para, "r") as stream: #read the params from training to apply to testing 
+            with open(pth_para, "r") as stream: #read the params from training to apply to testing
                 patch_t = train_dict['patch_t']
                 patch_x = train_dict['patch_x']
                 patch_y = train_dict['patch_y']
@@ -319,3 +380,4 @@ def denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise
 
             tc = testing_class(test_dict)
             tc.run()
+

@@ -7,8 +7,8 @@
 --do_background_subtraction 0 \
 --do_motion_correction 0 \
 --denoise_slice_index 'all' \
---do_denoise 0 \
---do_extraction 1 \
+--do_denoise 1 \
+--do_extraction 0 \
 --do_planar_extraction 0 \
 --use_background_subtracted 0 \
 --use_denoised 1 \

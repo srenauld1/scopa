@@ -6,7 +6,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from helpers import separate_z_slices_before_denoising, tracefunc 
+from helpers import separate_z_slices_before_denoising, separate_z_slices_before_denoising_carls_old_project, tracefunc 
 from subtract_background import bgremover
 
 def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
@@ -92,4 +92,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, 
     # (since default in denoise.py is denoise_volume = 0 )
     # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
     # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
-    separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+    if int(fn_prefix.split('_')[0])>20230101: #if it's not my old project 
+        separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+    else:
+        separate_z_slices_before_denoising_carls_old_project(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)

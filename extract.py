@@ -9,7 +9,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from caiman_vis_custom import caiman_plots_all
-from helpers import stitch_denoised_slices, tracefunc
+from helpers import stitch_denoised_slices, stitch_denoised_slices_carls_old_project, tracefunc
 from crop_fov import crop_fov
 
 
@@ -26,10 +26,14 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
         fn_dn_add = ''
         pth_tif_dn = pth_tif_dn + fn_dn_add
         epoch_choose = 5 #which epoch to stitch (must exist, ie must be one of epochs_choose in denoise.py)
-        force_stitch = 1 #stitch regardless of whether the file already exists (e.g. to use a different run)
+        force_stitch = 1 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch)
 
         if not os.path.isfile(pth_tif_dn) or force_stitch:
-            stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+            if int(fn_prefix.split('_')[0])>20230101: #if it's not my old project 
+                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], do_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+            else:
+                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], do_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+
         pth_exin = pth_tif_dn
     else:
         pth_exin = pth_tif_reg
