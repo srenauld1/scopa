@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --time=02:00:00
+#SBATCH --time=04:00:00
 #SBATCH -p gpu_quad
-#SBATCH --cpus-per-task=5
+#SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=5G
 #SBATCH --job-name=DNPZ
 #SBATCH --gres=gpu:a100:1,vram:80G
@@ -23,7 +23,7 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-for i in {0..4} 
+for i in {5..14} 
 do
     sleep 20s
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
