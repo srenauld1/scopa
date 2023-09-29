@@ -117,7 +117,6 @@ pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising):
     os.mkdir(pth_denoising)
 
-
 if do_denoise and virtenv=='deepcad':
   print("forcing do_register and do_extract and do_cluster to zero because you're trying to denoise")
   do_register = 0

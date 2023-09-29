@@ -81,51 +81,60 @@ def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, p
         imwrite(pth_tif_pdn, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
+
 def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, epoch_choose):
+
+  if denoise_volume == 1:
+    pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_all/')))
+  else:
+    pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_*/')))
+    pth_trainset_all = list(set(pth_trainset_all) - set(natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_al*/'))))) #exclude the "all" folders when denoise_volume==1
+
+  countz = 0
+  for pth_trainset in pth_trainset_all:
+    countz = countz + 1
     
-    # stitch together separate z slices (separate tifs) output by denoising, choose which denoising epoch to use, 
-    # and whether it was a denoising run that operated on all slices at once, or a slice ssubset (denoise_volume = 1 or 0, respectively) 
+    fldr_chex = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*')))
+    for fcxi,fcx in enumerate(fldr_chex):
+      if fcxi!=len(fldr_chex)-1:
+          print("deleting this denoise test folder from old run")
+          print(fcx)
+          shutil.rmtree(fcx)
+    
+    fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder
+    for fldr_outtiff in fldr_outtiff_all:
+      
 
-    if denoise_volume == 1:
-        pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_all/')))
-    else:
-        pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_*/')))
-        pth_trainset_all = list(set(pth_trainset_all) - set(natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_al*/'))))) #exclude the "all" folders when denoise_volume==1
+      if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose) + '_Iter_*'):
+        pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
-    countz = 0
-    for pth_trainset in pth_trainset_all:
-        countz = countz + 1
-        fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder  
-        for fldr_outtiff in fldr_outtiff_all:
-            if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose) + '_Iter_*'):
-                pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
+        Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1])) #t y x z
+        for fni,f in enumerate(pth_denoised_singles): #loop over each denoised z slice and reassemble into array matching shape of original 4d volume
+            print(f)
+            sliceind = int(f.split('/')[-1].split('_')[3])
+            Ynew = imread(f)
+            if Ynew.dtype!='uint16':
+                print("warning, converting type from " + str(Ynew.dtype))
+                Ynew = Ynew.astype('uint16')
+                if np.min(Y)<0 or np.max(Y) > 65535:
+                  raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
+            print(Ynew.dtype)
+            print(sliceind)
+            Y[:,:,:,sliceind] = Ynew
 
-                Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1])) #t y x z
-                for fni,f in enumerate(pth_denoised_singles): #loop over each denoised z slice and reassemble into array matching shape of original 4d volume
-                    print(f)
-                    sliceind = int(f.split('/')[-1].split('_')[3])
-                    Ynew = imread(f)
-                    if Ynew.dtype!='uint16':
-                        print("warning, converting type from " + str(Ynew.dtype))
-                        Ynew = Ynew.astype('uint16')
-                        if np.min(Y)<0 or np.max(Y) > 65535:
-                            raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
-                    print(Ynew.dtype)
-                    print(sliceind)
-                    Y[:,:,:,sliceind] = Ynew
+        if fni != dims_pre_denoise[1]-1:
+            raise Exception("not all slices present")
 
-                if fni != dims_pre_denoise[1]-1:
-                    raise Exception("not all slices present")
+        mnmv = np.min(Y)
+        Y = Y - mnmv #make nonnegative before writing to uint16
+        print("MIN AFTER DENOISING " + str(mnmv))
+        Y = Y.astype('uint16')
+        Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
+        print(Y.shape)
+        Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
+        print(Y.shape)
+        imwrite(pth_out, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
 
-                mnmv = np.min(Y)
-                Y = Y - mnmv #make nonnegative before writing to uint16
-                print("MIN AFTER DENOISING " + str(mnmv))
-                Y = Y.astype('uint16')
-                Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
-                print(Y.shape)
-                Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
-                print(Y.shape)
-                imwrite(pth_out, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
 def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, epoch_choose):
@@ -146,6 +155,16 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
 
   countz = 0
   for pth_trainset in pth_trainset_all:
+    
+        
+    fldr_chex = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*')))
+    for fcxi,fcx in enumerate(fldr_chex):
+      if fcxi!=len(fldr_chex)-1:
+          print("deleting this denoise test folder from old run")
+          print(fcx)
+          shutil.rmtree(fcx)
+    
+    
     fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder
     for fldr_outtiff in fldr_outtiff_all:
       if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose) + '_Iter_*'):
@@ -186,6 +205,9 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
 
         if countz != dims_pre_denoise[1]:
             raise Exception("more or less than one slice present")
+
+
+
 
 
 def tracefunc(frame, event, arg, indent=[0]): # can get line number with frame.f_lineno
