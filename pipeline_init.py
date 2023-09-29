@@ -140,19 +140,22 @@ else:
     raise Exception("virtenv is not set correctly")
 
    
-[pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, md] = \
+[pth_datafile_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
-if do_register:
-    register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
-    do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster)
+for ri in enumerate(pth_datafile_all):
 
-if do_denoise:
-    denoise(pth_denoising, fn_prefix, md['dims'], denoise_slice_index, denoise_volume)
+    if do_register:
+        register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], 
+            pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_background_subtraction, bg_patch_halfwidth, 
+            denoise_volume, cluster_backend, do_cluster)
 
-if do_extract or do_cropping_session:
-    extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_tif_dn, pth_denoising, 
-    md, denoise_volume, do_cropping_session, do_planar_extraction, use_denoised, 
-    region_extraction, do_plots, cluster_backend, do_cluster)
+    if do_denoise:
+        denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], denoise_slice_index, denoise_volume)
+
+    if do_extract or do_cropping_session:
+        extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_tif_dn_all[ri], pth_denoising, 
+        md_all[ri], denoise_volume, do_cropping_session, do_planar_extraction, use_denoised, 
+        region_extraction, do_plots, cluster_backend, do_cluster)
 

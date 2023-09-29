@@ -11,6 +11,14 @@ from natsort import natsorted
 def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
                  use_background_subtracted, do_register):
     
+    pth_datafile_all = []
+    fn_prefix_all = []
+    pth_prefix_all = []
+    pth_tif_reg_tmp_all = []
+    pth_tif_reg_all = []
+    pth_tif_dn_all = []
+    md_all = []
+
     countz = -1 #so first one is zero, since recording_index is zero indexed 
     for recording_date in recdates:
 
@@ -84,5 +92,13 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                                 md = np.load(pth_md_npy, allow_pickle='TRUE').item()
                             else:
                                 md = read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None)
+                        
+                        pth_datafile_all.append(pth_datafile)
+                        fn_prefix_all.append(fn_prefix)
+                        pth_prefix_all.append(pth_prefix)
+                        pth_tif_reg_tmp_all.append(pth_tif_reg_tmp)
+                        pth_tif_reg_all.append(pth_tif_reg)
+                        pth_tif_dn_all.append(pth_tif_dn)
+                        md_all.append(md)
 
-    return (pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, md) 
+    return (pth_datafile_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_all, pth_tif_dn_all, md_all) 
