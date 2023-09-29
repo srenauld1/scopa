@@ -11,21 +11,21 @@ from map2params import map2params, map2params_t5
 
 ##########################################################################################################################################
 
-def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,  
+def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
             md = None, do_planar_extraction = None, dims_spatial_ex = 0):
-    
+
     #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
 
-    #motion correction configs 
+    #motion correction configs
 
     pw_rigid = False
     nonneg_movie = True
     min_mov = min_mov
-    shifts_opencv = True #true uses intercubic interp, false uses fourier, but i think something else overrides this setting elsewhere 
+    shifts_opencv = True #true uses intercubic interp, false uses fourier, but i think something else overrides this setting elsewhere
     upsample_factor_grid = 4 #default 4
     niter_rig = 1 #default 1
     max_deviation_rigid = 3
-    
+
     if md['dims'][1]==1:
         is3D_mc = False
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
@@ -39,42 +39,42 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         overlaps_mc = (12, 12, 3)
         max_shifts_mc = (8, 8, 2)
 
-    do_slices = False #my crop_fov is meant to replace this, so should always be false 
+    do_slices = False #my crop_fov is meant to replace this, so should always be false
     if do_slices:
         sly = slice(6, 51, 1)
-        slx = slice(40, 181, 1) 
-        slz = slice(1, 9, 1) 
+        slx = slice(40, 181, 1)
+        slz = slice(1, 9, 1)
         indices_ex = [slx, sly, slz]
     else:
         indices_ex = [slice(None), slice(None), slice(None)]
-        
-    
-    only_init = True #only use the initialization run for extraction 
 
-    p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low framerate), 2 for non-instantaneous rise and decay 
+
+    only_init = False #only use the initialization run for extraction
+
+    p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
     merge_thresh = 0.9
-    gSig = [2, 2, 1] #radius (half-size) of average neurons (in pixels), gsiz (neuron bounding box diameter) is forced to be odd, so gsiz min is 3 (ie for gsig 0.5 and 1, gsiz is 3)       
-    nb = 1 #num background components 
+    gSig = [2, 2, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    nb = 1 #num background components
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
-    decay_time = .4         # length of calcium transient (gcamp7f)
-    dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron 
+    decay_time = .4         # length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
+    dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
 
     tsub = 1                # temporal downsampling
     ssub = 1               # spatial downsampling
-    p_ssub = 1 #patch downsampling in space 
+    p_ssub = 1 #patch downsampling in space
     p_tsub = 1 #patch downsampling in time
-    
+
     thr_method = 'nrg' #or 'max'
     maxthr = 0.1 #for  thr_method = 'max' keep pixels above this threshold
-    nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy 
-    extract_cc = True #true will throw away isolated pixels of some kind 
-    
-    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources  
+    nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy
+    extract_cc = True #true will throw away isolated pixels of some kind
+
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_NMF apparently has problems?? 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources
 
     max_iter_snmf = 1000
-    perc_baseline_snmf = 99
-    alpha_snmf = 100 #default 1000 #for method_init sparseNMF    
+    perc_baseline_snmf = 20
+    alpha_snmf = 100 #default 1000 #for method_init sparseNMF
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
 
     lambda_gnmf = 1 #for method_init graphNMF
@@ -85,59 +85,60 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     SC_use_NN = False          # sparsify affinity matrix by using only nearest neighbors
     SC_nnn = 20                # number of nearest neighbors to use if SC_use_NN = True
 
-    low_rank_background = True #true makes bankground nb, false makes it update with hals
-    update_background_components = True   #use this??
+    low_rank_background = True #True #true makes bankground nb, false makes it update with hals
+    update_background_components = True
 
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
-    ITER = 5                # (default is 2; old value=5) -- block coordinate descent iterations
-    bas_nonneg = True #this appears to be irrelevant unless the function deconvolve is called on extracted traces
+    ITER = 10                # (default is 2; old value=5) -- block coordinate descent iterations
+    bas_nonneg = True #appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
 
-    rolling_sum = True
+    rolling_sum = True #think (?) only relevant for init method greedy_roi
 
-    #Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1)) 
+    #Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1))
     # and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
     # A component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
     # can turn off CNN part withy use_CNN = false
-    # these values will result in no roi filtering 
-    SNR_lowest = 0#0.5#0  #0.5 default       # minimum SNR for accepted components 
-    min_SNR = 0#0  #2.5 default    # accept components with that peak-SNR or higher 
-    rval_lowest = -1  # -1 default 0.6  # space correlation threshold 
-    rval_thr = 0#0  # 0.8 default  # space correlation threshold 
+    # these values will result in no roi filtering
+    SNR_lowest = 0#0.5#0  #0.5 default       # minimum SNR for accepted components
+    min_SNR = 0#0  #2.5 default    # accept components with that peak-SNR or higher
+    rval_lowest = -1  # -1 default 0.6  # space correlation threshold
+    rval_thr = 0#0  # 0.8 default  # space correlation threshold
     use_cnn = False      # True default # use the CNN classifier affects if 2 below params are used
     cnn_lowest = 0  #0.1 default  # neurons with cnn probability lower than this value are rejected
     min_cnn_thr = 0 #0.9 default # if cnn classifier predicts below this value, reject
 
-    #stride_to_rf_ratio (along with gSig) is for automatic calculation of rf, stride, and k, 
+    #stride_to_rf_ratio (along with gSig) is for automatic calculation of rf, stride, and k,
     # keep stride_to_rf_ratio in approxoimate range 0.3 - 0.8, give or take (don't stay >0 and <=1)
     # smaller stride_to_rf_ratio means larger patch with smaller patch overlap (caiman mistakenly calls patch overlap "stride")
     # caiman says patch dia should be 3-4 times neuron dia and patch stride should be at least neuron dia
-    # this calculation is just based on the largest dim of neuron, to be conservative 
-    # if gsig is very diofferent across dims you may consider a different automated calculation of rf and stride and k 
-    #, example: when stride_to_rf_ratio = 0.3, patch is ~7 times larger and stride is 50% larger 
-    # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger 
+    # this calculation is just based on the largest dim of neuron, to be conservative
+    # if gsig is very diofferent across dims you may consider a different automated calculation of rf and stride and k
+    #, example: when stride_to_rf_ratio = 0.3, patch is ~7 times larger and stride is 50% larger
+    # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger
     # since, patch dia = ceil(neuron_dia/stride_to_rf_ratio)+1)*2 and patch stride = ceil(ceil(neuron_dia/stride_to_rf_ratio)+1)*stride_to_rf_ratio)+1
-    stride_to_rf_ratio = 0.65 
-    
+    stride_to_rf_ratio = 0.65 #0.65
+
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
-            print("USING ALTERNATE MAP2PARAMS FOR OLD PROJECT")
+            print("USING ALTERNATE MAP2PARAMS FOR CARLS OLD PROJECT")
             map_index_2_params = map2params_t5()
         else:
             map_index_2_params = map2params()
-            
+
         print('indexing into param set')
-        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = map_index_2_params.map_index(int(index_extraction_param_set))
-        gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5
+        merge_thresh, m2p_gsig, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = \
+            map_index_2_params.map_index(int(index_extraction_param_set))
+        gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5, and forcing 3rd element (z) to be 1 because my z sections are about half the neuron diameter
 
     if np.all(np.array(dims_spatial_ex)<50): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
         do_patches = False
     else:
         do_patches = True
-
-    # #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
-    roi_decimation_fac = 0.1 #1 is space filling, caiman demo is effectively around .33
+    #do_patches = False
+    #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
+    roi_decimation_fac = 0.3  #1 is space filling, caiman demo is effectively around .33
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
-        
+
         if do_planar_extraction==True:
             maxsig = np.max(gSig[0:2])
         else:
@@ -145,7 +146,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
 
         rf = int(np.ceil((maxsig*2+1) / stride_to_rf_ratio)) + 1
         stride_cnmf = int(np.ceil(rf * stride_to_rf_ratio)) + 1
-        
+
         p_patch = p
         nb_patch = nb
         if do_planar_extraction==True:
@@ -157,20 +158,20 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
                 rfz = dims_spatial_ex[2]
             k = int(np.round( (rf*2*rf*2*rfz) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
         indices_ex = [slice(None), slice(None), slice(None)]
-    else:   # PROCESS THE WHOLE FOV AT ONCE
-        rf = None # making rf = None will run CNMF on the whole FOV
+    else:                   # PROCESS THE WHOLE FOV AT ONCE
+        rf = None # will run CNMF on the whole FOV
         stride_cnmf = None       # will run CNMF on the whole FOV
         p_patch = p
         nb_patch = nb
-        k = int(np.round( np.prod(dims_spatial_ex) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in fov (in dims_spatial_ex)
+        k = int(np.round( np.prod(dims_spatial_ex) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
 
     dimstr = "3dex"
-    if do_planar_extraction==True:        
+    if do_planar_extraction==True:
         dimstr = '2dex'
-        indices_ex = indices_ex[:-1] #change from 3d to 2d 
-        dxy = dxy[:-1] #change from 3d to 2d 
-        gSig = gSig[:-1] #change from 3d to 2d 
-    
+        indices_ex = indices_ex[:-1] #change from 3d to 2d
+        dxy = dxy[:-1] #change from 3d to 2d
+        gSig = gSig[:-1] #change from 3d to 2d
+
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
     se = np.ones((3,)*len(gSig), dtype=np.uint8)  #put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
     #medw = (3,)*len(gSig)
@@ -178,11 +179,13 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning (when it is applied time is in 1st dim?)
     sigma_smooth_snmf.extend(gSig)
     if do_planar_extraction==False:
-        sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1 . . . may want to make small for coarse z samples (if 3d extraction)
+        sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1, if 3d extraction, make small for coarse z samples
 
-    fnadd = str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) + '_' + str(k) + \
-        '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
-            + '_' + str(max_iter_snmf) + '_' + method_init.split('_')[0] + '_' + dimstr
+
+    fnadd = str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) \
+        + '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
+        + '_' + str(max_iter_snmf) + '_' + str(ITER) \
+        + '_' + str(k) + '_' + method_init.split('_')[0] + '_' + dimstr
 
     if do_planar_extraction is None: #it's none during motion correction, when we don't care about these params, rather than true/false
         print("motion correction params configured")
@@ -197,16 +200,16 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
                 'is3D': is3D_mc,
                 'nonneg_movie':nonneg_movie,
                 'min_mov': min_mov,
-                'shifts_opencv':shifts_opencv, 
-                'niter_rig':niter_rig, 
-                'upsample_factor_grid':upsample_factor_grid, 
+                'shifts_opencv':shifts_opencv,
+                'niter_rig':niter_rig,
+                'upsample_factor_grid':upsample_factor_grid,
                 'fr': fr,
                 'p': p,
                 'nb': nb,
                 'merge_thr': merge_thresh,
                 'rf': rf,
                 'indices': indices_mc,  #for some reason indices_mc is causing error, maybe needs list for mc and tuple for extraction?
-                'K': k, 
+                'K': k,
                 'gSig': gSig,
                 'gSiz': gSiz,
                 'stride': stride_cnmf,
@@ -229,24 +232,24 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
                 'bas_nonneg': bas_nonneg,
                 'p_patch': p_patch,
                 'nb_patch': nb_patch,
-                'se': se, 
+                'se': se,
                 'rolling_sum': rolling_sum,
                 'only_init': only_init,
                 'ssub': ssub,
                 'tsub': tsub,
                 'p_ssub': p_ssub,
                 'p_tsub': p_tsub,
-                'SNR_lowest': SNR_lowest, 
+                'SNR_lowest': SNR_lowest,
                 'min_SNR': min_SNR,
                 'rval_thr': rval_thr,
                 'rval_lowest': rval_lowest,
                 'use_cnn': use_cnn,
                 'min_cnn_thr': min_cnn_thr,
-                'cnn_lowest': cnn_lowest, 
-                'ITER': ITER, 
-                'fudge_factor': fudge_factor, 
-                'cnn_lowest': cnn_lowest, 
-                'update_background_components': update_background_components, 
+                'cnn_lowest': cnn_lowest,
+                'ITER': ITER,
+                'fudge_factor': fudge_factor,
+                'cnn_lowest': cnn_lowest,
+                'update_background_components': update_background_components,
                 'low_rank_background' : low_rank_background,
                 'thr_method': thr_method,
                 'maxthr': maxthr,
@@ -257,7 +260,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
 
 
     # # for reference here are the initialization defs for 3 methods, sparse_nmf apparently "has problems" according to gitter
-    
+
     # # greedyROI(Y, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
     #           rolling_sum=False, rolling_length=100, seed_method='auto')
 
@@ -268,10 +271,12 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     #          perc_baseline=20, nb=1, truncate=2, tol=1e-3, SC_kernel='heat',
     #          SC_normalize=True, SC_thr=0, SC_sigma=1, SC_use_NN=False,
     #          SC_nnn=20
-    
+
     # for sparsenmf all these are tunable in cnmf params except remove_baseline and truncate, whose defaults are below
     # # sparseNMF(Y_ds, nr, max_iter_snmf=500, alpha=10e2, sigma_smooth=(.5, .5, .5),
     #           remove_baseline=True, perc_baseline=20, nb=1, truncate=2)
-    
-    
+
+
     return opts_dict, indices_ex, fnadd
+
+

@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=11:55:00
+#SBATCH --time=0:40:00
 #SBATCH -p short
-#SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=30G
-#SBATCH --array=[0]
+#SBATCH --cpus-per-task=4
+#SBATCH --mem-per-cpu=5G
+#SBATCH --array=[0-14]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
