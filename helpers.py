@@ -132,7 +132,8 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
   print(Y.shape)
   Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
   print(Y.shape)
-  imwrite(pth_out, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
+  #imwrite(pth_out, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+  imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
 def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, epoch_choose):

@@ -117,21 +117,29 @@ pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising):
     os.mkdir(pth_denoising)
 
-if do_denoise and virtenv=='deepcad':
-  print("forcing do_register and do_extract and do_cluster to zero because you're trying to denoise")
-  do_register = 0
-  do_extract = 0
-  do_cluster = 0
-  if denoise_volume==0 and len(denoise_slice_index)>1 and (denoise_slice_index != ['all'] or denoise_slice_index!='all'):
-      raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all")
-  if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
-      raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range)")
-elif (do_register or do_extract) and virtenv=='caiman':
-  print("forcing do_denoise to zero because either do_register or do_extract is true")
-  do_denoise = 0
-else:
-  raise Exception("virtenv is not set correctly")
 
+if do_cropping_session:
+  print("forcing everything to zero for fov cropping session since do_cropping_session==1")
+  do_register = 0
+  do_denoise = 0
+  do_extract = 0
+else:
+  if do_denoise and virtenv=='deepcad':
+    print("forcing do_register and do_extract and do_cluster to zero because you're trying to denoise")
+    do_register = 0
+    do_extract = 0
+    do_cluster = 0
+    if denoise_volume==0 and len(denoise_slice_index)>1 and (denoise_slice_index != ['all'] or denoise_slice_index!='all'):
+        raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all")
+    if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
+        raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range)")
+  elif (do_register or do_extract) and virtenv=='caiman':
+    print("forcing do_denoise to zero because either do_register or do_extract is true")
+    do_denoise = 0
+  else:
+    raise Exception("virtenv is not set correctly")
+
+   
 [pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_tif_dn, md] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
