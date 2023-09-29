@@ -110,7 +110,6 @@ elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFOR
 elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
   pth_allrec = '/content/drive/MyDrive/stacks/'
   do_cluster = 1 #cluster worked on colab 
-  index_extraction_param_set = 'default' #not set up for arguments in colab 
 
 pth_super = '/'.join(pth_allrec.split('/')[:-2])
 pth_denoising = os.path.join(pth_super, 'denoising')
