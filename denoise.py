@@ -189,7 +189,7 @@ def denoise(pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume)
     print(denoise_volume)
 
     n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-    epochs_choose = [1, 2, 3, 4, 5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
+    epochs_choose = [1, 2, 3, 4, 5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising)
 
     if denoise_volume:
         
