@@ -24,8 +24,6 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
 
     if use_denoised:
         
-        fn_dn_add = ''
-        pth_tif_dn = pth_tif_dn + fn_dn_add
         epoch_choose = 5 #which denoising epoch to stitch/use (must exist, ie must be one of epochs_choose in denoise.py)
         force_stitch = 0 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch, warning this will overwrite existing stitched denoised tif)
 
