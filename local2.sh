@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ##noglob \  #noglob is for passing this directly to zsh shell (mac terminal), not needed in bash
-for i in 1
+for i in 0 4 2
 do
     /Users/wienecke/mambaforge/envs/caiman/bin/python /Users/wienecke/Documents/scopa/pipeline_init.py \
     --virtenv 'caiman' \
