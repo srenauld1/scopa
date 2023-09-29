@@ -144,7 +144,7 @@ else:
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
-for ri in enumerate(pth_datafile_all):
+for ri,_ in enumerate(pth_datafile_all):
 
     if do_register:
         register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], 
