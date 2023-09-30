@@ -31,9 +31,9 @@ do
     --do_denoise 1 \
     --denoise_volume 1 \
     --denoise_slice_index 'all' \
-    --recdates '20230627' \
-    --fly '2' \
-    --trial '1' \
+    --recdates '*' \
+    --fly '*' \
+    --trial '*' \
     --recording_index $i &
 done
 
