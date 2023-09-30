@@ -2,7 +2,7 @@
 #SBATCH --time=00:30:00
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=13G
+#SBATCH --mem-per-cpu=20G
 #SBATCH --array=[0-18]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton

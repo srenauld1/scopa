@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --time=02:00:00
-#SBATCH -p gpu_requeue
+#SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=4
 #SBATCH --mem-per-cpu=12G
-#SBATCH --job-name=DNP2
+#SBATCH --job-name=DNP
 #SBATCH --gres=gpu:a100:1,vram:80G
 #SBATCH --array=[0]
 #SBATCH --begin=now+10
@@ -29,8 +29,9 @@ do
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
     --virtenv 'deepcad' \
     --do_denoise 1 \
+    --denoise_volume 1 \
     --denoise_slice_index 'all' \
-    --recdates '2023062*' \
+    --recdates '*' \
     --fly '*' \
     --trial '*' \
     --recording_index $i &
