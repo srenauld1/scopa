@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=01:00:00
+#SBATCH --time=00:30:00
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=13G
-#SBATCH --array=[0-4]
+#SBATCH --array=[0-18]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -28,7 +28,7 @@ conda activate caiman
 --do_planar_extraction 0 \
 --use_background_subtracted 0 \
 --use_denoised 0 \
---recdates '20230627' \
+--recdates '*' \
 --fly '*' \
 --trial '*' \
 --do_cropping_session 0 \
