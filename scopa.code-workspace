@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "DeepCAD-RT",
+			"path": "../DeepCAD-RT"
+		}
+	],
+	"settings": {}
+}
