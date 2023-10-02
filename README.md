@@ -84,11 +84,11 @@ INSTALLING THINGS
 
  before running register and extract, caiman and a few other packages need to be installed; to do that, log into O2 compute cluster and run these commands from your home folder (you probably could use a lot less than -c 15 --mem=50G in the first command, but who cares)
 
-            srun -p interactive --pty -t 4:00:00 -c 15 --mem=50G bash 
+            srun -p interactive --pty -t 3:00:00 -c 15 --mem=50G bash 
             module purge
             module load miniconda3/4.10.3
             source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-            mamba create -n caiman -c conda-forge caiman
+            conda create -n caiman -c conda-forge caiman
             conda activate caiman
             pip install scanimage-tiff-reader
             pip install mat73
