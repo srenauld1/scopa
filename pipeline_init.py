@@ -105,6 +105,7 @@ if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
      raise Exception("no gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
   pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
+  pth_allrec = '/n/scratch3/users/c/caw846/xtra/pb_only/'
 elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
   pth_allrec = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
@@ -151,7 +152,7 @@ for ri,_ in enumerate(pth_datafile_all):
             denoise_volume, cluster_backend, do_cluster)
 
     if do_denoise:
-        denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], denoise_slice_index, denoise_volume)
+        denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume)
 
     if do_extract or do_cropping_session:
         extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_tif_dn_all[ri], pth_denoising, 

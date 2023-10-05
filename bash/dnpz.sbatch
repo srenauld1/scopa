@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --time=07:00:00
+#SBATCH --time=06:00:00
 #SBATCH -p gpu_quad
-#SBATCH --cpus-per-task=15
+#SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=5G
 #SBATCH --job-name=DNPZ
 #SBATCH --gres=gpu:a100:1,vram:80G
@@ -23,7 +23,7 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-for i in {0..14} 
+for i in 3 
 do
     sleep 20s
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
@@ -31,8 +31,8 @@ do
     --do_denoise 1 \
     --denoise_volume 0 \
     --denoise_slice_index $i \
-    --recdates '20230627' \
-    --fly '2' \
+    --recdates '20230613' \
+    --fly '4' \
     --trial '1' \
     --recording_index $SLURM_ARRAY_TASK_ID &
 done
