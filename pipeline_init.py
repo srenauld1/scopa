@@ -12,7 +12,7 @@ virtenv = 'deepcad'  #deepcad for denoising, caiman for anythying else
 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '2' #string, fly index_extraction_param_set, '*' for any 
-trial = '2' #string, trial index_extraction_param_set, '*' for any 
+trial = '2' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 do_register = 0 #caiman normCorre registration 
@@ -128,7 +128,7 @@ else:
     do_register = 0
     do_extract = 0
     do_cluster = 0
-    if denoise_volume==0 and len(denoise_slice_index)>1 and (denoise_slice_index != ['all'] or denoise_slice_index!='all'):
+    if denoise_volume==0 and len(denoise_slice_index)>1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all")
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range)")
