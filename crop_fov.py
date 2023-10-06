@@ -2,7 +2,7 @@
 
 import numpy as np
 import glob
-from caiman_vis_custom import im_montage 
+from vis import im_montage 
 import matplotlib.pyplot as plt
 from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval

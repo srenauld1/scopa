@@ -8,7 +8,7 @@
 ##########################################################################################################################################
 
 
-virtenv = 'deepcad'  #deepcad for denoising, caiman for anythying else 
+virtenv = 'caiman'  #deepcad for denoising, caiman for anythying else 
 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '2' #string, fly index_extraction_param_set, '*' for any 

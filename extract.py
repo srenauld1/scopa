@@ -8,7 +8,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from caiman_vis_custom import caiman_plots_all
+from vis import caiman_plots_all
 from helpers import stitch_denoised_slices, stitch_denoised_slices_carls_old_project, tracefunc
 from crop_fov import crop_fov
 
