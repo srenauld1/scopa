@@ -146,6 +146,16 @@ else:
 
 for ri,_ in enumerate(pth_datafile_all):
 
+    from helpers import stitch_denoised_slices
+    epochs_choose = [1, 5, 10 , 15, 20, 25, 30, 35, 40]
+    newdims = [300, md_all[ri]['dims'][1], md_all[ri]['dims'][2], md_all[ri]['dims'][3] ]
+    for eci in epochs_choose:
+      epoch_choose = eci #which epoch to stitch (must exist, ie must be one of epochs_choose in denoise.py)
+      force_stitch = 1 #stitch regardless of whether the file already exists (e.g. to use a different run)
+      pth_tif_dn_new = pth_tif_dn_all[ri][:-4] + 'e' + str(epoch_choose) + '_.tif'
+      if not os.path.isfile(pth_tif_dn_all[ri]) or force_stitch:
+         stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_dn_new, newdims, denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+
     if do_register:
         register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], 
             pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_background_subtraction, bg_patch_halfwidth, 
