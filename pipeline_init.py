@@ -10,20 +10,20 @@
 
 virtenv = 'caiman'  #deepcad for denoising, caiman for anythying else 
 
-recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdates = ['20230629'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '2' #string, fly index_extraction_param_set, '*' for any 
-trial = '2' #string, trial index_extraction_param_set, '*' for any #
+trial = '*' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 do_register = 0 #caiman normCorre registration 
 do_background_subtraction = 0 #won't happen unless do_register = True 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 
-do_denoise = 1 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = 'all' #either 'all' (all z slices) or a single number (a single z slice) . . . this is which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 
-do_extract = 0 #caiman source extraction 
+do_extract = 1 #caiman source extraction 
 region_extraction = ['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #won't happen unless do_register = True 
@@ -104,7 +104,7 @@ if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
+  pth_allrec = '/n/scratch3/users/p/par26/analysis/'
 elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
   pth_allrec = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
