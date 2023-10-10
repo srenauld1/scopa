@@ -86,7 +86,6 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, 
     else:
         imwrite(pth_tif_reg, np.transpose(Y.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
-
     # FINAL PART OF MOTION CORECTION SECTION  is to prepare files for denoising 
     # by writing each z slice to separate tif and put them in separate folders 
     # (since default in denoise.py is denoise_volume = 0 )

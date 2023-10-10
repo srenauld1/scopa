@@ -179,7 +179,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
         else: #if not denoise_volume, all is just one stack 
             numstacks_all_refers_to = 1
 
-    print("all means this many stacks: ")
+    print(" 'all' means this many stacks: ")
     print(numstacks_all_refers_to)
 
     print(pth_denoising)
@@ -188,34 +188,25 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     print(denoise_slice_index)
     print(denoise_volume)
 
-    n_epochs = 40  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-    epochs_choose = [1, 5, 10 , 15, 20, 25, 30, 35, 40] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
+    n_epochs = 10  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+    epochs_choose = [2, 5, 10] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
 
-    patch_t_seconds = 20
-    padinc = 5
+    patch_t_seconds = 20 #20 seconds is my total guess for what seems reasonable 
+    padinc = 5 #this is probably pointless and can probably be zero 
 
+    patch_x = 120 if dims[3]>120 + padinc else int(dims[3] - padinc) # 110 #int(np.ceil(Lx/4)) #extent of patch in x
+    patch_y = 120 if dims[2]>120 + padinc else int(dims[2] - padinc) #120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
+    patch_t = int(np.ceil(patch_t_seconds*volrate)) #102 # 300 #extent of patch in t
+    overlap_factor = 0.8 # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
+
+    # TO DO: need to make train_datasets_size assignment automated . . . maybe to always use the same gap_t (patch stride in time)
     if denoise_volume:
-
         if carls_old_project:
-            train_datasets_size = 13000
-            patch_x = 120
-            patch_y = 120
-            patch_t = np.ceil(patch_t_seconds*volrate) #200
-            overlap_factor = 0.8
+            train_datasets_size = 13000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
         else:
-            train_datasets_size = 6000 #25000 #6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
-            patch_x = 120 if dims[3]>120 + padinc else int(dims[3] - padinc) # 110 #int(np.ceil(Lx/4)) #extent of patch in x
-            patch_y = 120 if dims[2]>120 + padinc else int(dims[2] - padinc) #120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
-            patch_t = int(np.ceil(patch_t_seconds*volrate)) #102 # 300 #extent of patch in t
-            overlap_factor = 0.8 #0.9        # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
-
+            train_datasets_size = 26000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
     else:
-
-        train_datasets_size = 6000
-        patch_x = 120 if dims[3]>120 + padinc else int(dims[3] - padinc) # 110 #int(np.ceil(Lx/4)) #extent of patch in x
-        patch_y = 120 if dims[2]>120 + padinc else int(dims[2] - padinc) #120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
-        patch_t = int(np.ceil(patch_t_seconds*volrate)) #102 # 300 #extent of patch in t
-        overlap_factor = 0.8
+        train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
 
     select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)
     intensity_scale_factor = 1 # the factor for image intensity scaling
@@ -223,7 +214,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     num_workers = 0             # if you use Windows system, set this to 0.
     save_test_images_per_epoch = True  # whether to save result images after each epoch
-    num_frames_of_each_tif_to_denoise = 300#1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised
+    num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised
 
     denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16
 

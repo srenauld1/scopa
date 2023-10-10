@@ -105,7 +105,6 @@ if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
      raise Exception("no gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
   pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
-  pth_allrec = '/n/scratch3/users/c/caw846/xtra/pb_only/'
 elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
   pth_allrec = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
@@ -145,16 +144,6 @@ else:
         use_background_subtracted, do_register)
 
 for ri,_ in enumerate(pth_datafile_all):
-
-    from helpers import stitch_denoised_slices
-    epochs_choose = [1, 5, 10 , 15, 20, 25, 30, 35, 40]
-    newdims = [300, md_all[ri]['dims'][1], md_all[ri]['dims'][2], md_all[ri]['dims'][3] ]
-    for eci in epochs_choose:
-      epoch_choose = eci #which epoch to stitch (must exist, ie must be one of epochs_choose in denoise.py)
-      force_stitch = 1 #stitch regardless of whether the file already exists (e.g. to use a different run)
-      pth_tif_dn_new = pth_tif_dn_all[ri][:-4] + 'e' + str(epoch_choose) + '_.tif'
-      if not os.path.isfile(pth_tif_dn_all[ri]) or force_stitch:
-         stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_dn_new, newdims, denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
 
     if do_register:
         register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], 
