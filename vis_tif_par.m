@@ -25,18 +25,15 @@ clear all
 clc
 
 plot_raw = 1; %optional
-plot_reg = 1;%optional
-plot_dn = 1;%optional
-
+plot_reg = 1; %optional
+plot_dn = 1; %optional
 nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-
-rescale_each_subplot = 0; %rescale each subplot to same range 0-1 before combining
-
+rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
 rescale_fac_bottom_wholeplot = 0; %combined plot rescale lower clip
 rescale_fac_top_wholeplot = 6; %combined plot rescale upper clip
-
-plotinds_t = 1:50; %time indices to plot
-plotinds_z = 4; %z indices to plot 
+plotinds_t = 2000:2050; %time indices to plot
+plotinds_z = [4 7 10 13]; %z indices to plot
+swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 
 filepath_super = '~/Documents/ambrose/stacks/';
 
@@ -174,7 +171,7 @@ for ri = 1:length(pth_all)
         stackall = cat(1, stackall, nanins, tmp);
         stackall_mn = cat(1, stackall_mn, nanins_mn, tmp_mn);
         clear stackreg tmp*
-        fn_gif_insert = [fn_gif_insert 'raw_'];
+        fn_gif_insert = [fn_gif_insert 'reg_'];
 
     end
 
@@ -203,13 +200,12 @@ for ri = 1:length(pth_all)
         stackall = cat(1, stackall, nanins, tmp);
         stackall_mn = cat(1, stackall_mn, nanins_mn, tmp_mn);
         clear stackdn tmp*
-        fn_gif_insert = [fn_gif_insert 'raw_'];
+        fn_gif_insert = [fn_gif_insert 'dn_'];
 
     end
 
     %% plot
 
-    swapdim = 0; %true will flip z and t for plotting to change perspective on registration
     tit_gif_insert = strrep(fn_gif_insert, '_', ' ');
     
     plot_gif_fast(rescale(stackall), ...
