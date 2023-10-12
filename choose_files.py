@@ -34,7 +34,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
             pth_fldr = ('/').join(pth_datafile.split('/')[:-1])
             f = pth_datafile.split('/')[-1]
 
-            if pth_fldr.split('_')[-1]=='kir' or pth_fldr.split('_')[-1]=='cl':
+            if pth_fldr.split('_')[-1]=='dark' or pth_fldr.split('_')[-1]=='cl':
                 
                 countz = countz + 1
 
@@ -42,7 +42,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
 
                     print(pth_datafile)
 
-                    fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + f.split('_')[-2][-1] #change hyphen to underscore
+                    fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + str(int(f.split('_')[-2][-1])) #change hyphen to underscore
                     
                     pth_prefix = pth_fldr + '/' + fn_prefix
                     if do_background_subtraction or (use_background_subtracted and not do_register):
