@@ -23,18 +23,18 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
     for recording_date in recdates:
 
         if trial=='*':
-            fn_pattern = recording_date + '-' + fly + '*_trial_*_*.tif'
+            fn_pattern = recording_date + '-' + fly + '_*_trial_*_*.tif'
         else:
-            fn_pattern = recording_date + '-' + fly + '*_trial_' + '{:03d}'.format(int(trial)) + '_*.tif'
+            fn_pattern = recording_date + '-' + fly + '_*_trial_' + '{:03d}'.format(int(trial)) + '_*.tif'
 
-        pth_allfiles = natsorted(glob.glob(pth_allrec + '/*/*/*/' + fn_pattern))
+        pth_allfiles = natsorted(glob.glob(pth_allrec + '/**/' + fn_pattern, recursive=True))
 
         for pth_datafile in pth_allfiles:
 
             pth_fldr = ('/').join(pth_datafile.split('/')[:-1])
             f = pth_datafile.split('/')[-1]
 
-            if pth_fldr.split('_')[-1]=='dark' or pth_fldr.split('_')[-1]=='cl':
+            if 1: #FILTER FOR PABLO pth_fldr.split('_')[-1]=='dark' or pth_fldr.split('_')[-1]=='cl':
                 
                 countz = countz + 1
 

@@ -16,7 +16,7 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
     if mat_file_shape is None:
 
         # use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
-        meta = ScanImageTiffReader(pth_datafile).metadata()   
+        meta = ScanImageTiffReader(pth_datafile).metadata()    #tiffile might be able to read metadata
         mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
         mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
         mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])

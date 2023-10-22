@@ -31,13 +31,15 @@ nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
 rescale_fac_bottom_wholeplot = 0; %combined plot rescale lower clip
 rescale_fac_top_wholeplot = 6; %combined plot rescale upper clip
-plotinds_t = 2000:2050; %time indices to plot
-plotinds_z = [4 7 10 13]; %z indices to plot
+plotinds_t = 1:30:3000; %time indices to plot
+plotinds_z = [1:8]; %z indices to plot
 swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+smooth_window_temporal = 100;
+
 
 filepath_super = '~/Documents/ambrose/stacks/';
 
-recdate = '*';
+recdate = '20230424';
 flyind = '*';
 trial = '*';
 
@@ -48,7 +50,7 @@ ncol = 256; %num colors in plot
 if strcmp(trial, '*')
     fn_pattern = [filepath_super '**/' recdate '-' flyind '_*_trial_*_*.tif'];
 else
-    fn_pattern = [filepath_super '**/' recdate '-' flyind '_*_trial_' sprintf( '%03d', trial ) '_*.tif'];
+    fn_pattern = [filepath_super '**/' recdate '-' flyind '_*_trial_' sprintf( '%03d', str2double(trial) ) '_*.tif'];
 end
 pth_all = rdir(fn_pattern);
 
@@ -132,6 +134,10 @@ for ri = 1:length(pth_all)
 
         end
 
+        if smooth_window_temporal
+            stackraw = smoothdata(stackraw, 4, 'gaussian', smooth_window_temporal);
+        end
+
         tmp = single(stackraw(:,:,plotinds_z, plotinds_t));
         tmp_mn = mean(stackraw, 4);
         tmp_mn = single(tmp_mn(:,:,plotinds_z));
@@ -161,6 +167,11 @@ for ri = 1:length(pth_all)
             save(pth_reg_mat, 'stackreg', '-v7.3', '-mat')
         end
 
+
+        if smooth_window_temporal
+            stackreg = smoothdata(stackreg, 4, 'gaussian', smooth_window_temporal);
+        end
+
         tmp = single(stackreg(:,:,plotinds_z, plotinds_t));
         tmp_mn = mean(stackreg, 4);
         tmp_mn = single(tmp_mn(:,:,plotinds_z));
@@ -188,6 +199,10 @@ for ri = 1:length(pth_all)
                 size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
             save(pth_dn_mat, 'stackdn', '-v7.3', '-mat')
+        end
+
+        if smooth_window_temporal
+            stackdn = smoothdata(stackdn, 4, 'gaussian', smooth_window_temporal);
         end
 
         tmp = single(stackdn(:,:,plotinds_z, plotinds_t));
@@ -228,6 +243,7 @@ for ri = 1:length(pth_all)
         [pth_fldr '/' recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_meanframe_allrescaled_.gif'], ...
         {[recid_tit ' : ' tit_gif_insert ' meanframe']; ['z inds ' plotinds_z_str]; rescale_str})
 
+    
 
 end
 
