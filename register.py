@@ -59,13 +59,9 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
         print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
                         
    
-    save_mmap_first = True
-    
-    if len_window_smooth_t: #if you smooth before registering, create another file for smoothed 
-        save_mmap_first = False
+    if len_window_smooth_t: #if you smooth before registering (very noisy data), create another file for smoothed movie
         imwrite(pth_tif_reg_tmp2, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
         dimtmp_presmooth = Y.shape
-        presmooth = Y.copy()
         numsigma_smooth_prereg = 5.0
         sigma_smooth_prereg = (len_window_smooth_t - 1) / numsigma_smooth_prereg / 2
         Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
@@ -73,7 +69,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
         mnmv = np.min(Y)
         Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
         print("MIN AFTER SMOOTHING " + str(mnmv))
-        im_montage(Y[200,:,:,:])
+        #im_montage(Y[200,:,:,:]) #check how it looks
 
     imwrite(pth_tif_reg_tmp, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
@@ -83,16 +79,18 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
 
     #sys.setprofile(tracefunc)
     mc = cm.motion_correction.MotionCorrect([pth_tif_reg_tmp], dview=dview, **opts.get_group('motion'))
-    mc.motion_correct(save_movie=save_mmap_first)
-    if len_window_smooth_t:
-        mc.apply_shifts_movie([pth_tif_reg_tmp2], save_memmap=True, order='C')
+    mc.motion_correct(save_movie=True)
+    input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
+    if len_window_smooth_t: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
+        input_for_save_memmap = mc.apply_shifts_movie(pth_tif_reg_tmp2, save_memmap=False, order='F') #for some reason cannot save_memmap
+        input_for_save_memmap = [input_for_save_memmap] #so must pass nd array to save_memmap below
         os.remove(pth_tif_reg_tmp2)
 
     os.remove(pth_tif_reg_tmp)
 
     border_to_0 = 0 if mc.border_nan == 'copy' else mc.border_to_0 
     basename_memap = pth_tif_reg.split('/')[-1][:-4]
-    pth_mmap_reg = cm.save_memmap(mc.mmap_file, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # save in order C (motion_correct above has to save in order F)
+    pth_mmap_reg = cm.save_memmap(input_for_save_memmap, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # save in order C (motion_correct above has to save in order F)
     Y, dims_spatial_rg, dim_time_rg = cm.load_memmap(pth_mmap_reg) 
     Y = np.reshape(Y.T, [dim_time_rg] + list(dims_spatial_rg), order='F') 
     

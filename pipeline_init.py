@@ -10,7 +10,7 @@
 
 virtenv = 'caiman'  #deepcad for denoising, caiman for anythying else 
 
-recdates = ['20230424'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
@@ -105,7 +105,7 @@ if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  pth_allrec = '/n/scratch3/users/p/par26/analysis/'
+  pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
 elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
   pth_allrec = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
