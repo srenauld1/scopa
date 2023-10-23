@@ -8,9 +8,11 @@ import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from helpers import separate_z_slices_before_denoising, separate_z_slices_before_denoising_carls_old_project, tracefunc 
 from subtract_background import bgremover
+from scipy.ndimage import gaussian_filter as smooth_movie
+from vis import im_montage
 
-def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, pth_denoising, md, 
-             do_background_subtraction, bg_patch_halfwidth, denoise_volume, cluster_backend, do_cluster):
+def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_tmp2, pth_tif_reg, pth_denoising, md, 
+             do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, cluster_backend, do_cluster):
 
     if do_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -29,7 +31,6 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, 
     if md['flyback']!=0:    
         Y = Y[:,:-md['flyback'],:,:] #crop md['flyback'] frames
 
-    #Y[540:600,4,:,:].play(magnification=2) #play in order t z y x
     Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
     
     mnmv = np.min(Y)
@@ -57,15 +58,36 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg, 
         Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
         print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
                         
-    imwrite(pth_tif_reg_tmp, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+   
+    save_mmap_first = True
+    
+    if len_window_smooth_t: #if you smooth before registering, create another file for smoothed 
+        save_mmap_first = False
+        imwrite(pth_tif_reg_tmp2, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+        dimtmp_presmooth = Y.shape
+        presmooth = Y.copy()
+        numsigma_smooth_prereg = 5.0
+        sigma_smooth_prereg = (len_window_smooth_t - 1) / numsigma_smooth_prereg / 2
+        Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
+        Y = Y.reshape(dimtmp_presmooth)
+        mnmv = np.min(Y)
+        Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+        print("MIN AFTER SMOOTHING " + str(mnmv))
+        im_montage(Y[200,:,:,:])
 
+    imwrite(pth_tif_reg_tmp, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+    
     min_mov = np.min(Y)
     opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = 'default', fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
     opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
     #sys.setprofile(tracefunc)
     mc = cm.motion_correction.MotionCorrect([pth_tif_reg_tmp], dview=dview, **opts.get_group('motion'))
-    mc.motion_correct(save_movie=True)
+    mc.motion_correct(save_movie=save_mmap_first)
+    if len_window_smooth_t:
+        mc.apply_shifts_movie([pth_tif_reg_tmp2], save_memmap=True, order='C')
+        os.remove(pth_tif_reg_tmp2)
+
     os.remove(pth_tif_reg_tmp)
 
     border_to_0 = 0 if mc.border_nan == 'copy' else mc.border_to_0 

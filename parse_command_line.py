@@ -3,7 +3,7 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
+def parse_command_line(virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
@@ -40,6 +40,12 @@ def parse_command_line(virtenv, index_extraction_param_set, region_extraction, d
         nargs=1, 
         type=int,
         default=[do_register],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--len_window_smooth_t",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[len_window_smooth_t],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
@@ -127,6 +133,7 @@ def parse_command_line(virtenv, index_extraction_param_set, region_extraction, d
     else:
         region_extraction = args.region_extraction #keep as list
     do_register = args.do_register[0]
+    len_window_smooth_t = args.len_window_smooth_t[0]
     do_denoise = args.do_denoise[0]
     denoise_volume = args.denoise_volume[0]
     if isinstance(args.denoise_slice_index[0], list):
@@ -148,7 +155,7 @@ def parse_command_line(virtenv, index_extraction_param_set, region_extraction, d
         recording_index = int(args.recording_index[0])
 
     return (virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, 
-            do_register, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
+            do_register, len_window_smooth_t, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
             do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
             fly, trial, do_cropping_session, recording_index)
 

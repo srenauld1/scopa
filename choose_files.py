@@ -15,6 +15,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
     fn_prefix_all = []
     pth_prefix_all = []
     pth_tif_reg_tmp_all = []
+    pth_tif_reg_tmp2_all = []
     pth_tif_reg_all = []
     pth_tif_dn_all = []
     md_all = []
@@ -48,10 +49,12 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                     if do_background_subtraction or (use_background_subtracted and not do_register):
                         pth_tif_dn = pth_prefix + '_cmrg_bksb_dcdn_.tif'        
                         pth_tif_reg_tmp = pth_prefix + '_cmrg_bksb_tmp_.tif'
+                        pth_tif_reg_tmp2 = pth_prefix + '_cmrg_bksb_tmp2_.tif'
                         pth_tif_reg = pth_prefix + '_cmrg_bksb_.tif'
                     else:
                         pth_tif_dn = pth_prefix + '_cmrg_dcdn_.tif'         
                         pth_tif_reg_tmp = pth_prefix + '_cmrg_tmp_.tif'
+                        pth_tif_reg_tmp2 = pth_prefix + '_cmrg_tmp2_.tif'
                         pth_tif_reg = pth_prefix + '_cmrg_.tif'
                     
                     pth_md = pth_prefix + '_metadatanew_.mat'
@@ -66,8 +69,10 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                     fn_prefix_all.append(fn_prefix)
                     pth_prefix_all.append(pth_prefix)
                     pth_tif_reg_tmp_all.append(pth_tif_reg_tmp)
+                    pth_tif_reg_tmp2_all.append(pth_tif_reg_tmp2)
                     pth_tif_reg_all.append(pth_tif_reg)
                     pth_tif_dn_all.append(pth_tif_dn)
                     md_all.append(md)
 
-    return (pth_datafile_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_all, pth_tif_dn_all, md_all) 
+    return (pth_datafile_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, 
+            pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all) 
