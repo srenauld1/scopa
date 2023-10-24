@@ -188,8 +188,8 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     print(denoise_slice_index)
     print(denoise_volume)
 
-    n_epochs = 10  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-    epochs_choose = [2, 5, 10] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
+    n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+    epochs_choose = [1, 2, 3, 4, 5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
 
     patch_t_seconds = 20 #20 seconds is my total guess for what seems reasonable 
     padinc = 5 #this is probably pointless and can probably be zero 
@@ -204,7 +204,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
         if carls_old_project:
             train_datasets_size = 13000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
         else:
-            train_datasets_size = 26000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
+            train_datasets_size = 10000#26000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
     else:
         train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
 
