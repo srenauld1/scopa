@@ -204,7 +204,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
         if carls_old_project:
             train_datasets_size = 13000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
         else:
-            train_datasets_size = 10000#26000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
+            train_datasets_size = 10000 #26000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
     else:
         train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
 

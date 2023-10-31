@@ -5,7 +5,7 @@
 #SBATCH --mem-per-cpu=12G
 #SBATCH --job-name=DNP
 #SBATCH --gres=gpu:a100:1,vram:80G
-#SBATCH --array=[0]
+#SBATCH --array=[0-9]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90

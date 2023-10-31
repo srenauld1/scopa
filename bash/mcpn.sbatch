@@ -3,7 +3,7 @@
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=30G
-#SBATCH --array=[0]
+#SBATCH --array=[0-93]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -23,7 +23,7 @@ conda activate caiman
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_background_subtraction 0 \
 --do_register 1 \
---len_window_smooth_t 30 \
+--len_window_smooth_t 20 \
 --do_denoise 0 \
 --do_extract 0 \
 --do_planar_extraction 0 \
