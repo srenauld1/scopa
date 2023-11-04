@@ -129,8 +129,8 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                         
                         cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=False) #use_residuals=False to not include residuals in traces for dff computation (default)
                         dff_residfalse = cnm2.estimates.F_dff 
-                        #cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=True) #use_residuals=True to include residuals in traces for dff computation
-                        #dff_residtrue = cnm2.estimates.F_dff 
+                        cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=True) #use_residuals=True to include residuals in traces for dff computation
+                        dff_residtrue = cnm2.estimates.F_dff 
                         cnm2.estimates.select_components(use_object=True, save_discarded_components=False)
 
                         if do_plots:
@@ -149,7 +149,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                             #stack_yra = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
                             stack_s = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
                             stack_df = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
-                            #stack_dfr = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
+                            stack_dfr = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
                             stack_snr = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
                             stack_rval = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
                             #stack_idx = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
@@ -166,7 +166,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                         #stack_yra[:numroi_slice,:,countz] = cnm2.estimates.YrA 
                         stack_s[:numroi_slice,:,countz] = cnm2.estimates.S 
                         stack_df[:numroi_slice,:,countz] = dff_residfalse
-                        #stack_dfr[:numroi_slice,:,countz] = dff_residtrue
+                        stack_dfr[:numroi_slice,:,countz] = dff_residtrue
                         stack_snr[:numroi_slice,countz] = cnm2.estimates.SNR_comp 
                         stack_rval[:numroi_slice,countz] = cnm2.estimates.r_values 
                         #stack_idx[:cnm2.estimates.idx_components.shape[0],countz] = cnm2.estimates.idx_components
@@ -186,7 +186,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                     #mdict['YrA'] = stack_yra.astype('float32')
                     mdict['S'] = stack_s.astype('float32')
                     mdict['dff'] = stack_df.astype('float32')
-                    #mdict['dffr'] = stack_dfr.astype('float32')
+                    mdict['dffr'] = stack_dfr.astype('float32')
                     mdict['snr'] = stack_snr.astype('float32')
                     mdict['rval'] = stack_rval.astype('float32')
                     #mdict['idx'] = stack_idx

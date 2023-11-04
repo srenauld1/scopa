@@ -41,7 +41,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
             pth_fldr = ('/').join(pth_datafile.split('/')[:-1])
             f = pth_datafile.split('/')[-1]
 
-            if not re.search("par26", pth_allrec) or (re.search("par26", pth_allrec) and (pth_fldr.split('_')[-1]=='dark' or pth_fldr.split('_')[-1]=='cl')):
+            if not re.search("par26", pth_allrec) or (re.search("par26", pth_allrec) and (pth_fldr.split('_')[-1]=='dark' or pth_fldr.split('_')[-1]=='cl')): #folder filter for pablo
                 
                 countz = countz + 1
 
