@@ -27,7 +27,6 @@ for i in 0
 do
     sleep 20s
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
-    --virtenv 'deepcad' \
     --do_denoise 1 \
     --denoise_volume 1 \
     --denoise_slice_index 'all' \

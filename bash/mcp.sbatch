@@ -18,21 +18,12 @@ source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
---virtenv 'caiman' \
---index_extraction_param_set 'default' \
---region_extraction 'pb' 'gar' 'gal' 'no' \
---do_background_subtraction 0 \
 --do_register 1 \
+--do_background_subtraction 0 \
 --len_window_smooth_t 0 \
---do_denoise 0 \
---do_extract 0 \
---do_planar_extraction 0 \
---use_background_subtracted 0 \
---use_denoised 0 \
 --recdates '*' \
 --fly '*' \
 --trial '*' \
---do_cropping_session 0 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 wait

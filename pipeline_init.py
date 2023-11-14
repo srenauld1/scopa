@@ -8,27 +8,27 @@
 ##########################################################################################################################################
 
 
-virtenv = 'caiman'  #deepcad for denoising, caiman for anythying else 
+do_copyfiles = 1 #whether you are just copying the files to the compute server, or computing on them 
 
-recdates = ['20230424'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
 
 do_register = 0 #caiman normCorre registration 
-len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std)
+len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
-do_background_subtraction = 0 #won't happen unless do_register = True 
+do_background_subtraction = 0 #prior to registration, won't happen unless do_register = 1 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = 'all' #either 'all' (all z slices) or a single number (a single z slice) . . . this is which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 
-do_extract = 1 #caiman source extraction 
+do_extract = 0 #caiman source extraction 
 region_extraction = ['fullfov']#['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
-use_background_subtracted = 0 #won't happen unless do_register = True 
+use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data 
 index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
@@ -49,84 +49,24 @@ import sys
 from parse_command_line import parse_command_line
 
 if len(sys.argv)>1:
-  [virtenv, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, len_window_smooth_t, do_denoise, denoise_volume, 
+  [do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, len_window_smooth_t, do_denoise, denoise_volume, 
    denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
    do_cropping_session, recording_index] = \
-    parse_command_line(virtenv = virtenv, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+    parse_command_line(do_copyfiles = do_copyfiles, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                        do_background_subtraction = do_background_subtraction, do_register = do_register, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
                        denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extract = do_extract, 
                        do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                        recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, recording_index = recording_index)
 
-import re
-import cv2
-import os
-import logging
-from choose_files import choose_files
-
-if virtenv == 'caiman':
-
-  try:
-      cv2.setNumThreads(0) #don't think this is necessary 
-  except:
-      pass
-
-  try:
-      if __IPYTHON__: #for debugging only. allows to reload classes when changed
-          get_ipython().magic('load_ext autoreload')
-          get_ipython().magic('autoreload 2')
-  except NameError:
-      pass
-
-  try:
-      shell = get_ipython().__class__.__name__
-      print(shell)
-  except NameError:
-      print("in py file probably")      # Probably standard Python interpreter
-
-  from register import register
-  from extract import extract
-  import logging
-  logging.basicConfig(format=
-                      "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s]"\
-                      "[%(process)d] %(message)s",
-                      #filename="/n/scratch3/users/c/caw846/ctmp/caiman.log",
-                      level=logging.WARNING,
-                      )
-
-elif virtenv == 'deepcad':
-    from denoise import denoise
-
-print(sys.executable)
-env_path = sys.path
-
-if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
-  pth_allrec = '/Users/wienecke/Documents/ambrose/stacks/'
-  if do_denoise: #need gpu, don't have one locally 
-     raise Exception("no gpu, make do_denoise false")
-elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
-elif (re.search("/home/par26/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  pth_allrec = '/n/scratch3/users/p/par26/analysis/'
-elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
-  pth_allrec = '/scratch/users/wienecke/stacks/'
-elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
-  pth_allrec = '/content/drive/MyDrive/stacks/'
-  do_cluster = 1 #cluster worked on colab 
-
-pth_super = '/'.join(pth_allrec.split('/')[:-2])
-pth_denoising = os.path.join(pth_super, 'denoising')
-if not os.path.exists(pth_denoising):
-    os.mkdir(pth_denoising)
 
 
-if do_cropping_session:
+if do_cropping_session or do_copyfiles:
   print("forcing everything to zero for fov cropping session since do_cropping_session==1")
   do_register = 0
   do_denoise = 0
   do_extract = 0
 else:
-  if do_denoise and virtenv=='deepcad':
+  if do_denoise:
     print("forcing do_register and do_extract and do_cluster to zero because you're trying to denoise")
     do_register = 0
     do_extract = 0
@@ -135,29 +75,115 @@ else:
         raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all")
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range)")
-  elif (do_register or do_extract) and virtenv=='caiman':
+  elif do_register or do_extract:
     print("forcing do_denoise to zero because either do_register or do_extract is true")
     do_denoise = 0
+
+
+import re
+import os
+import shutil 
+from choose_files import choose_files
+
+if not do_copyfiles:
+
+  import cv2
+  import logging
+
+  if do_register or do_extract or do_cropping_session:
+
+    try:
+        cv2.setNumThreads(0) #don't think this is necessary 
+    except:
+        pass
+
+    try:
+        if __IPYTHON__: #for debugging only. allows to reload classes when changed
+            get_ipython().magic('load_ext autoreload')
+            get_ipython().magic('autoreload 2')
+    except NameError:
+        pass
+
+    try:
+        shell = get_ipython().__class__.__name__
+        print(shell)
+    except NameError:
+        print("in py file probably")      # Probably standard Python interpreter
+
+    from register import register
+    from extract import extract
+    import logging
+    logging.basicConfig(format=
+                        "%(relativeCreated)12d [%(filename)s:%(funcName)20s():%(lineno)s]"\
+                        "[%(process)d] %(message)s",
+                        #filename="/n/scratch3/users/c/caw846/ctmp/caiman.log",
+                        level=logging.WARNING,
+                        )
+
+  elif do_denoise:
+      from denoise import denoise
+
+print(sys.executable)
+env_path = sys.path
+
+pth_super_copydest = []
+if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
+  if do_copyfiles:
+     pth_allrec = '/Volumes/neurobio/wilsonlab/wienecke/stacks/'
   else:
-    raise Exception("virtenv is not set correctly")
+     pth_allrec = '/Users/wienecke/Documents/ambrose/stacks/'
+  if do_denoise: #need gpu, don't have one locally 
+     raise Exception("no gpu, make do_denoise false")
+elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
+  if do_copyfiles:
+     pth_allrec = '/n/files/Neurobio/wilsonlab/wienecke/stacks/'
+     pth_super_copydest = '/n/scratch3/users/c/caw846/stacks/'
+  else:
+     pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
+elif (re.search("/home/par26/", env_path[0])): #IF YOU'RE ON O2 . . . 
+  if do_copyfiles:
+     pth_allrec = '/n/files/Neurobio/wilsonlab/pablo/analysis/'
+     pth_super_copydest = '/n/scratch3/users/p/par26/analysis/'
+  else:
+     pth_allrec = '/n/scratch3/users/p/par26/analysis/'
+elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
+  pth_allrec = '/scratch/users/wienecke/stacks/'
+elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
+  pth_allrec = '/content/drive/MyDrive/stacks/'
+  do_cluster = 1 #cluster worked on colab 
+
+pth_super = '/'.join(pth_allrec.split('/')[:-2])
+pth_denoising = os.path.join(pth_super, 'denoising')
+if not os.path.exists(pth_denoising) and not do_copyfiles:
+    os.mkdir(pth_denoising)
 
    
-[pth_datafile_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
+[pth_datafile_all, fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
 for ri,_ in enumerate(pth_datafile_all):
+    
+    if do_copyfiles:
+       
+       pth_copysource = pth_allrec + fldr_all[ri]
+       pth_copydest = pth_super_copydest + fldr_all[ri]
+       
+       shutil.copyfile(pth_copydest) #move the whole folder from storage server to compute server 
+       
 
-    if do_register:
-        register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], pth_tif_reg_tmp2_all[ri], 
-            pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t,
-            denoise_volume, cluster_backend, do_cluster)
+    else:
+    
+      if do_register:
+          register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], pth_tif_reg_tmp2_all[ri], 
+              pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t,
+              denoise_volume, cluster_backend, do_cluster)
 
-    if do_denoise:
-        denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume)
+      if do_denoise:
+          denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume)
 
-    if do_extract or do_cropping_session:
-        extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_tif_dn_all[ri], pth_denoising, 
-        md_all[ri], denoise_volume, do_cropping_session, do_planar_extraction, use_denoised, 
-        region_extraction, do_plots, cluster_backend, do_cluster)
+      if do_extract or do_cropping_session:
+          extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_tif_dn_all[ri], pth_denoising, 
+          md_all[ri], denoise_volume, do_cropping_session, do_planar_extraction, use_denoised, 
+          region_extraction, do_plots, cluster_backend, do_cluster)
 

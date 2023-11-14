@@ -187,8 +187,8 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                     mdict['S'] = stack_s.astype('float32')
                     mdict['dff'] = stack_df.astype('float32')
                     mdict['dffr'] = stack_dfr.astype('float32')
-                    mdict['snr'] = stack_snr.astype('float32')
-                    mdict['rval'] = stack_rval.astype('float32')
+                    mdict['rsnr'] = stack_snr.astype('float32')
+                    mdict['rcor'] = stack_rval.astype('float32')
                     #mdict['idx'] = stack_idx
                     #mdict['idxbad'] = stack_idx_bad
                     

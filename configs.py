@@ -134,7 +134,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         do_patches = False
     else:
         do_patches = True
-    #do_patches = False
+
     #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
     roi_decimation_fac = 0.3  #1 is space filling, caiman demo is effectively around .33
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
