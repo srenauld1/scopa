@@ -8,12 +8,12 @@
 ##########################################################################################################################################
 
 
-do_copyfiles = 1 #whether you are just copying the files to the compute server, or computing on them 
+do_copyfiles = '' #in or out does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any #
-recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec) matches value in recording_index
+recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 do_register = 0 #caiman normCorre registration 
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
@@ -126,52 +126,49 @@ if not do_copyfiles:
 print(sys.executable)
 env_path = sys.path
 
-pth_super_copydest = []
+pth_allrec_storage = []
 if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
-  if do_copyfiles:
-     pth_allrec = '/Volumes/neurobio/wilsonlab/wienecke/stacks/'
-  else:
-     pth_allrec = '/Users/wienecke/Documents/ambrose/stacks/'
+  pth_allrec_compute = '/Users/wienecke/Documents/ambrose/stacks/'
+  pth_allrec_storage = '/Volumes/neurobio/wilsonlab/wienecke/stacks/'
   if do_denoise: #need gpu, don't have one locally 
      raise Exception("no gpu, make do_denoise false")
 elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  if do_copyfiles:
-     pth_allrec = '/n/files/Neurobio/wilsonlab/wienecke/stacks/'
-     pth_super_copydest = '/n/scratch3/users/c/caw846/stacks/'
-  else:
-     pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
+  pth_allrec_compute = '/n/scratch3/users/c/caw846/stacks/'
+  pth_allrec_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks/'
 elif (re.search("/home/par26/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  if do_copyfiles:
-     pth_allrec = '/n/files/Neurobio/wilsonlab/pablo/analysis/'
-     pth_super_copydest = '/n/scratch3/users/p/par26/analysis/'
-  else:
-     pth_allrec = '/n/scratch3/users/p/par26/analysis/'
+  pth_allrec_compute = '/n/scratch3/users/p/par26/analysis/'
+  pth_allrec_storage = '/n/files/Neurobio/wilsonlab/pablo/analysis/'
 elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
-  pth_allrec = '/scratch/users/wienecke/stacks/'
+  pth_allrec_compute = '/scratch/users/wienecke/stacks/'
 elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
-  pth_allrec = '/content/drive/MyDrive/stacks/'
+  pth_allrec_compute = '/content/drive/MyDrive/stacks/'
   do_cluster = 1 #cluster worked on colab 
 
-pth_super = '/'.join(pth_allrec.split('/')[:-2])
+pth_super = '/'.join(pth_allrec_compute.split('/')[:-2])
 pth_denoising = os.path.join(pth_super, 'denoising')
 if not os.path.exists(pth_denoising) and not do_copyfiles:
     os.mkdir(pth_denoising)
 
+if do_copyfiles=='in':
+  pth_allrec = pth_allrec_storage
+else:
+  pth_allrec = pth_allrec_compute
+
    
-[pth_datafile_all, fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
+[pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
 for ri,_ in enumerate(pth_datafile_all):
     
-    if do_copyfiles:
+    if do_copyfiles=='in':
+      pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
+      shutil.copyfile(pth_fldr_all, pth_copydest) #move the whole folder from storage server to compute server 
+   
+    elif do_copyfiles=='out':
+      pth_copydest = pth_allrec_storage + pth_fldr_all[ri].split('/')[-1]
+      shutil.copyfile(pth_fldr_all, pth_copydest) #move the whole folder from storage server to compute server 
        
-       pth_copysource = pth_allrec + fldr_all[ri]
-       pth_copydest = pth_super_copydest + fldr_all[ri]
-       
-       shutil.copyfile(pth_copydest) #move the whole folder from storage server to compute server 
-       
-
     else:
     
       if do_register:

@@ -13,7 +13,7 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
     CLI.add_argument(
         "--do_copyfiles",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
-        type=int,
+        type=str,
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(

@@ -12,7 +12,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                  use_background_subtracted, do_register):
     
     pth_datafile_all = []
-    fldr_all = []
+    pth_fldr_all = []
     fn_prefix_all = []
     pth_prefix_all = []
     pth_tif_reg_tmp_all = []
@@ -56,7 +56,6 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                         fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + str(int(f.split('_')[-2][-1])) #change hyphen to underscore
                     
                     pth_prefix = pth_fldr + '/' + fn_prefix
-                    fldr = pth_fldr.split('/')[-1]
                     if do_background_subtraction or (use_background_subtracted and not do_register):
                         pth_tif_dn = pth_prefix + '_cmrg_bksb_dcdn_.tif'        
                         pth_tif_reg_tmp = pth_prefix + '_cmrg_bksb_tmp_.tif'
@@ -97,7 +96,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                             md = read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None)
                         
                     pth_datafile_all.append(pth_datafile)
-                    fldr_all.append(fldr)
+                    pth_fldr_all.append(pth_fldr)
                     fn_prefix_all.append(fn_prefix)
                     pth_prefix_all.append(pth_prefix)
                     pth_tif_reg_tmp_all.append(pth_tif_reg_tmp)
@@ -106,5 +105,5 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                     pth_tif_dn_all.append(pth_tif_dn)
                     md_all.append(md)
 
-    return (pth_datafile_all, fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, 
+    return (pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, 
             pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all) 
