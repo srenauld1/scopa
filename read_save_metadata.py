@@ -29,7 +29,7 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
             fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
             mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
-            mdt['zwid'] = int(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
+            mdt['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
             mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta)[0].replace(";",","))
             mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
             mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
