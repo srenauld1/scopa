@@ -83,9 +83,6 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
 
                 try: #try, since some param sets will error
 
-                    opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial_ex = dims_spatial_ex) #param set for extraction
-                    opts = cnmf.params.CNMFParams(params_dict=opts_dict)
-
                     if do_planar_extraction: #adjust images and some params for planar 
                         sliceindz = np.arange(Ycrop.shape[3])
                         dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1])
@@ -99,12 +96,16 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                         cnm = None
                         cnm2 = None
 
-                        if do_planar_extraction:
+                        # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
+                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial_ex = dims_spatial_ex) #param set for extraction
+                        opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+
+                        if do_planar_extraction: #for planar extraction take on z slice at a time
                             print("PLANAR EXTRACTION FOR SLICE " + str(si))
                             images_sliced = Ycrop[:,:,:,si]
-                        else:
+                        else: # for 3d extraction keep all z slices (for now, until implement z ranges)
                             print("3D EXTRACTION FOR ALL SLICES")
-                            images_sliced = Ycrop #can't .copy() for some reason, for 3d extraction keep all images for loop over ii
+                            images_sliced = Ycrop #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
                         if do_cluster:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -122,6 +123,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                             if 'dview' in locals(): cm.stop_server(dview=dview)
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
         
+                
                         cnm2 = cnm.refit(images_sliced)
 
                         cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
@@ -133,9 +135,16 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                         dff_residtrue = cnm2.estimates.F_dff 
                         cnm2.estimates.select_components(use_object=True, save_discarded_components=False)
 
-                        if do_plots:
-                            caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction)
 
+                        if do_plots and cnm2.estimates.A.shape[-1]:
+                            pth_results = pth_tif_ex[:-8] + fnadd + 'OUT_FIT1.mov'
+                            caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results)
+
+                        if do_plots and cnm2.estimates.A.shape[-1]:
+                            pth_results2 = pth_tif_ex[:-8] + fnadd + 'OUT_FIT2.mov'
+                            caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results2)
+                        
+                
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
                             numroi_stack_pad = cnm2.estimates.A.shape[-1]
@@ -194,6 +203,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                     
                     if np.any(stack_masks):
                         pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_.mat'
+
                     else:
                         mdict = {}
                         print("norois")

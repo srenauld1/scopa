@@ -51,7 +51,7 @@ def plot_gif(data, indy):
     line_ani.save(filename_gif, writer=writer)
 
 
-def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, do_planar_extraction):
+def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, do_planar_extraction, pth_results):
 
     if do_planar_extraction:
         #Cn_o = compute_correlations(pth_mmap_reg[0], dims_spatial)
@@ -61,13 +61,20 @@ def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, do_planar_extractio
         print('you may need to change the data rate to generate nb_view_components: use jupyter notebook --NotebookApp.iopub_data_rate_limit=1.0e10 before opening jupyter notebook')                
         cnm.estimates.plot_contours(img=Cn) #img=None for mean projection
         cnm.estimates.view_components(img=Cn)
-        cnm.estimates.play_movie(images_sliced, q_max=99.9, gain_res=2, magnification=2, bpx=True, include_bck=False, save_movie=True)
-        A2 = cnm.estimates.A.toarray().reshape(opts.data['dims'] + (-1,), order='F').transpose([2, 0, 1])
-        Nc = A2.shape[0]
-        grid_shape = (np.ceil(np.sqrt(Nc/2)).astype(int), np.ceil(np.sqrt(Nc*2)).astype(int))
-        plt.figure(figsize=np.array(grid_shape[::-1])*1.5)
-        plt.imshow(montage(A2, rescale_intensity=True, grid_shape=grid_shape))
-        plt.axis('off')
+        cnm.estimates.play_movie(images_sliced, q_min=1, q_max=99.75, gain_res=2, magnification=2, 
+                                 include_bck=False, frame_range=slice(0,100,1), bpx=False, thr=1, 
+                                 save_movie=True, movie_name=pth_results, display=True, opencv_codec='H264',
+                                 use_color=False, gain_color=4, gain_bck=0.2)
+        
+        # A2 = np.reshape(cnm.estimates.A.toarray(), dims_spatial + (-1,), order='F')
+        # A2 = A2.reshape( A2.shape[:-2] + (np.prod(A2.shape[2:]), ) )
+        # A2 = A2.transpose([2, 0, 1])
+        # Nc = A2.shape[0]
+        # grid_shape = (np.ceil(np.sqrt(Nc/2)).astype(int), np.ceil(np.sqrt(Nc*2)).astype(int))
+        # plt.figure(figsize=np.array(grid_shape[::-1])*1.5)
+        # plt.imshow(montage(A2, rescale_intensity=True, grid_shape=grid_shape, padding_width=5))
+        # plt.axis('off')
+
     else:
         cnm.estimates.nb_view_components_3d(image_type='mean', dims_spatial=dims_spatial, axis=2)
         #cnm2.estimates.nb_view_components_3d(image_type='corr', dims_spatial=dims_spatial, Yr=Yr, denoised_color='red', max_projection=True);
@@ -75,7 +82,63 @@ def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, do_planar_extractio
     #denoised_movie = cm.movie(cnm2.estimates.A.dot(cnm2.estimates.C) + \
     #            cnm2.estimates.b.dot(cnm2.estimates.f)).reshape(dims_spatial + (-1,), order='F').transpose([3, 0, 1, 2]) #%% reconstruct denoised movie 
 
+"""
+arguments for cnm.estimates.play_movie
 
+Displays a movie with three panels (original data (left panel),
+        reconstructed data (middle panel), residual (right panel))
+
+
+            imgs: np.array (possibly memory mapped, t,x,y[,z])
+                Imaging data
+
+            q_max: float (values in [0, 100], default: 99.75)
+                percentile for maximum plotting value
+
+            q_min: float (values in [0, 100], default: 1)
+                percentile for minimum plotting value
+
+            gain_res: float (1)
+                amplification factor for residual movie
+
+            magnification: float (1)
+                magnification factor for whole movie
+
+            include_bck: bool (True)
+                flag for including background in original and reconstructed movie
+
+            frame_range: range or slice or list (default: slice(None))
+                display only a subset of frames
+
+            bpx: int (default: 0)
+                number of pixels to exclude on each border
+
+            thr: float (values in [0, 1[) (default: 0)
+                threshold value for contours, no contours if thr=0
+
+            save_movie: bool (default: False)
+                flag to save an avi file of the movie
+
+            movie_name: str (default: 'results_movie.avi')
+                name of saved file
+
+            display: bool (default: True)
+                flag for playing the movie (to stop the movie press 'q')
+
+            opencv_codec: str (default: 'H264')
+                FourCC video codec for saving movie. Check http://www.fourcc.org/codecs.php
+
+            use_color: bool (default: False)
+                flag for making a color movie. If True a random color will be assigned
+                for each of the components
+
+            gain_color: float (default: 4)
+                amplify colors in the movie to make them brighter
+
+            gain_bck: float (default: 0.2)
+                dampen background in the movie to expose components (applicable
+                only when color is used.)
+"""
 
 def compute_correlations(fname, dims):
     

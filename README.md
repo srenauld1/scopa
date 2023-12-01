@@ -1,6 +1,6 @@
  scopa
  
- carl wienecke 230924
+ updated by carl wienecke 231201
 
 
  this is the first part of the analysis pipeline for volumetric (xyzt) 2p imaging with behavior and visual stimuli
@@ -9,9 +9,7 @@
 
  the second part of the pipeline is in matlab (entry point is cx_analysis.m), and operates on the output of this first part (imaging data) and also behavior and stimulus data
 
- there aren't many plots associated with this first part (they are disabled since the idea is for this first part to run in the background on all recordings, to prepare the data for more interactive analysis in matlab)
-
-
+ there are a few basic plots for results in function caiman_plots_all (in file vis.py)
 
  if recording_index = 0, pipeline_init.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
@@ -92,6 +90,8 @@ INSTALLING THINGS
             conda activate caiman
             pip install scanimage-tiff-reader
             pip install mat73
+            pip install natsort
+
 
  before running denoise, deepcad and torch (and a few other packages) need to be installed; to do that, run these commands on O2 from your home folder 
  
@@ -105,6 +105,7 @@ INSTALLING THINGS
             pip install deepcad
             pip install mat73
             pip install matplotlib 
+            pip install natsort
             pip install scanimage-tiff-reader
 
 if any conda command above is taking too long or not working, you can try substituting "mamba" for "conda"

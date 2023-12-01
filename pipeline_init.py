@@ -11,8 +11,8 @@
 do_copyfiles = '' #in or out does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '*' #string, fly index_extraction_param_set, '*' for any 
-trial = '*' #string, trial index_extraction_param_set, '*' for any #
+fly = '2' #string, fly index_extraction_param_set, '*' for any 
+trial = '2' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 do_register = 0 #caiman normCorre registration 
@@ -25,9 +25,9 @@ do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this 
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = 'all' #either 'all' (all z slices) or a single number (a single z slice) . . . this is which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 
-do_extract = 0 #caiman source extraction 
-region_extraction = ['fullfov']#['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
-do_planar_extraction = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
+do_extract = 1 #caiman source extraction 
+region_extraction = ['pb']#['pb', 'gar', 'gal', 'no'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data 
 index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
@@ -43,7 +43,7 @@ do_cropping_session = 0 #skip everything but FOV selection for all entries in re
 do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
-do_plots = 0 #plots were for old version of this pipeline, 
+do_plots = 1 #plots were for old version of this pipeline, 
 
 import sys
 from parse_command_line import parse_command_line

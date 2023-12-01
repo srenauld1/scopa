@@ -3,7 +3,7 @@
 #SBATCH -p short
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=3G
-#SBATCH --array=[0-31]
+#SBATCH --array=[0,1,2,5,6]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -21,10 +21,10 @@ conda activate caiman
 --do_extract 1 \
 --index_extraction_param_set 'default' \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
---do_planar_extraction 0 \
+--do_planar_extraction 1 \
 --use_background_subtracted 0 \
 --use_denoised 1 \
---recdates '202306*' \
+--recdates '202311*' \
 --fly '*' \
 --trial '*' \
 --recording_index $SLURM_ARRAY_TASK_ID &
