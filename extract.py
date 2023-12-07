@@ -49,7 +49,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
         print(pth_exin)
         print(rx)
 
-        Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov) 
+        Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
 
         print(Ycrop.shape)
 
