@@ -109,3 +109,6 @@ INSTALLING THINGS
 
 if any conda command above is taking too long or not working, you can try substituting "mamba" for "conda"
 
+deepcad repo https://github.com/cabooster/DeepCAD-RT
+caiman repo https://github.com/flatironinstitute/CaImAn/tree/main
+
