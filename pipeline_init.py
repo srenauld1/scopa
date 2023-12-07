@@ -43,7 +43,7 @@ do_cropping_session = 0 #skip everything but FOV selection for all entries in re
 do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
-do_plots = 1 #plots were for old version of this pipeline, 
+do_plots = 0 #calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 import sys
 from parse_command_line import parse_command_line
