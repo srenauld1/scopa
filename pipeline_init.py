@@ -25,7 +25,7 @@ do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this 
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = 'all' #either 'all' (all z slices) or a single number (a single z slice) . . . this is which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 
-do_extract = 1 #caiman source extraction 
+do_extract = 0 #caiman source extraction 
 region_extraction = ['fullfov'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
