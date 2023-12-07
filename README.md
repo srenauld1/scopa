@@ -11,9 +11,9 @@
 
  there are a few basic plots for results in function caiman_plots_all (in file vis.py)
 
- if recording_index = 0, pipeline_init.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
+ if recording_index = 'all', pipeline_init.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
- if recording_index is not 0, pipeline_init.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
+ if recording_index is not 'all', pipeline_init.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
 
  this is convenient because recording_index can be assigned SLURM_ARRAY_TASK_ID in a bash script (e.g. mcp.sbatch), 
  which will run the pipeline on multiple recordings in parallel as a job array on O2 
@@ -22,6 +22,7 @@
 
  pipeline.py includes these options: 
  --background subtraction line-by-line (to remove stimulus bleedthrough), 
+ --option to temporally smooth the movie before registration (can help if very noisy)
  --motion correction (with caiman NormCorre)
  --denoising (using deepcad), 
  --source extraction (using caiman cNMF)
@@ -35,7 +36,7 @@
  the denoising requires motion corrected input tif, and the extraction requires either the motion correction output tif, or the denoising output tif (depending on whether use_denoised is true of false)
 
  input to pipeline are the tif files output by ScanImage (precision is int16, not uint16), dimensions are tzyx
- metadata is read from these same tif files 
+ metadata is read from these raw tif files in read_save_metadata.py
 
  some output files of this pipeline are saved as uint16 (not int16), since the data is nonnegative after processing
  in all stages of the pipeline. int16 or uint16 data is converted to float32 when read in, then operated on
@@ -55,10 +56,8 @@
  then, analysis of more precisely defined brain regions is done in the matlab part of the pipeline, where regions can be further split into arbitrary 2d, 3d, or 4d shapes
 
  since the denoising part of the pipeline requires very different resources on O2, there are 3 bash scripts for the pipeline, one for motion correction (mcp.sbatch, called from conda env caiman), one for denoising (dnp.sbatch, called from conda env deepcadrt), and one for extraction (exp.sbatch, called from conda env caiman) 
- all 3 bash scripts call pipeline_init.py. in pipeline_init.py, parameter virtenv controls the switch between environments 
 
- the resources required for denoising are very different than the resrouces required for the rest of the pipeline, so denoising should be run in a sepaate sbatch job  
- 
+ all 3 bash scripts call pipeline_init.py. 
 
  the pipeline also exists as a jupyter notebook (pipeline_nb.ipynb)
  it is mostly the same but the fov selection plots use different packages, 
@@ -71,8 +70,8 @@
  the recommended workflow is:
 
         1. run job array mcp.sbatch to motion correct recordings in parallel (automated)
-        2. run job array dnp.sbatch to denoise the same batch of recordings in parallel (automated) - depending on how many recordings in pth_allrec, may need to make recording_index = 0 to loop in series (not parallel) because of limited GPU resources 
-        3. using ineractive job on O2 (visual studio), run pipeline_init.py, looping over all values in region_extraction and all recordings in the same batch, letting user define all sub-FOV (interactive)
+        2. run job array dnp.sbatch to denoise the same batch of recordings in parallel (automated) - depending on how many recordings in pth_allrec, may need to make recording_index = 'all' to loop in series (not parallel) because of limited GPU resources 
+        3. using ineractive job on O2 (visual studio), run pipeline_init.py with do_cropping_session=1, looping over all values in region_extraction and all recordings in the same batch, letting user define all sub-FOV (interactive)
         4. using job array exp.sbatch, run extraction on all values in region_extraction for same batch of recordings, optionally using the motion-corrected and denoised or just motion-corrected data (automated)
         5. use matlab pipeline for further analysis using the output of this python pipeline 
 

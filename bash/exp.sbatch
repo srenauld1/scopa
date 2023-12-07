@@ -24,7 +24,7 @@ conda activate caiman
 --do_planar_extraction 1 \
 --use_background_subtracted 0 \
 --use_denoised 1 \
---recdates '202311*' \
+--recdates '2023*' \
 --fly '*' \
 --trial '*' \
 --recording_index $SLURM_ARRAY_TASK_ID &

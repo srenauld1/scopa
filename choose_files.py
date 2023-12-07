@@ -46,7 +46,7 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                 
                 countz = countz + 1
 
-                if recording_index == 'all' or (recording_index !='all' and countz==recording_index): #if 'all', do all files matching pattern, otherwise only file matching index
+                if recording_index == 'all' or (recording_index !='all' and np.isin(countz, recording_index).any()): #if 'all', do all files matching pattern, otherwise only file matching index
 
                     print(pth_datafile)
 
