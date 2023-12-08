@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --time=02:00:00
+#SBATCH --time=01:30:00
 #SBATCH -p gpu_quad
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=12G
 #SBATCH --job-name=DNP
 #SBATCH --gres=gpu:a100:1,vram:80G
-#SBATCH --array=[0-9]
+#SBATCH --array=[0-1]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -23,17 +23,17 @@ conda activate deepcadrt
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
-for i in {1..6}
+for i in 0
 do
     sleep 20s
     ~/.conda/envs/deepcadrt/bin/python3 /home/caw846/scopa/pipeline_init.py \
     --do_denoise 1 \
     --denoise_volume 1 \
     --denoise_slice_index 'all' \
-    --recdates '*' \
+    --recdates '20231120' \
     --fly '*' \
     --trial '*' \
-    --recording_index $i &
+    --recording_index $SLURM_ARRAY_TASK_ID &
 done
 
 wait
