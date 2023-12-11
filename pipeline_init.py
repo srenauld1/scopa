@@ -10,12 +10,12 @@
 
 do_copyfiles = '' #in or out does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
-recdates = ['221120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '*' #string, fly index_extraction_param_set, '*' for any 
+recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 0 #'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
 do_background_subtraction = 0 #prior to registration, won't happen unless do_register = 1 

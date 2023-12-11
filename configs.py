@@ -16,28 +16,45 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
 
     #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
 
-    #motion correction configs
+   
+    ### motion correction configs ###
 
-    pw_rigid = False
-    nonneg_movie = True
+
+    pw_rigid = False #rigid or non, for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
+    nonneg_movie = True #true because i make it nonnegative before registration
     min_mov = min_mov
-    shifts_opencv = True #true uses intercubic interp, false uses fourier, but i think something else overrides this setting elsewhere
-    upsample_factor_grid = 4 #default 4
-    niter_rig = 1 #default 1
-    max_deviation_rigid = 3
+
+    niter_rig = 1 #default 1, number registration iterations (regardles of pw_rigid, or is3d)
+
+    if pw_rigid: #for clarity force this distinction
+        max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
+    else:
+        max_deviation_rigid = 0 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
+
 
     if md['dims'][1]==1:
-        is3D_mc = False
+        is3D_mc = False #if not 3d, correct each slice . . . 
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
-        strides_mc = (24, 24)
-        overlaps_mc = (12, 12)
-        max_shifts_mc = (8, 8)
+        strides_mc = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
+        overlaps_mc = (12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch overlap
+        max_shifts_mc = (8, 8) #max allowed shifts (in patch if piecewise, or whole fov if not) 
     else:
         is3D_mc = True
         indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
-        strides_mc = (24, 24, 6)
-        overlaps_mc = (12, 12, 3)
-        max_shifts_mc = (8, 8, 2)
+        strides_mc = (24, 24, 6) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
+        overlaps_mc = (12, 12, 3)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
+        max_shifts_mc = (8, 8, 2)#max allowed shifts (in patch if piecewise, or whole fov if not) 
+
+    if is3D_mc: #for clarity force this distinction
+        shifts_opencv = False #ignored if is3D_mc==true . . . true uses intercubic interp (faster but smoother), false uses fourier
+    else:
+        shifts_opencv = True #ignored if is3D_mc==true . . . true uses intercubic interp (faster but smoother), false uses fourier
+    
+    
+    upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
+
+
+    ### roi extraction params ###
 
     do_slices = False #my crop_fov is meant to replace this, so should always be false
     if do_slices:
