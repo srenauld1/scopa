@@ -26,7 +26,7 @@ conda activate deepcadrt2 #NOTE ENVIRONMENT NAME IS deepcadrt2
 for i in 0
 do
     sleep 20s
-    ~/.conda/envs/deepcadrt/bin/python3 /home/par26/scopa/pipeline_init.py \
+    ~/.conda/envs/deepcadrt2/bin/python3 /home/par26/scopa/pipeline_init.py \
     --do_denoise 1 \
     --denoise_volume 1 \
     --denoise_slice_index 'all' \
