@@ -25,11 +25,9 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     min_mov = min_mov
 
     niter_rig = 1 #default 1, number registration iterations (regardles of pw_rigid, or is3d)
-
-    if pw_rigid: #for clarity force this distinction
-        max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
-    else:
-        max_deviation_rigid = 0 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
+    max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
+    shifts_opencv = True #ignored if is3D_mc==true . . . true uses intercubic interp (faster but smoother), false uses fourier
+    upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 
     if md['dims'][1]==1:
@@ -44,14 +42,6 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
         strides_mc = (24, 24, 6) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
         overlaps_mc = (12, 12, 3)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
         max_shifts_mc = (8, 8, 2)#max allowed shifts (in patch if piecewise, or whole fov if not) 
-
-    if is3D_mc: #for clarity force this distinction
-        shifts_opencv = False #ignored if is3D_mc==true . . . true uses intercubic interp (faster but smoother), false uses fourier
-    else:
-        shifts_opencv = True #ignored if is3D_mc==true . . . true uses intercubic interp (faster but smoother), false uses fourier
-    
-    
-    upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 
     ### roi extraction params ###
