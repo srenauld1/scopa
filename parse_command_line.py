@@ -3,7 +3,7 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, len_window_smooth_t,
+def parse_command_line(do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
@@ -39,6 +39,12 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
         nargs=1, 
         type=int,
         default=[do_register],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--do_planar_registration",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[do_planar_registration],  # default if nothing is provided
     )
     CLI.add_argument(
         "--len_window_smooth_t",  # name on the CLI - drop the `--` for positional/required parameters
@@ -132,6 +138,7 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
     else:
         region_extraction = args.region_extraction #keep as list
     do_register = args.do_register[0]
+    do_planar_registration = args.do_planar_registration[0]
     len_window_smooth_t = args.len_window_smooth_t[0]
     do_denoise = args.do_denoise[0]
     denoise_volume = args.denoise_volume[0]
@@ -154,7 +161,7 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
         recording_index = int(args.recording_index[0])
 
     return (do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, 
-            do_register, len_window_smooth_t, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
+            do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
             do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
             fly, trial, do_cropping_session, recording_index)
 

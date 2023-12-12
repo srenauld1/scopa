@@ -7,6 +7,44 @@ import os
 from tifffile.tifffile import imwrite, imread
 import shutil
 
+def stitch_registered_z_slices(pth_tif_reg, dims):
+
+
+  pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_.tif'))
+
+  Y = np.zeros(dims) #t z y x 
+
+  countz = 0
+  for f in pth_tif_all:
+      countz = countz + 1
+      print(f)
+      sliceind = int(f.split('_')[-2])
+      Ynew = imread(f)
+      if Ynew.dtype!='uint16':
+          print("warning, converting type from " + str(Ynew.dtype))
+          Ynew = Ynew.astype('uint16')
+          if np.min(Y)<0 or np.max(Y) > 65535:
+            raise Exception("reg have operated on uint16 for this pipeline, or adjust it")
+      print(Ynew.dtype)
+      print(sliceind)
+      Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
+
+  if countz != dims[1]:
+      raise Exception("not all slices present")
+
+  mnmv = np.min(Y)
+  Y = Y - mnmv #make nonnegative before writing to uint16
+  print("MIN AFTER REGISTRATION " + str(mnmv))
+  Y = Y.astype('uint16')
+  print(Y.shape)
+  Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx
+  print(Y.shape)
+  #imwrite(pth_out, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+  imwrite(pth_tif_reg, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+
+  for f in pth_tif_all:
+     os.remove(f)
+
 
 def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims, denoise_volume):
 

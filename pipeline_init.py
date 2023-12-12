@@ -16,6 +16,7 @@ trial = '*' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 0 #'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 do_register = 1 #caiman normCorre registration 
+do_planar_registration = 1
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
 do_background_subtraction = 0 #prior to registration, won't happen unless do_register = 1 
@@ -49,11 +50,11 @@ import sys
 from parse_command_line import parse_command_line
 
 if len(sys.argv)>1:
-  [do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, len_window_smooth_t, do_denoise, denoise_volume, 
+  [do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
    denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
    do_cropping_session, recording_index] = \
     parse_command_line(do_copyfiles = do_copyfiles, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
-                       do_background_subtraction = do_background_subtraction, do_register = do_register, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
+                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
                        denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extract = do_extract, 
                        do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                        recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, recording_index = recording_index)
@@ -173,7 +174,7 @@ for ri,_ in enumerate(pth_datafile_all):
     
       if do_register:
           register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], pth_tif_reg_tmp2_all[ri], 
-              pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t,
+              pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t,
               denoise_volume, cluster_backend, do_cluster)
 
       if do_denoise:

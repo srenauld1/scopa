@@ -11,7 +11,7 @@ from map2params import map2params, map2params_t5
 
 ##########################################################################################################################################
 
-def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
+def configs(do_planar_registration = True, index_extraction_param_set = 'default', fnames = None, min_mov = 0,
             md = None, do_planar_extraction = None, dims_spatial_ex = 0):
 
     #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
@@ -30,7 +30,7 @@ def configs(index_extraction_param_set = 'default', fnames = None, min_mov = 0,
     upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 
-    if md['dims'][1]==1:
+    if md['dims'][1]==1 or do_planar_registration:
         is3D_mc = False #if not 3d, correct each slice . . . 
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
