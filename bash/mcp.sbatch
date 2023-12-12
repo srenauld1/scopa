@@ -2,8 +2,8 @@
 #SBATCH --time=00:30:00
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=20G
-#SBATCH --array=[0]
+#SBATCH --mem-per-cpu=40G
+#SBATCH --array=[0-1]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -22,7 +22,7 @@ conda activate caiman
 --do_planar_registration 1 \
 --do_background_subtraction 0 \
 --len_window_smooth_t 0 \
---recdates '*' \
+--recdates '20231120' \
 --fly '*' \
 --trial '*' \
 --recording_index $SLURM_ARRAY_TASK_ID &
