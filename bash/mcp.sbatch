@@ -19,6 +19,7 @@ conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
 --do_register 1 \
+--do_planar_registration 1 \
 --do_background_subtraction 0 \
 --len_window_smooth_t 0 \
 --recdates '*' \
