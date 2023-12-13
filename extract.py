@@ -53,6 +53,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
 
         print(Ycrop.shape)
 
+
         if not do_cropping_session:
             
             pth_tif_ex = pth_exin[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'

@@ -13,7 +13,9 @@ from skimage.util import montage
 from caiman.summary_images import local_correlations_movie_offline
 
 
-def im_montage(images):
+def im_montage(images, vmin=None, vmax=None):
+
+    # if you don't pass vmin and vmax each subfigure will be normalized to its own min/max
 
     numim = images.shape[-1]
     
@@ -22,7 +24,7 @@ def im_montage(images):
     fig, ax = plt.subplots(Nr, Nc)
     for i in range(numim):
         indies = np.unravel_index(i, (Nr,Nc))
-        ax[indies[0],indies[1]].imshow(images[:,:,i].T)
+        ax[indies[0],indies[1]].imshow(images[:,:,i].T, vmin=vmin, vmax=vmax)
         ax[indies[0],indies[1]].axis('off')
     
     # print("create zlimits and assign value")
@@ -30,7 +32,29 @@ def im_montage(images):
     #plt.close('all')
 
 
-def plot_gif(data, indy):
+def plot_gif(data, indsx = None, indsy = None, indsz = None, indst = None):
+
+
+    if indsx==None:
+        indsx = slice(0, data.shape[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
+    if indsy==None:
+        indsy = slice(0, data.shape[2], 1) 
+    if indsz==None:
+        indsz = slice(0, data.shape[3], 1) 
+    if indst==None:
+        indst = slice(0, data.shape[0], 1) 
+
+    if len(data.shape)==4:
+        data = data[indst,indsx,indsy,indsz]
+        data = np.transpose(data, (0, 3, 2, 1)) #put in order (tz) y x
+        data = data.reshape(data.shape[0]*data.shape[1], data.shape[2], data.shape[3])
+    else:
+        data = data[indst,indsx,indsy]
+        data = np.transpose(data, (0, 2, 1)) #put in order (tz) y x
+
+    
+    mnmv = np.min(data)
+    mxmv = np.max(data)
     
     matplotlib.use("Agg")
 
@@ -42,12 +66,12 @@ def plot_gif(data, indy):
     writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=100)
 
     fig1 = plt.figure()
-    img = plt.imshow(data[0,:,:])
+    img = plt.imshow(data[0,:,:], vmin=mnmv, vmax=mxmv)
 
     plt.title('test')
     fram = np.arange(1,data.shape[0])
     line_ani = animation.FuncAnimation(fig1, update_im, fram, fargs=(data, img), interval=50, blit=True)
-    filename_gif = '/Users/wienecke/Documents/ambrose/testnew' + str(indy) + '.gif'
+    filename_gif = '/Users/wienecke/Documents/ambrose/testnew_' + str(indsz) + '_.gif'
     line_ani.save(filename_gif, writer=writer)
 
 

@@ -9,11 +9,11 @@ from configs import configs
 from helpers import stitch_registered_z_slices, separate_z_slices_before_denoising, separate_z_slices_before_denoising_carls_old_project, tracefunc 
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
-from vis import im_montage
+from vis import im_montage, plot_gif
 
 def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_tmp2, pth_tif_reg, pth_denoising, md, 
              do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, 
-             denoise_volume, cluster_backend, do_cluster):
+             denoise_volume, cluster_backend, do_cluster, do_plots):
 
     if do_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -135,6 +135,10 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
             mnmv = np.min(Ynew)
             Ynew = Ynew - mnmv #make nonnegative before writing to uint16
             print("MIN AFTER MOTION CORRECTION " + str(mnmv))
+            if do_plots:
+                mxmv = np.max(Y)
+                #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
+                plot_gif(Ynew, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
         if len(Ynew.shape)==3:# or Y.shape[3]==1:
             imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
@@ -146,7 +150,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
     Y = None
 
     if do_planar_registration and movie_is_4d:
-        stitch_registered_z_slices(pth_tif_reg, md['dims'])
+        stitch_registered_z_slices(pth_tif_reg, md['dims'], do_plots)
 
     # FINAL PART OF MOTION CORECTION SECTION  is to prepare files for denoising 
     # by writing each z slice to separate tif and put them in separate folders 

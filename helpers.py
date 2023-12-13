@@ -6,8 +6,10 @@ import fnmatch
 import os
 from tifffile.tifffile import imwrite, imread
 import shutil
+from vis import im_montage, plot_gif
 
-def stitch_registered_z_slices(pth_tif_reg, dims):
+
+def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
 
   pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_.tif'))
@@ -27,6 +29,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims):
             raise Exception("reg have operated on uint16 for this pipeline, or adjust it")
       print(Ynew.dtype)
       print(sliceind)
+      print("each slice min should not be zero, this slice min is:" + str(np.min(Ynew)))
       Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
 
   if countz != dims[1]:
@@ -35,8 +38,18 @@ def stitch_registered_z_slices(pth_tif_reg, dims):
   mnmv = np.min(Y)
   Y = Y - mnmv #make nonnegative before writing to uint16
   print("MIN AFTER REGISTRATION " + str(mnmv))
-  Y = Y.astype('uint16')
+  
+  if Y.dtype!='uint16': #was  Y = Y.astype('uint16')
+      raise Exception("not uint16")
+  
   print(Y.shape)
+  
+  if do_plots:
+      mxmv = np.max(Y)
+      #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
+      plot_gif(Y, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+
+
   Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx
   print(Y.shape)
   #imwrite(pth_out, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
@@ -165,7 +178,10 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
   mnmv = np.min(Y)
   Y = Y - mnmv #make nonnegative before writing to uint16
   print("MIN AFTER DENOISING " + str(mnmv))
-  Y = Y.astype('uint16')
+  
+  if Y.dtype!='uint16': #was  Y = Y.astype('uint16')
+    raise Exception("not uint16")
+  
   Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
   print(Y.shape)
   Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
@@ -232,7 +248,10 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
                 mnmv = np.min(Y)
                 Y = Y - mnmv #make nonnegative before writing to uint16
                 print("MIN AFTER DENOISING " + str(mnmv))
-                Y = Y.astype('uint16')
+                 
+                if Y.dtype!='uint16': #was  Y = Y.astype('uint16')
+                  raise Exception("not uint16")
+              
                 Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
                 print(Y.shape)
                 Y = Y.reshape(dims_pre_denoise[0] * actual_z_size, dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx

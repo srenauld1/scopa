@@ -66,10 +66,11 @@ def crop_fov(Y, region_extraction, pth_prefix, dims):
                 zlimits = (1,1)
                 Ymtz = np.mean(Ymt, axis = 2)
             else:
-                im_montage(Ymt)
-                print("what z slices do you want to keep? Consider keeping first as padding if cells abut z edges \
-                    WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
-                    OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
+                im_montage(Ymt) #pass whole Ymt min and max as vmin and vmax if you don't want each slice normalized
+                print("what z slices do you want to keep? note: each slice normalized to boost contrast for this plot \
+                      Consider keeping first as padding if cells abut z edges \
+                      WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, \
+                      OR you must REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
                 zlimits = literal_eval(input ("choose z limits (one-indexed) using format (firstframe,lastframe): "))
                 Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]-1], axis = 2)
             ylimits, xlimits = select_fov_xy(Ymtz)

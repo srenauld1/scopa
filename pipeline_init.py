@@ -30,7 +30,7 @@ do_extract = 0 #caiman source extraction
 region_extraction = ['fullfov'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
-use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data 
+use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data 
 index_extraction_param_set = 'default' #specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
@@ -48,6 +48,7 @@ do_plots = 0 #calls caiman_plots_all, which shows extracted components' spatial 
 
 import sys
 from parse_command_line import parse_command_line
+from paths import pathfun
 
 if len(sys.argv)>1:
   [do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
@@ -81,8 +82,6 @@ else:
     do_denoise = 0
 
 
-import re
-import os
 import shutil 
 from choose_files import choose_files
 
@@ -124,36 +123,7 @@ if not do_copyfiles:
   elif do_denoise:
       from denoise import denoise
 
-print(sys.executable)
-env_path = sys.path
-
-pth_allrec_storage = []
-if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
-  pth_allrec_compute = '/Users/wienecke/Documents/ambrose/stacks/'
-  pth_allrec_storage = '/Volumes/neurobio/wilsonlab/wienecke/stacks/'
-  if do_denoise: #need gpu, don't have one locally 
-     raise Exception("no gpu, make do_denoise false")
-elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  pth_allrec_compute = '/n/scratch3/users/c/caw846/stacks/'
-  pth_allrec_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks/'
-elif (re.search("/home/par26/", env_path[0])): #IF YOU'RE ON O2 . . . 
-  pth_allrec_compute = '/n/scratch3/users/p/par26/analysis/'
-  pth_allrec_storage = '/n/files/Neurobio/wilsonlab/pablo/analysis/'
-elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
-  pth_allrec_compute = '/scratch/users/wienecke/stacks/'
-elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
-  pth_allrec_compute = '/content/drive/MyDrive/stacks/'
-  do_cluster = 1 #cluster worked on colab 
-
-pth_super = '/'.join(pth_allrec_compute.split('/')[:-2])
-pth_denoising = os.path.join(pth_super, 'denoising')
-if not os.path.exists(pth_denoising) and not do_copyfiles:
-    os.mkdir(pth_denoising)
-
-if do_copyfiles=='in':
-  pth_allrec = pth_allrec_storage
-else:
-  pth_allrec = pth_allrec_compute
+[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_cluster] = pathfun(do_copyfiles)
 
    
 [pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
@@ -175,7 +145,7 @@ for ri,_ in enumerate(pth_datafile_all):
       if do_register:
           register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], pth_tif_reg_tmp2_all[ri], 
               pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t,
-              denoise_volume, cluster_backend, do_cluster)
+              denoise_volume, cluster_backend, do_cluster, do_plots)
 
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume)
