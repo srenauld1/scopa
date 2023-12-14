@@ -17,9 +17,7 @@ ml miniconda3/4.10.3
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
-echo "$(pwd) pipeline_init.py"
-
-~/.conda/envs/caiman/bin/python3 $(pwd) pipeline_init.py \
+~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --do_register 1 \
 --do_planar_registration 1 \
 --do_background_subtraction 0 \

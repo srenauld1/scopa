@@ -21,7 +21,7 @@ def makepaths(do_copyfiles, data_folder_path_on_storage_server):
         if re.search('compute.*harvard', hn): #if you're on O2
             pth_allrec_storage = data_folder_path_on_storage_server
         else: #else assume you're not on a cluster 
-            pth_allrec_storage = data_folder_path_on_storage_server #no need to move data elsewhere on local machine
+            pth_allrec_storage = '' #no need to move data elsewhere on local machine
             # if do_copyfiles:
             #     print("FORCING do_copyfiles to zero because you're not on the cluster")
             #     do_copyfiles = 0

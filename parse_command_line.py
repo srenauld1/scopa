@@ -137,10 +137,10 @@ def parse_command_line(do_copyfiles, data_folder_path_on_storage_server, index_e
     print(args)
 
     do_copyfiles = args.do_copyfiles[0]
-    if isinstance(args.data_folder_path_on_storage_server[0], list):
-        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server[0] #keep as list
+    if isinstance(args.data_folder_path_on_storage_server, list):
+        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server[0] #shouldn't be list 
     else:
-        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server #keep as list
+        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server #shouldn't be list 
     if args.index_extraction_param_set[0] != 'default':
         index_extraction_param_set = int(args.index_extraction_param_set[0])
     if isinstance(args.region_extraction[0], list):
