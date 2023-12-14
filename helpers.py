@@ -12,7 +12,7 @@ from vis import im_montage, plot_gif
 def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
 
-  pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_.tif'))
+  pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_z_.tif'))
 
   Y = np.zeros(dims) #t z y x 
 

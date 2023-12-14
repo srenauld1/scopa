@@ -129,7 +129,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
         
         if do_planar_registration and movie_is_4d:
-            pth_write = pth_tif_reg[:-4] + str(si) + '_.tif'
+            pth_write = pth_tif_reg[:-4] + str(si) + '_z_.tif'
         else:
             pth_write = pth_tif_reg
             mnmv = np.min(Ynew)
