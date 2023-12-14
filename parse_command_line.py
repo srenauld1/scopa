@@ -4,9 +4,8 @@ from ast import literal_eval
 
 
 def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
-                       do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
-                       recdates, fly, trial, do_cropping_session, 
-                       recording_index):
+                       do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
+                       do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index):
     
     CLI=argparse.ArgumentParser()
 
@@ -81,6 +80,24 @@ def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_n
         nargs="*", 
         type=str,
         default=[denoise_slice_index],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--num_epochs_denoise",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[num_epochs_denoise],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--epoch_choose_denoise",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[epoch_choose_denoise],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--do_stitching_session",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[do_stitching_session],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_extract",  # name on the CLI - drop the `--` for positional/required parameters
@@ -166,6 +183,9 @@ def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_n
         denoise_slice_index = args.denoise_slice_index[0] #keep as list
     else:
         denoise_slice_index = args.denoise_slice_index #keep as list
+    num_epochs_denoise = args.num_epochs_denoise[0]
+    epoch_choose_denoise = args.epoch_choose_denoise[0]
+    do_stitching_session = args.do_stitching_session[0]
     do_extract = args.do_extract[0]
     do_planar_extraction = args.do_planar_extraction[0]
     use_denoised = args.use_denoised[0]
@@ -182,7 +202,7 @@ def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_n
 
     return (do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
-            do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, 
-            use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index)
+            do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
+            do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index)
 
 

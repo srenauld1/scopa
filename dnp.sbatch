@@ -29,6 +29,7 @@ do
     ~/.conda/envs/deepcadrt/bin/python3 $(pwd)/pipeline_init.py \
     --do_denoise 1 \
     --denoise_volume 1 \
+    --num_epochs_denoise 5 \
     --denoise_slice_index 'all' \
     --recdates '20231120' \
     --fly '*' \

@@ -165,7 +165,7 @@ from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 
 
-def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume):
+def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise):
 
     if int(fn_prefix.split('_')[0])>20230101: #if it's not my old grad school project 
         carls_old_project = 0
@@ -188,8 +188,8 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     print(denoise_slice_index)
     print(denoise_volume)
 
-    n_epochs = 5  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
-    epochs_choose = [1, 2, 3, 4, 5] #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), for now choosing last and middle, and inspecting for overfit or underfit
+    n_epochs = num_epochs_denoise  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
+    epochs_choose = list(range(1,n_epochs+1)) #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), default here is to test (denoise) with model state after all epochs 
 
     patch_t_seconds = 20 #20 seconds is my total guess for what seems reasonable 
     padinc = 5 #this is probably pointless and can probably be zero 

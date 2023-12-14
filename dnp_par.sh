@@ -26,6 +26,7 @@ do
     --do_denoise 1 \
     --denoise_volume 1 \
     --denoise_slice_index 'all' \
+    --num_epochs_denoise 5 \
     --recdates '*' \
     --fly '*' \
     --trial '*' \
