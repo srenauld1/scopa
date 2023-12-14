@@ -4,12 +4,14 @@ import os
 import sys
 
 
-def makepaths(do_copyfiles, data_folder_path_on_storage_server):
+def makepaths(do_copyfiles, data_folder_name_on_scratch3, data_folder_path_on_storage_server):
 
     print(sys.executable)
     env_path = sys.path[0]
 
-    pth_allrec_compute = env_path + '/data/stacks/' #data folder in scopa is ignored (see .gitignore file with ls -a)
+    pth_scratch3 = '/n/scratch3/users/' + env_path.split('/')[-1][0] + '/' + env_path.split('/')[-1]
+
+    pth_allrec_compute = pth_scratch3 + '/' + data_folder_name_on_scratch3 + '/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_allrec_compute):
         os.mkdir(pth_allrec_compute)
 
@@ -29,7 +31,7 @@ def makepaths(do_copyfiles, data_folder_path_on_storage_server):
     # if not os.path.exists(pth_allrec_storage):
     #     os.mkdir(pth_allrec_storage)
 
-    pth_denoising = env_path + '/data/denoising/' #data folder in scopa is ignored (see .gitignore file with ls -a)
+    pth_denoising = pth_scratch3 + '/denoising/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_denoising):
         os.mkdir(pth_denoising)
 

@@ -8,7 +8,8 @@
 ##########################################################################################################################################
 
 data_folder_path_on_storage_server = '/n/files/Neurobio/wilsonlab/wienecke/stacks/' #the full path (include closing slash) to the long-term storage folder you want the data copied from and to before and after analysis, ignored if not on cluster 
-do_copyfiles = '' #LEAVE THIS BLANK FOR NOW IT DOESN'T WORK YET ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+data_folder_name_on_scratch3 = 'stacks' #the name of the folder all your data this pipeline operates on goes into 
+do_copyfiles = '' #LEAVE THIS BLANK FOR NOW IT DOESN'T WORK YET . . . ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
@@ -62,7 +63,7 @@ if len(sys.argv)>1:
 
 
 [pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
-  makepaths(do_copyfiles, data_folder_path_on_storage_server)
+  makepaths(do_copyfiles, data_folder_name_on_scratch3, data_folder_path_on_storage_server)
 
 
 if do_cropping_session or do_copyfiles:
@@ -135,11 +136,11 @@ for ri, _ in enumerate(pth_datafile_all):
     
     if do_copyfiles=='in':
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from storage server to compute server, overwriting existing 
+      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from storage server to compute server
 
     elif do_copyfiles=='out':
       pth_copydest = pth_allrec_storage + pth_fldr_all[ri].split('/')[-1]
-      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from compute server to storage server, overwriting existing 
+      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from compute server to storage server
        
     else:
     
