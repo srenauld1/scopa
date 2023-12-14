@@ -107,8 +107,38 @@ INSTALLING THINGS
             pip install natsort
             pip install scanimage-tiff-reader
 
+if running dnp.sbatch is failing because cuda is not available or torch was not properly installed, you can try this alternative installation for deepcad (which doesn't use conda), and instead of running dnp.sbatch, run dnp2.sbatch
+
+        module purge
+        module load gcc/9.2.0 python/3.9.14 cuda/11.7
+        virtualenv deepcadrt2
+        source deepcadrt2/bin/activate
+        pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+        pip install deepcad
+        pip install mat73
+        pip install matplotlib
+        pip install scanimage-tiff-reader
+        pip install natsort
+
 if any conda command above is taking too long or not working, you can try substituting "mamba" for "conda"
 
 deepcad repo https://github.com/cabooster/DeepCAD-RT
 caiman repo https://github.com/flatironinstitute/CaImAn/tree/main
+
+
+to use VS Code on O2 (to debug on O2, or to do_cropping_session), you'll be promted to fill out several fields
+most of them are intuitive, except for two fields at the bottom
+here's the values i use for these two fields for caiman registration or extraction (or just do_cropping session)
+
+Additional modules to be preloaded:
+        python/3.10.11 miniconda3/4.10.3
+
+Custom Environment (drag text area to enlarge):
+        source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+        conda activate caiman
+
+I leave slurm custom arguments blank 
+
+i have been unable to open the vs code app on o2 when loading the deepcad environment, i think because of a python version conflict
+
 

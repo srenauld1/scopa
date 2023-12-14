@@ -4,31 +4,33 @@ import os
 import sys
 
 
-def pathfun(do_copyfiles):
+def makepaths(do_copyfiles, data_folder_path_on_storage_server):
 
     print(sys.executable)
-    env_path = sys.path
+    env_path = sys.path[0]
 
+    pth_allrec_compute = env_path + '/data/stacks/' #data folder in scopa is ignored (see .gitignore file with ls -a)
+    if not os.path.exists(pth_allrec_compute):
+        os.mkdir(pth_allrec_compute)
 
-    pth_allrec_storage = []
-    if (re.search("/Users/wienecke/", env_path[0])): #IF YOU'RE ON YOUR OWN MACHINE
-        pth_allrec_compute = '/Users/wienecke/Documents/ambrose/stacks/'
-        pth_allrec_storage = '/Volumes/neurobio/wilsonlab/wienecke/stacks/'
-    elif (re.search("/home/caw846/", env_path[0])): #IF YOU'RE ON O2 . . . 
-        pth_allrec_compute = '/n/scratch3/users/c/caw846/stacks/'
-        pth_allrec_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks/'
-    elif (re.search("/home/par26/", env_path[0])): #IF YOU'RE ON O2 . . . 
-        pth_allrec_compute = '/n/scratch3/users/p/par26/analysis/'
-        pth_allrec_storage = '/n/files/Neurobio/wilsonlab/pablo/analysis/'
-    elif (re.search("/home/users/wienecke/", env_path[0])): #IF YOURE ON THE STANFORD CLUSTER
-        pth_allrec_compute = '/scratch/users/wienecke/stacks/'
-    elif (re.search('/content', env_path[0])): #IF YOURE ON GOOGLE COLAB
-        pth_allrec_compute = '/content/drive/MyDrive/stacks/'
-        do_cluster = 1 #cluster worked on colab 
+    in_colab = 'google.colab' in sys.modules
+    if in_colab:
+        raise Exception("in colab run the ipynb pipeline instead")
+    else:
+        hn = os.popen('hostname').read()
+        if re.search('compute.*harvard', hn): #if you're on O2
+            pth_allrec_storage = data_folder_path_on_storage_server
+        else: #else assume you're not on a cluster 
+            pth_allrec_storage = data_folder_path_on_storage_server #no need to move data elsewhere on local machine
+            # if do_copyfiles:
+            #     print("FORCING do_copyfiles to zero because you're not on the cluster")
+            #     do_copyfiles = 0
 
-    pth_super = '/'.join(pth_allrec_compute.split('/')[:-2])
-    pth_denoising = os.path.join(pth_super, 'denoising')
-    if not os.path.exists(pth_denoising) and not do_copyfiles:
+    if not os.path.exists(pth_allrec_storage):
+        os.mkdir(pth_allrec_storage)
+
+    pth_denoising = env_path + '/data/denoising/' #data folder in scopa is ignored (see .gitignore file with ls -a)
+    if not os.path.exists(pth_denoising):
         os.mkdir(pth_denoising)
 
     if do_copyfiles=='in':
@@ -36,4 +38,4 @@ def pathfun(do_copyfiles):
     else:
         pth_allrec = pth_allrec_compute
 
-    return pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_cluster
+    return pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles

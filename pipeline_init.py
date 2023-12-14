@@ -7,13 +7,13 @@
 
 ##########################################################################################################################################
 
-
-do_copyfiles = '' #in or out does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+data_folder_path_on_storage_server = '/Users/wienecke/Documents/diks/' #'/n/files/Neurobio/wilsonlab/wienecke/stacks/' #the full path (include closing slash) to the long-term storage folder you want the data copied from and to before and after analysis, ignored if not on cluster 
+do_copyfiles = 'in' #ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '2' #string, fly index_extraction_param_set, '*' for any 
+fly = '*' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any #
-recording_index = 0 #'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
+recording_index = 'all' #'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 do_register = 1 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
@@ -41,25 +41,28 @@ do_cropping_session = 0 #skip everything but FOV selection for all entries in re
 # these commands need to be executed from the terminal (in Linux and Windows):
 # export MKL_NUM_THREADS=1 
 # export OPENBLAS_NUM_THREADS=1 
-do_cluster = 0 #leave as 0 because cluster isn't working (except on colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
+do_cluster = 0 #leave as 0 because cluster isn't working (except on google colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
-do_plots = 0 #calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
+do_plots = 0 #in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 import sys
 from parse_command_line import parse_command_line
-from paths import pathfun
+from paths import makepaths
 
 if len(sys.argv)>1:
-  [do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
+  [do_copyfiles, data_folder_path_on_storage_server, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
    denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
    do_cropping_session, recording_index] = \
-    parse_command_line(do_copyfiles = do_copyfiles, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+    parse_command_line(do_copyfiles = do_copyfiles, data_folder_path_on_storage_server = data_folder_path_on_storage_server, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                        do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
                        denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extract = do_extract, 
                        do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                        recdates = recdates, fly = fly, trial = trial, do_cropping_session = do_cropping_session, recording_index = recording_index)
 
+
+[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
+  makepaths(do_copyfiles, data_folder_path_on_storage_server)
 
 
 if do_cropping_session or do_copyfiles:
@@ -123,22 +126,20 @@ if not do_copyfiles:
   elif do_denoise:
       from denoise import denoise
 
-[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_cluster] = pathfun(do_copyfiles)
-
    
 [pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
-for ri,_ in enumerate(pth_datafile_all):
+for ri, _ in enumerate(pth_datafile_all):
     
     if do_copyfiles=='in':
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      shutil.copyfile(pth_fldr_all, pth_copydest) #move the whole folder from storage server to compute server 
-   
+      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from storage server to compute server, overwriting existing 
+
     elif do_copyfiles=='out':
       pth_copydest = pth_allrec_storage + pth_fldr_all[ri].split('/')[-1]
-      shutil.copyfile(pth_fldr_all, pth_copydest) #move the whole folder from storage server to compute server 
+      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from compute server to storage server, overwriting existing 
        
     else:
     

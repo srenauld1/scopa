@@ -3,7 +3,7 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(do_copyfiles, data_folder_path_on_storage_server, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
@@ -15,6 +15,12 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
         nargs=1, 
         type=str,
         default=[do_copyfiles],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--data_folder_path_on_storage_server",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs="*",  # 0 or more values expected => creates a list
+        type=str,
+        default=[data_folder_path_on_storage_server],  # default if nothing is provided
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
@@ -131,6 +137,10 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
     print(args)
 
     do_copyfiles = args.do_copyfiles[0]
+    if isinstance(args.data_folder_path_on_storage_server[0], list):
+        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server[0] #keep as list
+    else:
+        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server #keep as list
     if args.index_extraction_param_set[0] != 'default':
         index_extraction_param_set = int(args.index_extraction_param_set[0])
     if isinstance(args.region_extraction[0], list):
@@ -160,66 +170,9 @@ def parse_command_line(do_copyfiles, index_extraction_param_set, region_extracti
     if args.recording_index[0] != 'all':
         recording_index = int(args.recording_index[0])
 
-    return (do_copyfiles, index_extraction_param_set, region_extraction, do_background_subtraction, 
-            do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, denoise_slice_index, do_extract, 
-            do_planar_extraction, use_denoised, use_background_subtracted, recdates, 
-            fly, trial, do_cropping_session, recording_index)
+    return (do_copyfiles, data_folder_path_on_storage_server, index_extraction_param_set, region_extraction, 
+            do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
+            do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, 
+            use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index)
 
 
-
-
-def parse_command_line_denoise(pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume):
-    
-    CLI=argparse.ArgumentParser()
-
-    CLI.add_argument(
-        "--pth_in",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,
-        type=str,
-        default=pth_in,  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--denoise_volume",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[denoise_volume],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--pth_denoising",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,
-        type=str,
-        default=pth_denoising,  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--fn_prefix",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,
-        type=str,
-        default=fn_prefix,  # default if nothing is provided
-    )    
-    CLI.add_argument(
-        "--dims",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=dims,  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--denoise_slice_index",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=denoise_slice_index,  # default if nothing is provided
-    )
-
-    args = CLI.parse_args()
-
-    print("parsed command line arguments for denoise.py")
-    print(args)
-
-    pth_in = args.pth_in[0]
-    denoise_volume = args.denoise_volume[0]
-    pth_denoising = args.pth_denoising[0]
-    fn_prefix = args.fn_prefix[0]
-    dims = list(map(int, args.dims))
-    if denoise_slice_index != 'all':
-        denoise_slice_index = list(map(int, args.denoise_slice_index))
-
-    return pth_in, pth_denoising, fn_prefix, dims, denoise_slice_index, denoise_volume
