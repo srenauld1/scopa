@@ -17,13 +17,15 @@ ml miniconda3/4.10.3
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
-~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+echo "$(pwd) pipeline_init.py"
+
+~/.conda/envs/caiman/bin/python3 $(pwd) pipeline_init.py \
 --do_register 1 \
 --do_planar_registration 1 \
 --do_background_subtraction 0 \
 --len_window_smooth_t 0 \
 --recdates '20231120' \
---fly '*' \
+--fly '2' \
 --trial '*' \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
