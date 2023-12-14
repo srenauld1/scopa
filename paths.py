@@ -25,7 +25,7 @@ def makepaths(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_s
             #     print("FORCING do_copyfiles to zero because you're not on the cluster")
             #     do_copyfiles = 0
 
-    pth_allrec_compute = pth_super_compute + data_folder_name_for_compute #data folder in scopa is ignored (see .gitignore file with ls -a)
+    pth_allrec_compute = pth_super_compute + data_folder_name_for_compute + '/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_allrec_compute):
         os.mkdir(pth_allrec_compute)
         
