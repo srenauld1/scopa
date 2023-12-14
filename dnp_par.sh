@@ -14,19 +14,15 @@
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
 module purge
-module load python/3.10.11
-module load miniconda3/4.10.3
-module load gcc/9.2.0
-module load cuda/11.7
-source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-conda activate deepcadrt2 #NOTE ENVIRONMENT NAME IS deepcadrt2
+module load gcc/9.2.0 python/3.9.14 cuda/11.7
+source ~/deepcadrt2/bin/activate
 
 /n/cluster/bin/job_gpu_monitor.sh &
 
 for i in 0
 do
     sleep 20s
-    ~/.conda/envs/deepcadrt2/bin/python3 /home/par26/scopa/pipeline_init.py \
+    python3 $(pwd)/pipeline_init.py \
     --do_denoise 1 \
     --denoise_volume 1 \
     --denoise_slice_index 'all' \
