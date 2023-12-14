@@ -16,7 +16,7 @@ def makepaths(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_s
     else:
         hn = os.popen('hostname').read()
         if re.search('compute.*harvard', hn): #if you're on O2
-            pth_super_compute = '/n/scratch3/users/' + env_path.split('/')[-1][0] + '/' + env_path.split('/')[-1]
+            pth_super_compute = '/n/scratch3/users/' + env_path.split('/')[-2][0] + '/' + env_path.split('/')[-2] + '/'
             pth_allrec_storage = data_folder_name_for_storage
         else: #else assume you're not on a cluster 
             pth_super_compute = ('/').join(env_path.split('/')[:-1]) + '/' 
