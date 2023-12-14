@@ -26,8 +26,8 @@ def makepaths(do_copyfiles, data_folder_path_on_storage_server):
             #     print("FORCING do_copyfiles to zero because you're not on the cluster")
             #     do_copyfiles = 0
 
-    if not os.path.exists(pth_allrec_storage):
-        os.mkdir(pth_allrec_storage)
+    # if not os.path.exists(pth_allrec_storage):
+    #     os.mkdir(pth_allrec_storage)
 
     pth_denoising = env_path + '/data/denoising/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_denoising):
