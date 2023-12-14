@@ -8,7 +8,7 @@
 ##########################################################################################################################################
 
 data_folder_path_on_storage_server = '/n/files/Neurobio/wilsonlab/wienecke/stacks/' #the full path (include closing slash) to the long-term storage folder you want the data copied from and to before and after analysis, ignored if not on cluster 
-do_copyfiles = 'in' #ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+do_copyfiles = '' #LEAVE THIS BLANK FOR NOW IT DOESN'T WORK YET ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = '*' #string, fly index_extraction_param_set, '*' for any 
