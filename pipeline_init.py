@@ -7,8 +7,8 @@
 
 ##########################################################################################################################################
 
-data_folder_path_on_storage_server = '/n/files/Neurobio/wilsonlab/wienecke/stacks/' #the full path (include closing slash) to the long-term storage folder you want the data copied from and to before and after analysis, ignored if not on cluster 
-data_folder_name_on_scratch3 = 'stacks' #the name of the folder all your data this pipeline operates on goes into 
+data_folder_name_for_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
+data_folder_name_for_storage = 'wienecke/stacks' #the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
 do_copyfiles = '' #LEAVE THIS BLANK FOR NOW IT DOESN'T WORK YET . . . ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
@@ -52,10 +52,10 @@ from parse_command_line import parse_command_line
 from paths import makepaths
 
 if len(sys.argv)>1:
-  [do_copyfiles, data_folder_path_on_storage_server, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
+  [do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
    denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, 
    do_cropping_session, recording_index] = \
-    parse_command_line(do_copyfiles = do_copyfiles, data_folder_path_on_storage_server = data_folder_path_on_storage_server, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+    parse_command_line(do_copyfiles = do_copyfiles, data_folder_name_for_compute = data_folder_name_for_compute, data_folder_name_for_storage = data_folder_name_for_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                        do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
                        denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, do_extract = do_extract, 
                        do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
@@ -63,7 +63,7 @@ if len(sys.argv)>1:
 
 
 [pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
-  makepaths(do_copyfiles, data_folder_name_on_scratch3, data_folder_path_on_storage_server)
+  makepaths(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage)
 
 
 if do_cropping_session or do_copyfiles:

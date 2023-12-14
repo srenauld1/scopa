@@ -132,7 +132,7 @@ def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, p
         imwrite(pth_tif_pdn, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
-def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, epoch_choose):
+def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):
 
   if denoise_volume == 1:
     pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_all/')))
@@ -155,7 +155,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
     fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder
     for fldr_outtiff in fldr_outtiff_all:
       
-      if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose) + '_Iter_*'):
+      if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(denoise_epoch_choose) + '_Iter_*'):
         pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
         for fni,f in enumerate(pth_denoised_singles): #loop over each denoised z slice and reassemble into array matching shape of original 4d volume
@@ -190,7 +190,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
   imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
-def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, epoch_choose):
+def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):
 
   goal_trial = int(fn_prefix.split('_')[2])
   actual_z_size = 1
@@ -220,7 +220,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
     
     fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder
     for fldr_outtiff in fldr_outtiff_all:
-      if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose) + '_Iter_*'):
+      if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(denoise_epoch_choose) + '_Iter_*'):
         pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
         Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], actual_z_size)) #t y x z

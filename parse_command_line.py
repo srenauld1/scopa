@@ -3,7 +3,7 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(do_copyfiles, data_folder_path_on_storage_server, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, use_denoised, use_background_subtracted,
                        recdates, fly, trial, do_cropping_session, 
                        recording_index):
@@ -17,10 +17,16 @@ def parse_command_line(do_copyfiles, data_folder_path_on_storage_server, index_e
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--data_folder_path_on_storage_server",  # name on the CLI - drop the `--` for positional/required parameters
+        "--data_folder_name_for_compute",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*",  # 0 or more values expected => creates a list
         type=str,
-        default=[data_folder_path_on_storage_server],  # default if nothing is provided
+        default=[data_folder_name_for_compute],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--data_folder_name_for_storage",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs="*",  # 0 or more values expected => creates a list
+        type=str,
+        default=[data_folder_name_for_storage],  # default if nothing is provided
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
@@ -137,10 +143,14 @@ def parse_command_line(do_copyfiles, data_folder_path_on_storage_server, index_e
     print(args)
 
     do_copyfiles = args.do_copyfiles[0]
-    if isinstance(args.data_folder_path_on_storage_server, list):
-        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server[0] #shouldn't be list 
+    if isinstance(args.data_folder_name_for_storage, list):
+        data_folder_name_for_compute = args.data_folder_name_for_compute[0] #shouldn't be list 
     else:
-        data_folder_path_on_storage_server = args.data_folder_path_on_storage_server #shouldn't be list 
+        data_folder_name_for_compute = args.data_folder_name_for_compute #shouldn't be list 
+    if isinstance(args.data_folder_name_for_storage, list):
+        data_folder_name_for_storage = args.data_folder_name_for_storage[0] #shouldn't be list 
+    else:
+        data_folder_name_for_storage = args.data_folder_name_for_storage #shouldn't be list 
     if args.index_extraction_param_set[0] != 'default':
         index_extraction_param_set = int(args.index_extraction_param_set[0])
     if isinstance(args.region_extraction[0], list):
@@ -170,7 +180,7 @@ def parse_command_line(do_copyfiles, data_folder_path_on_storage_server, index_e
     if args.recording_index[0] != 'all':
         recording_index = int(args.recording_index[0])
 
-    return (do_copyfiles, data_folder_path_on_storage_server, index_extraction_param_set, region_extraction, 
+    return (do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_denoise, denoise_volume, denoise_slice_index, do_extract, do_planar_extraction, 
             use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index)
