@@ -20,7 +20,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
   for f in pth_tif_all:
       countz = countz + 1
       print(f)
-      sliceind = int(f.split('_')[-2])
+      sliceind = int(f.split('_')[-3])
       Ynew = imread(f)
       if Ynew.dtype!='uint16':
           print("warning, converting type from " + str(Ynew.dtype))
