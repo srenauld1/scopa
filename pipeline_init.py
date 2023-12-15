@@ -12,7 +12,7 @@ data_folder_name_for_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . th
 do_copyfiles = '' #LEAVE THIS BLANK IT DOESN'T WORK YET . . . ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = '*' #string, fly index_extraction_param_set, '*' for any 
+fly = '2' #string, fly index_extraction_param_set, '*' for any 
 trial = '*' #string, trial index_extraction_param_set, '*' for any #
 recording_index = 'all' #'all' #if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) specifying to operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
