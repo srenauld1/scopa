@@ -39,8 +39,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
   Y = Y - mnmv #make nonnegative before writing to uint16
   print("MIN AFTER REGISTRATION " + str(mnmv))
   
-  if Y.dtype!='uint16': #was  Y = Y.astype('uint16')
-      raise Exception("not uint16")
+  Y = Y.astype('uint16')
   
   print(Y.shape)
   
@@ -179,9 +178,8 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
   Y = Y - mnmv #make nonnegative before writing to uint16
   print("MIN AFTER DENOISING " + str(mnmv))
   
-  if Y.dtype!='uint16': #was  Y = Y.astype('uint16')
-    raise Exception("not uint16")
-  
+  Y = Y.astype('uint16')
+
   Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
   print(Y.shape)
   Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
@@ -249,8 +247,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
                 Y = Y - mnmv #make nonnegative before writing to uint16
                 print("MIN AFTER DENOISING " + str(mnmv))
                  
-                if Y.dtype!='uint16': #was  Y = Y.astype('uint16')
-                  raise Exception("not uint16")
+                Y = Y.astype('uint16')
               
                 Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
                 print(Y.shape)
