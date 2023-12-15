@@ -1,8 +1,12 @@
+#!/bin/bash
+
 #set -e #stop execution if error
 
 rm nohup.out  #remove existing nohup.out file
 
 narg=$#
+
+lastarg=${@: -1}
 
 in1="${1%/}"   #strip trailing slash if it exists so user doesn't have to think about it as input
 
@@ -16,14 +20,12 @@ pthsource=$basepathsource$in1/
 basepathdest=/n/files/Neurobio/wilsonlab/
 
 
-if test $narg -eq 3
+if [[ "$lastarg" == "test" ]]
 then
   drystr="this is a dry run, nothing is copied"
-  dryin="n"
   declare -i nargok=3
 else
   drystr="this is NOT a dry run, things are being copied"
-  dryin=""
   declare -i nargok=2
 fi
 
@@ -54,7 +56,7 @@ echo $drystr
 mkdir -p $pthdest          #make destination path if it doens't exist (including enclosing)
 
 
-if test $narg -eq 3
+if [[ "$lastarg" == "test" ]]
 then
   nohup rsync -rnv $pthsource $pthdest --ignore-existing &
 else
