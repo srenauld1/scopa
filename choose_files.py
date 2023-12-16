@@ -61,14 +61,14 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                         pth_tif_dn = pth_prefix + '_cmrg_dcdn_.tif'         
                         pth_tif_reg = pth_prefix + '_cmrg_.tif'
                     
-                    pth_md = pth_prefix + '_metadatanew_.mat'
-                    pth_md_npy = pth_md[:-4] + '.npy'
+                    pth_md_mat = pth_prefix + '_metadatanew_.mat'
+                    pth_md_npy = pth_md_mat[:-4] + '.npy'
                     
                     if old_mat_files: #for my old project 
 
                         pth_datafile_new = pth_datafile[:-4] + '.tif'
 
-                        if os.path.isfile(pth_md_npy) and os.path.isfile(pth_datafile_new): #
+                        if os.path.isfile(pth_md_npy) and os.path.isfile(pth_md_mat) and os.path.isfile(pth_datafile_new): #
                             md = np.load(pth_md_npy, allow_pickle='TRUE').item() #if it exists, the md file will too 
                             pth_datafile = pth_datafile_new
                         else:
@@ -80,14 +80,14 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                             Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
                             pth_datafile = pth_datafile_new
                             imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
-                            md = read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = Y.shape)
+                            md = read_save_metadata(pth_datafile, pth_md_mat, pth_md_npy, mat_file_shape = Y.shape)
 
                     else:
                         
-                        if os.path.isfile(pth_md_npy):
+                        if os.path.isfile(pth_md_npy) and os.path.isfile(pth_md_mat):
                             md = np.load(pth_md_npy, allow_pickle='TRUE').item()
                         else:
-                            md = read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None)
+                            md = read_save_metadata(pth_datafile, pth_md_mat, pth_md_npy, mat_file_shape = None)
                         
                     pth_datafile_all.append(pth_datafile)
                     pth_fldr_all.append(pth_fldr)
