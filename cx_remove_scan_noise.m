@@ -1,14 +1,14 @@
 
 
-function cx_remove_scan_noise()
-
-display("fuk")
+function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in)
 
 recdate_in
 fly_in
 trial_in
 smooth_window_temporal_in
 indx_in
+
+fu=mu
 
 %% determine which recordings to do based on last input
 
