@@ -12,7 +12,7 @@
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
 module purge
-ml matlab
+module load matlab/2023a
 
 RECDATES='*'
 FLY='*'
