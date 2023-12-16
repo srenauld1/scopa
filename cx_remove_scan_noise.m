@@ -1,48 +1,54 @@
 
 
-function cx_remove_scan_noise(arg1, arg2)
+function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in)
 
 
-arguments
-    arg1 string
-    arg2 string = "arg2Val"
-end
+recdate_in
+fly_in
+trial_in
+smooth_window_temporal_in
+indx_in
 
+%% determine which recordings to do based on last input 
 
-if ~exist( 'arg1', 'var' ) || isempty( arg1 )
-    arg1 = 1;
-end
 
 numfil = 5;
-if isstring(arg1)
-    arg1 = strsplit(arg1, ':');
-    arg1 = str2num(arg1{end});
-    indx = arg1;
+if isstring(indx_in)
+    indx_in = strsplit(indx_in, ':');
+    indx_in = str2num(indx_in{end});
+    indx = indx_in;
 else
-    indx = arg1;
+    indx = indx_in;
 end
 dofil = [1:numfil]+numfil*(indx-1);
 
+dofil
+
 %% params
 
-if ~isempty(regexp( path, '/Users/wienecke/Documents/GitHub/', 'once' ))
+enclosing_folder_on_scratch = 'stacks';
+currdir = split(pwd, '/');
+currdir = currdir{end};
+envname = getenv('HOSTNAME');
+if ~isempty(regexp( envname, 'compute-', 'once' ))
+    pth_super = ['/n/scratch3/users/'  currdir(1) '/' currdir '/' enclosing_folder_on_scratch '/'];
+    plotgif = 0;
+else
     pth_super = '~/Documents/stacks/';
-elseif ~isempty(regexp( path, '/home/caw846', 'once' ))
-    pth_super = '/n/scratch3/users/c/caw846/stacks/';
+    plotgif = 1;
 end
 
-recdate = '20230424';
-fly = '*';
-trial = '*';
+recdate = recdate_in;
+fly = fly_in;
+trial = trial_in;
+smooth_window_temporal = smooth_window_temporal_in; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th smooth_window_temporal
+
+stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
 
 plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
 plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
-swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-smooth_window_temporal = 30; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th smooth_window_temporal
-stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
+swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 testframes = 60; %make zero to do all frames, nonzeros to do 1:testframes
-
-
 ncol = 256; %num colors in plot
 
 
@@ -57,96 +63,114 @@ pth_all = rdir(fn_pattern);
 
 for ri = 1:length(pth_all)
 
-    pth_dn_tif = pth_all(ri).name;
-    display(['processing : ' pth_dn_tif] )
+    if ismember(ri, dofil)
 
-    [pth_fldr, fn_raw_tif, ~] = fileparts(pth_dn_tif);
-    pth_fldr = [pth_fldr '/'];
-    spl = strjoin(strsplit(fn_raw_tif, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
-    spl = strsplit(spl, '_'); %then separate by underscore
+        pth_dn_tif = pth_all(ri).name;
+        display(['processing : ' pth_dn_tif] )
 
-    datenum = str2double(spl{1});
-    flynum = str2double(spl{2});
-    trialnum = str2double(spl{3});
+        [pth_fldr, fn_raw_tif, ~] = fileparts(pth_dn_tif);
+        pth_fldr = [pth_fldr '/'];
+        spl = strjoin(strsplit(fn_raw_tif, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
+        spl = strsplit(spl, '_'); %then separate by underscore
 
-    recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
-    recid_tit = strrep(recid, '_', ' ');
+        datenum = str2double(spl{1});
+        flynum = str2double(spl{2});
+        trialnum = str2double(spl{3});
 
-    pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
-    pth_dn_nh_mat = [pth_dn_mat(1:end-4) 'nh_.mat'];
-    pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
+        recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
+        recid_tit = strrep(recid, '_', ' ');
 
-    load(pth_metadata) %file created in initial python part of pipeline
-    sz = single([md.ypix md.xpix md.numslice md.numvol]);
+        pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
+        pth_dn_nh_mat = [pth_dn_mat(1:end-4) 'nh_.mat'];
+        pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
-    size_z_read_from = sz(3);
-    size_t_read_from = sz(4);
-    inds_z_read_from = 1:size_z_read_from; %can choose to not read the flyback frames here
-    inds_t_read_from = 1:size_t_read_from;
-    size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
+        load(pth_metadata) %file created in initial python part of pipeline
+        sz = single([md.ypix md.xpix md.numslice md.numvol]);
 
-    if isempty(plotinds_z)
-        plotinds_z = 1:sz(3);
-    elseif plotinds_z<0
-        plotinds_z = round(linspace(1, sz(3), -plotinds_z));
-    end
+        size_z_read_from = sz(3);
+        size_t_read_from = sz(4);
+        inds_z_read_from = 1:size_z_read_from; %can choose to not read the flyback frames here
+        inds_t_read_from = 1:size_t_read_from;
+        size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
 
-    if isempty(plotinds_t)
-        plotinds_t = 1:sz(4);
-    elseif plotinds_t<0
-        plotinds_t = round(linspace(1, sz(4), -plotinds_t));
-    end
-
-    plotinds_z_str = sprintf('%.0f,', plotinds_z);
-    plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
-
-
-    %% load
-
-    try
-        load(pth_dn_mat)
-        if exist('stackreg', 'var')
-            stackdn = stackreg;
-            clear stackreg
+        if isempty(plotinds_z)
+            plotinds_z = 1:sz(3);
+        elseif plotinds_z<0
+            plotinds_z = round(linspace(1, sz(3), -plotinds_z));
         end
-    catch
-        out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
-        stackdn = cx_read_tif_tzyx(pth_dn_tif, ...
-            out_datatype, size_read_to, ...
-            size_z_read_from, size_t_read_from, ...
-            inds_z_read_from, inds_t_read_from);
-        save(pth_dn_mat, 'stackdn', '-v7.3', '-mat')
+
+        if isempty(plotinds_t)
+            plotinds_t = 1:sz(4);
+        elseif plotinds_t<0
+            plotinds_t = round(linspace(1, sz(4), -plotinds_t));
+        end
+
+        plotinds_z_str = sprintf('%.0f,', plotinds_z);
+        plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
+
+
+        %% load
+
+        try
+            load(pth_dn_mat)
+            if exist('stackreg', 'var')
+                stackdn = stackreg;
+                clear stackreg
+            end
+        catch
+            out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
+            stackdn = cx_read_tif_tzyx(pth_dn_tif, ...
+                out_datatype, size_read_to, ...
+                size_z_read_from, size_t_read_from, ...
+                inds_z_read_from, inds_t_read_from);
+            save(pth_dn_mat, 'stackdn', '-v7.3', '-mat')
+        end
+
+
+        %% smooth
+
+
+        if smooth_window_temporal
+            stackdn = smoothdata(stackdn, 4, 'gaussian', smooth_window_temporal);
+        end
+
+
+
+        %% plot before filtering 
+
+        if plotgif
+
+            pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
+            title_str = 'filt';
+            plot_gif_fast(rescale(fuk, 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+
+        end
+
+
+        %% filter
+
+
+        stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
+
+
+        %% save
+
+
+        save(pth_dn_nh_mat, 'stackdn', '-v7.3', '-mat')
+
+
+        %% plot after filtering 
+
+        if plotgif
+
+            pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
+            title_str = 'filt';
+            plot_gif_fast(rescale(fuk, 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+
+        end
+
+
     end
-
-
-    %% smooth
-
-
-    if smooth_window_temporal
-        stackdn = smoothdata(stackdn, 4, 'gaussian', smooth_window_temporal);
-    end
-
-
-
-    %% filter
-
-
-    stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
-
-    %% save
-
-
-    save(pth_dn_nh_mat, 'stackdn', '-v7.3', '-mat')
-
-
-    %% plot
-
-
-    pth_gif = [pth_fldr 'fftfilt_' datestr(now,30) '_.gif'];
-    title_str = 'filt';
-    swapdim = 1;
-    plot_gif_fast(rescale(fuk, 0, 1), ncol, swapdim, pth_gif, title_str)
-
 
 end
 
