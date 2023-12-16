@@ -19,8 +19,8 @@ FLY='*'
 TRIAL='*'
 SMOOTHWINDOWTIME=30
 
-matlab -batch "addpath(genpath('~/scopa')), \
-run ~/shako/analysis_cfrw/cx_remove_scan_noise($RECDATES, $FLY, $TRIAL, $SMOOTHWINDOWTIME, $SLURM_ARRAY_TASK_ID);exit"
+matlab -batch "addpath(genpath( $(pwd) )), \
+run $(pwd)/cx_remove_scan_noise($RECDATES, $FLY, $TRIAL, $SMOOTHWINDOWTIME, $SLURM_ARRAY_TASK_ID);exit"
 
 wait
 sleep 1m
