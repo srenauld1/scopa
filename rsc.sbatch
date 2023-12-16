@@ -14,13 +14,7 @@ echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $S
 module purge
 module load matlab/2023a
 
-RECDATES='*'
-FLY='*'
-TRIAL='*'
-SMOOTHWINDOWTIME=30
-
-matlab -batch "addpath(genpath( $(pwd) )), \
-run $(pwd)/cx_remove_scan_noise($RECDATES, $FLY, $TRIAL, $SMOOTHWINDOWTIME, $SLURM_ARRAY_TASK_ID);exit"
+matlab -batch "cx_remove_scan_noise();exit"
 
 wait
 sleep 1m
