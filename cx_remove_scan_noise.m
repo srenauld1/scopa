@@ -1,6 +1,13 @@
 
 
-function cx_remove_scan_noise(arg1)
+function cx_remove_scan_noise(arg1, arg2)
+
+
+arguments
+    arg1 string
+    arg2 string = "arg2Val"
+end
+
 
 if ~exist( 'arg1', 'var' ) || isempty( arg1 )
     arg1 = 1;
