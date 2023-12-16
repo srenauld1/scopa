@@ -7,6 +7,7 @@ rm nohup.out  #remove existing nohup.out file
 narg=$#
 
 lastarg=${@: -1}
+penarg=${@: -2}
 
 in1="${1%/}"   #strip trailing slash if it exists so user doesn't have to think about it as input
 

@@ -1,9 +1,20 @@
 
 
-close all
-clear all
-clc
+function cx_remove_scan_noise(arg1)
 
+if ~exist( 'arg1', 'var' ) || isempty( arg1 )
+    arg1 = 1;
+end
+
+numfil = 5;
+if isstring(arg1)
+    arg1 = strsplit(arg1, ':');
+    arg1 = str2num(arg1{end});
+    indx = arg1;
+else
+    indx = arg1;
+end
+dofil = [1:numfil]+numfil*(indx-1);
 
 %% params
 
@@ -21,7 +32,7 @@ plotinds_t = -40; %t indices to plot, blank for all, negative for that number eq
 plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 smooth_window_temporal = 30; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th smooth_window_temporal
-stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings 
+stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
 testframes = 60; %make zero to do all frames, nonzeros to do 1:testframes
 
 
@@ -83,7 +94,7 @@ for ri = 1:length(pth_all)
     plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
 
 
-    %% load 
+    %% load
 
     try
         load(pth_dn_mat)
@@ -101,7 +112,7 @@ for ri = 1:length(pth_all)
     end
 
 
-    %% smooth 
+    %% smooth
 
 
     if smooth_window_temporal
@@ -115,13 +126,13 @@ for ri = 1:length(pth_all)
 
     stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
 
-    %% save 
+    %% save
 
 
     save(pth_dn_nh_mat, 'stackdn', '-v7.3', '-mat')
 
 
-    %% plot 
+    %% plot
 
 
     pth_gif = [pth_fldr 'fftfilt_' datestr(now,30) '_.gif'];
@@ -131,6 +142,11 @@ for ri = 1:length(pth_all)
 
 
 end
+
+end
+
+
+
 
 %% function for filtering
 
