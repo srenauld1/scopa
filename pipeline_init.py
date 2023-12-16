@@ -18,7 +18,7 @@ recording_index = 'all' #'all' #if 'all', loop over all recordings matching patt
 
 do_register = 1 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
-len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
+len_window_smooth_t = 5 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
 do_background_subtraction = 0 #prior to registration, won't happen unless do_register = 1 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
@@ -132,7 +132,7 @@ if not do_copyfiles:
       from denoise import denoise
 
    
-[pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_tmp_all, pth_tif_reg_tmp2_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
+[pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_all, pth_tif_dn_all, md_all] = \
   choose_files(recdates, pth_allrec, fly, trial, recording_index, do_background_subtraction, 
         use_background_subtracted, do_register)
 
@@ -149,9 +149,8 @@ for ri, _ in enumerate(pth_datafile_all):
     else:
     
       if do_register:
-          register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_tmp_all[ri], pth_tif_reg_tmp2_all[ri], 
-              pth_tif_reg_all[ri], pth_denoising, md_all[ri], do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t,
-              denoise_volume, cluster_backend, do_cluster, do_plots)
+          register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_denoising, md_all[ri], 
+          do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, cluster_backend, do_cluster, do_plots)
 
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise)

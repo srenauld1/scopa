@@ -11,7 +11,7 @@ from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
-def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_tmp2, pth_tif_reg, pth_denoising, md, 
+def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md, 
              do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, 
              denoise_volume, cluster_backend, do_cluster, do_plots):
 
@@ -22,6 +22,8 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
+
+    pth_tif_reg_tmp = pth_tif_reg[:-4] + 'tmp_.tif'
 
     ##########################   BACKGROUND SUBTRACTION AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
@@ -43,13 +45,16 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
     elif Y.shape[3]==1:
         movie_is_4d = 0
 
+    if movie_is_4d: 
+        zindall = np.arange(Y.shape[3])
+    else:
+        zindall = [0]
+    
+    Y = Y.astype('uint16')
+
+
     if do_background_subtraction:
                     
-        if movie_is_4d: 
-            zindall = np.arange(Y.shape[3])
-        else:
-            zindall = [0]
-
         for zind in zindall: #for every z slice 
 
             dimorder = 'txy' 
@@ -62,11 +67,23 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
                 
         mnmv = np.min(Y)
         Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+        Y = Y.astype('uint16')
         print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
                         
    
     if len_window_smooth_t: #if you smooth before registering (very noisy data), create another file for smoothed movie
-        imwrite(pth_tif_reg_tmp2, Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+        
+        if do_planar_registration: #for planar extraction write one presmoothed z at a time
+            pth_tif_psm = ['']*len(zindall)
+            for zind in zindall: #for every z slice 
+                print("WRITING PRESMOOTHED SLICE " + str(zind))
+                pth_tif_psm[zind] = pth_tif_reg_tmp[:-4] + str(zind) + '_presmooth_.tif'
+                imwrite(pth_tif_psm[zind], Y[:,:,:,zind].squeeze()) 
+        else: # 
+            print("WRITING ALL PRESMOOTHED SLICES" )
+            pth_tif_psm = [pth_tif_reg_tmp[:-4] + 'all_presmooth_.tif']
+            imwrite(pth_tif_psm[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+    
         dimtmp_presmooth = Y.shape
         numsigma_smooth_prereg = 5.0
         sigma_smooth_prereg = (len_window_smooth_t - 1) / numsigma_smooth_prereg / 2
@@ -74,14 +91,16 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
         Y = Y.reshape(dimtmp_presmooth)
         mnmv = np.min(Y)
         Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+        Y = Y.astype('uint16')
         print("MIN AFTER SMOOTHING " + str(mnmv))
-        #im_montage(Y[200,:,:,:]) #check how it looks
 
+    
+    min_mov = np.min(Y)
 
     if do_planar_registration: 
-        sliceindz = np.arange(Y.shape[3])
+        sliceindz = zindall
     else:
-        sliceindz = [np.arange(Y.shape[3])] #all slices in one list (not planar)
+        sliceindz = [zindall] #all slices in one list (not planar)
 
     countz = 0
     for si in sliceindz: #for each slice (or all slices if do_planar_extraction = false)
@@ -97,11 +116,9 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
 
         imwrite(pth_tif_reg_tmp, images_sliced.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
-        global_min_mov = 0
-        if global_min_mov:
-            min_mov = np.min(Y)
-        else:
-            min_mov = np.min(images_sliced)
+        # each_min_mov = 0 # don't think we want to make min mov the min for each z slice 
+        # if each_min_mov:
+        #     min_mov = np.min(images_sliced)
         
         # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
         opts_dict, indices_ex, fnadd = configs(do_planar_registration = do_planar_registration, index_extraction_param_set = 'default', fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
@@ -112,9 +129,9 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg_tmp, pth_tif_reg_t
         mc.motion_correct(save_movie=True)
         input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
         if len_window_smooth_t: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
-            input_for_save_memmap = mc.apply_shifts_movie(pth_tif_reg_tmp2, save_memmap=False, order='F') #for some reason cannot save_memmap
+            input_for_save_memmap = mc.apply_shifts_movie(pth_tif_psm[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
             input_for_save_memmap = [input_for_save_memmap] #so must pass nd array to save_memmap below
-            os.remove(pth_tif_reg_tmp2)
+            os.remove(pth_tif_psm[countz])
 
         os.remove(pth_tif_reg_tmp)
 
