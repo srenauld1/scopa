@@ -72,7 +72,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
                         
    
     if len_window_smooth_t: #if you smooth before registering (very noisy data), create another file for smoothed movie
-        
+
         if do_planar_registration: #for planar extraction write one presmoothed z at a time
             pth_tif_psm = ['']*len(zindall)
             for zind in zindall: #for every z slice 
@@ -84,6 +84,8 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
             pth_tif_psm = [pth_tif_reg_tmp[:-4] + 'all_presmooth_.tif']
             imwrite(pth_tif_psm[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
+        print("SMOOTHING DATA IN TIME BEFORE REGISTRATION")
+
         dimtmp_presmooth = Y.shape
         numsigma_smooth_prereg = 5.0
         sigma_smooth_prereg = (len_window_smooth_t - 1) / numsigma_smooth_prereg / 2

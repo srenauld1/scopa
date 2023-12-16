@@ -3,7 +3,7 @@
 #SBATCH -p short
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=30G
-#SBATCH --array=[0-93]
+#SBATCH --array=[0-1]
 #SBATCH --begin=now+10
 #SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
@@ -17,7 +17,7 @@ ml miniconda3/4.10.3
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
-~/.conda/envs/caiman/bin/python3 /home/caw846/scopa/pipeline_init.py \
+~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --do_register 1 \
 --do_planar_registration 1 \
 --do_background_subtraction 0 \
