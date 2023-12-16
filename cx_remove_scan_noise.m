@@ -1,7 +1,8 @@
 
 
-function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in)
+function cx_remove_scan_noise()
 
+display("fuk")
 
 recdate_in
 fly_in
