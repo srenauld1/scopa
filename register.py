@@ -13,7 +13,7 @@ from vis import im_montage, plot_gif
 
 def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md, 
              do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, 
-             denoise_volume, cluster_backend, do_cluster, do_plots):
+             denoise_volume, carls_old_project, cluster_backend, do_cluster, do_plots):
 
     if do_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -176,7 +176,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
     # (since default in denoise.py is denoise_volume = 0 )
     # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
     # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
-    if int(fn_prefix.split('_')[0])>20230101: #if it's not my old project 
-        separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
-    else:
+    if carls_old_project: #if it's not my old project 
         separate_z_slices_before_denoising_carls_old_project(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+    else:
+        separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)

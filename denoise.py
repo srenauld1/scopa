@@ -165,19 +165,17 @@ from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 
 
-def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise):
+def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project):
 
-    if int(fn_prefix.split('_')[0])>20230101: #if it's not my old grad school project 
-        carls_old_project = 0
-        numstacks_all_refers_to = dims[1] # then 'all' is number of z slices (dims[1])
-    else: #if it's my old grad project 
-        carls_old_project = 1
+    if carls_old_project: #if it's not my old grad school project 
         if denoise_volume:
             pretend_trial = '1' # pretend they all come from same trial
             dnfolder = fn_prefix.split('_')[0] + '_' + fn_prefix.split('_')[1] + '_' + pretend_trial + '_all' #for these non-volumetric grad recordings, if do_volume == 1, rename all trials "1", and each trial a different z slice
             numstacks_all_refers_to = len(glob.glob(pth_denoising + '/' + dnfolder + '/*tif')) #and 'all' means all stacks in dnfolder (which is really all trials)
         else: #if not denoise_volume, all is just one stack 
             numstacks_all_refers_to = 1
+    else:
+        numstacks_all_refers_to = dims[1] # then 'all' is number of z slices (dims[1])
 
     print(" 'all' means this many stacks: ")
     print(numstacks_all_refers_to)

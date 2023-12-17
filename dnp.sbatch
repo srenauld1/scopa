@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --time=01:30:00
 #SBATCH -p gpu_quad
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=12G
 #SBATCH --job-name=DNP
 #SBATCH --gres=gpu:a100:1,vram:80G
 #SBATCH --array=[0-1]
 #SBATCH --begin=now+10
-#SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
 #SBATCH --requeue
 

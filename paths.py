@@ -4,7 +4,7 @@ import os
 import sys
 
 
-def makepaths(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage):
+def makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage):
 
     print(sys.executable)
     env_path = sys.path[0]
@@ -17,7 +17,7 @@ def makepaths(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_s
         hn = os.popen('hostname').read()
         if re.search('compute.*harvard', hn): #if you're on O2
             pth_super_compute = '/n/scratch3/users/' + env_path.split('/')[-2][0] + '/' + env_path.split('/')[-2] + '/'
-            pth_allrec_storage = data_folder_name_for_storage
+            pth_allrec_storage = superfolder_name_storage
         else: #else assume you're not on a cluster 
             pth_super_compute = ('/').join(env_path.split('/')[:-1]) + '/' 
             pth_allrec_storage = '' #no need to move data elsewhere on local machine
@@ -25,7 +25,7 @@ def makepaths(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_s
             #     print("FORCING do_copyfiles to zero because you're not on the cluster")
             #     do_copyfiles = 0
 
-    pth_allrec_compute = pth_super_compute + data_folder_name_for_compute + '/' #data folder in scopa is ignored (see .gitignore file with ls -a)
+    pth_allrec_compute = pth_super_compute + superfolder_name_compute + '/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_allrec_compute):
         os.mkdir(pth_allrec_compute)
         

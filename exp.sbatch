@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --time=1:00:00
+#SBATCH --time=0:05:00
 #SBATCH -p short
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=3G
-#SBATCH --array=[0,1,2,5,6]
+#SBATCH --array=[1-3]
 #SBATCH --begin=now+10
-#SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
 #SBATCH --requeue
 
@@ -18,7 +18,7 @@ source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
---do_extract 1 \
+--do_extract 0 \
 --index_extraction_param_set 'default' \
 --region_extraction 'pb' 'gar' 'gal' 'no' \
 --do_planar_extraction 1 \

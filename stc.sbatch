@@ -1,11 +1,11 @@
 #!/bin/bash
-#SBATCH --time=0:15:00
+#SBATCH --time=0:05:00
 #SBATCH -p short
+#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5
 #SBATCH --mem-per-cpu=10G
-#SBATCH --array=[0]
+#SBATCH --array=[1-3]
 #SBATCH --begin=now+10
-#SBATCH --dependency=singleton
 #SBATCH --signal=B:SIGUSR1@90
 #SBATCH --requeue
 
@@ -18,9 +18,9 @@ source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
---do_stitching_session 1 \
+--do_stitching_session 0 \
 --epoch_choose_denoise 5 \
---recdates '2023*' \
+--recdates '*' \
 --fly '*' \
 --trial '*' \
 --recording_index $SLURM_ARRAY_TASK_ID &

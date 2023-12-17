@@ -3,7 +3,7 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index):
     
@@ -16,16 +16,16 @@ def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_n
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--data_folder_name_for_compute",  # name on the CLI - drop the `--` for positional/required parameters
+        "--superfolder_name_compute",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*",  # 0 or more values expected => creates a list
         type=str,
-        default=[data_folder_name_for_compute],  # default if nothing is provided
+        default=[superfolder_name_compute],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--data_folder_name_for_storage",  # name on the CLI - drop the `--` for positional/required parameters
+        "--superfolder_name_storage",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*",  # 0 or more values expected => creates a list
         type=str,
-        default=[data_folder_name_for_storage],  # default if nothing is provided
+        default=[superfolder_name_storage],  # default if nothing is provided
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
@@ -160,14 +160,14 @@ def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_n
     print(args)
 
     do_copyfiles = args.do_copyfiles[0]
-    if isinstance(args.data_folder_name_for_storage, list):
-        data_folder_name_for_compute = args.data_folder_name_for_compute[0] #shouldn't be list 
+    if isinstance(args.superfolder_name_storage, list):
+        superfolder_name_compute = args.superfolder_name_compute[0] #shouldn't be list 
     else:
-        data_folder_name_for_compute = args.data_folder_name_for_compute #shouldn't be list 
-    if isinstance(args.data_folder_name_for_storage, list):
-        data_folder_name_for_storage = args.data_folder_name_for_storage[0] #shouldn't be list 
+        superfolder_name_compute = args.superfolder_name_compute #shouldn't be list 
+    if isinstance(args.superfolder_name_storage, list):
+        superfolder_name_storage = args.superfolder_name_storage[0] #shouldn't be list 
     else:
-        data_folder_name_for_storage = args.data_folder_name_for_storage #shouldn't be list 
+        superfolder_name_storage = args.superfolder_name_storage #shouldn't be list 
     if args.index_extraction_param_set[0] != 'default':
         index_extraction_param_set = int(args.index_extraction_param_set[0])
     if isinstance(args.region_extraction[0], list):
@@ -200,7 +200,7 @@ def parse_command_line(do_copyfiles, data_folder_name_for_compute, data_folder_n
     if args.recording_index[0] != 'all':
         recording_index = int(args.recording_index[0])
 
-    return (do_copyfiles, data_folder_name_for_compute, data_folder_name_for_storage, index_extraction_param_set, region_extraction, 
+    return (do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
             do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, do_cropping_session, recording_index)

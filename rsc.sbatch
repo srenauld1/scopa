@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH -p short
+#SBATCH --ntasks=1
 #SBATCH -t 11:00:00
 #SBATCH -c 5
 #SBATCH --mem=55G

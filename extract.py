@@ -15,7 +15,7 @@ from crop_fov import crop_fov
 
 def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_tif_dn, pth_denoising, 
              md, denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, 
-             use_denoised, epoch_choose_denoise, region_extraction, do_plots, cluster_backend, do_cluster):
+             use_denoised, epoch_choose_denoise, region_extraction, carls_old_project, do_plots, cluster_backend, do_cluster):
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
@@ -28,10 +28,10 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
         force_stitch = 0 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch, warning this will overwrite existing stitched denoised tif)
 
         if not os.path.isfile(pth_tif_dn) or force_stitch:
-            if int(fn_prefix.split('_')[0])>20230101: #if it's not my old project 
-                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
-            else:
+            if carls_old_project: #if it's not my old project 
                 stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+            else:
+                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
 
         pth_exin = pth_tif_dn
     
