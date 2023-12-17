@@ -3,7 +3,7 @@
 #SBATCH -t 2:00:00
 #SBATCH -c 5
 #SBATCH --mem=30G
-#SBATCH --array=[0-6]
+#SBATCH --array=[1-7]
 
 module purge
 module load matlab/2023a
