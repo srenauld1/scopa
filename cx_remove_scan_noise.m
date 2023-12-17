@@ -58,6 +58,7 @@ ncol = 256; %num colors in plot
 fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.tif'];
 pth_all = rdir(fn_pattern);
 
+pth_all
 
 %% loop over recordings
 
