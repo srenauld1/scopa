@@ -48,7 +48,7 @@ stopband = [10 20]; %set emperically for now, stopband frequency indices keep be
 plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
 plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-testframes = 10; %make zero to do all frames, nonzeros to do 1:testframes
+testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
 ncol = 256; %num colors in plot
 
 
