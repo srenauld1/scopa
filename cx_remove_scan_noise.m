@@ -133,6 +133,7 @@ for ri = 1:length(pth_all)
         if smooth_window_temporal
             stackdn = smoothdata(stackdn, 4, 'gaussian', smooth_window_temporal);
         end
+        "DONE SMOOTHING"
 
 
 
@@ -151,6 +152,7 @@ for ri = 1:length(pth_all)
 
 
         stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
+        "DONE FILTERING"
 
 
         %% plot after filtering
@@ -169,7 +171,7 @@ for ri = 1:length(pth_all)
 
         save(pth_dn_nosn_mat, 'stackdn', '-v7.3', '-mat')
 
-        "FINISHED"
+        "FINISHED SAVING"
 
 
 

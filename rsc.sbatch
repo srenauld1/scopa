@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -p short
-#SBATCH -t 2:00:00
+#SBATCH -t 0:50:00
 #SBATCH -c 5
-#SBATCH --mem=30G
-#SBATCH --array=[1-7]
+#SBATCH --mem=90G
+#SBATCH --array=[1-3]
 
 module purge
 module load matlab/2023a
