@@ -2,12 +2,12 @@
 
 function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in)
 
-
 recdate_in
 fly_in
 trial_in
 smooth_window_temporal_in
 indx_in
+
 
 %% determine which recordings to do based on last input
 
@@ -81,7 +81,7 @@ for ri = 1:length(pth_all)
         recid_tit = strrep(recid, '_', ' ');
 
         pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
-        pth_dn_nh_mat = [pth_dn_mat(1:end-4) 'nh_.mat'];
+        pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
         pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
         load(pth_metadata) %file created in initial python part of pipeline
@@ -153,12 +153,6 @@ for ri = 1:length(pth_all)
         stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
 
 
-        %% save
-
-
-        save(pth_dn_nh_mat, 'stackdn', '-v7.3', '-mat')
-
-
         %% plot after filtering
 
         if plotgif
@@ -168,6 +162,13 @@ for ri = 1:length(pth_all)
             cx_plot_gif_fast(rescale(stackdn(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
 
         end
+
+
+        %% save
+
+
+        save(pth_dn_nosn_mat, 'stackdn', '-v7.3', '-mat')
+
 
 
     end

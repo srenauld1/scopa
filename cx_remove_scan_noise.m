@@ -8,7 +8,6 @@ trial_in
 smooth_window_temporal_in
 indx_in
 
-fu=mu
 
 %% determine which recordings to do based on last input
 
@@ -49,7 +48,7 @@ stopband = [10 20]; %set emperically for now, stopband frequency indices keep be
 plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
 plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
+testframes = 10; %make zero to do all frames, nonzeros to do 1:testframes
 ncol = 256; %num colors in plot
 
 
@@ -82,7 +81,7 @@ for ri = 1:length(pth_all)
         recid_tit = strrep(recid, '_', ' ');
 
         pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
-        pth_dn_nh_mat = [pth_dn_mat(1:end-4) 'nh_.mat'];
+        pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
         pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
         load(pth_metadata) %file created in initial python part of pipeline
@@ -154,21 +153,22 @@ for ri = 1:length(pth_all)
         stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
 
 
-        %% save
-
-
-        save(pth_dn_nh_mat, 'stackdn', '-v7.3', '-mat')
-
-
         %% plot after filtering
 
         if plotgif
 
             pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
             title_str = 'filt';
-            cx_plot_gif_fast(rescale(stackdn(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+            cx_plot_gif_fast(rescale(single(stackdn(:,:,plotinds_z, plotinds_t)), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
 
         end
+
+
+        %% save
+
+
+        save(pth_dn_nosn_mat, 'stackdn', '-v7.3', '-mat')
+
 
 
     end
@@ -236,6 +236,15 @@ imout = permute(imout, [2 1 3 4]);
 if ~isa(imout, 'single')
     imout = single(imout);
 end
+
+datmin_raw = min(imout(:));
+datmax_raw = max(imout(:));
+imout = imout - datmin_raw;
+% if datmax_raw > 2^16-1
+%     "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
+%     error
+% end
+% imout = uint16(imout);
 
 end
 

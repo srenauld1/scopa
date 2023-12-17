@@ -55,11 +55,11 @@ def choose_files(recdates, pth_allrec, fly, trial, recording_index, do_backgroun
                     
                     pth_prefix = pth_fldr + '/' + fn_prefix
                     if do_background_subtraction or (use_background_subtracted and not do_register):
-                        pth_tif_dn = pth_prefix + '_cmrg_bksb_dcdn_.tif'        
                         pth_tif_reg = pth_prefix + '_cmrg_bksb_.tif'
+                        pth_tif_dn = pth_prefix + '_cmrg_bksb_dcdn_.tif'        
                     else:
-                        pth_tif_dn = pth_prefix + '_cmrg_dcdn_.tif'         
                         pth_tif_reg = pth_prefix + '_cmrg_.tif'
+                        pth_tif_dn = pth_prefix + '_cmrg_dcdn_.tif'         
                     
                     pth_md_mat = pth_prefix + '_metadatanew_.mat'
                     pth_md_npy = pth_md_mat[:-4] + '.npy'
