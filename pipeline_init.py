@@ -51,6 +51,8 @@ cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
 do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
+rename_raw_tif = 0 #this can only be overridden if we're in carl's scratch folder, as a precaution for other users 
+
 import sys
 from parse_command_line import parse_command_line
 from paths import makepaths

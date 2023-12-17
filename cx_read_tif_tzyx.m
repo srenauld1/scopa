@@ -5,20 +5,30 @@ function out = cx_read_tif_tzyx(filename_tif, ...
 
 allow_data_type_conversion = 0;
 
-%scanimage writes as tzyx, and so does my python registration and roi extraction
-%so read it like this, then permute output later (faster that way)
+%scanimage writes as tzyx, 
+% and so does scopa python pipeline 
+% (registration,denoising, roi extraction)
+%so read it like this, then permute output afterwards
+%option to just read a subset of z and t indices to save time
+%size_z_read_from and size_t_read_from must match z and t dimensions of tif
+%inds_z_read_from and size_t_read_from can be used to only read those z and t indices 
+%out_datatype defines output data type, 
+% if allow_data_type_conversion==1 the tif datatype can be converted to
+% out_datatype, but this is a work in progress so it's 0 by default 
+%if tif is 3d (one z slice) then size_z_read_from==1 and it works fine 
 
 tr = Tiff(filename_tif, 'r');
 
+final_frame_flag_count = 0;
 countz_ti = 0;
-for ti =  1:size_t_read_from
+for ti = 1:size_t_read_from
     if  ismember(ti, inds_t_read_from)
         countz_ti = countz_ti + 1;
     end
-    countz_zi = 0;
     % if mod(ti, 100)==0
     %     display(["on frame " num2str(ti)])
     % end
+    countz_zi = 0;
     for zi = 1:size_z_read_from
         if ismember(zi, inds_z_read_from) & ismember(ti, inds_t_read_from)
             countz_zi = countz_zi + 1;
@@ -35,10 +45,24 @@ for ti =  1:size_t_read_from
             tr.nextDirectory()
         catch
             "FINAL TIF FRAME"
+            final_frame_flag_count = final_frame_flag_count + 1;
         end
     end
 end
-%
+
+if final_frame_flag_count>1
+    sprintf([ 'message FINAL TIF FRAME appeared multiple times' newline ...
+        'two possible reasons are ' newline ...
+        '1. you''re reading a raw tif output from scanimage and the header is different ' newline ...
+        'than the headers this function was written to process, proceed with caution ' newline ...
+        '2. you tried to read too many frames, ' newline ...
+        'meaning size_z_read_from and/or size_t_read_from may be too large, ' newline ... 
+        'stack read will be wrong if size_z_read_from is wrong, ' newline ...
+        'stack read will be fine but slow if size_t_read_from is too large,' newline ...
+        'but this should not occur if you''re using the metadatanew.mat file to determine these values,' newline ...
+        'in which case #1 seems more likely'])
+end
+
 % out = permute(out, [2 3 1]);
 % out = reshape(out, size_read_to(2), size_read_to(3), length(inds_t_read_from), length(inds_z_read_from));
 out = permute(out, [3 4 2 1]); %reshape into y x z t
