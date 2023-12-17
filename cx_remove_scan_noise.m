@@ -12,7 +12,7 @@ indx_in
 %% determine which recordings to do based on last input
 
 
-numfil = 1;
+numfil = 19;
 if isstring(indx_in)
     indx_in = strsplit(indx_in, ':');
     indx_in = str2num(indx_in{end});
