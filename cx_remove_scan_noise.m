@@ -112,17 +112,17 @@ for ri = 1:length(pth_all)
         %% load
 
         try
-            load(pth_dn_mat)
-            if exist('stackreg', 'var')
-                stackdn = stackreg;
-                clear stackreg
-            end
+            tmp = struct2cell(load(pth_dn_mat));
+            stackdn = tmp{1};
+            clear tmp
         catch
             out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
+            "ENTERING READ TIF"
             stackdn = cx_read_tif_tzyx(pth_dn_tif, ...
                 out_datatype, size_read_to, ...
                 size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
+            "DONE READING TIF"
             save(pth_dn_mat, 'stackdn', '-v7.3', '-mat')
         end
 
