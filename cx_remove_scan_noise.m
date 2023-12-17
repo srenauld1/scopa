@@ -12,7 +12,7 @@ indx_in
 %% determine which recordings to do based on last input
 
 
-numfil = 5;
+numfil = 1;
 if isstring(indx_in)
     indx_in = strsplit(indx_in, ':');
     indx_in = str2num(indx_in{end});
@@ -58,7 +58,6 @@ ncol = 256; %num colors in plot
 fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.tif'];
 pth_all = rdir(fn_pattern);
 fn_pattern
-pth_all
 
 %% loop over recordings
 
@@ -169,6 +168,8 @@ for ri = 1:length(pth_all)
 
 
         save(pth_dn_nosn_mat, 'stackdn', '-v7.3', '-mat')
+
+        "FINISHED"
 
 
 
