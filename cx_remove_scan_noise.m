@@ -28,7 +28,7 @@ dofil
 
 enclosing_folder_on_scratch = 'stacks';
 currdir = split(pwd, '/');
-currdir = currdir{end};
+currdir = currdir{end-1};
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
     pth_super = ['/n/scratch3/users/'  currdir(1) '/' currdir '/' enclosing_folder_on_scratch '/'];
