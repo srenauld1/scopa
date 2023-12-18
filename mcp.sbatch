@@ -18,7 +18,7 @@ source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
---do_register 0 \
+--do_register 1 \
 --do_planar_registration 1 \
 --do_background_subtraction 0 \
 --len_window_smooth_t 0 \
