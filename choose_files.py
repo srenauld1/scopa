@@ -56,6 +56,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 if re.search(recording_date + '-' + fly, pth_datafile) or re.search('stackraw', pth_datafile):
                     trialspec = str(int(pth_datafile.split('_')[-2]))
                     pth_datafile_rename = pth_fldr + '/' + recording_date + '_' + fly + '_' + trialspec + '_raw_.tif'
+                    print("RENAMING" + pth_datafile)
                     os.rename(pth_datafile, pth_datafile_rename)
                     pth_badmat = glob.glob(pth_datafile[:-4] + '.mat', recursive=True)
                     if pth_badmat:
