@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --time=0:05:00
+#SBATCH --time=0:15:00
 #SBATCH -p short
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=5

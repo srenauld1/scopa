@@ -11,7 +11,7 @@ import re
 def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, do_background_subtraction, 
                  do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
                  use_background_subtracted, use_denoised, rename_raw_tif):
-    
+    print("CHOOSEFILES")
     pth_datafile_all = []
     pth_fldr_all = []
     fn_prefix_all = []
