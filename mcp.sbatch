@@ -4,7 +4,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=40G
-#SBATCH --array=[1-3]
+#SBATCH --array=[0-2]
 #SBATCH --begin=now+10
 #SBATCH --signal=B:SIGUSR1@90
 #SBATCH --requeue
