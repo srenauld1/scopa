@@ -37,6 +37,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
         flyg_filename_pattern = 0
         if not pth_allfiles and do_register:  #if no matches for 'raw' try original flyg output file pattern
             flyg_filename_pattern = 1
+            print("FLYG PATTERN")
             if trial=='*':
                 fn_pattern = recording_date + '-' + fly + '_*_trial_*_*.tif'
             else:
