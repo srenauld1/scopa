@@ -24,8 +24,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
     countz = -1 #so first one is zero, since recording_index is zero indexed 
     for recording_date in recdates:
 
-        if do_register:
-            fn_suffix = '_raw'
+        fn_suffix = '_raw'
         if do_denoise or do_stitching_session or do_extract or do_cropping_session:
             fn_suffix = '_cmrg'
             if use_background_subtracted:
@@ -43,13 +42,14 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             else:
                 fn_pattern = recording_date + '-' + fly + '_*_trial_' + '{:03d}'.format(int(trial)) + '_*.tif'  
             pth_allfiles = natsorted(glob.glob(pth_allrec + '**/' + fn_pattern, recursive=True))
-            if not pth_allfiles:
-                print("FOR JOB SUBMITTED, NO FILES MATCHING INPUT PATTERN")
+        
+        if not pth_allfiles:
+            print("FOR JOB SUBMITTED, NO FILES MATCHING INPUT PATTERN")
 
         for pth_datafile in pth_allfiles:
 
             pth_fldr = ('/').join(pth_datafile.split('/')[:-1])
-            f = pth_datafile.split('/')[-1]
+            fname = pth_datafile.split('/')[-1]
 
             if rename_raw_tif and (re.search("caw846", pth_allrec) or re.search("wienecke", pth_allrec)):
                 if re.search(recording_date + '-' + fly, pth_datafile) or re.search('stackraw', pth_datafile):
@@ -71,9 +71,9 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                     print(pth_datafile)
 
                     if flyg_filename_pattern:                       
-                        fn_prefix = f.split('_')[0].split('-')[0] + '_' + f.split('_')[0].split('-')[1]  + '_' + str(int(f.split('_')[-2][-1])) #change hyphen to underscore
+                        fn_prefix = fname.split('_')[0].split('-')[0] + '_' + fname.split('_')[0].split('-')[1]  + '_' + str(int(fname.split('_')[-2][-1])) #change hyphen to underscore
                     else:
-                        fn_prefix = '_'.join(f.split('_')[:3])
+                        fn_prefix = '_'.join(fname.split('_')[:3])
 
                     pth_prefix = pth_fldr + '/' + fn_prefix
                     if do_background_subtraction or (use_background_subtracted and not do_register):
