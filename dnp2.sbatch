@@ -30,7 +30,7 @@ do
     --recdates '*' \
     --fly '*' \
     --trial '*' \
-    --folder_substrings '' \ 
+    --folder_substrings '*' \ 
     --file_matching_style 'any' \ 
     --recording_index $SLURM_ARRAY_TASK_ID &
 done

@@ -13,13 +13,10 @@ echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $S
 
 module purge
 ml python/3.10.11
-ml miniconda3/4.10.3
-source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-conda activate caiman
 
 if [[ ! -v COPYFLAG ]]; then
     echo "COPYFLAG is not set"
-    COPYFLAG=''
+    COPYFLAG='no'
     NUMLOOP=1
 else
     echo "COPYFLAG is set to: $COPYFLAG"
@@ -31,7 +28,10 @@ for (( i = 1; i <= $NUMLOOP; i++ )); do
     if (($i==1 && $NUMLOOP==2)); then
         COPYFLAGNEW=$COPYFLAG
     else
-        COPYFLAGNEW=''
+        COPYFLAGNEW='no'
+        ml miniconda3/4.10.3
+        source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+        conda activate caiman
     fi
 
     echo "COPYFLAGNEW is set to: $COPYFLAGNEW"
@@ -45,7 +45,7 @@ for (( i = 1; i <= $NUMLOOP; i++ )); do
     --recdates '*' \
     --fly '*' \
     --trial '*' \
-    --folder_substrings '' \ 
+    --folder_substrings '*' \ 
     --file_matching_style 'any' \ 
     --recording_index $SLURM_ARRAY_TASK_ID &
 

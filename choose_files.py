@@ -17,18 +17,20 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
     
 
     if file_matching_style=='any': #find all possible combinations 
-        filepatspec_all = list(product(recdates, fly, trial)) 
+        filepatspec_all = list(product(recdates, fly, trial, folder_substrings)) 
     elif file_matching_style=='each': #else corresponding elements 
-        maxspec = np.max((len(recdates), len(fly), len(trial)))
+        maxspec = np.max((len(recdates), len(fly), len(trial), len(folder_substrings)))
         if len(recdates)==1:
             recdates = recdates*maxspec
         if len(fly)==1:
             fly = fly*maxspec
         if len(trial)==1:
             trial = trial*maxspec
-        if not(len(recdates) == len(fly) == len(trial)):
-            raise Exception("recdate, fly, and trial must all be same length or length 1 for file_matching_style 'each'")
-        filepatspec_all = [(x, y, z) for x, y, z in zip(recdates, fly, trial)] 
+        if len(folder_substrings)==1:
+            folder_substrings = folder_substrings*maxspec
+        if not(len(recdates) == len(fly) == len(trial) == len(folder_substrings)):
+            raise Exception("recdate, fly, trial, and folder_substrings must all be same length or length 1 for file_matching_style 'each'")
+        filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdates, fly, trial, folder_substrings)] 
 
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
@@ -42,7 +44,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 fn_suffix = fn_suffix + '_dcdn'
         fn_suffix = fn_suffix + '_.tif'
         fn_pattern = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix
-        pth_allfiles_scopa = glob.glob(pth_allrec + '**/' + fn_pattern, recursive=True)
+        pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine, since both patterns are valid as input
 
         if do_register: #find files matching flyg default output pattern (if do_register), and carl's old project output pattern
@@ -79,9 +81,9 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
     pth_prefix_all = []
     md_all = []
     carls_old_project_all = []
-    countz = -1
+    countz = 0
     for pth_datafile in pth_allfiles: #loop over all found files
-
+        
         pth_fldr = ('/').join(pth_datafile.split('/')[:-1])
         fldrname = pth_fldr.split('/')[-1]
         fname = pth_datafile.split('/')[-1]
@@ -104,53 +106,52 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 pth_datafile = pth_datafile_rename
                 fname = fname_rename
 
-
-        if any(re.search(fsbtr, fldrname) for fsbtr in folder_substrings): #folder filter, optional
             
-            countz = countz + 1
+        if recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()): #if 'all', do all files matching pattern, otherwise only file matching index
 
-            if recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()): #if 'all', do all files matching pattern, otherwise only file matching index
+            print(pth_datafile)
 
-                print(pth_datafile)
+            pth_prefix = pth_fldr + '/' + fn_prefix      
 
-                pth_prefix = pth_fldr + '/' + fn_prefix      
+            pth_md_mat = pth_prefix + '_metadatanew_.mat'
+            pth_md_npy = pth_md_mat[:-4] + '.npy'
+            
+            if int(fn_prefix.split('_')[0])<20230101:
+                carls_old_project = 1
+            else:
+                carls_old_project = 0
 
-                pth_md_mat = pth_prefix + '_metadatanew_.mat'
-                pth_md_npy = pth_md_mat[:-4] + '.npy'
+            mat_file_shape_in = None
+            if carls_old_project and fname[-3:]=='mat':
+
+                if os.path.isfile(pth_datafile[:-4] + '.tif'):
+                    raise Exception("you should only be in mat clause if there is no tif")
+
+                mat = mat73.loadmat(pth_datafile)
+                Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
+                mnmv = np.min(Y)
+                Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+                print("MIN OF STACKRAW_PMC MAT FILE " + str(mnmv))
+                Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
+                pth_datafile = pth_datafile[:-4] + '.tif'
+                imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
+                mat_file_shape_in = Y.shape
+
+            
+            if os.path.isfile(pth_md_npy) and os.path.isfile(pth_md_mat):
+                md = np.load(pth_md_npy, allow_pickle='TRUE').item()
+            else:
+                md = read_save_metadata(pth_datafile, pth_md_mat, pth_md_npy, mat_file_shape = mat_file_shape_in)
                 
-                if int(fn_prefix.split('_')[0])<20230101:
-                    carls_old_project = 1
-                else:
-                    carls_old_project = 0
+            pth_tif_read_all.append(pth_datafile)
+            pth_fldr_all.append(pth_fldr)
+            fn_prefix_all.append(fn_prefix)
+            pth_prefix_all.append(pth_prefix)
+            md_all.append(md)
+            carls_old_project_all.append(carls_old_project)
+            
+        
+        countz = countz + 1
 
-                mat_file_shape_in = None
-                if carls_old_project and fname[-3:]=='mat':
-
-                    if os.path.isfile(pth_datafile[:-4] + '.tif'):
-                        raise Exception("you should only be in mat clause if there is no tif")
-
-                    mat = mat73.loadmat(pth_datafile)
-                    Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
-                    mnmv = np.min(Y)
-                    Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
-                    print("MIN OF STACKRAW_PMC MAT FILE " + str(mnmv))
-                    Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
-                    pth_datafile = pth_datafile[:-4] + '.tif'
-                    imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
-                    mat_file_shape_in = Y.shape
-
-                
-                if os.path.isfile(pth_md_npy) and os.path.isfile(pth_md_mat):
-                    md = np.load(pth_md_npy, allow_pickle='TRUE').item()
-                else:
-                    md = read_save_metadata(pth_datafile, pth_md_mat, pth_md_npy, mat_file_shape = mat_file_shape_in)
-                    
-                pth_tif_read_all.append(pth_datafile)
-                pth_fldr_all.append(pth_fldr)
-                fn_prefix_all.append(fn_prefix)
-                pth_prefix_all.append(pth_prefix)
-                md_all.append(md)
-                carls_old_project_all.append(carls_old_project)
-                
 
     return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, md_all, carls_old_project_all) 
