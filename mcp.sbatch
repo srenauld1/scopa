@@ -11,9 +11,8 @@
 
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
-me=$(basename "$0")
 
-echo "running file $me"
+echo "running file $0"
 
 module purge
 ml python/3.10.11
@@ -50,7 +49,7 @@ for (( i = 1; i <= $NUMLOOP; i++ )); do
     --fly '*' \
     --trial '*' \
     --folder_substrings '*' \
-    --file_matching_style '*' \
+    --file_matching_style 'any' \
     --recording_index $SLURM_ARRAY_TASK_ID &
 
     wait

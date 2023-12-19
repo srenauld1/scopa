@@ -1,63 +1,72 @@
 
 
-function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in)
-
-recdate_in
-fly_in
-trial_in
-smooth_window_temporal_in
-indx_in
+function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in, single_rec_mode)
 
 
-%% determine which recordings to do based on last input
+if single_rec_mode
 
+    indx_in = 1;
 
-numfil = 19;
-if isstring(indx_in)
-    indx_in = strsplit(indx_in, ':');
-    indx_in = str2num(indx_in{end});
-    indx = indx_in;
 else
-    indx = indx_in;
+
+    recdate_in
+    fly_in
+    trial_in
+    smooth_window_temporal_in
+    indx_in
+
+
+    %% determine which recordings to do based on last input
+
+
+    numfil = 19;
+    if isstring(indx_in)
+        indx_in = strsplit(indx_in, ':');
+        indx_in = str2num(indx_in{end});
+        indx = indx_in;
+    else
+        indx = indx_in;
+    end
+    dofil = [1:numfil]+numfil*(indx-1);
+
+    dofil
+
+    %% params
+
+    enclosing_folder_on_scratch = 'stacks';
+    currdir = split(pwd, '/');
+    currdir = currdir{end-1};
+    envname = getenv('HOSTNAME');
+    if ~isempty(regexp( envname, 'compute-', 'once' ))
+        pth_super = ['/n/scratch3/users/'  currdir(1) '/' currdir '/' enclosing_folder_on_scratch '/'];
+        plotgif = 0;
+    else
+        pth_super = '~/Documents/stacks/';
+        plotgif = 1;
+    end
+
+    recdate = recdate_in;
+    fly = fly_in;
+    trial = trial_in;
+    smooth_window_temporal = smooth_window_temporal_in; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th smooth_window_temporal
+
+    stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
+
+    plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
+    plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
+    swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+    testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
+    ncol = 256; %num colors in plot
+
+
+    %% filenames
+
+
+    fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.tif'];
+    pth_all = rdir(fn_pattern);
+    fn_pattern
+
 end
-dofil = [1:numfil]+numfil*(indx-1);
-
-dofil
-
-%% params
-
-enclosing_folder_on_scratch = 'stacks';
-currdir = split(pwd, '/');
-currdir = currdir{end-1};
-envname = getenv('HOSTNAME');
-if ~isempty(regexp( envname, 'compute-', 'once' ))
-    pth_super = ['/n/scratch3/users/'  currdir(1) '/' currdir '/' enclosing_folder_on_scratch '/'];
-    plotgif = 0;
-else
-    pth_super = '~/Documents/stacks/';
-    plotgif = 1;
-end
-
-recdate = recdate_in;
-fly = fly_in;
-trial = trial_in;
-smooth_window_temporal = smooth_window_temporal_in; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th smooth_window_temporal
-
-stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
-
-plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
-plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
-swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
-ncol = 256; %num colors in plot
-
-
-%% filenames
-
-
-fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.tif'];
-pth_all = rdir(fn_pattern);
-fn_pattern
 
 %% loop over recordings
 
