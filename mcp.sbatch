@@ -11,9 +11,6 @@
 
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
-
-echo "running file $0"
-
 module purge
 ml python/3.10.11
 

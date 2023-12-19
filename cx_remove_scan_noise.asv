@@ -129,12 +129,13 @@ for ri = 1:length(pth_all)
         %% load
 
         try
-            stack = struct2cell(load(pth_dn_mat));
-            stack = stack{1};
+            tmp = struct2cell(load(pth_dn_mat));
+            stackdn = tmp{1};
+            clear tmp
         catch
             out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
             "ENTERING READ TIF"
-            stack = cx_read_tif_tzyx(pth_dn_tif, ...
+            stackdn = cx_read_tif_tzyx(pth_dn_tif, ...
                 out_datatype, size_read_to, ...
                 size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
@@ -152,7 +153,7 @@ for ri = 1:length(pth_all)
                 end
                 stack = uint16(stack);
             end
-            save(pth_dn_mat, 'stack', '-v7.3', '-mat')
+            save(pth_dn_mat, 'stackdn', '-v7.3', '-mat')
         end
 
 
@@ -160,7 +161,7 @@ for ri = 1:length(pth_all)
 
 
         if smooth_window_temporal
-            stack = smoothdata(stack, 4, 'gaussian', smooth_window_temporal);
+            stackdn = smoothdata(stackdn, 4, 'gaussian', smooth_window_temporal);
         end
         "DONE SMOOTHING"
 
@@ -172,7 +173,7 @@ for ri = 1:length(pth_all)
 
             pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
             title_str = 'filt';
-            cx_plot_gif_fast(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+            cx_plot_gif_fast(rescale(stackdn(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
 
         end
 
@@ -180,7 +181,7 @@ for ri = 1:length(pth_all)
         %% filter
 
 
-        stack = cx_fft_filter_1d(stack, stopband, testframes, 0);
+        stackdn = cx_fft_filter_1d(stackdn, stopband, testframes, 0);
         "DONE FILTERING"
 
 
@@ -190,7 +191,7 @@ for ri = 1:length(pth_all)
 
             pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
             title_str = 'filt';
-            cx_plot_gif_fast(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+            cx_plot_gif_fast(rescale(single(stackdn(:,:,plotinds_z, plotinds_t)), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
 
         end
 
@@ -198,7 +199,7 @@ for ri = 1:length(pth_all)
         %% save
 
 
-        save(pth_dn_nosn_mat, 'stack', '-v7.3', '-mat')
+        save(pth_dn_nosn_mat, 'stackdn', '-v7.3', '-mat')
 
         "FINISHED SAVING"
 
