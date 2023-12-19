@@ -11,7 +11,7 @@ from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
-def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md, 
+def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md, 
              do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, 
              denoise_volume, carls_old_project, cluster_backend, do_cluster, do_plots):
 
@@ -22,12 +22,16 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
+    if do_background_subtraction:
+        pth_tif_write = pth_prefix + '_cmrg_bksb_.tif'
+    else:
+        pth_tif_write = pth_prefix + '_cmrg_.tif'
 
-    pth_tif_reg_tmp = pth_tif_reg[:-4] + 'tmp_.tif'
+    pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
 
     ##########################   BACKGROUND SUBTRACTION AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
-    Y = imread(pth_datafile).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
+    Y = imread(pth_tif_read).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
     
     Y = Y.reshape(md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
         
@@ -58,8 +62,8 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
         for zind in zindall: #for every z slice 
 
             dimorder = 'txy' 
-            pth_bgplot_save = pth_prefix + '_' + str(zind)
-            br = bgremover(Y[:,:,:,zind], pth_bgplot_save, half_wid=bg_patch_halfwidth, dimorder=dimorder)
+            pth_bgplots_save = pth_prefix + '_' + str(zind)
+            br = bgremover(Y[:,:,:,zind], pth_bgplots_save, half_wid=bg_patch_halfwidth, dimorder=dimorder)
             br.draw_patches()
             br.remove_bg()
             br.make_plots()
@@ -74,15 +78,15 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
     if len_window_smooth_t: #if you smooth before registering (very noisy data), create another file for smoothed movie
 
         if do_planar_registration: #for planar extraction write one presmoothed z at a time
-            pth_tif_psm = ['']*len(zindall)
+            pth_tif_presmooth = ['']*len(zindall)
             for zind in zindall: #for every z slice 
                 print("WRITING PRESMOOTHED SLICE " + str(zind))
-                pth_tif_psm[zind] = pth_tif_reg_tmp[:-4] + str(zind) + '_presmooth_.tif'
-                imwrite(pth_tif_psm[zind], Y[:,:,:,zind].squeeze()) 
+                pth_tif_presmooth[zind] = pth_tif_write_tmp[:-4] + str(zind) + '_presmooth_.tif'
+                imwrite(pth_tif_presmooth[zind], Y[:,:,:,zind].squeeze()) 
         else: # 
             print("WRITING ALL PRESMOOTHED SLICES" )
-            pth_tif_psm = [pth_tif_reg_tmp[:-4] + 'all_presmooth_.tif']
-            imwrite(pth_tif_psm[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+            pth_tif_presmooth = [pth_tif_write_tmp[:-4] + 'all_presmooth_.tif']
+            imwrite(pth_tif_presmooth[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
         print("SMOOTHING DATA IN TIME BEFORE REGISTRATION")
 
@@ -116,29 +120,29 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
             print("3D registration FOR ALL SLICES")
             images_sliced = Y #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
-        imwrite(pth_tif_reg_tmp, images_sliced.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+        imwrite(pth_tif_write_tmp, images_sliced.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
         # each_min_mov = 0 # don't think we want to make min mov the min for each z slice 
         # if each_min_mov:
         #     min_mov = np.min(images_sliced)
         
         # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
-        opts_dict, indices_ex, fnadd = configs(do_planar_registration = do_planar_registration, index_extraction_param_set = 'default', fnames = pth_tif_reg_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+        opts_dict, indices_ex, fnadd = configs(do_planar_registration = do_planar_registration, index_extraction_param_set = 'default', fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         #sys.setprofile(tracefunc)
-        mc = cm.motion_correction.MotionCorrect([pth_tif_reg_tmp], dview=dview, **opts.get_group('motion'))
+        mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True)
         input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
         if len_window_smooth_t: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
-            input_for_save_memmap = mc.apply_shifts_movie(pth_tif_psm[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
+            input_for_save_memmap = mc.apply_shifts_movie(pth_tif_presmooth[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
             input_for_save_memmap = [input_for_save_memmap] #so must pass nd array to save_memmap below
-            os.remove(pth_tif_psm[countz])
+            os.remove(pth_tif_presmooth[countz])
 
-        os.remove(pth_tif_reg_tmp)
+        os.remove(pth_tif_write_tmp)
 
         border_to_0 = 0 if mc.border_nan == 'copy' else mc.border_to_0 
-        basename_memap = pth_tif_reg.split('/')[-1][:-4]
+        basename_memap = pth_tif_write.split('/')[-1][:-4]
         pth_mmap_reg = cm.save_memmap(input_for_save_memmap, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # save in order C (motion_correct above has to save in order F)
         Ynew, dims_spatial_rg, dim_time_rg = cm.load_memmap(pth_mmap_reg) 
         Ynew = np.reshape(Ynew.T, [dim_time_rg] + list(dims_spatial_rg), order='F') 
@@ -148,9 +152,9 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
         
         if do_planar_registration and movie_is_4d:
-            pth_write = pth_tif_reg[:-4] + str(si) + '_z_.tif'
+            pth_write = pth_tif_write[:-4] + str(si) + '_z_.tif'
         else:
-            pth_write = pth_tif_reg
+            pth_write = pth_tif_write
             mnmv = np.min(Ynew)
             Ynew = Ynew - mnmv #make nonnegative before writing to uint16
             print("MIN AFTER MOTION CORRECTION " + str(mnmv))
@@ -169,7 +173,7 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
     Y = None
 
     if do_planar_registration and movie_is_4d:
-        stitch_registered_z_slices(pth_tif_reg, md['dims'], do_plots)
+        stitch_registered_z_slices(pth_tif_write, md['dims'], do_plots)
 
     # FINAL PART OF MOTION CORECTION SECTION  is to prepare files for denoising 
     # by writing each z slice to separate tif and put them in separate folders 
@@ -177,6 +181,6 @@ def register(pth_datafile, fn_prefix, pth_prefix, pth_tif_reg, pth_denoising, md
     # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
     # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
     if carls_old_project: #if it's not my old project 
-        separate_z_slices_before_denoising_carls_old_project(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+        separate_z_slices_before_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md['dims'], denoise_volume)
     else:
-        separate_z_slices_before_denoising(pth_tif_reg, fn_prefix, pth_denoising, md['dims'], denoise_volume)
+        separate_z_slices_before_denoising(pth_tif_write, fn_prefix, pth_denoising, md['dims'], denoise_volume)

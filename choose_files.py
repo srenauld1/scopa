@@ -12,7 +12,7 @@ import collections
 
 
 def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
-                 do_background_subtraction, do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
+                 do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
                  use_background_subtracted, use_denoised):
     
 
@@ -73,12 +73,10 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
         print("FOR JOB SUBMITTED, NO FILES MATCHING INPUT PATTERN")
 
 
-    pth_datafile_all = []
+    pth_tif_read_all = []
     pth_fldr_all = []
     fn_prefix_all = []
     pth_prefix_all = []
-    pth_tif_reg_all = []
-    pth_tif_dn_all = []
     md_all = []
     carls_old_project_all = []
     countz = -1
@@ -115,14 +113,8 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
 
                 print(pth_datafile)
 
-                pth_prefix = pth_fldr + '/' + fn_prefix
-                if do_background_subtraction or (use_background_subtracted and not do_register):
-                    pth_tif_reg = pth_prefix + '_cmrg_bksb_.tif'
-                    pth_tif_dn = pth_prefix + '_cmrg_bksb_dcdn_.tif'        
-                else:
-                    pth_tif_reg = pth_prefix + '_cmrg_.tif'
-                    pth_tif_dn = pth_prefix + '_cmrg_dcdn_.tif'         
-                
+                pth_prefix = pth_fldr + '/' + fn_prefix      
+
                 pth_md_mat = pth_prefix + '_metadatanew_.mat'
                 pth_md_npy = pth_md_mat[:-4] + '.npy'
                 
@@ -153,14 +145,12 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 else:
                     md = read_save_metadata(pth_datafile, pth_md_mat, pth_md_npy, mat_file_shape = mat_file_shape_in)
                     
-                pth_datafile_all.append(pth_datafile)
+                pth_tif_read_all.append(pth_datafile)
                 pth_fldr_all.append(pth_fldr)
                 fn_prefix_all.append(fn_prefix)
                 pth_prefix_all.append(pth_prefix)
-                pth_tif_reg_all.append(pth_tif_reg)
-                pth_tif_dn_all.append(pth_tif_dn)
                 md_all.append(md)
                 carls_old_project_all.append(carls_old_project)
                 
 
-    return (pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_all, pth_tif_dn_all, md_all, carls_old_project_all) 
+    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, md_all, carls_old_project_all) 

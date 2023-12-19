@@ -135,27 +135,27 @@ if not do_copyfiles:
       from denoise import denoise
 
    
-[pth_datafile_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_tif_reg_all, pth_tif_dn_all, md_all, carls_old_project_all] = \
-  choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, do_background_subtraction, 
+[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, md_all, carls_old_project_all] = \
+  choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
         do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
         use_background_subtracted, use_denoised)
 
-FUK = MUK
 
-for ri, _ in enumerate(pth_datafile_all):
+for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles=='in':
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from storage server to compute server
+      shutil.copytree(pth_tif_read_all[ri], pth_copydest)
 
     elif do_copyfiles=='out':
       pth_copydest = pth_allrec_storage + pth_fldr_all[ri].split('/')[-1]
-      shutil.copytree(pth_fldr_all[ri], pth_copydest) #move the whole folder from compute server to storage server
+      shutil.copytree(pth_tif_read_all[ri], pth_copydest) 
        
     else:
-    
+
+
       if do_register:
-          register(pth_datafile_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_denoising, md_all[ri], 
+          register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
           cluster_backend, do_cluster, do_plots)
 
@@ -163,7 +163,7 @@ for ri, _ in enumerate(pth_datafile_all):
           denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
 
       if do_extract or do_stitching_session or do_cropping_session:
-          extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_reg_all[ri], pth_tif_dn_all[ri], pth_denoising, 
+          extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_read_all[ri], pth_denoising, 
           md_all[ri], denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
           region_extraction, carls_old_project_all[ri], do_plots, cluster_backend, do_cluster)
 

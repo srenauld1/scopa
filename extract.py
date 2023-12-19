@@ -13,7 +13,7 @@ from helpers import stitch_denoised_slices, stitch_denoised_slices_carls_old_pro
 from crop_fov import crop_fov
 
 
-def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_tif_dn, pth_denoising, 
+def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth_denoising, 
              md, denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, 
              use_denoised, epoch_choose_denoise, region_extraction, carls_old_project, do_plots, cluster_backend, do_cluster):
 
@@ -25,28 +25,24 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
     if use_denoised or do_stitching_session:
         
         force_stitch = 0 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch, warning this will overwrite existing stitched denoised tif)
-        if not os.path.isfile(pth_tif_dn) or force_stitch:
+        if not os.path.isfile(pth_tif_read) or force_stitch:
             if carls_old_project: #if it's not my old project 
-                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose_denoise) #stitch together denoised slices (tyx) into original size (tzyx)
+                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md['dims'], denoise_volume, epoch_choose_denoise) #stitch together denoised slices (tyx) into original size (tzyx)
             else:
-                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose_denoise) #stitch together denoised slices (tyx) into original size (tzyx)
+                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md['dims'], denoise_volume, epoch_choose_denoise) #stitch together denoised slices (tyx) into original size (tzyx)
 
-        pth_exin = pth_tif_dn
-    
-    else:
-    
-        pth_exin = pth_tif_reg
 
+    
     if not do_stitching_session: #skip everything else if do_stitching_session
 
-        Y = imread(pth_exin).astype('float32')
+        Y = imread(pth_tif_read).astype('float32')
         Y = Y.reshape(md['dims'])
         Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
         print(Y.shape)
 
         for rx in region_extraction:
             
-            print(pth_exin)
+            print(pth_tif_read)
             print(rx)
 
             Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
@@ -56,12 +52,12 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
 
             if not do_cropping_session: #skip everything else if you're doing a cropping session
                 
-                pth_tif_ex = pth_exin[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
-                imwrite(pth_tif_ex, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
-                basename_memap = pth_tif_ex.split('/')[-1][:-4]
+                pth_tif_write = pth_tif_read[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
+                imwrite(pth_tif_write, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
+                basename_memap = pth_tif_write.split('/')[-1][:-4]
                 border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 
-                fn_mmap_ex = cm.save_memmap([pth_tif_ex], base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
-                os.remove(pth_tif_ex)
+                fn_mmap_ex = cm.save_memmap([pth_tif_write], base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
+                os.remove(pth_tif_write)
                 Ycrop, dims_spatial_ex, dim_time_ex = cm.load_memmap(fn_mmap_ex) #if 3d mmap should be 3d, but Ycrop gets singleton 4th dim (z) added below so the code is more readable
                 Ycrop = np.reshape(Ycrop.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
                 
@@ -138,11 +134,11 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
 
 
                             if do_plots and cnm2.estimates.A.shape[-1]:
-                                pth_results = pth_tif_ex[:-8] + fnadd + 'OUT_FIT1.mov'
+                                pth_results = pth_tif_write[:-8] + fnadd + 'OUT_FIT1.mov'
                                 caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results)
 
                             if do_plots and cnm2.estimates.A.shape[-1]:
-                                pth_results2 = pth_tif_ex[:-8] + fnadd + 'OUT_FIT2.mov'
+                                pth_results2 = pth_tif_write[:-8] + fnadd + 'OUT_FIT2.mov'
                                 caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results2)
                             
                     
@@ -203,17 +199,17 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
                         #mdict['idxbad'] = stack_idx_bad
                         
                         if np.any(stack_masks):
-                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_.mat'
+                            pth_mat_ex = pth_tif_write[:-8] + fnadd + '_rois_.mat'
 
                         else:
                             mdict = {}
                             print("norois")
-                            pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_NOROIS_.mat'
+                            pth_mat_ex = pth_tif_write[:-8] + fnadd + '_rois_NOROIS_.mat'
 
                     except Exception as error:
                         
                         mdict = {}
-                        pth_mat_ex = pth_tif_ex[:-8] + fnadd + '_rois_FAILURE_.mat'
+                        pth_mat_ex = pth_tif_write[:-8] + fnadd + '_rois_FAILURE_.mat'
                         print("An exception occurred:", type(error).__name__, "-", error) 
 
                     
