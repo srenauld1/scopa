@@ -32,8 +32,10 @@ do
     then
     COPYFLAG2=$COPYFLAG
     else
-    COPYFLAG2=''
+    COPYFLAG2='hjhj'
     fi
+
+    echo $COPYFLAG2
 
 
     ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
