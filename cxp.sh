@@ -1,6 +1,7 @@
 #!/bin/bash
 
-arr1id=$(sbatch --export=ALL,COPYFLAG='in' --parsable mcp.sbatch)
+INMEM=40G
+arr1id=$(sbatch --export=ALL,COPYFLAG='in',INMEM --parsable mcp.sbatch)
 echo "Job-Array. ID: ${arr1id}"
 
 arr2id=$(sbatch -export=ALL,COPYFLAG='in' --parsable --dependency=aftercorr:${arr1id} stc.sbatch)

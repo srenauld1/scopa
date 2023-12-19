@@ -3,7 +3,7 @@
 #SBATCH -p short
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem-per-cpu=40G
+#SBATCH --mem-per-cpu=$INMEM
 #SBATCH --array=[0-2]
 #SBATCH --begin=now+10
 #SBATCH --signal=B:SIGUSR1@90

@@ -34,6 +34,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
 
     print(pth_allrec)
     print(filepatspec_all)
+    
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 

@@ -3,6 +3,14 @@
 function cx_remove_scan_noise(recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in, pth_all_in)
 
 
+stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
+
+plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
+plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
+swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
+ncol = 256; %num colors in plot
+
 if exist('pth_all_in', 'var') & isempty(recdate_in) %single recording mode operates only on one file pth_all
 
     indx_in = 1;
@@ -11,6 +19,7 @@ if exist('pth_all_in', 'var') & isempty(recdate_in) %single recording mode opera
 
 elseif ~exist('pth_all_in', 'var') & ~isempty(recdate_in)  %batch mode finds files matching input arg pattern and loops over them
 
+    
     recdate_in
     fly_in
     trial_in
@@ -52,14 +61,6 @@ elseif ~exist('pth_all_in', 'var') & ~isempty(recdate_in)  %batch mode finds fil
     trial = trial_in;
     smooth_window_temporal = smooth_window_temporal_in; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th smooth_window_temporal
 
-    stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
-
-    plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
-    plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
-    swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-    testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
-    ncol = 256; %num colors in plot
-
 
     %% filenames
 
@@ -71,7 +72,7 @@ elseif ~exist('pth_all_in', 'var') & ~isempty(recdate_in)  %batch mode finds fil
 
 else
 
-    "ERROR, EITHER PASS ARGUMENTS recdate_in, fly_in, trial_in, smooth_window_temporal_in, indx_in, OR JUST ARGUMENT pth_all"
+    "ERROR, EITHER PASS ARGUMENTS recdate_in, fly_in, trial_in, indx_in, OR ARGUMENTS pth_all AND smooth_window_temporal_in"
     error
 
 end
