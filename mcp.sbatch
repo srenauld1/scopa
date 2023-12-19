@@ -37,7 +37,7 @@ do
 
 
     ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
-    --do_copyfiles $COPYFLAG2
+    --do_copyfiles $COPYFLAG2 \
     --do_register 1 \
     --do_planar_registration 1 \
     --do_background_subtraction 0 \
