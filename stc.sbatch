@@ -17,6 +17,13 @@ ml miniconda3/4.10.3
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
+if [ -z ${COPYFLAG+x} ]
+then echo "COPYFLAG is unset"
+else echo "COPYFLAG is set to '$COPYFLAG'"
+    ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+    --do_copyfiles $COPYFLAG
+fi
+
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --do_stitching_session 0 \
 --epoch_choose_denoise 5 \
