@@ -28,7 +28,7 @@ for i in 0 1
 
 do
 
-    if test i -eq 0
+    if test $i -eq 0
     then
     COPYFLAG2=$COPYFLAG
     else
