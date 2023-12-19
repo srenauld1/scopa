@@ -55,8 +55,11 @@ cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 import sys
+import os
+import shutil 
 from parse_command_line import parse_command_line
 from paths import makepaths
+from choose_files import choose_files
 
 if len(sys.argv)>1:
   [do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
@@ -92,9 +95,6 @@ else:
     print("forcing do_denoise to zero because either do_register or do_extract is true")
     do_denoise = 0
 
-
-import shutil 
-from choose_files import choose_files
 
 if not do_copyfiles:
 
@@ -145,14 +145,15 @@ for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles=='in':
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      shutil.copytree(pth_tif_read_all[ri], pth_copydest)
+      os.makedirs(os.path.dirname(pth_copydest), exist_ok=True)
+      shutil.copy(pth_tif_read_all[ri], pth_copydest)
 
     elif do_copyfiles=='out':
       pth_copydest = pth_allrec_storage + pth_fldr_all[ri].split('/')[-1]
-      shutil.copytree(pth_tif_read_all[ri], pth_copydest) 
+      os.makedirs(os.path.dirname(pth_copydest), exist_ok=True)
+      shutil.copy(pth_tif_read_all[ri], pth_copydest) 
        
     else:
-
 
       if do_register:
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
