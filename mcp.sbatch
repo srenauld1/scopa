@@ -17,25 +17,24 @@ ml miniconda3/4.10.3
 source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
 conda activate caiman
 
-if [ -z ${COPYFLAG+x} ]
-then echo "COPYFLAG is unset"
-else echo "COPYFLAG is set to '$COPYFLAG'"
-    ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
-    --do_copyfiles $COPYFLAG
+if [[ ! -v COPYFLAG ]]; then
+    echo "COPYFLAG is not set"
+    COPYFLAG=''
+    NUMLOOP=1
+else
+    echo "COPYFLAG is set to: $COPYFLAG"
+    NUMLOOP=2
 fi
 
-for i in 0 1 
+for (( i = 0; i <= $NUMLOOP; i++ )); do
 
-do
-
-    if test $i -eq 0
-    then
-    COPYFLAG2=$COPYFLAG
+    if (($i==0 && $NUMLOOP==2)); then
+        COPYFLAGNEW=$COPYFLAG
     else
-    COPYFLAG2='hjhj'
+        COPYFLAGNEW=''
     fi
 
-    echo $COPYFLAG2
+    echo $COPYFLAGNEW
 
 
     ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
