@@ -32,6 +32,8 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             raise Exception("recdate, fly, trial, and folder_substrings must all be same length or length 1 for file_matching_style 'each'")
         filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdates, fly, trial, folder_substrings)] 
 
+    pth_allrec
+    filepatspec_all
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
