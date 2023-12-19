@@ -26,19 +26,18 @@ else
     NUMLOOP=2
 fi
 
-for (( i = 0; i <= $NUMLOOP; i++ )); do
+for (( i = 1; i <= $NUMLOOP; i++ )); do
 
-    if (($i==0 && $NUMLOOP==2)); then
+    if (($i==1 && $NUMLOOP==2)); then
         COPYFLAGNEW=$COPYFLAG
     else
         COPYFLAGNEW=''
     fi
 
-    echo $COPYFLAGNEW
-
+    echo "COPYFLAGNEW is set to: $COPYFLAGNEW"
 
     ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
-    --do_copyfiles $COPYFLAG2 \
+    --do_copyfiles $COPYFLAGNEW \
     --do_register 1 \
     --do_planar_registration 1 \
     --do_background_subtraction 0 \
