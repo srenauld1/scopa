@@ -24,14 +24,12 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_reg, pth_
 
     if use_denoised or do_stitching_session:
         
-        epoch_choose = epoch_choose_denoise #which denoising epoch to stitch/use (must exist, ie must be one of epochs_choose in denoise.py)
         force_stitch = 0 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch, warning this will overwrite existing stitched denoised tif)
-
         if not os.path.isfile(pth_tif_dn) or force_stitch:
             if carls_old_project: #if it's not my old project 
-                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose_denoise) #stitch together denoised slices (tyx) into original size (tzyx)
             else:
-                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose) #stitch together denoised slices (tyx) into original size (tzyx)
+                stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_dn, md['dims'], denoise_volume, epoch_choose_denoise) #stitch together denoised slices (tyx) into original size (tzyx)
 
         pth_exin = pth_tif_dn
     

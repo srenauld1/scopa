@@ -34,6 +34,8 @@ do
     --recdates '20230613' \
     --fly '4' \
     --trial '1' \
+    --folder_substrings '' \ 
+    --file_matching_style 'any' \ 
     --recording_index $SLURM_ARRAY_TASK_ID &
 done
 
