@@ -24,19 +24,34 @@ else echo "COPYFLAG is set to '$COPYFLAG'"
     --do_copyfiles $COPYFLAG
 fi
 
-~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
---do_register 1 \
---do_planar_registration 1 \
---do_background_subtraction 0 \
---len_window_smooth_t 0 \
---recdates '*' \
---fly '*' \
---trial '*' \
---folder_substrings '' \ 
---file_matching_style 'any' \ 
---recording_index $SLURM_ARRAY_TASK_ID &
+for i in 0 1 
 
-wait
-sleep 1m
-date
-sleep 1m
+do
+
+    if test i -eq 0
+    then
+    COPYFLAG2=$COPYFLAG
+    else
+    COPYFLAG2=''
+    fi
+
+
+    ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+    --do_copyfiles $COPYFLAG2
+    --do_register 1 \
+    --do_planar_registration 1 \
+    --do_background_subtraction 0 \
+    --len_window_smooth_t 0 \
+    --recdates '*' \
+    --fly '*' \
+    --trial '*' \
+    --folder_substrings '' \ 
+    --file_matching_style 'any' \ 
+    --recording_index $SLURM_ARRAY_TASK_ID &
+
+    wait
+    sleep 1m
+    date
+    sleep 1m
+
+done
