@@ -168,7 +168,8 @@ def parse_command_line(do_copyfiles, superfolder_name_compute, superfolder_name_
 
     args = CLI.parse_args()
 
-    print("parsed command line arguments for pipeline_init.py, NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
+    print("parsed command line arguments for pipeline_init.py")
+    print("NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
     allvars = vars(args).keys()
     allvals = vars(args).values()
     for vi,vii in zip(allvars, allvals):
