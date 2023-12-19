@@ -9,17 +9,17 @@
 
 superfolder_name_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
 superfolder_name_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
-do_copyfiles = '' #LEAVE THIS BLANK IT DOESN'T WORK YET . . . ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+do_copyfiles = '' #ignored on local machine, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
-recdates = ['*', '20231119', '20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['0', '2'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
-trial = ['1', '3', '4', '5'] #list of strings, trial index_extraction_param_set, '*' for any #
+recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
+trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = [''] #list of strings, empty string to skip, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
@@ -35,13 +35,15 @@ epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and sti
 use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data, if 1,  
 do_stitching_session = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
 
-do_extract = 1 #caiman source extraction 
+do_extract = 0 #caiman source extraction 
 region_extraction = ['fullfov'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 index_extraction_param_set = ['default'] #'default' or list of string ints or ints, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
+
+do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 # caiman note on starting cluster
 # The default backend mode for parallel processing is through the multiprocessing package. 
@@ -51,8 +53,6 @@ do_cropping_session = 0 #skip everything but FOV selection for all entries in re
 # export OPENBLAS_NUM_THREADS=1 
 do_cluster = 0 #leave as 0 because cluster isn't working (except on google colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
-
-do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 import sys
 import os
@@ -144,6 +144,10 @@ if not do_copyfiles:
 for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles=='in':
+      print("copying")
+      print(pth_tif_read_all[ri])
+      print(pth_copydest)
+      fuk=muk
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
       os.makedirs(os.path.dirname(pth_copydest), exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
@@ -154,7 +158,8 @@ for ri, _ in enumerate(pth_tif_read_all):
       shutil.copy(pth_tif_read_all[ri], pth_copydest) 
        
     else:
-
+      print("doing")
+      fuk=muk
       if do_register:
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
