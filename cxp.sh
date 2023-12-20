@@ -4,19 +4,19 @@
 #JOBARRAYIND=( 0,2,7 ) #this is the syntax for non-sequential
 JOBARRAYIND=( 0-2 ) #this is the syntax for sequential
 
-RECDATES='20*'
-FLY='2'
-TRIAL='*'
-FOLDER_SUBSTRINGS='*'
-FILE_MATCHING_STYLE='any'
+RECDATES=('20*' '30*' '*')
+FLY=('*' '2')
+TRIAL=('*' '99')
+FOLDER_SUBSTRINGS=('*')
+FILE_MATCHING_STYLE=('any')
 
 arr1id=$(sbatch --parsable --export=\
 DO_COPYFILES='in',\
-RECDATES="$RECDATES",\
-FLY="$FLY",\
-TRIAL="$TRIAL",\
-FOLDER_SUBSTRINGS="$FOLDER_SUBSTRINGS",\
-FILE_MATCHING_STYLE="$FILE_MATCHING_STYLE" \
+RECDATES="${RECDATES[@]}",\
+FLY="${FLY[@]}",\
+TRIAL="${TRIAL[@]}",\
+FOLDER_SUBSTRINGS="${FOLDER_SUBSTRINGS[@]}",\
+FILE_MATCHING_STYLE="${FILE_MATCHING_STYLE[@]}" \
 -p short \
 --time=0:15:00 \
 --ntasks=1 \
