@@ -14,44 +14,30 @@ echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $S
 module purge
 ml python/3.10.11
 
-if [[ ! -v COPYFLAG ]]; then
-    echo "COPYFLAG is not set"
-    COPYFLAG='no'
-    NUMLOOP=1
-else
-    echo "COPYFLAG is set to: $COPYFLAG"
-    NUMLOOP=2
+if [[$DO_COPYFILES=='no']]; then
+    ml miniconda3/4.10.3
+    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+    conda activate caiman
 fi
 
-for (( i = 1; i <= $NUMLOOP; i++ )); do
+echo "DO_COPYFILES is set to: $DO_COPYFILES"
 
-    if (($i==1 && $NUMLOOP==2)); then
-        COPYFLAGNEW=$COPYFLAG
-    else
-        COPYFLAGNEW='no'
-        ml miniconda3/4.10.3
-        source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-        conda activate caiman
-    fi
+~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+--do_copyfiles $DO_COPYFILES \
+--do_register 1 \
+--do_planar_registration 1 \
+--do_background_subtraction 0 \
+--len_window_smooth_t 0 \
+--recdates $RECDATES \
+--fly $FLY \
+--trial $TRIAL \
+--folder_substrings $FOLDER_SUBSTRINGS \
+--file_matching_style $FILE_MATCHING_STYLE \
+--recording_index $SLURM_ARRAY_TASK_ID &
 
-    echo "COPYFLAGNEW is set to: $COPYFLAGNEW"
+wait
+sleep 1m
+date
+sleep 1m
 
-    ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
-    --do_copyfiles $COPYFLAGNEW \
-    --do_register 1 \
-    --do_planar_registration 1 \
-    --do_background_subtraction 0 \
-    --len_window_smooth_t 0 \
-    --recdates '*' \
-    --fly '*' \
-    --trial '*' \
-    --folder_substrings '*' \
-    --file_matching_style 'any' \
-    --recording_index $SLURM_ARRAY_TASK_ID &
 
-    wait
-    sleep 1m
-    date
-    sleep 1m
-
-done

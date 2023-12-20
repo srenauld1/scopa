@@ -1,7 +1,17 @@
 #!/bin/bash
 
-INMEM=40G
-arr1id=$(sbatch --export=ALL,COPYFLAG='in',INMEM --parsable mcp.sbatch)
+arr1id=$(
+    sbatch \     
+        --parsable \
+        --export=ALL, \
+            DO_COPYFILES='in' \
+            RECDATES='*' \
+            FLY='*' \
+            TRIAL='*' \
+            FOLDER_SUBSTRINGS='*' \
+            FILE_MATCHING_STYLE='any' \
+    mcp.sbatch)
+
 echo "Job-Array. ID: ${arr1id}"
 
 arr2id=$(sbatch -export=ALL,COPYFLAG='in' --parsable --dependency=aftercorr:${arr1id} stc.sbatch)
