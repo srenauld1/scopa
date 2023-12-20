@@ -134,7 +134,6 @@ if not do_copyfiles:
   elif do_denoise:
       from denoise import denoise
 
-fuk=muk
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, md_all, carls_old_project_all] = \
   choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
         do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
