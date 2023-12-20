@@ -13,12 +13,9 @@ echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $S
 
 module purge
 ml python/3.10.11
-
-if [[$DO_COPYFILES=='no']]; then
-    ml miniconda3/4.10.3
-    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-    conda activate caiman
-fi
+ml miniconda3/4.10.3
+source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+conda activate caiman
 
 echo "DO_COPYFILES is set to: $DO_COPYFILES"
 
