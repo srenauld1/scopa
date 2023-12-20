@@ -1,6 +1,6 @@
 #!/bin/bash
 
-arr1id=$(sbatch --parsable --export=ALL,\
+arr1id=$(sbatch --time=00:15:00 -p short --mem-per-cpu=40G --parsable --export=ALL,\
 DO_COPYFILES_TMP='in',\
 RECDATES_TMP='*',\
 FLY_TMP='*',\
