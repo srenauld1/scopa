@@ -21,11 +21,11 @@ echo "DO_COPYFILES is set to: "$DO_COPYFILES""
 --do_planar_registration 1 \
 --do_background_subtraction 0 \
 --len_window_smooth_t 0 \
---recdates "${RECDATES[@]}" \
---fly "${FLY[@]}" \
---trial "${TRIAL[@]}" \
---folder_substrings "${FOLDER_SUBSTRINGS[@]}" \
---file_matching_style "${FILE_MATCHING_STYLE[@]}" \
+--recdates "$RECDATES" \
+--fly "$FLY" \
+--trial "$TRIAL" \
+--folder_substrings "$FOLDER_SUBSTRINGS" \
+--file_matching_style "$FILE_MATCHING_STYLE" \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 
