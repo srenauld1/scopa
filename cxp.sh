@@ -1,17 +1,36 @@
 #!/bin/bash
 
-arr1id=$(sbatch --time=00:15:00 -p short --mem-per-cpu=40G --parsable --export=ALL,\
-DO_COPYFILES_TMP='in',\
-RECDATES_TMP='*',\
-FLY_TMP='*',\
-TRIAL_TMP='*',\
-FOLDER_SUBSTRINGS_TMP='*',\
-FILE_MATCHING_STYLE_TMP='any' mcp.sbatch)
+
+#JOBARRAYIND=( 0,2,7 ) #this is the syntax for non-sequential
+JOBARRAYIND=( 0-2 ) #this is the syntax for sequential
+
+RECDATES='20*'
+FLY='2'
+TRIAL='*'
+FOLDER_SUBSTRINGS='*'
+FILE_MATCHING_STYLE='any'
+
+arr1id=$(sbatch --parsable --export=\
+DO_COPYFILES='in',\
+RECDATES="$RECDATES",\
+FLY="$FLY",\
+TRIAL="$TRIAL",\
+FOLDER_SUBSTRINGS="$FOLDER_SUBSTRINGS",\
+FILE_MATCHING_STYLE="$FILE_MATCHING_STYLE" \
+-p short \
+--time=0:15:00 \
+--ntasks=1 \
+--cpus-per-task=1 \
+--mem-per-cpu=10G \
+--ntasks=1 \
+--cpus-per-task=1 \
+--array=[$JOBARRAYIND] \
+mcp.sbatch)
 
 echo "Job-Array. ID: ${arr1id}"
 
 arr2id=$(sbatch --parsable --dependency=aftercorr:${arr1id} --export=ALL,\
-DO_COPYFILES_TMP='no' mcp.sbatch)
+DO_COPYFILES_TMP='no' stc.sbatch)
 
 #arr2id=$(sbatch --parsable --dependency=aftercorr:${arr1id} stc.sbatch)
 #echo "Job-Array. ID: ${arr2id}"
