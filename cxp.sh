@@ -10,6 +10,9 @@ TRIAL=('*' '99')
 FOLDER_SUBSTRINGS=('*')
 FILE_MATCHING_STYLE=('any')
 
+fuk=("${RECDATES[@]}")
+echo $fuk
+
 arr1id=$(sbatch --parsable --export=\
 DO_COPYFILES='in',\
 RECDATES=("${RECDATES[@]}"),\
