@@ -21,7 +21,7 @@ if [ "$DO_COPYFILES_TMP" = 'no' ]; then
     conda activate caiman
 fi
 
-echo "DO_COPYFILES is set to: "$DO_COPYFILES_TMP"
+echo "DO_COPYFILES is set to: "$DO_COPYFILES_TMP""
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --do_copyfiles "$DO_COPYFILES_TMP" \
@@ -34,7 +34,7 @@ echo "DO_COPYFILES is set to: "$DO_COPYFILES_TMP"
 --trial "$TRIAL_TMP" \
 --folder_substrings "$FOLDER_SUBSTRINGS_TMP" \
 --file_matching_style "$FILE_MATCHING_STYLE_TMP" \
---recording_index "$SLURM_ARRAY_TASK_ID" &
+--recording_index $SLURM_ARRAY_TASK_ID &
 
 wait
 sleep 1m
