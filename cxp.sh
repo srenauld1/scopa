@@ -12,11 +12,11 @@ FILE_MATCHING_STYLE=('any')
 
 arr1id=$(sbatch --parsable --export=\
 DO_COPYFILES='in',\
-RECDATES="("${RECDATES[@]}")",\
-FLY="("${FLY[@]}")",\
-TRIAL="("${TRIAL[@]}")",\
-FOLDER_SUBSTRINGS="("${FOLDER_SUBSTRINGS[@]}")",\
-FILE_MATCHING_STYLE="("${FILE_MATCHING_STYLE[@]}")" \
+RECDATES=("${RECDATES[@]}"),\
+FLY=("${FLY[@]}"),\
+TRIAL=("${TRIAL[@]}"),\
+FOLDER_SUBSTRINGS=("${FOLDER_SUBSTRINGS[@]}"),\
+FILE_MATCHING_STYLE=("${FILE_MATCHING_STYLE[@]}") \
 -p short \
 --time=0:15:00 \
 --ntasks=1 \
