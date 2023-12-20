@@ -15,6 +15,7 @@ module purge
 ml python/3.10.11
 
 if [[$DO_COPYFILES=='no']]; then
+    echo "SET TO NO NONONONONONON"
     ml miniconda3/4.10.3
     source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
     conda activate caiman
