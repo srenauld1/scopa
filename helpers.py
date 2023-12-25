@@ -46,7 +46,8 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
   if do_plots:
       mxmv = np.max(Y)
       #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
-      plot_gif(Y, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+      filename_gif = pth_tif_reg[:-4] + '.gif'
+      plot_gif(Y, filename_gif, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
 
   Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx

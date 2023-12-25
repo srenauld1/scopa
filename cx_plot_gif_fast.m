@@ -1,10 +1,10 @@
-function plot_gif_fast(inp, ncol, flipdim, filename, titopt)
+function plot_gif_fast(inp, ncol, swapdim, filename, titopt)
 
 szo = size(inp);
 numdims = ndims(inp);
 
-if ~exist('flipdim', 'var')
-    flipdim = 0;
+if ~exist('swapdim', 'var')
+    swapdim = 0;
 end
 
 if numdims==2
@@ -12,7 +12,7 @@ if numdims==2
 elseif numdims==3
     sznew = size(inp);
 elseif numdims>3
-    if flipdim
+    if swapdim
         inp = permute(inp, [1 2 4 3]);
         szo = size(inp);
     end

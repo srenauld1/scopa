@@ -32,7 +32,7 @@ def im_montage(images, vmin=None, vmax=None):
     #plt.close('all')
 
 
-def plot_gif(data, indsx = None, indsy = None, indsz = None, indst = None):
+def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst = None):
 
 
     if indsx==None:
@@ -71,7 +71,6 @@ def plot_gif(data, indsx = None, indsy = None, indsz = None, indst = None):
     plt.title('test')
     fram = np.arange(1,data.shape[0])
     line_ani = animation.FuncAnimation(fig1, update_im, fram, fargs=(data, img), interval=50, blit=True)
-    filename_gif = '/Users/wienecke/Documents/ambrose/testnew_' + str(indsz) + '_.gif'
     line_ani.save(filename_gif, writer=writer)
 
 

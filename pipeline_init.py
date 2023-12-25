@@ -9,7 +9,7 @@
 
 superfolder_name_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
 superfolder_name_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
-do_copyfiles = 'no' #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+do_copyfiles = '' #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 
 recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
@@ -19,7 +19,7 @@ recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop 
 
 file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
@@ -32,11 +32,11 @@ denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all
 num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model after each epoch 
 
 epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)
-use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data, if 1,  
+use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data, if 1,  
 do_stitching_session = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
 
 do_extract = 0 #caiman source extraction 
-region_extraction = ['fullfov'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+region_extraction = ['pb'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 index_extraction_param_set = ['default'] #'default' or list of string ints or ints, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
@@ -158,7 +158,7 @@ for ri, _ in enumerate(pth_tif_read_all):
        
     else:
       print("doing")
-      fuk=muk
+
       if do_register:
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
@@ -168,6 +168,8 @@ for ri, _ in enumerate(pth_tif_read_all):
           denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
 
       if do_extract or do_stitching_session or do_cropping_session:
+          "FIX THIS"
+          index_extraction_param_set = index_extraction_param_set[0]
           extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_read_all[ri], pth_denoising, 
           md_all[ri], denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
           region_extraction, carls_old_project_all[ri], do_plots, cluster_backend, do_cluster)
