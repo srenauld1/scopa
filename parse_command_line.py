@@ -3,12 +3,18 @@ import argparse
 from ast import literal_eval
 
 
-def parse_command_line(do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings, do_cropping_session, recording_index, file_matching_style):
     
     CLI=argparse.ArgumentParser()
 
+    CLI.add_argument(
+        "--pars_filename",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=str,
+        default=[pars_filename],  # default if nothing is provided
+    )
     CLI.add_argument(
         "--do_copyfiles",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
@@ -175,7 +181,6 @@ def parse_command_line(do_copyfiles, superfolder_name_compute, superfolder_name_
     for vi,vii in zip(allvars, allvals):
         print(vi, ' = ', vii)
 
-
     do_copyfiles = args.do_copyfiles[0]
     superfolder_name_compute = args.superfolder_name_compute[0]
     superfolder_name_storage = args.superfolder_name_storage[0] 
@@ -238,7 +243,29 @@ def parse_command_line(do_copyfiles, superfolder_name_compute, superfolder_name_
 
     file_matching_style = args.file_matching_style[0] 
 
-    return (do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
+    if pars_filename: #additional option to read input from file written in bash script, should come after command line arguments 
+
+        pieces = open(pars_filename, 'r').read().split('\0')
+        tmp = {}
+        while len(pieces) >= 2:
+            k = pieces.pop(0); v = pieces.pop(0)
+            tmp[k] = v
+
+        for key, value in tmp.items():
+            litmp = list(tmp[key].split(" "))
+            exec(key + '=litmp')
+
+        recdates = RECDATES
+        fly = FLY
+        trial = TRIAL
+        folder_substrings = FOLDER_SUBSTRINGS
+        file_matching_style = FILE_MATCHING_STYLE
+
+        print(recdates)
+        print(fly)
+
+
+    return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 

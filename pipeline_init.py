@@ -10,6 +10,7 @@
 superfolder_name_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
 superfolder_name_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
 do_copyfiles = '' #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+pars_filename = '' 
 
 recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
@@ -61,43 +62,21 @@ from parse_command_line import parse_command_line
 from paths import makepaths
 from choose_files import choose_files
 
+sys.argv
 if len(sys.argv)>1:
 
     
-  [do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
+  [pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
   denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
-    parse_command_line(do_copyfiles = do_copyfiles, superfolder_name_compute = superfolder_name_compute, superfolder_name_storage = superfolder_name_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, superfolder_name_compute = superfolder_name_compute, superfolder_name_storage = superfolder_name_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitching_session = do_stitching_session, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
 
-if len(sys.argv)==2: #additional option to read input from file written in bash script, should come after command line arguments 
-  print(sys.argv)
-
-  pieces = open(sys.argv[1], 'r').read().split('\0')
-  tmp = {}
-  while len(pieces) >= 2:
-      k = pieces.pop(0); v = pieces.pop(0)
-      tmp[k] = v
-
-  print(tmp)
-  print("fuk2")
-
-  for key, value in tmp.items():
-    litmp = list(tmp[key].split(" "))
-    exec(key + '=litmp')
-
-  recdates = RECDATES
-  fly = FLY
-
-  print(recdates)
-  print(fly)
-
-
-
 fuk=muk
+
 [pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
   makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage)
 
