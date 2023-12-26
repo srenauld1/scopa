@@ -174,6 +174,29 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
 
     args = CLI.parse_args()
 
+    if pars_filename==['pars.txt']: #additional option to read input from file written in bash script, should come after command line arguments 
+
+        pieces = open(pars_filename[0], 'r').read().split('\0')
+        tmp = {}
+        while len(pieces) >= 2:
+            k = pieces.pop(0); v = pieces.pop(0)
+            tmp[k] = v
+
+        for key, value in tmp.items():
+            litmp = list(tmp[key].split(" "))
+            exec(key + '=litmp')
+
+        recdates = RECDATES
+        fly = FLY
+        trial = TRIAL
+        folder_substrings = FOLDER_SUBSTRINGS
+        file_matching_style = FILE_MATCHING_STYLE
+
+        print("inclause")
+        print(recdates)
+        print(fly)
+
+
     print("parsed command line arguments for pipeline_init.py")
     print("NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
     allvars = vars(args).keys()
@@ -243,26 +266,6 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
 
     file_matching_style = args.file_matching_style[0] 
 
-    if pars_filename: #additional option to read input from file written in bash script, should come after command line arguments 
-
-        pieces = open(pars_filename, 'r').read().split('\0')
-        tmp = {}
-        while len(pieces) >= 2:
-            k = pieces.pop(0); v = pieces.pop(0)
-            tmp[k] = v
-
-        for key, value in tmp.items():
-            litmp = list(tmp[key].split(" "))
-            exec(key + '=litmp')
-
-        recdates = RECDATES
-        fly = FLY
-        trial = TRIAL
-        folder_substrings = FOLDER_SUBSTRINGS
-        file_matching_style = FILE_MATCHING_STYLE
-
-        print(recdates)
-        print(fly)
 
 
     return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
