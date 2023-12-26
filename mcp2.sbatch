@@ -15,6 +15,7 @@ fi
 echo "DO_COPYFILES is set to: "$DO_COPYFILES""
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+--pars_file 'pars.txt' \
 --do_copyfiles "$DO_COPYFILES" \
 --do_register 1 \
 --do_planar_registration 1 \

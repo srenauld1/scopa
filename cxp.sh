@@ -21,8 +21,8 @@ for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
 done >pars.txt
 
-arr1id=$(sbatch --parsable 
---export=DO_COPYFILES='in'\
+arr1id=$(sbatch --parsable \
+--export=DO_COPYFILES='in' \
 -p short \
 --time=0:15:00 \
 --ntasks=1 \
@@ -31,7 +31,7 @@ arr1id=$(sbatch --parsable
 --ntasks=1 \
 --cpus-per-task=1 \
 --array=[$JOBARRAYIND] \
-mcp.sbatch)
+mcp2.sbatch)
 
 echo "Job-Array. ID: ${arr1id}"
 
