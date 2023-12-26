@@ -17,11 +17,9 @@ pars["TRIAL"]="${TRIAL[@]}"
 pars["FOLDER_SUBSTRINGS"]="${FOLDER_SUBSTRINGS[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 
-for KEY in "${!pars[@]}"; do
-    printf "%s --> %s\n" "$KEY" "${pars[$KEY]}"
-done | tee $(pwd)/pars.txt
-
-cat $(pwd)/pars.txt
+for key in "${!pars[@]}"; do
+  printf '%s\0' "$key" "${pars[$key]}"
+done >pars.txt
 
 arr1id=$(sbatch --parsable 
 --export=DO_COPYFILES='in'\

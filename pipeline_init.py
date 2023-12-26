@@ -62,16 +62,42 @@ from paths import makepaths
 from choose_files import choose_files
 
 if len(sys.argv)>1:
+
+    
   [do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
-   denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
-   recording_index, file_matching_style] = \
+  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
+  recording_index, file_matching_style] = \
     parse_command_line(do_copyfiles = do_copyfiles, superfolder_name_compute = superfolder_name_compute, superfolder_name_storage = superfolder_name_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
-                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
-                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitching_session = do_stitching_session, do_extract = do_extract, 
-                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
-                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
+                      do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
+                      denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitching_session = do_stitching_session, do_extract = do_extract, 
+                      do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
+                      recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
+
+if len(sys.argv)==2: #additional option to read input from file written in bash script, should come after command line arguments 
+  print(sys.argv)
+
+  pieces = open(sys.argv[1], 'r').read().split('\0')
+  tmp = {}
+  while len(pieces) >= 2:
+      k = pieces.pop(0); v = pieces.pop(0)
+      tmp[k] = v
+
+  print(tmp)
+  print("fuk2")
+
+  for key, value in tmp.items():
+    litmp = list(tmp[key].split(" "))
+    exec(key + '=litmp')
+
+  recdates = RECDATES
+  fly = FLY
+
+  print(recdates)
+  print(fly)
 
 
+
+fuk=muk
 [pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
   makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage)
 
