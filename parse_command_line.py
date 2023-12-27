@@ -180,6 +180,8 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         print("in cluase")
         pieces = open(pars_filename, 'r').read().split('\0')
+
+        print(pieces)
         tmp = {}
         while len(pieces) >= 2:
             k = pieces.pop(0); v = pieces.pop(0)
@@ -188,6 +190,9 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         for key, value in tmp.items():
             litmp = list(tmp[key].split(" "))
             exec(key + '=litmp')
+
+        print(key)
+
 
         recdates = RECDATES
         fly = FLY
