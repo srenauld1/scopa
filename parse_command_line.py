@@ -193,13 +193,10 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             print(key)
             print(litmp)
             exec(key + '=litmp')
-            FLY=litmp
-            print('FLY')
-            print(fly)
-            print(FLY)
             print("fuk2")
 
 
+        print(locals())
         fly=FLY
         recdates=RECDATES
         trial = TRIAL
@@ -209,6 +206,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         print("inclause2")
 
 
+    
     print("parsed command line arguments for pipeline_init.py")
     print("NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
     allvars = vars(args).keys()
