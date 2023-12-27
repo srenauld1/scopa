@@ -178,6 +178,13 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     pars_filename = args.pars_filename[0]
 
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
+        
+        RECDATES = None
+        FLY = None
+        TRIAL = None
+        FOLDER_SUBSTRINGS = None
+        FILE_MATCHING_STYLE = None
+
         print("in cluase")
         pieces = open(pars_filename, 'r').read().split('\0')
 
