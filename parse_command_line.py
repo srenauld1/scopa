@@ -194,6 +194,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             print(litmp)
             locals()[key] = litmp
 
+        locals()
         fly=FLY
         recdates=RECDATES
         trial = TRIAL
