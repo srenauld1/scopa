@@ -173,9 +173,12 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     )
 
     args = CLI.parse_args()
+    print("not in cluase")
+    print(pars_filename)
+    pars_filename==['pars.txt']
 
     if pars_filename==['pars.txt']: #additional option to read input from file written in bash script, should come after command line arguments 
-
+        print("not in cluase")
         pieces = open(pars_filename[0], 'r').read().split('\0')
         tmp = {}
         while len(pieces) >= 2:
