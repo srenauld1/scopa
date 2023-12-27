@@ -7,6 +7,7 @@
 
 ##########################################################################################################################################
 
+
 superfolder_name_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
 superfolder_name_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
 do_copyfiles = '' #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
