@@ -192,8 +192,10 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             litmp = list(tmp[key].split(" "))
             print(key)
             print(litmp)
-            print("fuk")
             exec(key + '=litmp')
+            print('FLY')
+            print(fly)
+            print(FLY)
             print("fuk2")
 
 
