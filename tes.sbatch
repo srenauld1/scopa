@@ -1,14 +1,20 @@
-#!/bin/bash
-#SBATCH --time=0:15:00
-#SBATCH -p short
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=5
-#SBATCH --mem-per-cpu=3G
-#SBATCH --array=[0-2]
-#SBATCH --begin=now+10
-#SBATCH --signal=B:SIGUSR1@90
-#SBATCH --requeue
 
-cat $(pwd)/pars.txt
 
-echo $MANPATH
+pieces = open('pars.txt', 'r').read().split('\0')
+
+print(pieces)
+tmp = {}
+while len(pieces) >= 2:
+    k = pieces.pop(0); v = pieces.pop(0)
+    tmp[k] = v
+
+for key, value in tmp.items():
+    litmp = list(tmp[key].split(" "))
+    print(key)
+    print(litmp)
+    print("fuk")
+    exec(key + '=litmp')
+    print("fuk2")
+    key
+    print("fuk3")
+    

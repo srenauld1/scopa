@@ -187,6 +187,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             k = pieces.pop(0); v = pieces.pop(0)
             tmp[k] = v
 
+        print(tmp)
         for key, value in tmp.items():
             litmp = list(tmp[key].split(" "))
             print(key)
@@ -194,18 +195,19 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             print("fuk")
             exec(key + '=litmp')
             print("fuk2")
-            key
-            print("fuk3")
 
-        recdates = RECDATES
-        fly = FLY
+
+
+        fly=FLY
+        recdates=RECDATES
+        print(fly)
+        print(recdates)
+
         trial = TRIAL
         folder_substrings = FOLDER_SUBSTRINGS
         file_matching_style = FILE_MATCHING_STYLE
 
         print("inclause2")
-        print(recdates)
-        print(fly)
 
 
     print("parsed command line arguments for pipeline_init.py")
