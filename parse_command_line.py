@@ -175,49 +175,15 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     args = CLI.parse_args()
 
 
-    pars_filename = args.pars_filename[0]
-
-    if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
-        
-        RECDATES = None
-        FLY = None
-        TRIAL = None
-        FOLDER_SUBSTRINGS = None
-        FILE_MATCHING_STYLE = None
-
-        print("in cluase")
-        pieces = open(pars_filename, 'r').read().split('\0')
-
-        print(pieces)
-        tmp = {}
-        while len(pieces) >= 2:
-            k = pieces.pop(0); v = pieces.pop(0)
-            tmp[k] = v
-
-        print(tmp)
-        for key, value in tmp.items():
-            litmp = list(tmp[key].split(" "))
-            print(key)
-            print(litmp)
-            locals()[key] = litmp
-
-        print(locals())
-        fly=FLY
-        recdates=RECDATES
-        trial = TRIAL
-        folder_substrings = FOLDER_SUBSTRINGS
-        file_matching_style = FILE_MATCHING_STYLE
-
-        print("inclause2")
-
-
-    
     print("parsed command line arguments for pipeline_init.py")
     print("NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
     allvars = vars(args).keys()
     allvals = vars(args).values()
     for vi,vii in zip(allvars, allvals):
         print(vi, ' = ', vii)
+
+
+    pars_filename = args.pars_filename[0]
 
     do_copyfiles = args.do_copyfiles[0]
     superfolder_name_compute = args.superfolder_name_compute[0]
@@ -280,6 +246,42 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         recording_index = [int(ri) for ri in recording_index] #convert to int if not 'all'
 
     file_matching_style = args.file_matching_style[0] 
+
+    if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
+        
+        RECDATES = []
+        FLY = []
+        TRIAL = []
+        FOLDER_SUBSTRINGS = []
+        FILE_MATCHING_STYLE = []
+
+        pieces = open(pars_filename, 'r').read().split('\0')
+
+        print(pieces)
+        tmp = {}
+        while len(pieces) >= 2:
+            k = pieces.pop(0); v = pieces.pop(0)
+            tmp[k] = v
+
+        print(tmp)
+        for key, value in tmp.items():
+            litmp = list(tmp[key].split(" "))
+            print(key)
+            print(litmp)
+            locals()[key] = litmp
+
+        fly=FLY
+        recdates=RECDATES
+        trial = TRIAL
+        folder_substrings = FOLDER_SUBSTRINGS
+        file_matching_style = FILE_MATCHING_STYLE
+
+        print(fly)
+        print(recdates)
+        print(trial)
+        print(folder_substrings)
+        print(file_matching_style)
+
 
 
 
