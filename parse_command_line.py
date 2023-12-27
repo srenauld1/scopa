@@ -193,18 +193,15 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             print(key)
             print(litmp)
             exec(key + '=litmp')
+            FLY=litmp
             print('FLY')
             print(fly)
             print(FLY)
             print("fuk2")
 
 
-
         fly=FLY
         recdates=RECDATES
-        print(fly)
-        print(recdates)
-
         trial = TRIAL
         folder_substrings = FOLDER_SUBSTRINGS
         file_matching_style = FILE_MATCHING_STYLE
