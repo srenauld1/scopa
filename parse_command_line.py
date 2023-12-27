@@ -189,7 +189,11 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
 
         for key, value in tmp.items():
             litmp = list(tmp[key].split(" "))
+            print(key)
+            print(litmp)
             exec(key + '=litmp')
+            key
+            
 
         print(key)
 
