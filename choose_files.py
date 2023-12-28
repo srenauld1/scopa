@@ -2,7 +2,7 @@ import os
 import glob
 import numpy as np
 from read_save_metadata import read_save_metadata
-from helpers import mat2tif_carls_old_project, ordinal
+from helpers import rename_files, mat2tif_carls_old_project, ordinal
 from natsort import natsorted
 import re
 from itertools import product
@@ -87,8 +87,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
         recindstr = []
         for ri in recording_index:
             recindstr.append(ordinal(ri))
-
-        recindstr = "WILL OPERATE ON THE " + '%s' % ', '.join(map(str, recindstr)) + " FILE FROM THIS LIST"
+        recindstr = "BECAUSE OF VALUE(S) ASSIGNED TO recording_index, WILL OPERATE ON THE " + '%s' % ', '.join(map(str, recindstr)) + " FILE FROM THIS LIST"
 
     print("AFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
           "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substrings, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
@@ -119,17 +118,8 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             print("PREPARING FILE: \n" + pth_datafile)
 
             if re.search("caw846", pth_allrec) or re.search("wienecke", pth_allrec): #  if on on carl's scratch, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
-                if re.search('trial', fname) or re.search('stackraw', fname): 
-                    fname_rename = fn_prefix + '_raw_.' + fname[-3:]
-                    pth_datafile_rename = pth_fldr + '/' + fname_rename
-                    print("RENAMING FILE \n" + pth_datafile + "\n TO \n" + pth_datafile_rename)
-                    os.rename(pth_datafile, pth_datafile_rename)
-                    pth_badmat = glob.glob(pth_datafile[:-4] + '.mat', recursive=True)
-                    if pth_badmat and re.search('trial', fname):
-                        print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
-                        os.remove(pth_badmat[0])
-                    pth_datafile = pth_datafile_rename
-                    fname = fname_rename
+                if re.search('trial', fname) or re.search('stackraw', fname):
+                    [pth_datafile, fname] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr)
 
             pth_prefix = pth_fldr + '/' + fn_prefix      
 

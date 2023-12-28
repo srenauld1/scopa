@@ -1,6 +1,7 @@
 
 import numpy as np
 import glob
+import re
 from natsort import natsorted
 import fnmatch
 import os
@@ -270,6 +271,22 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
         if countz != dims_pre_denoise[1]:
             raise Exception("more or less than one slice present")
 
+
+def rename_files(pth_datafile, fname, fn_prefix, pth_fldr):
+
+    fname_rename = fn_prefix + '_raw_.' + fname[-3:]
+    pth_datafile_rename = pth_fldr + '/' + fname_rename
+    print("RENAMING FILE \n" + pth_datafile + "\n TO \n" + pth_datafile_rename)
+    os.rename(pth_datafile, pth_datafile_rename) 
+    
+    pth_badmat = glob.glob(pth_datafile[:-4] + '.mat', recursive=True) #remove any mat files from old filename pattern
+    if pth_badmat and re.search('trial', fname):
+        print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
+        os.remove(pth_badmat[0])
+    pth_datafile = pth_datafile_rename
+    fname = fname_rename
+
+    return (pth_datafile, fname)
 
 def mat2tif_carls_old_project(pth_datafile):
 

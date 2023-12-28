@@ -6,8 +6,11 @@ import sys
 
 def makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage):
 
-    print(sys.executable)
+    print("sys.executable returns: \n" + sys.executable)
+    
     env_path = sys.path[0]
+
+    print("sys.path[0] returns: \n" + env_path)
 
 
     in_colab = 'google.colab' in sys.modules
@@ -40,5 +43,8 @@ def makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage):
         pth_allrec = pth_allrec_storage
     else:
         pth_allrec = pth_allrec_compute
+    
+    print("pth_allrec_storage is : \n" + pth_allrec_storage)
+    print("pth_allrec_compute is : \n" + pth_allrec_compute)
 
     return pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles

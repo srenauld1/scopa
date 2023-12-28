@@ -65,8 +65,6 @@ from paths import makepaths
 from choose_files import choose_files
 from pathlib import Path
 
-
-sys.argv
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
