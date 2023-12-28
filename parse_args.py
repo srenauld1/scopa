@@ -3,6 +3,36 @@ import argparse
 from ast import literal_eval
 
 
+class parse_pars_file():
+    def __init__(self, pars_filename):
+
+        print("inthesdhit")
+                          
+        # RECDATES = []
+        # FLY = []
+        # TRIAL = []
+        # FOLDER_SUBSTRINGS = []
+        # FILE_MATCHING_STYLE = []
+
+
+        pieces = open(pars_filename, 'r').read().split('\0')
+
+        print(pieces)
+        tmp = {}
+        while len(pieces) >= 2:
+            k = pieces.pop(0); v = pieces.pop(0)
+            tmp[k] = v
+
+        print(tmp)
+        for key, value in tmp.items():
+            litmp = list(tmp[key].split(" "))
+            print(key)
+            print(litmp)
+            exec('self.' + key + '=litmp')
+            print(self)
+
+    
+
 def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings, do_cropping_session, recording_index, file_matching_style):
@@ -249,32 +279,16 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
 
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         
-        RECDATES = []
-        FLY = []
-        TRIAL = []
-        FOLDER_SUBSTRINGS = []
-        FILE_MATCHING_STYLE = []
+        filepars = parse_pars_file(pars_filename)
+        print(filepars)
+        print(filepars.FLY)
 
-        pieces = open(pars_filename, 'r').read().split('\0')
-
-        print(pieces)
-        tmp = {}
-        while len(pieces) >= 2:
-            k = pieces.pop(0); v = pieces.pop(0)
-            tmp[k] = v
-
-        print(tmp)
-        for key, value in tmp.items():
-            litmp = list(tmp[key].split(" "))
-            print(key)
-            print(litmp)
-            locals()[key] = litmp
-
-        fly=FLY
-        recdates=RECDATES
-        trial = TRIAL
-        folder_substrings = FOLDER_SUBSTRINGS
-        file_matching_style = FILE_MATCHING_STYLE
+        print(locals())
+        fly=filepars.FLY
+        recdates=filepars.RECDATES
+        trial = filepars.TRIAL
+        folder_substrings = filepars.FOLDER_SUBSTRINGS
+        file_matching_style = filepars.FILE_MATCHING_STYLE
 
         print(fly)
         print(recdates)
@@ -282,8 +296,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         print(folder_substrings)
         print(file_matching_style)
 
-
-
+    
 
     return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 

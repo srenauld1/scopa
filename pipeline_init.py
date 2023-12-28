@@ -59,7 +59,7 @@ cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 import sys
 import os
 import shutil 
-from parse_command_line import parse_command_line
+from parse_args import parse_command_line
 from paths import makepaths
 from choose_files import choose_files
 
