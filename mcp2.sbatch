@@ -5,8 +5,8 @@ echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $S
 module purge
 ml python/3.10.11
 
-if [ "$DO_COPYFILES" == 'no' ]; then
-    echo "DO_COPYFILES SET TO NO"
+if [ -z "${DO_COPYFILES}" ]; then
+    echo "DO_COPYFILES EMPTY"
     ml miniconda3/4.10.3
     source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
     conda activate caiman
