@@ -6,30 +6,16 @@ from ast import literal_eval
 class parse_pars_file():
     def __init__(self, pars_filename):
 
-        print("inthesdhit")
-                          
-        # RECDATES = []
-        # FLY = []
-        # TRIAL = []
-        # FOLDER_SUBSTRINGS = []
-        # FILE_MATCHING_STYLE = []
-
-
         pieces = open(pars_filename, 'r').read().split('\0')
 
-        print(pieces)
-        tmp = {}
+        tmpdict = {}
         while len(pieces) >= 2:
             k = pieces.pop(0); v = pieces.pop(0)
-            tmp[k] = v
+            tmpdict[k] = v
 
-        print(tmp)
-        for key, value in tmp.items():
-            litmp = list(tmp[key].split(" "))
-            print(key)
-            print(litmp)
-            exec('self.' + key + '=litmp')
-            print(self)
+        for key, value in tmpdict.items():
+            tmplist = list(tmpdict[key].split(" "))
+            exec('self.' + key + '=tmplist')
 
     
 
@@ -204,7 +190,6 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
 
     args = CLI.parse_args()
 
-
     print("parsed command line arguments for pipeline_init.py")
     print("NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
     allvars = vars(args).keys()
@@ -212,8 +197,17 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     for vi,vii in zip(allvars, allvals):
         print(vi, ' = ', vii)
 
-
     pars_filename = args.pars_filename[0]
+
+    if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
+        
+        pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
+
+        args.recdates = pars.RECDATES
+        args.fly = pars.FLY
+        args.trial = pars.TRIAL
+        args.folder_substrings = pars.FOLDER_SUBSTRINGS
+        args.file_matching_style = pars.FILE_MATCHING_STYLE
 
     do_copyfiles = args.do_copyfiles[0]
     superfolder_name_compute = args.superfolder_name_compute[0]
@@ -276,27 +270,6 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         recording_index = [int(ri) for ri in recording_index] #convert to int if not 'all'
 
     file_matching_style = args.file_matching_style[0] 
-
-    if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
-        
-        filepars = parse_pars_file(pars_filename)
-        print(filepars)
-        print(filepars.FLY)
-
-        print(locals())
-        fly=filepars.FLY
-        recdates=filepars.RECDATES
-        trial = filepars.TRIAL
-        folder_substrings = filepars.FOLDER_SUBSTRINGS
-        file_matching_style = filepars.FILE_MATCHING_STYLE
-
-        print(fly)
-        print(recdates)
-        print(trial)
-        print(folder_substrings)
-        print(file_matching_style)
-
-    
 
     return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 

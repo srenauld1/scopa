@@ -21,8 +21,9 @@ for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
 done >pars.txt
 
+DO_COPYFILES=$""
 arr1id=$(sbatch --parsable \
---export=DO_COPYFILES='in' \
+--export=DO_COPYFILES=$DO_COPYFILES \
 -p short \
 --time=0:15:00 \
 --ntasks=1 \
