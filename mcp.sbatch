@@ -5,13 +5,13 @@ echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $S
 module purge
 ml python/3.10.11
 
-if [ -z "${DO_COPYFILES}" ]; then #load virtual env if not copying files
-    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS EMPTY"
-    ml miniconda3/4.10.3
+if [ "$DO_COPYFILES" == 0 ]; then #load virtual env if not copying files
+    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+    ml miniconda3/4.10.3 
     source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
     conda activate caiman
 else #otherwise no need to load virtual env
-    echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES is set to: "$DO_COPYFILES""
+    echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 fi
 
 #run the python code, passing in arguments indirectly with pars file, and also directly

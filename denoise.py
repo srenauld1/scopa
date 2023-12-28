@@ -167,6 +167,8 @@ from deepcad.test_collection import testing_class
 
 def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project):
 
+    print("ENTERING DENOISE FUNCTION")
+    
     if carls_old_project: #if it's not my old grad school project 
         if denoise_volume:
             pretend_trial = '1' # pretend they all come from same trial

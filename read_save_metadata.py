@@ -12,6 +12,8 @@ from numpy.core.records import fromarrays
 def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
 
     mdt = {}
+    
+    print("READING METADATA")
 
     try:
         
@@ -54,7 +56,7 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
 
     except:
         
-        "WARNING: CANNOT READ METADATA, USING DEFAULTS"
+        print("WARNING: CANNOT READ METADATA, USING DEFAULTS")
         mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is 1 because old project is not volumetric 
         mdt['framerate'] = 20
         mdt['volrate'] = 20

@@ -15,6 +15,8 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
              do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, 
              denoise_volume, carls_old_project, cluster_backend, do_cluster, do_plots):
 
+    print("ENTERING REGISTRATION SCRIPT")
+
     if do_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
         cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
@@ -50,8 +52,7 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
         filename_gif = pth_tif_read[:-4] + '.gif'
         plot_gif(Y, filename_gif, indsz = slice(0, 2, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
-
-    
+ 
     if Y.shape[3]>1:
         movie_is_4d = 1
     elif Y.shape[3]==1:
@@ -66,7 +67,9 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
 
 
     if do_background_subtraction:
-                    
+
+        print("DOING LINE-BY-LINE BACKGROUND SUBTRACTION")
+      
         for zind in zindall: #for every z slice 
 
             dimorder = 'txy' 
@@ -80,7 +83,7 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
         mnmv = np.min(Y)
         Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
         Y = Y.astype('uint16')
-        print("MIN BEFORE MOTION CORRECTION AFTER BG SUB" + str(mnmv))
+        print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         
    
     if len_window_smooth_t: #if you smooth before registering (very noisy data), create another file for smoothed movie
@@ -122,10 +125,10 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
         mc = None
 
         if do_planar_registration and movie_is_4d: #for planar extraction take on z slice at a time
-            print("PLANAR registration FOR SLICE " + str(si))
+            print("DOING PLANAR registration FOR SLICE " + str(si))
             images_sliced = Y[:,:,:,si]
         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
-            print("3D registration FOR ALL SLICES")
+            print("DOING 3D registration FOR ALL SLICES")
             images_sliced = Y #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
         imwrite(pth_tif_write_tmp, images_sliced.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)

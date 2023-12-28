@@ -36,7 +36,7 @@ def makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage):
     if not os.path.exists(pth_denoising):
         os.mkdir(pth_denoising)
 
-    if do_copyfiles=='in':
+    if do_copyfiles:
         pth_allrec = pth_allrec_storage
     else:
         pth_allrec = pth_allrec_compute

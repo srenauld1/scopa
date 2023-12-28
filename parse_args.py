@@ -34,7 +34,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     CLI.add_argument(
         "--do_copyfiles",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
-        type=str,
+        type=int,
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(

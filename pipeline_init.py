@@ -10,10 +10,10 @@
 
 superfolder_name_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
 superfolder_name_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
-do_copyfiles = '' #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
+do_copyfiles = 0 #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 pars_filename = '' #skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
-recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdates = ['*', '20*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
@@ -21,7 +21,7 @@ recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop 
 
 file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
@@ -56,12 +56,15 @@ do_plots = 0 #should be 0 if running job on O2, so not a command line argument b
 do_cluster = 0 #leave as 0 because cluster isn't working (except on google colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
 
+
 import sys
 import os
 import shutil 
 from parse_args import parse_command_line
 from paths import makepaths
 from choose_files import choose_files
+from pathlib import Path
+
 
 sys.argv
 if len(sys.argv)>1:
@@ -146,22 +149,16 @@ if not do_copyfiles:
 
 for ri, _ in enumerate(pth_tif_read_all):
     
-    if do_copyfiles=='in':
-      print("copying")
-      print(pth_tif_read_all[ri])
-      print(pth_copydest)
-
+    if do_copyfiles:
+      
+      print("copying the following file: \n" + pth_tif_read_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      os.makedirs(os.path.dirname(pth_copydest), exist_ok=True)
+      Path(pth_copydest).mkdir(parents=True, exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
 
-    elif do_copyfiles=='out':
-      pth_copydest = pth_allrec_storage + pth_fldr_all[ri].split('/')[-1]
-      os.makedirs(os.path.dirname(pth_copydest), exist_ok=True)
-      shutil.copy(pth_tif_read_all[ri], pth_copydest) 
-       
     else:
-      print("doing")
+      
+      print("operating on the following file: \n" + pth_tif_read_all[ri]) 
 
       if do_register:
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 

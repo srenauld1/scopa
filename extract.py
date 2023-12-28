@@ -17,6 +17,8 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
              md, denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, 
              use_denoised, epoch_choose_denoise, region_extraction, carls_old_project, do_plots, cluster_backend, do_cluster):
 
+    print("ENTERING EXTRACT FUNCTION")
+
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
 
@@ -42,13 +44,11 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
 
         for rx in region_extraction:
             
-            print(pth_tif_read)
-            print(rx)
+            print("ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
             Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
 
-            print(Ycrop.shape)
-
+            print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(Ycrop.shape))
 
             if not do_cropping_session: #skip everything else if you're doing a cropping session
                 
@@ -64,7 +64,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
                 if len(Ycrop.shape)==3: #if it's not volumetric
                     Ycrop = Ycrop[...,np.newaxis] #add singleton 4th dim (z) so the code is more readable 
                 
-                print(Ycrop.shape)
+                print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF ORIGINALLY 3D), REGION EXTRACTION HAS SHAPE: \n" + str(Ycrop.shape))
 
                 if index_extraction_param_set == 'default':
                     index_extraction_param_set_new = ['default'] #make it iterable with brackets
@@ -74,7 +74,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
                 else: #if positive, just the one extraction param whose index matches index_extraction_param_set
                     index_extraction_param_set_new = [index_extraction_param_set]
                                 
-                print("index_extraction_param_set NEW " + str(index_extraction_param_set_new))
+                print("looping over the following index_extraction_param_set values, to index into extraction param sets " + str(index_extraction_param_set_new))
                 
                 for ii in index_extraction_param_set_new:
 
@@ -98,10 +98,10 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
                             opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                             if do_planar_extraction: #for planar extraction take on z slice at a time
-                                print("PLANAR EXTRACTION FOR SLICE " + str(si))
+                                print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + "IN REGION_EXTRACTION")
                                 images_sliced = Ycrop[:,:,:,si]
                             else: # for 3d extraction keep all z slices (for now, until implement z ranges)
-                                print("3D EXTRACTION FOR ALL SLICES")
+                                print("DOING 3D EXTRACTION FOR ALL SLICES IN REGION EXTRACTION")
                                 images_sliced = Ycrop #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
                             if do_cluster:
@@ -112,7 +112,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
                             cnm = cnm.fit(images_sliced, indices = indices_ex)
 
                             cnm.estimates.evaluate_components(images_sliced, cnm.params, dview=dview)
-                            print(('NUMGOOD ' + str(len(cnm.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm.estimates.idx_components_bad))))
+                            print(('NUM GOOD ROIS ' + str(len(cnm.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm.estimates.idx_components_bad))))
                             
                             cnm.estimates.select_components(use_object=True, save_discarded_components=False)
 
@@ -124,7 +124,7 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
                             cnm2 = cnm.refit(images_sliced)
 
                             cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
-                            print(('REFIT: NUMGOOD ' + str(len(cnm2.estimates.idx_components)) + ' NUMBAD ' + str(len(cnm2.estimates.idx_components_bad))))
+                            print(('AFTER REFIT: NUM GOOD ROIS ' + str(len(cnm2.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm2.estimates.idx_components_bad))))
                             
                             cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=False) #use_residuals=False to not include residuals in traces for dff computation (default)
                             dff_residfalse = cnm2.estimates.F_dff 

@@ -6,11 +6,13 @@ import fnmatch
 import os
 from tifffile.tifffile import imwrite, imread
 import shutil
+import mat73
 from vis import im_montage, plot_gif
 
 
 def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
+  print("stitching together separately registered z slices, and writing as one tif")
 
   pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_z_.tif'))
 
@@ -29,7 +31,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
             raise Exception("reg have operated on uint16 for this pipeline, or adjust it")
       print(Ynew.dtype)
       print(sliceind)
-      print("each slice min should not be zero, this slice min is:" + str(np.min(Ynew)))
+      print("all slice min maybe (??) not be zero, this slice min is:" + str(np.min(Ynew)))
       Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
 
   if countz != dims[1]:
@@ -60,6 +62,8 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
 
 def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims, denoise_volume):
+
+    print("separating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
 
     Y = imread(pth_input)
     Y = Y.reshape(dims)
@@ -93,6 +97,8 @@ def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims
 
 
 def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, pth_denoising, dims, denoise_volume):
+
+    print("preparing carl's old data for deepcad denoising, if you're not carl there is a problem")
 
     Y = imread(pth_input)
     Y = Y.reshape(dims)
@@ -133,6 +139,8 @@ def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, p
 
 
 def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):
+
+  print("stitching together denoised tifs (each tif a single z slice), and writing as one tif")
 
   if denoise_volume == 1:
     pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_all/')))
@@ -190,6 +198,8 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
 
 
 def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):
+
+  print("writing denoised tifs for carls old project, if you're not carl there's a problem")
 
   goal_trial = int(fn_prefix.split('_')[2])
   actual_z_size = 1
@@ -259,6 +269,34 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
 
         if countz != dims_pre_denoise[1]:
             raise Exception("more or less than one slice present")
+
+
+def mat2tif_carls_old_project(pth_datafile):
+
+    print("converting mat to tif for carls old project, if you're not carl there's a problem")
+    
+    if os.path.isfile(pth_datafile[:-4] + '.tif'):
+        raise Exception("ERROR: YOU SHOULD ONLY BE IN THIS FUNCTION IF THERE IS NO TIF")
+    mat = mat73.loadmat(pth_datafile)
+    Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
+    mnmv = np.min(Y)
+    Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+    print("MIN OF STACKRAW_PMC MAT FILE " + str(mnmv))
+    Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
+    pth_datafile = pth_datafile[:-4] + '.tif'
+    imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
+    mat_file_shape = Y.shape
+    
+    return mat_file_shape
+            
+
+def ordinal(n: int):
+    if 11 <= (n % 100) <= 13:
+        suffix = 'th'
+    else:
+        suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+    return str(n) + suffix
+
 
 
 def tracefunc(frame, event, arg, indent=[0]): # can get line number with frame.f_lineno
