@@ -190,13 +190,6 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
 
     args = CLI.parse_args()
 
-    print("parsed command line arguments for pipeline_init.py")
-    print("NOTE FOR VARIABLES BELOW OUTERMOST ENCLOSING LIST WILL BE REMOVED SO THAT ALL ARE SINGLE OR LIST, NOT LIST OF LIST")
-    allvars = vars(args).keys()
-    allvals = vars(args).values()
-    for vi,vii in zip(allvars, allvals):
-        print(vi, ' = ', vii)
-
     pars_filename = args.pars_filename[0]
 
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
@@ -270,6 +263,12 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         recording_index = [int(ri) for ri in recording_index] #convert to int if not 'all'
 
     file_matching_style = args.file_matching_style[0] 
+
+    print("parsed these command line and/or param file arguments")
+
+    localscopy = locals().copy()
+    [print(k,'=',v) for k,v in localscopy.items() if not k.startswith('_') and k!='localscopy' and k!='In' and k!='Out' and not hasattr(v, '__call__')]
+
 
     return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
