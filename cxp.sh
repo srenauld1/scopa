@@ -3,9 +3,9 @@
 #JOBARRAYIND=( 0,2,7 ) #this is the syntax for non-sequential
 JOBARRAYIND=( 0-2 ) #this is the syntax for sequential
 
-RECDATES=('20*' '30*' '*')
+RECDATES=('22*' '2023061')
 FLY=('*' '2')
-TRIAL=('*' '99')
+TRIAL=('*')
 FOLDER_SUBSTRINGS=('*')
 FILE_MATCHING_STYLE=('any')
 
@@ -21,7 +21,7 @@ for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
 done >pars.txt
 
-DO_COPYFILES=$""
+DO_COPYFILES='' 
 arr1id=$(sbatch --parsable \
 --export=DO_COPYFILES=$DO_COPYFILES \
 -p short \

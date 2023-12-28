@@ -267,7 +267,9 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     print("parsed these command line and/or param file arguments")
 
     localscopy = locals().copy()
-    [print(k,'=',v) for k,v in localscopy.items() if not k.startswith('_') and k!='localscopy' and k!='In' and k!='Out' and not hasattr(v, '__call__')]
+    for k,v in localscopy.items():
+        if not k.startswith('_') and k!='localscopy' and k!='CLI' and k!='args' and k!='pars' and k!='In' and k!='Out' and not hasattr(v, '__call__'):
+            print(k,'=',v)
 
 
     return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
