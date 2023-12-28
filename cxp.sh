@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #JOBARRAYIND=( 0,2,7 ) #this is the syntax for non-sequential
-JOBARRAYIND=( 0-2 ) #this is the syntax for sequential #
+JOBARRAYIND=( 0-2 ) #this is the syntax for sequential ##
 
 RECDATES=('22*' '2023061')
 FLY=('*' '2')
