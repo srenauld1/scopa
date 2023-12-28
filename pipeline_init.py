@@ -21,7 +21,7 @@ recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop 
 
 file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
@@ -75,7 +75,6 @@ if len(sys.argv)>1:
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
 
-fuk=muk
 
 [pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
   makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage)
@@ -165,6 +164,7 @@ for ri, _ in enumerate(pth_tif_read_all):
       print("doing")
 
       if do_register:
+          fuk-muk
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
           cluster_backend, do_cluster, do_plots)
