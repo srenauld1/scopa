@@ -150,7 +150,7 @@ for ri, _ in enumerate(pth_tif_read_all):
       print("copying")
       print(pth_tif_read_all[ri])
       print(pth_copydest)
-      fuk=muk
+
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
       os.makedirs(os.path.dirname(pth_copydest), exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
@@ -164,7 +164,6 @@ for ri, _ in enumerate(pth_tif_read_all):
       print("doing")
 
       if do_register:
-          fuk-muk
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
           cluster_backend, do_cluster, do_plots)

@@ -65,6 +65,8 @@
  BUT, i've been unable to get the denoising working in the ipynb version of the pipeline on O2 (it does work on google colab)
 
 
+ Once a job dependency fails due to the termination state of a preceding job, the dependent job will never be run, even if the preceding job is requeued and has a different termination state in a subsequent execution.
+
  #########
 
  the recommended workflow is:
