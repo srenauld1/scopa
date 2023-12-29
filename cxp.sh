@@ -16,7 +16,7 @@ do_stitch=1
 do_extract=1
 
 #sbatch_job_name_sequence is list of sbatch jobs run by cxp.sh (space delimited, enclosed by parentheses, no quotes required)
-declare -a sbatch_job_name_sequence=() 
+sbatch_job_name_sequence=() 
 
 if [ "$do_register" == 1 ]; then
     sbatch_job_name_sequence+=(mcp.sbatch)
