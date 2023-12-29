@@ -10,7 +10,29 @@
 
 echo "SHELL IS " $SHELL
 
-declare -a sbatch_job_name_sequence=(mcp.sbatch mcp2.sbatch) #list of sbatch jobs run by cxp.sh (space delimited, enclosed by parentheses, no quotes required)
+do_register=1
+do_denoise=1
+do_stitch=1
+do_extract=1
+
+#sbatch_job_name_sequence is list of sbatch jobs run by cxp.sh (space delimited, enclosed by parentheses, no quotes required)
+declare -a sbatch_job_name_sequence=() 
+
+if [ "$do_register" == 1 ]; then
+    sbatch_job_name_sequence+=(mcp.sbatch)
+fi
+if [ "$do_denoise" == 1 ]; then
+    sbatch_job_name_sequence+=(dnp.sbatch)
+fi
+if [ "$do_stitch" == 1 ]; then
+    sbatch_job_name_sequence+=(stc.sbatch)
+fi
+if [ "$do_extract" == 1 ]; then
+    sbatch_job_name_sequence+=(exp.sbatch)
+fi
+
+echo "WILL SUBMIT THE FOLLOWING SBATCH JOBS $sbatch_job_name_sequence"
+
 do_copyfiles_sequence=(1 0) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
 PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
@@ -61,7 +83,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         if [ $DO_COPYFILES == 0 ]; then
             partition_str=short #use short partition for everything but copying files (when do_copyfiles==0)
         else 
-            partition_str=long #use transfer partition if do_copyfiles==1
+            partition_str=gpu_quad #use transfer partition if do_copyfiles==1
         fi
 
         #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
