@@ -46,13 +46,13 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
     if [ "$sbatch_job_name" == 'mcp.sbatch' ]; then
         echo "mcp"
-    elif [ "$sbatch_job_name" == 'dnp.sbatch' ]; then 
-        echo "dnp"
+    elif [ "$sbatch_job_name" == 'mcp2.sbatch' ]; then 
+        echo "mcp2"
     fi
 
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
 
-        if [ $loopcount == 1 ]; then #copy the requested files from storage server to O2 
+        if [ $loopcount == 0 ]; then #copy the requested files from storage server to O2 
             depstr="singleton" #on first loop have no dependency ('singleton' will do nothing because --name param is not specified)
         else #do analysis on files moved in first loop (when do_copyfiles==1)
             depstr="aftercorr:${!tmpid}" #if not do_copyfiles, the job depends on the previous job  
