@@ -25,14 +25,9 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
       print(f)
       sliceind = int(f.split('_')[-3])
       Ynew = imread(f)
-      if Ynew.dtype!='uint16':
-          print("warning, converting type from " + str(Ynew.dtype))
-          Ynew = Ynew.astype('uint16')
-          if np.min(Y)<0 or np.max(Y) > 65535:
-            raise Exception("reg have operated on uint16 for this pipeline, or adjust it")
       print(Ynew.dtype)
       print(sliceind)
-      print("all slice min maybe (??) not be zero, this slice min is:" + str(np.min(Ynew)))
+      print("not every slice min should be zero (probably), this slice min is:" + str(np.min(Ynew)))
       Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
 
   if countz != dims[1]:
@@ -40,6 +35,8 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
   mnmv = np.min(Y)
   Y = Y - mnmv #make nonnegative before writing to uint16
+  if np.max(Y) > 65535:
+     raise Exception("clipping will occur when converting to uint16")
   print("MIN AFTER REGISTRATION " + str(mnmv))
   
   Y = Y.astype('uint16')
@@ -50,7 +47,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
       mxmv = np.max(Y)
       #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
       filename_gif = pth_tif_reg[:-4] + '.gif'
-      plot_gif(Y, filename_gif, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+      plot_gif(np.transpose(Y, (0,3,2,1)), filename_gif, indsz = slice(17, 18, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
 
   Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx

@@ -28,8 +28,8 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #matches within folders containing FOLDER_SUBSTRINGS ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
-RECDATES=('22*' '2023061*')
-FLY=('*')
+RECDATES=('20230619')
+FLY=('1')
 TRIAL=('*')
 FOLDER_SUBSTRINGS=('*') #in case RECDATES, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATES, FLY, TRIAL, FOLDER_SUBSTRINGS, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
@@ -76,31 +76,43 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         if [ $DO_COPYFILES == 1 ]; then
             echo "COPYING FILES IN SBATCH JOB "$sbatch_job_name""
-            partition_str=short #use short partition for everything but copying files (when do_copyfiles==0)        
-            time_str=00:15:00
-            mem_str=10G
+            partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
+            time_str=00:20:00
+            ntasks_str=1
+            cpus_per_task_str=1
+            mem_per_cpu_str=1G
         else
             echo "RUNNING SBATCH JOB "$sbatch_job_name""
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:05:00
-                mem_str=12G
+                time_str=00:25:00
+                ntasks_str=1
+                cpus_per_task_str=1
+                mem_per_cpu_str=10G
             elif [ "$sbatch_job_name" == mcp2.sbatch ]; then 
-                partition_str=gpu_quad #use transfer partition if do_copyfiles==1
-                time_str=00:04:00
-                mem_str=13G
+                partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=00:14:00
+                ntasks_str=1
+                cpus_per_task_str=1
+                mem_per_cpu_str=11G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
                 time_str=00:15:00
-                mem_str=10G
+                ntasks_str=1
+                cpus_per_task_str=1
+                mem_per_cpu_str=10G
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:15:00
-                mem_str=10G
+                ntasks_str=1
+                cpus_per_task_str=1
+                mem_per_cpu_str=11G
             elif [ "$sbatch_job_name" == exp.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:15:00
-                mem_str=10G
+                ntasks_str=1
+                cpus_per_task_str=1
+                mem_per_cpu_str=10G
             fi
         fi
 
@@ -111,9 +123,9 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --dependency="$dep_str" \
         -p "$partition_str" \
         --time="$time_str" \
-        --ntasks=1 \
-        --cpus-per-task=1 \
-        --mem-per-cpu="$mem_str" \
+        --ntasks="$ntasks_str" \
+        --cpus-per-task="$cpus_per_task_str" \
+        --mem-per-cpu="$mem_per_cpu_str" \
         "$sbatch_job_name") 
 
         declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification

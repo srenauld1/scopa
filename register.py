@@ -164,6 +164,7 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
         
         if do_planar_registration and movie_is_4d:
             pth_write = pth_tif_write[:-4] + str(si) + '_z_.tif'
+            imwrite(pth_write, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
         else:
             pth_write = pth_tif_write
             mnmv = np.min(Ynew)
@@ -175,10 +176,10 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
                 filename_gif = pth_write[:-4] + '.gif'
                 plot_gif(Ynew, filename_gif, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
-        if len(Ynew.shape)==3:# or Y.shape[3]==1:
-            imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-        else:
-            imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+            if len(Ynew.shape)==3:# or Y.shape[3]==1:
+                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+            else:
+                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
         countz = countz + 1
 
