@@ -10,9 +10,9 @@
 
 echo "SHELL IS " $SHELL
 
-declare -a sbatch_job_name_sequence=('mcp.sbatch' 'mcp2.sbatch') #list of sbatch jobs run by cxp.sh (space delimited, single-quoted, enclosed by parentheses)
+declare -a sbatch_job_name_sequence=(mcp.sbatch mcp2.sbatch) #list of sbatch jobs run by cxp.sh (space delimited, single-quoted, enclosed by parentheses)
 do_copyfiles_sequence=(1 0) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
-PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
+PARS_FILENAME=pars.txt #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 jobarrayind=( 0-2 ) #indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices
 #jobarrayind=( 0,2,7 ) #and this is the syntax for non-sequential indices
@@ -44,10 +44,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
     
     echo "RUNNING "$sbatch_job_name""
 
-    if [ "$sbatch_job_name" == 'mcp.sbatch' ]; then
-        echo "mcp"
-    elif [ "$sbatch_job_name" == 'mcp2.sbatch' ]; then 
-        echo "mcp2"
+    if [ "$sbatch_job_name" == mcp.sbatch ]; then
+        echo mcp
+    elif [ "$sbatch_job_name" == mcp2.sbatch ]; then 
+        echo mcp2
     fi
 
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
