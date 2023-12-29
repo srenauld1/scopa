@@ -3,25 +3,23 @@
 
 ##########################################################################################################################################
 
-#SEE README FILE FOR DOCUMENTATION ()
+#SEE README.md FOR MORE DOCUMENTATION
 
 ##########################################################################################################################################
 
-
-superfolder_name_compute = 'stacks' #string, single element not in list, the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
-superfolder_name_storage = 'wienecke/stacks' #string, single element not in list, THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
+path_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks' #string, single element not in list, the full path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster 
 do_copyfiles = 0 #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
-recdates = ['*', '20*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
+recdates = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['2'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
@@ -60,24 +58,23 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 import sys
 import shutil 
 from parse_args import parse_command_line
-from paths import makepaths
+from paths_scopa import makepaths
 from choose_files import choose_files
 from pathlib import Path
 
 if len(sys.argv)>1:
     
-  [pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
+  [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
   denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
-    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, superfolder_name_compute = superfolder_name_compute, superfolder_name_storage = superfolder_name_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, path_storage = path_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitching_session = do_stitching_session, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = \
-  makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage)
+[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = makepaths(do_copyfiles, path_storage)
 
 
 if do_stitching_session or do_cropping_session:

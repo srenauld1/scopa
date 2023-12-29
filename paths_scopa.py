@@ -2,8 +2,6 @@
 import re
 import os
 import sys
-from pathlib import Path
-
 
 
 def makepaths(do_copyfiles, path_storage):
@@ -28,11 +26,11 @@ def makepaths(do_copyfiles, path_storage):
     superfolder_name_compute = path_storage.split('/')[-1] #for compute, mirror the last folder on path_storage
     pth_allrec_compute = pth_super_compute + superfolder_name_compute + '/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_allrec_compute):
-        Path(pth_allrec_compute).mkdir(parents=True, exist_ok=True)
+        os.mkdir(pth_allrec_compute)
 
     pth_denoising = pth_super_compute + 'denoising/' #data folder in scopa is ignored (see .gitignore file with ls -a)
     if not os.path.exists(pth_denoising):
-        Path(pth_denoising).mkdir(parents=True, exist_ok=True)
+        os.mkdir(pth_denoising)
 
     if do_copyfiles:
         pth_allrec = path_storage

@@ -19,7 +19,7 @@ class parse_pars_file():
 
     
 
-def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings, do_cropping_session, recording_index, file_matching_style):
     
@@ -38,16 +38,10 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--superfolder_name_compute",  # name on the CLI - drop the `--` for positional/required parameters
+        "--path_storage",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[superfolder_name_compute],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--superfolder_name_storage",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=str,
-        default=[superfolder_name_storage],  # default if nothing is provided
+        default=[path_storage],  # default if nothing is provided
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
@@ -203,8 +197,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
         args.file_matching_style = pars.FILE_MATCHING_STYLE
 
     do_copyfiles = args.do_copyfiles[0]
-    superfolder_name_compute = args.superfolder_name_compute[0]
-    superfolder_name_storage = args.superfolder_name_storage[0] 
+    path_storage = args.path_storage[0] 
     
     index_extraction_param_set = args.index_extraction_param_set[0] 
     if index_extraction_param_set != 'default':
@@ -269,7 +262,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
             print(k,'=',v)
 
 
-    return (pars_filename, do_copyfiles, superfolder_name_compute, superfolder_name_storage, index_extraction_param_set, region_extraction, 
+    return (pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
