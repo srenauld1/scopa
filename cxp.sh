@@ -53,16 +53,22 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
 
         if [ $loopcount == 0 ]; then #on the first loop, there is no job dependency ('singleton' will do nothing because --name param is not specified)
-            depstr="singleton"
+            dep_str='singleton'
         else #on subsequent loops, use dependencies 
-            depstr="aftercorr:${!tmpid}" #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
+            dep_str='aftercorr:${!tmpid}' #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
+        fi
+
+        if [ $DO_COPYFILES == 0 ]; then
+            partition_str='short' #use short partition for everything but copying files (when do_copyfiles==0)
+        else 
+            partition_str='transfer' #use transfer partition if do_copyfiles==1
         fi
 
         #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
         --export=DO_COPYFILES="$DO_COPYFILES",PARS_FILENAME="$PARS_FILENAME" \
-        --dependency="$depstr" \
-        -p short \
+        --dependency="$dep_str" \
+        -p "$partition_str" \
         --time=0:15:00 \
         --ntasks=1 \
         --cpus-per-task=1 \
