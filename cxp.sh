@@ -22,11 +22,11 @@ jobarrayind=( 0-2 ) #indices for parallel runs (using slurm job array), specifie
 #matches within folders containing FOLDER_SUBSTRINGS ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES 
-RECDATES=('22*' '2023061*')
-FLY=('*')
-TRIAL=('*')
-FOLDER_SUBSTRINGS=('*') #in case RECDATES, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
-FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATES, FLY, TRIAL, FOLDER_SUBSTRINGS, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
+RECDATES=(22* 2023061*)
+FLY=(*)
+TRIAL=(*)
+FOLDER_SUBSTRINGS=(*) #in case RECDATES, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
+FILE_MATCHING_STYLE=(any) #'any' will match any combination of elements from RECDATES, FLY, TRIAL, FOLDER_SUBSTRINGS, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 declare -A pars #put common input args into associative array called pars (purpose is to group them to be written txt)
 pars["RECDATES"]="${RECDATES[@]}"
