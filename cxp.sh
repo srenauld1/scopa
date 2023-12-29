@@ -107,13 +107,13 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         #run the sbatch file (sbatch_job_name), using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
         --export=DO_COPYFILES="$DO_COPYFILES",PARS_FILENAME="$PARS_FILENAME" \
+        --array=[$jobarrayind] \
         --dependency="$dep_str" \
         -p "$partition_str" \
         --time="$time_str" \
         --ntasks=1 \
         --cpus-per-task=1 \
         --mem-per-cpu="$mem_str" \
-        --array=[$jobarrayind] \
         "$sbatch_job_name") 
 
         declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
