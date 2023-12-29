@@ -51,7 +51,7 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*",  # 0 or more values expected => creates a list
+        nargs=1,  # 0 or more values expected => creates a list
         type=str,
         default=[index_extraction_param_set],  # default if nothing is provided
     )
@@ -206,12 +206,9 @@ def parse_command_line(pars_filename, do_copyfiles, superfolder_name_compute, su
     superfolder_name_compute = args.superfolder_name_compute[0]
     superfolder_name_storage = args.superfolder_name_storage[0] 
     
-    if isinstance(args.index_extraction_param_set[0], list):
-        index_extraction_param_set = args.index_extraction_param_set[0] #keep as list
-    else:
-        index_extraction_param_set = args.index_extraction_param_set #keep as list
-    if index_extraction_param_set != ['default']:
-        index_extraction_param_set = [int(ri) for ri in index_extraction_param_set] #convert to int if not 'default'
+    index_extraction_param_set = args.index_extraction_param_set[0] 
+    if index_extraction_param_set != 'default':
+        index_extraction_param_set = int(index_extraction_param_set) #convert to int if not 'default'
 
     if isinstance(args.region_extraction[0], list):
         region_extraction = args.region_extraction[0] #keep as list
