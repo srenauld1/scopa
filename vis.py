@@ -34,15 +34,15 @@ def im_montage(images, vmin=None, vmax=None):
 
 def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst = None):
 
-
+    if indst==None:
+        indst = slice(0, data.shape[0], 1) 
     if indsx==None:
         indsx = slice(0, data.shape[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
     if indsy==None:
         indsy = slice(0, data.shape[2], 1) 
-    if indsz==None:
-        indsz = slice(0, data.shape[3], 1) 
-    if indst==None:
-        indst = slice(0, data.shape[0], 1) 
+    if len(data.shape)==4:
+        if indsz==None:
+            indsz = slice(0, data.shape[3], 1) 
 
     if len(data.shape)==4:
         data = data[indst,indsx,indsy,indsz]
@@ -56,7 +56,7 @@ def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst
     mnmv = np.min(data)
     mxmv = np.max(data)
     
-    matplotlib.use("Agg")
+    #matplotlib.use("Agg")
 
     def update_im(num, data, img):
         img.set_data(data[num,:,:])
