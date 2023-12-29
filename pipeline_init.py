@@ -21,7 +21,7 @@ recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop 
 
 file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
