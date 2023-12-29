@@ -34,6 +34,8 @@ def im_montage(images, vmin=None, vmax=None):
 
 def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst = None):
 
+    #input movie "data" should be in order txyz if 4d, or txy if 3d
+
     if indst==None:
         indst = slice(0, data.shape[0], 1) 
     if indsx==None:
@@ -52,10 +54,12 @@ def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst
         data = data[indst,indsx,indsy]
         data = np.transpose(data, (0, 2, 1)) #put in order (tz) y x
 
-    
+
+    data = data - np.min(data)
+
     mnmv = np.min(data)
     mxmv = np.max(data)
-    
+
     #matplotlib.use("Agg")
 
     def update_im(num, data, img):
