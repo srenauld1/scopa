@@ -22,13 +22,13 @@ if [ "$do_register" == 1 ]; then
     sbatch_job_name_sequence+=(mcp.sbatch)
 fi
 if [ "$do_denoise" == 1 ]; then
-    sbatch_job_name_sequence+=(dnp.sbatch)
+    sbatch_job_name_sequence+=(mcp2.sbatch)
 fi
 if [ "$do_stitch" == 1 ]; then
-    sbatch_job_name_sequence+=(stc.sbatch)
+    sbatch_job_name_sequence+=(mcp.sbatch)
 fi
 if [ "$do_extract" == 1 ]; then
-    sbatch_job_name_sequence+=(exp.sbatch)
+    sbatch_job_name_sequence+=(mcp2.sbatch)
 fi
 
 echo "WILL SUBMIT THE FOLLOWING SBATCH JOBS $sbatch_job_name_sequence"
