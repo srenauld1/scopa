@@ -24,9 +24,6 @@ fi
 --len_window_smooth_t 0 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
-scontrol show job $SLURM_JOB_ID
-scontrol write batch_script $SLURM_JOB_ID -
-
 wait
 sleep 1m
 date

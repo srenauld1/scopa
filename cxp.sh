@@ -121,6 +121,9 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         echo "Job-Array ID: ${!tmpid}"
 
+        scontrol show job $SLURM_JOB_ID
+        scontrol write batch_script $SLURM_JOB_ID -
+
         loopcount=$((loopcount+1)) #increment loopcount
 
     done
