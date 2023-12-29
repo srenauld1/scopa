@@ -7,11 +7,10 @@
 #each sbatch file below is called in a 2-iteration for loop, the first iteration copies the required files from storage server to scratch on O2, the second operates on them, afterward files are automatically copied back to the storage server  
 #copying requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
 #see pipeline_init.py and README.md for more details 
-#
 
 echo "SHELL IS " $SHELL
 
-declare -a sbatch_job_name_sequence=('mcp.sbatch' 'dnp.sbatch') #list of sbatch jobs run by cxp.sh (space delimited, single-quoted, enclosed by parentheses)
+declare -a sbatch_job_name_sequence=('mcp.sbatch' 'mcp2.sbatch') #list of sbatch jobs run by cxp.sh (space delimited, single-quoted, enclosed by parentheses)
 do_copyfiles_sequence=(1 0) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
 PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
@@ -54,15 +53,15 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
 
         if [ $loopcount == 0 ]; then #on the first loop, there is no job dependency ('singleton' will do nothing because --name param is not specified)
-            dep_str='singleton'
+            dep_str=singleton
         else #on subsequent loops, use dependencies 
-            dep_str='aftercorr:${!tmpid}' #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
+            dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
         if [ $DO_COPYFILES == 0 ]; then
-            partition_str='short' #use short partition for everything but copying files (when do_copyfiles==0)
+            partition_str=short #use short partition for everything but copying files (when do_copyfiles==0)
         else 
-            partition_str='transfer' #use transfer partition if do_copyfiles==1
+            partition_str=transfer #use transfer partition if do_copyfiles==1
         fi
 
         #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
