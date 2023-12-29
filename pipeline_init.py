@@ -17,7 +17,7 @@ recdates = ['*', '20*'] #list of strings, as it appears in the directory and raw
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
-recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
+recording_index = [1, 2] #'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
 file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
