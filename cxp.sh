@@ -10,7 +10,7 @@
 
 echo "SHELL IS " $SHELL
 
-declare -a sbatch_job_name_sequence=('mcp.sbatch' 'mcp2.sbatch') #list of sbatch jobs run by cxp.sh (space delimited, single-quoted, enclosed by parentheses)
+declare -a sbatch_job_name_sequence=('mcp.sbatch' 'dnp.sbatch') #list of sbatch jobs run by cxp.sh (space delimited, single-quoted, enclosed by parentheses)
 do_copyfiles_sequence=(1 0) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
 PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
@@ -52,10 +52,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
 
-        if [ $loopcount == 0 ]; then #copy the requested files from storage server to O2 
-            depstr="singleton" #on first loop have no dependency ('singleton' will do nothing because --name param is not specified)
-        else #do analysis on files moved in first loop (when do_copyfiles==1)
-            depstr="aftercorr:${!tmpid}" #if not do_copyfiles, the job depends on the previous job  
+        if [ $loopcount == 0 ]; then #on the first loop, there is no job dependency ('singleton' will do nothing because --name param is not specified)
+            depstr="singleton"
+        else #on subsequent loops, use dependencies 
+            depstr="aftercorr:${!tmpid}" #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
         #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
@@ -72,8 +72,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --array=[$jobarrayind] \
         "$sbatch_job_name") 
 
-        declare arrid_${loopcount}_dynvar=$arr_id_out
-        tmpid=arrid_${loopcount}_dynvar
+        declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
+        tmpid=arrid_${loopcount}_dynvar #assign to another var whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
 
         echo "Job-Array ID: ${!tmpid}"
 

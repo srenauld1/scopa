@@ -78,16 +78,16 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
 
     if not pth_allfiles:
         search_result_string = "NO FILES WERE FOUND"
+        recindstr = ''
     else:
         search_result_string = "THE FOLLOWING FILES WERE FOUND: \n" + '%s' % '\n'.join(map(str, pth_allfiles))
-
-    if recording_index == ['all']:
-        recindstr = "WILL OPERATE ON ALL OF THESE FILES"
-    else:
-        recindstr = []
-        for ri in recording_index:
-            recindstr.append(ordinal(ri))
-        recindstr = "BECAUSE OF VALUE(S) ASSIGNED TO recording_index, WILL OPERATE ON THE " + '%s' % ', '.join(map(str, recindstr)) + " FILE FROM THIS LIST"
+        if recording_index == ['all']:
+            recindstr = "WILL OPERATE ON ALL OF THESE FILES"
+        else:
+            recindstr = []
+            for ri in recording_index:
+                recindstr.append(ordinal(ri))
+            recindstr = "BECAUSE OF VALUE(S) ASSIGNED TO recording_index, WILL OPERATE ON THE " + '%s' % ', '.join(map(str, recindstr)) + " FILE FROM THIS LIST"
 
     print("AFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
           "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substrings, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
