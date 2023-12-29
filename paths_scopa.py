@@ -2,6 +2,7 @@
 import re
 import os
 import sys
+from pathlib import Path
 
 
 def makepaths(do_copyfiles, path_storage):
@@ -26,11 +27,11 @@ def makepaths(do_copyfiles, path_storage):
     superfolder_name_compute = path_storage.split('/')[-1] #for compute, mirror the last folder on path_storage
     pth_allrec_compute = pth_super_compute + superfolder_name_compute + '/' 
     if not os.path.exists(pth_allrec_compute):
-        os.mkdir(pth_allrec_compute)
+        Path(pth_allrec_compute).mkdir(parents=True, exist_ok=True)
 
     pth_denoising = pth_super_compute + 'denoising/' 
     if not os.path.exists(pth_denoising):
-        os.mkdir(pth_denoising)
+        Path(pth_denoising).mkdir(parents=True, exist_ok=True)
 
     if do_copyfiles:
         pth_allrec = path_storage
