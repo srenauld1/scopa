@@ -8,18 +8,18 @@
 ##########################################################################################################################################
 
 
-superfolder_name_compute = 'stacks' #the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
-superfolder_name_storage = 'wienecke/stacks' #THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
+superfolder_name_compute = 'stacks' #string, single element not in list, the name of the folder (no final slash) with your data you want analyzed by this pipeline, will be on same directory level as scopa
+superfolder_name_storage = 'wienecke/stacks' #string, single element not in list, THIS DOESN'T WORK YET . . . the partial path (no final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, appended to /n/files/Neurobio/wilsonlab, ignored if not on cluster 
 do_copyfiles = 0 #ignored on local machine, 'no' to skip, 'in' or 'out' does nothing but copy the files matching pattern (e.g. in from storage to compute server, out vice versa), empty string '' allows everything else in the pipeline to occur 
-pars_filename = '' #skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
+pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
 recdates = ['*', '20*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
-recording_index = ['all'] #'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
+recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
 
-file_matching_style = 'any' #'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
+file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
 do_register = 0 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
@@ -41,7 +41,7 @@ do_extract = 0 #caiman source extraction
 region_extraction = ['pb'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
-index_extraction_param_set = 'default' #'default' or list of string ints or ints, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
+index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
@@ -54,11 +54,10 @@ do_plots = 0 #should be 0 if running job on O2, so not a command line argument b
 # export MKL_NUM_THREADS=1 
 # export OPENBLAS_NUM_THREADS=1 
 do_cluster = 0 #leave as 0 because cluster isn't working (except on google colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
-cluster_backend = 'ipyparallel' #irrelevant if do_cluster=0
+cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant if do_cluster=0
 
 
 import sys
-import os
 import shutil 
 from parse_args import parse_command_line
 from paths import makepaths
@@ -171,4 +170,7 @@ for ri, _ in enumerate(pth_tif_read_all):
           extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_read_all[ri], pth_denoising, 
           md_all[ri], denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
           region_extraction, carls_old_project_all[ri], do_plots, cluster_backend, do_cluster)
+
+
+print("EXITING pipeline_init.py") 
 
