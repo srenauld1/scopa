@@ -81,14 +81,24 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             echo "RUNNING SBATCH JOB "$sbatch_job_name""
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=0:15:00
+                mem_str=10G
             elif [ "$sbatch_job_name" == mcp2.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
+                time_str=0:05:00
+                mem_str=15G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
+                time_str=0:15:00
+                mem_str=10G
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=0:15:00
+                mem_str=10G
             elif [ "$sbatch_job_name" == exp.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=0:15:00
+                mem_str=10G
             fi
         fi
 
@@ -97,12 +107,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --export=DO_COPYFILES="$DO_COPYFILES",PARS_FILENAME="$PARS_FILENAME" \
         --dependency="$dep_str" \
         -p "$partition_str" \
-        --time=0:15:00 \
+        --time="$time_str" \
         --ntasks=1 \
         --cpus-per-task=1 \
-        --mem-per-cpu=10G \
-        --ntasks=1 \
-        --cpus-per-task=1 \
+        --mem-per-cpu="$mem_str" \
         --array=[$jobarrayind] \
         "$sbatch_job_name") 
 
