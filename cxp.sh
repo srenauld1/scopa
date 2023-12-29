@@ -78,6 +78,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             echo "COPYING FILES IN SBATCH JOB "$sbatch_job_name""
             partition_str=short #use short partition for everything but copying files (when do_copyfiles==0)        
             time_str=00:15:00
+            mem_str=10G
         else
             echo "RUNNING SBATCH JOB "$sbatch_job_name""
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
