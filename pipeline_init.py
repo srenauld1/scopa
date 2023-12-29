@@ -80,8 +80,8 @@ if len(sys.argv)>1:
   makepaths(do_copyfiles, superfolder_name_compute, superfolder_name_storage)
 
 
-if do_stitching_session or do_cropping_session or do_copyfiles:
-  print("forcing everything to zero since do_stitching_session or do_cropping_session or do_copyfiles is true")
+if do_stitching_session or do_cropping_session:
+  print("forcing everything to zero since do_stitching_session or do_cropping_session is true")
   do_register = 0
   do_denoise = 0
   do_extract = 0
