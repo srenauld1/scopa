@@ -61,7 +61,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         if [ $DO_COPYFILES == 0 ]; then
             partition_str=short #use short partition for everything but copying files (when do_copyfiles==0)
         else 
-            partition_str=short #use transfer partition if do_copyfiles==1
+            partition_str=long #use transfer partition if do_copyfiles==1
         fi
 
         #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
