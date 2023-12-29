@@ -31,6 +31,5 @@ date
 sleep 1m
 
 scontrol show job $SLURM_JOB_ID
-scontrol write batch_script $SLURM_JOB_ID -
 
 
