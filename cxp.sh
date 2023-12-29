@@ -83,12 +83,12 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             echo "RUNNING SBATCH JOB "$sbatch_job_name""
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:15:00
-                mem_str=10G
+                time_str=00:05:00
+                mem_str=12G
             elif [ "$sbatch_job_name" == mcp2.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
-                time_str=00:05:00
-                mem_str=15G
+                time_str=00:04:00
+                mem_str=13G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
                 time_str=00:15:00
