@@ -35,7 +35,8 @@ num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model 
 
 epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)
 use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data, if 1,  
-do_stitching_session = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
+
+do_stitch = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
 
 do_extract = 0 #caiman source extraction 
 region_extraction = ['pb'] #list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
@@ -58,6 +59,7 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 
 
 import sys
+import os
 import shutil 
 from parse_args import parse_command_line
 from paths_scopa import make_paths
@@ -67,11 +69,11 @@ from pathlib import Path
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
-  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
+  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, path_storage = path_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
-                      denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitching_session = do_stitching_session, do_extract = do_extract, 
+                      denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
 
@@ -79,8 +81,8 @@ if len(sys.argv)>1:
 [pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = make_paths(do_copyfiles, path_storage)
 
 
-if do_stitching_session or do_cropping_session:
-  print("forcing everything to zero since do_stitching_session or do_cropping_session is true")
+if do_stitch or do_cropping_session:
+  print("forcing everything to zero since do_stitch or do_cropping_session is true")
   do_register = 0
   do_denoise = 0
   do_extract = 0
@@ -104,10 +106,10 @@ if not do_copyfiles:
   import numpy as np
   import cv2
   import logging
-  from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project 
+  from helpers import separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+ 
 
-
-  if do_register or do_extract or do_stitching_session or do_cropping_session:
+  if do_register or do_extract or do_stitch or do_cropping_session:
 
     try:
         cv2.setNumThreads(0) #don't think this is necessary 
@@ -142,7 +144,7 @@ if not do_copyfiles:
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
   choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
-        do_register, do_separate, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
+        do_register, do_separate, do_denoise, do_extract, do_cropping_session, do_stitch, 
         use_background_subtracted, use_denoised)
 
 
@@ -163,9 +165,8 @@ for ri, _ in enumerate(pth_tif_read_all):
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md, 
-          do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
-          cluster_backend, do_cluster, do_plots)
+          register(pth_tif_read_all[ri], pth_prefix_all[ri], md, do_planar_registration, do_background_subtraction, 
+                   bg_patch_halfwidth, len_window_smooth_t, cluster_backend, do_cluster, do_plots)
 
       if do_separate:
           if carls_old_project_all[ri]: 
@@ -176,10 +177,19 @@ for ri, _ in enumerate(pth_tif_read_all):
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
 
-      if do_extract or do_stitching_session or do_cropping_session:
+      if do_stitch: #and use_denoised
+        force_stitch = 0 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch, warning this will overwrite existing stitched denoised tif)
+        if not os.path.isfile(pth_tif_read_all[ri]) or force_stitch:
+            if carls_old_project_all[ri]: 
+                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+            else:
+                stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+
+
+      if do_extract or do_cropping_session:
 
           extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_read_all[ri], pth_denoising, 
-          md, denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
+          md, denoise_volume, do_stitch, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
           region_extraction, carls_old_project_all[ri], do_plots, cluster_backend, do_cluster)
 
 

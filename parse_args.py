@@ -29,7 +29,7 @@ class parse_pars_file():
 
 
 def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
-                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
+                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings, do_cropping_session, recording_index, file_matching_style):
     
     CLI=argparse.ArgumentParser()
@@ -125,10 +125,10 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
         default=[epoch_choose_denoise],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--do_stitching_session",  # name on the CLI - drop the `--` for positional/required parameters
+        "--do_stitch",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[do_stitching_session],  # default if nothing is provided
+        default=[do_stitch],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_cropping_session",  # name on the CLI - drop the `--` for positional/required parameters
@@ -249,7 +249,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     num_epochs_denoise = args.num_epochs_denoise[0]
     epoch_choose_denoise = args.epoch_choose_denoise[0]
-    do_stitching_session = args.do_stitching_session[0]
+    do_stitch = args.do_stitch[0]
     do_cropping_session = args.do_cropping_session[0]
     do_extract = args.do_extract[0]
     do_planar_extraction = args.do_planar_extraction[0]
@@ -291,7 +291,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
     return (pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
-            do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
+            do_stitch, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
             recdates, fly, trial, folder_substrings, recording_index, file_matching_style)
 
 

@@ -6,14 +6,15 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, tracefunc 
+from helpers import stitch_registered_z_slices, tracefunc 
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
-def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md, 
-             do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, 
-             denoise_volume, carls_old_project, cluster_backend, do_cluster, do_plots):
+def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background_subtraction, 
+             bg_patch_halfwidth, len_window_smooth_t, cluster_backend, do_cluster, do_plots):
+   
+    ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
     print("ENTERING REGISTRATION SCRIPT")
 
@@ -30,8 +31,6 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
         pth_tif_write = pth_prefix + '_cmrg_.tif'
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
-
-    ##########################   BACKGROUND SUBTRACTION AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
     Y = imread(pth_tif_read).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
     

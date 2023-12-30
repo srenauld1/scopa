@@ -167,6 +167,9 @@ from deepcad.test_collection import testing_class
 
 def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project):
 
+
+    ##########################   DEEPCAD DENOISING   ##########################
+
     dims = md['dims']
     volrate = md['volrate']
     

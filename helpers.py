@@ -52,7 +52,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
   Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx
   print(Y.shape)
-  #imwrite(pth_out, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+  #imwrite(pth_tif_reg, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
   imwrite(pth_tif_reg, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
 
   for f in pth_tif_all:
@@ -148,10 +148,12 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
         imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
-def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):
+def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_write, md, denoise_volume, denoise_epoch_choose):
 
+  #stitch together denoised slices (tyx) into original size (tzyx)
   print("stitching together denoised tifs (each tif a single z slice), and writing as one tif")
 
+  dims_pre_denoise = md['dims']
   if denoise_volume == 1:
     pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_all/')))
   else:
@@ -203,13 +205,17 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, 
   print(Y.shape)
   Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
   print(Y.shape)
-  #imwrite(pth_out, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
-  imwrite(pth_out, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+  #imwrite(pth_tif_write, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+  imwrite(pth_tif_write, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
-def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):
+def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_write, md, denoise_volume, denoise_epoch_choose):
+
+  #stitch together denoised slices (tyx) into original size (tzyx, with singleton z)
 
   print("writing denoised tifs for carls old project, if you're not carl there's a problem")
+
+  dims_pre_denoise = md['dims']
 
   goal_trial = int(fn_prefix.split('_')[2])
   actual_z_size = 1
@@ -274,7 +280,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_out, 
                 print(Y.shape)
                 Y = Y.reshape(dims_pre_denoise[0] * actual_z_size, dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
                 print(Y.shape)
-                imwrite(pth_out, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
+                imwrite(pth_tif_write, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
         if countz != dims_pre_denoise[1]:
