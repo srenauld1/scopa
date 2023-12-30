@@ -139,21 +139,22 @@ if not do_copyfiles:
 
 for ri, _ in enumerate(pth_tif_read_all):
     
-    if do_copyfiles:
-      
-      if do_copyfiles==1: #copy from storage server to O2
-        pth_copydest = pth_compute + pth_fldr_all[ri].split('/')[-1]
-        print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
-        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-        shutil.copy(pth_tif_read_all[ri], pth_copydest)
-        shutil.copy(pth_md_all[ri], pth_copydest)
-      elif do_copyfiles==2: #copy from O2 to storage server 
-        pth_copydest = pth_storage + pth_fldr_all[ri].split('/')[-1]
-        print("copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
-        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-        shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True, ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif')) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places, except don't overwrite the raw tif (which shouldn't ever be modified on O2 anyway), raw tif scopa and flyg patterns included here 
+    if do_copyfiles==1: #copy from storage server to O2
         
-    else:
+      pth_copydest = pth_compute + pth_fldr_all[ri].split('/')[-1]
+      print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
+      Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+      shutil.copy(pth_tif_read_all[ri], pth_copydest)
+      shutil.copy(pth_md_all[ri], pth_copydest)
+    
+    elif do_copyfiles==2: #copy from O2 to storage server 
+        
+      pth_copydest = pth_storage + pth_fldr_all[ri].split('/')[-1]
+      print("copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
+      Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+      shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True, ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif')) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places, except don't overwrite the raw tif (which shouldn't ever be modified on O2 anyway), raw tif scopa and flyg patterns included here 
+        
+    elif do_copyfiles==0: #compute against the data 
       
       print("operating on the following file: \n" + pth_tif_read_all[ri] + "\n loading metadata first") 
 
