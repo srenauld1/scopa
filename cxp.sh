@@ -14,6 +14,7 @@
 echo "SHELL IS " $SHELL
 
 do_register=1
+do_separate=0
 do_denoise=0
 do_stitch=0
 do_extract=0
@@ -53,6 +54,9 @@ sbatch_job_name_sequence=() #list of sbatch jobs run by cxp.sh (space delimited,
 if [ "$do_register" == 1 ]; then
     sbatch_job_name_sequence+=(mcp.sbatch)
 fi
+if [ "$do_separate" == 1 ]; then
+    sbatch_job_name_sequence+=(sep.sbatch)
+fi
 if [ "$do_denoise" == 1 ]; then
     sbatch_job_name_sequence+=(dnp.sbatch)
 fi
@@ -88,6 +92,12 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:40:00
+                ntasks_str=1
+                cpus_per_task_str=5
+                mem_per_cpu_str=10G
+            if [ "$sbatch_job_name" == sep.sbatch ]; then
+                partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=00:15:00
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=10G

@@ -7,7 +7,7 @@
 
 ##########################################################################################################################################
 
-path_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
+path_storage = '' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
 do_copyfiles = 0 #0 or 1 . . . 1 does nothing but copy the files matching pattern (e.g. from path_storage to compute folder), 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
@@ -19,12 +19,14 @@ recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all',
 
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
 
 do_background_subtraction = 0 #prior to registration, won't happen unless do_register = 1 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
+
+do_separate = 0 #write each z slice to separate tif prior to denoising, running this at some point is required for deepcad denoising to work on 4d data
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
@@ -64,11 +66,11 @@ from pathlib import Path
 
 if len(sys.argv)>1:
     
-  [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_denoise, denoise_volume, 
+  [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
   denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, path_storage = path_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
-                      do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_denoise = do_denoise, 
+                      do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitching_session = do_stitching_session, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
@@ -102,6 +104,8 @@ if not do_copyfiles:
   import numpy as np
   import cv2
   import logging
+  from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project 
+
 
   if do_register or do_extract or do_stitching_session or do_cropping_session:
 
@@ -138,7 +142,7 @@ if not do_copyfiles:
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
   choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
-        do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
+        do_register, do_separate, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
         use_background_subtracted, use_denoised)
 
 
@@ -162,6 +166,12 @@ for ri, _ in enumerate(pth_tif_read_all):
           register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md, 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
           cluster_backend, do_cluster, do_plots)
+
+      if do_separate:
+          if carls_old_project_all[ri]: 
+            separate_z_slices_for_denoising_carls_old_project(pth_tif_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume)
+          else:
+            separate_z_slices_for_denoising(pth_tif_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume)
 
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])

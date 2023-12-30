@@ -6,7 +6,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from helpers import stitch_registered_z_slices, separate_z_slices_before_denoising, separate_z_slices_before_denoising_carls_old_project, tracefunc 
+from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, tracefunc 
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
@@ -188,12 +188,3 @@ def register(pth_tif_read, fn_prefix, pth_prefix, pth_denoising, md,
     if do_planar_registration and movie_is_4d:
         stitch_registered_z_slices(pth_tif_write, md['dims'], do_plots)
 
-    # FINAL PART OF MOTION CORECTION SECTION  is to prepare files for denoising 
-    # by writing each z slice to separate tif and put them in separate folders 
-    # (since default in denoise.py is denoise_volume = 0 )
-    # if using denoise_volume = 1, just move all separate tifs into one folder (might build this if clause) 
-    # (do this cpu-intensive part outside denoise.py, which is gpu-intensive, and called with different O2 resources)
-    if carls_old_project: #if it's not my old project 
-        separate_z_slices_before_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md['dims'], denoise_volume)
-    else:
-        separate_z_slices_before_denoising(pth_tif_write, fn_prefix, pth_denoising, md['dims'], denoise_volume)

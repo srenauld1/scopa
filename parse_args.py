@@ -27,7 +27,7 @@ class parse_pars_file():
 
 
 def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
-                       do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
+                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings, do_cropping_session, recording_index, file_matching_style):
     
     CLI=argparse.ArgumentParser()
@@ -85,6 +85,12 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
         nargs=1, 
         type=int,
         default=[len_window_smooth_t],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--do_separate",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[do_separate],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
@@ -228,6 +234,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
     do_register = args.do_register[0]
     do_planar_registration = args.do_planar_registration[0]
     len_window_smooth_t = args.len_window_smooth_t[0]
+    do_separate = args.do_separate[0]
     do_denoise = args.do_denoise[0]
     denoise_volume = args.denoise_volume[0]
 
@@ -281,7 +288,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     return (pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
-            do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
+            do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitching_session, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
             recdates, fly, trial, folder_substrings, recording_index, file_matching_style)
 

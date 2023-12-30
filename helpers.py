@@ -59,11 +59,17 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
      os.remove(f)
 
 
-def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims, denoise_volume):
+def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume):
+
+    # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
+    # if using denoise_volume = 1, saves all separate tifs into one folder 
+    # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
     print("separating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
 
-    Y = imread(pth_input)
+    dims = md['dims']
+
+    Y = imread(pth_tif_read)
     Y = Y.reshape(dims)
     Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
     if Y.dtype!='uint16':
@@ -86,19 +92,25 @@ def separate_z_slices_before_denoising(pth_input, fn_prefix, pth_denoising, dims
 
         print(tifname)
         pth_trainset = pth_denoising + '/' + dnfolder #dir containing all tif files for training
-        pth_tif_pdn = pth_trainset + '/' + tifname
+        pth_tif_write = pth_trainset + '/' + tifname
         if os.path.exists(pth_trainset) and (zii==0 or denoise_volume==0): #if you're on the first zii (regardless of denoise_volume value), or for all zii if denoise_volume==0
             shutil.rmtree(pth_trainset) #REMOVE any existing training folder before training, to ensure models don't get mixed (until "resume training" functionality is written)
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
-        imwrite(pth_tif_pdn, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
+        imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
-def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, pth_denoising, dims, denoise_volume):
+def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume):
+
+    # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
+    # if using denoise_volume = 1, saves all separate tifs into one folder 
+    # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
     print("preparing carl's old data for deepcad denoising, if you're not carl there is a problem")
 
-    Y = imread(pth_input)
+    dims = md['dims']
+    
+    Y = imread(pth_tif_read)
     Y = Y.reshape(dims)
     Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
     if Y.dtype!='uint16':
@@ -125,7 +137,7 @@ def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, p
 
         print(tifname)
         pth_trainset = pth_denoising + '/' + dnfolder #dir containing all tif files for training
-        pth_tif_pdn = pth_trainset + '/' + tifname
+        pth_tif_write = pth_trainset + '/' + tifname
         
         # for old project cannot remove folder because it saves from separate runs of register        
         # if os.path.exists(pth_trainset) and (zii==0 or denoise_volume==0): #if you're on the first zii (regardless of denoise_volume value), or for all zii if denoise_volume==0
@@ -133,7 +145,7 @@ def separate_z_slices_before_denoising_carls_old_project(pth_input, fn_prefix, p
         
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
-        imwrite(pth_tif_pdn, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
+        imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
 def stitch_denoised_slices(pth_denoising, fn_prefix, pth_out, dims_pre_denoise, denoise_volume, denoise_epoch_choose):

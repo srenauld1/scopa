@@ -10,7 +10,7 @@ import collections
 
 
 def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
-                 do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
+                 do_register, do_separate, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
                  use_background_subtracted, use_denoised):
     
 
@@ -34,11 +34,11 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern
-        if do_denoise or do_stitching_session or do_extract or do_cropping_session:
+        if do_separate or do_denoise or do_stitching_session or do_extract or do_cropping_session:
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
                 fn_suffix_scopa = fn_suffix_scopa + '_bksb'
-            if use_denoised and not do_denoise:
+            if use_denoised and (do_stitching_session or do_extract or do_cropping_session):
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
         fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa
