@@ -145,8 +145,8 @@ for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles:
       
-      print("copying the following file: \n" + pth_tif_read_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
+      print("copying the following file: \n" + pth_tif_read_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
 

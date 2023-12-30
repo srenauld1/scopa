@@ -24,7 +24,7 @@ def makepaths(do_copyfiles, path_storage):
             pth_super_compute = ('/').join(env_path.split('/')[:-1]) + '/' 
 
 
-    superfolder_name_compute = path_storage.split('/')[-1] #for compute, mirror the last folder on path_storage
+    superfolder_name_compute = path_storage.split('/')[-2] #for compute, mirror the last folder on path_storage (which is -2 since path_storage ends with slash)
     pth_allrec_compute = pth_super_compute + superfolder_name_compute + '/' 
     if not os.path.exists(pth_allrec_compute):
         Path(pth_allrec_compute).mkdir(parents=True, exist_ok=True)
