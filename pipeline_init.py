@@ -11,8 +11,8 @@ path_storage = '/Users/wienecke/Documents/stacks/' #string, single element not i
 do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from path_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
-recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['1*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
+recdate = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['1*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
@@ -69,13 +69,13 @@ from pathlib import Path
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
-  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
+  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, path_storage = path_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
-                      recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
+                      recdate = recdate, fly = fly, trial = trial, folder_substrings = folder_substrings, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
 [pth_allrec_use, pth_compute, pth_storage, pth_denoising, do_copyfiles] = make_paths(do_copyfiles, path_storage)
@@ -132,7 +132,7 @@ if not do_copyfiles:
       from denoise import denoise
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
-  choose_files(pth_allrec_use, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
+  choose_files(pth_allrec_use, recdate, fly, trial, folder_substrings, recording_index, file_matching_style, 
         do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
         use_background_subtracted, use_denoised)
 

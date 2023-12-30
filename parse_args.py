@@ -30,7 +30,7 @@ class parse_pars_file():
 
 def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
-                       do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings, do_crop, recording_index, file_matching_style):
+                       do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substrings, do_crop, recording_index, file_matching_style):
     
     CLI=argparse.ArgumentParser()
 
@@ -161,10 +161,10 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
         default=[use_denoised],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--recdates",  # name on the CLI - drop the `--` for positional/required parameters
+        "--recdate",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
         type=str,
-        default=[recdates],  # default if nothing is provided
+        default=[recdate],  # default if nothing is provided
     )
     CLI.add_argument(
         "--fly",  # name on the CLI - drop the `--` for positional/required parameters
@@ -214,7 +214,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
         
         args.path_storage = pars.PATH_STORAGE
-        args.recdates = pars.RECDATES
+        args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
         args.folder_substrings = pars.FOLDER_SUBSTRINGS
@@ -257,10 +257,10 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
     do_planar_extraction = args.do_planar_extraction[0]
     use_denoised = args.use_denoised[0]
     use_background_subtracted = args.use_background_subtracted[0]
-    if isinstance(args.recdates[0], list):
-        recdates = args.recdates[0] #keep as list
+    if isinstance(args.recdate[0], list):
+        recdate = args.recdate[0] #keep as list
     else:
-        recdates = args.recdates #keep as list
+        recdate = args.recdate #keep as list
     if isinstance(args.fly[0], list):
         fly = args.fly[0] #keep as list
     else:
@@ -294,6 +294,6 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
-            recdates, fly, trial, folder_substrings, recording_index, file_matching_style)
+            recdate, fly, trial, folder_substrings, recording_index, file_matching_style)
 
 
