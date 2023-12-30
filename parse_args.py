@@ -202,8 +202,8 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         
-        parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
-        args = parse_pars_file.overwrite_args(args)
+        ppf = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
+        args = ppf.overwrite_args(args)
         # args.recdates = pars.PATH_STORAGE
         # args.recdates = pars.RECDATES
         # args.fly = pars.FLY
