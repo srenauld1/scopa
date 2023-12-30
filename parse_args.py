@@ -1,10 +1,8 @@
 
 import argparse
-from ast import literal_eval
-
 
 class parse_pars_file():
-    def __init__(self, pars_filename):
+    def __init__(self, pars_filename, args):
 
         pieces = open(pars_filename, 'r').read().split('\0')
 
@@ -16,6 +14,9 @@ class parse_pars_file():
         for key, value in tmpdict.items():
             tmplist = list(tmpdict[key].split(" "))
             exec('self.' + key + '=tmplist')
+            exec('args.' + key + '=self.' + key)
+    
+        return args
 
     
 
@@ -186,15 +187,23 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     pars_filename = args.pars_filename[0]
 
+
+    print("parsed these command line and/or param file arguments BEFORE")
+
+    localscopy = locals().copy()
+    for k,v in localscopy.items():
+        if not k.startswith('_') and k!='localscopy' and k!='CLI' and k!='args' and k!='pars' and k!='In' and k!='Out' and not hasattr(v, '__call__'):
+            print(k,'=',v)
+
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         
-        pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
+        args = parse_pars_file(pars_filename, args) #have to do it this way for exec to create a local variable 
 
-        args.recdates = pars.RECDATES
-        args.fly = pars.FLY
-        args.trial = pars.TRIAL
-        args.folder_substrings = pars.FOLDER_SUBSTRINGS
-        args.file_matching_style = pars.FILE_MATCHING_STYLE
+        # args.recdates = pars.RECDATES
+        # args.fly = pars.FLY
+        # args.trial = pars.TRIAL
+        # args.folder_substrings = pars.FOLDER_SUBSTRINGS
+        # args.file_matching_style = pars.FILE_MATCHING_STYLE
 
     do_copyfiles = args.do_copyfiles[0]
     path_storage = args.path_storage[0] 

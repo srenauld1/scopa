@@ -117,8 +117,8 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
 
             print("PREPARING FILE: \n" + pth_datafile)
 
-            if re.search("caw846", pth_allrec) or re.search("wienecke", pth_allrec): #  if on on carl's scratch, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
-                if re.search('trial', fname) or re.search('stackraw', fname):
+            if re.search("wilsonlab/wienecke", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
+                if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
                     [pth_datafile, fname] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr)
 
             pth_prefix = pth_fldr + '/' + fn_prefix      
