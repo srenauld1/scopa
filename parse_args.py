@@ -2,7 +2,8 @@
 import argparse
 
 class parse_pars_file():
-    def __init__(self, pars_filename, args):
+    
+    def __init__(self, pars_filename):
 
         pieces = open(pars_filename, 'r').read().split('\0')
 
@@ -14,8 +15,13 @@ class parse_pars_file():
         for key, value in tmpdict.items():
             tmplist = list(tmpdict[key].split(" "))
             exec('self.' + key + '=tmplist')
-            exec('args.' + key + '=self.' + key)
     
+    def overwrite_args(self, args):
+
+        for a in dir(self):
+            if hasattr(args, a): #not a.startswith('__') and not callable(getattr(self, a)):
+                exec('args.' + a + '=self.' + a)
+
         return args
 
     
@@ -187,7 +193,6 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     pars_filename = args.pars_filename[0]
 
-
     print("parsed these command line and/or param file arguments BEFORE")
 
     localscopy = locals().copy()
@@ -197,14 +202,17 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         
-        args = parse_pars_file(pars_filename, args) #have to do it this way for exec to create a local variable 
-
+        parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
+        args = parse_pars_file.overwrite_args(args)
+        # args.recdates = pars.PATH_STORAGE
         # args.recdates = pars.RECDATES
         # args.fly = pars.FLY
         # args.trial = pars.TRIAL
         # args.folder_substrings = pars.FOLDER_SUBSTRINGS
         # args.file_matching_style = pars.FILE_MATCHING_STYLE
 
+
+    ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
     do_copyfiles = args.do_copyfiles[0]
     path_storage = args.path_storage[0] 
     
