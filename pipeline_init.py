@@ -7,31 +7,6 @@
 
 ##########################################################################################################################################
 
-print("startingman")
-import fnmatch
-from natsort import natsorted
-import glob
-import os
-import shutil
-
-n_epochs = 5 
-pth_testset = '/Users/wienecke/Documents/denoising/20231120-12_*'
-epochs_choose = list(range(1,n_epochs+1)) 
-pth_pth_keep_pattern = []
-for ec in epochs_choose:
-    pth_pth_keep_pattern.append('E_' + "{:02d}".format(ec) + '_*.mat')
-pth_pth_all = natsorted(glob.glob(pth_testset + '/' + '*.mat'))  
-pth_fldr_pth = '/'.join(pth_pth_all[0].split('/')[:-1])          
-fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
-
-for pth_pth in pth_pth_all:
-    fn_pth = pth_pth.split('/')[-1]
-    if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
-        print("moving")
-        if not os.path.exists(fldr_unused_pth):
-          os.mkdir(fldr_unused_pth)
-          shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with
-
 path_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
 do_copyfiles = 0 #0 or 1 . . . 1 does nothing but copy the files matching pattern (e.g. from path_storage to compute folder), 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
