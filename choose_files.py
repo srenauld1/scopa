@@ -45,7 +45,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
         pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine, since both patterns are valid as input
 
-        if do_register: #if do_register==1 (ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
+        if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
             
             fn_suffix_flyg = '*.tif'
             if filepatspec[2]=='*':
@@ -53,6 +53,9 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             else:
                 fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_' + fn_suffix_flyg  
             pth_allfiles_flygraw = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
+            print("in flygrsw pat")
+            print(pth_allrec + '**/' + fn_pattern_flyg)
+            print(pth_allfiles_flygraw)
             pth_allfiles = pth_allfiles + pth_allfiles_flygraw #combine, since both patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
