@@ -14,7 +14,6 @@ else #load virtual env if not copying files
     conda activate caiman
 fi
 
-#run the python code, passing in arguments indirectly with pars file, and also directly
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
