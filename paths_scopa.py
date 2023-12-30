@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 
-def makepaths(do_copyfiles, path_storage):
+def make_paths(do_copyfiles, path_storage):
 
     print("sys.executable returns: \n" + sys.executable)
     

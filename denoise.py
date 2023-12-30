@@ -322,16 +322,17 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
             pth_pth_all = natsorted(glob.glob(pth_testset + '/' + '*.pth')) #paths to pth files (trained models, one for each epoch )
 
             pth_pth_keep_pattern = []
-            for eci, epoch_choose in enumerate(epochs_choose):
-                pth_pth_keep_pattern.append('E_' + "{:02d}".format(epoch_choose) + '_*.pth')
+            for ec in epochs_choose:
+                pth_pth_keep_pattern.append('E_' + "{:02d}".format(ec) + '_*.pth')
 
+            print("using pth files with the following pattern: \n" + '%s' % '\n'.join(map(str, pth_pth_keep_pattern)) + "\n because epochs_choose is \n" + '%s' % ', '.join(map(str, epochs_choose)) )
+            
             pthcheck_prev = ''
             for ppi,pth_pth in enumerate(pth_pth_all): #make sure there aren't multiple train folders before you move pth files below
                 pth_fldr_pth = '/'.join(pth_pth.split('/')[:-1])
                 if ppi>0 and pth_fldr_pth != pthcheck_prev:
-                    print(pthcheck_prev)
-                    print(pth_fldr_pth)
-                    raise Exception("multiple training folders, not allowed until resume training functionality exists")
+                    print("WARNING, FOUND AT LEAST TWO TRAINING FOLDERS \n" + pthcheck_prev + "\n" + pth_fldr_pth)
+                    raise Exception("multiple training folders are not allowed until resume training functionality exists")
                 pthcheck_prev = pth_fldr_pth
 
             fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
@@ -341,10 +342,10 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
                 if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
                     if not os.path.exists(fldr_unused_pth):
                         os.mkdir(fldr_unused_pth)
+                    print("moving the following pth file into unused_pth_files because it's not specified by epochs_choose: \n" + pth_pth)
                     shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with
 
             fldr_pth = pth_fldr_pth.split('/')[-1] #folder with all the pth files
-
 
 
             with open(pth_para, "r") as stream: #read the params from training to apply to testing

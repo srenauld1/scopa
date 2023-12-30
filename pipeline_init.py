@@ -7,6 +7,31 @@
 
 ##########################################################################################################################################
 
+print("startingman")
+import fnmatch
+from natsort import natsorted
+import glob
+import os
+import shutil
+
+n_epochs = 5 
+pth_testset = '/Users/wienecke/Documents/denoising/20231120-12_*'
+epochs_choose = list(range(1,n_epochs+1)) 
+pth_pth_keep_pattern = []
+for ec in epochs_choose:
+    pth_pth_keep_pattern.append('E_' + "{:02d}".format(ec) + '_*.mat')
+pth_pth_all = natsorted(glob.glob(pth_testset + '/' + '*.mat'))  
+pth_fldr_pth = '/'.join(pth_pth_all[0].split('/')[:-1])          
+fldr_unused_pth = pth_fldr_pth + '/' + 'unused_pth_files/' #folder for the pth files you don't want to use for testing
+
+for pth_pth in pth_pth_all:
+    fn_pth = pth_pth.split('/')[-1]
+    if not any(fnmatch.fnmatch(fn_pth, pat+'*') for pat in pth_pth_keep_pattern):
+        print("moving")
+        if not os.path.exists(fldr_unused_pth):
+          os.mkdir(fldr_unused_pth)
+          shutil.move(pth_pth, fldr_unused_pth) #move all pth files besides the ones you want to test with
+
 path_storage = '/n/files/Neurobio/wilsonlab/wienecke/stacks/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
 do_copyfiles = 0 #0 or 1 . . . 1 does nothing but copy the files matching pattern (e.g. from path_storage to compute folder), 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
@@ -58,7 +83,7 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 import sys
 import shutil 
 from parse_args import parse_command_line
-from paths_scopa import makepaths
+from paths_scopa import make_paths
 from choose_files import choose_files
 from pathlib import Path
 
@@ -74,7 +99,7 @@ if len(sys.argv)>1:
                       recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = makepaths(do_copyfiles, path_storage)
+[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = make_paths(do_copyfiles, path_storage)
 
 
 if do_stitching_session or do_cropping_session:
@@ -147,7 +172,7 @@ for ri, _ in enumerate(pth_tif_read_all):
     if do_copyfiles:
       
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      print("copying the following file: \n" + pth_tif_read_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
+      print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
       shutil.copy(pth_md_all[ri], pth_copydest)
