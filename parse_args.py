@@ -20,7 +20,9 @@ class parse_pars_file():
     def overwrite_args(self, args):
 
         for a in dir(self):
+            print(a)
             if hasattr(args, a) and not a.startswith('__') and not callable(getattr(self, a)):
+                print(a)
                 exec('args.' + a + '=self.' + a)
 
         return args
