@@ -83,7 +83,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         fi
 
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
-            echo "COPYING FILES IN SBATCH JOB "$sbatch_job_name""
+            echo "COPY FILES TYPE "$DO_COPYFILES" FROM WITHIN SBATCH JOB "$sbatch_job_name""
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
             time_str=00:20:00
             ntasks_str=1
