@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#SBATCH --gres=gpu:a100:1,vram:80G
-
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
 module purge
@@ -10,6 +8,7 @@ ml python/3.10.11
 if [ "$DO_COPYFILES" == 1 ]; then #no need to load any virtual environment for copying files 
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 else #load virtual env if not copying files
+    #SBATCH --gres=gpu:a100:1,vram:80G
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
     module load miniconda3/4.10.3
     module load gcc/9.2.0
