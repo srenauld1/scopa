@@ -53,9 +53,6 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             else:
                 fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_' + fn_suffix_flyg  
             pth_allfiles_flygraw = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
-            print("in flygrsw pat")
-            print(pth_allrec + '**/' + fn_pattern_flyg)
-            print(pth_allfiles_flygraw)
             pth_allfiles = pth_allfiles + pth_allfiles_flygraw #combine, since both patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
@@ -103,7 +100,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
     pth_fldr_all = []
     fn_prefix_all = []
     pth_prefix_all = []
-    md_all = []
+    pth_md_all = []
     carls_old_project_all = []
     countz = 0
     for pth_datafile in pth_allfiles: #loop over all found files
@@ -125,9 +122,9 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                     [pth_datafile, fname] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr)
 
             pth_prefix = pth_fldr + '/' + fn_prefix      
+            pth_md = pth_prefix + '_metadatanew_.npy'
+            pth_md_mat = pth_md[:-4] + '.mat'
 
-            pth_md_mat = pth_prefix + '_metadatanew_.mat'
-            pth_md_npy = pth_md_mat[:-4] + '.npy'
             
             mat_file_shape = None
             if int(fn_prefix.split('_')[0])>20230101:
@@ -136,22 +133,19 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 carls_old_project = 1
                 if fname[-3:]=='mat':
                     mat_file_shape = mat2tif_carls_old_project(pth_datafile)
-                    
-            
-            if os.path.isfile(pth_md_npy) and os.path.isfile(pth_md_mat):
-                md = np.load(pth_md_npy, allow_pickle='TRUE').item()
-            else:
-                md = read_save_metadata(pth_datafile, pth_md_mat, pth_md_npy, mat_file_shape = mat_file_shape)
+
+            if not os.path.isfile(pth_md) and not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
+                read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = mat_file_shape)
                 
             pth_tif_read_all.append(pth_datafile)
             pth_fldr_all.append(pth_fldr)
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
-            md_all.append(md)
+            pth_md_all.append(pth_md)
             carls_old_project_all.append(carls_old_project)
             
         
         countz = countz + 1
 
 
-    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, md_all, carls_old_project_all) 
+    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all) 

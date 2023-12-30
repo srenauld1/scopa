@@ -9,10 +9,10 @@ import numpy as np
 from numpy.core.records import fromarrays
 
 
-def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
+def read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = None):
 
     mdt = {}
-    
+
     print("READING METADATA")
 
     try:
@@ -79,10 +79,8 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_npy, mat_file_shape = None):
         names = ['numvol', 'numslice_withflyback', 'numslice', 'xpix', 'ypix', 'flyback', \
             'xfov', 'yfov', 'zwid', 'zfov', 'framerate', 'volrate' ] )
 
-    sio.savemat(pth_md, {'md': md}) #save for matlab part of pipeline 
+    sio.savemat(pth_md_mat, {'md': md}) #save for matlab part of pipeline 
     
-    with open(pth_md_npy, 'wb') as fnmd: #and save as npy file for rest of python pipeline
+    with open(pth_md, 'wb') as fnmd: #and save as npy file for rest of python pipeline
         np.save(fnmd, mdt)
-
-    return mdt
 

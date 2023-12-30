@@ -99,6 +99,7 @@ else:
 
 if not do_copyfiles:
 
+  import numpy as np
   import cv2
   import logging
 
@@ -135,7 +136,7 @@ if not do_copyfiles:
   elif do_denoise:
       from denoise import denoise
 
-[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, md_all, carls_old_project_all] = \
+[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
   choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
         do_register, do_denoise, do_extract, do_cropping_session, do_stitching_session, 
         use_background_subtracted, use_denoised)
@@ -149,23 +150,26 @@ for ri, _ in enumerate(pth_tif_read_all):
       print("copying the following file: \n" + pth_tif_read_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
+      shutil.copy(pth_md_all[ri], pth_copydest)
 
     else:
       
-      print("operating on the following file: \n" + pth_tif_read_all[ri]) 
+      print("operating on the following file: \n" + pth_tif_read_all[ri] + "\n loading metadata first") 
+
+      md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md_all[ri], 
+          register(pth_tif_read_all[ri], fn_prefix_all[ri], pth_prefix_all[ri], pth_denoising, md, 
           do_planar_registration, do_background_subtraction, bg_patch_halfwidth, len_window_smooth_t, denoise_volume, carls_old_project_all[ri], 
           cluster_backend, do_cluster, do_plots)
 
       if do_denoise:
-          denoise(pth_denoising, fn_prefix_all[ri], md_all[ri]['dims'], md_all[ri]['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
+          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
 
       if do_extract or do_stitching_session or do_cropping_session:
 
           extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_read_all[ri], pth_denoising, 
-          md_all[ri], denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
+          md, denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
           region_extraction, carls_old_project_all[ri], do_plots, cluster_backend, do_cluster)
 
 
