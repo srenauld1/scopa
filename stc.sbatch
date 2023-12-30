@@ -1,40 +1,33 @@
 #!/bin/bash
-#SBATCH --time=0:15:00
-#SBATCH -p short
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=5
-#SBATCH --mem-per-cpu=10G
-#SBATCH --array=[0-2]
-#SBATCH --begin=now+10
-#SBATCH --signal=B:SIGUSR1@90
-#SBATCH --requeue
 
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
 module purge
 ml python/3.10.11
-ml miniconda3/4.10.3
-source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-conda activate caiman
 
-if [ -z ${COPYFLAG+x} ]
-then echo "COPYFLAG is unset"
-else echo "COPYFLAG is set to '$COPYFLAG'"
-    ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
-    --do_copyfiles $COPYFLAG
+if [ "$DO_COPYFILES" == 1 ]; then #no need to load any virtual environment for copying files 
+    echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+else #load virtual env if not copying files
+    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+    ml miniconda3/4.10.3 
+    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+    conda activate caiman
 fi
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
---do_stitching_session 0 \
+--pars_filename "$PARS_FILENAME" \
+--do_copyfiles "$DO_COPYFILES" \
+--do_stitching_session 1 \
 --epoch_choose_denoise 5 \
---recdates '*' \
---fly '*' \
---trial '*' \
---folder_substrings '*' \ 
---file_matching_style 'any' \ 
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 wait
 sleep 1m
 date
 sleep 1m
+
+
+scontrol show job $SLURM_JOB_ID
+
+
+

@@ -14,8 +14,8 @@
 echo "SHELL IS " $SHELL
 
 do_register=1
-do_denoise=0
-do_stitch=0
+do_denoise=1
+do_stitch=1
 do_extract=0
 
 do_copyfiles_sequence=(1 0) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
@@ -99,8 +99,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:20:00
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=50G
+                cpus_per_task_str=5
+                mem_per_cpu_str=10G
             elif [ "$sbatch_job_name" == exp.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:40:00
