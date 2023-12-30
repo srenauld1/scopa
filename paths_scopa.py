@@ -33,9 +33,9 @@ def make_paths(do_copyfiles, path_storage):
     if not os.path.exists(pth_denoising):
         Path(pth_denoising).mkdir(parents=True, exist_ok=True)
 
-    if do_copyfiles:
+    if do_copyfiles==1: #copying into O2
         pth_allrec_use = path_storage
-    else:
+    elif do_copyfiles==0 or do_copyfiles==2: #computing, or copying out of O2, respectively
         pth_allrec_use = pth_compute
     
     print("path_storage is : \n" + path_storage)
