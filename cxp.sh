@@ -21,7 +21,7 @@ do_denoise=0
 do_stitch=0
 do_extract=0
 
-do_copyfiles_sequence=(1) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
+do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices
@@ -31,8 +31,8 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #matches within folders containing FOLDER_SUBSTRINGS ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
-PATH_STORAGE=('/n/files/Neurobio/wilsonlab/wienecke/stacks/')
-RECDATES=('20231119', '22*')
+PATH_STORAGE=('/n/files/Neurobio/wilsonlab/wienecke/stacks/') #path from which required files will be copied into scratch on O2 (last folder of PATH_STORAGE will be mirrored on your scratch folder)
+RECDATES=('20231119')
 FLY=('1', '2*')
 TRIAL=('*')
 FOLDER_SUBSTRINGS=('*') #in case RECDATES, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
@@ -82,7 +82,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
-        if [ $DO_COPYFILES == 1 ]; then
+        if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
             echo "COPYING FILES IN SBATCH JOB "$sbatch_job_name""
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
             time_str=00:20:00

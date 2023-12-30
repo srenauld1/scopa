@@ -7,15 +7,15 @@
 
 ##########################################################################################################################################
 
-path_storage = '' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
-do_copyfiles = 0 #0 or 1 . . . 1 does nothing but copy the files matching pattern (e.g. from path_storage to compute folder), 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
+path_storage = '/Users/wienecke/Documents/stacks/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
+do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from path_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
 recdates = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
+fly = ['1*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdates), if len 1 and len(recdates)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
-recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_allrec_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_allrec_compute) matches value in recording_index
+recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
@@ -44,7 +44,7 @@ do_planar_extraction = 1 #caiman source extraction for each plane independently 
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
-do_cropping_session = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
+do_crop = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
 do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
@@ -59,8 +59,8 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 
 
 import sys
-import os
-import shutil 
+import shutil
+from shutil import ignore_patterns
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
@@ -69,37 +69,26 @@ from pathlib import Path
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
-  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_cropping_session, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
+  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdates, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, path_storage = path_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
-                      recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_cropping_session = do_cropping_session, recording_index = recording_index, file_matching_style = file_matching_style)
+                      recdates = recdates, fly = fly, trial = trial, folder_substrings = folder_substrings, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec, pth_allrec_compute, pth_allrec_storage, pth_denoising, do_copyfiles] = make_paths(do_copyfiles, path_storage)
+[pth_allrec_use, pth_compute, pth_storage, pth_denoising, do_copyfiles] = make_paths(do_copyfiles, path_storage)
 
 
-if do_stitch or do_cropping_session:
-  print("forcing everything to zero since do_stitch or do_cropping_session is true")
-  do_register = 0
-  do_denoise = 0
-  do_extract = 0
+if do_register + do_separate + do_denoise + do_stitch + do_extract + do_crop > 1:
+  raise Exception ("only one of these variables can be true: do_register, do_separate, do_denoise, do_stitch, do_extract, do_crop")
 else:
   if do_denoise:
-    print("forcing do_register and do_extract and do_cluster to zero because you're trying to denoise")
-    do_register = 0
-    do_extract = 0
-    do_cluster = 0
     if denoise_volume==0 and len(denoise_slice_index)>1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all. . . IS THIS STILL TRUE?")
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range) . . . IS THIS STILL TRUE?")
-  elif do_register or do_extract:
-    print("forcing do_denoise to zero because either do_register or do_extract is true")
-    do_denoise = 0
-
 
 if not do_copyfiles:
 
@@ -109,7 +98,7 @@ if not do_copyfiles:
   from helpers import separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, stitch_denoised_slices, stitch_denoised_slices_carls_old_project
  
 
-  if do_register or do_extract or do_stitch or do_cropping_session:
+  if do_register or do_extract or do_crop:
 
     try:
         cv2.setNumThreads(0) #don't think this is necessary 
@@ -143,27 +132,32 @@ if not do_copyfiles:
       from denoise import denoise
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
-  choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
-        do_register, do_separate, do_denoise, do_extract, do_cropping_session, do_stitch, 
+  choose_files(pth_allrec_use, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
+        do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
         use_background_subtracted, use_denoised)
 
 
 for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles:
-
-      pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
-      print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
-      Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-      shutil.copy(pth_tif_read_all[ri], pth_copydest)
-      shutil.copy(pth_md_all[ri], pth_copydest)
-
+      
+      if do_copyfiles==1: #copy from storage server to O2
+        pth_copydest = pth_compute + pth_fldr_all[ri].split('/')[-1]
+        print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
+        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+        shutil.copy(pth_tif_read_all[ri], pth_copydest)
+        shutil.copy(pth_md_all[ri], pth_copydest)
+      elif do_copyfiles==2: #copy from O2 to storage server 
+        pth_copydest = pth_storage + pth_fldr_all[ri].split('/')[-1]
+        print("copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
+        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+        shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True, ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif')) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places, except don't overwrite the raw tif (which shouldn't ever be modified on O2 anyway), raw tif scopa and flyg patterns included here 
+        
     else:
       
       print("operating on the following file: \n" + pth_tif_read_all[ri] + "\n loading metadata first") 
 
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
-
 
       if do_register:
           register(pth_tif_read_all[ri], pth_prefix_all[ri], md, do_planar_registration, do_background_subtraction, 
@@ -182,19 +176,14 @@ for ri, _ in enumerate(pth_tif_read_all):
 
 
       if do_stitch: 
-        pth_tif_write = pth_tif_read_all[ri][:-4] + 'dcdn_.tif'
-        if os.path.isfile(pth_tif_write):
-           print("WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
-        else:
             if carls_old_project_all[ri]: 
-                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_write, md, denoise_volume, epoch_choose_denoise) 
+                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
             else:
-                stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_write, md, denoise_volume, epoch_choose_denoise) 
+                stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
 
-      if do_extract or do_cropping_session:
-
-          extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_cropping_session, 
+      if do_extract or do_crop:
+          extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, 
                   do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
 
 

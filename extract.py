@@ -12,7 +12,7 @@ from vis import caiman_plots_all
 from crop_fov import crop_fov
 
 
-def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_cropping_session, 
+def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, 
             do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
@@ -35,7 +35,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_croppin
 
         print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(Ycrop.shape))
 
-        if not do_cropping_session: #skip everything else if you're doing a cropping session
+        if not do_crop: #skip everything else if you're doing a cropping session
             
             pth_tif_write_tmp = pth_tif_read[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
             imwrite(pth_tif_write_tmp, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction

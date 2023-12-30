@@ -98,7 +98,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
             pth_tif_presmooth = [pth_tif_write_tmp[:-4] + 'all_presmooth_.tif']
             imwrite(pth_tif_presmooth[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
-        print("SMOOTHING DATA IN TIME BEFORE REGISTRATION")
+        print("TEMPORALLY SMOOTHING MOVIE BEFORE REGISTRATION")
 
         dimtmp_presmooth = Y.shape
         numsigma_smooth_prereg = 5.0

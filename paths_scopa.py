@@ -25,20 +25,20 @@ def make_paths(do_copyfiles, path_storage):
 
 
     superfolder_name_compute = path_storage.split('/')[-2] #for compute, mirror the last folder on path_storage (which is -2 since path_storage ends with slash)
-    pth_allrec_compute = pth_super_compute + superfolder_name_compute + '/' 
-    if not os.path.exists(pth_allrec_compute):
-        Path(pth_allrec_compute).mkdir(parents=True, exist_ok=True)
+    pth_compute = pth_super_compute + superfolder_name_compute + '/' 
+    if not os.path.exists(pth_compute):
+        Path(pth_compute).mkdir(parents=True, exist_ok=True)
 
     pth_denoising = pth_super_compute + 'denoising/' 
     if not os.path.exists(pth_denoising):
         Path(pth_denoising).mkdir(parents=True, exist_ok=True)
 
     if do_copyfiles:
-        pth_allrec = path_storage
+        pth_allrec_use = path_storage
     else:
-        pth_allrec = pth_allrec_compute
+        pth_allrec_use = pth_compute
     
     print("path_storage is : \n" + path_storage)
-    print("pth_allrec_compute is : \n" + pth_allrec_compute)
+    print("pth_compute is : \n" + pth_compute)
 
-    return pth_allrec, pth_allrec_compute, path_storage, pth_denoising, do_copyfiles
+    return pth_allrec_use, pth_compute, path_storage, pth_denoising, do_copyfiles
