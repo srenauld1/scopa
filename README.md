@@ -68,6 +68,8 @@ do_copyfiles occurs inside pipeline_init.py for two reasons:
         1. to ensure everything is the same for the copying and the analysis (ie to ensure the right files get copied)
         2. since slurm arrays are used, it is simpler to copy inside the parallel job
 
+denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
+
  Once a job dependency fails due to the termination state of a preceding job, the dependent job will never be run, even if the preceding job is requeued and has a different termination state in a subsequent execution.
 
  #########

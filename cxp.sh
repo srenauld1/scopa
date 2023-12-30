@@ -6,6 +6,8 @@
 #the sbatch files called below can run multiple jobs in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
 #each sbatch file below is called in a 2-iteration for loop, the first iteration copies the required files from storage server to scratch on O2, the second operates on them, afterward files are automatically copied back to the storage server  
 #copying requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
+
+#the cxp.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
 #see pipeline_init.py and README.md for more details 
 
 #note bash variables are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
@@ -117,8 +119,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:40:00
                 ntasks_str=1
-                cpus_per_task_str=8
-                mem_per_cpu_str=5G
+                cpus_per_task_str=5
+                mem_per_cpu_str=4G
             fi
         fi
 

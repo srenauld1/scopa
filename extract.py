@@ -12,9 +12,8 @@ from vis import caiman_plots_all
 from crop_fov import crop_fov
 
 
-def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth_denoising, 
-             md, denoise_volume, do_stitching_session, do_cropping_session, do_planar_extraction, 
-             use_denoised, epoch_choose_denoise, region_extraction, carls_old_project, do_plots, cluster_backend, do_cluster):
+def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_cropping_session, 
+            do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -38,12 +37,12 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
 
         if not do_cropping_session: #skip everything else if you're doing a cropping session
             
-            pth_tif_write = pth_tif_read[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
-            imwrite(pth_tif_write, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
-            basename_memap = pth_tif_write.split('/')[-1][:-4]
+            pth_tif_write_tmp = pth_tif_read[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
+            imwrite(pth_tif_write_tmp, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
+            basename_memap = pth_tif_write_tmp.split('/')[-1][:-4]
             border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 
-            fn_mmap_ex = cm.save_memmap([pth_tif_write], base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
-            os.remove(pth_tif_write)
+            fn_mmap_ex = cm.save_memmap([pth_tif_write_tmp], base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
+            os.remove(pth_tif_write_tmp)
             Ycrop, dims_spatial_ex, dim_time_ex = cm.load_memmap(fn_mmap_ex) #if 3d mmap should be 3d, but Ycrop gets singleton 4th dim (z) added below so the code is more readable
             Ycrop = np.reshape(Ycrop.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
             
@@ -120,11 +119,11 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
 
 
                         if do_plots and cnm2.estimates.A.shape[-1]:
-                            pth_results = pth_tif_write[:-8] + fnadd + 'OUT_FIT1.mov'
+                            pth_results = pth_tif_write_tmp[:-8] + fnadd + 'OUT_FIT1.mov'
                             caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results)
 
                         if do_plots and cnm2.estimates.A.shape[-1]:
-                            pth_results2 = pth_tif_write[:-8] + fnadd + 'OUT_FIT2.mov'
+                            pth_results2 = pth_tif_write_tmp[:-8] + fnadd + 'OUT_FIT2.mov'
                             caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results2)
                         
                 
@@ -185,17 +184,17 @@ def extract(index_extraction_param_set, fn_prefix, pth_prefix, pth_tif_read, pth
                     #mdict['idxbad'] = stack_idx_bad
                     
                     if np.any(stack_masks):
-                        pth_mat_ex = pth_tif_write[:-8] + fnadd + '_rois_.mat'
+                        pth_mat_ex = pth_tif_write_tmp[:-8] + fnadd + '_rois_.mat'
 
                     else:
                         mdict = {}
                         print("norois")
-                        pth_mat_ex = pth_tif_write[:-8] + fnadd + '_rois_NOROIS_.mat'
+                        pth_mat_ex = pth_tif_write_tmp[:-8] + fnadd + '_rois_NOROIS_.mat'
 
                 except Exception as error:
                     
                     mdict = {}
-                    pth_mat_ex = pth_tif_write[:-8] + fnadd + '_rois_FAILURE_.mat'
+                    pth_mat_ex = pth_tif_write_tmp[:-8] + fnadd + '_rois_FAILURE_.mat'
                     print("An exception occurred:", type(error).__name__, "-", error) 
 
                 

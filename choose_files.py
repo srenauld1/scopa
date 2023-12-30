@@ -38,7 +38,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
                 fn_suffix_scopa = fn_suffix_scopa + '_bksb'
-            if use_denoised and (do_stitch or do_extract or do_cropping_session):
+            if use_denoised and (do_extract or do_cropping_session): 
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
         fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa

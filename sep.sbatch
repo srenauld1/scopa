@@ -9,20 +9,13 @@ if [ "$DO_COPYFILES" == 1 ]; then #no need to load any virtual environment for c
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
-    ml miniconda3/4.10.3 
-    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-    conda activate caiman
 fi
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
---do_extract 1 \
---index_extraction_param_set 'default' \
---region_extraction 'pb' 'gar' 'gal' 'no' \
---do_planar_extraction 1 \
+--do_separate 1 \
 --use_background_subtracted 0 \
---use_denoised 1 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 wait
@@ -32,3 +25,5 @@ sleep 1m
 
 
 scontrol show job $SLURM_JOB_ID
+
+

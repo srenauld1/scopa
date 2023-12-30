@@ -151,7 +151,7 @@ if not do_copyfiles:
 for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles:
-      
+
       pth_copydest = pth_allrec_compute + pth_fldr_all[ri].split('/')[-1]
       print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
@@ -164,9 +164,11 @@ for ri, _ in enumerate(pth_tif_read_all):
 
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
+
       if do_register:
           register(pth_tif_read_all[ri], pth_prefix_all[ri], md, do_planar_registration, do_background_subtraction, 
                    bg_patch_halfwidth, len_window_smooth_t, cluster_backend, do_cluster, do_plots)
+
 
       if do_separate:
           if carls_old_project_all[ri]: 
@@ -174,23 +176,26 @@ for ri, _ in enumerate(pth_tif_read_all):
           else:
             separate_z_slices_for_denoising(pth_tif_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume)
 
+
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
 
-      if do_stitch: #and use_denoised
-        force_stitch = 0 #stitch regardless of whether the file already exists (e.g. to use a different run or different epoch, warning this will overwrite existing stitched denoised tif)
-        if not os.path.isfile(pth_tif_read_all[ri]) or force_stitch:
+
+      if do_stitch: 
+        pth_tif_write = pth_tif_read_all[ri][:-4] + 'dcdn_.tif'
+        if os.path.isfile(pth_tif_write):
+           print("WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
+        else:
             if carls_old_project_all[ri]: 
-                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+                stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_write, md, denoise_volume, epoch_choose_denoise) 
             else:
-                stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+                stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_write, md, denoise_volume, epoch_choose_denoise) 
 
 
       if do_extract or do_cropping_session:
 
-          extract(index_extraction_param_set, fn_prefix_all[ri], pth_prefix_all[ri], pth_tif_read_all[ri], pth_denoising, 
-          md, denoise_volume, do_stitch, do_cropping_session, do_planar_extraction, use_denoised, epoch_choose_denoise,
-          region_extraction, carls_old_project_all[ri], do_plots, cluster_backend, do_cluster)
+          extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_cropping_session, 
+                  do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
 
 
 print("EXITING pipeline_init.py") 
