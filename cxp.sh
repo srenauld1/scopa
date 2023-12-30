@@ -33,7 +33,7 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 PATH_STORAGE=('/n/files/Neurobio/wilsonlab/wienecke/stacks/') #path from which required files will be copied into scratch on O2 (last folder of PATH_STORAGE will be mirrored on your scratch folder)
 RECDATE=('20231119')
-FLY=('1' '2*')
+FLY=('1' '2' '3')
 TRIAL=('*')
 FOLDER_SUBSTRINGS=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRINGS, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
