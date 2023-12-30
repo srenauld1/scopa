@@ -164,7 +164,7 @@ for ri, _ in enumerate(pth_tif_read_all):
           cluster_backend, do_cluster, do_plots)
 
       if do_denoise:
-          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
+          denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri])
 
       if do_extract or do_stitching_session or do_cropping_session:
 

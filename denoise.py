@@ -165,8 +165,11 @@ from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 
 
-def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project):
+def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project):
 
+    dims = md['dims']
+    volrate = md['volrate']
+    
     print("ENTERING DENOISE FUNCTION")
     
     if carls_old_project: #if it's not my old grad school project 
