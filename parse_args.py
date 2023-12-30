@@ -17,15 +17,15 @@ class parse_pars_file():
             tmplist = list(tmpdict[key].split(" "))
             exec('self.' + key + '=tmplist')
     
-    def overwrite_args(self, args):
+    # def overwrite_args(self, args): #this doesn't work yet
 
-        for a in dir(self):
-            print(a)
-            if hasattr(args, a) and not a.startswith('__') and not callable(getattr(self, a)):
-                print(a)
-                exec('args.' + a + '=self.' + a)
+    #     for a in dir(self):
+    #         print(a)
+    #         if hasattr(args, a) and not a.startswith('__') and not callable(getattr(self, a)):
+    #             print(a)
+    #             exec('args.' + a + '=self.' + a)
 
-        return args
+    #     return args
 
 
 def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
@@ -210,19 +210,21 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         
-        ppf = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
-        args = ppf.overwrite_args(args)
-        # args.recdates = pars.PATH_STORAGE
-        # args.recdates = pars.RECDATES
-        # args.fly = pars.FLY
-        # args.trial = pars.TRIAL
-        # args.folder_substrings = pars.FOLDER_SUBSTRINGS
-        # args.file_matching_style = pars.FILE_MATCHING_STYLE
+        pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
+        # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
+        
+        args.path_storage = pars.PATH_STORAGE
+        args.recdates = pars.RECDATES
+        args.fly = pars.FLY
+        args.trial = pars.TRIAL
+        args.folder_substrings = pars.FOLDER_SUBSTRINGS
+        args.file_matching_style = pars.FILE_MATCHING_STYLE
 
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
-    do_copyfiles = args.do_copyfiles[0]
+    
     path_storage = args.path_storage[0] 
+    do_copyfiles = args.do_copyfiles[0]
     
     index_extraction_param_set = args.index_extraction_param_set[0] 
     if index_extraction_param_set != 'default':
