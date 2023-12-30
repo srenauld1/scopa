@@ -14,9 +14,9 @@
 echo "SHELL IS " $SHELL
 
 do_register=1
-do_denoise=1
-do_stitch=1
-do_extract=1
+do_denoise=0
+do_stitch=0
+do_extract=0
 
 do_copyfiles_sequence=(1 0) #set to (1 0) to copy required files from storage server to O2 before each of the above sbatch_job_name_sequence is run (requires access to transfer job partition, must request access at rchelp@hms.harvard.edu), set to (0) to skip copying (must copy manually to O2 first)
 PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
@@ -52,13 +52,13 @@ if [ "$do_register" == 1 ]; then
     sbatch_job_name_sequence+=(mcp.sbatch)
 fi
 if [ "$do_denoise" == 1 ]; then
-    sbatch_job_name_sequence+=(mcp2.sbatch)
+    sbatch_job_name_sequence+=(dnp.sbatch)
 fi
 if [ "$do_stitch" == 1 ]; then
-    sbatch_job_name_sequence+=(mcp.sbatch)
+    sbatch_job_name_sequence+=(stc.sbatch)
 fi
 if [ "$do_extract" == 1 ]; then
-    sbatch_job_name_sequence+=(mcp2.sbatch)
+    sbatch_job_name_sequence+=(exp.sbatch)
 fi
 
 echo "WILL SUBMIT THE FOLLOWING SBATCH JOBS "${sbatch_job_name_sequence[@]}""
@@ -85,34 +85,28 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             echo "RUNNING SBATCH JOB "$sbatch_job_name""
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:25:00
+                time_str=00:40:00
                 ntasks_str=1
-                cpus_per_task_str=1
+                cpus_per_task_str=5
                 mem_per_cpu_str=10G
-            elif [ "$sbatch_job_name" == mcp2.sbatch ]; then 
-                partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:14:00
-                ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=11G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
-                time_str=00:15:00
+                time_str=02:30:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=10G
+                mem_per_cpu_str=15G
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:15:00
+                time_str=00:20:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=11G
+                mem_per_cpu_str=50G
             elif [ "$sbatch_job_name" == exp.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:15:00
+                time_str=00:40:00
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=10G
+                cpus_per_task_str=8
+                mem_per_cpu_str=5G
             fi
         fi
 
