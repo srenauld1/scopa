@@ -26,7 +26,7 @@ PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch file
 
 jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices
 
-#set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
+#set input args common to all sbatch, jobs below (job-specific arguments are specified within each sbatch file)
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
 #matches within folders containing FOLDER_SUBSTRINGS ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
