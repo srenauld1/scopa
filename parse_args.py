@@ -1,6 +1,7 @@
 
 import argparse
 
+
 class parse_pars_file():
     
     def __init__(self, pars_filename):
@@ -19,12 +20,11 @@ class parse_pars_file():
     def overwrite_args(self, args):
 
         for a in dir(self):
-            if hasattr(args, a): #not a.startswith('__') and not callable(getattr(self, a)):
+            if hasattr(args, a) and not a.startswith('__') and not callable(getattr(self, a)):
                 exec('args.' + a + '=self.' + a)
 
         return args
 
-    
 
 def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitching_session, 
