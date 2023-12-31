@@ -16,7 +16,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
    
     ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
-    print("ENTERING REGISTRATION SCRIPT")
+    print("\n\n\n ENTERING REGISTRATION SCRIPT")
 
     if do_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)

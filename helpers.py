@@ -13,7 +13,7 @@ from vis import im_montage, plot_gif
 
 def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
-    print("stitching together separately registered z slices, and writing as one tif")
+    print("\n\n\n stitching together separately registered z slices, and writing as one tif")
 
     pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_z_.tif'))
 
@@ -65,7 +65,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
     # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
-    print("separating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
+    print("\n\n\n separating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
 
     dims = md['dims']
 
@@ -106,7 +106,7 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
     # if using denoise_volume = 1, saves all separate tifs into one folder 
     # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
-    print("preparing carl's old data for deepcad denoising, if you're not carl there is a problem")
+    print("\n\n\n preparing carl's old data for deepcad denoising, if you're not carl there is a problem")
 
     dims = md['dims']
     
@@ -156,11 +156,11 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     
     if os.path.isfile(pth_tif_write):
     
-        print("WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
+        print("\n\n\n WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
     
     else:
   
-        print("stitching together denoised tifs (each tif a single z slice), and writing as one tif")
+        print("\n\n\n stitching together denoised tifs (each tif a single z slice), and writing as one tif")
 
         dims_pre_denoise = md['dims']
         if denoise_volume == 1:
@@ -226,11 +226,11 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
     
     if os.path.isfile(pth_tif_write):
     
-        print("WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
+        print("\n\n\n WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
     
     else:
 
-        print("writing denoised tifs for carls old project, if you're not carl there's a problem")
+        print("\n\n\n writing denoised tifs for carls old project, if you're not carl there's a problem")
 
         dims_pre_denoise = md['dims']
 

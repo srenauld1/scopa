@@ -141,7 +141,7 @@ for ri, _ in enumerate(pth_tif_read_all):
     if do_copyfiles==1: #copy from storage server to O2
         
       pth_copydest = pth_compute + pth_fldr_all[ri].split('/')[-1]
-      print("copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
+      print("\n\n\n copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
       shutil.copy(pth_tif_read_all[ri], pth_copydest)
       shutil.copy(pth_md_all[ri], pth_copydest)
@@ -149,12 +149,12 @@ for ri, _ in enumerate(pth_tif_read_all):
     elif do_copyfiles==2: #copy from O2 to storage server 
         
       pth_copydest = pth_storage + pth_fldr_all[ri].split('/')[-1]
-      print("copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
+      print("\n\n\n copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
       try:
         shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
       except: #shutil.Error, exc:
-        print("some copy oiut errors")
+        print("some copy out errors")
         # errors = exc.args[0]
         # for error in errors:
         #     src, dst, msg = error
@@ -163,7 +163,7 @@ for ri, _ in enumerate(pth_tif_read_all):
         
     elif do_copyfiles==0: #compute against the data 
       
-      print("operating on the following file: \n" + pth_tif_read_all[ri] + "\n loading metadata first") 
+      print("\n\n\n operating on the following file: \n" + pth_tif_read_all[ri] + "\n loading metadata first") 
 
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
@@ -195,5 +195,5 @@ for ri, _ in enumerate(pth_tif_read_all):
                   do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
 
 
-print("EXITING pipeline_init.py") 
+print("\n\n\n EXITING pipeline_init.py") 
 

@@ -27,7 +27,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
         if len(folder_substrings)==1:
             folder_substrings = folder_substrings*maxspec
         if not(len(recdates) == len(fly) == len(trial) == len(folder_substrings)):
-            raise Exception("recdate, fly, trial, and folder_substrings must all be same length or length 1 for file_matching_style 'each'")
+            raise Exception("\n\n\n recdate, fly, trial, and folder_substrings must all be same length or length 1 for file_matching_style 'each'")
         filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdates, fly, trial, folder_substrings)] 
 
     pth_allfiles = []
@@ -89,7 +89,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 recindstr.append(ordinal(ri+1))
             recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
-    print("AFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
+    print("\n\n\n AFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
           "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substrings, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
             "AND HAVING ANY OF THE THE FOLLOWING SUFFIXES: \n" + '%s' % '\n'.join(map(str, fn_suffixes_all)) + '\n' + \
                 search_result_string + '\n' + recindstr)
@@ -115,7 +115,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             
         if recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()): #if 'all', do all files matching pattern, otherwise only file matching index
 
-            print("PREPARING FILE: \n" + pth_datafile)
+            print("\n\n\n PREPARING FILE: \n" + pth_datafile)
 
             if re.search("wilsonlab/wienecke", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names

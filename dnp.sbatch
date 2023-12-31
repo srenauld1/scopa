@@ -9,7 +9,7 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load 
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 else #load virtual env if not copying files
     #SBATCH --gres=gpu:a100:1,vram:80G
-    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES" \n\n"
     module load miniconda3/4.10.3
     module load gcc/9.2.0
     module load cuda/11.7
@@ -39,6 +39,6 @@ sleep 1m
 date
 sleep 1m
 
-scontrol show job $SLURM_JOB_ID
+# scontrol show job $SLURM_JOB_ID
 
 

@@ -173,7 +173,7 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
     dims = md['dims']
     volrate = md['volrate']
     
-    print("ENTERING DENOISE FUNCTION")
+    print("\n\n\n ENTERING DENOISE FUNCTION")
     
     if carls_old_project: #if it's not my old grad school project 
         if denoise_volume:

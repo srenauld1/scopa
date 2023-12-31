@@ -38,7 +38,7 @@ def make_paths(do_copyfiles, path_storage):
     elif do_copyfiles==0 or do_copyfiles==2: #computing, or copying out of O2, respectively
         pth_allrec_use = pth_compute
     
-    print("path_storage is : \n" + path_storage)
+    print("\n\n\n path_storage is : \n" + path_storage)
     print("pth_compute is : \n" + pth_compute)
 
     return pth_allrec_use, pth_compute, path_storage, pth_denoising, do_copyfiles

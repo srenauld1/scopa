@@ -27,7 +27,7 @@ date
 sleep 1m
 
 
-scontrol show job $SLURM_JOB_ID
+# scontrol show job $SLURM_JOB_ID
 
 
 

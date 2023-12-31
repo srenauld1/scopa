@@ -201,13 +201,6 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     pars_filename = args.pars_filename[0]
 
-    print("parsed these command line and/or param file arguments BEFORE")
-
-    localscopy = locals().copy()
-    for k,v in localscopy.items():
-        if not k.startswith('_') and k!='localscopy' and k!='CLI' and k!='args' and k!='pars' and k!='In' and k!='Out' and not hasattr(v, '__call__'):
-            print(k,'=',v)
-
     if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
         
         pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
@@ -282,7 +275,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     file_matching_style = args.file_matching_style[0] 
 
-    print("parsed these command line and/or param file arguments")
+    print("\n\n\n parsed these command line and/or param file arguments")
 
     localscopy = locals().copy()
     for k,v in localscopy.items():
