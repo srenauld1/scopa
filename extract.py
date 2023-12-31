@@ -17,7 +17,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
-    print("\n\n\n ENTERING EXTRACT FUNCTION")
+    print("\n\n\nENTERING EXTRACT FUNCTION")
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster

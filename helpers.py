@@ -15,7 +15,7 @@ from vis import im_montage, plot_gif
 
 def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
-    print("\n\n\n stitching together separately registered z slices, and writing as one tif")
+    print("\n\n\nstitching together separately registered z slices, and writing as one tif")
 
     pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_z_.tif'))
 
@@ -68,7 +68,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
     # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
-    print("\n\n\n separating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
+    print("\n\n\nseparating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
 
     dims = md['dims']
 
@@ -110,7 +110,7 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
     # if using denoise_volume = 1, saves all separate tifs into one folder 
     # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
-    print("\n\n\n preparing carl's old data for deepcad denoising, if you're not carl there is a problem")
+    print("\n\n\npreparing carl's old data for deepcad denoising, if you're not carl there is a problem")
 
     dims = md['dims']
     
@@ -161,11 +161,11 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     
     if os.path.isfile(pth_tif_write):
     
-        print("\n\n\n WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
+        print("\n\n\nWARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
     
     else:
   
-        print("\n\n\n stitching together denoised tifs (each tif a single z slice), and writing as one tif")
+        print("\n\n\nstitching together denoised tifs (each tif a single z slice), and writing as one tif")
 
         dims_pre_denoise = md['dims']
         if denoise_volume == 1:
@@ -232,11 +232,11 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
     
     if os.path.isfile(pth_tif_write):
     
-        print("\n\n\n WARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
+        print("\n\n\nWARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
     
     else:
 
-        print("\n\n\n writing denoised tifs for carls old project, if you're not carl there's a problem")
+        print("\n\n\nwriting denoised tifs for carls old project, if you're not carl there's a problem")
 
         dims_pre_denoise = md['dims']
 
@@ -315,7 +315,7 @@ def rename_files(pth_datafile, fname, fn_prefix, pth_fldr):
 
     fname_rename = fn_prefix + '_raw_.' + fname[-3:]
     pth_datafile_rename = pth_fldr + '/' + fname_rename
-    print("RENAMING FILE \n" + pth_datafile + "\n TO \n" + pth_datafile_rename)
+    print("RENAMING FILE \n" + pth_datafile + "\nTO \n" + pth_datafile_rename)
     os.rename(pth_datafile, pth_datafile_rename) 
     
     pth_badmat = glob.glob(pth_datafile[:-4] + '.mat', recursive=True) #remove any mat files from old filename pattern
@@ -354,19 +354,19 @@ def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_r
 
     if do_copyfiles==1 and not (do_denoise or do_stitch): #copy from storage server to O2 (unless do_denoise or do_stitch, since they only use files in O2 denoising folder, whcih is not copied in or out of O2)
         
-        print("\n\n\n copying the following files: \n" + pth_tif_read + "\n" + pth_md + "\n from storage server into the following O2 directory: \n" + pth_copydest)
+        print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_copydest)
         Path(pth_copydest).mkdir(parents=True, exist_ok=True)
         shutil.copy(pth_tif_read, pth_copydest)
         shutil.copy(pth_md, pth_copydest)
 
     elif do_copyfiles==2 and not do_separate: #copy from O2 to storage server (unless do_separate, since new files are sent to O2 denoising folder, whcih is not copied in or out of O2)
         
-        print("\n\n\n copying anything new from the O2 folder: \n" + pth_fldr + "\n into the storage server folder: \n" + pth_copydest)
+        print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_copydest)
         Path(pth_copydest).mkdir(parents=True, exist_ok=True)
         try:
             shutil.copytree(pth_fldr, pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
         except: #shutil.Error, exc:
-            print("\n\n\n there were some copy errors, which seem to be because of unchanged files that exist in source and dest, but the rest of the copytree seems to work regardless")
+            print("\n\n\nthere were some copy errors, which seem to be because of unchanged files that exist in source and dest, but the rest of the copytree seems to work regardless")
             # errors = exc.args[0]
             # for error in errors:
             #     src, dst, msg = error

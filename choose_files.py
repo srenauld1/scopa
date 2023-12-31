@@ -115,7 +115,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
             
         if recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()): #if 'all', do all files matching pattern, otherwise only file matching index
 
-            print("\n\n\n PREPARING FILE: \n" + pth_datafile)
+            print("\n\n\nPREPARING FILE: \n" + pth_datafile)
 
             if re.search("wilsonlab/wienecke", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
