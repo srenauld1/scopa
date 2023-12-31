@@ -11,7 +11,6 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load 
 
 else #load virtual env if not copying files
     
-    #SBATCH --gres=gpu:a100:1,vram:80G
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES" \n\n"
     module load miniconda3/4.10.3
     module load gcc/9.2.0

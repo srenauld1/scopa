@@ -14,13 +14,13 @@
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
 
 #set variables that control which jobs are done
-do_register=0
-do_separate=0
+do_register=1
+do_separate=1
 do_denoise=1
 do_stitch=1
 do_extract=1
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices
+jobarrayind=( 1 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
