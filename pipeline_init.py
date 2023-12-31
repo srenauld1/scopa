@@ -7,7 +7,7 @@
 
 ##########################################################################################################################################
 
-pth_storage = '/this/is/a/path/full/of/rotted/garbage' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage will be created (if on O2, this folder is directly under your scratch folder)
+pth_storage = '/this/is/a/path/full/of/rotted/garbage/stacks/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage will be created (if on O2, this folder is directly under your scratch folder)
 do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
