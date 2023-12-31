@@ -13,17 +13,13 @@
 #note bash variables are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
 
-echo "\n\n\n SHELL IS " $SHELL
-
+#set variables that control which jobs are done
 do_register=1
 do_separate=1
 do_denoise=1
 do_stitch=1
 do_extract=1
-
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
-
 jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
@@ -37,6 +33,9 @@ FLY=('1' '2' '3')
 TRIAL=('*')
 FOLDER_SUBSTRINGS=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRINGS, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
+
+
+PARS_FILENAME='scopaparams.txt' #no need to change this, filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
 pars["PTH_STORAGE"]="${PTH_STORAGE[@]}"
