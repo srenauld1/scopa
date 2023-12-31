@@ -68,7 +68,7 @@ if [ "$do_extract" == 1 ]; then
     sbatch_job_name_sequence+=(exp.sbatch)
 fi
 
-echo "\n\n\n WILL SUBMIT THE FOLLOWING SBATCH JOBS "${sbatch_job_name_sequence[@]}""
+echo -e "STARTING SCOPA PIPELINE \n SUBMITTING THE FOLLOWING SBATCH JOBS \n "${sbatch_job_name_sequence[@]}""
 
 loopcount=0
 for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
@@ -82,14 +82,14 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         fi
 
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
-            echo "\n\n\n COPY FILES TYPE "$DO_COPYFILES" FROM WITHIN SBATCH JOB "$sbatch_job_name""
+            echo "COPY FILES TYPE "$DO_COPYFILES" FROM WITHIN SBATCH JOB "$sbatch_job_name""
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
             time_str=00:20:00
             ntasks_str=1
             cpus_per_task_str=1
             mem_per_cpu_str=1G
         else
-            echo "\n\n\n RUNNING SBATCH JOB "$sbatch_job_name""
+            echo "RUNNING SBATCH JOB "$sbatch_job_name""
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:40:00
@@ -138,7 +138,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
         tmpid=arrid_${loopcount}_dynvar #assign to another var whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
 
-        echo "\n\n\n Job-Array ID: ${!tmpid}"
+        echo "Job-Array ID: ${!tmpid}"
 
         loopcount=$((loopcount+1)) #increment loopcount
 
