@@ -9,25 +9,25 @@ from itertools import product
 import collections
 
 
-def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
+def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_index, file_matching_style, 
                  do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
                  use_background_subtracted, use_denoised, pth_copydest_prefix):
     
     if file_matching_style=='any': #find all possible combinations 
-        filepatspec_all = list(product(recdates, fly, trial, folder_substrings)) 
+        filepatspec_all = list(product(recdates, fly, trial, folder_substring)) 
     elif file_matching_style=='each': #else corresponding elements 
-        maxspec = np.max((len(recdates), len(fly), len(trial), len(folder_substrings)))
+        maxspec = np.max((len(recdates), len(fly), len(trial), len(folder_substring)))
         if len(recdates)==1:
             recdates = recdates*maxspec
         if len(fly)==1:
             fly = fly*maxspec
         if len(trial)==1:
             trial = trial*maxspec
-        if len(folder_substrings)==1:
-            folder_substrings = folder_substrings*maxspec
-        if not(len(recdates) == len(fly) == len(trial) == len(folder_substrings)):
-            raise Exception("\n\n\n recdate, fly, trial, and folder_substrings must all be same length or length 1 for file_matching_style 'each'")
-        filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdates, fly, trial, folder_substrings)] 
+        if len(folder_substring)==1:
+            folder_substring = folder_substring*maxspec
+        if not(len(recdates) == len(fly) == len(trial) == len(folder_substring)):
+            raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
+        filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdates, fly, trial, folder_substring)] 
 
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
@@ -89,7 +89,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
     print("\n\n\n AFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
-          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substrings, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
+          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
             "AND HAVING ANY OF THE THE FOLLOWING SUFFIXES: \n" + '%s' % '\n'.join(map(str, fn_suffixes_all)) + '\n' + \
                 search_result_string + '\n' + recindstr)
 

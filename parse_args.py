@@ -15,6 +15,8 @@ class parse_pars_file():
 
         for key, value in tmpdict.items():
             tmplist = list(tmpdict[key].split(" "))
+            print(key)
+            print(tmplist)
             exec('self.' + key + '=tmplist')
     
     # def overwrite_args(self, args): #this doesn't work yet
@@ -30,7 +32,7 @@ class parse_pars_file():
 
 def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
-                       do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substrings, do_crop, recording_index, file_matching_style):
+                       do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, do_crop, recording_index, file_matching_style):
     
     CLI=argparse.ArgumentParser()
 
@@ -179,10 +181,10 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
         default=[trial],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--folder_substrings",  # name on the CLI - drop the `--` for positional/required parameters
+        "--folder_substring",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
         type=str,
-        default=[folder_substrings],  # default if nothing is provided
+        default=[folder_substring],  # default if nothing is provided
     )
     CLI.add_argument(
         "--recording_index",  # name on the CLI - drop the `--` for positional/required parameters
@@ -212,7 +214,7 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
         args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
-        args.folder_substrings = pars.FOLDER_SUBSTRINGS
+        args.folder_substring = pars.FOLDER_SUBSTRING
         args.file_matching_style = pars.FILE_MATCHING_STYLE
 
 
@@ -264,10 +266,10 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
         trial = args.trial[0] #keep as list
     else:
         trial = args.trial #keep as list
-    if isinstance(args.folder_substrings[0], list):
-        folder_substrings = args.folder_substrings[0] #keep as list
+    if isinstance(args.folder_substring[0], list):
+        folder_substring = args.folder_substring[0] #keep as list
     else:
-        folder_substrings = args.folder_substrings #keep as list
+        folder_substring = args.folder_substring #keep as list
     if isinstance(args.recording_index[0], list):
         recording_index = args.recording_index[0] #keep as list
     else:
@@ -277,7 +279,7 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
 
     file_matching_style = args.file_matching_style[0] 
 
-    print("\n\n\n parsed these command line and/or param file arguments")
+    print("\n\n\nparsed these command line and/or param file arguments")
 
     localscopy = locals().copy()
     for k,v in localscopy.items():
@@ -289,6 +291,6 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
-            recdate, fly, trial, folder_substrings, recording_index, file_matching_style)
+            recdate, fly, trial, folder_substring, recording_index, file_matching_style)
 
 

@@ -24,15 +24,15 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
-#matches within folders containing FOLDER_SUBSTRINGS ( * is wildcard)
+#matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 PTH_STORAGE=('/n/files/Neurobio/wilsonlab/wienecke/stacks/') #path from which required files will be copied into scratch on O2 (last folder of PTH_STORAGE will be mirrored on your scratch folder)
 RECDATE=('20231119')
 FLY=('1' '2' '3')
 TRIAL=('*')
-FOLDER_SUBSTRINGS=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRINGS 
-FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRINGS, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
+FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
+FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 
 PARS_FILENAME='scopaparams.txt' #no need to change this, filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
@@ -42,7 +42,7 @@ pars["PTH_STORAGE"]="${PTH_STORAGE[@]}"
 pars["RECDATE"]="${RECDATE[@]}"
 pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"
-pars["FOLDER_SUBSTRINGS"]="${FOLDER_SUBSTRINGS[@]}"
+pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 
 for key in "${!pars[@]}"; do

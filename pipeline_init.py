@@ -14,7 +14,7 @@ pars_filename = '' #string, single element not in list, skip if empty, name of i
 recdate = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
-folder_substrings = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
+folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
@@ -67,13 +67,13 @@ from helpers import copy_files_scopa
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
-  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substrings,
+  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring,
   recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, pth_storage = pth_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
-                      recdate = recdate, fly = fly, trial = trial, folder_substrings = folder_substrings, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
+                      recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
 [pth_allrec, pth_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, pth_storage)
@@ -131,7 +131,7 @@ if not do_copyfiles:
       from denoise import denoise
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all, pth_copydest_all] = \
-  choose_files(pth_allrec, recdate, fly, trial, folder_substrings, recording_index, file_matching_style, 
+  choose_files(pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, 
         do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
         use_background_subtracted, use_denoised, pth_copydest_prefix)
 
