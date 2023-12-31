@@ -144,7 +144,7 @@ for ri, _ in enumerate(pth_tif_read_all):
         
     elif do_copyfiles==0: #compute against the data 
       
-      print("\n\n\n operating on the following file: \n" + pth_tif_read_all[ri] + "\n loading metadata first") 
+      print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_tif_read_all[ri] + "\nLOADING METADATA FIRST") 
 
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
@@ -176,5 +176,5 @@ for ri, _ in enumerate(pth_tif_read_all):
                   do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
 
 
-print("\n\n\n EXITING pipeline_init.py") 
+print("\n\n\nEXITING pipeline_init.py") 
 

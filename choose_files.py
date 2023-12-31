@@ -88,7 +88,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
                 recindstr.append(ordinal(ri+1))
             recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
-    print("\n\n\n AFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
+    print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
           "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
             "AND HAVING ANY OF THE THE FOLLOWING SUFFIXES: \n" + '%s' % '\n'.join(map(str, fn_suffixes_all)) + '\n' + \
                 search_result_string + '\n' + recindstr)
