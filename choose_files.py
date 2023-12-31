@@ -11,9 +11,8 @@ import collections
 
 def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_index, file_matching_style, 
                  do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
-                 use_background_subtracted, use_denoised):
+                 use_background_subtracted, use_denoised, pth_copydest_prefix):
     
-
     if file_matching_style=='any': #find all possible combinations 
         filepatspec_all = list(product(recdates, fly, trial, folder_substrings)) 
     elif file_matching_style=='each': #else corresponding elements 
@@ -102,6 +101,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
     pth_prefix_all = []
     pth_md_all = []
     carls_old_project_all = []
+    pth_copydest_all = []
     countz = 0
     for pth_datafile in pth_allfiles: #loop over all found files
         
@@ -137,15 +137,19 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
             if not os.path.isfile(pth_md) and not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
                 read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = mat_file_shape)
                 
+
+            pth_copydest = pth_copydest_prefix + pth_fldr.split('/')[-1]
+
             pth_tif_read_all.append(pth_datafile)
             pth_fldr_all.append(pth_fldr)
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
             pth_md_all.append(pth_md)
             carls_old_project_all.append(carls_old_project)
+            pth_copydest_all.append(pth_copydest)
             
         
         countz = countz + 1
 
 
-    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all) 
+    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all, pth_copydest_all) 

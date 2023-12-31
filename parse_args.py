@@ -28,7 +28,7 @@ class parse_pars_file():
     #     return args
 
 
-def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substrings, do_crop, recording_index, file_matching_style):
     
@@ -47,10 +47,10 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--path_storage",  # name on the CLI - drop the `--` for positional/required parameters
+        "--pth_storage",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[path_storage],  # default if nothing is provided
+        default=[pth_storage],  # default if nothing is provided
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
@@ -206,7 +206,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
         pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
         
-        args.path_storage = pars.PATH_STORAGE
+        args.pth_storage = pars.PTH_STORAGE
         args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
@@ -216,7 +216,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
     
-    path_storage = args.path_storage[0] 
+    pth_storage = args.pth_storage[0] 
     do_copyfiles = args.do_copyfiles[0]
     
     index_extraction_param_set = args.index_extraction_param_set[0] 
@@ -283,7 +283,7 @@ def parse_command_line(pars_filename, do_copyfiles, path_storage, index_extracti
             print(k,'=',v)
 
 
-    return (pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, 
+    return (pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 

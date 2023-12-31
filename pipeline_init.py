@@ -7,8 +7,8 @@
 
 ##########################################################################################################################################
 
-path_storage = '/dummy/path/here/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder path_storage will be created (if on O2, this folder is directly under your scratch folder)
-do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from path_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to path_storage from where you're running this script
+pth_storage = '/dummy/path/here/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage will be created (if on O2, this folder is directly under your scratch folder)
+do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
 recdate = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
@@ -67,17 +67,17 @@ from pathlib import Path
 
 if len(sys.argv)>1:
     
-  [pars_filename, do_copyfiles, path_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
+  [pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
   denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substrings,
   recording_index, file_matching_style] = \
-    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, path_storage = path_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, pth_storage = pth_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdate = recdate, fly = fly, trial = trial, folder_substrings = folder_substrings, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec_use, pth_compute, pth_storage, pth_denoising, do_copyfiles] = make_paths(do_copyfiles, path_storage)
+[pth_allrec, pth_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, pth_storage)
 
 
 if do_register + do_separate + do_denoise + do_stitch + do_extract + do_crop > 1:
@@ -130,29 +130,27 @@ if not do_copyfiles:
   elif do_denoise:
       from denoise import denoise
 
-[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
-  choose_files(pth_allrec_use, recdate, fly, trial, folder_substrings, recording_index, file_matching_style, 
+[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all, pth_copydest_all] = \
+  choose_files(pth_allrec, recdate, fly, trial, folder_substrings, recording_index, file_matching_style, 
         do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
-        use_background_subtracted, use_denoised)
+        use_background_subtracted, use_denoised, pth_copydest_prefix)
 
 
 for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles==1: #copy from storage server to O2
         
-      pth_copydest = pth_compute + pth_fldr_all[ri].split('/')[-1]
-      print("\n\n\n copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest)
-      Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-      shutil.copy(pth_tif_read_all[ri], pth_copydest)
-      shutil.copy(pth_md_all[ri], pth_copydest)
+      print("\n\n\n copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest_all[ri])
+      Path(pth_copydest_all[ri]).mkdir(parents=True, exist_ok=True)
+      shutil.copy(pth_tif_read_all[ri], pth_copydest_all[ri])
+      shutil.copy(pth_md_all[ri], pth_copydest_all[ri])
     
     elif do_copyfiles==2: #copy from O2 to storage server 
         
-      pth_copydest = pth_storage + pth_fldr_all[ri].split('/')[-1]
-      print("\n\n\n copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
-      Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+      print("\n\n\n copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest_all[ri])
+      Path(pth_copydest_all[ri]).mkdir(parents=True, exist_ok=True)
       try:
-        shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
+        shutil.copytree(pth_fldr_all[ri], pth_copydest_all[ri], dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
       except: #shutil.Error, exc:
         print("some copy out errors")
         # errors = exc.args[0]

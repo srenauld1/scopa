@@ -7,7 +7,7 @@ from pathlib import Path
 
 def make_paths(do_copyfiles, path_storage):
 
-    print("sys.executable returns: \n" + sys.executable)
+    print("\n\n\n sys.executable returns: \n" + sys.executable)
     
     env_path = sys.path[0]
 
@@ -33,12 +33,18 @@ def make_paths(do_copyfiles, path_storage):
     if not os.path.exists(pth_denoising):
         Path(pth_denoising).mkdir(parents=True, exist_ok=True)
 
+    elif do_copyfiles==0: #computing (not copying)
+        pth_allrec = pth_compute
+        pth_copydest_prefix = path_storage
     if do_copyfiles==1: #copying into O2
-        pth_allrec_use = path_storage
-    elif do_copyfiles==0 or do_copyfiles==2: #computing, or copying out of O2, respectively
-        pth_allrec_use = pth_compute
+        pth_allrec = path_storage
+        pth_copydest_prefix = pth_compute
+    elif do_copyfiles==2: #copying out of O2
+        pth_allrec = pth_compute
+        pth_copydest_prefix = path_storage
     
     print("\n\n\n path_storage is : \n" + path_storage)
     print("pth_compute is : \n" + pth_compute)
+    print("pth_allrec is : \n" + pth_allrec)
 
-    return pth_allrec_use, pth_compute, path_storage, pth_denoising, do_copyfiles
+    return pth_allrec, pth_copydest_prefix, pth_denoising
