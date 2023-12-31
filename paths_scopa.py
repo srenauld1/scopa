@@ -35,7 +35,7 @@ def make_paths(do_copyfiles, pth_storage):
 
     elif do_copyfiles==0: #computing (not copying)
         pth_allrec = pth_compute
-        pth_copydest_prefix = pth_storage
+        pth_copydest_prefix = 'junkpath' #this won't be used, making dummy name just in case 
     if do_copyfiles==1: #copying into O2
         pth_allrec = pth_storage
         pth_copydest_prefix = pth_compute
