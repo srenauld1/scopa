@@ -60,7 +60,6 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 
 import sys
 import shutil
-from shutil import ignore_patterns
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
@@ -152,7 +151,15 @@ for ri, _ in enumerate(pth_tif_read_all):
       pth_copydest = pth_storage + pth_fldr_all[ri].split('/')[-1]
       print("copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest)
       Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-      shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
+      try:
+        shutil.copytree(pth_fldr_all[ri], pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
+      except: #shutil.Error, exc:
+        print("some copy oiut errors")
+        # errors = exc.args[0]
+        # for error in errors:
+        #     src, dst, msg = error
+        #     # Get the path to the file in Gold dir here from src
+        #     shutil.copy2(goldsrc, dst)
         
     elif do_copyfiles==0: #compute against the data 
       
