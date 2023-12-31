@@ -6,8 +6,11 @@ module purge
 ml python/3.10.11
 
 if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load any virtual environment for copying files 
+    
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+
 else #load virtual env if not copying files
+    
     #SBATCH --gres=gpu:a100:1,vram:80G
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES" \n\n"
     module load miniconda3/4.10.3
@@ -15,10 +18,10 @@ else #load virtual env if not copying files
     module load cuda/11.7
     source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
     conda activate deepcadrt
+
+    /n/cluster/bin/job_gpu_monitor.sh &
+
 fi
-
-/n/cluster/bin/job_gpu_monitor.sh &
-
 
 for i in 0
 do
@@ -28,7 +31,7 @@ do
     --do_copyfiles "$DO_COPYFILES" \
     --do_denoise 1 \
     --denoise_volume 1 \
-    --num_epochs_denoise 5 \
+    --num_epochs_denoise 1 \
     --denoise_slice_index 'all' \
     --recording_index $SLURM_ARRAY_TASK_ID &
 

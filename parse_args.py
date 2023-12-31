@@ -206,6 +206,8 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
         pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
         
+        ##args.__dict__ = pars.__dict__.copy() #untested . . .  try this to overwrite new args, need to make them lowercase programmatically first, perhaps in the exec call above 
+
         args.pth_storage = pars.PTH_STORAGE
         args.recdate = pars.RECDATE
         args.fly = pars.FLY

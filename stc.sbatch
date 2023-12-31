@@ -18,7 +18,7 @@ fi
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
 --do_stitch 1 \
---epoch_choose_denoise 5 \
+--epoch_choose_denoise 1 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 wait

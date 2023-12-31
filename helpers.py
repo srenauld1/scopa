@@ -7,8 +7,10 @@ import fnmatch
 import os
 from tifffile.tifffile import imwrite, imread
 import shutil
+from pathlib import Path
 import mat73
 from vis import im_montage, plot_gif
+
 
 
 def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
@@ -59,6 +61,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
         os.remove(f)
 
 
+
 def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume):
 
     # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
@@ -98,6 +101,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
         imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
+
 
 
 def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume):
@@ -146,6 +150,7 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
         imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
+
 
 
 def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, denoise_epoch_choose):
@@ -216,6 +221,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         print(Y.shape)
         #imwrite(pth_tif_write, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
         imwrite(pth_tif_write, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+
 
 
 def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, denoise_epoch_choose):
@@ -304,6 +310,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                         raise Exception("more or less than one slice present")
 
 
+
 def rename_files(pth_datafile, fname, fn_prefix, pth_fldr):
 
     fname_rename = fn_prefix + '_raw_.' + fname[-3:]
@@ -319,6 +326,8 @@ def rename_files(pth_datafile, fname, fn_prefix, pth_fldr):
     fname = fname_rename
 
     return (pth_datafile, fname)
+
+
 
 def mat2tif_carls_old_project(pth_datafile):
 
@@ -338,6 +347,33 @@ def mat2tif_carls_old_project(pth_datafile):
     
     return mat_file_shape
             
+
+
+def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, pth_md, pth_copydest, pth_fldr):
+
+
+    if do_copyfiles==1 and not (do_denoise or do_stitch): #copy from storage server to O2 (unless do_denoise or do_stitch, since they only use files in O2 denoising folder, whcih is not copied in or out of O2)
+        
+        print("\n\n\n copying the following files: \n" + pth_tif_read + "\n" + pth_md + "\n from storage server into the following O2 directory: \n" + pth_copydest)
+        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+        shutil.copy(pth_tif_read, pth_copydest)
+        shutil.copy(pth_md, pth_copydest)
+
+    elif do_copyfiles==2 and not do_separate: #copy from O2 to storage server (unless do_separate, since new files are sent to O2 denoising folder, whcih is not copied in or out of O2)
+        
+        print("\n\n\n copying anything new from the O2 folder: \n" + pth_fldr + "\n into the storage server folder: \n" + pth_copydest)
+        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+        try:
+            shutil.copytree(pth_fldr, pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
+        except: #shutil.Error, exc:
+            print("\n\n\n there were some copy errors, which seem to be because of unchanged files that exist in source and dest, but the rest of the copytree seems to work regardless")
+            # errors = exc.args[0]
+            # for error in errors:
+            #     src, dst, msg = error
+            #     # Get the path to the file in Gold dir here from src
+            #     shutil.copy2(goldsrc, dst)
+
+
 
 def ordinal(n: int):
     if 11 <= (n % 100) <= 13:

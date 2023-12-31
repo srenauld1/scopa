@@ -51,8 +51,8 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substrings, recording_
                 fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_*_' + fn_suffix_flyg
             else:
                 fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_' + fn_suffix_flyg  
-            pth_allfiles_flygraw = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
-            pth_allfiles = pth_allfiles + pth_allfiles_flygraw #combine, since both patterns are valid as input
+            pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
+            pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since both patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
             fn_pattern_carlold = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + '_' + fn_suffix_carlold 

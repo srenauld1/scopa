@@ -72,6 +72,8 @@ denoising folder is separate from data folder because it can get big (if multipl
 
  Once a job dependency fails due to the termination state of a preceding job, the dependent job will never be run, even if the preceding job is requeued and has a different termination state in a subsequent execution.
 
+there are a few spots in the pipeline built to accommodate carl's old project, they are flagged with carls_old_project==1, and in some cases have their own functions (which are named with suffix 'carls_old_project') 
+
  #########
 
  the recommended workflow is:

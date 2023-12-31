@@ -7,7 +7,7 @@
 
 ##########################################################################################################################################
 
-pth_storage = '/dummy/path/here/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage will be created (if on O2, this folder is directly under your scratch folder)
+pth_storage = '/this/is/a/dummy/path/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage will be created (if on O2, this folder is directly under your scratch folder)
 do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
@@ -59,11 +59,10 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 
 
 import sys
-import shutil
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
-from pathlib import Path
+from helpers import copy_files_scopa
 
 if len(sys.argv)>1:
     
@@ -78,6 +77,7 @@ if len(sys.argv)>1:
 
 
 [pth_allrec, pth_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, pth_storage)
+
 
 
 if do_register + do_separate + do_denoise + do_stitch + do_extract + do_crop > 1:
@@ -138,26 +138,9 @@ if not do_copyfiles:
 
 for ri, _ in enumerate(pth_tif_read_all):
     
-    if do_copyfiles==1: #copy from storage server to O2
-        
-      print("\n\n\n copying the following files: \n" + pth_tif_read_all[ri] + "\n" + pth_md_all[ri] + "\n from storage server into the following O2 directory: \n" + pth_copydest_all[ri])
-      Path(pth_copydest_all[ri]).mkdir(parents=True, exist_ok=True)
-      shutil.copy(pth_tif_read_all[ri], pth_copydest_all[ri])
-      shutil.copy(pth_md_all[ri], pth_copydest_all[ri])
-    
-    elif do_copyfiles==2: #copy from O2 to storage server 
-        
-      print("\n\n\n copying anything new from the O2 folder: \n" + pth_fldr_all[ri] + "\n into the storage server folder: \n" + pth_copydest_all[ri])
-      Path(pth_copydest_all[ri]).mkdir(parents=True, exist_ok=True)
-      try:
-        shutil.copytree(pth_fldr_all[ri], pth_copydest_all[ri], dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
-      except: #shutil.Error, exc:
-        print("some copy out errors")
-        # errors = exc.args[0]
-        # for error in errors:
-        #     src, dst, msg = error
-        #     # Get the path to the file in Gold dir here from src
-        #     shutil.copy2(goldsrc, dst)
+    if do_copyfiles!=0: #copy files from storage server to O2, or vice versa
+       
+       copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read_all[ri], pth_md_all[ri], pth_copydest_all[ri], pth_fldr_all[ri])
         
     elif do_copyfiles==0: #compute against the data 
       
