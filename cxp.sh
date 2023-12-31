@@ -109,7 +109,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 ntasks_str=1
                 cpus_per_task_str=1
                 mem_per_cpu_str=15G
-                gres_str=--gres=gpu:a100:1,vram:80G 
+                gres_str='--gres=gpu:a100:1,vram:80G '
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:20:00
