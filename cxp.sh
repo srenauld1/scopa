@@ -35,7 +35,7 @@ FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 
-PARS_FILENAME='scopaparams.txt' #no need to change this, filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
+PARS_FILENAME='scopaparams.txt' #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
 pars["PTH_STORAGE"]="${PTH_STORAGE[@]}"

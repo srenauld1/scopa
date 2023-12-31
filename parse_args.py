@@ -15,8 +15,6 @@ class parse_pars_file():
 
         for key, value in tmpdict.items():
             tmplist = list(tmpdict[key].split(" "))
-            print(key)
-            print(tmplist)
             exec('self.' + key + '=tmplist')
     
     # def overwrite_args(self, args): #this doesn't work yet
@@ -203,7 +201,7 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
 
     pars_filename = args.pars_filename[0]
 
-    if pars_filename=='pars.txt': #additional option to read input from file written in bash script, should come after command line arguments 
+    if pars_filename: #additional option to read input from file written in bash script, should come after command line arguments 
         
         pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 

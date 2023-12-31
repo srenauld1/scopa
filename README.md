@@ -64,6 +64,9 @@
  and it uses fewer loops and is less automated 
  BUT, i've been unable to get the denoising working in the ipynb version of the pipeline on O2 (it does work on google colab)
 
+please have a backup of your data outside of the paths this pipeline operates on (path_storage and scratch )
+especially if you are using do_copyfiles to automate file transfer to and from O2, 
+
 do_copyfiles occurs inside pipeline_init.py for two reasons:
         1. to ensure everything is the same for the copying and the analysis (ie to ensure the right files get copied)
         2. since slurm arrays are used, it is simpler to copy inside the parallel job
