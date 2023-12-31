@@ -130,12 +130,13 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --export=DO_COPYFILES="$DO_COPYFILES",PARS_FILENAME="$PARS_FILENAME" \
         --array=[$jobarrayind] \
         --dependency="$dep_str" \
-        -p "$partition_str" \
+        --partition="$partition_str" \
         --time="$time_str" \
         --ntasks="$ntasks_str" \
         --cpus-per-task="$cpus_per_task_str" \
         --mem-per-cpu="$mem_per_cpu_str" \
-        "$gres_str""$sbatch_job_name") 
+        "$gres_str" \
+        "$sbatch_job_name") 
 
         declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
         tmpid=arrid_${loopcount}_dynvar #assign to another var whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
