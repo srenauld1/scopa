@@ -16,10 +16,10 @@
 echo "SHELL IS " $SHELL
 
 do_register=1
-do_separate=0
-do_denoise=0
-do_stitch=0
-do_extract=0
+do_separate=1
+do_denoise=1
+do_stitch=1
+do_extract=1
 
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 PARS_FILENAME='pars.txt' #filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
