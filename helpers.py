@@ -29,7 +29,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
         Ynew = imread(f)
         print(Ynew.dtype)
         print(sliceind)
-        print("not every slice min should be zero (probably), this slice min is:" + str(np.min(Ynew)))
+        print("some (or probably all) slice min should be nonzero at this stage, this slice min is:" + str(np.min(Ynew)))
         Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
 
     if countz != dims[1]:
@@ -352,26 +352,32 @@ def mat2tif_carls_old_project(pth_datafile):
 def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, pth_md, pth_copydest, pth_fldr):
 
 
-    if do_copyfiles==1 and not (do_denoise or do_stitch): #copy from storage server to O2 (unless do_denoise or do_stitch, since they only use files in O2 denoising folder, whcih is not copied in or out of O2)
+    if do_copyfiles==1: #copy from storage server to O2 (unless do_denoise or do_stitch, since they only use files in O2 denoising folder, whcih is not copied in or out of O2)
         
-        print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_copydest)
-        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-        shutil.copy(pth_tif_read, pth_copydest)
-        shutil.copy(pth_md, pth_copydest)
+        if do_denoise or do_stitch:
+            print("\n\n\nnot copying anything because do_denoise or do_stitch is true, and they use files in denoising folder")
+        else:
+            print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_copydest)
+            Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+            shutil.copy(pth_tif_read, pth_copydest)
+            shutil.copy(pth_md, pth_copydest)
 
-    elif do_copyfiles==2 and not do_separate: #copy from O2 to storage server (unless do_separate, since new files are sent to O2 denoising folder, whcih is not copied in or out of O2)
+    elif do_copyfiles==2: #copy from O2 to storage server (unless do_separate, since new files are sent to O2 denoising folder, whcih is not copied in or out of O2)
         
-        print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_copydest)
-        Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-        try:
-            shutil.copytree(pth_fldr, pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
-        except: #shutil.Error, exc:
-            print("\n\n\nthere were some copy errors, which seem to be because of unchanged files that exist in source and dest, but the rest of the copytree seems to work regardless")
-            # errors = exc.args[0]
-            # for error in errors:
-            #     src, dst, msg = error
-            #     # Get the path to the file in Gold dir here from src
-            #     shutil.copy2(goldsrc, dst)
+        if do_separate:
+            print("\n\n\nnot copying anything because do_separate is true, and files created by do_separate are in denoising folder")
+        else:
+            print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_copydest)
+            Path(pth_copydest).mkdir(parents=True, exist_ok=True)
+            try:
+                shutil.copytree(pth_fldr, pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
+            except: #shutil.Error, exc:
+                print("\n\n\nthere were some copy errors, which are probably because of unchanged files that exist in source and dest, but the rest of the copytree seems to work regardless")
+                # errors = exc.args[0]
+                # for error in errors:
+                #     src, dst, msg = error
+                #     # Get the path to the file in Gold dir here from src
+                #     shutil.copy2(goldsrc, dst)
 
 
 
