@@ -14,8 +14,8 @@
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
 
 #set variables that control which jobs are done
-do_register=1
-do_separate=1
+do_register=0
+do_separate=0
 do_denoise=1
 do_stitch=1
 do_extract=1
@@ -81,6 +81,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
+        gres_str=
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
@@ -108,6 +109,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 ntasks_str=1
                 cpus_per_task_str=1
                 mem_per_cpu_str=15G
+                gres_str=gpu:a100:1,vram:80G
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:20:00
@@ -133,6 +135,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --ntasks="$ntasks_str" \
         --cpus-per-task="$cpus_per_task_str" \
         --mem-per-cpu="$mem_per_cpu_str" \
+        --gres="$gres_str" \
         "$sbatch_job_name") 
 
         declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
