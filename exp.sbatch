@@ -20,7 +20,7 @@ fi
 --do_extract 1 \
 --index_extraction_param_set 'default' \
 --region_extraction 'fullfov' \
---do_planar_extraction 0 \
+--do_planar_extraction 1 \
 --use_background_subtracted 0 \
 --use_denoised 1 \
 --recording_index $SLURM_ARRAY_TASK_ID &

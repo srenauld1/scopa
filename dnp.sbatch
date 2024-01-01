@@ -30,7 +30,7 @@ do
     --do_copyfiles "$DO_COPYFILES" \
     --do_denoise 1 \
     --denoise_volume 1 \
-    --num_epochs_denoise 1 \
+    --num_epochs_denoise 5 \
     --denoise_slice_index 'all' \
     --recording_index $SLURM_ARRAY_TASK_ID &
 
