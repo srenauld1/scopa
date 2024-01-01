@@ -20,328 +20,228 @@
 % this will error if there are two files with the exact same name
 % in different directories within filepath_super
 
-close all
-clear all
-clc
-
-plot_raw = 0; %optional
-plot_reg = 0; %optional
-plot_dn = 1; %optional
-nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-rescale_fac_bottom_wholeplot = 0; %combined plot rescale lower clip
-rescale_fac_top_wholeplot = 6; %combined plot rescale upper clip
-plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
-plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
-swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-smooth_window_temporal = 30;
+function stack = cx_vis_tif(md, suffixes_plot, suffix_analysis, ...
+    pth_fldr, recid, ...
+    pth_use_tif, pth_use_mat, nan_numlines, ...
+    rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
+    rescalefac_wholeplot_ubnd, plotinds_t, plotinds_z, ...
+    swapdim, smooth_window_temporal, remove_scan_noise, ...
+    smooth_window_temporal_for_remove_scan_noise, plot_stack_stats, ...
+    ncolgif, old_project)
 
 
 
-if ~isempty(regexp( path, '/Users/wienecke/Documents/GitHub/', 'once' ))
-    pth_super = '~/Documents/stacks/';
-elseif ~isempty(regexp( path, '/home/caw846', 'once' ))
-    pth_super = '/n/scratch3/users/c/caw846/stacks/';
+sz = md.sz_o;
+
+if isempty(plotinds_z)
+    plotinds_z = 1:sz(3);
+elseif plotinds_z<0
+    plotinds_z = round(linspace(1, sz(3), -plotinds_z));
 end
 
-recdate = '20230424';
-fly = '*';
-trial = '*';
 
-ncol = 256; %num colors in plot
-
-if strcmp(recdate(1:2), '22') %override some settings for old project
-    old_project = 1;
+if md.croptimeinds
+    keepinds_t = md.croptimeinds(1)+1:sz(4)-md.croptimeinds(2);
 else
-    old_project = 0;
+    keepinds_t = 1:sz(4);
 end
 
-%% filenames
+if isempty(plotinds_t)
+    plotinds_t = 1:length(keepinds_t);
+elseif plotinds_t<0
+    plotinds_t = round(linspace(1, length(keepinds_t), -plotinds_t));
+end
 
+plotinds_z_str = sprintf('%.0f,', plotinds_z);
+plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
+rescale_str = [' rescale ' num2str(rescalefac_wholeplot_lbnd) ' ' num2str(rescalefac_wholeplot_ubnd)];
 
-if ~old_project
-    if strcmp(trial, '*')
-        fn_pattern = [pth_super '**' filesep recdate '-' fly '_*_trial_*_*.tif'];
+if rescale_each_subplot
+    rseachstr = 'eachrescaled';
+else
+    rseachstr = '';
+end
+
+stackall = cell(length(suffixes_plot), 1); %make it cell column so first dim is cat when cell2mat below
+stackall_mn = cell(length(suffixes_plot), 1); %make it cell column so first dim is cat when cell2mat below
+fn_gif_insert = cell(length(suffixes_plot), 1);
+fn_gif_insert_all = '';
+
+plot_gif = 1;
+if ~ismember(suffix_analysis, suffixes_plot)
+    if isempty(suffixes_plot)
+        plot_gif = 0;
+        "WARNING, suffixes_plot IS EMPTY, SKIPPING STACK GIF"
+        suffixes_plot{end+1} = suffix_analysis;
     else
-        fn_pattern = [pth_super '**' filesep recdate '-' fly '_*_trial_' sprintf( '%03d', str2double(trial) ) '_*.tif'];
+        "WARNING suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW"
+        suffixes_plot{end+1} = suffix_analysis;
     end
 else
-    fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_stackraw_.tif'];
+    suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot), suffix_analysis); %make suffix_analysis the last one so it can be output from this function with minimal memory
 end
 
-pth_all = rdir(fn_pattern);
+[~, plot_order] = sort(cellfun(@length, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
 
-raw_tif_absent = 0;
-if isempty(pth_all)
-    raw_tif_absent = 1;
-    fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_.tif'];
-    pth_all = rdir(fn_pattern);
-end
-if isempty(pth_all)
-    fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_.mat'];
-    pth_all = rdir(fn_pattern);
-end
-if isempty(pth_all)
-    fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.tif'];
-    pth_all = rdir(fn_pattern);
-end
-if isempty(pth_all)
-    fn_pattern = [pth_super '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.mat'];
-    pth_all = rdir(fn_pattern);
-end
+%%  loop over suffixes, loading and concatenating
 
 
+for spi = 1:length(suffixes_plot)
 
-pth_all = rdir(fn_pattern);
-
-for ri = 1:length(pth_all)
-
-    pth_raw_tif = pth_all(ri).name;
-    display(['processing : ' pth_raw_tif] )
-
-    [pth_fldr, fn_raw_tif, ~] = fileparts(pth_raw_tif);
-    pth_fldr = [pth_fldr '/'];
-    spl = strjoin(strsplit(fn_raw_tif, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
-    spl = strsplit(spl, '_'); %then separate by underscore
-
-    datenum = str2double(spl{1});
-    flynum = str2double(spl{2});
-
-    if old_project | raw_tif_absent
-        trialnum = str2double(spl{3});
-    else
-        trialnum = str2double(spl(find(strcmp(spl, 'trial'))+1));
+    pth_tmp_tif = [pth_fldr recid '_' suffixes_plot{spi} '_.tif'];
+    tmptif = rdir(pth_tmp_tif);
+    if ~isempty(tmptif)
+        pth_tmp_tif = tmptif.name;
+    end
+    pth_tmp_mat = [pth_fldr recid '_' suffixes_plot{spi} '_.mat'];
+    tmpmat = rdir(pth_tmp_mat);
+    if ~isempty(tmpmat)
+        pth_tmp_mat = tmpmat.name;
     end
 
-    recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
-    recid_tit = strrep(recid, '_', ' ');
+    try_stack = 1;
+    if isempty(tmptif) & isempty(tmpmat)
 
-    pth_raw_mat = [pth_raw_tif(1:end-4) '.mat'];
+        if strcmp(suffixes_plot{spi}, 'cmrg_dcdn_nosn')
 
-    pth_reg_tif = [pth_fldr recid '_cmrg_.tif'];
-    pth_reg_mat = [pth_reg_tif(1:end-4) '.mat'];
+            suffix_dn = 'cmrg_dcdn';
+            pth_tmp_tif_nosn = [pth_fldr recid '_' suffix_dn '_.tif'];
+            cx_remove_scan_noise([], [], [], smooth_window_temporal_for_remove_scan_noise, [], pth_tmp_tif_nosn)
 
-    pth_dn_tif = [pth_fldr recid '_cmrg_dcdn_.tif'];
-    pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
+        else
 
-    pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
+            sprintf(['WARNING, NEITHER TIF NOR MAT FOUND FOR' newline pth_tmp_tif(1:end-4) newline 'SKIPPING IT FOR PLOT'])
+            try_stack = 0;
 
-    load(pth_metadata) %file created in initial python part of pipeline
-    sz = single([md.ypix md.xpix md.numslice md.numvol]);
+        end
 
-    size_z_read_from_raw = md.numslice_withflyback; %raw tif includes flyback
-    size_z_read_from = sz(3);
-    size_t_read_from = sz(4);
-    inds_z_read_from = 1:size_z_read_from; %can choose to not read the flyback frames here
-    inds_t_read_from = 1:size_t_read_from;
-    size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
 
-    if isempty(plotinds_z)
-        plotinds_z = 1:sz(3);
-    elseif plotinds_z<0
-        plotinds_z = round(linspace(1, sz(3), -plotinds_z));
     end
 
-    if isempty(plotinds_t)
-        plotinds_t = 1:sz(4);
-    elseif plotinds_t<0
-        plotinds_t = round(linspace(1, sz(4), -plotinds_t));
-    end
+    if try_stack
 
-    nanins = single(nan([nan_numlines, size_read_to(4), length(plotinds_z), length(plotinds_t)]));
-    nanins_mn = nanins(:,:,:,1);
-
-    plotinds_z_str = sprintf('%.0f,', plotinds_z);
-    plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
-    rescale_str = [' rescale ' num2str(rescale_fac_bottom_wholeplot) ' ' num2str(rescale_fac_top_wholeplot)];
-
-    if rescale_each_subplot
-        rseachstr = 'eachrescaled';
-    else
-        rseachstr = '';
-    end
-
-    stackall = [];
-    stackall_mn = [];
-    fn_gif_insert = '';
-
-    %% read raw
-
-
-    if plot_raw
+        stackall{spi} = single(nan([nan_numlines+sz(1), sz(2), length(plotinds_z), length(plotinds_t)]));
+        stackall_mn{spi} = single(nan([nan_numlines+sz(1), sz(2), length(plotinds_z)]));
 
         try
-            load(pth_raw_mat)
-            if exist('stackRaw_pmc', 'var')
-                stackraw(1,:,:,:) = stackRaw_pmc;
-                stackraw = permute(stackraw, [2 3 1 4]);
-                clear stackRaw_pmc
-            end
+
+            stack = struct2cell(load(pth_tmp_mat));
+            stack = stack{1};
+
         catch
-            out_datatype = "int16"; %NOTE: SCANIMAGE SAVES INT16 NOT UINT16, CONVERT BELOW
-            stackraw = cx_read_tif_tzyx(pth_raw_tif, ...
-                out_datatype, size_read_to, ...
-                size_z_read_from_raw, size_t_read_from, ...
-                inds_z_read_from, inds_t_read_from);
 
-            datmin_raw = min(stackraw(:));
-            datmax_raw = max(stackraw(:));
-            stackraw = single(stackraw);
-            stackraw = stackraw - double(datmin_raw);
-            if datmax_raw > 2^16-1
-                "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
-                error
+            if strcmp(suffixes_plot{spi}, 'raw')
+                if old_project
+                    out_datatype = "double"; %old project saved raw as double
+                else
+                    out_datatype = "int16"; %SCANIMAGE SAVES INT16 NOT UINT16!!!
+                end
+            else
+                out_datatype = "uint16"; %scopa output tifs are all uint16
             end
-            stackraw = uint16(stackraw);
 
-            save(pth_raw_mat, 'stackraw', '-v7.3', '-mat')
-
-        end
-
-        if smooth_window_temporal
-            stackraw = smoothdata(stackraw, 4, 'gaussian', smooth_window_temporal);
-        end
-
-        tmp = single(stackraw(:,:,plotinds_z, plotinds_t));
-        tmp_mn = mean(stackraw, 4);
-        tmp_mn = single(tmp_mn(:,:,plotinds_z));
-        if rescale_each_subplot
-            tmp = rescale(tmp);
-            tmp_mn = rescale(tmp_mn);
-        end
-        stackall = cat(1, stackall, nanins, tmp);
-        stackall_mn = cat(1, stackall_mn, nanins_mn, tmp_mn);
-        clear stackraw tmp*
-        fn_gif_insert = [fn_gif_insert 'raw_'];
-
-    end
-
-    %% read registered
-
-    if plot_reg
-
-        try
-            load(pth_reg_mat)
-            if exist('regProduct', 'var')
-                stackreg = regProduct;
-                clear regProduct
+            if strcmp(suffixes_plot{spi}, 'raw')
+                size_z_read_from = md.numslice_withflyback; %raw tif includes flyback
+            else
+                size_z_read_from = sz(3);
             end
-        catch
-            out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
-            stackreg = cx_read_tif_tzyx(pth_reg_tif, ...
+            size_t_read_from = sz(4);
+            inds_z_read_from = 1:size_z_read_from; %can choose any subset of z (e.g. can skip flyback frames if reading raw), does not have to be contiguous
+            inds_t_read_from = 1:size_t_read_from; %can choose any subset of t, does not have to be contiguous
+            size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
+
+            stack = cx_read_tif_tzyx(pth_tmp_tif, ...
                 out_datatype, size_read_to, ...
                 size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
-            save(pth_reg_mat, 'stackreg', '-v7.3', '-mat')
-        end
-
-
-        if smooth_window_temporal
-            stackreg = smoothdata(stackreg, 4, 'gaussian', smooth_window_temporal);
-        end
-
-        tmp = single(stackreg(:,:,plotinds_z, plotinds_t));
-        tmp_mn = mean(stackreg, 4);
-        tmp_mn = single(tmp_mn(:,:,plotinds_z));
-        if rescale_each_subplot
-            tmp = rescale(tmp);
-            tmp_mn = rescale(tmp_mn);
-        end
-        stackall = cat(1, stackall, nanins, tmp);
-        stackall_mn = cat(1, stackall_mn, nanins_mn, tmp_mn);
-        clear stackreg tmp*
-        fn_gif_insert = [fn_gif_insert 'reg_'];
-
-    end
-
-    %% read denoised
-
-    if plot_dn
-
-        try
-            load(pth_dn_mat)
-            if exist('stackreg', 'var')
-                stackdn = stackreg;
-                clear stackreg
+            
+            datmin = min(stack(:));
+            datmax = max(stack(:));
+            if ~isa(stack, 'uint16')
+                stack = single(stack);
             end
-        catch
-            out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
-            stackdn = cx_read_tif_tzyx(pth_dn_tif, ...
-                out_datatype, size_read_to, ...
-                size_z_read_from, size_t_read_from, ...
-                inds_z_read_from, inds_t_read_from);
-            save(pth_dn_mat, 'stackdn', '-v7.3', '-mat')
+            stack = stack - double(datmin);
+            if ~isa(stack, 'uint16')
+                if datmax > 2^16-1
+                    "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
+                    error
+                end
+                stack = uint16(stack);
+            end
+
+            if md.croptimeinds
+                stack = stack(:,:,:,keepinds_t);
+            end
+
+            save(pth_tmp_mat, 'stack', '-v7.3', '-mat')
+
+
+        end
+
+        stacktmp = single(stack(:,:,plotinds_z, plotinds_t));
+
+        if plot_stack_stats
+            tindz = 1:sz(4);
+            numframes_subset_statsplots = 100;
+            tindz_sub = round(linspace(1, sz(4), numframes_subset_statsplots));
+            cx_plots_imdata(single(stacktmp(:,:,:,tindz)), [], sindz, tindz, tindz_sub, size(tmp), pth_tmp_mat)
         end
 
         if smooth_window_temporal
-            stackdn = smoothdata(stackdn, 4, 'gaussian', smooth_window_temporal);
+            stack = smoothdata(stack, 4, 'gaussian', smooth_window_temporal); %ideally this comes before plot indexing but smoothdata will output double so that could be huge and not worth it
         end
 
-
-  
-        %% 
-
-        %num_low_freq_to_keep: if one number, it's the number of frequencies to keep in a lowpass filter
-        % if two numbers, it's the min and max of the range of frequency indices to keep in a stopband filter 
-        % must be between 2 and sz(2)/2
-
-        num_low_freq_to_keep = [10 20]; 
-
-        stackdn = cx_fftfilter(stackdn, num_low_freq_to_keep, 0);
-        pth_dn_nh_mat = [pth_dn_mat(1:end-4) 'nh_.mat'];
-        save(pth_dn_nh_mat, 'stackdn', '-v7.3', '-mat')
-
-        tit_gif_insert = strrep(fn_gif_insert, '_', ' ');
-
-        plot_gif_fast(rescale(stackdn, 0, 1), ...
-            ncol, swapdim, ...
-            [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str '_.gif'], ...
-            {[recid_tit ' : ' tit_gif_insert]; ['z inds ' plotinds_z_str]})
-
-        %% 
-
-
-        tmp = single(stackdn(:,:,plotinds_z, plotinds_t));
-        tmp = single(stackdn(:,:,plotinds_z, 1:40));
-        tmp_mn = mean(stackdn, 4);
-        tmp_mn = single(tmp_mn(:,:,plotinds_z));
+        if ~strcmp(pth_use_mat, pth_tmp_mat) %if it's the stack for analysis outside this function
+            stack = [];
+        end
+        stacktmp_mn = mean(stacktmp, 4);
+        stacktmp_mn = single(stacktmp_mn(:,:,plotinds_z));
         if rescale_each_subplot
-            tmp = rescale(tmp);
-            tmp_mn = rescale(tmp_mn);
+            stacktmp = rescale(stacktmp);
+            stacktmp_mn = rescale(stacktmp_mn);
         end
-        stackall = cat(1, stackall, nanins, tmp);
-        stackall_mn = cat(1, stackall_mn, nanins_mn, tmp_mn);
-        clear stackdn tmp*
-        fn_gif_insert = [fn_gif_insert 'dn_'];
+        stackall{spi}(nan_numlines+1:end, :, :, :) = stacktmp;
+        stackall_mn{spi}(nan_numlines+1:end, :, :) = stacktmp_mn;
+        clear stacktmp*
+        fn_gif_insert{spi} = [fn_gif_insert_all suffixes_plot{spi}];
 
     end
+end
 
-    %% plot
 
+stackall = cell2mat(stackall(~cellfun( @isempty, stackall )));
+stackall_mn = cell2mat(stackall_mn(~cellfun( @isempty, stackall_mn )));
+fn_gif_insert = strjoin(fn_gif_insert(~cellfun( @isempty, fn_gif_insert )), '_AND_');
 
-    tit_gif_insert = strrep(fn_gif_insert, '_', ' ');
+%% plot
 
-    %mef = mean(stackall, 4);
-    plot_gif_fast(rescale(stackall, 0, 1), ...
-        ncol, swapdim, ...
+if plot_gif
+
+    title_insert = strrep(fn_gif_insert, '_', ' ');
+    recid_title = strrep(recid, '_', ' ');
+
+    cx_plot_gif_fast(rescale(stackall, 0, 1), ...
+        ncolgif, swapdim, ...
         [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str '_.gif'], ...
-        {[recid_tit ' : ' tit_gif_insert]; ['z inds ' plotinds_z_str]})
+        {[recid_title ' : ' title_insert]; ['z inds ' plotinds_z_str]})
 
-    plot_gif_fast(rescale(stackall, rescale_fac_bottom_wholeplot, rescale_fac_top_wholeplot), ...
-        ncol, swapdim, ...
-        [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_allrescaled_.gif'], ...
-        {[recid_tit ' : ' tit_gif_insert]; ['z inds ' plotinds_z_str]; rescale_str})
+    % cx_plot_gif_fast(rescale(stackall, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
+    %     ncolgif, swapdim, ...
+    %     [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_allrescaled_.gif'], ...
+    %     {[recid_title ' : ' title_insert]; ['z inds ' plotinds_z_str]; rescale_str})
 
-    plot_gif_fast(rescale(stackall_mn), ...
-        ncol, swapdim, ...
+    cx_plot_gif_fast(rescale(stackall_mn), ...
+        ncolgif, swapdim, ...
         [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str '_meanframe_.gif'], ...
-        {[recid_tit ' : ' tit_gif_insert ' meanframe']; ['z inds ' plotinds_z_str]})
+        {[recid_title ' : ' title_insert ' meanframe']; ['z inds ' plotinds_z_str]})
 
-    plot_gif_fast(rescale(stackall_mn, rescale_fac_bottom_wholeplot, rescale_fac_top_wholeplot), ...
-        ncol, swapdim, ...xz
+    cx_plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
+        ncolgif, swapdim, ...xz
         [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_meanframe_allrescaled_.gif'], ...
-        {[recid_tit ' : ' tit_gif_insert ' meanframe']; ['z inds ' plotinds_z_str]; rescale_str})
+        {[recid_title ' : ' title_insert ' meanframe']; ['z inds ' plotinds_z_str]; rescale_str})
 
+
+end
 
 end
 
