@@ -54,8 +54,8 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
     Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx
     print(Y.shape)
-    #imwrite(pth_tif_reg, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
-    imwrite(pth_tif_reg, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+    #imwrite(pth_tif_reg, Y.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+    imwrite(pth_tif_reg, Y, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
     for f in pth_tif_all:
         os.remove(f)
@@ -100,7 +100,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
             shutil.rmtree(pth_trainset) #REMOVE any existing training folder before training, to ensure models don't get mixed (until "resume training" functionality is written)
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
-        imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
+        imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
 
@@ -149,7 +149,7 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
         
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
-        imwrite(pth_tif_write, Ynew, photometric = 'minisblack' ) #put the tif in the folder deepcad looks to for training data
+        imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #put the tif in the folder deepcad looks to for training data
 
 
 
@@ -219,8 +219,8 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         print(Y.shape)
         Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
         print(Y.shape)
-        #imwrite(pth_tif_write, Y.squeeze()) #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
-        imwrite(pth_tif_write, Y) #write the registered movie as tif for use in matlab, and caiman extraction below
+        #imwrite(pth_tif_write, Y.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+        imwrite(pth_tif_write, Y, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
 
@@ -303,7 +303,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                             print(Y.shape)
                             Y = Y.reshape(dims_pre_denoise[0] * actual_z_size, dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
                             print(Y.shape)
-                            imwrite(pth_tif_write, Y.squeeze()) #write the registered movie as tif for use in matlab, and caiman extraction below
+                            imwrite(pth_tif_write, Y.squeeze(), bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
                     if countz != dims_pre_denoise[1]:
@@ -342,7 +342,7 @@ def mat2tif_carls_old_project(pth_datafile):
     print("MIN OF STACKRAW_PMC MAT FILE " + str(mnmv))
     Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
     pth_datafile = pth_datafile[:-4] + '.tif'
-    imwrite(pth_datafile, Y.astype('uint16')) #write as t x y z (singleton z at end)
+    imwrite(pth_datafile, Y.astype('uint16'), bigtiff=True, photometric='minisblack') #write as t x y z (singleton z at end)
     mat_file_shape = Y.shape
     
     return mat_file_shape

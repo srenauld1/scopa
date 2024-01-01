@@ -92,11 +92,11 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
             for zind in zindall: #for every z slice 
                 print("WRITING PRESMOOTHED SLICE " + str(zind))
                 pth_tif_presmooth[zind] = pth_tif_write_tmp[:-4] + str(zind) + '_presmooth_.tif'
-                imwrite(pth_tif_presmooth[zind], Y[:,:,:,zind].squeeze()) 
+                imwrite(pth_tif_presmooth[zind], Y[:,:,:,zind].squeeze(), bigtiff=True, photometric='minisblack') 
         else: # 
             print("WRITING ALL PRESMOOTHED SLICES" )
             pth_tif_presmooth = [pth_tif_write_tmp[:-4] + 'all_presmooth_.tif']
-            imwrite(pth_tif_presmooth[0], Y.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+            imwrite(pth_tif_presmooth[0], Y.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
         print("TEMPORALLY SMOOTHING MOVIE BEFORE REGISTRATION")
 
@@ -130,7 +130,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
             print("DOING 3D registration FOR ALL SLICES")
             images_sliced = Y #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
-        imwrite(pth_tif_write_tmp, images_sliced.squeeze()) #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+        imwrite(pth_tif_write_tmp, images_sliced.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
         # each_min_mov = 0 # don't think we want to make min mov the min for each z slice 
         # if each_min_mov:
@@ -163,7 +163,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
         
         if do_planar_registration and movie_is_4d:
             pth_write = pth_tif_write[:-4] + str(si) + '_z_.tif'
-            imwrite(pth_write, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+            imwrite(pth_write, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
         else:
             pth_write = pth_tif_write
             mnmv = np.min(Ynew)
@@ -176,9 +176,9 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
                 plot_gif(Ynew, filename_gif, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
             if len(Ynew.shape)==3:# or Y.shape[3]==1:
-                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
             else:
-                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])) #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
         countz = countz + 1
 

@@ -38,7 +38,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
         if not do_crop: #skip everything else if you're doing a cropping session
             
             pth_tif_write_tmp = pth_tif_read[:-4] + rx + '_' + limits_str + '_cmex_tmp_.tif'
-            imwrite(pth_tif_write_tmp, Ycrop.squeeze()) #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
+            imwrite(pth_tif_write_tmp, Ycrop.squeeze(), bigtiff=True, photometric='minisblack') #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
             basename_memap = pth_tif_write_tmp.split('/')[-1][:-4]
             border_to_0 = 0 #if mc.border_nan == 'copy' else mc.border_to_0 
             fn_mmap_ex = cm.save_memmap([pth_tif_write_tmp], base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # exclude borders
