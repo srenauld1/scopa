@@ -11,7 +11,7 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load 
 
 else #load virtual env if not copying files
     
-    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES" \n\n"
+    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
     module load miniconda3/4.10.3
     module load gcc/9.2.0
     module load cuda/11.7
@@ -25,7 +25,7 @@ fi
 for i in 0
 do
     sleep 20s
-    ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+    ~/.conda/envs/deepcadrt/bin/python3 $(pwd)/pipeline_init.py \
     --pars_filename "$PARS_FILENAME" \
     --do_copyfiles "$DO_COPYFILES" \
     --do_denoise 1 \

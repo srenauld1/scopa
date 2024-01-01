@@ -1,11 +1,7 @@
-function out = cx_read_tif_tzyx_deprecated(filename_tif, ...
+function out = cx_read_tif_tzyx(filename_tif, ...
     out_datatype, size_read_to, ...
     size_z_read_from, size_t_read_from, ...
     inds_z_read_from, inds_t_read_from)
-
-"this version fails for tif with more than 65536 (2^16) slices"
-error
-allow_data_type_conversion = 0;
 
 %scanimage writes as tzyx, 
 % and so does scopa python pipeline 
@@ -19,36 +15,60 @@ allow_data_type_conversion = 0;
 % out_datatype, but this is a work in progress so it's 0 by default 
 %if tif is 3d (one z slice) then size_z_read_from==1 and it works fine 
 
-tr = Tiff(filename_tif, 'r');
+allow_data_type_conversion = 0;
+
+info1 = imfinfo(filename_tif);
+stripOffset = info1(1).StripOffsets;
+stripByteCounts = info1(1).StripByteCounts;
+sz_x=info1(1).Width;
+sz_y=info1(1).Height;
+if length(info1)<2
+    num_z_times_num_t=floor(info1(1).FileSize/stripByteCounts);
+else
+    num_z_times_num_t=length(info1);
+end
+
+
+fID = fopen (filename_tif, 'r');
+
+start_point = stripOffset(1) + (0:1:(num_z_times_num_t-1)).*stripByteCounts + 1;
 
 final_frame_flag_count = 0;
-countz_ti = 0;
+count_all = 0;
+count_ti = 0;
 for ti = 1:size_t_read_from
     if  ismember(ti, inds_t_read_from)
-        countz_ti = countz_ti + 1;
+        count_ti = count_ti + 1;
     end
-    % if mod(ti, 100)==0
-    %     display(["on frame " num2str(ti)])
-    % end
-    countz_zi = 0;
+    
+    count_zi = 0;
     for zi = 1:size_z_read_from
+
+        count_all = count_all + 1;
+        
+        fseek (fID, start_point(count_all), 'bof'); 
+
         if ismember(zi, inds_z_read_from) & ismember(ti, inds_t_read_from)
-            countz_zi = countz_zi + 1;
-            if countz_ti==1 & countz_zi==1 %on first frame, find data type and create output array
-                tmpframe = tr.read();
+            count_zi = count_zi + 1;
+            
+            if info1(1).BitDepth==32
+                tmpframe = fread(fID, [size_read_to(4) size_read_to(3)], 'uint32=>uint32');
+            elseif info1(1).BitDepth==16
+                tmpframe = fread(fID, [size_read_to(4) size_read_to(3)], 'uint16=>uint16');
+            else
+                tmpframe = fread(fID, [size_read_to(4) size_read_to(3)], 'uint8=>uint8');
+            end
+
+            if count_ti==1 & count_zi==1 %on first frame, find data type and create output array
                 in_datatype = class(tmpframe);
                 out = zeros(size_read_to, in_datatype);
-                out(countz_ti,countz_zi,:,:) = tmpframe; 
-            else
-                out(countz_ti,countz_zi,:,:) = tr.read(); %tiff read faster than imread
             end
+                
+            out(count_ti,count_zi,:,:) = tmpframe';
+
+
         end
-        try
-            tr.nextDirectory()
-        catch
-            "FINAL TIF FRAME"
-            final_frame_flag_count = final_frame_flag_count + 1;
-        end
+
     end
 end
 
@@ -68,6 +88,9 @@ end
 % out = permute(out, [2 3 1]);
 % out = reshape(out, size_read_to(2), size_read_to(3), length(inds_t_read_from), length(inds_z_read_from));
 out = permute(out, [3 4 2 1]); %reshape into y x z t
+
+fclose(fID);
+
 
 %make minimal required adjustments to switch data types
 if ~strcmp(in_datatype, out_datatype)
@@ -106,5 +129,5 @@ if ~strcmp(in_datatype, out_datatype)
     end
 end
 
-close(tr)
+
 
