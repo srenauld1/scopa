@@ -26,7 +26,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
 
     niter_rig = 1 #default 1, number registration iterations (regardles of pw_rigid, or is3d)
     max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
-    shifts_opencv = False #ignored if is3D_mc==true . . . true uses intercubic interp (faster but smoother), false uses fourier
+    shifts_opencv = False #ignored if is3D_mc==true, or if pw_rigid = True . . . true uses intercubic interp (faster but smoother), false uses fourier
     upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 

@@ -15,6 +15,21 @@ function out = cx_read_tif_tzyx(filename_tif, ...
 % out_datatype, but this is a work in progress so it's 0 by default 
 %if tif is 3d (one z slice) then size_z_read_from==1 and it works fine 
 
+
+% TiffInfo=tiff_read_header(filename_tif);
+
+tsStack = TIFFStack(filename_tif); % Construct a TIFF stack associated with a file
+
+tsStack = TIFFStack(filename_tif, true); % Indicate that the image data should be inverted 
+   % tsStack = 
+   %   TIFFStack handle 
+   %   Properties: 
+   %      bInvert: 1 
+   %      strFilename: [1x9 char] 
+   %      sImageInfo: [5x1 struct] 
+   %      strDataClass: 'uint16'
+
+
 allow_data_type_conversion = 0;
 
 info1 = imfinfo(filename_tif);
@@ -70,19 +85,6 @@ for ti = 1:size_t_read_from
         end
 
     end
-end
-
-if final_frame_flag_count>1
-    sprintf([ 'message FINAL TIF FRAME appeared multiple times' newline ...
-        'two possible reasons are ' newline ...
-        '1. you''re reading a raw tif output from scanimage and the header is different ' newline ...
-        'than the headers this function was written to process, proceed with caution ' newline ...
-        '2. you tried to read too many frames, ' newline ...
-        'meaning size_z_read_from and/or size_t_read_from may be too large, ' newline ... 
-        'stack read will be wrong if size_z_read_from is wrong, ' newline ...
-        'stack read will be fine but slow if size_t_read_from is too large,' newline ...
-        'but this should not occur if you''re using the metadatanew.mat file to determine these values,' newline ...
-        'in which case #1 seems more likely'])
 end
 
 % out = permute(out, [2 3 1]);
