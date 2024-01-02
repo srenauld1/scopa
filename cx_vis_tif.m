@@ -131,16 +131,6 @@ for spi = 1:length(suffixes_plot)
         catch
 
             if strcmp(suffixes_plot{spi}, 'raw')
-                if old_project
-                    out_datatype = "double"; %old project saved raw as double
-                else
-                    out_datatype = "int16"; %SCANIMAGE SAVES INT16 NOT UINT16!!!
-                end
-            else
-                out_datatype = "uint16"; %scopa output tifs are all uint16
-            end
-
-            if strcmp(suffixes_plot{spi}, 'raw')
                 size_z_read_from = md.numslice_withflyback; %raw tif includes flyback
             else
                 size_z_read_from = sz(3);
@@ -151,8 +141,7 @@ for spi = 1:length(suffixes_plot)
             size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
 
             stack = cx_read_tif_tzyx(pth_tmp_tif, ...
-                out_datatype, size_read_to, ...
-                size_z_read_from, size_t_read_from, ...
+                size_read_to, size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
             
             datmin = min(stack(:));
@@ -195,7 +184,7 @@ for spi = 1:length(suffixes_plot)
             stack = [];
         end
         stacktmp_mn = mean(stacktmp, 4);
-        stacktmp_mn = single(stacktmp_mn(:,:,plotinds_z));
+        stacktmp_mn = single(stacktmp_mn);
         if rescale_each_subplot
             stacktmp = rescale(stacktmp);
             stacktmp_mn = rescale(stacktmp_mn);
@@ -235,10 +224,10 @@ if plot_gif
         [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str '_meanframe_.gif'], ...
         {[recid_title ' : ' title_insert ' meanframe']; ['z inds ' plotinds_z_str]})
 
-    cx_plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
-        ncolgif, swapdim, ...xz
-        [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_meanframe_allrescaled_.gif'], ...
-        {[recid_title ' : ' title_insert ' meanframe']; ['z inds ' plotinds_z_str]; rescale_str})
+    % cx_plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
+    %     ncolgif, swapdim, ...xz
+    %     [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_meanframe_allrescaled_.gif'], ...
+    %     {[recid_title ' : ' title_insert ' meanframe']; ['z inds ' plotinds_z_str]; rescale_str})
 
 
 end
