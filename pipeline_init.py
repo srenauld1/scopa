@@ -9,7 +9,6 @@
 
 folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #the name says it all (with or without trailing slash, doesn't matter)
 pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, the full path (include final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage_prefix will be created (if on O2, this folder is directly under your scratch folder)
-pth_storage_prefix = '/Users/wienecke/Documents/shite/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage_prefix will be created (if on O2, this folder is directly under your scratch folder)
 do_copyfiles = 2 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage_prefix to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage_prefix from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
