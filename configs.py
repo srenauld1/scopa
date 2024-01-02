@@ -123,7 +123,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
     #, example: when stride_to_rf_ratio = 0.3, patch is ~7 times larger and stride is 50% larger
     # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger
     # since, patch dia = ceil(neuron_dia/stride_to_rf_ratio)+1)*2 and patch stride = ceil(ceil(neuron_dia/stride_to_rf_ratio)+1)*stride_to_rf_ratio)+1
-    stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8
+    stride_to_rf_ratio = 0.5  #keep in approxoimate range 0.3 - 0.8
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
@@ -143,7 +143,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
         do_patches = True
 
     #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
-    roi_decimation_fac = 0.1  #1 is "space filling", caiman demo does not use this variable, but effectively their demo sets it at 0.33)
+    roi_decimation_fac = 0.3  #1 is "space filling", caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
 
         if do_planar_extraction==True:
