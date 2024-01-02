@@ -28,7 +28,8 @@ class parse_pars_file():
     #     return args
 
 
-def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, 
+                       pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
                        do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, do_crop, recording_index, file_matching_style):
     
@@ -47,10 +48,16 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
         default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--pth_storage",  # name on the CLI - drop the `--` for positional/required parameters
+        "--folder_with_all_recordings_on_storage_and_compute_filesystems",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[pth_storage],  # default if nothing is provided
+        default=[folder_with_all_recordings_on_storage_and_compute_filesystems],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--pth_storage_prefix",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=str,
+        default=[pth_storage_prefix],  # default if nothing is provided
     )
     CLI.add_argument(
         "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
@@ -208,7 +215,8 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
         
         ##args.__dict__ = pars.__dict__.copy() #untested . . .  try this to overwrite new args, need to make them lowercase programmatically first, perhaps in the exec call above 
 
-        args.pth_storage = pars.PTH_STORAGE
+        args.folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS
+        args.pth_storage_prefix = pars.PTH_STORAGE_PREFIX
         args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
@@ -218,7 +226,8 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
     
-    pth_storage = args.pth_storage[0] 
+    folder_with_all_recordings_on_storage_and_compute_filesystems =  args.folder_with_all_recordings_on_storage_and_compute_filesystems[0] 
+    pth_storage_prefix = args.pth_storage_prefix[0] 
     do_copyfiles = args.do_copyfiles[0]
     
     index_extraction_param_set = args.index_extraction_param_set[0] 
@@ -285,7 +294,8 @@ def parse_command_line(pars_filename, do_copyfiles, pth_storage, index_extractio
             print(k,'=',v)
 
 
-    return (pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, 
+    return (pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, 
+            pth_storage_prefix, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 

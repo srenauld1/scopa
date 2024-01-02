@@ -25,8 +25,7 @@ function stack = cx_vis_tif(md, suffixes_plot, suffix_analysis, ...
     rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
     rescalefac_wholeplot_ubnd, plotinds_t, plotinds_z, ...
     swapdim, smooth_window_temporal, ...
-    smooth_window_temporal_for_remove_scan_noise, ...
-    plot_stack_gif, plot_stack_stats, ncolgif)
+    smooth_window_temporal_for_remove_scan_noise, plot_stack_stats, ncolgif)
 
 
 
@@ -68,7 +67,7 @@ fn_gif_insert_all = '';
 
 if ~ismember(suffix_analysis, suffixes_plot)
     if isempty(suffixes_plot)
-        plot_stack_gif = 0;
+        plot_gif = 0;
         "WARNING, suffixes_plot IS EMPTY, SKIPPING STACK GIF"
         suffixes_plot{end+1} = suffix_analysis;
     else
@@ -175,7 +174,7 @@ for spi = 1:length(suffixes_plot)
             stack = smoothdata(stack, 4, 'gaussian', smooth_window_temporal); %ideally this comes before plot indexing but smoothdata will output double so that could be huge and not worth it
         end
 
-        if plot_stack_gif
+        if plot_gif
             if ~strcmp(suffixes_plot{spi}, suffix_analysis) %if it's the stack for analysis outside this function
                 stack = [];
             end
@@ -199,7 +198,7 @@ end
 
 %% plot
 
-if plot_stack_gif
+if plot_gif
     
     stackall = stackall(plot_order);
     stackall = cell2mat(stackall(~cellfun( @isempty, stackall )));

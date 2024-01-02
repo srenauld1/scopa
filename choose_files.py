@@ -11,7 +11,7 @@ import collections
 
 def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_index, file_matching_style, 
                  do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
-                 use_background_subtracted, use_denoised, pth_copydest_prefix):
+                 use_background_subtracted, use_denoised):
     
     if file_matching_style=='any': #find all possible combinations 
         filepatspec_all = list(product(recdates, fly, trial, folder_substring)) 
@@ -101,11 +101,10 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
     pth_prefix_all = []
     pth_md_all = []
     carls_old_project_all = []
-    pth_copydest_all = []
     countz = 0
     for pth_datafile in pth_allfiles: #loop over all found files
         
-        pth_fldr = ('/').join(pth_datafile.split('/')[:-1])
+        pth_fldr = ('/').join(pth_datafile.split('/')[:-1]) + '/'
         fname = pth_datafile.split('/')[-1]
 
         if re.search('trial', fname):                       
@@ -121,7 +120,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
                 if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
                     [pth_datafile, fname] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr)
 
-            pth_prefix = pth_fldr + '/' + fn_prefix      
+            pth_prefix = pth_fldr + fn_prefix      
             pth_md = pth_prefix + '_metadatanew_.npy'
             pth_md_mat = pth_md[:-4] + '.mat'
 
@@ -138,7 +137,6 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
                 read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = mat_file_shape)
                 
 
-            pth_copydest = pth_copydest_prefix + pth_fldr.split('/')[-1]
 
             pth_tif_read_all.append(pth_datafile)
             pth_fldr_all.append(pth_fldr)
@@ -146,10 +144,9 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
             pth_prefix_all.append(pth_prefix)
             pth_md_all.append(pth_md)
             carls_old_project_all.append(carls_old_project)
-            pth_copydest_all.append(pth_copydest)
             
         
         countz = countz + 1
 
 
-    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all, pth_copydest_all) 
+    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all) 

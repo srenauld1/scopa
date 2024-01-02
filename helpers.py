@@ -308,7 +308,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
 def rename_files(pth_datafile, fname, fn_prefix, pth_fldr):
 
     fname_rename = fn_prefix + '_raw_.' + fname[-3:]
-    pth_datafile_rename = pth_fldr + '/' + fname_rename
+    pth_datafile_rename = pth_fldr + fname_rename
     print("RENAMING FILE \n" + pth_datafile + "\nTO \n" + pth_datafile_rename)
     os.rename(pth_datafile, pth_datafile_rename) 
     
@@ -343,35 +343,51 @@ def mat2tif_carls_old_project(pth_datafile):
             
 
 
-def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, pth_md, pth_copydest, pth_fldr):
+def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, pth_md, pth_fldr_copydest_prefix, pth_fldr):
 
+
+    fldr_name = os.path.basename(os.path.abspath(pth_fldr))
+    pth_fldr_copydest = pth_fldr_copydest_prefix + fldr_name
+    if pth_fldr_copydest[-1] == '/': 
+        pth_fldr_copydest = pth_fldr_copydest[:-1]
+    if pth_fldr[-1] != '/': 
+        pth_fldr = pth_fldr + '/'
 
     if do_copyfiles==1: #copy from storage server to O2 (unless do_denoise or do_stitch, since they only use files in O2 denoising folder, whcih is not copied in or out of O2)
         
         if do_denoise or do_stitch:
             print("\n\n\nnot copying anything because do_denoise or do_stitch is true, and they use files in denoising folder")
         else:
-            print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_copydest)
-            Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-            shutil.copy(pth_tif_read, pth_copydest)
-            shutil.copy(pth_md, pth_copydest)
+            print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_fldr_copydest)
+
+            Path(pth_fldr_copydest).mkdir(parents=True, exist_ok=True)
+            shutil.copy2(pth_tif_read, pth_fldr_copydest)
+            shutil.copy2(pth_md, pth_fldr_copydest)
 
     elif do_copyfiles==2: #copy from O2 to storage server (unless do_separate, since new files are sent to O2 denoising folder, whcih is not copied in or out of O2)
         
         if do_separate:
             print("\n\n\nnot copying anything because do_separate is true, and files created by do_separate are in denoising folder")
         else:
-            print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_copydest)
-            Path(pth_copydest).mkdir(parents=True, exist_ok=True)
-            try:
-                shutil.copytree(pth_fldr, pth_copydest, dirs_exist_ok=True) #copy all new files to destination, keep everything in destination that is not in source, overwrite everything that exists in both places . . . previously tried ignore=ignore_patterns('*_raw_.tif', '*trial_*_*.tif') to protect raw but this errors permission on o2 for some reason, but that's fine raw sholdn't be altered anyway 
-            except: #shutil.Error, exc:
-                print("\n\n\nthere were some copy errors, which are probably because of unchanged files that exist in source and dest, but the rest of the copytree seems to work regardless")
-                # errors = exc.args[0]
-                # for error in errors:
-                #     src, dst, msg = error
-                #     # Get the path to the file in Gold dir here from src
-                #     shutil.copy2(goldsrc, dst)
+            print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
+
+            for pth_src_tmp in Path(pth_fldr).glob('**/*'):  #this will copy hidden files too
+                pth_src = str(pth_src_tmp)
+                if os.path.isfile(pth_src): #only files, no directories (will create parent dirs if necessary below)
+                    pp = Path(pth_src).parts #split path
+                    split_index = pp.index(fldr_name) + 1 #find index to split source and destination (in case it's within a subdir)
+                    pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
+                    pth_dest = pth_fldr_copydest + '/' + pth_dest_suffix #append suffix to source path
+                    os.makedirs(os.path.dirname(pth_dest), exist_ok=True) #in case it's within a subdir, create any missing parent dir, if they don't exist  
+                    if (not os.path.exists(pth_dest)) or (os.path.exists(pth_dest) and abs(os.stat(pth_src).st_mtime - os.stat(pth_dest).st_mtime) > 1) :
+                        try:
+                            shutil.copy2(pth_src, pth_dest)
+                        except shutil.SameFileError:
+                            print("same file error error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
+                        except PermissionError:
+                            print("permission error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
+                        except:
+                            print("Unknown error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
 
 
 

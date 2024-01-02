@@ -27,7 +27,8 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
-PTH_STORAGE=('/n/files/Neurobio/wilsonlab/wienecke/stacks/') #path from which required files will be copied into scratch on O2 (last folder of PTH_STORAGE will be mirrored on your scratch folder)
+FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
+PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/stacks/') #path from which required files will be copied into scratch on O2 (last folder of PTH_STORAGE_PREFIX will be mirrored on your scratch folder)
 RECDATE=('20231119')
 FLY=('1' '2' '3')
 TRIAL=('*')
@@ -38,7 +39,8 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 PARS_FILENAME='scopaparams.txt' #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
-pars["PTH_STORAGE"]="${PTH_STORAGE[@]}"
+pars["FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS"]="${FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS[@]}"
+pars["PTH_STORAGE_PREFIX"]="${PTH_STORAGE_PREFIX[@]}"
 pars["RECDATE"]="${RECDATE[@]}"
 pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"

@@ -7,12 +7,14 @@
 
 ##########################################################################################################################################
 
-pth_storage = '/this/is/a/path/full/of/rotted/garbage/stacks/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage will be created (if on O2, this folder is directly under your scratch folder)
-do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage from where you're running this script
+folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #the name says it all (with or without trailing slash, doesn't matter)
+pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, the full path (include final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage_prefix will be created (if on O2, this folder is directly under your scratch folder)
+pth_storage_prefix = '/Users/wienecke/Documents/shite/' #string, single element not in list, the full path (with final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage_prefix will be created (if on O2, this folder is directly under your scratch folder)
+do_copyfiles = 2 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage_prefix to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage_prefix from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
-recdate = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+recdate = ['20231120'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['2'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
@@ -66,17 +68,18 @@ from helpers import copy_files_scopa
 
 if len(sys.argv)>1:
     
-  [pars_filename, do_copyfiles, pth_storage, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, 
-  denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring,
-  recording_index, file_matching_style] = \
-    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, pth_storage = pth_storage, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+  [pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
+  do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, 
+  use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, recording_index, file_matching_style] = \
+    parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, 
+                      pth_storage_prefix = pth_storage_prefix, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec, pth_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, pth_storage)
+[pth_allrec, pth_fldr_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix)
 
 
 
@@ -130,17 +133,17 @@ if not do_copyfiles:
   elif do_denoise:
       from denoise import denoise
 
-[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all, pth_copydest_all] = \
+[pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
   choose_files(pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, 
         do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
-        use_background_subtracted, use_denoised, pth_copydest_prefix)
+        use_background_subtracted, use_denoised)
 
 
 for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles!=0: #copy files from storage server to O2, or vice versa
        
-       copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read_all[ri], pth_md_all[ri], pth_copydest_all[ri], pth_fldr_all[ri])
+       copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read_all[ri], pth_md_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri])
         
     elif do_copyfiles==0: #compute against the data 
       
