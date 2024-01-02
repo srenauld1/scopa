@@ -14,9 +14,9 @@
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
 
 #set variables that control which jobs are done
-do_register=1
-do_separate=1
-do_denoise=1
+do_register=0
+do_separate=0
+do_denoise=0
 do_stitch=1
 do_extract=1
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
