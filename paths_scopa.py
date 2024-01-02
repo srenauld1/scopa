@@ -32,8 +32,8 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
         Path(pth_compute).mkdir(parents=True, exist_ok=True)
 
     pth_storage = pth_storage_prefix + folder_with_all_recordings_on_storage_and_compute_filesystems 
-    if not os.path.exists(pth_storage):
-        raise Exception("pth_storage does not exist")
+    if not os.path.exists(pth_storage) and do_copyfiles:
+        raise Exception("pth_storage: \n" + pth_storage + "does not exist")
 
     pth_denoising = pth_compute_prefix + 'denoising' + '/' 
     if not os.path.exists(pth_denoising):
