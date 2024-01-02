@@ -185,5 +185,13 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
     Y = None
 
     if do_planar_registration and movie_is_4d:
-        stitch_registered_z_slices(pth_tif_write, md['dims'], do_plots)
+        
+        Y = stitch_registered_z_slices(pth_tif_write, md['dims'], do_plots)
+
+        if do_plots:
+            mxmv = np.max(Y)
+            #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
+            filename_gif = pth_write[:-4] + '.gif'
+            plot_gif(np.transpose(Y, (0,3,2,1)), filename_gif, indsz = slice(17, 18, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+
 

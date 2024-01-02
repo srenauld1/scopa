@@ -9,7 +9,6 @@ from tifffile.tifffile import imwrite, imread
 import shutil
 from pathlib import Path
 import mat73
-from vis import im_montage, plot_gif
 
 
 
@@ -45,13 +44,6 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
     print(Y.shape)
 
-    if do_plots:
-        mxmv = np.max(Y)
-        #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
-        filename_gif = pth_tif_reg[:-4] + '.gif'
-        plot_gif(np.transpose(Y, (0,3,2,1)), filename_gif, indsz = slice(17, 18, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
-
-
     Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx
     print(Y.shape)
     #imwrite(pth_tif_reg, Y.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
@@ -59,6 +51,8 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
 
     for f in pth_tif_all:
         os.remove(f)
+    
+    return Y 
 
 
 
