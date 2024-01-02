@@ -12,13 +12,13 @@ import mat73
 
 
 
-def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
+def stitch_registered_z_slices(pth_tif_reg, dims):
 
     print("\n\n\nstitching together separately registered z slices, and writing as one tif")
 
     pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_z_.tif'))
 
-    Y = np.zeros(dims) #t z y x 
+    Y = np.zeros(dims, dtype='float32') #t z y x 
 
     countz = 0
     for f in pth_tif_all:
@@ -34,8 +34,8 @@ def stitch_registered_z_slices(pth_tif_reg, dims, do_plots):
     if countz != dims[1]:
         raise Exception("not all slices present")
 
-    mnmv = np.min(Y)
-    Y = Y - mnmv #make nonnegative before writing to uint16
+    mnmv = np.min(Y).astype('float32')
+    Y -= mnmv #make nonnegative before writing to uint16
     if np.max(Y) > 65535:
         raise Exception("clipping will occur when converting to uint16")
     print("MIN AFTER REGISTRATION " + str(mnmv))
@@ -168,7 +168,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
             pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_*/')))
             pth_trainset_all = list(set(pth_trainset_all) - set(natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_al*/'))))) #exclude the "all" folders when denoise_volume==1
 
-        Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1])) #t y x z
+        Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1]), dtype='float32') #t y x z
 
         countz = 0
         for pth_trainset in pth_trainset_all:
@@ -203,8 +203,8 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         if countz != dims_pre_denoise[1]:
             raise Exception("not all slices present")
 
-        mnmv = np.min(Y)
-        Y = Y - mnmv #make nonnegative before writing to uint16
+        mnmv = np.min(Y).astype('float32')
+        Y -= mnmv #make nonnegative before writing to uint16
         print("MIN AFTER DENOISING " + str(mnmv))
     
         Y = Y.astype('uint16')
@@ -265,7 +265,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                 if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(denoise_epoch_choose) + '_Iter_*'):
                     pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
-                    Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], actual_z_size)) #t y x z
+                    Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], actual_z_size), dtype='float32') #t y x z
                     print(dims_pre_denoise[1])
                     for fni,f in enumerate(pth_denoised_singles): #loop over each denoised z slice and reassemble into array matching shape of original 4d volume
                         if denoise_volume == 1:
@@ -287,8 +287,8 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                             print(sliceind)
                             Y[:,:,:,sliceind] = Ynew
 
-                            mnmv = np.min(Y)
-                            Y = Y - mnmv #make nonnegative before writing to uint16
+                            mnmv = np.min(Y).astype('float32')
+                            Y -= mnmv #make nonnegative before writing to uint16
                             print("MIN AFTER DENOISING " + str(mnmv))
                                 
                             Y = Y.astype('uint16')
@@ -331,8 +331,9 @@ def mat2tif_carls_old_project(pth_datafile):
         raise Exception("ERROR: YOU SHOULD ONLY BE IN THIS FUNCTION IF THERE IS NO TIF")
     mat = mat73.loadmat(pth_datafile)
     Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
-    mnmv = np.min(Y)
-    Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+    Y = Y.astype('float32')
+    mnmv = np.min(Y).astype('float32')
+    Y -= mnmv #make movie nonnegative (not sure this is necessary)
     print("MIN OF STACKRAW_PMC MAT FILE " + str(mnmv))
     Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
     pth_datafile = pth_datafile[:-4] + '.tif'

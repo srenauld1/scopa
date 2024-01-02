@@ -47,7 +47,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
             Ycrop = np.reshape(Ycrop.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
             
             if len(Ycrop.shape)==3: #if it's not volumetric
-                Ycrop = Ycrop[...,np.newaxis] #add singleton 4th dim (z) so the code is more readable 
+                Ycrop = Ycrop[...,np.newaxis] #add singleton 4th dim (z) so the code is simpler later
             
             print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF ORIGINALLY 3D), REGION EXTRACTION HAS SHAPE: \n" + str(Ycrop.shape))
 
@@ -83,7 +83,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #for planar extraction take on z slice at a time
-                            print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + "IN REGION_EXTRACTION")
+                            print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + " OF REGION_EXTRACTION")
                             images_sliced = Ycrop[:,:,:,si]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
                             print("DOING 3D EXTRACTION FOR ALL SLICES IN REGION EXTRACTION")

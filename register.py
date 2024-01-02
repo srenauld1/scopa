@@ -41,8 +41,8 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
 
     Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
     
-    mnmv = np.min(Y)
-    Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+    mnmv = np.min(Y).astype('float32')
+    Y -= mnmv #make movie nonnegative (not sure this is necessary)
     print("MIN BEFORE MOTION CORRECTION " + str(mnmv))
 
     if do_plots:
@@ -79,8 +79,8 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
             br.make_plots()
             Y[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
                 
-        mnmv = np.min(Y)
-        Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+        mnmv = np.min(Y).astype('float32')
+        Y -= mnmv #make movie nonnegative (not sure this is necessary)
         Y = Y.astype('uint16')
         print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         
@@ -105,13 +105,13 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
         sigma_smooth_prereg = (len_window_smooth_t - 1) / numsigma_smooth_prereg / 2
         Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
         Y = Y.reshape(dimtmp_presmooth)
-        mnmv = np.min(Y)
-        Y = Y - mnmv #make movie nonnegative (not sure this is necessary)
+        mnmv = np.min(Y).astype('float32')
+        Y -= mnmv #make movie nonnegative (not sure this is necessary)
         Y = Y.astype('uint16')
         print("MIN AFTER SMOOTHING " + str(mnmv))
 
     
-    min_mov = np.min(Y)
+    min_mov = np.min(Y).astype('float32')
 
     if do_planar_registration: 
         sliceindz = zindall
@@ -134,7 +134,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
     
         # each_min_mov = 0 # don't think we want to make min mov the min for each z slice 
         # if each_min_mov:
-        #     min_mov = np.min(images_sliced)
+        #     min_mov = np.min(images_sliced).astype('float32')
         
         # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
         opts_dict, indices_ex, fnadd = configs(do_planar_registration = do_planar_registration, index_extraction_param_set = 'default', fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
@@ -166,14 +166,14 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
             imwrite(pth_write, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
         else:
             pth_write = pth_tif_write
-            mnmv = np.min(Ynew)
-            Ynew = Ynew - mnmv #make nonnegative before writing to uint16
+            mnmv = np.min(Ynew).astype('float32')
+            Ynew -= mnmv #make nonnegative before writing to uint16
             print("MIN AFTER MOTION CORRECTION " + str(mnmv))
             if do_plots:
                 mxmv = np.max(Y)
                 #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
                 filename_gif = pth_write[:-4] + '.gif'
-                plot_gif(Ynew, filename_gif, indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                plot_gif(Ynew, filename_gif, indsz = slice(2, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
             if len(Ynew.shape)==3:# or Y.shape[3]==1:
                 imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
@@ -186,12 +186,12 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
 
     if do_planar_registration and movie_is_4d:
         
-        Y = stitch_registered_z_slices(pth_tif_write, md['dims'], do_plots)
+        Y = stitch_registered_z_slices(pth_tif_write, md['dims'])
 
         if do_plots:
             mxmv = np.max(Y)
             #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
             filename_gif = pth_write[:-4] + '.gif'
-            plot_gif(np.transpose(Y, (0,3,2,1)), filename_gif, indsz = slice(17, 18, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+            plot_gif(np.transpose(Y.reshape(dim_time_rg, len(zindall), dims_spatial_rg[1], dims_spatial_rg[0]), (0,3,2,1)), filename_gif, indsz = slice(3, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
 
