@@ -28,7 +28,7 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
-PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/stacks/') #path from which required files will be copied into scratch on O2 (last folder of PTH_STORAGE_PREFIX will be mirrored on your scratch folder)
+PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') #include trailing slash
 RECDATE=('20231119')
 FLY=('1' '2' '3')
 TRIAL=('*')
