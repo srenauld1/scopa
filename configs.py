@@ -81,7 +81,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
 
     max_iter_snmf = 1000
     perc_baseline_snmf = 20
-    alpha_snmf = 100 #default 1000 #for method_init sparseNMF
+    alpha_snmf = 1000 #default 1000 #for method_init sparseNMF
     #sigma_smooth_snmf = gSig #(2, 2, 0.5) #default 0.5 0.5 0.5
 
     lambda_gnmf = 1 #for method_init graphNMF
@@ -96,7 +96,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
     update_background_components = True
 
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
-    ITER = 10                # (default is 2; old value=5) -- block coordinate descent iterations
+    ITER = 2                # (default is 2; old value=5) -- block coordinate descent iterations
     bas_nonneg = True #appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
 
     rolling_sum = True #think (?) only relevant for init method greedy_roi
@@ -123,7 +123,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
     #, example: when stride_to_rf_ratio = 0.3, patch is ~7 times larger and stride is 50% larger
     # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger
     # since, patch dia = ceil(neuron_dia/stride_to_rf_ratio)+1)*2 and patch stride = ceil(ceil(neuron_dia/stride_to_rf_ratio)+1)*stride_to_rf_ratio)+1
-    stride_to_rf_ratio = 0.5  #keep in approxoimate range 0.3 - 0.8
+    stride_to_rf_ratio = 0.7  #keep in approxoimate range 0.3 - 0.8
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
