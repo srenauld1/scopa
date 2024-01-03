@@ -119,11 +119,11 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
 
 
                         if do_plots and cnm2.estimates.A.shape[-1]:
-                            pth_results = pth_tif_write_tmp[:-8] + fnadd + 'OUT_FIT1.mov'
+                            pth_results = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT1.mov'
                             caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results)
 
                         if do_plots and cnm2.estimates.A.shape[-1]:
-                            pth_results2 = pth_tif_write_tmp[:-8] + fnadd + 'OUT_FIT2.mov'
+                            pth_results2 = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT2.mov'
                             caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results2)
                         
                 
