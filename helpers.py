@@ -305,21 +305,42 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
 
 
 
-def rename_files(pth_datafile, fname, fn_prefix, pth_fldr):
+def rename_files(pth_datafile, fname, fn_prefix, pth_fldr, pth_hires):
 
-    fname_rename = fn_prefix + '_raw_.' + fname[-3:]
-    pth_datafile_rename = pth_fldr + fname_rename
-    print("RENAMING FILE \n" + pth_datafile + "\nTO \n" + pth_datafile_rename)
-    os.rename(pth_datafile, pth_datafile_rename) 
+    if re.search('trial', fname) or re.search('stackraw', fname):
+        fname_rename = fn_prefix + '_raw_.' + fname[-3:]
+        pth_datafile_rename = pth_fldr + fname_rename
+        print("RENAMING FILE \n" + pth_datafile + "\nTO \n" + pth_datafile_rename)
+        os.rename(pth_datafile, pth_datafile_rename) 
+        
+        pth_badmat = glob.glob(pth_datafile[:-4] + '.mat') #remove any mat files from old filename pattern
+        if pth_badmat and re.search('trial', fname):
+            print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
+            os.remove(pth_badmat[0])
+        
+        pth_datafile = pth_datafile_rename
+        fname = fname_rename
     
-    pth_badmat = glob.glob(pth_datafile[:-4] + '.mat', recursive=True) #remove any mat files from old filename pattern
-    if pth_badmat and re.search('trial', fname):
-        print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
-        os.remove(pth_badmat[0])
-    pth_datafile = pth_datafile_rename
-    fname = fname_rename
 
-    return (pth_datafile, fname)
+    if pth_hires:
+        fn_hires = os.path.basename(pth_hires)
+        if re.search(fn_prefix.split('_')[0] + '-' + fn_prefix.split('_')[1], fn_hires):
+            fn_hires_rename = fn_hires.replace('-', '_')
+            pth_hires_rename = pth_fldr + fn_hires_rename
+            print("RENAMING FILE \n" + pth_hires + "\nTO \n" + pth_hires_rename)
+            os.rename(pth_hires, pth_hires_rename) 
+        
+            pth_hires = pth_hires_rename
+
+        pth_badmat = glob.glob(pth_hires[:-4] + '.mat') #remove any mat files from old filename pattern
+        if pth_badmat:
+            print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
+            os.remove(pth_badmat[0])
+        
+    
+        
+
+    return (pth_datafile, fname, pth_hires)
 
 
 

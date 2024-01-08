@@ -116,13 +116,21 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
 
             print("\n\n\nPREPARING FILE: \n" + pth_datafile)
 
-            if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
-                if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
-                    [pth_datafile, fname] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr)
-
-            pth_prefix = pth_fldr + fn_prefix      
+            pth_prefix = pth_fldr + fn_prefix
             pth_md = pth_prefix + '_metadatanew_.npy'
-            pth_md_mat = pth_md[:-4] + '.mat'
+            pth_md_mat = pth_md[:-4] + '.mat'  
+            
+            pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_' + fn_prefix.split('_')[2] + '_hires_.tif'
+            pth_hires = glob.glob(pth_pattern_hires)
+            if not pth_hires:
+                pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_hires_.tif'
+                pth_hires = glob.glob(pth_pattern_hires)
+            if pth_hires:
+                pth_hires = pth_hires[0]
+
+            if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
+                if re.search('trial', fname) or re.search('stackraw', fname) or pth_hires: #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
+                    [pth_datafile, fname, pth_hires] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr, pth_hires)
 
             
             mat_file_shape = None
@@ -133,10 +141,10 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
                 if fname[-3:]=='mat':
                     mat_file_shape = mat2tif_carls_old_project(pth_datafile)
 
-            if not os.path.isfile(pth_md) and not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
-                read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = mat_file_shape)
-                
 
+            if not os.path.isfile(pth_md) or not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
+                read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
+                
 
             pth_tif_read_all.append(pth_datafile)
             pth_fldr_all.append(pth_fldr)

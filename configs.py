@@ -61,7 +61,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
     p = 0                   # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
     merge_thresh = 0.9
     gSig = [2, 2, 1] #forces to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
-    nb = 1 #num background components
+    nb = 2 #num background components
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
     decay_time = .4         # length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
@@ -137,7 +137,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
             map_index_2_params.map_index(int(index_extraction_param_set))
         gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5, and forcing 3rd element (z) to be 1 because my z sections are about half the neuron diameter
 
-    if np.all(np.array(dims_spatial_ex)<50): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
+    if np.all(np.array(dims_spatial_ex)<5000000000): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
         do_patches = False
     else:
         do_patches = True

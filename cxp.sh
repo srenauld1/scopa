@@ -29,8 +29,8 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') #include trailing slash
-RECDATE=('20231119')
-FLY=('1' '2' '3')
+RECDATE=('*')
+FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)

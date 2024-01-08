@@ -9,18 +9,37 @@ import numpy as np
 from numpy.core.records import fromarrays
 
 
-def read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = None):
+def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_shape = None):
 
     mdt = {}
 
-    print("READING METADATA")
+    print("READING METADATA") #use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
 
     try:
         
         if mat_file_shape is None:
 
-            # use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
+            if pth_hires:
+                meta_hires = ScanImageTiffReader(pth_hires).metadata()
+                mdt['numvol_hires'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
+                mdt['numslice_withflyback_hires'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
+                mdt['numslice_hires'] = int(re.findall( 'actualNumSlices = (.*)', meta_hires)[0])
+                mdt['xpix_hires'] = int(re.findall( 'pixelsPerLine = (.*)', meta_hires)[0])
+                mdt['ypix_hires'] = int(re.findall( 'linesPerFrame = (.*)', meta_hires)[0])
+                mdt['flyback_hires'] = mdt['numslice_withflyback_hires'] - mdt['numslice_hires']
+                mdt['dims_hires'] = [mdt['numvol_hires'], mdt['numslice_withflyback_hires'] - mdt['flyback_hires'], mdt['ypix_hires'], mdt['xpix_hires']]
+                fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
+                mdt['xfov_hires'] = abs(fovtmp[0]) + abs(fovtmp[2])
+                mdt['yfov_hires'] = abs(fovtmp[1]) + abs(fovtmp[3])
+                mdt['zwid_hires'] = float(re.findall( 'actualStackZStepSize = (.*)', meta_hires)[0])
+                mdt['zstartpos_hires'] = literal_eval(re.findall( 'zsRelative = (.*)', meta_hires)[0].replace(";",","))
+                mdt['zfov_hires'] = mdt['zstartpos_hires'][-1] + mdt['zwid_hires'] - mdt['zstartpos_hires'][0]
+                mdt['framerate_hires'] = float(re.findall( 'scanFrameRate = (.*)', meta_hires)[0])
+                mdt['volrate_hires'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
+
+            
             meta = ScanImageTiffReader(pth_datafile).metadata()    #tiffile might be able to read metadata
+            
             mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
             mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
             mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
@@ -71,13 +90,39 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_mat, mat_file_shape = None):
         mdt['flyback'] = 0
         mdt['zwid'] = 0
         mdt['zstartpos'] = 0
+
+                
+    md = {  'numvol': mdt['numvol'],
+            'numslice_withflyback': mdt['numslice_withflyback'],
+            'numslice': mdt['numslice'],
+            'xpix': mdt['xpix'],
+            'ypix': mdt['ypix'],
+            'flyback': mdt['flyback'],
+            'xfov': mdt['xfov'],
+            'yfov': mdt['yfov'],
+            'zwid': mdt['zwid'],
+            'zstartpos': mdt['zstartpos'],
+            'zfov': mdt['zfov'],
+            'framerate': mdt['framerate'],
+            'volrate': mdt['volrate']}
     
+    if pth_hires:
+        md_hires = {'numvol': mdt['numvol_hires'],
+                    'numslice_withflyback': mdt['numslice_withflyback_hires'],
+                    'numslice': mdt['numslice_hires'],
+                    'xpix': mdt['xpix_hires'],
+                    'ypix': mdt['ypix_hires'],
+                    'flyback': mdt['flyback_hires'],
+                    'xfov': mdt['xfov_hires'],
+                    'yfov': mdt['yfov_hires'],
+                    'zwid': mdt['zwid_hires'],
+                    'zstartpos': mdt['zstartpos_hires'],
+                    'zfov': mdt['zfov_hires'],
+                    'framerate': mdt['framerate_hires'],
+                    'volrate': mdt['volrate_hires']}
+        md['md_hires'] = md_hires
     
-    md = fromarrays( [ mdt['numvol'], mdt['numslice_withflyback'], mdt['numslice'], mdt['xpix'], \
-        mdt['ypix'], mdt['flyback'], mdt['xfov'], mdt['yfov'], \
-        mdt['zwid'], mdt['zfov'], mdt['framerate'], mdt['volrate'] ], \
-        names = ['numvol', 'numslice_withflyback', 'numslice', 'xpix', 'ypix', 'flyback', \
-            'xfov', 'yfov', 'zwid', 'zfov', 'framerate', 'volrate' ] )
+        
 
     sio.savemat(pth_md_mat, {'md': md}) #save for matlab part of pipeline 
     

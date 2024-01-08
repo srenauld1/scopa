@@ -8,12 +8,12 @@
 ##########################################################################################################################################
 
 folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #the name says it all (with or without trailing slash, doesn't matter)
-pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, the full path (include final slash) to the long-term storage folder you want the data copied from after and copied to before and after analysis, ignored if not on cluster, compute folder with same name as final folder pth_storage_prefix will be created (if on O2, this folder is directly under your scratch folder)
+pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, pth_storage_prefix+folder_with_all_recordings_on_storage_and_compute_filesystems is the path to the storage folder containing all recordings, data will be copied from here, into a folder on scratch with name (folder_with_all_recordings_on_storage_and_compute_filesystems) then analyzed, then copied back, ignored if do_copyfiles==0, 
 do_copyfiles = 0 #0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage_prefix to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage_prefix from where you're running this script
 pars_filename = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 
-recdate = ['*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+recdate = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['2'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
@@ -47,7 +47,7 @@ index_extraction_param_set = 'default' #one element, not in list, 'default' or s
 
 do_crop = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
-do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
+do_plots = 1 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 # caiman note on starting cluster
 # The default backend mode for parallel processing is through the multiprocessing package. 
