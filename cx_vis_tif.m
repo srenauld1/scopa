@@ -20,13 +20,13 @@
 % this will error if there are two files with the exact same name
 % in different directories within filepath_super
 
-function stack = cx_vis_tif(md, suffixes_plot, suffix_analysis, ...
-    pth_fldr, recid, use_hires, nan_numlines, ...
+function stack = cx_vis_tif(md, pth_use_mat, pth_stacks_prefix, ...
+    pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
     rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
     rescalefac_wholeplot_ubnd, plotinds_t, plotinds_z, ...
     swapdim, smooth_window_temporal, ...
     smooth_window_temporal_for_remove_scan_noise, ...
-    plot_stack_gif, plot_stack_stats, ncolgif)
+    plot_stack_gif, plot_stack_stats, suffixes_plot, ncolgif)
 
 
 
@@ -59,7 +59,7 @@ elseif plotinds_t<0
 end
 
 if length(plotinds_z)>20
-    plotinds_z_str = 'toomanyztolist';
+    plotinds_z_str = [num2str(plotinds_z(1)) 'to' num2str(plotinds_z(end))];
 else
     plotinds_z_str = sprintf('%.0f,', plotinds_z);
     plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
@@ -72,87 +72,45 @@ else
     rseachstr = '';
 end
 
-stackall = cell(length(suffixes_plot), 1); %make it cell column so first dim is cat when cell2mat below
-stackall_mn = cell(length(suffixes_plot), 1); %make it cell column so first dim is cat when cell2mat below
-fn_gif_insert = cell(length(suffixes_plot), 1);
-fn_gif_insert_all = '';
 
-if ~ismember(suffix_analysis, suffixes_plot)
-    if isempty(suffixes_plot)
-        plot_stack_gif = 0;
-        "WARNING, suffixes_plot IS EMPTY, SKIPPING STACK GIF"
-        suffixes_plot{end+1} = suffix_analysis;
-    else
-        "WARNING suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW"
-        suffixes_plot{end+1} = suffix_analysis;
-    end
-else
-    suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot), suffix_analysis); %make suffix_analysis the last one so it can be output from this function with minimal memory
-end
+stackall = cell(length(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
+stackall_mn = cell(length(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
+fn_gif_insert = cell(length(pth_stacks_prefix), 1);
 
 [~, plot_order] = sort(cellfun(@length, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
+
 
 %%  loop over suffixes, loading and concatenating
 
 
-for spi = 1:length(suffixes_plot)
+for spi = 1:length(pth_stacks_prefix)
 
-    pth_tmp_tif = [pth_fldr recid '_' suffixes_plot{spi} '_.tif'];
-    tmptif = rdir(pth_tmp_tif);
-    if ~isempty(tmptif)
-        pth_tmp_tif = tmptif.name;
-    end
-    pth_tmp_mat = [pth_fldr recid '_' suffixes_plot{spi} '_.mat'];
-    tmpmat = rdir(pth_tmp_mat);
-    if ~isempty(tmpmat)
-        pth_tmp_mat = tmpmat.name;
-    end
+    if ~isempty(pth_stacks_prefix{spi}) %if it's not empty it means either mat or tif or both exist 
 
-    try_stack = 1;
-    if isempty(tmptif) & isempty(tmpmat) 
-
-        if ~isempty(regexp(suffixes_plot{spi}, '_hires')) %strcmp(suffixes_plot{spi}, 'cmrg_dcdn_nosn')
-
-
-        elseif ~isempty(regexp(suffixes_plot{spi}, '_nosn_')) %strcmp(suffixes_plot{spi}, 'cmrg_dcdn_nosn')
-
-            suffix_dn = suffixes_plot{spi}(1:regexp(suffixes_plot{spi}, '_nosn')-1);
-            pth_tmp_tif_nosn = [pth_fldr recid '_' suffix_dn '_.tif'];
-            cx_remove_scan_noise([], [], [], smooth_window_temporal_for_remove_scan_noise, [], pth_tmp_tif_nosn)
-
-        else
-
-            sprintf(['WARNING, NEITHER TIF NOR MAT FOUND FOR' newline pth_tmp_tif(1:end-4) newline 'SKIPPING IT FOR PLOT'])
-            try_stack = 0;
-
-        end
-
-
-    end
-
-    if try_stack
+        pth_stack_tif = [pth_stacks_prefix{spi} '.tif'];
+        pth_stack_mat = [pth_stacks_prefix{spi} '.mat'];
 
         try
 
-            stack = struct2cell(load(pth_tmp_mat));
+            stack = struct2cell(load(pth_stack_mat));
             stack = stack{1};
 
         catch
 
-            if strcmp(suffixes_plot{spi}, 'raw')
-                size_z_read_from = md.numslice_withflyback; %raw tif includes flyback
+            if strcmp(suffixes_plot{spi}, 'raw') || strcmp(suffixes_plot{spi}, 'hires')
+                size_z_read_from = md.numslice_withflyback; %raw and hires includes flyback
             else
                 size_z_read_from = sz(3);
             end
             size_t_read_from = sz(4);
-            inds_z_read_from = 1:size_z_read_from; %can choose any subset of z (e.g. can skip flyback frames if reading raw), does not have to be contiguous
+            inds_z_read_from = 1:sz(3); %can choose any subset of z (e.g. passing 1:sz(3) will skip flyback frames for raw and hires, for example, do 1:size_z_read_from to read fluback frames), does not have to be contiguous
             inds_t_read_from = 1:size_t_read_from; %can choose any subset of t, does not have to be contiguous
             size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
 
-            stack = cx_read_tif_tzyx(pth_tmp_tif, ...
+            stack = cx_read_tif_tzyx(pth_stack_tif, ...
                 size_read_to, size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
-            
+
             datmin = min(stack(:));
             datmax = max(stack(:));
             if ~isa(stack, 'uint16')
@@ -171,18 +129,18 @@ for spi = 1:length(suffixes_plot)
                 stack = stack(:,:,:,keepinds_t);
             end
 
-            save(pth_tmp_mat, 'stack', '-v7.3', '-mat')
-
+            save(pth_stack_mat, 'stack', '-v7.3', '-mat')
 
         end
 
+        stacktmp_mn = single(mean(stack, 4));
         stacktmp = single(stack(:,:,plotinds_z, plotinds_t));
 
         if plot_stack_stats
             tindz = 1:sz(4);
             numframes_subset_statsplots = 100;
             tindz_sub = round(linspace(1, sz(4), numframes_subset_statsplots));
-            cx_plots_imdata(single(stacktmp(:,:,:,tindz)), [], sindz, tindz, tindz_sub, size(tmp), pth_tmp_mat)
+            cx_plots_imdata(single(stacktmp(:,:,:,tindz)), [], sindz, tindz, tindz_sub, size(tmp), pth_stack_mat)
         end
 
         if smooth_window_temporal
@@ -190,23 +148,21 @@ for spi = 1:length(suffixes_plot)
         end
 
         if plot_stack_gif
-            if ~strcmp(suffixes_plot{spi}, suffix_analysis) %if it's the stack for analysis outside this function
+            if ~strcmp(pth_stack_mat, pth_use_mat) %if it's the stack for analysis outside this function
                 stack = [];
             end
-            stacktmp_mn = mean(stacktmp, 4);
-            stacktmp_mn = single(stacktmp_mn);
+
             if rescale_each_subplot
                 stacktmp = rescale(stacktmp);
                 stacktmp_mn = rescale(stacktmp_mn);
             end
             stackall{spi} = single(nan([nan_numlines+sz(1), sz(2), length(plotinds_z), length(plotinds_t)]));
-            stackall_mn{spi} = single(nan([nan_numlines+sz(1), sz(2), length(plotinds_z)]));
+            stackall_mn{spi} = single(nan([nan_numlines+sz(1), sz(2), sz(3)]));
             stackall{spi}(nan_numlines+1:end, :, :, :) = stacktmp;
             stackall_mn{spi}(nan_numlines+1:end, :, :) = stacktmp_mn;
             clear stacktmp*
-            fn_gif_insert{spi} = [fn_gif_insert_all suffixes_plot{spi}];
+            fn_gif_insert{spi} = suffixes_plot{spi};
         end
-
     end
 end
 
@@ -214,7 +170,7 @@ end
 %% plot
 
 if plot_stack_gif
-    
+
     stackall = stackall(plot_order);
     stackall = cell2mat(stackall(~cellfun( @isempty, stackall )));
     stackall_mn = stackall_mn(plot_order);
@@ -230,8 +186,8 @@ if plot_stack_gif
         {[recid_title ' : ' title_insert]; ['z inds ' plotinds_z_str]})
 
     cx_plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
-        ncolgif, swapdim, ...xz
-        [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_meanframe_allrescaled_.gif'], ...
+        ncolgif, swapdim, ...
+        [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str  '_mean_all_t_rescaled_.gif'], ...
         {[recid_title ' : ' title_insert ' meanframe']; ['z inds ' plotinds_z_str]; rescale_str})
 
 
@@ -239,33 +195,37 @@ end
 
 
 if any(use_hires)
-    
+
     %it's not straightforward to plot hires stack along with lores using
     %cx_vis_tif as it is written above (because their z resolutions are
-    %different) it's more readable to just pass it separately, here, 
+    %different) it's more readable to just pass it separately, here,
     % to read, save, and plot the hires stack by itself
 
-[ST, ~] = dbstack();
-if length(cell2mat( strfind( {ST(:).name}, 'cx_vis_tif' ) ) ) == 1 %since this is called recursively, make sure you're not in an infinite loop, use_hires_new==0 is meant to prevent as well)
-    use_hires_new = 0;
-    md_hires = md.md_hires;
-    suffixes_plot_hires = {'hires'}; 
-    suffix_analysis_hires = {'hires'}; 
-    plotinds_t_hires = [];
-    plotinds_z_hires = [];
-    smooth_window_temporal_hires = [];
-    plot_stack_gif = 1;
-    plot_stack_stats = 0;
-    cx_vis_tif(md_hires, suffixes_plot_hires, suffix_analysis_hires, ...
-        pth_fldr, recid, use_hires_new, nan_numlines, ...
-        rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
-        rescalefac_wholeplot_ubnd, plotinds_t_hires, plotinds_z_hires, ...
-        swapdim, smooth_window_temporal_hires, ...
-        smooth_window_temporal_for_remove_scan_noise, ...
-        plot_stack_gif, plot_stack_stats, ncolgif);
+    [ST, ~] = dbstack();
+    if length(cell2mat( strfind( {ST(:).name}, 'cx_vis_tif' ) ) ) == 1 %since this is called recursively, make sure you're not in an infinite loop, use_hires_new==0 is meant to prevent as well)
+        
+        %it's okay to overwrite these since none are output from this function
+        use_hires = 0;
+        md = md.md_hires;
+        pth_use_mat_hires = {''};
+        pth_stacks_prefix = {pth_hires_prefix};
+        plotinds_t = [1];
+        plotinds_z = [];
+        smooth_window_temporal = [];
+        suffixes_plot = {'hires'};
+
+        %no need to call with output, purpose is just to read hires tif,
+        %save as mat, and optionally plot . . . hires will be loaded later in
+        %cx_load_hires_stack.m
+        cx_vis_tif(md, pth_use_mat_hires, pth_stacks_prefix, ...
+            pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
+            rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
+            rescalefac_wholeplot_ubnd, plotinds_t, plotinds_z, ...
+            swapdim, smooth_window_temporal, ...
+            smooth_window_temporal_for_remove_scan_noise, ...
+            plot_stack_gif, plot_stack_stats, suffixes_plot, ncolgif);
 
 
-end
-
+    end
 end
 

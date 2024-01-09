@@ -27,7 +27,7 @@ elseif ~exist('pth_all_in', 'var') & ~isempty(recdate_in)  %batch mode finds fil
     indx_in
 
 
-    %% determine which recordings to do based on last input
+    %% determine which recordings to do based on input
 
 
     numfil = 19;
@@ -133,13 +133,12 @@ for ri = 1:length(pth_all)
             stack = struct2cell(load(pth_dn_mat));
             stack = stack{1};
         catch
-            out_datatype = "uint16"; %UINT16 HERE BECAUSE WRITTEN THAT WAY IN PYTHON
-            "ENTERING READ TIF"
-            stack = cx_read_tif_tzyx(pth_dn_tif, ...
-                out_datatype, size_read_to, ...
-                size_z_read_from, size_t_read_from, ...
+
+            "READING DNEOISED TIF"
+            stack = cx_read_tif_tzyx(pth_stack_tif, ...
+                size_read_to, size_z_read_from, size_t_read_from, ...
                 inds_z_read_from, inds_t_read_from);
-            "DONE READING TIF"
+
             datmin = min(stack(:));
             datmax = max(stack(:));
             if ~isa(stack, 'uint16')
@@ -153,7 +152,10 @@ for ri = 1:length(pth_all)
                 end
                 stack = uint16(stack);
             end
+
+            "SAVING DENOISED AS MAT"
             save(pth_dn_mat, 'stack', '-v7.3', '-mat')
+        
         end
 
 

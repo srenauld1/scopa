@@ -14,7 +14,7 @@
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
 
 #set variables that control which jobs are done
-do_register=1
+do_register=1 #0 or 1
 do_separate=1
 do_denoise=1
 do_stitch=1
