@@ -3,9 +3,9 @@
 function cx_remove_scan_noise(pars_filename, do_copyfiles, indx_in, pth_all_in, len_window_smooth_t_rsc)
 
 
-
-
 %len_window_smooth_t_rsc is specified in pars_filename, or directly as command line argument
+
+numfil = 1; %how many files to do in this single run of cx_remove_scan_noise (so job array indices 1-5 with numfil=19 will do recording indices 1-95
 
 stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
 
@@ -27,7 +27,6 @@ end
 %% determine which recordings to do based on input
 
 
-numfil = 1;
 if isstring(indx_in)
     indx_in = strsplit(indx_in, ':');
     indx_in = str2num(indx_in{end});
