@@ -41,7 +41,7 @@ dofil
 
 %% paths
 
-currdir = split(pwd, '/');
+currdir = split(pwd, filesep);
 currdir = currdir{end-1};
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
@@ -62,7 +62,9 @@ if exist('pth_all_in', 'var') & isempty(pars_filename) %single recording mode op
 elseif ~exist('pth_all_in', 'var') & ~isempty(recdate_in)  %batch mode finds files matching input arg pattern and loops over them
 
 
-    fileID = fopen(pars_filename,'r');
+
+    pth_pars = [pwd filesep pars_filename]
+    fileID = fopen(pth_pars,'r');
 
     formatSpec = '%f';
     A = fscanf(fileID,formatSpec)
@@ -96,7 +98,7 @@ for ri = 1:length(pth_all)
         display(['processing : ' pth_dn_tif] )
 
         [pth_fldr, fn_raw_tif, ~] = fileparts(pth_dn_tif);
-        pth_fldr = [pth_fldr '/'];
+        pth_fldr = [pth_fldr filesep];
         spl = strjoin(strsplit(fn_raw_tif, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
         spl = strsplit(spl, '_'); %then separate by underscore
 
@@ -120,17 +122,27 @@ for ri = 1:length(pth_all)
         inds_t_read_from = 1:size_t_read_from;
         size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
 
+        
         if isempty(plotinds_z)
             plotinds_z = 1:sz(3);
         elseif plotinds_z<0
-            plotinds_z = round(linspace(1, sz(3), -plotinds_z));
+            if -plotinds_z<sz(3)
+                plotinds_z = round(linspace(1, sz(3), -plotinds_z));
+            else
+                plotinds_z = 1:sz(3);
+            end
         end
 
         if isempty(plotinds_t)
             plotinds_t = 1:sz(4);
         elseif plotinds_t<0
-            plotinds_t = round(linspace(1, sz(4), -plotinds_t));
+            if -plotinds_t<sz(4)
+                plotinds_t = round(linspace(1, sz(4), -plotinds_t));
+            else
+                plotinds_t = 1:sz(4);
+            end
         end
+
 
         plotinds_z_str = sprintf('%.0f,', plotinds_z);
         plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
