@@ -4,6 +4,7 @@ function cx_remove_scan_noise(pars_filename, do_copyfiles, indx_in, pth_all_in, 
 
 
 
+
 %len_window_smooth_t_rsc is specified in pars_filename, or directly as command line argument
 
 stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
@@ -26,7 +27,7 @@ end
 %% determine which recordings to do based on input
 
 
-numfil = 19;
+numfil = 1;
 if isstring(indx_in)
     indx_in = strsplit(indx_in, ':');
     indx_in = str2num(indx_in{end});
@@ -59,8 +60,9 @@ if exist('pth_all_in', 'var') & isempty(pars_filename) %single recording mode op
     len_window_smooth_t = len_window_smooth_t_rsc;
     pth_all.name = pth_all_in;
 
-elseif ~exist('pth_all_in', 'var') & ~isempty(recdate_in)  %batch mode finds files matching input arg pattern and loops over them
+elseif ~exist('pth_all_in', 'var') & ~isempty(pars_filename)  %batch mode finds files matching input arg pattern and loops over them
 
+    pars_filename
 
 
     pth_pars = [pwd filesep pars_filename]
