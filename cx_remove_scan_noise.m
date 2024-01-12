@@ -20,13 +20,13 @@ if ~exist('do_copyfiles', 'var') || isempty(do_copyfiles)
 end
 
 if ~exist('indx_in', 'var') || isempty(indx_in)
-    indx_in = 1;
+    indx_in = 0;
 end
 
 
 %% determine which recordings to do based on input
 
-
+indx_in
 if isstring(indx_in)
     indx_in = strsplit(indx_in, ':');
     indx_in = str2num(indx_in{end});
@@ -35,7 +35,7 @@ else
     indx = indx_in;
 end
 dofil = [1:numfil]+numfil*(indx-1);
-
+dofil = dofil+1;
 dofil
 
 
