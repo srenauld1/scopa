@@ -11,8 +11,9 @@ else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 fi
 
-matlab -batch "try; cx_remove_scan_noise("$PARS_FILENAME", "$DO_COPYFILES", $SLURM_ARRAY_TASK_ID); catch; end; quit"
-
+echo inrsc
+matlab -batch "try; cx_remove_scan_noise($PARS_FILENAME, [], $SLURM_ARRAY_TASK_ID); catch; end; quit"
+echo donemat
 ##ampersand???
 
 wait
