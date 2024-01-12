@@ -17,12 +17,11 @@ fly = ['2'] #list of strings, fly index_extraction_param_set, '*' for any, can b
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
-
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
 do_register = 0 #caiman normCorre registration 
 do_planar_registration = 1 #one z slice at a time, for 4d data, ignored if 3d data  
-len_window_smooth_t = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t = 0 skips smoothing)
+len_window_smooth_t_mcp = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp = 0 skips smoothing)
 
 do_background_subtraction = 0 #prior to registration, won't happen unless do_register = 1 
 bg_patch_halfwidth = 3 #half width of patch over which mean is computed for background subtraction (patch is a line in x)
@@ -68,11 +67,11 @@ from helpers import copy_files_scopa
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
-  do_planar_registration, len_window_smooth_t, do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, 
+  do_planar_registration, len_window_smooth_t_mcp, do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, 
   use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, 
                       pth_storage_prefix = pth_storage_prefix, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
-                      do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t = len_window_smooth_t, do_separate = do_separate, do_denoise = do_denoise, 
+                      do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t_mcp = len_window_smooth_t_mcp, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
@@ -152,7 +151,7 @@ for ri, _ in enumerate(pth_tif_read_all):
 
       if do_register:
           register(pth_tif_read_all[ri], pth_prefix_all[ri], md, do_planar_registration, do_background_subtraction, 
-                   bg_patch_halfwidth, len_window_smooth_t, cluster_backend, do_cluster, do_plots)
+                   bg_patch_halfwidth, len_window_smooth_t_mcp, cluster_backend, do_cluster, do_plots)
 
 
       if do_separate:

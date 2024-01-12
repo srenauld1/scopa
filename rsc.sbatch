@@ -1,16 +1,25 @@
 #!/bin/bash
-#SBATCH -p short
-#SBATCH --ntasks=1
-#SBATCH -t 11:00:00
-#SBATCH -c 5
-#SBATCH --mem=55G
-#SBATCH --array=[1-5]
+
+echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
 module purge
 module load matlab/2023a
-RECDATES='*'
-FLY='*'
-TRIAL='*'
-SMOOTHWINDOWTIME=30
 
-matlab -batch "try; cx_remove_scan_noise('$RECDATES', '$FLY', '$TRIAL', $SMOOTHWINDOWTIME, $SLURM_ARRAY_TASK_ID); catch; end; quit"
+if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then #no need to load any virtual environment for copying files 
+    echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+else #load virtual env if not copying files
+    echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+fi
+
+matlab -batch "try; cx_remove_scan_noise("$PARS_FILENAME", "$DO_COPYFILES", $SLURM_ARRAY_TASK_ID); catch; end; quit"
+
+##ampersand???
+
+wait
+sleep 1m
+date
+sleep 1m
+
+
+# scontrol show job $SLURM_JOB_ID
+

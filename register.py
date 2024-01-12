@@ -12,7 +12,7 @@ from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background_subtraction, 
-             bg_patch_halfwidth, len_window_smooth_t, cluster_backend, do_cluster, do_plots):
+             bg_patch_halfwidth, len_window_smooth_t_mcp, cluster_backend, do_cluster, do_plots):
    
     ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
@@ -85,7 +85,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
         print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         
    
-    if len_window_smooth_t: #if you smooth before registering (very noisy data), create another file for smoothed movie
+    if len_window_smooth_t_mcp: #if you smooth before registering (very noisy data), create another file for smoothed movie
 
         if do_planar_registration: #for planar extraction write one presmoothed z at a time
             pth_tif_presmooth = ['']*len(zindall)
@@ -102,7 +102,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
 
         dimtmp_presmooth = Y.shape
         numsigma_smooth_prereg = 5.0
-        sigma_smooth_prereg = (len_window_smooth_t - 1) / numsigma_smooth_prereg / 2
+        sigma_smooth_prereg = (len_window_smooth_t_mcp - 1) / numsigma_smooth_prereg / 2
         Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
         Y = Y.reshape(dimtmp_presmooth)
         mnmv = np.min(Y).astype('float32')
@@ -144,7 +144,7 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True)
         input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
-        if len_window_smooth_t: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
+        if len_window_smooth_t_mcp: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
             input_for_save_memmap = mc.apply_shifts_movie(pth_tif_presmooth[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
             input_for_save_memmap = [input_for_save_memmap] #so must pass nd array to save_memmap below
             os.remove(pth_tif_presmooth[countz])

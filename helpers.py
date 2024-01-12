@@ -155,7 +155,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     
     if os.path.isfile(pth_tif_write):
     
-        print("\n\n\nWARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE")
+        print("\n\n\nWARNING, SKIPPING do_stitch BECAUSE pth_tif_write ALREADY EXISTS - DELETE IT TO CREATE A NEW ONE (FOR EXAMPLE WITH A DIFFERENT EPOCH)")
     
     else:
   

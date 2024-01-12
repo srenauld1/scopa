@@ -115,6 +115,7 @@ INSTALLING THINGS
             conda create -n deepcadrt python=3.9
             conda activate deepcadrt
             conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
+            
             pip install deepcad
             pip install mat73
             pip install matplotlib 
@@ -131,8 +132,11 @@ if running dnp.sbatch is failing because cuda is not available or torch was not 
         pip install deepcad
         pip install mat73
         pip install matplotlib
-        pip install scanimage-tiff-reader
         pip install natsort
+        pip install scanimage-tiff-reader
+
+the packages installed with pip while the conda env is active are here 
+/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
 
 if any conda command above is taking too long or not working, you can try substituting "mamba" for "conda"
 

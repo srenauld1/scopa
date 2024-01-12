@@ -18,9 +18,6 @@ fi
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
 --do_register 1 \
---do_planar_registration 1 \
---do_background_subtraction 0 \
---len_window_smooth_t 0 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 wait

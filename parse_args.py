@@ -29,7 +29,7 @@ class parse_pars_file():
 
 
 def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, 
-                       pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t,
+                       pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t_mcp,
                        do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, do_crop, recording_index, file_matching_style):
     
@@ -90,10 +90,10 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
         default=[do_planar_registration],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--len_window_smooth_t",  # name on the CLI - drop the `--` for positional/required parameters
+        "--len_window_smooth_t_mcp",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[len_window_smooth_t],  # default if nothing is provided
+        default=[len_window_smooth_t_mcp],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_separate",  # name on the CLI - drop the `--` for positional/required parameters
@@ -241,7 +241,7 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
         
     do_register = args.do_register[0]
     do_planar_registration = args.do_planar_registration[0]
-    len_window_smooth_t = args.len_window_smooth_t[0]
+    len_window_smooth_t_mcp = args.len_window_smooth_t_mcp[0]
     do_separate = args.do_separate[0]
     do_denoise = args.do_denoise[0]
     denoise_volume = args.denoise_volume[0]
@@ -296,7 +296,7 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
 
     return (pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, 
             pth_storage_prefix, index_extraction_param_set, region_extraction, 
-            do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t, 
+            do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t_mcp, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
             do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
             recdate, fly, trial, folder_substring, recording_index, file_matching_style)
