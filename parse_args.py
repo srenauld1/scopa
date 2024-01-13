@@ -223,6 +223,25 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
         args.folder_substring = pars.FOLDER_SUBSTRING
         args.file_matching_style = pars.FILE_MATCHING_STYLE
 
+        args.do_planar_registration = pars.DO_PLANAR_REGISTRATION
+        args.do_background_subtraction = pars.DO_BACKGROUND_SUBTRACTION
+        args.len_window_smooth_t_mcp = pars.LEN_WINDOW_SMOOTH_T_MCP
+
+        args.use_background_subtracted = pars.USE_BACKGROUND_SUBTRACTED 
+
+        args.denoise_volume = pars.DENOISE_VOLUME
+        args.num_epochs_denoise = pars.NUM_EPOCHS_DENOISE
+        args.denoise_slice_index = pars.DENOISE_SLICE_INDEX
+
+        args.epoch_choose_denoise = pars.EPOCH_CHOOSE_DENOISE
+
+        args.len_window_smooth_t_rsc = pars.LEN_WINDOW_SMOOTH_T_RSC
+
+        args.index_extraction_param_set = pars.INDEX_EXTRACTION_PARAM_SET
+        args.region_extraction = pars.REGION_EXTRACTION
+        args.do_planar_extraction = pars.DO_PLANAR_EXTRACTION
+        args.use_denoised = pars.USE_DENOISED
+
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
     

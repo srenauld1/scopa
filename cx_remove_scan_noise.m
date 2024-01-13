@@ -55,9 +55,10 @@ end
 
 if exist('pth_all_in', 'var') & isempty(pars_filename) %single recording mode operates only on one file pth_all
 
+    pth_all = rdir(pth_all_in);
     dofil = 1;
+    folder_substring = '*';
     len_window_smooth_t = len_window_smooth_t_rsc;
-    pth_all.name = pth_all_in;
 
 elseif ~exist('pth_all_in', 'var') & ~isempty(pars_filename)  %batch mode finds files matching input arg pattern and loops over them
 
@@ -67,20 +68,26 @@ elseif ~exist('pth_all_in', 'var') & ~isempty(pars_filename)  %batch mode finds 
     pth_pars = [pwd filesep pars_filename]
     fileID = fopen(pth_pars,'r');
 
-    formatSpec = '%f';
-    A = fscanf(fileID,formatSpec)
+    formatSpec = '%s';
+    pars_string = fscanf(fileID,formatSpec);
+    pars_string = split(pars_string, '^@');
     fclose(fileID);
+    for pri = 1:length(pars_string)
+        if mod(pri, 2)==0
+            pars.(pars_string{pri-1}) = pars_string{pri};
+        end
+    end
 
-    recdate = recdate_in
-    fly = fly_in
-    trial = trial_in
-    len_window_smooth_t = len_window_smooth_t_rsc %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
-    folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems
+    recdate = pars.RECDATE;
+    fly = pars.FLY;
+    trial = pars.TRIAL;
+    len_window_smooth_t = pars.LEN_WINDOW_SMOOTH_T_RSC; %this helps with filtering the scannoise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
+    folder_substring = PARS.FOLDER_SUBSTRING;
+    folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS;
 
     fn_pattern = [pth_super folder_with_all_recordings_on_storage_and_compute_filesystems filesep '**' filesep recdate '_' fly '_' trial '_cmrg_dcdn_.tif'];
     pth_all = rdir(fn_pattern);
     fn_pattern
-    fuk = muk
 
 
 else
@@ -93,144 +100,148 @@ end
 
 for ri = 1:length(pth_all)
 
-    if ismember(ri, dofil)
+    pth_dn_tif = pth_all(ri).name;
+    pth_fldr_parent = fileparts(pth_dn_tif);
 
-        pth_dn_tif = pth_all(ri).name;
-        display(['processing : ' pth_dn_tif] )
-
-        [pth_fldr, fn_raw_tif, ~] = fileparts(pth_dn_tif);
-        pth_fldr = [pth_fldr filesep];
-        spl = strjoin(strsplit(fn_raw_tif, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
-        spl = strsplit(spl, '_'); %then separate by underscore
-
-        datenum = str2double(spl{1});
-        flynum = str2double(spl{2});
-        trialnum = str2double(spl{3});
-
-        recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
-        recid_tit = strrep(recid, '_', ' ');
-
-        pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
-        pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
-        pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
-
-        load(pth_metadata) %file created in initial python part of pipeline
-        sz = single([md.ypix md.xpix md.numslice md.numvol]);
-
-        size_z_read_from = sz(3);
-        size_t_read_from = sz(4);
-        inds_z_read_from = 1:size_z_read_from; %can choose to not read the flyback frames here
-        inds_t_read_from = 1:size_t_read_from;
-        size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
-
+    if ~isempty(regexp(pth_fldr_parent, regexptranslate('wildcard', folder_substring)))
         
-        if isempty(plotinds_z)
-            plotinds_z = 1:sz(3);
-        elseif plotinds_z<0
-            if -plotinds_z<sz(3)
-                plotinds_z = round(linspace(1, sz(3), -plotinds_z));
-            else
+        if ismember(ri, dofil)
+
+            display(['processing : ' pth_dn_tif] )
+
+            [pth_fldr, fn_raw_tif, ~] = fileparts(pth_dn_tif);
+            pth_fldr = [pth_fldr filesep];
+            spl = strjoin(strsplit(fn_raw_tif, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
+            spl = strsplit(spl, '_'); %then separate by underscore
+
+            datenum = str2double(spl{1});
+            flynum = str2double(spl{2});
+            trialnum = str2double(spl{3});
+
+            recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
+            recid_tit = strrep(recid, '_', ' ');
+
+            pth_dn_mat = [pth_dn_tif(1:end-4) '.mat'];
+            pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
+            pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
+
+            load(pth_metadata) %file created in initial python part of pipeline
+            sz = single([md.ypix md.xpix md.numslice md.numvol]);
+
+            size_z_read_from = sz(3);
+            size_t_read_from = sz(4);
+            inds_z_read_from = 1:size_z_read_from; %can choose to not read the flyback frames here
+            inds_t_read_from = 1:size_t_read_from;
+            size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within cx_read_tif_tzyx
+
+
+            if isempty(plotinds_z)
                 plotinds_z = 1:sz(3);
-            end
-        end
-
-        if isempty(plotinds_t)
-            plotinds_t = 1:sz(4);
-        elseif plotinds_t<0
-            if -plotinds_t<sz(4)
-                plotinds_t = round(linspace(1, sz(4), -plotinds_t));
-            else
-                plotinds_t = 1:sz(4);
-            end
-        end
-
-
-        plotinds_z_str = sprintf('%.0f,', plotinds_z);
-        plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
-
-
-        %% load
-
-        try
-            stack = struct2cell(load(pth_dn_mat));
-            stack = stack{1};
-        catch
-
-            "READING DNEOISED TIF"
-            stack = cx_read_tif_tzyx(pth_stack_tif, ...
-                size_read_to, size_z_read_from, size_t_read_from, ...
-                inds_z_read_from, inds_t_read_from);
-
-            datmin = min(stack(:));
-            datmax = max(stack(:));
-            if ~isa(stack, 'uint16')
-                stack = single(stack);
-            end
-            stack = stack - double(datmin);
-            if ~isa(stack, 'uint16')
-                if datmax > 2^16-1
-                    "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
-                    error
+            elseif plotinds_z<0
+                if -plotinds_z<sz(3)
+                    plotinds_z = round(linspace(1, sz(3), -plotinds_z));
+                else
+                    plotinds_z = 1:sz(3);
                 end
-                stack = uint16(stack);
             end
 
-            "SAVING DENOISED AS MAT"
-            save(pth_dn_mat, 'stack', '-v7.3', '-mat')
+            if isempty(plotinds_t)
+                plotinds_t = 1:sz(4);
+            elseif plotinds_t<0
+                if -plotinds_t<sz(4)
+                    plotinds_t = round(linspace(1, sz(4), -plotinds_t));
+                else
+                    plotinds_t = 1:sz(4);
+                end
+            end
+
+
+            plotinds_z_str = sprintf('%.0f,', plotinds_z);
+            plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
+
+
+            %% load
+
+            try
+                stack = struct2cell(load(pth_dn_mat));
+                stack = stack{1};
+            catch
+
+                "READING DNEOISED TIF"
+                stack = cx_read_tif_tzyx(pth_stack_tif, ...
+                    size_read_to, size_z_read_from, size_t_read_from, ...
+                    inds_z_read_from, inds_t_read_from);
+
+                datmin = min(stack(:));
+                datmax = max(stack(:));
+                if ~isa(stack, 'uint16')
+                    stack = single(stack);
+                end
+                stack = stack - double(datmin);
+                if ~isa(stack, 'uint16')
+                    if datmax > 2^16-1
+                        "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
+                        error
+                    end
+                    stack = uint16(stack);
+                end
+
+                "SAVING DENOISED AS MAT"
+                save(pth_dn_mat, 'stack', '-v7.3', '-mat')
+
+            end
+
+
+            %% smooth
+
+
+            if len_window_smooth_t
+                stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t);
+            end
+            "DONE SMOOTHING"
+
+
+
+            %% plot before filtering
+
+            if plotgif
+
+                pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
+                title_str = 'filt';
+                cx_plot_gif_fast(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+
+            end
+
+
+            %% filter
+
+
+            stack = cx_fft_filter_1d(stack, stopband, testframes, 0);
+            "DONE FILTERING"
+
+
+            %% plot after filtering
+
+            if plotgif
+
+                pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
+                title_str = 'filt';
+                cx_plot_gif_fast(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+
+            end
+
+
+            %% save
+
+
+            save(pth_dn_nosn_mat, 'stack', '-v7.3', '-mat')
+
+            "FINISHED SAVING"
+
+
 
         end
-
-
-        %% smooth
-
-
-        if len_window_smooth_t
-            stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t);
-        end
-        "DONE SMOOTHING"
-
-
-
-        %% plot before filtering
-
-        if plotgif
-
-            pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
-            title_str = 'filt';
-            cx_plot_gif_fast(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
-
-        end
-
-
-        %% filter
-
-
-        stack = cx_fft_filter_1d(stack, stopband, testframes, 0);
-        "DONE FILTERING"
-
-
-        %% plot after filtering
-
-        if plotgif
-
-            pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
-            title_str = 'filt';
-            cx_plot_gif_fast(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
-
-        end
-
-
-        %% save
-
-
-        save(pth_dn_nosn_mat, 'stack', '-v7.3', '-mat')
-
-        "FINISHED SAVING"
-
-
-
     end
-
 end
 
 end
