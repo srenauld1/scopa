@@ -49,7 +49,7 @@ index_extraction_param_set = 'default' #one element, not in list, 'default' or s
 
 do_crop = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
-do_plots = 1 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
+do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 # caiman note on starting cluster
 # The default backend mode for parallel processing is through the multiprocessing package. 
@@ -80,7 +80,7 @@ if len(sys.argv)>1:
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec, pth_fldr_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix)
+[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, do_plots] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix)
 
 
 
@@ -179,7 +179,7 @@ for ri, _ in enumerate(pth_tif_read_all):
         import matlab.engine
         eng = matlab.engine.start_matlab()
         eng.cx_remove_scan_noise(nargout=0)
-        eng.cx_remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, nargout=0)
+        eng.cx_remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, do_plots, nargout=0)
         print("enddoremove")
 
       if do_extract or do_crop:
