@@ -80,7 +80,7 @@ if len(sys.argv)>1:
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
 
-[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, do_plots] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix)
+[pth_allrec, pth_fldr_copydest_prefix, pth_denoising] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix)
 
 
 
