@@ -39,6 +39,7 @@ use_denoised = 1 #use the deepcad denoised data, or just the caiman registered d
 do_stitch = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
 
 do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
+len_window_smooth_t_rsc = 30 #gaussian window length in matlab smoothdata for smoothing stack in time prior to removing scan noise (with line by line notch filter) in extremely noisy recordings
 
 do_extract = 0 #caiman source extraction 
 region_extraction = ['pb'] #DO NOT USE UNDERSCORES! ideally each string has no punctuation . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
@@ -174,11 +175,12 @@ for ri, _ in enumerate(pth_tif_read_all):
                 stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
       if do_remove:
+        print("startdoremove")
         import matlab.engine
         eng = matlab.engine.start_matlab()
         eng.cx_remove_scan_noise(nargout=0)
-        f=mm
-
+        eng.cx_remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, nargout=0)
+        print("enddoremove")
 
       if do_extract or do_crop:
           extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, 
