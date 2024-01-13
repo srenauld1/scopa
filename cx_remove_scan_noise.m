@@ -2,6 +2,8 @@
 
 function cx_remove_scan_noise(pth_datafile, len_window_smooth_t_rsc, do_plots)
 
+fprintf("\n\n\nENTERING cx_remove_scan_noise")
+
 %pth_datafile is full path to tif or mat (if mat is in same folder with
 %tif, it will be loaded without reading the tif)
 
