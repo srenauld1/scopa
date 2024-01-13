@@ -12,7 +12,7 @@ else #load virtual env if not copying files
     module load matlab/2023a
 fi
 
-python3 $(pwd)/pipeline_init.py \
+~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
 --do_remove 1 \
