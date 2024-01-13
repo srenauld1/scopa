@@ -38,6 +38,8 @@ use_denoised = 1 #use the deepcad denoised data, or just the caiman registered d
 
 do_stitch = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
 
+do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
+
 do_extract = 0 #caiman source extraction 
 region_extraction = ['pb'] #DO NOT USE UNDERSCORES! ideally each string has no punctuation . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
@@ -67,12 +69,12 @@ from helpers import copy_files_scopa
 if len(sys.argv)>1:
     
   [pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
-  do_planar_registration, len_window_smooth_t_mcp, do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_crop, do_extract, do_planar_extraction, 
+  do_planar_registration, len_window_smooth_t_mcp, do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_remove, do_crop, do_extract, do_planar_extraction, 
   use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, 
                       pth_storage_prefix = pth_storage_prefix, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t_mcp = len_window_smooth_t_mcp, do_separate = do_separate, do_denoise = do_denoise, 
-                      denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_extract = do_extract, 
+                      denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_remove = do_remove, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, do_crop = do_crop, recording_index = recording_index, file_matching_style = file_matching_style)
 
@@ -81,8 +83,8 @@ if len(sys.argv)>1:
 
 
 
-if do_register + do_separate + do_denoise + do_stitch + do_extract + do_crop > 1:
-  raise Exception ("only one of these variables can be true: do_register, do_separate, do_denoise, do_stitch, do_extract, do_crop")
+if do_register + do_separate + do_denoise + do_stitch + + do_remove + do_extract + do_crop > 1:
+  raise Exception ("only one of these variables can be true: do_register, do_separate, do_denoise, do_stitch, do_remove, do_extract, do_crop")
 else:
   if do_denoise:
     if denoise_volume==0 and len(denoise_slice_index)>1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
@@ -133,7 +135,7 @@ if not do_copyfiles:
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
   choose_files(pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, 
-        do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
+        do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, do_remove,
         use_background_subtracted, use_denoised)
 
 
@@ -171,10 +173,18 @@ for ri, _ in enumerate(pth_tif_read_all):
             else:
                 stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
+      if do_remove:
+        import matlab.engine
+        eng = matlab.engine.start_matlab()
+        eng.cx_remove_scan_noise(nargout=0)
+        f=mm
+
 
       if do_extract or do_crop:
           extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, 
                   do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
+          
+         
 
 
 print("\n\n\nEXITING pipeline_init.py") 

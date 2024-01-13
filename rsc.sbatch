@@ -11,6 +11,12 @@ else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 fi
 
+~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+--pars_filename "$PARS_FILENAME" \
+--do_copyfiles "$DO_COPYFILES" \
+--do_remove 1 \
+--recording_index $SLURM_ARRAY_TASK_ID
+
 matlab -batch "try; cx_remove_scan_noise('scopaparams.txt', [], $SLURM_ARRAY_TASK_ID); catch; end; quit"
 
 ##ampersand???

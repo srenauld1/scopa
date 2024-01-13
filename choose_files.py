@@ -10,7 +10,7 @@ import collections
 
 
 def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_index, file_matching_style, 
-                 do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, 
+                 do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, do_remove, 
                  use_background_subtracted, use_denoised):
     
     if file_matching_style=='any': #find all possible combinations 
@@ -37,7 +37,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
                 fn_suffix_scopa = fn_suffix_scopa + '_bksb'
-            if use_denoised and (do_extract or do_crop): 
+            if use_denoised and (do_extract or do_crop or do_remove):
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
         fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa

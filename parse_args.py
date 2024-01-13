@@ -30,7 +30,7 @@ class parse_pars_file():
 
 def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, 
                        pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t_mcp,
-                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, 
+                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_remove, 
                        do_extract, do_planar_extraction, use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, do_crop, recording_index, file_matching_style):
     
     CLI=argparse.ArgumentParser()
@@ -136,6 +136,12 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
         nargs=1, 
         type=int,
         default=[do_stitch],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--do_remove",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[do_remove],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_crop",  # name on the CLI - drop the `--` for positional/required parameters
@@ -275,6 +281,7 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
     num_epochs_denoise = args.num_epochs_denoise[0]
     epoch_choose_denoise = args.epoch_choose_denoise[0]
     do_stitch = args.do_stitch[0]
+    do_remove = args.do_remove[0]
     do_crop = args.do_crop[0]
     do_extract = args.do_extract[0]
     do_planar_extraction = args.do_planar_extraction[0]
@@ -317,7 +324,7 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
             pth_storage_prefix, index_extraction_param_set, region_extraction, 
             do_background_subtraction, do_register, do_planar_registration, len_window_smooth_t_mcp, 
             do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, 
-            do_stitch, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
+            do_stitch, do_remove, do_crop, do_extract, do_planar_extraction, use_denoised, use_background_subtracted, 
             recdate, fly, trial, folder_substring, recording_index, file_matching_style)
 
 

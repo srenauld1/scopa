@@ -64,9 +64,8 @@ elseif ~exist('pth_all_in', 'var') & ~isempty(pars_filename)  %batch mode finds 
 
     pars_filename
 
-
     pth_pars = [pwd filesep pars_filename]
-    fileID = fopen(pth_pars,'r');
+    fileID = fopen(pth_pars,'r')
 
     formatSpec = '%s';
     pars_string = fscanf(fileID,formatSpec);
