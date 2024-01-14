@@ -33,7 +33,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern
-        if do_separate or do_denoise or do_stitch or do_extract or do_crop:
+        if do_separate or do_denoise or do_stitch or do_extract or do_crop or do_remove:
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
                 fn_suffix_scopa = fn_suffix_scopa + '_bksb'
