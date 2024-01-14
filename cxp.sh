@@ -142,7 +142,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
-        gres_str=--begin=now #this is a dummy string to make gres_str work properly for all jobs (denoising, when gres_str is functional, and otherwise, when this dummy string is used and does nothing . . . empty string here doesn't work)
+        gres_str=--begin=now #this is a dummy string to make gres_str work properly for all jobs (denoising with dnp.sbatch, when gres_str is actully functional by setting gpu, and otherwise, when this dummy string is used to make the job begin "now", which is default anyway . . . empty string doesn't work)
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        

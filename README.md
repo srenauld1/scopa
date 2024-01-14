@@ -159,16 +159,24 @@ I leave slurm custom arguments blank
 
 i have been unable to open the vs code app on o2 when loading the deepcad environment, i think because of a python version conflict
 
+pip install the correct version for the default(?) newest matlab on O2, which is not 2023b, but 2023a, which corresponds to matlabengine==9.14.3, which is not the latest one . . . module load the python you intend to use first . . . it will fail to install in default dir because you don't have write permission, then it will try in your home folder, within hidden folder .locals, if it works, from there you move what was installed into the virtual environment or conda environment you want to use it in, so for example into caiman below, .  . . there are two folders installed, two folders to move  . . . also add LD_LIBRARY_PATH in hidden file .bashrc, which is in your home folder
 
 module purge
 python/3.10.11
 pip install matlabengine==9.14.3
 
 
-/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
+mv /home/caw846/.local/lib/python3.10/site-packages/matlab /home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
 
+mv /home/caw846/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info /home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
+
+
+cd /home/caw846
+nano .bashrc
+add this on last line 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/n/app/matlab/2023a-v2/bin/glnxa64
 
-cd /n/app/matlab/2023a-v2/extern/engines/python
-python3 setup.py build --build-base=“/home/caw846” install --prefix="/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages/matlab23ap310”
+failed to run setup.py directly like this
+        cd /n/app/matlab/2023a-v2/extern/engines/python
+        python3 setup.py build --build-base=“/home/caw846” install --prefix="/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages/matlab23a”
 
