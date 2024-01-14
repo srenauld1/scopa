@@ -129,7 +129,7 @@ fi
 
 
 echo -e "STARTING SCOPA PIPELINE \n SUBMITTING THE FOLLOWING SBATCH JOBS \n "${sbatch_job_name_sequence[@]}""
-
+echo LIST OF PATHS AVAILABLE TO cxp.sh: ; echo ; echo "${PATH//:/$'\n'}" ; echo
 
 loopcount=0
 for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do

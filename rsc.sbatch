@@ -9,7 +9,9 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load 
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
-    module load matlab/2023a
+    ml miniconda3/4.10.3 
+    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+    conda activate caiman
 fi
 
 ~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \

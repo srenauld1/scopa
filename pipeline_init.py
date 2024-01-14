@@ -62,10 +62,13 @@ cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant 
 
 
 import sys
+print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
+
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
 from helpers import copy_files_scopa
+
 
 if len(sys.argv)>1:
     
@@ -178,7 +181,6 @@ for ri, _ in enumerate(pth_tif_read_all):
         print("startdoremove")
         import matlab.engine
         eng = matlab.engine.start_matlab()
-        eng.cx_remove_scan_noise(nargout=0)
         eng.cx_remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, do_plots, nargout=0)
         print("enddoremove")
 

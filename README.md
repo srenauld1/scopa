@@ -160,3 +160,15 @@ I leave slurm custom arguments blank
 i have been unable to open the vs code app on o2 when loading the deepcad environment, i think because of a python version conflict
 
 
+module purge
+python/3.10.11
+pip install matlabengine==9.14.3
+
+
+/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
+
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/n/app/matlab/2023a-v2/bin/glnxa64
+
+cd /n/app/matlab/2023a-v2/extern/engines/python
+python3 setup.py build --build-base=“/home/caw846” install --prefix="/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages/matlab23ap310”
+
