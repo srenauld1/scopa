@@ -47,6 +47,8 @@ do_planar_extraction = 1 #caiman source extraction for each plane independently 
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
+do_analysis = 0 #matlab analysis, various functions in analyze_movie
+
 do_crop = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
 do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
@@ -178,15 +180,18 @@ for ri, _ in enumerate(pth_tif_read_all):
                 stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
       if do_remove:
-        print("startdoremove")
         import matlab.engine
         eng = matlab.engine.start_matlab()
         eng.cx_remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, do_plots, nargout=0)
-        print("enddoremove")
 
       if do_extract or do_crop:
           extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, 
                   do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
+          
+      if do_analysis:
+        import matlab.engine
+        eng = matlab.engine.start_matlab()
+        eng.cx_analysis(pth_tif_read_all[ri], len_window_smooth_t_rsc, do_plots, nargout=0)
           
          
 
