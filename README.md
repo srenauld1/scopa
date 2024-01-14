@@ -93,9 +93,9 @@ there are a few spots in the pipeline built to accommodate carl's old project, t
 
 INSTALLING THINGS
 
- before running register and extract, caiman and a few other packages need to be installed; to do that, log into O2 compute cluster and run these commands from your home folder (you probably could use a lot less than -c 15 --mem=50G in the first command, but who cares)
+ before running register and extract, caiman and a few other packages need to be installed; to do that, log into O2 compute cluster and run these commands from your home folder 
 
-            srun -p interactive --pty -t 3:00:00 -c 15 --mem=50G bash 
+            srun -p interactive --pty -t 3:00:00 -c 5 --mem=10G bash 
             module purge
             module load miniconda3/4.10.3
             source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
@@ -163,27 +163,26 @@ i have been unable to open the vs code app on o2 when loading the deepcad enviro
 on local machine, used mamba to install caiman, it's licated here 
 /Users/wienecke/mambaforge/envs/caiman/lib/python3.10/site-packages/caiman
 
+
 ###### matlab for python ######
 to run everything through the same pipeline, install the matlab for python engine, which let's you call matlab functions from within python files
 
 be sure to pip install the correct matlabengine version for the matlab version on O2 that the pip installer finds by default (which appears to be the newest matlab version on O2, which is 2023a, not 2023b, and which corresponds to matlabengine==9.14.3, which is not the latest matlabengine
 
-module load the python version you intend to use first, this pipeline uses 3.10 (never tested other versions)
+start an interactive session, then module load the python version you intend to use first, this pipeline uses 3.10 (never tested other versions)
 
 matlabengine will fail to install in the default directory because you don't have write permission there, so the installer will automatically try installing in your home folder, within hidden folder .locals . . . it should work, and if it works, there will be two new folders in ~/.local/lib/python3.10/site-packages, one called matlab and one called matlabengine-9.14.3.dist-info
 
 move both folders into a path you want the pipeline to find . . . for example, you can move them into a virtual environment a conda environment that the pipeline uses . . . below are the commands to move them into the caiman conda environment 
 
+srun -p interactive --pty -t 3:00:00 -c 5 --mem=10G bash
 module purge
 python/3.10.11
 pip install matlabengine==9.14.3
-
-
 mv ~/.local/lib/python3.10/site-packages/matlab ~/.conda/envs/caiman/lib/python3.10/site-packages
-
 mv ~/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info ~/.conda/envs/caiman/lib/python3.10/site-packages
 
-
+that should be all you need to do, but here are some more comments
 
 the docs say to put the matlabengine installation path in LD_LIBRARY_PATH in .bashrc if the matlab app is not in the default location . . . its O2 location does not match what the docs report to be defualt, but i've found matlab engine works without doing this, but i'm documenting it here in case somebody needs it, you just open your hidden .bashrc file and put the export line as the last line (you have to reopen your terminal session for the change to take effect)
 
