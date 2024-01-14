@@ -159,24 +159,41 @@ I leave slurm custom arguments blank
 
 i have been unable to open the vs code app on o2 when loading the deepcad environment, i think because of a python version conflict
 
-pip install the correct version for the default(?) newest matlab on O2, which is not 2023b, but 2023a, which corresponds to matlabengine==9.14.3, which is not the latest one . . . module load the python you intend to use first . . . it will fail to install in default dir because you don't have write permission, then it will try in your home folder, within hidden folder .locals, if it works, from there you move what was installed into the virtual environment or conda environment you want to use it in, so for example into caiman below, .  . . there are two folders installed, two folders to move  . . . also add LD_LIBRARY_PATH in hidden file .bashrc, which is in your home folder
+
+on local machine, used mamba to install caiman, it's licated here 
+/Users/wienecke/mambaforge/envs/caiman/lib/python3.10/site-packages/caiman
+
+###### matlab for python ######
+to run everything through the same pipeline, install the matlab for python engine, which let's you call matlab functions from within python files
+
+be sure to pip install the correct matlabengine version for the matlab version on O2 that the pip installer finds by default (which appears to be the newest matlab version on O2, which is 2023a, not 2023b, and which corresponds to matlabengine==9.14.3, which is not the latest matlabengine
+
+module load the python version you intend to use first, this pipeline uses 3.10 (never tested other versions)
+
+matlabengine will fail to install in the default directory because you don't have write permission there, so the installer will automatically try installing in your home folder, within hidden folder .locals . . . it should work, and if it works, there will be two new folders in ~/.local/lib/python3.10/site-packages, one called matlab and one called matlabengine-9.14.3.dist-info
+
+move both folders into a path you want the pipeline to find . . . for example, you can move them into a virtual environment a conda environment that the pipeline uses . . . below are the commands to move them into the caiman conda environment 
 
 module purge
 python/3.10.11
 pip install matlabengine==9.14.3
 
 
-mv /home/caw846/.local/lib/python3.10/site-packages/matlab /home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
+mv ~/.local/lib/python3.10/site-packages/matlab ~/.conda/envs/caiman/lib/python3.10/site-packages
 
-mv /home/caw846/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info /home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
+mv ~/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info ~/.conda/envs/caiman/lib/python3.10/site-packages
 
 
-cd /home/caw846
+
+the docs say to put the matlabengine installation path in LD_LIBRARY_PATH in .bashrc if the matlab app is not in the default location . . . its O2 location does not match what the docs report to be defualt, but i've found matlab engine works without doing this, but i'm documenting it here in case somebody needs it, you just open your hidden .bashrc file and put the export line as the last line (you have to reopen your terminal session for the change to take effect)
+
+cd ~
 nano .bashrc
-add this on last line 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/n/app/matlab/2023a-v2/bin/glnxa64
 
-failed to run setup.py directly like this
+in case it's useful to know about install failures, initially i tried pip install with the wrong matlabengine version, which fails, and i also tried running setup.py directly, like this
         cd /n/app/matlab/2023a-v2/extern/engines/python
         python3 setup.py build --build-base=“/home/caw846” install --prefix="/home/caw846/.conda/envs/caiman/lib/python3.10/site-packages/matlab23a”
+various versions of this approach failed, some actually installed, but would error when using the code
+
 
