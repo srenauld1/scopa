@@ -36,7 +36,7 @@ do
     --pars_filename "$PARS_FILENAME" \
     --do_copyfiles "$DO_COPYFILES" \
     --do_denoise 1 \
-    --recording_index $SLURM_ARRAY_TASK_ID &
+    --recording_index $SLURM_ARRAY_TASK_ID
 
 done
 

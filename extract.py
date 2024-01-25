@@ -13,7 +13,7 @@ from crop_fov import crop_fov
 
 
 def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, 
-            do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster):
+            do_planar_extraction, regionex, do_plots, cluster_backend, do_cluster):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -27,7 +27,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
     Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
     print(Y.shape)
 
-    for rx in region_extraction:
+    for rx in regionex:
         
         print("ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
@@ -83,7 +83,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if do_planar_extraction: #for planar extraction take on z slice at a time
-                            print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + " OF REGION_EXTRACTION")
+                            print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + " OF REGIONEX")
                             images_sliced = Ycrop[:,:,:,si]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
                             print("DOING 3D EXTRACTION FOR ALL SLICES IN REGION EXTRACTION")

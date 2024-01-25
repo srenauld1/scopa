@@ -19,14 +19,14 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
-do_separate=0 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
-do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
-do_stitch=0 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
-do_remove=1 #0 or 1, no space after =, remove scan noise (matlab)
+do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
+do_separate=1 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
+do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
+do_stitch=1 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
+do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_matlab=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
-do_copyfiles_sequence=(0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
@@ -35,7 +35,8 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
 #matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
-#HERE, THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
+#THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
+
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') #include trailing slash
 RECDATE=('*')
@@ -61,7 +62,7 @@ EPOCH_CHOOSE_DENOISE=(5) #denoising epoch to use in do_stitch, to be saved as ti
 LEN_WINDOW_SMOOTH_T_RSC=(30)
 
 INDEX_EXTRACTION_PARAM_SET=('default')
-REGION_EXTRACTION=('fullfov')
+REGIONEX=('fullfov')
 DO_PLANAR_EXTRACTION=(1)
 USE_DENOISED=(1)
 
@@ -88,7 +89,7 @@ pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"
 pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
 pars["LEN_WINDOW_SMOOTH_T_RSC"]="${LEN_WINDOW_SMOOTH_T_RSC[@]}"
 pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"
-pars["REGION_EXTRACTION"]="${REGION_EXTRACTION[@]}"
+pars["REGIONEX"]="${REGIONEX[@]}"
 pars["DO_PLANAR_EXTRACTION"]="${DO_PLANAR_EXTRACTION[@]}"
 pars["USE_DENOISED"]="${USE_DENOISED[@]}"
 

@@ -38,13 +38,13 @@ def select_fov_xy(img):
 
 
 
-def crop_fov(Y, region_extraction, pth_prefix, dims):
+def crop_fov(Y, regionex, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
     
     try:
         
-        fn_croplim_pattern = pth_prefix + '_' + region_extraction + '*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        fn_croplim_pattern = pth_prefix + '_' + regionex + '*_croplim_.npy' #find file matching fov subregion with some crop lim 
         fn_croplim = glob.glob(fn_croplim_pattern)
         if len(fn_croplim) > 1:
             raise Exception("too many crop files")
@@ -54,7 +54,7 @@ def crop_fov(Y, region_extraction, pth_prefix, dims):
 
     except:
         
-        if region_extraction == 'fullfov':
+        if regionex == 'fullfov':
        
             croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
             limits_str = '1_' + str(dims[0]) + '_1_' + str(dims[3]) + '_1_' + str(dims[2]) + '_1_' + str(dims[1])
@@ -78,7 +78,7 @@ def crop_fov(Y, region_extraction, pth_prefix, dims):
             croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
             
         limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-        fn_crop_lim = pth_prefix + '_' + region_extraction + '_' + limits_str + '_croplim_.npy'
+        fn_crop_lim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
         with open(fn_crop_lim, 'wb') as fncrop:
             np.save(fncrop, croplim)
 

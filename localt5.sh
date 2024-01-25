@@ -4,7 +4,7 @@
 /Users/wienecke/mambaforge/envs/caiman/bin/python /Users/wienecke/Documents/scopa/pipeline_init.py \
 --virtenv 'caiman' \
 --index_extraction_param_set -75 \
---region_extraction 'post' \
+--regionex 'post' \
 --do_background_subtraction 0 \
 --do_register 0 \
 --do_denoise 0 \

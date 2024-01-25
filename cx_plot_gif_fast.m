@@ -1,4 +1,4 @@
-function plot_gif_fast(inp, ncol, swapdim, filename, titopt)
+function plot_gif_fast(inp, ncol, swapdim, filename, titall, plotinds_z, plotinds_t)
 
 szo = size(inp);
 numdims = ndims(inp);
@@ -20,6 +20,16 @@ elseif numdims>3
     sznew = size(inp);
 end
 
+if exist('plotinds_z', 'var') & exist('plotinds_t', 'var')
+    titopt = repelem(plotinds_z, length(plotinds_t));
+    for ti = 1:length(titopt)
+        titallnew{ti} = cat(1, titall, ['z slice ' num2str(titopt(ti))]);
+    end
+else
+    titallnew{1} = titall;
+    titallnew = repelem(titallnew, sznew(end));
+end
+
 h = figure;
 for i = 1:sznew(end)
 
@@ -30,7 +40,7 @@ for i = 1:sznew(end)
     end
     axis off; axis image;
 
-    sgtitle(titopt, 'FontSize', 6)
+    sgtitle(titallnew{i}, 'FontSize', 10)
 
     frame = getframe(h);
     im = frame2im(frame);

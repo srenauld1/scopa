@@ -42,14 +42,14 @@ do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_fi
 len_window_smooth_t_rsc = 30 #gaussian window length in matlab smoothdata for smoothing stack in time prior to removing scan noise (with line by line notch filter) in extremely noisy recordings
 
 do_extract = 0 #caiman source extraction 
-region_extraction = ['pb'] #DO NOT USE UNDERSCORES! ideally each string has no punctuation . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+regionex = ['pb'] #DO NOT USE UNDERSCORES! ideally each string has no punctuation . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 do_planar_extraction = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_analysis = 0 #matlab analysis, various functions in analyze_movie
 
-do_crop = 0 #skip everything but FOV selection for all entries in region_extraction, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
+do_crop = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
 do_plots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
@@ -74,11 +74,11 @@ from helpers import copy_files_scopa
 
 if len(sys.argv)>1:
     
-  [pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, index_extraction_param_set, region_extraction, do_background_subtraction, do_register, 
+  [pars_filename, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, index_extraction_param_set, regionex, do_background_subtraction, do_register, 
   do_planar_registration, len_window_smooth_t_mcp, do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, epoch_choose_denoise, do_stitch, do_remove, do_crop, do_extract, do_planar_extraction, 
   use_denoised, use_background_subtracted, recdate, fly, trial, folder_substring, recording_index, file_matching_style] = \
     parse_command_line(pars_filename = pars_filename, do_copyfiles = do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, 
-                      pth_storage_prefix = pth_storage_prefix, index_extraction_param_set = index_extraction_param_set, region_extraction = region_extraction, 
+                      pth_storage_prefix = pth_storage_prefix, index_extraction_param_set = index_extraction_param_set, regionex = regionex, 
                       do_background_subtraction = do_background_subtraction, do_register = do_register, do_planar_registration = do_planar_registration, len_window_smooth_t_mcp = len_window_smooth_t_mcp, do_separate = do_separate, do_denoise = do_denoise, 
                       denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, epoch_choose_denoise = epoch_choose_denoise, do_stitch = do_stitch, do_remove = do_remove, do_extract = do_extract, 
                       do_planar_extraction = do_planar_extraction, use_denoised = use_denoised, use_background_subtracted = use_background_subtracted, 
@@ -186,7 +186,7 @@ for ri, _ in enumerate(pth_tif_read_all):
 
       if do_extract or do_crop:
           extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, 
-                  do_planar_extraction, region_extraction, do_plots, cluster_backend, do_cluster)
+                  do_planar_extraction, regionex, do_plots, cluster_backend, do_cluster)
           
       if do_analysis:
         import matlab.engine
