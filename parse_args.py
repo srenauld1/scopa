@@ -253,7 +253,7 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
     
     folder_with_all_recordings_on_storage_and_compute_filesystems =  args.folder_with_all_recordings_on_storage_and_compute_filesystems[0] 
     pth_storage_prefix = args.pth_storage_prefix[0] 
-    do_copyfiles = args.do_copyfiles[0]
+    do_copyfiles = int(args.do_copyfiles[0])
     
     index_extraction_param_set = args.index_extraction_param_set[0] 
     if index_extraction_param_set != 'default':
@@ -264,12 +264,12 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
     else:
         regionex = args.regionex #keep as list
         
-    do_register = args.do_register[0]
-    do_planar_registration = args.do_planar_registration[0]
+    do_register = int(args.do_register[0])
+    do_planar_registration = int(args.do_planar_registration[0])
     len_window_smooth_t_mcp = int(args.len_window_smooth_t_mcp[0])
-    do_separate = args.do_separate[0]
-    do_denoise = args.do_denoise[0]
-    denoise_volume = args.denoise_volume[0]
+    do_separate = int(args.do_separate[0])
+    do_denoise = int(args.do_denoise[0])
+    denoise_volume = int(args.denoise_volume[0])
 
     if isinstance(args.denoise_slice_index[0], list):
         denoise_slice_index = args.denoise_slice_index[0] #keep as list
@@ -278,15 +278,15 @@ def parse_command_line(pars_filename, do_copyfiles, folder_with_all_recordings_o
     if denoise_slice_index != ['all']:
         denoise_slice_index = [int(ri) for ri in denoise_slice_index] #convert to int if not 'all'
 
-    num_epochs_denoise = args.num_epochs_denoise[0]
-    epoch_choose_denoise = args.epoch_choose_denoise[0]
-    do_stitch = args.do_stitch[0]
-    do_remove = args.do_remove[0]
-    do_crop = args.do_crop[0]
-    do_extract = args.do_extract[0]
-    do_planar_extraction = args.do_planar_extraction[0]
-    use_denoised = args.use_denoised[0]
-    use_background_subtracted = args.use_background_subtracted[0]
+    num_epochs_denoise = int(args.num_epochs_denoise[0])
+    epoch_choose_denoise = int(args.epoch_choose_denoise[0])
+    do_stitch = int(args.do_stitch[0])
+    do_remove = int(args.do_remove[0])
+    do_crop = int(args.do_crop[0])
+    do_extract = int(args.do_extract[0])
+    do_planar_extraction = int(args.do_planar_extraction[0])
+    use_denoised = int(args.use_denoised[0])
+    use_background_subtracted = int(args.use_background_subtracted[0])
     if isinstance(args.recdate[0], list):
         recdate = args.recdate[0] #keep as list
     else:
