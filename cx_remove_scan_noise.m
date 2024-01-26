@@ -173,54 +173,49 @@ numxpix = sz(2);
 fs = numxpix; %sampling frequency (num x pixels)
 fn = fs/2; % Nyquist Frequency
 fv = linspace(0, 1, fix(numxpix/2)+1)*fn; % Frequency Vector (One-Sided FFT)
-fpass1 = fv(stopband(1)-1); % Frequency Corresponding To stopband(1)
+% fpass1 = fv(stopband(1)-1); % Frequency Corresponding To stopband(1)
 fstop1 = fv(stopband(1)); % Frequency Corresponding To stopband(1)
 fstop2 = fv(stopband(2)); % Frequency Corresponding To stopband(2)
-fpass2 = fv(stopband(2)+1); % Frequency Corresponding To stopband(1)
+% fpass2 = fv(stopband(2)+1); % Frequency Corresponding To stopband(1)
 
 %% make linear phase fir stopband filter to minimize distortion in reconstructed signal 
 
-filtord = 2^8; % Discrete Filter Order
+filtord = 2^6; %longer is better filtering but bigger startup transient 
 
-filt = fir1(filtord, [fstop1 fstop2]/fn, 'stop'); 
-hfvt = fvtool(filt);
-filt2 = fir1(filtord, [fstop1 fstop2]/fn, 'stop', chebwin(filtord+1,30)); 
-hfvt = fvtool(filt2);
-
-%% 
-
-filtord = 2^9
-filt3 = designfilt(...
-       'bandstopfir', ...     
-       'FilterOrder', filtord, ...            
-       'PassbandFrequency1', fpass1, ...    
-       'StopbandFrequency1', fstop1, ...
-       'StopbandFrequency2', fstop2, ...
-       'PassbandFrequency2', fpass2, ...
-       'DesignMethod','ls', ...        
-       'PassbandWeight1', 1, ...        
-       'StopbandWeight', 1, ...
-       'PassbandWeight2', 1, ...
-       'SampleRate', fs ...
-       );   
-
-
-filt4 = designfilt(...
+filt = designfilt(...
        'bandstopfir', ...     
        'FilterOrder', filtord, ...            
        'CutoffFrequency1', fstop1, ...
        'CutoffFrequency2', fstop2, ...
        'DesignMethod','window', ...        
        'SampleRate', fs ...
-       );   
+       );    %same as fir1(filtord, [fstop1 fstop2]/fn, 'stop'); 
 
-fvtool(filt3, filt4);
-fvtool(filt3);
-fvtool(filt4);
+% filt2 = fir1(filtord, [fstop1 fstop2]/fn, 'stop', chebwin(filtord+1,30)); 
+
+% filt3 = designfilt(...
+%        'bandstopfir', ...     
+%        'FilterOrder', filtord, ...            
+%        'PassbandFrequency1', fpass1, ...    
+%        'StopbandFrequency1', fstop1, ...
+%        'StopbandFrequency2', fstop2, ...
+%        'PassbandFrequency2', fpass2, ...
+%        'DesignMethod','ls', ...        
+%        'PassbandWeight1', 1, ...        
+%        'StopbandWeight', 1, ...
+%        'PassbandWeight2', 1, ...
+%        'SampleRate', fs ...
+%        );   
+
+
+% fvtool(filt); %show filter freq and phase 
+% fvtool(filt2);
+% fvtool(filt3);
+
 
 %% 
 
-imin = reshape(imin, numlines, numxpix, []); 
+imin = reshape(imin, numlines, numxpix, []);
 imin = permute(imin, [2 3 1]);
 
 imout = zeros(size(imin), 'int16');
@@ -230,11 +225,9 @@ for indi = 1:numlines %do small loop so that the conversion to double is not too
     data = double(imin(:, :, indi));
     mnd = mean(data);
     data = data - mnd;
-    % data = cat(1, padtmp*mnd, data);
-    tmpout = fftfilt(filt, data);
-    % tmpout2 = bandstop(data, [Fkfth/Fn Fkfth2/Fn]);
-    % imout(:,indi) = tmpout(padlen+1:end) + mnd;
-    imout(:,:, indi) = tmpout + mnd; 
+    tmpout = filtfilt(filt, data); %zero-phase filtering
+    % tmpout = fftfilt(filt, data); %not zero phase
+    imout(:,:, indi) = tmpout + mnd;
 
 end
 
@@ -246,8 +239,8 @@ if maxall > 2^16-1
 end
 imout = uint16(imout);
 
+imout = permute(imout, [3 1 2]);
 imout = reshape(imout, sz); %put back in 4d
-imout = permute(imout, []);
 
 end
 
