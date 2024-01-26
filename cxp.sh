@@ -27,7 +27,7 @@ do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_matlab=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring
+jobarrayind=( 0-2 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
@@ -39,7 +39,7 @@ jobarrayind=( 0-2 ) #nonsequential syntax ( 0,2,7 ) or sequential syntax ( 0-2 )
 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') #include trailing slash
-RECDATE=('*')
+RECDATE=('20230627')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -48,8 +48,8 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 ############ SET PARAMS FOR ANALYSIS ############
 
 DO_PLANAR_REGISTRATION=(1) #register each z slice independently
-DO_BACKGROUND_SUBTRACTION=(0)
-LEN_WINDOW_SMOOTH_T_MCP=(20)
+DO_BACKGROUND_SUBTRACTION=(0) #line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
+LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior to registration, helps register noisy movies)
 
 USE_BACKGROUND_SUBTRACTED=(0) #note: value assigned here used in do_separate and do_extract 
 
@@ -59,7 +59,7 @@ DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for su
 
 EPOCH_CHOOSE_DENOISE=(5) #denoising epoch to use in do_stitch, to be saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun do_stitch with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, thisn is faster than rerunning denoising, but still stupid, fix it soon) 
 
-LEN_WINDOW_SMOOTH_T_RSC=(30)
+LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise 
 
 INDEX_EXTRACTION_PARAM_SET=('default')
 REGIONEX=('fullfov')
