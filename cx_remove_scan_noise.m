@@ -12,7 +12,6 @@ stopband = [10 20]; %set emperically for now, stopband frequency indices keep be
 plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
 plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-testframes = 0; %make zero to do all frames, nonzeros to do 1:testframes
 ncol = 256; %num colors in plot
 
 len_window_smooth_t = len_window_smooth_t_rsc; %helps with filtering the scan noise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
@@ -137,7 +136,7 @@ end
 %% filter
 
 
-stack = cx_fft_filter_1d(stack, stopband, testframes, 0);
+stack = cx_fft_filter_1d(stack, stopband);
 "DONE FILTERING"
 
 
@@ -164,79 +163,91 @@ end
 
 %% function for filtering
 
-function imout = cx_fft_filter_1d(imin, stopband, testframes, doplots)
+function imout = cx_fft_filter_1d(imin, stopband)
+
+%% 
+
+sz = size(imin);
+numlines = sz(1);
+numxpix = sz(2);
+fs = numxpix; %sampling frequency (num x pixels)
+fn = fs/2; % Nyquist Frequency
+fv = linspace(0, 1, fix(numxpix/2)+1)*fn; % Frequency Vector (One-Sided FFT)
+fpass1 = fv(stopband(1)-1); % Frequency Corresponding To stopband(1)
+fstop1 = fv(stopband(1)); % Frequency Corresponding To stopband(1)
+fstop2 = fv(stopband(2)); % Frequency Corresponding To stopband(2)
+fpass2 = fv(stopband(2)+1); % Frequency Corresponding To stopband(1)
+
+%% make linear phase fir stopband filter to minimize distortion in reconstructed signal 
+
+filtord = 2^8; % Discrete Filter Order
+
+filt = fir1(filtord, [fstop1 fstop2]/fn, 'stop'); 
+hfvt = fvtool(filt);
+filt2 = fir1(filtord, [fstop1 fstop2]/fn, 'stop', chebwin(filtord+1,30)); 
+hfvt = fvtool(filt2);
+
+%% 
+
+filtord = 2^9
+filt3 = designfilt(...
+       'bandstopfir', ...     
+       'FilterOrder', filtord, ...            
+       'PassbandFrequency1', fpass1, ...    
+       'StopbandFrequency1', fstop1, ...
+       'StopbandFrequency2', fstop2, ...
+       'PassbandFrequency2', fpass2, ...
+       'DesignMethod','ls', ...        
+       'PassbandWeight1', 1, ...        
+       'StopbandWeight', 1, ...
+       'PassbandWeight2', 1, ...
+       'SampleRate', fs ...
+       );   
 
 
-if testframes
-    doframes = 1:testframes;
-else
-    doframes = 1:size(imin, 4);
-end
+filt4 = designfilt(...
+       'bandstopfir', ...     
+       'FilterOrder', filtord, ...            
+       'CutoffFrequency1', fstop1, ...
+       'CutoffFrequency2', fstop2, ...
+       'DesignMethod','window', ...        
+       'SampleRate', fs ...
+       );   
 
-szperm = [size(imin, 2), size(imin, 1), size(imin, 3), length(doframes)];
-imin = permute(imin, [2 1 3 4]);
-imin = reshape(imin(:,:,:,doframes), size(imin, 1), []);  %collapse z and t because we believe dominant structure is through true time (not volume time)
+fvtool(filt3, filt4);
+fvtool(filt3);
+fvtool(filt4);
 
+%% 
 
-Ts = 1;                                                             % Sampling Interval
-Fs = 1/Ts;                                                          % Sampling Frequency
-Fn = Fs/2;                                                          % Nyquist Frequency
-L = size(imin,1);                                                   % Length Of ‘data’ Vector
-t = 1:L*Ts;
-%t = linspace(0, 1, L)*Ts;% Time Vector
+imin = reshape(imin, numlines, numxpix, []); 
+imin = permute(imin, [2 3 1]);
 
-if doplots
-    FTdataall = fft(imin)./L;                                               % Fourier Transform
-end
-Fv = linspace(0, 1, fix(L/2)+1)*Fn;                                 % Frequency Vector (One-Sided FFT)
-Iv = 1:length(Fv);                                                 % Index Vector
-Ivkf = 1:stopband(1);                                                      % 8First keepfreq FFT Frequencies
-Fkfth = Fv(stopband(1));                                                     % Frequency Corresponding To keepfreqth Element
-Fkfth2 = Fv(stopband(2));                                                     % Frequency Corresponding To keepfreqth Element
+imout = zeros(size(imin), 'int16');
 
+for indi = 1:numlines %do small loop so that the conversion to double is not too large in ram (output saved as int16, then converted to uint16 after subtracting min)
 
-FLen = 40;                                                          % Discrete Filter Order
-b_filt = fir1(FLen, [Fkfth/Fn Fkfth2/Fn], 'stop', chebwin(FLen+1,30));                                       % Design FIR Filter
-
-do_pad = 0;
-if do_pad
-    padlen = length(b_filt);
-else
-    padlen = 0;
-end
-padtmp = ones(padlen, 1, 'double');
-
-imout = zeros(size(imin), 'single');
-
-
-for indi = 1:size(imin, 2) %loop over lines, filtering
-
-    data = double(imin(:,indi));
+    data = double(imin(:, :, indi));
     mnd = mean(data);
     data = data - mnd;
-    data = cat(1, padtmp*mnd, data);
-    tmpout = fftfilt(b_filt, data);
-    tmpout2 = bandstop(data, [Fkfth/Fn Fkfth2/Fn]);
-    imout(:,indi) = tmpout(padlen+1:end) + mnd;
+    % data = cat(1, padtmp*mnd, data);
+    tmpout = fftfilt(filt, data);
+    % tmpout2 = bandstop(data, [Fkfth/Fn Fkfth2/Fn]);
+    % imout(:,indi) = tmpout(padlen+1:end) + mnd;
+    imout(:,:, indi) = tmpout + mnd; 
 
 end
 
-
-%put back in 4d
-imout = reshape(imout, szperm);
-imout = permute(imout, [2 1 3 4]);
-if ~isa(imout, 'single')
-    imout = single(imout);
+minall = min(imout(:));
+maxall = max(imout(:));
+imout = imout - minall; %subtract min before converting to uint16
+if maxall > 2^16-1
+    error("ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE")
 end
+imout = uint16(imout);
 
-datmin_raw = min(imout(:));
-datmax_raw = max(imout(:));
-imout = imout - datmin_raw;
-% if datmax_raw > 2^16-1
-%     "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
-%     error
-% end
-% imout = uint16(imout);
+imout = reshape(imout, sz); %put back in 4d
+imout = permute(imout, []);
 
 end
 

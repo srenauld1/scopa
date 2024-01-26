@@ -42,7 +42,7 @@ PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') #include trailing s
 RECDATE=('*')
 FLY=('*')
 TRIAL=('*')
-FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
+FOLDER_SUBSTRING=('cl' 'dark') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 ############ SET PARAMS FOR ANALYSIS ############
