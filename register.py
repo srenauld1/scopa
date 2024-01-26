@@ -105,10 +105,10 @@ def register(pth_tif_read, pth_prefix, md, do_planar_registration, do_background
         sigma_smooth_prereg = (len_window_smooth_t_mcp - 1) / numsigma_smooth_prereg / 2
         Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
         Y = Y.reshape(dimtmp_presmooth)
-        mnmv = np.min(Y).astype('float32')
-        Y -= mnmv #make movie nonnegative (not sure this is necessary)
-        Y = Y.astype('uint16')
-        print("MIN AFTER SMOOTHING " + str(mnmv))
+        # mnmv = np.min(Y).astype('float32')
+        # Y -= mnmv #make movie nonnegative (not sure this is necessary)
+        # Y = Y.astype('uint16')
+        print("MIN AFTER SMOOTHING " + str(np.min(Y)))
 
     
     min_mov = np.min(Y).astype('float32')

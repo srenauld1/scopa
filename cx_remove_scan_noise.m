@@ -78,7 +78,7 @@ end
 
 
 plotinds_z_str = sprintf('%.0f,', plotinds_z);
-plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
+plotinds_z_str = plotinds_z_str(1:end-1); %strip final comma
 
 %% load
 

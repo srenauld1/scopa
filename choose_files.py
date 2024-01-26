@@ -51,12 +51,14 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
                 fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_*_' + fn_suffix_flyg
             else:
                 fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_' + fn_suffix_flyg  
-            pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
+            # pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
+            pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_flyg, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since both patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
             fn_pattern_carlold = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + '_' + fn_suffix_carlold 
-            pth_allfiles_carlold = glob.glob(pth_allrec + '**/' + fn_pattern_carlold, recursive=True)
+            # pth_allfiles_carlold = glob.glob(pth_allrec + '**/' + fn_pattern_carlold, recursive=True)
+            pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_carlold, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since both patterns are valid as input
 
     pth_allfiles_singles = [item for item, count in collections.Counter(pth_allfiles).items() if count == 1] #files that appear once 
