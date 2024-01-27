@@ -171,6 +171,8 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
     if first_job: #if first_job, write a file mathing recording specifiers to recording index, so subsequent jobs in the same run will follow this mapping
         with open(pth_fnind, 'w') as f2:
+            
+            print("\n\n\nSINCE THIS IS THE FIRST (OR ONLY) JOB IN THE PIPELINE, WILL WRITE FILENAME SPECIFIERS FOR FOUND FILES TO THIS FILE: \n" + pth_fnind)
 
             recdate_found = []
             fly_found = []
