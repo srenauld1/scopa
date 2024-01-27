@@ -78,9 +78,9 @@ def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst
     line_ani.save(filename_gif, writer=writer)
 
 
-def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, do_planar_extraction, pth_results):
+def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, extract_in_2d, pth_results):
 
-    if do_planar_extraction:
+    if extract_in_2d:
         #Cn_o = compute_correlations(pth_mmap_reg[0], dims_spatial)
         Cn = cm.local_correlations(images_sliced.transpose(1,2,0))
         print(Cn.shape)

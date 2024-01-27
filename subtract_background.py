@@ -18,8 +18,8 @@ from scipy import signal
 
 class bgremover:
 
-    def __init__(self, img, pth_save_prefix, half_wid=12, dimorder='tyx'):
-        self.half_wid = half_wid
+    def __init__(self, img, pth_save_prefix, patchlen=24, dimorder='tyx'):
+        self.half_wid = patchlen/2
         self.pth_save_prefix = pth_save_prefix
         if dimorder=='tyx':
             self.img = img

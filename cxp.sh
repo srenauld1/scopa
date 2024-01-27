@@ -25,9 +25,9 @@ do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
 do_stitch=1 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
-do_matlab=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
+do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0-2 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below, this is the syntax for sequential indices . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring
+jobarrayind=( 0-2 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
@@ -38,7 +38,8 @@ jobarrayind=( 0-2 ) #unlike many of the bash arrays here, nonsequential syntax f
 #THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
-PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') #include trailing slash
+PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
+
 RECDATE=('20230627')
 FLY=('*')
 TRIAL=('*')
@@ -47,24 +48,28 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 ############ SET PARAMS FOR ANALYSIS ############
 
-DO_PLANAR_REGISTRATION=(1) #register each z slice independently
-DO_BACKGROUND_SUBTRACTION=(0) #line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
+REGISTER_IN_2D=(1) #register each z slice independently
+LEN_WINDOW_BGSUB=(0) #make zero to skip, otherwise window full width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior to registration, helps register noisy movies)
 
-USE_BACKGROUND_SUBTRACTED=(0) #note: value assigned here used in do_separate and do_extract 
-
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
-NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
+NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 
+USE_BACKGROUND_SUBTRACTED=(0) #note: value assigned here used in do_separate and do_extract 
+USE_DENOISED=(1)
 EPOCH_CHOOSE_DENOISE=(5) #denoising epoch to use in do_stitch, to be saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun do_stitch with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, thisn is faster than rerunning denoising, but still stupid, fix it soon) 
 
 LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise 
 
-INDEX_EXTRACTION_PARAM_SET=('default')
+EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
-DO_PLANAR_EXTRACTION=(1)
-USE_DENOISED=(1)
+INDEX_EXTRACTION_PARAM_SET=('default')
+
+############ CREATE PREFIX FOR TXT FILES THAT WILL MAP FOUND FILENAMES TO PARALLEL JOB INDICES ############
+
+CURRENTEPOCTIME=`date +"%Y-%m-%d %T"`
+FNIND_FN_PREFIX=${CURRENTEPOCTIME} #string, the job id (before any underscore if arrayed) for the first job run by cxp.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
 
 ############ WRITE THE ABOVE PARAMS TO PARS_FILENAME ############
 
@@ -79,19 +84,19 @@ pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"
 pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
-pars["DO_PLANAR_REGISTRATION"]="${DO_PLANAR_REGISTRATION[@]}"
-pars["DO_BACKGROUND_SUBTRACTION"]="${DO_BACKGROUND_SUBTRACTION[@]}"
+pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
+pars["LEN_WINDOW_BGSUB"]="${LEN_WINDOW_BGSUB[@]}"
 pars["LEN_WINDOW_SMOOTH_T_MCP"]="${LEN_WINDOW_SMOOTH_T_MCP[@]}"
-pars["USE_BACKGROUND_SUBTRACTED"]="${USE_BACKGROUND_SUBTRACTED[@]}"
 pars["DENOISE_VOLUME"]="${DENOISE_VOLUME[@]}"
-pars["NUM_EPOCHS_DENOISE"]="${NUM_EPOCHS_DENOISE[@]}"
 pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"
+pars["NUM_EPOCHS_DENOISE"]="${NUM_EPOCHS_DENOISE[@]}"
+pars["USE_BACKGROUND_SUBTRACTED"]="${USE_BACKGROUND_SUBTRACTED[@]}"
+pars["USE_DENOISED"]="${USE_DENOISED[@]}"
 pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
 pars["LEN_WINDOW_SMOOTH_T_RSC"]="${LEN_WINDOW_SMOOTH_T_RSC[@]}"
-pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"
+pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
-pars["DO_PLANAR_EXTRACTION"]="${DO_PLANAR_EXTRACTION[@]}"
-pars["USE_DENOISED"]="${USE_DENOISED[@]}"
+pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"
 
 for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
@@ -121,7 +126,7 @@ fi
 if [ "$do_extract" == 1 ]; then
     sbatch_job_name_sequence+=(exp.sbatch)
 fi
-if [ "$do_matlab" == 1 ]; then
+if [ "$do_analysis" == 1 ]; then
     sbatch_job_name_sequence+=(mlp.sbatch)
 fi
 
@@ -137,9 +142,11 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
     
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
 
-        if [ $loopcount == 0 ]; then #on the first loop, there is no job dependency ('singleton' will do nothing because --name param is not specified)
+        if [ $loopcount == 0 ]; then #on the first loop, use first_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
+            FIRST_JOB=1
             dep_str=singleton
-        else #on subsequent loops, use dependencies 
+        else #on subsequent loops, use dependencies, and turn off first_job flag 
+            FIRST_JOB=0
             dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
@@ -201,7 +208,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         #run the sbatch file (sbatch_job_name), using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
-        --export=DO_COPYFILES="$DO_COPYFILES",PARS_FILENAME="$PARS_FILENAME" \
+        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",FNIND_FN_PREFIX="$FNIND_FN_PREFIX",PARS_FILENAME="$PARS_FILENAME" \
         --array=[$jobarrayind] \
         --dependency="$dep_str" \
         --partition="$partition_str" \

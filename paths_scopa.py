@@ -4,7 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-
 def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix):
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
@@ -26,6 +25,8 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
 
     if folder_with_all_recordings_on_storage_and_compute_filesystems[-1] != '/': 
         folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems + '/'
+    if pth_storage_prefix[-1] != '/': 
+        pth_storage_prefix = pth_storage_prefix + '/'
 
     pth_compute = pth_compute_prefix + folder_with_all_recordings_on_storage_and_compute_filesystems 
     if not os.path.exists(pth_compute):
@@ -38,6 +39,10 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     pth_denoising = pth_compute_prefix + 'denoising' + '/' 
     if not os.path.exists(pth_denoising):
         Path(pth_denoising).mkdir(parents=True, exist_ok=True)
+
+    pth_fldr_fnind = env_path + '/' + 'fnind' + '/' 
+    if not os.path.exists(pth_fldr_fnind):
+        Path(pth_fldr_fnind).mkdir(parents=True, exist_ok=True)
 
     elif do_copyfiles==0: #computing (not copying)
         pth_allrec = pth_compute
@@ -52,5 +57,6 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     print("\n\n\npth_storage is : \n" + pth_storage)
     print("pth_compute is : \n" + pth_compute)
     print("pth_allrec is : \n" + pth_allrec)
+    print("pth_fldr_fnind is : \n" + pth_fldr_fnind)
 
-    return pth_allrec, pth_fldr_copydest_prefix, pth_denoising
+    return pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind

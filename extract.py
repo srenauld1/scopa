@@ -12,8 +12,7 @@ from vis import caiman_plots_all
 from crop_fov import crop_fov
 
 
-def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, 
-            do_planar_extraction, regionex, do_plots, cluster_backend, do_cluster):
+def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, extract_in_2d, regionex, makeplots, cluster_backend, use_cluster):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -65,7 +64,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
 
                 try: #try, since some param sets will error
 
-                    if do_planar_extraction: #adjust images and some params for planar 
+                    if extract_in_2d: #adjust images and some params for planar 
                         sliceindz = np.arange(Ycrop.shape[3])
                         dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1])
                     else:
@@ -73,23 +72,23 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
                         dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1], dims_spatial_ex[2])
 
                     countz = 0
-                    for si in sliceindz: #for each slice (or all slices if do_planar_extraction = false)
+                    for si in sliceindz: #for each slice (or all slices if extract_in_2d = false)
 
                         cnm = None
                         cnm2 = None
 
                         # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
-                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, do_planar_extraction = do_planar_extraction, dims_spatial_ex = dims_spatial_ex) #param set for extraction
+                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex) #param set for extraction
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
-                        if do_planar_extraction: #for planar extraction take on z slice at a time
+                        if extract_in_2d: #for planar extraction take on z slice at a time
                             print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + " OF REGIONEX")
                             images_sliced = Ycrop[:,:,:,si]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
                             print("DOING 3D EXTRACTION FOR ALL SLICES IN REGION EXTRACTION")
                             images_sliced = Ycrop #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
-                        if do_cluster:
+                        if use_cluster:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
@@ -101,7 +100,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
                         
                         cnm.estimates.select_components(use_object=True, save_discarded_components=False)
 
-                        if do_cluster:
+                        if use_cluster:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
         
@@ -118,13 +117,13 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop,
                         cnm2.estimates.select_components(use_object=True, save_discarded_components=False)
 
 
-                        if do_plots and cnm2.estimates.A.shape[-1]:
+                        if makeplots and cnm2.estimates.A.shape[-1]:
                             pth_results = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT1.mov'
-                            caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results)
+                            caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, extract_in_2d, pth_results)
 
-                        if do_plots and cnm2.estimates.A.shape[-1]:
+                        if makeplots and cnm2.estimates.A.shape[-1]:
                             pth_results2 = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT2.mov'
-                            caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, do_planar_extraction, pth_results2)
+                            caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, extract_in_2d, pth_results2)
                         
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 

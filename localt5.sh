@@ -9,7 +9,7 @@
 --do_register 0 \
 --do_denoise 0 \
 --do_extract 1 \
---do_planar_extraction 1 \
+--extract_in_2d 1 \
 --use_background_subtracted 0 \
 --use_denoised 1 \
 --recdates '2211*' \

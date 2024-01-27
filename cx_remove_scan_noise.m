@@ -1,6 +1,6 @@
 
 
-function cx_remove_scan_noise(pth_datafile, len_window_smooth_t_rsc, do_plots)
+function cx_remove_scan_noise(pth_datafile, len_window_smooth_t_rsc, makeplots)
 
 fprintf("\n\n\nENTERING cx_remove_scan_noise")
 
@@ -124,7 +124,7 @@ end
 
 %% plot before filtering
 
-if do_plots
+if makeplots
 
     pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
     title_str = 'filt';
@@ -142,7 +142,7 @@ stack = cx_fft_filter_1d(stack, stopband);
 
 %% plot after filtering
 
-if do_plots
+if makeplots
 
     pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
     title_str = 'filt';

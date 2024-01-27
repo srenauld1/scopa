@@ -7,27 +7,39 @@ from natsort import natsorted
 import re
 from itertools import product
 import collections
+from pathlib import Path
+import ast
 
 
-def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_index, file_matching_style, 
-                 do_register, do_separate, do_denoise, do_extract, do_crop, do_stitch, do_remove, 
-                 use_background_subtracted, use_denoised):
+def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+                 do_register, do_separate, do_denoise, use_background_subtracted, use_denoised, do_stitch, do_remove, do_crop, do_extract, do_analysis, 
+                 folder_with_all_recordings_on_storage_and_compute_filesystems):
+
     
-    if file_matching_style=='any': #find all possible combinations 
-        filepatspec_all = list(product(recdates, fly, trial, folder_substring)) 
-    elif file_matching_style=='each': #else corresponding elements 
-        maxspec = np.max((len(recdates), len(fly), len(trial), len(folder_substring)))
-        if len(recdates)==1:
-            recdates = recdates*maxspec
-        if len(fly)==1:
-            fly = fly*maxspec
-        if len(trial)==1:
-            trial = trial*maxspec
-        if len(folder_substring)==1:
-            folder_substring = folder_substring*maxspec
-        if not(len(recdates) == len(fly) == len(trial) == len(folder_substring)):
-            raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
-        filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdates, fly, trial, folder_substring)] 
+    pth_fnind = pth_fldr_fnind + fnind_fn_prefix + '_' + str(recording_index[0]) + '_.txt'
+
+    if not first_job:
+        with open(pth_fnind) as f1:
+            print("\n\n\nSINCE THIS IS A JOB INITIATED BY CXP.SH, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
+            filepatspec_all = []
+            for line in f1:
+                filepatspec_all.append(ast.literal_eval(line))
+    else:
+        if file_matching_style=='any': #find all possible combinations 
+            filepatspec_all = list(product(recdate, fly, trial, folder_substring)) 
+        elif file_matching_style=='each': #else corresponding elements 
+            maxspec = np.max((len(recdate), len(fly), len(trial), len(folder_substring)))
+            if len(recdate)==1:
+                recdate = recdate*maxspec
+            if len(fly)==1:
+                fly = fly*maxspec
+            if len(trial)==1:
+                trial = trial*maxspec
+            if len(folder_substring)==1:
+                folder_substring = folder_substring*maxspec
+            if not(len(recdate) == len(fly) == len(trial) == len(folder_substring)):
+                raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
+            filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdate, fly, trial, folder_substring)] 
 
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
@@ -82,7 +94,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
         recindstr = ''
     else:
         search_result_string = "THE FOLLOWING FILES WERE FOUND: \n" + '%s' % '\n'.join(map(str, pth_allfiles))
-        if recording_index == ['all']:
+        if not first_job or recording_index == ['all']:
             recindstr = "WILL OPERATE ON ALL OF THESE FILES"
         else:
             recindstr = []
@@ -91,7 +103,7 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
             recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
     print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
-          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdates, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
+          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
             "AND HAVING ANY OF THE THE FOLLOWING SUFFIXES: \n" + '%s' % '\n'.join(map(str, fn_suffixes_all)) + '\n' + \
                 search_result_string + '\n' + recindstr)
 
@@ -105,18 +117,18 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
     carls_old_project_all = []
     countz = 0
     for pth_datafile in pth_allfiles: #loop over all found files
-        
-        pth_fldr = ('/').join(pth_datafile.split('/')[:-1]) + '/'
-        fname = pth_datafile.split('/')[-1]
-
-        if re.search('trial', fname):                       
-            fn_prefix = fname.split('_')[0].split('-')[0] + '_' + fname.split('_')[0].split('-')[1]  + '_' + str(int(fname.split('_')[-2][-1])) #change hyphen to underscore
-        else:
-            fn_prefix = '_'.join(fname.split('_')[:3])
             
-        if recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()): #if 'all', do all files matching pattern, otherwise only file matching index
+        if not first_job or (first_job and ( recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file matching recording_index, if not first_job, don't apply this selection
 
             print("\n\n\nPREPARING FILE: \n" + pth_datafile)
+
+            pth_fldr = ('/').join(pth_datafile.split('/')[:-1]) + '/'
+            fname = pth_datafile.split('/')[-1]
+
+            if re.search('trial', fname):                       
+                fn_prefix = fname.split('_')[0].split('-')[0] + '_' + fname.split('_')[0].split('-')[1]  + '_' + str(int(fname.split('_')[-2][-1])) #change hyphen to underscore
+            else:
+                fn_prefix = '_'.join(fname.split('_')[:3])
 
             pth_prefix = pth_fldr + fn_prefix
             pth_md = pth_prefix + '_metadatanew_.npy'
@@ -133,7 +145,6 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname) or re.search('stackraw', fname) or pth_hires: #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
                     [pth_datafile, fname, pth_hires] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr, pth_hires)
-
             
             mat_file_shape = None
             if int(fn_prefix.split('_')[0])>20230101:
@@ -157,6 +168,27 @@ def choose_files(pth_allrec, recdates, fly, trial, folder_substring, recording_i
             
         
         countz = countz + 1
+
+    if first_job: #if first_job, write a file mathing recording specifiers to recording index, so subsequent jobs in the same run will follow this mapping
+        with open(pth_fnind, 'w') as f2:
+
+            recdate_found = []
+            fly_found = []
+            trial_found = []
+            folder_substring_found = []
+            for ppa in pth_prefix_all:
+                pp = Path(ppa).parts #split path
+                recdate_found.append(pp[-1].split('_')[0])
+                fly_found.append(pp[-1].split('_')[1])
+                trial_found.append(pp[-1].split('_')[2])
+                split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems)# + 1
+                folder_substring_found.append(os.path.join(*pp[split_index:-1]) )
+            lines = [(w, x, y, z) for w, x, y, z in zip(recdate_found, fly_found, trial_found, folder_substring_found)] 
+            for line in lines:
+                f2.write(f"{line}\n")
+            f2.close()
+
+
 
 
     return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all) 

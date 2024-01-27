@@ -11,8 +11,8 @@ from map2params import map2params, map2params_t5
 
 ##########################################################################################################################################
 
-def configs(do_planar_registration = True, index_extraction_param_set = 'default', fnames = None, min_mov = 0,
-            md = None, do_planar_extraction = None, dims_spatial_ex = 0):
+def configs(register_in_2d = True, index_extraction_param_set = 'default', fnames = None, min_mov = 0,
+            md = None, extract_in_2d = None, dims_spatial_ex = 0):
 
     #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
 
@@ -30,7 +30,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
     upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 
-    if md['dims'][1]==1 or do_planar_registration:
+    if md['dims'][1]==1 or register_in_2d:
         is3D_mc = False #if not 3d, correct each slice . . . 
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
@@ -146,7 +146,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
     roi_decimation_fac = 0.3  #1 is "space filling", caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
 
-        if do_planar_extraction==True:
+        if extract_in_2d==True:
             maxsig = np.max(gSig[0:2])
         else:
             maxsig = np.max(gSig)
@@ -156,7 +156,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
 
         p_patch = p
         nb_patch = nb
-        if do_planar_extraction==True:
+        if extract_in_2d==True:
             k = int(np.round( (rf*2*rf*2) / ((gSig[0]*2+1)*(gSig[1]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
         else:
             if rf*2<dims_spatial_ex[2]:
@@ -173,7 +173,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
         k = int(np.round( np.prod(dims_spatial_ex) / ((gSig[0]*2+1)*(gSig[1]*2+1)*(gSig[2]*2+1))*roi_decimation_fac))  # number of components in each patch, rf and gsig are both half sizes
 
     dimstr = "3dex"
-    if do_planar_extraction==True:
+    if extract_in_2d==True:
         dimstr = '2dex'
         indices_ex = indices_ex[:-1] #change from 3d to 2d
         dxy = dxy[:-1] #change from 3d to 2d
@@ -185,7 +185,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
 
     sigma_smooth_snmf = [0.5] #append this filter sigma for time to beginning (when it is applied time is in 1st dim?)
     sigma_smooth_snmf.extend(gSig)
-    if do_planar_extraction==False:
+    if extract_in_2d==False:
         sigma_smooth_snmf[-1] = 0.5 #sigma_smooth_snmf can actually use values<1, if 3d extraction, make small for coarse z samples
 
 
@@ -194,7 +194,7 @@ def configs(do_planar_registration = True, index_extraction_param_set = 'default
         + '_' + str(max_iter_snmf) + '_' + str(ITER) \
         + '_' + str(k) + '_' + method_init.split('_')[0] + '_' + dimstr
 
-    if do_planar_extraction is None: #it's none during motion correction, when we don't care about these params, rather than true/false
+    if extract_in_2d is None: #it's none during motion correction, when we don't care about these params, rather than true/false
         print("motion correction params configured")
     else:
         print("index_extraction_param_set is " + str(index_extraction_param_set) + " with filename string " + fnadd)

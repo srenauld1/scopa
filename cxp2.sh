@@ -47,7 +47,7 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 ############ SET PARAMS FOR ANALYSIS ############
 
-DO_PLANAR_REGISTRATION=(1) #register each z slice independently
+REGISTER_IN_2D=(1) #register each z slice independently
 DO_BACKGROUND_SUBTRACTION=(0) #line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 LEN_WINDOW_SMOOTH_T_MCP=(20) #gaussian smoothing window length in register (prior to registration, helps register noisy movies) 
 
@@ -63,7 +63,7 @@ LEN_WINDOW_SMOOTH_T_RSC=(30) #gaussian smoothing window length in remove_scan_no
 
 INDEX_EXTRACTION_PARAM_SET=('default')
 REGIONEX=('fullfov')
-DO_PLANAR_EXTRACTION=(1)
+EXTRACT_IN_2D=(1)
 USE_DENOISED=(1)
 
 ############ WRITE THE ABOVE PARAMS TO PARS_FILENAME ############
@@ -79,7 +79,7 @@ pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"
 pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
-pars["DO_PLANAR_REGISTRATION"]="${DO_PLANAR_REGISTRATION[@]}"
+pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
 pars["DO_BACKGROUND_SUBTRACTION"]="${DO_BACKGROUND_SUBTRACTION[@]}"
 pars["LEN_WINDOW_SMOOTH_T_MCP"]="${LEN_WINDOW_SMOOTH_T_MCP[@]}"
 pars["USE_BACKGROUND_SUBTRACTED"]="${USE_BACKGROUND_SUBTRACTED[@]}"
@@ -90,7 +90,7 @@ pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
 pars["LEN_WINDOW_SMOOTH_T_RSC"]="${LEN_WINDOW_SMOOTH_T_RSC[@]}"
 pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
-pars["DO_PLANAR_EXTRACTION"]="${DO_PLANAR_EXTRACTION[@]}"
+pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["USE_DENOISED"]="${USE_DENOISED[@]}"
 
 for key in "${!pars[@]}"; do

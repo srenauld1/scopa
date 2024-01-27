@@ -364,12 +364,10 @@ def mat2tif_carls_old_project(pth_datafile):
     return mat_file_shape
             
 
-
 def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, 
                      pth_md, pth_fldr_copydest_prefix, pth_fldr, folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
-    fldr_name = os.path.basename(os.path.abspath(pth_fldr))
     pp = Path(pth_fldr).parts #split path
     split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems) + 1
     pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
@@ -398,6 +396,7 @@ def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_r
         else:
             print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
 
+            fldr_name = os.path.basename(os.path.abspath(pth_fldr))
             for pth_src_tmp in Path(pth_fldr).glob('**/*'):  #this will copy hidden files too
                 pth_src = str(pth_src_tmp)
                 if os.path.isfile(pth_src): #only files, no directories (will create parent dirs if necessary below)
