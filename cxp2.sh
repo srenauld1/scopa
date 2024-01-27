@@ -28,6 +28,7 @@ do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0-2 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+FNIND_FN_PREFIX_OVERRIDE='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix FNIND_FN_PREFIX_OVERRIDE must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
@@ -68,8 +69,12 @@ INDEX_EXTRACTION_PARAM_SET=('default')
 
 ############ CREATE PREFIX FOR TXT FILES THAT WILL MAP FOUND FILENAMES TO PARALLEL JOB INDICES ############
 
-CURRTIME="`date +%Y%m%d%H%M%S`"
-FNIND_FN_PREFIX=${CURRTIME}  #string, the job id (before any underscore if arrayed) for the first job run by cxp.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
+if [ -z "${FNIND_FN_PREFIX_OVERRIDE}" ]; then #on the first loop, use first_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
+    CURRTIME="`date +%Y%m%d%H%M%S`"
+    FNIND_FN_PREFIX=${CURRTIME} #string, a datetime string id assigned on the first job run by cxp.sh, will point to a file that saves/maps filename specifiers and indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
+else #on subsequent loops, use dependencies, and turn off first_job flag 
+    FNIND_FN_PREFIX=$FNIND_FN_PREFIX_OVERRIDE
+fi
 
 ############ WRITE THE ABOVE PARAMS TO PARS_FILENAME ############
 
