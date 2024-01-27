@@ -68,7 +68,7 @@ INDEX_EXTRACTION_PARAM_SET=('default')
 
 ############ CREATE PREFIX FOR TXT FILES THAT WILL MAP FOUND FILENAMES TO PARALLEL JOB INDICES ############
 
-CURRTIME=`date +"%Y%m%d%T"`
+CURRTIME="`date +%Y%m%d%H%M%S`"
 FNIND_FN_PREFIX=${CURRTIME}  #string, the job id (before any underscore if arrayed) for the first job run by cxp.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
 
 ############ WRITE THE ABOVE PARAMS TO PARS_FILENAME ############
