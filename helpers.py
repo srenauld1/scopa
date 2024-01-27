@@ -365,11 +365,16 @@ def mat2tif_carls_old_project(pth_datafile):
             
 
 
-def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, pth_md, pth_fldr_copydest_prefix, pth_fldr):
+def copy_files_scopa(do_copyfiles, do_separate, do_denoise, do_stitch, pth_tif_read, 
+                     pth_md, pth_fldr_copydest_prefix, pth_fldr, folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
     fldr_name = os.path.basename(os.path.abspath(pth_fldr))
-    pth_fldr_copydest = pth_fldr_copydest_prefix + fldr_name
+    pp = Path(pth_fldr).parts #split path
+    split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems) + 1
+    pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
+
+    pth_fldr_copydest = pth_fldr_copydest_prefix + pth_dest_suffix
     if pth_fldr_copydest[-1] == '/': 
         pth_fldr_copydest = pth_fldr_copydest[:-1]
     if pth_fldr[-1] != '/': 
