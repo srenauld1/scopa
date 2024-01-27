@@ -97,6 +97,7 @@ pars["LEN_WINDOW_SMOOTH_T_RSC"]="${LEN_WINDOW_SMOOTH_T_RSC[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
 pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"
+pars["FNIND_FN_PREFIX"]="${FNIND_FN_PREFIX[@]}"
 
 for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
@@ -208,7 +209,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         #run the sbatch file (sbatch_job_name), using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
-        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",FNIND_FN_PREFIX="$FNIND_FN_PREFIX",PARS_FILENAME="$PARS_FILENAME" \
+        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PARS_FILENAME="$PARS_FILENAME" \
         --array=[$jobarrayind] \
         --dependency="$dep_str" \
         --partition="$partition_str" \

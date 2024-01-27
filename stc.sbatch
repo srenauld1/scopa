@@ -15,7 +15,6 @@ fi
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \
---fnind_fn_prefix "$FNIND_FN_PREFIX" \
 --do_stitch 1 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
