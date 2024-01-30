@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#VERSION OF CXP FOR PABLO CALLS dnp2.sbatch rather than dnp.sbatch AND HAS SOME SPECIFIC INPUT SETTINGS
+
 #cxp.sh runs the entire preprocessing pipeline by specifying params for pipeline_init.py
 #pipeline_init.py is called from various sbatch files (specified by sbatch_job_name_sequence), which are themselves called below, and each of which uses different resources and depends on the previous (with matching jobarrayind) to finish without error
 #cxp.sh is designed to only be called once 
@@ -121,7 +123,7 @@ if [ "$do_separate" == 1 ]; then
     sbatch_job_name_sequence+=(sep.sbatch)
 fi
 if [ "$do_denoise" == 1 ]; then
-    sbatch_job_name_sequence+=(dnp.sbatch)
+    sbatch_job_name_sequence+=(dnp2.sbatch)
 fi
 if [ "$do_stitch" == 1 ]; then
     sbatch_job_name_sequence+=(stc.sbatch)
@@ -156,7 +158,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
-        gres_str=--begin=now #this is a dummy string to make gres_str work properly for all jobs (denoising with dnp.sbatch, when gres_str is actully functional by setting gpu, and otherwise, when this dummy string is used to make the job begin "now", which is default anyway . . . empty string doesn't work)
+        gres_str=--begin=now #this is a dummy string to make gres_str work properly for all jobs (denoising with dnp2.sbatch, when gres_str is actully functional by setting gpu, and otherwise, when this dummy string is used to make the job begin "now", which is default anyway . . . empty string doesn't work)
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
@@ -178,7 +180,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=10G
-            elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
+            elif [ "$sbatch_job_name" == dnp2.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
                 time_str=02:30:00
                 ntasks_str=1

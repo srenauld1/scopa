@@ -124,6 +124,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger
     # since, patch dia = ceil(neuron_dia/stride_to_rf_ratio)+1)*2 and patch stride = ceil(ceil(neuron_dia/stride_to_rf_ratio)+1)*stride_to_rf_ratio)+1
     stride_to_rf_ratio = 0.7  #keep in approxoimate range 0.3 - 0.8
+    use_patch_size_threshold = 5000000000 #skip patch extraction if all dims are smaller than this 
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
@@ -137,13 +138,13 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
             map_index_2_params.map_index(int(index_extraction_param_set))
         gSig = [m2p_gsig, m2p_gsig, 1]  #gSiz (made from gsig) will be 2 for 0.5 or 1, so don't bother with 0.5, and forcing 3rd element (z) to be 1 because my z sections are about half the neuron diameter
 
-    if np.all(np.array(dims_spatial_ex)<5000000000): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
+    if np.all(np.array(dims_spatial_ex)<use_patch_size_threshold): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
         do_patches = False
     else:
         do_patches = True
 
     #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
-    roi_decimation_fac = 0.3  #1 is "space filling", caiman demo does not use this variable, but effectively their demo sets it at 0.33)
+    roi_decimation_fac = 0.1  #1 is "space filling", caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
 
         if extract_in_2d==True:

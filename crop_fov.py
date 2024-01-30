@@ -50,14 +50,12 @@ def crop_fov(Y, regionex, pth_prefix, dims):
             raise Exception("too many crop files")
         with open(fn_croplim[0], 'rb') as fnc:
             croplim = np.load(fnc)
-        limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
 
     except:
         
         if regionex == 'fullfov':
        
             croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
-            limits_str = '1_' + str(dims[0]) + '_1_' + str(dims[3]) + '_1_' + str(dims[2]) + '_1_' + str(dims[1])
        
         else:
        
@@ -77,10 +75,10 @@ def crop_fov(Y, regionex, pth_prefix, dims):
             tlimits = (1, dims[0])
             croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
             
-        limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-        fn_crop_lim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
-        with open(fn_crop_lim, 'wb') as fncrop:
-            np.save(fncrop, croplim)
+    limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
+    fn_crop_lim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
+    with open(fn_crop_lim, 'wb') as fncrop:
+        np.save(fncrop, croplim) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
 
     slt = slice(croplim[0]-1, croplim[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
     slx = slice(croplim[2]-1, croplim[3], 1) 
