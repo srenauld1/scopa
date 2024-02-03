@@ -183,8 +183,8 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 recdate_found.append(pp[-1].split('_')[0])
                 fly_found.append(pp[-1].split('_')[1])
                 trial_found.append(pp[-1].split('_')[2])
-                split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems) + 1
-                folder_substring_found.append(os.path.join(*pp[split_index:-1]) )
+                split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems) + 1 
+                folder_substring_found.append(os.path.join(*pp[split_index:-1]) ) #everything in path after 'stacks' but before filename
             lines = [(w, x, y, z) for w, x, y, z in zip(recdate_found, fly_found, trial_found, folder_substring_found)] 
             for line in lines:
                 f2.write(f"{line}\n")
