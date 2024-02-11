@@ -99,7 +99,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
         else:
             recindstr = []
             for ri in recording_index:
-                recindstr.append(ordinal(ri+1))
+                recindstr.append(ordinal(str(ri)+1))
             recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
     print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
