@@ -82,10 +82,10 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if extract_in_2d: #for planar extraction take on z slice at a time
-                            print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + " OF REGIONEX")
+                            print("DOING PLANAR EXTRACTION FOR SLICE " + str(si) + " OF REGIONEX '" + rx + "'" )
                             images_sliced = Ycrop[:,:,:,si]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
-                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGION EXTRACTION")
+                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGIONEX '" + rx + "'" )
                             images_sliced = Ycrop #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
 
                         if use_cluster:
