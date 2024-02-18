@@ -21,7 +21,7 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
-do_separate=0 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
+do_separate=1 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
 do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
 do_stitch=0 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
@@ -174,7 +174,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             time_str=00:10:00
             ntasks_str=1
             cpus_per_task_str=1
-            mem_per_cpu_str=5M
+            mem_per_cpu_str=5G
         else
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
@@ -188,7 +188,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=00:15:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=2G
+                mem_per_cpu_str=5G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
                 time_str=02:30:00
