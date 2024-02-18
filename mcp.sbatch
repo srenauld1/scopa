@@ -9,12 +9,12 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then #no need to load a
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
-    ml miniconda3/4.10.3 
-    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+    eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+    conda activate caiman
     conda activate caiman
 fi
 
-~/.conda/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
+/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \
 --pars_filename "$PARS_FILENAME" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \
