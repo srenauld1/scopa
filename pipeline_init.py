@@ -25,7 +25,7 @@ from helpers import copy_files_scopa
 if len(sys.argv)>1:
     
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pars_filename, 
+                      do_copyfiles, fnind_fn_prefix, pars_filename, user_homedir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
@@ -34,7 +34,7 @@ if len(sys.argv)>1:
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
                       do_analysis, first_job] = \
     parse_command_line( folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix = pth_storage_prefix, 
-                      do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pars_filename = pars_filename, 
+                      do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pars_filename = pars_filename, user_homedir = user_homedir, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, recording_index = recording_index, file_matching_style = file_matching_style,
                       do_register = do_register, register_in_2d = register_in_2d, len_window_bgsub = len_window_bgsub, len_window_smooth_t_mcp = len_window_smooth_t_mcp,  
                       do_separate = do_separate, do_denoise = do_denoise, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
@@ -44,7 +44,7 @@ if len(sys.argv)>1:
                       do_analysis = do_analysis, first_job = first_job)
 
 
-[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix)
+[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, user_homedir)
 
 
 if do_register + do_separate + do_denoise + do_stitch + do_remove + do_extract + do_crop + do_analysis > 1:

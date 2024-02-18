@@ -29,7 +29,7 @@ class parse_pars_file():
 
 
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pars_filename, 
+                      do_copyfiles, fnind_fn_prefix, pars_filename, user_homedir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
@@ -45,6 +45,12 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         nargs=1, 
         type=str,
         default=[pars_filename],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--user_homedir",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=str,
+        default=[user_homedir],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_copyfiles",  # name on the CLI - drop the `--` for positional/required parameters
@@ -255,6 +261,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS
         args.pth_storage_prefix = pars.PTH_STORAGE_PREFIX
         args.fnind_fn_prefix = pars.FNIND_FN_PREFIX
+        args.user_homedir = pars.USER_HOMEDIR
         args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
@@ -281,6 +288,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     pth_storage_prefix = args.pth_storage_prefix[0] 
     do_copyfiles = int(args.do_copyfiles[0])
     fnind_fn_prefix = args.fnind_fn_prefix[0] 
+    user_homedir = args.user_homedir[0] 
     
     if isinstance(args.recdate[0], list):
         recdate = args.recdate[0] #keep as list
@@ -356,7 +364,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pars_filename, 
+                      do_copyfiles, fnind_fn_prefix, pars_filename, user_homedir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 

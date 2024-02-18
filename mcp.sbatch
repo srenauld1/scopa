@@ -11,7 +11,6 @@ else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
     eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
     conda activate caiman
-    conda activate caiman
 fi
 
 /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \

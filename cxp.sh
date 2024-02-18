@@ -38,6 +38,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 
+USER_HOMEDIR=$( getent passwd "$USER" | cut -d: -f6 ) 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
@@ -82,6 +83,7 @@ PARS_FILENAME='scopaparams.txt' #no need to change this, make empty to skip (no 
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
 
+pars["USER_HOMEDIR"]="${USER_HOMEDIR[@]}"
 pars["FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS"]="${FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS[@]}"
 pars["PTH_STORAGE_PREFIX"]="${PTH_STORAGE_PREFIX[@]}"
 pars["RECDATE"]="${RECDATE[@]}"
