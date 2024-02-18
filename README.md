@@ -2,6 +2,13 @@
  
  updated by carl wienecke 231201
 
+TO DO:
+--filling GPU without time increase
+--memory allocation based on file size
+--integrate matlab pipeline
+--shared matlab engine
+--submit cxp to O2 from local with ssh 
+--integrate into flyg
 
 analysis pipeline for volumetric (xyzt) 2p imaging while presenting visual stimuli and measuring locomotion with fictrac
 

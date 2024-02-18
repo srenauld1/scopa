@@ -31,6 +31,19 @@ do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to
 jobarrayind=( 0 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
+############ SET PARAMS FOR RESOURCE REQUEST ############
+
+
+# gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+# gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
+# gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
+# gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
+# gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
+# gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
+
+gpu_time=06:00:00
+
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
@@ -191,11 +204,11 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 mem_per_cpu_str=5G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
-                time_str=02:30:00
+                time_str=$gpu_time
                 ntasks_str=1
-                cpus_per_task_str=5
-                mem_per_cpu_str=3G
-                gres_str=--gres=gpu:a100:1,vram:80G
+                cpus_per_task_str=4
+                mem_per_cpu_str=4G
+                gres_str=--gres=gpu:$gpu_to_use 
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:20:00
