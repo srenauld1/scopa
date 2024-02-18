@@ -4,9 +4,9 @@ import argparse
 
 class parse_pars_file():
     
-    def __init__(self, pars_filename):
+    def __init__(self, pth_parsfile):
 
-        pieces = open(pars_filename, 'r').read().split('\0')
+        pieces = open(pth_parsfile, 'r').read().split('\0')
 
         tmpdict = {}
         while len(pieces) >= 2:
@@ -29,7 +29,7 @@ class parse_pars_file():
 
 
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pars_filename, user_homedir, 
+                      do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
@@ -41,16 +41,16 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     CLI=argparse.ArgumentParser()
 
     CLI.add_argument(
-        "--pars_filename",  # name on the CLI - drop the `--` for positional/required parameters
+        "--pth_parsfile",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[pars_filename],  # default if nothing is provided
+        default=[pth_parsfile],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--user_homedir",  # name on the CLI - drop the `--` for positional/required parameters
+        "--scopatmpdir",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[user_homedir],  # default if nothing is provided
+        default=[scopatmpdir],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_copyfiles",  # name on the CLI - drop the `--` for positional/required parameters
@@ -247,11 +247,11 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
     args = CLI.parse_args()
 
-    pars_filename = args.pars_filename[0]
+    pth_parsfile = args.pth_parsfile[0]
 
-    if pars_filename: #additional option to read input from file written in bash script, should come after command line arguments 
+    if pth_parsfile: #additional option to read input from file written in bash script, should come after command line arguments 
         
-        pars = parse_pars_file(pars_filename) #have to do it this way for exec to create a local variable 
+        pars = parse_pars_file(pth_parsfile) #have to do it this way for exec to create a local variable 
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
         
         ##args.__dict__ = pars.__dict__.copy() #untested . . .  try this to overwrite new args, need to make them lowercase programmatically first, perhaps in the exec call above 
@@ -261,7 +261,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS
         args.pth_storage_prefix = pars.PTH_STORAGE_PREFIX
         args.fnind_fn_prefix = pars.FNIND_FN_PREFIX
-        args.user_homedir = pars.USER_HOMEDIR
+        args.scopatmpdir = pars.SCOPATMPDIR
         args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
@@ -288,7 +288,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     pth_storage_prefix = args.pth_storage_prefix[0] 
     do_copyfiles = int(args.do_copyfiles[0])
     fnind_fn_prefix = args.fnind_fn_prefix[0] 
-    user_homedir = args.user_homedir[0] 
+    scopatmpdir = args.scopatmpdir[0] 
     
     if isinstance(args.recdate[0], list):
         recdate = args.recdate[0] #keep as list
@@ -364,7 +364,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pars_filename, user_homedir, 
+                      do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
                       do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 

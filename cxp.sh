@@ -39,7 +39,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 #THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 
-USER_HOMEDIR=$( getent passwd "$USER" | cut -d: -f6 ) 
+
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
@@ -78,13 +78,21 @@ else #on subsequent loops, use dependencies, and turn off first_job flag
     FNIND_FN_PREFIX=$fnind_fn_prefix_override
 fi
 
-############ WRITE THE ABOVE PARAMS TO PARS_FILENAME ############
+############ MAKE SCOPATMPDIR TO STORE SCOPA TEMP FILES AND OUTPUT IN USER'S HOME DIR ############
+user_homedir=$( getent passwd "$USER" | cut -d: -f6 ) 
+name_of_scopa_tmp_folder=scopatmp
+SCOPATMPDIR=$user_homedir/$name_of_scopa_tmp_folder
+mkdir -p $SCOPATMPDIR
 
-PARS_FILENAME='scopaparams.txt' #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
+pthout=$SCOPATMPDIR/slurm-%A_%a.out
+
+############ WRITE THE ABOVE PARAMS TO PTH_PARSFILE ############
+
+PTH_PARSFILE=$SCOPATMPDIR/scopaparams.txt #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
 
-pars["USER_HOMEDIR"]="${USER_HOMEDIR[@]}"
+pars["SCOPATMPDIR"]="${SCOPATMPDIR[@]}"
 pars["FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS"]="${FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS[@]}"
 pars["PTH_STORAGE_PREFIX"]="${PTH_STORAGE_PREFIX[@]}"
 pars["RECDATE"]="${RECDATE[@]}"
@@ -109,7 +117,7 @@ pars["FNIND_FN_PREFIX"]="${FNIND_FN_PREFIX[@]}"
 
 for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
-done >"$PARS_FILENAME" #write common input args to txt file
+done >"$PTH_PARSFILE" #write common input args to txt file
 
 
 ############ SET SEQUENCE OF SBATCH JOBS TO BE SUBMITTED ############
@@ -183,7 +191,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 mem_per_cpu_str=2G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
-                time_str=00:10:00
+                time_str=02:30:00
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=3G
@@ -217,7 +225,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         #run the sbatch file (sbatch_job_name), using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
-        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PARS_FILENAME="$PARS_FILENAME" \
+        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE" \
         --array=[$jobarrayind] \
         --dependency="$dep_str" \
         --partition="$partition_str" \
@@ -225,6 +233,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --ntasks="$ntasks_str" \
         --cpus-per-task="$cpus_per_task_str" \
         --mem-per-cpu="$mem_per_cpu_str" \
+        --output="$pthout" \
+        --error="$pthout" \
         "$gres_str" \
         "$sbatch_job_name") 
 

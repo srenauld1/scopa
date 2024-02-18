@@ -23,7 +23,7 @@ for i in 0
 do
     sleep 20s
     python3 $(pwd)/pipeline_init.py \
-    --pars_filename "$PARS_FILENAME" \
+    --pth_parsfile "$PTH_PARSFILE" \
     --do_copyfiles "$DO_COPYFILES" \
     --first_job "$FIRST_JOB" \
     --do_denoise 1 \

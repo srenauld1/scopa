@@ -4,16 +4,16 @@ import os
 import sys
 from pathlib import Path
 
-def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, user_homedir):
+def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
 
     env_path = sys.path[0]
     print("sys.path[0] returns: \n" + env_path)
 
-    if user_homedir:
-        env_path = user_homedir
-        print("\n\n\nsetting env_path to user's home dir: \n" + env_path)
+    if scopatmpdir:
+        env_path = scopatmpdir
+        print("\n\n\nsetting env_path to scopatmpdir in user's home dir: \n" + env_path)
     else:
         print("\n\n\nsetting env_path to: \n" + env_path)
 

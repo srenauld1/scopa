@@ -78,9 +78,9 @@ else #on subsequent loops, use dependencies, and turn off first_job flag
     FNIND_FN_PREFIX=$fnind_fn_prefix_override
 fi
 
-############ WRITE THE ABOVE PARAMS TO PARS_FILENAME ############
+############ WRITE THE ABOVE PARAMS TO PTH_PARSFILE ############
 
-PARS_FILENAME='scopaparams.txt' #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
+PTH_PARSFILE='scopaparams.txt' #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
 
@@ -108,7 +108,7 @@ pars["FNIND_FN_PREFIX"]="${FNIND_FN_PREFIX[@]}"
 
 for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"
-done >"$PARS_FILENAME" #write common input args to txt file
+done >"$PTH_PARSFILE" #write common input args to txt file
 
 
 ############ SET SEQUENCE OF SBATCH JOBS TO BE SUBMITTED ############
@@ -216,7 +216,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         #run the sbatch file (sbatch_job_name), using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
-        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PARS_FILENAME="$PARS_FILENAME" \
+        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE" \
         --array=[$jobarrayind] \
         --dependency="$dep_str" \
         --partition="$partition_str" \

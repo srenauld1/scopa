@@ -12,7 +12,7 @@ else #load virtual env if not copying files
 fi
 
 /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \
---pars_filename "$PARS_FILENAME" \
+--pth_parsfile "$PTH_PARSFILE" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \
 --do_separate 1 \
