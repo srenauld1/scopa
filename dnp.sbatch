@@ -3,7 +3,8 @@
 echo "$(date): job $SLURM_JOBID (array task $SLURM_ARRAY_TASK_ID) starting on $SLURM_NODELIST"
 
 module purge
-module load gcc/9.2.0 python/3.10.11
+module load gcc/9.2.0 python/3.9.14
+
 
 if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load any virtual environment for copying files 
     

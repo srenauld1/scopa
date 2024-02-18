@@ -16,6 +16,7 @@ else:
 
 print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
 
+
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
