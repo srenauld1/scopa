@@ -163,15 +163,15 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
-            time_str=00:20:00
+            time_str=00:10:00
             ntasks_str=1
             cpus_per_task_str=1
-            mem_per_cpu_str=1G
+            mem_per_cpu_str=5M
         else
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
             if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:40:00
+                time_str=00:30:00
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=2G
@@ -179,14 +179,14 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:15:00
                 ntasks_str=1
-                cpus_per_task_str=5
+                cpus_per_task_str=1
                 mem_per_cpu_str=2G
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=gpu_quad #use transfer partition if do_copyfiles==1
-                time_str=02:30:00
+                time_str=00:10:00
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=15G
+                cpus_per_task_str=5
+                mem_per_cpu_str=3G
                 gres_str=--gres=gpu:a100:1,vram:80G
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
