@@ -23,7 +23,7 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     else:
         hn = os.popen('hostname').read()
         if re.search('compute.*harvard', hn): #if you're on O2, make compute folder that matches scratch path pattern
-            pth_compute_prefix = '/n/scratch/users/' + env_path.split('/')[-2][0] + '/' + env_path.split('/')[-2] + '/'
+            pth_compute_prefix = '/n/scratch/users/' + env_path.split('/')[-1][0] + '/' + env_path.split('/')[-1] + '/'
         else: #else assume you're not on a cluster with specific compute folders (like scratch)
             pth_compute_prefix = ('/').join(env_path.split('/')[:-1]) + '/' 
 
