@@ -6,8 +6,6 @@ from ast import literal_eval
 import re
 import scipy.io as sio
 import numpy as np
-from numpy.core.records import fromarrays
-
 
 def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_shape = None):
 

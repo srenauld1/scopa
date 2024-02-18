@@ -1,7 +1,6 @@
 import os
 import glob
 import numpy as np
-from read_save_metadata import read_save_metadata
 from helpers import rename_files, mat2tif_carls_old_project, ordinal
 from natsort import natsorted
 import re
@@ -156,6 +155,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
             if not os.path.isfile(pth_md) or not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
+                from read_save_metadata import read_save_metadata ##IMPORT HERE SINCE NOT USED IN ALL VIRTUALENV (NOT IN ALL RUNS OF PIPELINE_INIT)
                 read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
                 
 
