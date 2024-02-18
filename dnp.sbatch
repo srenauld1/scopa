@@ -20,17 +20,14 @@ else #load virtual env if not copying files
 
 fi
 
-for i in 0
-do
-    sleep 20s
-    /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \
-    --pars_filename "$PARS_FILENAME" \
-    --do_copyfiles "$DO_COPYFILES" \
-    --first_job "$FIRST_JOB" \
-    --do_denoise 1 \
-    --recording_index $SLURM_ARRAY_TASK_ID
 
-done
+# sleep 20s
+/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \
+--pars_filename "$PARS_FILENAME" \
+--do_copyfiles "$DO_COPYFILES" \
+--first_job "$FIRST_JOB" \
+--do_denoise 1 \
+--recording_index $SLURM_ARRAY_TASK_ID
 
 wait
 sleep 1m

@@ -3,13 +3,15 @@
  updated by carl wienecke 231201
 
 
- this is the first part of the analysis pipeline for volumetric (xyzt) 2p imaging with behavior and visual stimuli
+analysis pipeline for volumetric (xyzt) 2p imaging while presenting visual stimuli and measuring locomotion with fictrac
 
- this first part of the pipeline is in python (entry point pipeline_init.py), and it operates on the imaging data only (not on behavior or stimulus data) 
+entrypoint is pipeline_init.py in interactive mode, or cxp.sh in batch mode (cxp.sh calls pipeline_init.py)
+
+there are 7 modules: registration, 
 
  the second part of the pipeline is in matlab (entry point is cx_analysis.m), and operates on the output of this first part (imaging data) and also behavior and stimulus data
 
- there are a few basic plots for results in function caiman_plots_all (in file vis.py)
+caiman_plots_all (in file vis.py)
 
  if recording_index = 'all', pipeline_init.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
@@ -165,7 +167,8 @@ on local machine, used mamba to install caiman, it's licated here
 
 
 ###### matlab for python ######
-to run everything through the same pipeline, install the matlab for python engine, which let's you call matlab functions from within python files
+
+to run everything through the same pipeline, install the matlab for python engine, which let's you call matlab functions from within python files (i do this so all analysis goes through the same pipeline, which happens to have a python entrypoint including file selection, copying, renaming, and setting parameters, )
 
 be sure to pip install the correct matlabengine version for the matlab version on O2 that the pip installer finds by default (which appears to be the newest matlab version on O2, which is 2023a, not 2023b, and which corresponds to matlabengine==9.14.3, which is not the latest matlabengine
 
@@ -202,11 +205,16 @@ https://stackoverflow.com/questions/77474450/using-conda-environment-at-a-specif
 conda config --append envs_dirs /n/data1/hms/neurobio/wilson/miniforge3/envs
 CONDA_ALWAYS_COPY=1 mamba env create -f env1.yaml -p /shared/conda_envs/env1
 
+if you're using -f it's conda env create, if not using -f then it's just conda create 
+
+##INSTALL MINIFORGE
 
 srun --pty -p interactive -t 0-1:00 --mem=5G bash
 curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
 bash Miniforge3-$(uname)-$(uname -m).sh
 told it not to modify any config files 
+
+##INSTALL CAIMAN
 
 
 fork caiman repo and rename caiman (no capitals)
@@ -221,17 +229,21 @@ pip install scanimage-tiff-reader
 pip install mat73
 pip install natsort
 
+##INSTALL DEEPCAD
+
 CONDA_ALWAYS_COPY=1 mamba create -p /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad python=3.9
 conda activate deepcad
-conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+pip3 install torch torchvision torchaudio
 
-pip install deepcad 
-      OR 
 fork deepcad and rename deepcad
 git clone https://github.com/wienecke/deepcad
-cd deepcad/DeepCAD_RT_pytorch/
+        (OR INSTEAD OF FORKING AND CLONING, COULD DO pip install deepcad, BUT THEN HARDER TO EDIT/DEBUG)
 
 pip install mat73
 pip install matplotlib 
 pip install natsort
 pip install scanimage-tiff-reader
+
+##INSTALL SCOPA
+cd /n/data1/hms/neurobio/wilson
+git clone https://github.com/wienecke/scopa.git
