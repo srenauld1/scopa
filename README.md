@@ -234,10 +234,12 @@ pip install natsort
 CONDA_ALWAYS_COPY=1 mamba create -p /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad python=3.9
 conda activate deepcad
 pip3 install torch torchvision torchaudio
+pip install deepcad
 
-fork deepcad and rename deepcad
-git clone https://github.com/wienecke/deepcad
-        (OR INSTEAD OF FORKING AND CLONING, COULD DO pip install deepcad, BUT THEN HARDER TO EDIT/DEBUG)
+OR INSTEAD OF pip install deepcad, you can
+
+        fork deepcad and clone it, but then you have to pip install all the dependencies (there's around 15-20)
+
 
 pip install mat73
 pip install matplotlib 
@@ -247,3 +249,7 @@ pip install scanimage-tiff-reader
 ##INSTALL SCOPA
 cd /n/data1/hms/neurobio/wilson
 git clone https://github.com/wienecke/scopa.git
+
+if you want to step through 3rd party libraries during debugging in VS code, do this 
+
+add this line to launch.json file 
