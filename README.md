@@ -250,6 +250,7 @@ pip install scanimage-tiff-reader
 cd /n/data1/hms/neurobio/wilson
 git clone https://github.com/wienecke/scopa.git
 
-if you want to step through 3rd party libraries during debugging in VS code, do this 
+if you want to step through 3rd party libraries (like deepcad, if you installed with pip install deepcad) during debugging in VS code, do this 
 
-add this line to launch.json file 
+add this line to file launch.json, which is in hidden folder .vscode 
+        "justMyCode": false,
