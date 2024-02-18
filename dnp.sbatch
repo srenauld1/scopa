@@ -12,10 +12,9 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load 
 else #load virtual env if not copying files
     
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
-    module load miniconda3/4.10.3
-    module load cuda/11.7
-    source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-    conda activate deepcadrt
+    module load cuda/12.1
+    eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+    conda activate deepcad
 
     /n/cluster/bin/job_gpu_monitor.sh &
 
@@ -24,7 +23,7 @@ fi
 for i in 0
 do
     sleep 20s
-    ~/.conda/envs/deepcadrt/bin/python3 $(pwd)/pipeline_init.py \
+    /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \
     --pars_filename "$PARS_FILENAME" \
     --do_copyfiles "$DO_COPYFILES" \
     --first_job "$FIRST_JOB" \

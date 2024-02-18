@@ -196,3 +196,42 @@ in case it's useful to know about install failures, initially i tried pip instal
 various versions of this approach failed, some actually installed, but would error when using the code
 
 
+#######240217 wilson lab group folder shared libraries 
+
+https://stackoverflow.com/questions/77474450/using-conda-environment-at-a-specific-directory
+conda config --append envs_dirs /n/data1/hms/neurobio/wilson/miniforge3/envs
+CONDA_ALWAYS_COPY=1 mamba env create -f env1.yaml -p /shared/conda_envs/env1
+
+
+srun --pty -p interactive -t 0-1:00 --mem=5G bash
+curl -L -O "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash Miniforge3-$(uname)-$(uname -m).sh
+told it not to modify any config files 
+
+
+fork caiman repo and rename caiman (no capitals)
+srun --pty -p interactive -t 0-1:00 --mem=5G bash
+eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+git clone https://github.com/wienecke/caiman
+cd caiman/
+mamba env create -f environment.yml -p /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman
+source activate caiman
+pip install -e .
+pip install scanimage-tiff-reader
+pip install mat73
+pip install natsort
+
+CONDA_ALWAYS_COPY=1 mamba create -p /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad python=3.9
+conda activate deepcad
+conda install pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+
+pip install deepcad 
+      OR 
+fork deepcad and rename deepcad
+git clone https://github.com/wienecke/deepcad
+cd deepcad/DeepCAD_RT_pytorch/
+
+pip install mat73
+pip install matplotlib 
+pip install natsort
+pip install scanimage-tiff-reader
