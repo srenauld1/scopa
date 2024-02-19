@@ -47,6 +47,8 @@ gpu_partition=gpu_requeue
 # gpu_partition=gpu_quad
 gpu_time=01:30:00
 
+requeue_str=--begin=now
+
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
@@ -211,7 +213,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 ntasks_str=1
                 cpus_per_task_str=4
                 mem_per_cpu_str=5G
-                gres_str=--gres=gpu:$gpu_to_use 
+                gres_str=--gres=gpu:$gpu_to_use
+                if [ "$gpu_partition" == gpu_requeue ]; then
+                    requeue_str=--requeue 
+                fi 
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:20:00
@@ -251,6 +256,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --mem-per-cpu="$mem_per_cpu_str" \
         --output="$pthout" \
         --error="$pthout" \
+        "$requeue_str" \
         "$gres_str" \
         "$sbatch_job_name") 
 
