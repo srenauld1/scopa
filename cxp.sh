@@ -48,7 +48,7 @@ if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then
     gpu_time=11:00:00
 elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
     gpu_partition=gpu_requeue #use transfer partition if do_copyfiles==1
-    gpu_time=4:00:00
+    gpu_time=6:00:00 #tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
     gpu_partition=gpu_quad #use transfer partition if do_copyfiles==1
     gpu_time=0:30:00

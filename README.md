@@ -1,6 +1,6 @@
  scopa
  
- updated by carl wienecke 231201
+ updated carl wienecke 240218
 
 TO DO:
 --filling GPU without time increase
@@ -286,7 +286,9 @@ PyTorch version:  2.0.1+cu117
 
 {'overlap_factor': 0.8, 'datasets_path': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'n_epochs': 5, 'fmap': 16, 'output_dir': './results', 'pth_dir': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'onnx_dir': './onnx', 'batch_size': 1, 'patch_t': 102, 'patch_x': 120, 'patch_y': 120, 'gap_y': 23, 'gap_x': 23, 'gap_t': 20, 'lr': 5e-05, 'b1': 0.5, 'b2': 0.9, 'GPU': '0', 'ngpu': 1, 'num_workers': 0, 'scale_factor': 1, 'train_datasets_size': 10000, 'select_img_num': 10000000000.0, 'test_datasize': 400, 'visualize_images_per_epoch': False, 'save_test_images_per_epoch': True, 'colab_display': True, 'result_display': ''}
 
+Training:
 [Epoch 1/5] [Batch 10260/10260] [Total loss: 19478.05, L1 Loss: 91.50, L2 Loss: 38864.61] [ETA: 6:39:06] [Time cost: 5977s]   
+Testing:
 TEST TIME HAS NOT BEEN TESTED YET  
 
 Nodes: 1
@@ -300,7 +302,7 @@ Memory Efficiency: 40.07% of 20.00 GB
 
 # gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
 
-rtx6000 roughly 40 min per epoch, so budget at least 4 hours
+rtx6000 roughly 40 min training per epoch, 25 min testing per epoch, so budget at least 6 hours
 
 GPU accessiable. Use GPU for computation.
 GPU ID:  0 | Quadro RTX 6000 | Memory: 22691 MB
@@ -308,6 +310,16 @@ PyTorch version:  2.0.1+cu117
 
 {'overlap_factor': 0.8, 'datasets_path': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'n_epochs': 5, 'fmap': 16, 'output_dir': './results', 'pth_dir': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'onnx_dir': './onnx', 'batch_size': 1, 'patch_t': 102, 'patch_x': 120, 'patch_y': 120, 'gap_y': 23, 'gap_x': 23, 'gap_t': 20, 'lr': 5e-05, 'b1': 0.5, 'b2': 0.9, 'GPU': '0', 'ngpu': 1, 'num_workers': 0, 'scale_factor': 1, 'train_datasets_size': 10000, 'select_img_num': 10000000000.0, 'test_datasize': 400, 'visualize_images_per_epoch': False, 'save_test_images_per_epoch': True, 'colab_display': True, 'result_display': ''}
 
+Training: 3.5 hours for 5 epochs
 [Epoch 1/5] [Batch 10260/10260] [Total loss: 30611.76, L1 Loss: 129.44, L2 Loss: 61094.08] [ETA: 2:19:46] [Time cost: 2162 s]   
 
+Testing: 2 hours for 5 epochs
+[Model 1/1, E_05_Iter_10260.pth] [Stack 1/15, 20230627_1_1_0_3047_140_256_uint16_.tif] [Patch 2086/2086] [Time Cost: 101 s] [ETA: 0 s]      
 
+Nodes: 1
+Cores per node: 4
+CPU Utilized: 04:21:00
+CPU Efficiency: 26.69% of 16:18:04 core-walltime
+Job Wall-clock time: 04:04:31
+Memory Utilized: 8.63 GB
+Memory Efficiency: 43.17% of 20.00 GB

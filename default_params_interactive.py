@@ -42,7 +42,7 @@ do_crop = 0 #skip everything but FOV selection for all entries in regionex, must
 
 do_extract = 1 #caiman source extraction 
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
-regionex = ['ooob'] #DO NOT USE UNDERSCORES! ideally each string has no punctuation . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+regionex = ['pb2'] #DO NOT USE UNDERSCORES! ideally each string has no punctuation . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_analysis = 0 #matlab analysis, various functions in analyze_movie
