@@ -23,7 +23,7 @@ plot_gif(rescale(meanvol_hr), ['~/Documents/ambrose/leprechaunMat/hirestest_test
 
 load('~/Documents/ambrose/leprechaunMat/2dlores_.mat');
 % clip_percentile_for_viz = [3 96];
-% meanim = process_stack_for_roi_selection(meanvol_lr, filename_roi2d, clip_percentile_for_viz);
+% meanim = cx_process_stack_for_roi_selection(meanvol_lr, filename_roi2d, clip_percentile_for_viz);
 % mask2d = drawrois_cx(meanim, filename_roi2d, 'shji');
 
 tmpup = meanvol_lr .* mask2d;

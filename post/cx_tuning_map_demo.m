@@ -181,7 +181,7 @@ for ri = 1:length(pth_all)
                 load(pth_cropinds)
             catch
                 clip_percentile_for_viz = [0 100];
-                meanim = process_stack_for_roi_selection(stackraw, pth_cropinds, clip_percentile_for_viz);
+                meanim = cx_process_stack_for_roi_selection(stackraw, pth_cropinds, clip_percentile_for_viz);
                 cropxy = drawrois_cx(meanim, [], region_extraction);
                 [yinds, xinds] = ind2sub(size(cropxy), find(cropxy));
                 yinds = min(yinds):max(yinds);

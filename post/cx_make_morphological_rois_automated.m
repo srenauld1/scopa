@@ -394,7 +394,7 @@ if do_plots
         %     count = count+1;
         %     tmp3 = mean(tmptmp, 4);
         %     tmp3(tmp3~=0) = rescale(tmp3(tmp3~=0));
-        %     %tmp3 = process_stack_for_roi_selection(tmptmp, iiii);
+        %     %tmp3 = cx_process_stack_for_roi_selection(tmptmp, iiii);
         %     tmpall(:,:,:,count) = tmp3;
         %     idxnz = find(tmp3~=0); %find nonzero indices
         %     idxout = find(isoutlier(tmp3(idxnz))); %find outliers among nonzeros
