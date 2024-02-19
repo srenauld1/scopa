@@ -45,7 +45,7 @@ gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double prec
 gpu_partition=gpu_requeue
 # gpu_partition=gpu
 # gpu_partition=gpu_quad
-gpu_time=06:00:00
+gpu_time=11:00:00
 
 requeue_str=--begin=now #don't change this dummy variable, only overwritten if using the gpu_requeue partition 
 
@@ -211,8 +211,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=$gpu_partition #use transfer partition if do_copyfiles==1
                 time_str=$gpu_time
                 ntasks_str=1
-                cpus_per_task_str=4
-                mem_per_cpu_str=5G
+                cpus_per_task_str=6
+                mem_per_cpu_str=2G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 

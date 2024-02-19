@@ -224,7 +224,6 @@ told it not to modify any config files
 
 ##INSTALL CAIMAN
 
-
 fork caiman repo and rename caiman (no capitals)
 srun --pty -p interactive -t 0-1:00 --mem=5G bash
 eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
@@ -263,3 +262,51 @@ if you want to step through 3rd party libraries (like deepcad, if you installed 
 
 add this line to file launch.json, which is in hidden folder .vscode 
         "justMyCode": false,
+
+
+
+####GPU
+
+# gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+# gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
+# gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
+# gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+# gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
+# gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
+# gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
+
+
+
+# gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
+
+TeslaM40 roughly 1:45 min per epoch, so budget at least 10 hours
+
+GPU ID:  0 | Tesla M40 24GB | Memory: 22940 MB
+PyTorch version:  2.0.1+cu117
+
+{'overlap_factor': 0.8, 'datasets_path': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'n_epochs': 5, 'fmap': 16, 'output_dir': './results', 'pth_dir': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'onnx_dir': './onnx', 'batch_size': 1, 'patch_t': 102, 'patch_x': 120, 'patch_y': 120, 'gap_y': 23, 'gap_x': 23, 'gap_t': 20, 'lr': 5e-05, 'b1': 0.5, 'b2': 0.9, 'GPU': '0', 'ngpu': 1, 'num_workers': 0, 'scale_factor': 1, 'train_datasets_size': 10000, 'select_img_num': 10000000000.0, 'test_datasize': 400, 'visualize_images_per_epoch': False, 'save_test_images_per_epoch': True, 'colab_display': True, 'result_display': ''}
+
+[Epoch 1/5] [Batch 10260/10260] [Total loss: 19478.05, L1 Loss: 91.50, L2 Loss: 38864.61] [ETA: 6:39:06] [Time cost: 5977s]   
+
+Nodes: 1
+Cores per node: 4
+CPU Utilized: 06:09:00
+CPU Efficiency: 25.62% of 1-00:00:12 core-walltime
+Job Wall-clock time: 06:00:03
+Memory Utilized: 8.01 GB
+Memory Efficiency: 40.07% of 20.00 GB
+
+
+# gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+
+rtx6000 roughly 40 min per epoch, so budget at least 4 hours
+
+GPU accessiable. Use GPU for computation.
+GPU ID:  0 | Quadro RTX 6000 | Memory: 22691 MB
+PyTorch version:  2.0.1+cu117
+
+{'overlap_factor': 0.8, 'datasets_path': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'n_epochs': 5, 'fmap': 16, 'output_dir': './results', 'pth_dir': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'onnx_dir': './onnx', 'batch_size': 1, 'patch_t': 102, 'patch_x': 120, 'patch_y': 120, 'gap_y': 23, 'gap_x': 23, 'gap_t': 20, 'lr': 5e-05, 'b1': 0.5, 'b2': 0.9, 'GPU': '0', 'ngpu': 1, 'num_workers': 0, 'scale_factor': 1, 'train_datasets_size': 10000, 'select_img_num': 10000000000.0, 'test_datasize': 400, 'visualize_images_per_epoch': False, 'save_test_images_per_epoch': True, 'colab_display': True, 'result_display': ''}
+
+[Epoch 1/5] [Batch 10260/10260] [Total loss: 30611.76, L1 Loss: 129.44, L2 Loss: 61094.08] [ETA: 2:19:46] [Time cost: 2162 s]   
+
+
