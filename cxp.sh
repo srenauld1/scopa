@@ -21,13 +21,13 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
-do_separate=1 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
+do_separate=0 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
 do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
 do_stitch=0 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
-do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+do_copyfiles_sequence=(0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
@@ -37,8 +37,8 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 # gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
 # gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
 # gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
-gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
-#gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
+#gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
 # gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
 # gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
 
