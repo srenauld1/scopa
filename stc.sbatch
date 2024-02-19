@@ -11,7 +11,7 @@ else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 fi
 
-/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 /n/data1/hms/neurobio/wilson/scopa/pipeline_init.py \
+/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 $(pwd)/pipeline_init.py \
 --pth_parsfile "$PTH_PARSFILE" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \

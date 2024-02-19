@@ -65,7 +65,7 @@ caiman_hr_str = '*'; %empty to skip
 suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 plotinds_t = [20.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available

@@ -35,7 +35,7 @@ for i = 1:length(regionex_all)
         rtmp = regionex_all{i}(1:end-nci);
         pthcroplimall = rdir([pth_fldr recid_underscore '_' rtmp '_*_croplim_.*']);
         if ~isempty(pthcroplimall) 
-            regionex_original = rtmp; %don't break, loop over all to find the shortest substring that has a croplim file, in case original is substring of substring (e.g. pb having subregions pb2 and pb22)
+            regionex_original = rtmp; %don't break, loop over all to find the shortest 
         end
     end
 
