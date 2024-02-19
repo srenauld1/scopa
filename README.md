@@ -287,6 +287,7 @@ PyTorch version:  2.0.1+cu117
 {'overlap_factor': 0.8, 'datasets_path': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'n_epochs': 5, 'fmap': 16, 'output_dir': './results', 'pth_dir': '/n/scratch/users/c/caw846/denoising//20230627_1_1_all', 'onnx_dir': './onnx', 'batch_size': 1, 'patch_t': 102, 'patch_x': 120, 'patch_y': 120, 'gap_y': 23, 'gap_x': 23, 'gap_t': 20, 'lr': 5e-05, 'b1': 0.5, 'b2': 0.9, 'GPU': '0', 'ngpu': 1, 'num_workers': 0, 'scale_factor': 1, 'train_datasets_size': 10000, 'select_img_num': 10000000000.0, 'test_datasize': 400, 'visualize_images_per_epoch': False, 'save_test_images_per_epoch': True, 'colab_display': True, 'result_display': ''}
 
 [Epoch 1/5] [Batch 10260/10260] [Total loss: 19478.05, L1 Loss: 91.50, L2 Loss: 38864.61] [ETA: 6:39:06] [Time cost: 5977s]   
+TEST TIME HAS NOT BEEN TESTED YET  
 
 Nodes: 1
 Cores per node: 4

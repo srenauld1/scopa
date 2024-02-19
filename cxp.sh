@@ -35,17 +35,27 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 
 
 # gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+# gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
 # gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
 # gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
 #gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
 gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
 # gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
-# gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
+# this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
 
-gpu_partition=gpu_requeue
-# gpu_partition=gpu
-# gpu_partition=gpu_quad
-gpu_time=11:00:00
+if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then 
+    gpu_partition=gpu_requeue
+    gpu_time=11:00:00
+elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
+    gpu_partition=gpu_requeue #use transfer partition if do_copyfiles==1
+    gpu_time=4:00:00
+elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
+    gpu_partition=gpu_quad #use transfer partition if do_copyfiles==1
+    gpu_time=0:30:00
+elif [ "$gpu_to_use" == a100:1,vram:80G ]; then 
+    gpu_partition=gpu_quad #use transfer partition if do_copyfiles==1
+    gpu_time=3:00:00
+fi
 
 requeue_str=--begin=now #don't change this dummy variable, only overwritten if using the gpu_requeue partition 
 
