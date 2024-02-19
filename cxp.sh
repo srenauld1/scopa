@@ -45,7 +45,7 @@ gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double prec
 gpu_partition=gpu_requeue
 # gpu_partition=gpu
 # gpu_partition=gpu_quad
-gpu_time=06:00:00
+gpu_time=00:20:00
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
@@ -209,8 +209,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=$gpu_partition #use transfer partition if do_copyfiles==1
                 time_str=$gpu_time
                 ntasks_str=1
-                cpus_per_task_str=4
-                mem_per_cpu_str=4G
+                cpus_per_task_str=2
+                mem_per_cpu_str=5G
                 gres_str=--gres=gpu:$gpu_to_use 
             elif [ "$sbatch_job_name" == stc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1

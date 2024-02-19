@@ -13,7 +13,7 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then  #no need to load 
 else #load virtual env if not copying files
     
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
-    module load cuda/12.1
+    module load cuda/11.7 #12.1
     eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
     conda activate deepcad
 
