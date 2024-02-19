@@ -147,7 +147,10 @@ if torch.cuda.is_available():
     alloc_memory = torch.cuda.memory_allocated(0)/1024/1024
     print('GPU ID: ', gpu_id, '|', torch.cuda.get_device_name(), \
           '| Memory: {:.0f} MB'.format(total_memory))
-    #nvcc--version
+    print("tess")
+    print(nvidia-smi)
+    print(nvcc --version)
+    print("tess2")
     print('PyTorch version: ', torch.__version__)
 else:
     print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')

@@ -240,7 +240,8 @@ pip install natsort
 
 CONDA_ALWAYS_COPY=1 mamba create -p /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad python=3.9
 conda activate deepcad
-pip3 install torch torchvision torchaudio
+#pip3 install torch torchvision torchaudio #for cuda12.1
+pip install torch==2.0.1 torchvision==0.15.2 torchaudio==2.0.2 #for cuda11.7
 pip install deepcad
 
 OR INSTEAD OF pip install deepcad, you can
