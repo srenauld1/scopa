@@ -4,6 +4,7 @@
 
 TO DO:
 --filling GPU without time increase
+--deepcad GOF
 --memory allocation based on file size
 --integrate matlab pipeline
 --shared matlab engine
