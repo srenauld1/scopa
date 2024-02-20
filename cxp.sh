@@ -18,8 +18,6 @@
 
 #set variables that control which jobs are done
 
-your_email=carl_wienecke@hms.harvard.edu
-
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
