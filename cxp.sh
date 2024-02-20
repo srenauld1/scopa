@@ -14,7 +14,10 @@
 #note bash variables are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
 
-### require_user_defined_roi=1 #require user defined roi limits before DO_EXTRACT (ie do not operate on default fullfov)
+#email sent to user for all tasks, all job states, to avoid clutter, you can configure your email to store all slurm emails in a slurm folder 
+
+### CONSIDERING ADDING VARIABLE that requires user defined roi limits before DO_EXTRACT (ie do not operate on default fullfov)
+
 
 #set variables that control which jobs are done
 

@@ -4,6 +4,8 @@
 
 TO DO:
 --filling GPU without time increase
+--sh folder
+--requeue save/load
 --deepcad GOF
 --memory allocation based on file size
 --integrate matlab pipeline
@@ -17,7 +19,7 @@ entrypoint is pipeline_init.py in interactive mode, or cxp.sh in batch mode (cxp
 
 there are 7 modules: registration, 
 
- the second part of the pipeline is in matlab (entry point is cx_analysis.m), and operates on the output of this first part (imaging data) and also behavior and stimulus data
+ the second part of the pipeline is in matlab (entry point is analysis2p.m), and operates on the output of this first part (imaging data) and also behavior and stimulus data
 
 caiman_plots_all (in file vis.py)
 

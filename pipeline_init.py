@@ -145,14 +145,14 @@ for ri, _ in enumerate(pth_tif_read_all):
 
       if do_remove:
         eng = matlab.engine.start_matlab()
-        eng.cx_remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, makeplots, nargout=0)
+        eng.remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, makeplots, nargout=0)
 
       if do_extract or do_crop:
           extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, extract_in_2d, regionex, makeplots, cluster_backend, use_cluster)
           
       if do_analysis:
         eng = matlab.engine.start_matlab()
-        eng.cx_analysis(pth_tif_read_all[ri], makeplots, nargout=0)
+        eng.analysis(pth_tif_read_all[ri], makeplots, nargout=0)
           
          
 
