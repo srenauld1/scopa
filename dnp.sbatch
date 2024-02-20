@@ -30,7 +30,7 @@ fi
 --do_denoise 1 \
 --recording_index $SLURM_ARRAY_TASK_ID
 
-wait
+#wait
 sleep 1m
 date
 sleep 1m
