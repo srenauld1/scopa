@@ -47,8 +47,9 @@ for i = 1:length(regionex_all)
         spl = strsplit(fncr, '_');
         insloc = find(strcmp(spl, regionex_nohyphen{i}));
         croplimstr = strjoin(spl(insloc+1:insloc+8), '_');
-        croplimtmp = permute(strsplit(croplimstr, '_'), [3 2 4 1]);
-        croplim_all{i} = str2double(strsplit(croplimstr, '_'));
+        croplimtmp = str2double(strsplit(croplimstr, '_'));
+
+        croplim_all{i} = croplimtmp(vec([1:2]'+2*([3 2 4 1]-1)));
     end
 
 
