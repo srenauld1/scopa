@@ -109,7 +109,7 @@ INSTALLING THINGS
             module purge
             module load miniconda3/4.10.3
             source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-            conda create -n caiman -c conda-forge caiman
+            mamba create -n caiman -c conda-forge caiman
             conda activate caiman
             pip install scanimage-tiff-reader
             pip install mat73
@@ -122,7 +122,7 @@ INSTALLING THINGS
             module purge
             module load miniconda3/4.10.3
             source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
-            conda create -n deepcadrt python=3.9
+            mamba create -n deepcadrt python=3.9
             conda activate deepcadrt
             conda install pytorch torchvision torchaudio pytorch-cuda=11.7 -c pytorch -c nvidia
             
@@ -229,7 +229,7 @@ srun --pty -p interactive -t 0-1:00 --mem=5G bash
 eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
 git clone https://github.com/wienecke/caiman
 cd caiman/
-mamba env create -f environment.yml -p /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman
+CONDA_ALWAYS_COPY=1 mamba env create -f environment.yml -p /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman
 source activate caiman
 pip install -e .
 pip install scanimage-tiff-reader

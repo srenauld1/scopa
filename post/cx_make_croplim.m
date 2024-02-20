@@ -1,5 +1,5 @@
 
-function [stack, cropdims] = cx_make_croplim(stack, sz_t, pth_fldr, recid, region_extraction)
+function [stack, croplim] = cx_make_croplim(stack, sz_t, pth_fldr, recid, region_extraction)
 
 
 clip_prctile = [0 100]; %[0 100] does not change contrast
@@ -25,7 +25,7 @@ yinds = min(yinds):max(yinds);
 xinds = min(xinds):max(xinds);
 tinds = 1:sz_t;
 stack = stack(yinds, xinds, zinds, tinds); %need to create this and make single for draw_morphological_rois function
-cropdims = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
+croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
 
 pth_croplim = [pth_fldr recid '_' region_extraction '_' num2str(min(tinds)) '_' num2str(max(tinds)) '_' num2str(min(xinds)) '_' num2str(max(xinds)) '_' num2str(min(yinds)) '_' num2str(max(yinds)) '_' num2str(min(zinds)) '_' num2str(max(zinds)) '_croplim_.mat'];
 save(pth_croplim, 'yinds', 'xinds', 'zinds', 'tinds', '-v7.3', '-mat')

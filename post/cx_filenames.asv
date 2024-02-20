@@ -2,7 +2,7 @@ function [pth_fldr, pth_use_mat, pth_stacks_prefix, ...
     pth_hires_prefix, pth_hires_mat_matreg, pth_caimanrois_hires, ...
     pth_metadata, pth_roi_morph, pth_roi_func_all, pth_roi_allmethods, ...
     pth_fictrac, pth_savedata_oneregion, ...
-    cropdims_all, roiparsm, roiparsf, ...
+    croplim_all, roiparsm, roiparsf, ...
     plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid_underscore] = ...
     cx_filenames(pth_input, suffixes_plot, suffix_analysis, use_hires, numroi_morph, numroi_func, ...
     use_caiman_on_hires, caiman_lr_str, caiman_hr_str, ...
@@ -30,35 +30,38 @@ pth_fictrac = [pth_fldr recid_hyphen '_ficTracData_DAQ.mat'];
 
 for i = 1:length(regionex_all)
 
-    numchar_regionex = length(regionex_all{i});
-    for nci = 0:(numchar_regionex-1)
-        rtmp = regionex_all{i}(1:end-nci);
-        pthcroplimall = rdir([pth_fldr recid_underscore '_' rtmp '_*_croplim_.*']);
-        if ~isempty(pthcroplimall) 
-            regionex_original = rtmp; %don't break, loop over all to find the shortest 
-        end
-    end
+    spl = strsplit(regionex_all{i}, '_'); 
+    regionex_nohyphen{i} = spl{1}; %anything after an underscore defines a region within the prefix regionex cuboid from python preprocessing 
 
-    try
+    pthcroplimall = rdir([pth_fldr recid_underscore '_' regionex_nohyphen{i} '_*_croplim_.*']);
+
+    if isempty(pthcroplimall)
+        sprintf("NO CROPLIM FILE FOR REGIONEX: " + regionex_nohyphen{i} + ", YOU WILL BE PROMPTED TO DEFINE CROPLIM ")
+        croplim_all{i} = [];
+        croplimstr = 'nocroplim';
+    elseif length(pthcroplimall)>1
+        error(sprintf("ERROR, MULTIPLE CROPLIM FILES FOR REGIONEX: " + regionex_nohyphen{i} + ", CHOOSE THE ONE THAT MATCHES SIZE OF *roi2d_.mat"))
+    elseif length(pthcroplimall)==1
+        sprintf("FOUND ONE CROPLIM FILE FOR REGIONEX: " + regionex_nohyphen{i})
         [~, fncr, ~] = fileparts(pthcroplimall.name);
         spl = strsplit(fncr, '_');
-        cropdims_all{i} = [str2double(spl(9)), str2double(spl(10)), str2double(spl(7)), str2double(spl(8)), str2double(spl(11)), str2double(spl(12)), str2double(spl(5)), str2double(spl(6))];
-        cropdims_str = [spl{5} '_' spl{6} '_' spl{7} '_' spl{8} '_' spl{9} '_' spl{10} '_' spl{11} '_' spl{12}];
-    catch
-        cropdims_all{i} = [];
-        cropdims_str = 'nocropdims';
+        insloc = find(strcmp(spl, regionex_nohyphen{i}));
+        croplimstr = strjoin(spl(insloc+1:insloc+8), '_');
+        croplimtmp = permute(strsplit(croplimstr, '_');
+        croplim_all{i} = str2double(strsplit(croplimstr, '_'));
     end
+
 
     paramstr = ['moex_' num2str(use_hires(i)) '_' num2str(numroi_morph(i))];
     roiparsm{i} = paramstr;
 
-    pth_roi_morph{i} = [pth_use_mat(1:end-4) regionex_all{i} '_' cropdims_str '_' paramstr '_rois_.mat'];
+    pth_roi_morph{i} = [pth_use_mat(1:end-4) regionex_all{i} '_' croplimstr '_' paramstr '_rois_.mat'];
     pth_roi_allmethods{i}{1} = pth_roi_morph{i};
 
-    pth_caimanfails{i} = [pth_fldr recid_underscore '_*_' regionex_all{i} '_*_cmex_*_FAILURE_.mat'];
-    pth_caimanfails2{i} = [pth_fldr recid_underscore '_*_' regionex_all{i} '_*_cmex_*_NOROIS_.mat'];
+    pth_caimanfails{i} = [pth_fldr recid_underscore '_*_' regionex_nohyphen{i} '_*_cmex_*_FAILURE_.mat'];
+    pth_caimanfails2{i} = [pth_fldr recid_underscore '_*_' regionex_nohyphen{i} '_*_cmex_*_NOROIS_.mat'];
 
-    pth_roi_func_pat = [pth_fldr recid_underscore '_' suffix_analysis '_' regionex_original '_*_cmex_' caiman_lr_str '_rois_.mat'];
+    pth_roi_func_pat = [pth_fldr recid_underscore '_' suffix_analysis '_' regionex_nohyphen{i} '_*_cmex_' caiman_lr_str '_rois_.mat'];
     pthfncrall = rdir(pth_roi_func_pat);
     roiparsf{i} = cell(length(pthfncrall),1);
     pth_roi_func_all{i} = cell(length(pthfncrall),1);
@@ -69,12 +72,12 @@ for i = 1:length(regionex_all)
         for ci = 1:length(pthfncrall)
             [~, fncr, ~] = fileparts(pthfncrall(ci).name);
             spl = strsplit(fncr, '_');
-            insloc = find(strcmp(spl, regionex_original));
-            cropdimstr_check = strjoin(spl(insloc+1:insloc+8), '_');
-            if ci>1 & ~strcmp(cropdimstr_check, cropdimstr_prev)
+            insloc = find(strcmp(spl, regionex_nohyphen{i}));
+            croplimstr_check = strjoin(spl(insloc+1:insloc+8), '_');
+            if ci>1 & ~strcmp(croplimstr_check, croplimstr_prev)
                 error("a regionex has different FOV sizes across extraction runs, should be same across runs")
             end
-            cropdimstr_prev = cropdimstr_check;
+            croplimstr_prev = croplimstr_check;
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_');
             roiparsf{i}{ci,1} = strrep(cpatmp, '.', 'p');
             pth_roi_func_all{i}{ci,1} = pthfncrall(ci).name;
@@ -86,7 +89,7 @@ for i = 1:length(regionex_all)
 
     end
 
-    
+
     paramstr = [paramstr '_' num2str(numroi_func(i))];
 
     % if use_hires(i)
@@ -112,15 +115,15 @@ nrfstr = nrfstr(1:end-1);
 
 if ~isempty(regionex_all)
     pth_savedata_allregions = [pth_fldr recid_underscore '_' suffix_analysis '_' paramstr '_' uhrstr '_' nrmstr '_' nrfstr '_' strjoin(regionex_all, ',') '_savedata_.mat'];
-    cx_delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_all)
-    cx_delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_all)
+    cx_delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_nohyphen)
+    cx_delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_nohyphen)
 else
     pth_savedata_allregions = [pth_fldr recid_underscore '_' suffix_analysis '_FIXTHISFILENAME_savedata_.mat'];
     pth_savedata_oneregion = [pth_fldr recid_underscore '_' suffix_analysis '_FIXTHISFILENAME_savedata_.mat'];
     pth_roi_morph = '';
     pth_roi_func_all = '';
     pth_roi_allmethods = '';
-    cropdims_all = [];
+    croplim_all = [];
     roiparsm = {};
     roiparsf = {};
 end
