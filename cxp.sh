@@ -18,6 +18,8 @@
 
 #set variables that control which jobs are done
 
+your_email=carl_wienecke@hms.harvard.edu
+
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
@@ -47,13 +49,13 @@ if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then
     gpu_partition=gpu_requeue
     gpu_time=11:00:00
 elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
-    gpu_partition=gpu_requeue #use transfer partition if do_copyfiles==1
+    gpu_partition=gpu_requeue
     gpu_time=6:00:00 #tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
-    gpu_partition=gpu_quad #use transfer partition if do_copyfiles==1
+    gpu_partition=gpu_quad 
     gpu_time=0:30:00
 elif [ "$gpu_to_use" == a100:1,vram:80G ]; then 
-    gpu_partition=gpu_quad #use transfer partition if do_copyfiles==1
+    gpu_partition=gpu_quad 
     gpu_time=3:00:00
 fi
 
@@ -266,6 +268,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         --mem-per-cpu="$mem_per_cpu_str" \
         --output="$pthout" \
         --error="$pthout" \
+        --mail-type=ALL,ARRAY_TASKS \
         "$requeue_str" \
         "$gres_str" \
         "$sbatch_job_name") 
