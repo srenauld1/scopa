@@ -282,7 +282,7 @@ roi_overlay = roi_overlay(:,:,:,roisortinds);
 
 %% remove rois that failed morphological criteria above
 
-bad_roi_indices = ~good_roi_indices;
+bad_roi_indices = find(~good_roi_indices);
 good_roi_indices = find(good_roi_indices);
 
 
@@ -322,16 +322,13 @@ end
 %% plots
 
 
-if doplots
-
-    error("PLOTS NEED TO BE REWRITTEN FOR CROPPED VARS, OR MOVED BEFORE CROP")
+if numrois_to_plot
 
 
-    numrois_to_plot = 10;
-    if length(good_roi_indices)>numrois_to_plot
-        roi_plot_inds_good = round(linspace(1, length(good_roi_indices), numrois_to_plot));
+    if roiinfo.numroi>numrois_to_plot
+        roi_plot_inds_good = round(linspace(1, roiinfo.numroi, numrois_to_plot));
     else
-        roi_plot_inds_good = 1:length(good_roi_indices);
+        roi_plot_inds_good = 1:roiinfo.numroi;
     end
 
     if length(bad_roi_indices)>numrois_to_plot
@@ -340,11 +337,11 @@ if doplots
         roi_plot_inds_bad = 1:length(bad_roi_indices);
     end
 
-    filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset3_' num2str(numrois_to_plot) '.gif'];
-    plot_gif(roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, 256, cmap_im)
+    filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset_' num2str(numrois_to_plot) 'rois_.gif'];
+    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, 256, cmap_im)
 
-    filename_gif = [pth_roi_func(1:end-4) 'badrois_subset3_' num2str(numrois_to_plot) '.gif'];
-    plot_gif(roi_overlay(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
+    filename_gif = [pth_roi_func(1:end-4) 'badrois_subset_' num2str(numrois_to_plot) 'rois_.gif'];
+    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
 
 
 
