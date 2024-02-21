@@ -11,7 +11,7 @@ fitopt.modeltype = 'vonmises';
 fitopt.sort_method = 'unbiased';
 fitopt.epochinds = {[4]};
 fitopt.length_model_seconds = 0;
-fitopt.doplots = 0;
+fitopt.doplots = 1;
 
 [~, ~, cueang_pref] = fitresp(stack, stimfit, resp, ...
     pixinds_roi, mapind2ind, stimepochinds_i, ...

@@ -28,6 +28,8 @@ plot_stack_stats = 0;
 
 % set(0,'DefaultFigureWindowStyle','docked')
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 parent_folder_on_scratch = 'stacks';
 currdir = split(pwd, '/');
 currdir = currdir{end};
@@ -38,25 +40,24 @@ else
     pth_super = '~/stacks/';
 end
 
-doplots = 0;
 
+doplots = 0;
 recdate = '20230627';
 fly = '*';
 trial = '*';
-
 suffix_analysis = 'cmrg_dcdn';
 
 regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
 % regionex_all = {'eb', 'gar', 'gal', 'no_r', 'no_l'};
 % regionex_all = {'ff', 'gar', 'no_l'}; %third char may not exist, if not will be created
 
-use_hires = [0, 0, 0, 0, 1];
-use_drawn_rois = [1, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+use_hires = [0, 0, 0, 0, 0];
+use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_morph_auto = [1, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_func = [0, 0, 0, 0, 16]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 
 caiman_lr_str_all = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell of strings, empty to skip
-caiman_lr_str_all = {''}; %cell of strings, empty to skip
+% caiman_lr_str_all = {''}; %cell of strings, empty to skip
 
 use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
 caiman_hr_str = '*'; %empty to skip
@@ -75,6 +76,8 @@ rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combini
 rescalefac_wholeplot = [0 1]; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = 0;
 ncolgif = 128;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %params for response normalization
 response_normalization_string = {...
@@ -145,8 +148,8 @@ opt.fit.ignoresat = 1; %1 ignores it, makes constant 1
 opt.fit.ignoreval = 1; %1 ignores it, makes constant 1
 
 opt.fit.responseplot_norm = 'each'; %amplotude normalization for the detail plots at bottom, 'all' normalizes to population, 'each' normalizes to each
-opt.fit.maxnumplotinds = 100; %number of rois that get detail view on the bottom, one per gif frame
-opt.fit.sort_method = 'unbiased'; %'majoraxis', 'unbiased', 'gof', 'custom'; %how to select rois for detail plots, 'unbiased' for equidistant maxnumplotinds, 'gof' for equidistant maxnumplotinds sorted by gof in descending order (so starts with best fit ends with worst)
+opt.fit.maxnumroiplot = 100; %number of rois that get detail view on the bottom, one per gif frame
+opt.fit.sort_method = 'unbiased'; %'majoraxis', 'unbiased', 'gof', 'custom'; %how to select rois for detail plots, 'unbiased' for equidistant maxnumroiplot, 'gof' for equidistant maxnumroiplot sorted by gof in descending order (so starts with best fit ends with worst)
 
 opt.fit.standardize_stim = 0;
 opt.fit.standardize_resp = 1; %1 makes each response mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to responses whose amplitudes differ
@@ -447,7 +450,7 @@ for csi = 1:length(caiman_lr_str_all)
 
 
 
-                                    opt.fit.use_saved_model = 0;
+                                    opt.fit.use_saved_model = 1;
                                     opt.fit.modeltype = 'glno4';
                                     % opt.fit.modeltype = 'svd';
                                     opt.fit.length_model_seconds = 2;

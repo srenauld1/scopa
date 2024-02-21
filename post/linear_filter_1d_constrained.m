@@ -2,6 +2,8 @@ function filt = linear_filter_1d_constrained(numsamp, filtnorm, doplots, varargi
 
 % disp("see ricker.m")
 
+padlen = 5;
+
 tau1 = varargin{1};
 shift = varargin{2};
 if nargin==5
@@ -27,22 +29,23 @@ filt = b1-b2;
 
 if doplots
     filtplot = filt / norm(vec(filt(:)),1) * filtnorm; %normalize by L1
-    figure; plot(filtplot); hold on;
+    figure; plot(x, filtplot); hold on;
 end
 
-filt = [zeros(1, 5) filt zeros(1, 5)];
+filt = [zeros(1, padlen) filt zeros(1, padlen)];
 x = 0:length(filt)-1;
 
-filt2 = spline(x+2.2,filt,x);
+filt = spline(x+shift,filt,x);
 
+filt = filt(padlen+1:end-padlen);
 x = 0:length(filt)-1;
 
-filt = fraccircshift(filt,shift); %circshift with non-integer allowed
+% filt = fraccircshift(filt,shift); %circshift with non-integer allowed
 
 filt = filt / norm(vec(filt(:)),1) * filtnorm; %normalize by L1
 
 if doplots
-    plot(filt);
+    plot(x, filt);
 end
 
 end

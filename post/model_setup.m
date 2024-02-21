@@ -143,7 +143,7 @@ switch modeltype
         supp = [];
 
 
-    case {'glno3', 'glno4'}
+    case {'glno3', 'glno4', 'glno5'}
         [objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, supp, gethue, gethr_native] = ...
             fit_glno(modeltype, stimaug, respin, num_samp_model, num_dim_stimin, huestr);
 

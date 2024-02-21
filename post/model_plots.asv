@@ -677,8 +677,8 @@ if doplots(3)
             for nsi = 1:numrows_ts
                 
                 contseginds = [1:contseg_per_row]+contseg_per_row*(nsi-1); %indices of contiguous segments for row nsi
-                contseginds(contseginds>length(tinds_cont_nan)) = [];
-                tinds_row = cell2mat(tinds_cont_nan(contseginds));
+                contseginds(contseginds>length(tinds_cont)) = [];
+                tinds_row = cell2mat(tinds_cont(contseginds));
 
                 if ri==1
 

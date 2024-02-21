@@ -266,7 +266,7 @@ for bni = 1:num_full_bouts
 end
 
 
-%prepare plot quantities, by inserting nan padding between bouts
+%prepare plot quantities by inserting nan padding between bouts
 % and for unwrapped cueang, bumpang, and ballang, across discontiguous bouts, shift values within each bout to start where the last bout left off, and normalize whole epoch to common scale
 
 for rind = 1:numr/2
