@@ -87,7 +87,8 @@ opt.froi.within_mask_threshold = 0.5;
 opt.froi.numbins = 20;
 opt.froi.sort_roi_method = 'majoraxis'; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.froi.numrois_to_plot = 10;
+opt.froi.numrois_for_gif = 10;
+opt.froi.do_other_plots = 1;
 opt.froi.saturation_factor_background = 0.4; %above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %above this fraction of data is sent to max
 
