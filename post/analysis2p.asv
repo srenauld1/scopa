@@ -78,16 +78,19 @@ rescalefac_wholeplot = [0 1]; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = 0;
 ncolgif = 128;
 
-%params for loading/selecting/viewing functional rois
+%params for loading/selecting/viewing functional rois (froi)
 opt.froi.min_pixels_per_region = 3;
 opt.froi.min_roi_size = 5;
 opt.froi.max_roi_size = 300;
 opt.froi.max_regions_per_roi = 4;
 opt.froi.within_mask_threshold = 0.5;
 opt.froi.numbins = 20;
-opt.froi.sort_roi_method = 'majoraxis';
-opt.froi.foreground_plot_style = 'overlay';%'boundary'; %options to show roi are 'boundary' and 'overlay'
+opt.froi.sort_roi_method = 'majoraxis'; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
+opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
 opt.froi.numrois_to_plot = 10;
+opt.froi.saturation_factor_background = 0.4; %above this fraction of data is sent to max
+opt.froi.saturation_factor_rois = 0.1; %above this fraction of data is sent to max
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -364,12 +367,12 @@ for csi = 1:length(caiman_lr_str_all)
 
                         for rfi = 1:length(pth_roi_func_all{rei})
 
-                            %assign previously extracted functional rois to any morphological rois
+                            %load/visualize any previously extracted functional rois, assign to any morphological rois
                             [roiinfo.(regionex).(roiparsf{rei}{rfi}), resp_roi_func] = ...
                                 load_functional_rois(pth_roi_func_all{rei}{rfi}, stack_mnt{rei}, ...
                                 roiinfo.(regionex).(roiparsm{rei}).centroids_roi, ...
                                 roiinfo.(regionex).(roiparsm{rei}).mask_allroi, ...
-                                regionex, md.croptimeinds, doplots);
+                                regionex, md.croptimeinds, opt.froi);
 
                             %this version not weighted by area by passing pixinds_roi_func
                             resp.(regionex).(roiparsf{rei}{rfi}) = ...
