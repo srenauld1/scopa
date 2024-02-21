@@ -344,6 +344,7 @@ if numrois_to_plot
     plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
 
 
+    %variable 'roimasks' has not been subset by good_roi_indices
 
 
     tmp = roimasks(:,:,:,good_roi_indices);
