@@ -48,6 +48,7 @@ trial = '*';
 suffix_analysis = 'cmrg_dcdn';
 
 regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
+regionex_all = {'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
 % regionex_all = {'eb', 'gar', 'gal', 'no_r', 'no_l'};
 % regionex_all = {'ff', 'gar', 'no_l'}; %third char may not exist, if not will be created
 
@@ -66,7 +67,7 @@ caiman_hr_str = '*'; %empty to skip
 suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
