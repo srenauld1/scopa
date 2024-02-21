@@ -44,7 +44,7 @@ def crop_fov(Y, regionex, pth_prefix, dims):
     
     try:
         
-        fn_croplim_pattern = pth_prefix + '_' + regionex + '*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        fn_croplim_pattern = pth_prefix + '_' + regionex + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
         fn_croplim = glob.glob(fn_croplim_pattern)
         if len(fn_croplim) > 1:
             raise Exception("too many crop files")
