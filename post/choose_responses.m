@@ -63,4 +63,4 @@ end
 
 
 resptmp.resp_ga_mean = rescale(mean([resptmp.gal; resptmp.gar], 1)); %nanmean doesnt make sense here
-resptmp.resp_no_mean = rescale(mean([resptmp.nol; resptmp.nor], 1)); %nanmean doesnt make sense here
+resptmp.resp_no_mean = rescale(mean([resptmp.no_l; resptmp.no_r], 1)); %nanmean doesnt make sense here

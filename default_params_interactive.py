@@ -30,7 +30,7 @@ denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all
 num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model after each epoch 
 
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
-use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data, if 1,  
+use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data, if 1,  
 epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)
 
 do_stitch = 0 #do nothing but stitch the denoised tifs into single tif and move from denoising into data folder (this is normally first part of extract function below, but this will skip the extraction part) . . . stitching is not part of denoise function because it is cpu intensive and causes jobs to pend forever if requesting sufficient CPU AND GPU
@@ -42,7 +42,7 @@ do_crop = 0 #skip everything but FOV selection for all entries in regionex, must
 
 do_extract = 1 #caiman source extraction 
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
-regionex = ['pb2'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+regionex = ['pb3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_analysis = 0 #matlab analysis, various functions in analyze_movie

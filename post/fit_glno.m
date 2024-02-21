@@ -13,14 +13,14 @@ if strcmp(modeltype, 'glno')
 elseif strcmp(modeltype, 'glno2')
     objfcn = @ann2;
 elseif strcmp(modeltype, 'glno3')
-    objfcn = @ann3;
+    objfcn = @fit_ann;
     polarity_types_per_stim_dim = {'excitatory', 'inhibitory'}; %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid)
     linfilt_types_per_stim_dim = {'integrating', 'differentiating'}; %integrator (monophasic linear filter) as opposed to differentiator (biphasic linear filter)
     nonlinearity_types_per_stim_dim = {'none'}; %'none' to skip, 'genlog' for 5-param sigmoid
 elseif strcmp(modeltype, 'glno4')
-    objfcn = @ann3;
+    objfcn = @fit_ann;
     polarity_types_per_stim_dim = {'excitatory', 'inhibitory'}; %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid)
-    linfilt_types_per_stim_dim = {'integrating'}; %integrator (monophasic linear filter) as opposed to differentiator (biphasic linear filter)
+    linfilt_types_per_stim_dim = {'differentiating'}; %integrator (monophasic linear filter) as opposed to differentiator (biphasic linear filter)
     nonlinearity_types_per_stim_dim = {'none'}; %'none' to skip, 'genlog' for 5-param sigmoid
 end
 

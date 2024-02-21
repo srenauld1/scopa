@@ -25,7 +25,7 @@ pth_save = [pth_save_prefix '/' strjoin(spl(1:end-3), '_') '_.mat']; %remove the
 % in_input normlization_pc_precluster normalization_cl_cluster normalization_w_weighting
 
 %put pb last for now
-region_choose = {'gar', 'gal', 'nor', 'nol', 'pb'};
+region_choose = {'gar', 'gal', 'no_r', 'no_l', 'pb'};
 region_choose = {'pb'};
 
 for rci = 1:length(region_choose)
@@ -76,10 +76,10 @@ for rci = 1:length(region_choose)
         elseif strcmp(region_choose{rci}, 'gal')
             resp_gal = resp_tmp;
             params_all_gal = params_all_tmp;
-        elseif strcmp(region_choose{rci}, 'nor')
+        elseif strcmp(region_choose{rci}, 'no_r')
             resp_nor = resp_tmp;
             params_all_nor = params_all_tmp;
-        elseif strcmp(region_choose{rci}, 'nol')
+        elseif strcmp(region_choose{rci}, 'no_l')
             resp_nol = resp_tmp;
             params_all_nol = params_all_tmp;
         end

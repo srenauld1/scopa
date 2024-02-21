@@ -38,6 +38,7 @@ switch modeltype
                 gethr_native = @(ft,st,rs) [min(rs(:)) max(rs(:))];
         end
         supp.num_model_functions = 1;
+
         
 
     case 'linear'
@@ -118,7 +119,7 @@ switch modeltype
                 gethue = @(ft, st, pr) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
                 gethr_native = @(ft,st,rs) [min(rs(:)) max(rs(:))];
         end
-        supp = [];
+        supp.num_par_total = length(lbnd);
 
 
     case 'gaussian'

@@ -10,7 +10,7 @@ tuning.gof_velocity_ball = nan;
 tuning.preferred_hd_cue = nan;
 tuning.gof_hd_cue = nan;
 
-if strcmp(region_extraction, 'nol') | strcmp(region_extraction, 'nor') %we want to separate left and right so don't make it too low
+if strcmp(region_extraction, 'no_l') | strcmp(region_extraction, 'no_r') %we want to separate left and right so don't make it too low
 
     epochinds_lfit = [1 2 3 4]; %restrict stimulus epochs for linear fit
     epochinds_lfit = [1 4]; %restrict stimulus epochs for linear fit
@@ -46,11 +46,11 @@ if strcmp(region_extraction, 'nol') | strcmp(region_extraction, 'nor') %we want 
     tuning.preferred_velocity_ball = mean(lfit_ball(:));
     tuning.gof_velocity_ball = norm(vec(lfit_ball), 1);
 
-    %nor prefers positive vel, nol prefers negative
+    %no_r prefers positive vel, no_l prefers negative
     %0.1 might work for tuning strength thresh
-    if strcmp(region_extraction, 'nol') & (tuning.preferred_velocity_ball<0 | tuning.gof_velocity_ball>0.1)
+    if strcmp(region_extraction, 'no_l') & (tuning.preferred_velocity_ball<0 | tuning.gof_velocity_ball>0.1)
         roi_is_not_selective = 0;
-    elseif strcmp(region_extraction, 'nor') & (tuning.preferred_velocity_ball>0 | tuning.gof_velocity_ball>0.1)
+    elseif strcmp(region_extraction, 'no_r') & (tuning.preferred_velocity_ball>0 | tuning.gof_velocity_ball>0.1)
         roi_is_not_selective = 0;
     end
 

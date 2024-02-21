@@ -71,10 +71,10 @@ for dti4 = 1:3
 
                 if dti1==1
                     dattmp1 = respnor;
-                    labtmp1 = 'nor';
+                    labtmp1 = 'no_r';
                 elseif dti1==2
                     dattmp1 = respnol;
-                    labtmp1 = 'nol';
+                    labtmp1 = 'no_l';
                 elseif dti1==3
                     dattmp1 = meann;
                     labtmp1 = 'nomean';
@@ -134,8 +134,8 @@ for dti4 = 1:3
                 if any(endsWith(labvarsvals, 'mean')) & numel(find(endsWith(labvarsvals, 'mean')))~=2 %must be 0 or 2 'mean' vars
                     skipplot = 1;
                 end
-                if (any(endsWith(labvarsvals, 'gar')) & any(endsWith(labvarsvals, 'nor'))) | ... %must not have no and ga from "same side" (not connected)
-                        (any(endsWith(labvarsvals, 'gal')) & any(endsWith(labvarsvals, 'nol')))
+                if (any(endsWith(labvarsvals, 'gar')) & any(endsWith(labvarsvals, 'no_r'))) | ... %must not have no and ga from "same side" (not connected)
+                        (any(endsWith(labvarsvals, 'gal')) & any(endsWith(labvarsvals, 'no_l')))
                     skipplot = 1;
                 end
                 if any(endsWith(labvarsvals, 'ang')) %must not be an angle (for now)

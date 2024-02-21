@@ -14,7 +14,7 @@ histfit.max_iter_local = 10000;
 histfit.max_iter_global = 5;
 histfit.max_unique_sol_global = 3; %run indefinite global search iterations until it finds histfit.max_iter_global unique local solutions . . .  make empty to not set limit
 histfit.local_sol_is_unique_thresh = 1e-4; %local solution flagged as unique (recorded in histfit.unique_local_fval) if it differs from all other local solutions by at least histfit.local_sol_is_unique_thresh
-histfit.save_iter_spacing = 1; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)
+histfit.save_iter_spacing = 3; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)
 histfit.dummyval = 61616161; %written to histfit.x_l and histfit.fval_l to help easily distinguish init rows (start of global iteration) by eye
 histfit.precision = 'single';
 
@@ -37,11 +37,11 @@ save_unique_sol_count_global = 1;
 
 slvrg = GlobalSearch; %globalsearch can only use fmincon
 
-slvrg.NumTrialPoints = 1000; %1000
+slvrg.NumTrialPoints = 100000; %1000
 slvrg.BasinRadiusFactor = 0.2000; %0.2000
 slvrg.DistanceThresholdFactor = 0.7500; %0.7500
 slvrg.MaxWaitCycle = 20; %20
-slvrg.NumStageOnePoints = 200; %200
+slvrg.NumStageOnePoints = 20000; %200
 slvrg.PenaltyThresholdFactor = 0.2000; %0.2000
 slvrg.Display = 'final'; %'final'
 slvrg.FunctionTolerance = 1.0000e-06; %1.0000e-06
@@ -116,9 +116,7 @@ vdata = getval(resp);
 
 pstim = stim(find(max(predresp)==predresp,1));
 
-save([pth_fitdata_epoch(1:end-4) '_' num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
-
-disp("wee")
+save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
 
 
 %% (nested) output and plotting functions

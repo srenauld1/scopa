@@ -449,7 +449,7 @@ for csi = 1:length(caiman_lr_str_all)
 
                                     opt.fit.use_saved_model = 0;
                                     opt.fit.modeltype = 'glno4';
-                                    opt.fit.modeltype = 'svd';
+                                    % opt.fit.modeltype = 'svd';
                                     opt.fit.length_model_seconds = 2;
                                     
                                     stimfit(1,:) = stim.(opt.fit.sdom.(regionex){1}{1}).(opt.fit.sdom.(regionex){1}{2});

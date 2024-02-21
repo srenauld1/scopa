@@ -143,8 +143,8 @@ for cvi = 1:length(colorvars)
         %         ((any(strcmp(labvarsvals, 'respnol')) | any(strcmp(labvarsvals, 'respnor'))) & any(strcmp(labvarsvals, 'respnolrmean')))
         %     skipplot = 1;
         % end
-        % if (any(endsWith(labvarsvals, 'gar')) & any(endsWith(labvarsvals, 'nor'))) | ... %must not have no and ga from "same side" (not connected)
-        %         (any(endsWith(labvarsvals, 'gal')) & any(endsWith(labvarsvals, 'nol')))
+        % if (any(endsWith(labvarsvals, 'gar')) & any(endsWith(labvarsvals, 'no_r'))) | ... %must not have no and ga from "same side" (not connected)
+        %         (any(endsWith(labvarsvals, 'gal')) & any(endsWith(labvarsvals, 'no_l')))
         %     skipplot = 1;
         % end
         %

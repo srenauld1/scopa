@@ -31,11 +31,10 @@ if doplots
 end
 
 filt = [zeros(1, 5) filt zeros(1, 5)];
-x = 0:length(filt)-1;
+x = 0:length(filt);
 
 filt2 = spline(x+2.2,filt,x);
-
-x = 0:length(filt)-1;
+x = 0:length(filt);
 
 filt = fraccircshift(filt,shift); %circshift with non-integer allowed
 

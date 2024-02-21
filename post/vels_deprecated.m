@@ -16,8 +16,8 @@ cue = wrapToPi(movmean(unwrap(cue), [4 4], 'omitmissing'));
 
 respgartmp2 = rescale(resp2{end}.gar);
 respgaltmp2 = rescale(resp2{end}.gal);
-respnortmp2 = rescale(resp2{end}.nor);
-respnoltmp2 = rescale(resp2{end}.nol);
+respnortmp2 = rescale(resp2{end}.no_r);
+respnoltmp2 = rescale(resp2{end}.no_l);
 meangtmp2 = rescale(mean([respgartmp2; respgaltmp2], 1));
 meanntmp2 = rescale(mean([respnortmp2; respnoltmp2], 1));
 

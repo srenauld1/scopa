@@ -25,7 +25,7 @@ pth_super = '/'.join(pth_allrec.split('/')[:-2])
 # patold = ['cmnrg', 'cmnrgcaddn', 'cmnex']
 # patnew = ['cmrg', 'cmrg_dcdn', 'cmex']
 
-patold = ['cx_']
+patold = ['']
 patnew = ['']
 
 for i,p in enumerate(patold):

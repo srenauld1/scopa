@@ -88,10 +88,10 @@ for sllli3 = 1
                 tmplab1 = 'gal';
             elseif sllli==5
                 tmpdat1 = respnor;
-                tmplab1 = 'nor';
+                tmplab1 = 'no_r';
             elseif sllli==6
                 tmpdat1 = respnol;
-                tmplab1 = 'nol';
+                tmplab1 = 'no_l';
             end
 
 
