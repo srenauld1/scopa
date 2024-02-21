@@ -30,14 +30,14 @@ plot_stack_stats = 0;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-parent_folder_on_scratch = 'stacks';
-currdir = split(pwd, '/');
+parent_folder = 'stacks';
+currdir = split(pwd, filesep);
 currdir = currdir{end};
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
-    pth_super = ['/n/scratch/users/'  currdir(1) '/' currdir '/' parent_folder_on_scratch '/'];
+    pth_super = ['/n/scratch/users/'  currdir(1) filesep currdir filesep parent_folder filesep];
 else
-    pth_super = '~/stacks/';
+    pth_super = ['~' filesep parent_folder filesep];
 end
 
 
