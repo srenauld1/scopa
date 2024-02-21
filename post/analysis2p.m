@@ -53,7 +53,7 @@ regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO c
 
 use_hires = [0, 0, 0, 0, 0];
 use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
-numroi_morph_auto = [1, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+numroi_morph_auto = [0, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_func = [0, 0, 0, 0, 16]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 
 caiman_lr_str_all = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell of strings, empty to skip
@@ -66,9 +66,9 @@ caiman_hr_str = '*'; %empty to skip
 suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-plotinds_t = [20.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
