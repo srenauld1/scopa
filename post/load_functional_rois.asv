@@ -6,25 +6,40 @@ function [roiinfo, resp_roi_func] = ...
 
 %% params
 
-min_pixels_per_region = opts.min_pixels_per_region;
-min_roi_size = opts.min_roi_size;
-max_roi_size = opts.max_roi_size;
-max_regions_per_roi = opts.max_regions_per_roi;
-within_mask_threshold = opts.within_mask_threshold;
-numbins = opts.numbins;
-sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
-foreground_plot_style = opts.foreground_plot_style; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-numrois_to_plot = opts.numrois_to_plot;
-saturation_factor_background = opts.saturation_factor_background; %above this fraction of data is sent to max
-saturation_factor_rois = opts.saturation_factor_rois; %above this fraction of data is sent to max
+opt.froi.min_pixels_per_region = 3;
+opt.froi.min_roi_size = 5;
+opt.froi.max_roi_size = 300;
+opt.froi.max_regions_per_roi = 4;
+opt.froi.within_mask_threshold = 0.5;
+opt.froi.numbins = 20;
+opt.froi.sort_roi_method = 'majoraxis'; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
+opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
+opt.froi.numrois_to_plot = 10;
+
+%% 
+
+min_pixels_per_region = 3;
+min_roi_size = 5;
+max_roi_size = 300;
+max_regions_per_roi = 4;
+within_mask_threshold = 0.5;
+
+numbins = 20;
+
+sort_roi_method = 'majoraxis';
+foreground_plot_style = 'overlay';%'boundary'; %options to show roi are 'boundary' and 'overlay'
+
+numrois_to_plot = 10;
 
 
-%%create colormap for roi+mean image overlay (roi is red by default)
+%%create colormap for roi+mean image overlay
 ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
 endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
 startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
 endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
+saturation_factor_background = 0.4; %above this fraction of data is sent to max
+saturation_factor_rois = 0.1; %above this fraction of data is sent to max
 cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
 
 cmap_im = colormap_custom(cmap_method, ncol_each, ...

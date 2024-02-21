@@ -48,12 +48,13 @@ trial = '*';
 suffix_analysis = 'cmrg_dcdn';
 
 regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
+regionex_all = {'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
 % regionex_all = {'eb', 'gar', 'gal', 'no_r', 'no_l'};
 % regionex_all = {'ff', 'gar', 'no_l'}; %third char may not exist, if not will be created
 
 use_hires = [0, 0, 0, 0, 0];
 use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
-numroi_morph_auto = [1, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+numroi_morph_auto = [0, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_func = [0, 0, 0, 0, 16]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 
 caiman_lr_str_all = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell of strings, empty to skip
@@ -66,9 +67,9 @@ caiman_hr_str = '*'; %empty to skip
 suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-plotinds_t = [20.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
@@ -76,6 +77,17 @@ rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combini
 rescalefac_wholeplot = [0 1]; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = 0;
 ncolgif = 128;
+
+%params for loading/selecting/viewing functional rois
+opt.froi.min_pixels_per_region = 3;
+opt.froi.min_roi_size = 5;
+opt.froi.max_roi_size = 300;
+opt.froi.max_regions_per_roi = 4;
+opt.froi.within_mask_threshold = 0.5;
+opt.froi.numbins = 20;
+opt.froi.sort_roi_method = 'majoraxis';
+opt.froi.foreground_plot_style = 'overlay';%'boundary'; %options to show roi are 'boundary' and 'overlay'
+opt.froi.numrois_to_plot = 10;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
