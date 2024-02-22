@@ -323,7 +323,12 @@ end
 %% plots
 
 
-if numrois_for_gif
+if numrois_for_gif~=0
+
+
+    if isempty(numrois_for_gif)
+        numrois_for_gif = roiinfo.numroi;
+    end
 
 
     if roiinfo.numroi>numrois_for_gif

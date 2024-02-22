@@ -14,7 +14,8 @@ within_mask_threshold = opts.within_mask_threshold;
 numbins = opts.numbins;
 sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 foreground_plot_style = opts.foreground_plot_style; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-numrois_to_plot = opts.numrois_to_plot;
+numrois_for_gif = opts.numrois_for_gif;
+do_other_plots = opts.do_other_plots;
 saturation_factor_background = opts.saturation_factor_background; %above this fraction of data is sent to max
 saturation_factor_rois = opts.saturation_factor_rois; %above this fraction of data is sent to max
 
@@ -322,30 +323,33 @@ end
 %% plots
 
 
-if doplots
+if numrois_for_gif
 
 
-
-    if roiinfo.numroi>numrois_to_plot
-        roi_plot_inds_good = round(linspace(1, roiinfo.numroi, numrois_to_plot));
+    
+    if roiinfo.numroi>numrois_for_gif
+        roi_plot_inds_good = round(linspace(1, roiinfo.numroi, numrois_for_gif));
     else
         roi_plot_inds_good = 1:roiinfo.numroi;
     end
 
-    if length(bad_roi_indices)>numrois_to_plot
-        roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_to_plot));
+    if length(bad_roi_indices)>numrois_for_gif
+        roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
     else
         roi_plot_inds_bad = 1:length(bad_roi_indices);
     end
 
-    filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset_' num2str(numrois_to_plot) 'rois_.gif'];
+    filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, 256, cmap_im)
 
-    filename_gif = [pth_roi_func(1:end-4) 'badrois_subset_' num2str(numrois_to_plot) 'rois_.gif'];
-    plot_gif(roi_overlay(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
+    filename_gif = [pth_roi_func(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
+    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
 
+end
 
+%variable 'roimasks' has not been subset by good_roi_indices
 
+if do_other_plots
 
     tmp = roimasks(:,:,:,good_roi_indices);
 
@@ -408,10 +412,10 @@ if doplots
         sgtitle(['roi mean ' titadd])
         saveas( gcf, [pth_roi_func(1:end-4) 'roisallmask_' titadd '_.png'])
 
-        figure; imagesc(roimasks_all_2d); title(['roisall2d ' titadd])
+        figure; imagesc(roimasks_all_2d); title(['roisall2d ' titadd]); axis image
         saveas( gcf, [pth_roi_func(1:end-4) 'roisall2d_' titadd '_.png'])
 
-        figure; imagesc(roimasks_all_masked_2d); title(['roisall2d ' titadd])
+        figure; imagesc(roimasks_all_masked_2d); title(['roisall2d ' titadd]); axis image
         saveas( gcf, [pth_roi_func(1:end-4) 'roisall2dmask_' titadd '_.png'])
 
     end
