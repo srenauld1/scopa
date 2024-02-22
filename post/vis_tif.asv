@@ -18,13 +18,22 @@
 % if possible without clipping 
 
 
-function stack = vis_tif(md, pth_use_mat, pth_stacks_prefix, ...
-    pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
-    rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
-    rescalefac_wholeplot_ubnd, plotinds_t, plotinds_z, ...
-    swapdim, smooth_window_temporal, ...
-    plot_stack_stats, plot_stack_order, plot_stack_gif, ncolgif)
+function stack = vis_tif(md, pth, recid, use_hires, ...
+plot_stack_stats, plot_stack_order, plot_stack_gif, opts)
 
+pth_fldr = pth.pth_fldr;
+pth_use_mat = pth.pth_use_mat;
+pth_stacks_prefix = pth.pth_stacks_prefix;
+pth_hires_prefix = pth.pth_hires_prefix;
+
+plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+plotinds_z = opts.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
+swapdim = opts.swapdim; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+nan_numlines = opts.nan_numlines; %how many lines of nans to insert in dim 1 above each subplot
+rescale_each_subplot = opts.rescale_each_subplot; %rescale each subplot to same range 0-1 before combining
+rescalefac_wholeplot = opts.rescalefac_wholeplot; %combined plot rescale arguments, [lower, upper]
+smooth_window_temporal = opts.smooth_window_temporal; %smooth the stack in time, 0 to skip
+ncolgif = opts.ncolgif; %color/grey res
 
 
 sz = md.sz_o;
@@ -73,7 +82,7 @@ else
     plotinds_z_str = sprintf('%.0f,', plotinds_z);
     plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
 end
-rescale_str = [' rescale ' num2str(rescalefac_wholeplot_lbnd) ' ' num2str(rescalefac_wholeplot_ubnd)];
+rescale_str = [' rescale ' num2str(rescalefac_wholeplot(1)) ' ' num2str(rescalefac_wholeplot(2))];
 
 if rescale_each_subplot
     rseachstr = 'eachrescaled';
@@ -190,12 +199,12 @@ if plot_stack_gif
     filename_prefix = [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str '_' ];
     figtitle_prefix = {[recid_title ' : ' title_insert]; ['z inds ' plotinds_z_str]; rescale_str};
 
-    plot_gif_fast(rescale(stackall, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
+    plot_gif_fast(rescale(stackall, rescalefac_wholeplot(1), rescalefac_wholeplot(2)), ...
         ncolgif, swapdim, ...
         [filename_prefix '_.gif'], ...
         figtitle_prefix, plotinds_z, plotinds_t)
 
-    plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot_lbnd, rescalefac_wholeplot_ubnd), ...
+    plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot(1), rescalefac_wholeplot(2)), ...
         ncolgif, swapdim, ...
         [filename_prefix '_meanframe_.gif'], ...
         [figtitle_prefix; '_meanframe_.gif'])
@@ -217,21 +226,19 @@ if any(use_hires)
         %it's okay to overwrite these since none are output from this function
         use_hires = 0;
         md = md.md_hires;
-        pth_use_mat_hires = {''};
-        pth_stacks_prefix = {pth_hires_prefix};
-        plotinds_t = [1];
-        plotinds_z = [];
-        smooth_window_temporal = [];
+        pth2 = pth;
+        pth2.use_mat_hires = {''};
+        pth2_stacks_prefix = {pth_hires_prefix};
+        opts_hires = opts;
+        opts_hires.plotinds_t = [1];
+        opts_hires.plotinds_z = [];
+        opts_hires.smooth_window_temporal = [];
 
         %no need to call with output, purpose is just to read hires tif,
         %save as mat, and optionally plot . . . hires will be loaded later in
         %load_hires_stack.m
-        vis_tif(md, pth_use_mat_hires, pth_stacks_prefix, ...
-            pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
-            rescale_each_subplot, rescalefac_wholeplot_lbnd, ...
-            rescalefac_wholeplot_ubnd, plotinds_t, plotinds_z, ...
-            swapdim, smooth_window_temporal, ...
-            plot_stack_stats, plot_stack_order, plot_stack_gif, ncolgif);
+        vis_tif(md, pth, recid, use_hires, ...
+            plot_stack_stats, plot_stack_order, plot_stack_gif, opts_hires);
 
 
     end

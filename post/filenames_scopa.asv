@@ -1,4 +1,4 @@
-function [pth, croplim_all, roiparsm, roiparsf, ...
+function [paths, croplim_all, roiparsm, roiparsf, ...
     plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid_underscore] = ...
     filenames_scopa(pth_input, suffixes_plot, suffix_analysis, use_hires, numroi_morph, numroi_func, ...
     use_caiman_on_hires, caiman_lr_str, caiman_hr_str, ...
@@ -188,18 +188,18 @@ else
     pth_roi_func_hires = [];
 end
 
-%assign to struct
-pth.fldr = pth_fldr;
-pth.use_mat = pth_use_mat;
-pth.stacks_prefix = pth_stacks_prefix;         
-pth.hires_prefix = pth_hires_prefix;
-pth.hires_mat_matreg = pth_hires_mat_matreg;
-pth.roi_func_hires = pth_roi_func_hires;
-pth.metadata = pth_metadata;
-pth.roi_morph = pth_roi_morph;
-pth.roi_func_all = pth_roi_func_all;
-pth.roi_allmethods = pth_roi_allmethods;         
-pth.fictrac = pth_fictrac;
-pth.savedata_oneregion = pth_savedata_oneregion;
+
+pth_fldr
+pth_use_mat
+pth_stacks_prefix          
+pth_hires_prefix
+pth_hires_mat_matreg
+pth_roi_func_hires
+pth_metadata
+pth_roi_morph
+pth_roi_func_all
+pth_roi_allmethods           
+pth_fictrac
+pth_savedata_oneregion
 
 

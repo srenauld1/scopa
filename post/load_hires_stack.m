@@ -1,6 +1,9 @@
-function [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth_hires_prefix, pth_hires_mat_matreg, ...
-    stack, md, use_caiman_on_hires, pth_roi_func_hires)
+function [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth, stack, md, use_caiman_on_hires)
 
+
+pth_hires_prefix = pth.hires_prefix;
+pth_hires_mat_matreg = pth.hires_mat_matreg;
+pth_roi_func_hires = pth.roi_func_hires;
 
 %% if using a high-z-res stack also, map low resolution z indices to to high resolution z indices
 

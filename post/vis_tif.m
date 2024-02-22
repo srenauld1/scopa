@@ -18,10 +18,13 @@
 % if possible without clipping 
 
 
-function stack = vis_tif(md, pth_use_mat, pth_stacks_prefix, ...
-    pth_fldr, recid, use_hires, pth_hires_prefix, ...
-plot_stack_stats, plot_stack_order, plot_stack_gif, opts)
+function stack = vis_tif(md, pth, opts, recid, use_hires, ...
+plot_stack_stats, plot_stack_order, plot_stack_gif)
 
+pth_fldr = pth.fldr;
+pth_use_mat = pth.use_mat;
+pth_stacks_prefix = pth.stacks_prefix;
+pth_hires_prefix = pth.hires_prefix;
 
 plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = opts.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -223,21 +226,19 @@ if any(use_hires)
         %it's okay to overwrite these since none are output from this function
         use_hires = 0;
         md = md.md_hires;
-        pth_use_mat_hires = {''};
-        pth_stacks_prefix = {pth_hires_prefix};
-        plotinds_t = [1];
-        plotinds_z = [];
-        smooth_window_temporal = [];
+        pth2 = pth;
+        pth2.use_mat_hires = {''};
+        pth2.stacks_prefix = {pth_hires_prefix};
+        opts_hires = opts;
+        opts_hires.plotinds_t = [1];
+        opts_hires.plotinds_z = [];
+        opts_hires.smooth_window_temporal = [];
 
         %no need to call with output, purpose is just to read hires tif,
         %save as mat, and optionally plot . . . hires will be loaded later in
         %load_hires_stack.m
-        vis_tif(md, pth_use_mat_hires, pth_stacks_prefix, ...
-            pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
-            rescale_each_subplot, rescalefac_wholeplot, ...
-            plotinds_t, plotinds_z, ...
-            swapdim, smooth_window_temporal, ...
-            plot_stack_stats, plot_stack_order, plot_stack_gif, ncolgif);
+        vis_tif(md, pth2, opts_hires, recid, use_hires, ...
+            plot_stack_stats, plot_stack_order, plot_stack_gif);
 
 
     end

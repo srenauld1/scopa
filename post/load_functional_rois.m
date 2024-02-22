@@ -284,7 +284,10 @@ roi_overlay = roi_overlay(:,:,:,roisortinds);
 %% remove rois that failed morphological criteria above
 
 bad_roi_indices = find(~good_roi_indices);
+roi_overlay_bad = roi_overlay(:,:,:,bad_roi_indices); %no need to save bad rois to roiinfo struct
+
 good_roi_indices = find(good_roi_indices);
+roiinfo.roi_overlay = roi_overlay(:,:,:,good_roi_indices);
 
 
 %resp_roi_func.cmc = single(C(good_roi_indices, :)); %components denoised by caiman (nonnegative . . . that seems bad)
@@ -303,7 +306,6 @@ else
     roiinfo.mask_allroi = mean(roimasks(:,:,:,good_roi_indices), 4); %boolean mask of all rois
 end
 roiinfo.mapind2ind = mapind2ind(good_roi_indices); %for each pixel in a roi, which roi it belongs to
-roiinfo.roi_overlay = roi_overlay(:,:,:,good_roi_indices);
 
 roiinfo.rcor = rcor(good_roi_indices);
 roiinfo.rsnr = rsnr(good_roi_indices);
@@ -337,17 +339,17 @@ if numrois_for_gif~=0
         roi_plot_inds_good = 1:roiinfo.numroi;
     end
 
+    filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
+    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, 256, cmap_im)
+
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
     else
         roi_plot_inds_bad = 1:length(bad_roi_indices);
     end
-
-    filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, 256, cmap_im)
-
+    
     filename_gif = [pth_roi_func(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
+    plot_gif(roi_overlay_bad(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
 
 end
 
@@ -357,7 +359,7 @@ if do_other_plots
 
     tmp = roimasks(:,:,:,good_roi_indices);
 
-    %plot pixel energies
+    %plot pixel energies (kind of like the strength of each pixel's contribution to the roi signal)
     tmpnz = tmp(tmp~=0);
     figure; subplot(2,1,1); hist(tmpnz);
     subplot(2,1,2); plot(sort(tmpnz));
@@ -373,12 +375,12 @@ if do_other_plots
     furn(furn<thr_tri) = nan;
     figure; subplot(2,1,1);
     plot(sort(tmpnz)); hold on; plot(furn)
-    title('triangle threshold')
+    title('pixel energy, triangle threshold')
     furn = sort(tmpnz);
     furn(furn<thr_knee) = nan;
     subplot(2,1,2);
     plot(sort(tmpnz)); hold on; plot(furn)
-    title('knee threshold')
+    title('pixel energy knee threshold')
 
 
     for ptti = 1:2
@@ -432,8 +434,8 @@ if do_other_plots
     % plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], running, simultaneous)
     % filename_gif = [pth_roi_func(1:end-4) 'caimanrois_simul_goods.gif'];
     % plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], 0, 0)
-    % filename_gif = [pth_roi_func(1:end-4) 'caimanrois_notsimul_goods.gif'];
-    % plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], running, simultaneous)
+    filename_gif = [pth_roi_func(1:end-4) 'caimanrois_notsimul_goods.gif'];
+    plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], running, simultaneous)
 
 
     % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
@@ -462,82 +464,78 @@ if do_other_plots
     %     end
     %     roimasks = roimasks_maxes;
     % end
+%% 
 
 
-    figure;
+    hfg = figure;
+    ncolgif = 128;
+    spl1 = subplot(2,1,1);
+    spl2 = subplot(2,1,2);
+    filenamegif = [pth_roi_func(1:end-4) '_roimaskkneeeach_.gif'];
+
     for ci = 1:numrois
         furn = vec(roimasks(:,:,:,ci));
         furn = furn(furn~=0);
-        fuksorted = sort(furn);
-        [~, kneeidx_each] = knee_pt(fuksorted,[],1);
-        figure;
-        subplot(2,1,1);
-        plot(furn);
-        hold on
-        yline(fuksorted(kneeidx_each))
-        subplot(2,1,2);
-        plot(fuksorted);
-        hold on
-        scatter(kneeidx_each, fuksorted(kneeidx_each), 'm', 'filled');
-        knee_all(cci) = fuksorted(kneeidx_each);
-        sgtitle("spatial correlation (?) for single roi")
-        saveas( gcf, [pth_save_fig(1:end-4) '_roimaskkneeeach_.png'])
+        if ~isempty(furn)
+            furnsort = sort(furn);
+            [~, kneeidx_each] = knee_pt(furnsort,[],1, 1);
+            if isnan(kneeidx_each)
+                kneeidx_each = 1;
+            end
+            if ci == 1
+                pl11 = plot(spl1, furn);
+                hold(spl1, 'on')
+                pl12 = yline(spl1, furnsort(kneeidx_each));
+                hold(spl1, 'off')
+                hold(spl2, 'on')
+                pl21 = plot(spl2, furnsort);
+                pl22 = scatter(spl2, kneeidx_each, furnsort(kneeidx_each), 'm', 'filled');
+                hold(spl2, 'off')
+            else
+                pl11.YData = furn;
+                pl12.Value = furnsort(kneeidx_each);
+                pl21.YData = furnsort;
+                pl22.XData = kneeidx_each;
+                pl22.YData = furnsort(kneeidx_each);
+            end
+
+            % knee_all(ci) = furnsort(kneeidx_each);
+            sgtitle("spatial correlation (?) for single roi")
+        end
+
+        frame = getframe(hfg);
+        im = frame2im(frame);
+        [imind, cm] = rgb2ind(im, ncolgif);
+
+        if ci==1
+            imwrite(imind, cm, filenamegif, 'DelayTime', 0, 'Loopcount', inf);
+        else
+            imwrite(imind, cm, filenamegif,'DelayTime', 0, 'WriteMode', 'append');
+        end
+
     end
+%% 
 
 
     furn = vec(roimasks);
 
     furn = furn(furn~=0);
-    fuksorted = sort(furn);
-    [~, kneeidx] = knee_pt(fuksorted,[],1);
+    furnsort = sort(furn);
+    [~, kneeidx] = knee_pt(furnsort,[],1, 1);
 
     figure;
     subplot(2,1,1);
     plot(furn);
     hold on
-    yline(fuksorted(kneeidx))
+    yline(furnsort(kneeidx))
     subplot(2,1,2);
-    plot(fuksorted);
+    plot(furnsort);
     hold on
-    scatter(kneeidx, fuksorted(kneeidx), 'm', 'filled');
+    scatter(kneeidx, furnsort(kneeidx), 'm', 'filled');
     sgtitle("spatial correlation (?) for all rois")
-    saveas( gcf, [pth_save_fig(1:end-4) '_roimaskknee_.png'])
-
+    saveas( gcf, [pth_roi_func(1:end-4) '_roimaskknee_.png'])
 
 
 
 
 end
-
-
-
-%
-% %%
-%
-% nla = [-.6]; %left asymptote value
-% nlk = [1.2]; %right asymptote (exactly if C=1, otherwise a function of C, A, K, V)
-% nlb = [4]; %slope, 0 is horizontal line
-% nlv = [1]; %inflection point, 1 is balanced in center, below half if below zero, above half if above zero; can't be negative, approaches ylim asymptotically
-% nlq = [.1]%[0.1 0.8 1.2];  %kind of like x shift / when curve starts to rise (i think this needs to be positive??)
-% nlm = [-.6]; %also seems like x shift, but larger effect
-% nlc = [1]; %maybe can force this to be 1, changes right asymptote value, above 1 makes it exponentially closer to lower asymptote, and below eponentially furthe
-%
-%
-% sigmoid_test(resp_roi_func(:), nla, nlk, nlc, nlq, nlb, nlm, nlv, 3, 1);
-% %%
-%
-% nla = [-.6]; %left asymptote value
-% nlk = [1.2]; %right asymptote (exactly if C=1, otherwise a function of C, A, K, V)
-% nlb = [4]; %slope, 0 is horizontal line
-% nlm = [-.6]; %also seems like x shift, but larger effect
-%
-%
-% sigmoid_test(resp_roi_func(:), nla, nlk, [], [], nlb, nlm, [], 2, 1);
-% %%
-%
-% nla = [-.6]; %left asymptote value
-% nlb = [4]; %slope, 0 is horizontal line
-% nlm = [-.6]; %also seems like x shift, but larger effect
-%
-%
-% sigmoid_test(resp_roi_func(:), nla, [], [], [], nlb, nlm, [], 1, 1);
