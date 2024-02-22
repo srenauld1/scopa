@@ -16,7 +16,7 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     else:
         pp = Path(sys.path[0]).parts #split path
         split_index = pp.index('scopa') + 1
-        pth_scopatmpdir = os.path.join(*pp[:split_index], 'scopatmpdir') #join to make suffix
+        pth_scopatmpdir = os.path.join(*pp[:split_index-1], 'scopatmpdir') #join to make suffix
         if not os.path.exists(pth_scopatmpdir):
             Path(pth_scopatmpdir).mkdir(parents=True, exist_ok=True)
         print("\n\n\nsetting pth_scopatmpdir to: \n" + pth_scopatmpdir)
@@ -29,7 +29,7 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
         if re.search('compute.*harvard', hn): #if you're on O2, make compute folder that matches scratch path pattern
             pth_compute_prefix = '/n/scratch/users/' + pth_scopatmpdir.split('/')[-2][0] + '/' + pth_scopatmpdir.split('/')[-2] + '/'
         else: #else assume you're not on a cluster with specific compute folders (like scratch)
-            pth_compute_prefix = ('/').join(pth_scopatmpdir.split('/')[:-2]) + '/' 
+            pth_compute_prefix = ('/').join(pth_scopatmpdir.split('/')[:-1]) + '/' 
 
 
     if folder_with_all_recordings_on_storage_and_compute_filesystems[-1] != '/': 
