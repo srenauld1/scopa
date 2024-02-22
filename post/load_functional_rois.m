@@ -434,8 +434,8 @@ if do_other_plots
     % plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], running, simultaneous)
     % filename_gif = [pth_roi_func(1:end-4) 'caimanrois_simul_goods.gif'];
     % plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], 0, 0)
-    filename_gif = [pth_roi_func(1:end-4) 'caimanrois_notsimul_goods.gif'];
-    plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], running, simultaneous)
+    % filename_gif = [pth_roi_func(1:end-4) 'caimanrois_notsimul_goods.gif'];
+    % plot_data(resp_roi_func(good_roi_indices(roi_plot_inds_good), :), 'resp_roi_func', roiindies, filename_gif, [], [], running, simultaneous)
 
 
     % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
