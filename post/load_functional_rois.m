@@ -392,8 +392,8 @@ if do_other_plots
             titadd = '';
         end
 
-        roimasks_all = mean(tmp, 4);
-        roimasks_all_masked = roimasks_all.*mask_allroi_morph;
+        roimasks_all = rescale(mean(tmp, 4));
+        roimasks_all_masked = rescale(roimasks_all.*mask_allroi_morph);
         roimasks_all_2d = mean(roimasks_all, 3);
         roimasks_all_masked_2d = mean(roimasks_all_masked, 3);
 
