@@ -89,8 +89,9 @@ opt.froi.do_other_plots = 1; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%params for response normalization
+%params for response extraction/normalization
 response_normalization_string = {...
     'rescale0100', ...
     'rescale595', ...
@@ -112,7 +113,6 @@ md2.slopeorder = 2; %order of polynomial used to fit local slope
 md2.slopelen = 5; %window length used to fit slope
 md2.croptimeinds = [0 0]; %this is only relevant for carl's old project
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
 caiman_hr_str = '*'; %empty to skip
