@@ -1,4 +1,4 @@
-function [md, stim] = load_stim_features(md, datenum, flynum, trialnum, no_stim_epochs, doplots)
+function [md, stim] = load_stim(md, datenum, flynum, trialnum, no_stim_epochs, doplots)
 
 recid = [num2str(datenum) num2str(flynum)];
 

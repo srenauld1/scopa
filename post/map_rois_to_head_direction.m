@@ -1,7 +1,7 @@
 
 function [resp, alpha] = map_rois_to_head_direction(stack, resp, visang, ...
     pixinds_roi, mapind2ind, stimepochinds_i, dt_i_mean, fitopt, ...
-    halfcent, fn_prefix, resample_alpha, doplots)
+    halfcent, fn_prefix, numcluster_for_bump_domain_resample, doplots)
 
 %resp = nonlinearly_transform_response(resp)
 
@@ -22,7 +22,7 @@ cueang_pref = cueang_pref{1}(:)';
 
 %% resample functional alpha
 
-if resample_alpha
+if numcluster_for_bump_domain_resample
 
     ["resampling original numrois " num2str(size(resp, 1))]
 
@@ -33,6 +33,7 @@ if resample_alpha
     %     error
     % end
 
+    %%%should change this to sampling 4*pi rather than right/left
     rois_left = 1:size(resp, 1)/2;
     rois_right = size(resp, 1)/2+1:size(resp, 1);
 

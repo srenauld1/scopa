@@ -9,15 +9,15 @@ import glob
 dryrun = 1
 
 print(sys.executable)
-env_path = sys.path
+pth_env = sys.path
 
-if (re.search("/Users/wienecke/", env_path[0])):
+if (re.search("/Users/wienecke/", pth_env[0])):
   pth_allrec = '/Users/wienecke/scopa/post'
-elif (re.search("/home/caw846/", env_path[0])):
+elif (re.search("/home/caw846/", pth_env[0])):
   pth_allrec = '/n/scratch3/users/c/caw846/stacks/'
-elif (re.search("/home/users/wienecke/", env_path[0])):
+elif (re.search("/home/users/wienecke/", pth_env[0])):
   pth_allrec = '/scratch/users/wienecke/stacks/'
-elif (re.search('/content', env_path[0])):
+elif (re.search('/content', pth_env[0])):
   pth_allrec = '/content/drive/MyDrive/stacks/'
 
 pth_super = '/'.join(pth_allrec.split('/')[:-2])

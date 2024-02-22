@@ -1,6 +1,7 @@
 
 function plots_imdata(inp, mask, sindz, tindz, tindz_sub, szo, filename_prefix)
 
+%%this function is old and needs to be updated
 
 filename_prefix = filename_prefix(1:end-4);
 

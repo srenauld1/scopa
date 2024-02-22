@@ -1,32 +1,38 @@
 
-
 disp("see ricker.m for 1d filter option")
-disp("change reample bump to 4pi")
-disp("does 2pi ever appear twice as 0 and 1??")
+disp("see ricker.m for 1d filter option")
+disp("see ricker.m for 1d filter option")
+disp("see ricker.m for 1d filter option")
+disp("see ricker.m for 1d filter option")
+disp("see ricker.m for 1d filter option")
 
+
+%% define params
+%
 % rval documentation The algorithm also measures the reliability of the spatial mask by comparing the filters in A
 %      with the average of the movies over samples where exceptional events happen, after  removing (if possible)
 %     frames when neighboring neurons were active
 
 %%g4 frame 0 (in vis.raw) assigned to angle -pi (in vis.ang)
 
-
-%% params
-
-
 clear all
 close all
 clc
 
-no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
-do_cropping_session = 0; %skip everything except drawing 2d rois
-skip_existing = 0; %if savedata file exists, skip computing the data 
-plot_stack_stats = 0; %function this uses is old and needs to be updated
+"IS THE RE WRAPPING EVER OFF BY ONE, WHERE 2PI APPEARS TWICE AS ZERO AND 2PI??"
 
+no_stim_epochs = 0;
+do_cropping_session = 0; %skip everything except drawing 2d rois
+skip_existing = 0;
+plot_stack_stats = 0;
+
+% set(0,'DefaultFigureWindowStyle','docked')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 parent_folder = 'stacks';
 
-include_behavior = 1; %0 to skip behavior
+include_behavior = 0; %0 to skip behavior
 
 doplots = 0;
 recdate = '20230627';
@@ -40,8 +46,9 @@ regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO c
 use_hires = [0, 0, 0, 0, 1]; %0 to skip
 use_drawn_rois = [1, 1, 1, 1, 1]; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_morph_auto = [1, 1, 1, 1, 32]; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+numroi_func = [0, 0, 0, 0, 16]; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 
-caiman_lr_str = '2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'; %caiman param string, can use wildcards, empty to skip
+caiman_lr_str = '2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'; %casiman param string, can use wildcards, empty to skip
 
 
 %params for stacks gif (made in vis_tif)
@@ -73,6 +80,7 @@ opt.froi.do_other_plots = 1; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %params for response extraction/normalization
 response_normalization_string = {...
@@ -96,20 +104,25 @@ md2.slopeorder = 2; %order of polynomial used to fit local slope
 md2.slopelen = 5; %window length used to fit slope
 md2.croptimeinds = [0 0]; %this is only relevant for carl's old project
 
-%params for bump
-opt.bump.regionpat = {'pb'};
-opt.bump.expat = {'moex*'};
-opt.bump.normpat = {'in_rawf_pc_f_cl_rsc_w_*'};
+
+use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
+caiman_hr_str = '*'; %empty to skip
+
+
 opt.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.bump.numcluster_for_bump_domain_resample = 16; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere) when resampled uniformly, 0 to skip resampling 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 
 %params for modeling responses in fitresp function
+opt.bump.regionpat_bump = {'pb'};
+opt.bump.expat = {'moex*'};
+opt.bump.normpat = {'in_rawf_pc_f_cl_rsc_w_*'};
+
 opt.fit.regionpat_fit = {'no_r'};
 opt.fit.expat_fit = {'mo*'};
+% opt.fit.normpat_fit = {'in_cmdffr_pc_f_cl_f_w_null', 'in_rawf_pc_f_cl_rsc_w_yes', 'in_rawf_pc_f_cl_rsc_w_no'};
 opt.fit.normpat_fit = {'in_rawf_pc_f_cl_f_w_no'};
 
 opt.fit.sdom.no_r = {{'ball', 'vel_r_sm_rsmp'}, {'bump', 'mu'}};
@@ -164,17 +177,13 @@ opt.fit.doplots = 1;
 opt.fit.use_saved_model = 1;
 opt.fit.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
+opt.fit = orderfields(opt.fit);
 
 % params for scatterplots
 opt.scatter.epochinds = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]};
 
 
-%params for hires stack
-opt.hires.use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
-opt.hires.caiman_hr_str = '*'; %empty to skip
-
-
-%overwrite some params for carl's old project
+%params for carl's old project
 old_project = 0;
 if strcmp(recdate(1:2), '22') %override some settings for old project
     old_project = 1;
@@ -185,10 +194,6 @@ if strcmp(recdate(1:2), '22') %override some settings for old project
     opt.fit.length_model_seconds = 1.25;
 end
 
-fn = fieldnames(opt);
-for fni = 1:length(fn)
-    opt.fit = orderfields(opt.(fn{fni}));
-end
 
 %% loop over extraction param sets all recordings matching those
 
@@ -216,7 +221,7 @@ for pai = 1:length(pth_all)
 
     [pth, croplim_all, roiparsm, roiparsf, plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid] = ...
         filenames_scopa(pth_usetmp, opt.vistif.suffixes_plot, suffix_analysis, use_hires, ...
-        numroi_morph_auto, numroi_func, opt.hires.use_caiman_on_hires, caiman_lr_str, opt.hires.caiman_hr_str, regionex_all);
+        numroi_morph_auto, numroi_func, use_caiman_on_hires, caiman_lr_str, caiman_hr_str, regionex_all);
 
     if datenum<20230624
         use_hires(:) = 0;
@@ -224,7 +229,9 @@ for pai = 1:length(pth_all)
 
     if all(isfile(pth.savedata_oneregion)) & skip_existing & ~do_cropping_session %if analysis is already done/saved for all regions, proceed to plotting
 
-        plots_scopa(pth.savedata_oneregion)
+        if clsai == length(caiman_lr_str_all)
+            plots_scopa(pth.savedata_oneregion)
+        end
 
     else %otherwise do analysis for any incomplete regions
 
@@ -276,7 +283,7 @@ for pai = 1:length(pth_all)
 
         if any(use_hires)
 
-            [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth, stack, md, opt.hires.use_caiman_on_hires);
+            [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth, stack, md, use_caiman_on_hires);
 
         end
 
@@ -394,10 +401,10 @@ for pai = 1:length(pth_all)
                                 bump.(regionex).(extraction_params).(norm_params) = ...
                                     compute_bump(stackcrop, resp.(regionex).(extraction_params).(norm_params), ...
                                     stim.(opt.fit.sdom.(regionex){1}).(opt.fit.sdom.(regionex){2}), ...
-                                    numroi_func(rei), fn_save_prefix, md.stimepochinds_i, md.dt_i_mean, ...
+                                    numroi_func(rei), fn_save_prefix, md.smoothwindow_i, md.stimepochinds_i, md.dt_i_mean, ...
                                     roiinfo.(regionex).(extraction_params_all{epi}).pixinds_roi, ...
                                     roiinfo.(regionex).(extraction_params_all{epi}).mapind2ind, ...
-                                    opt.bump, opt.fit, doplots);
+                                    opt.fit, doplots);
 
                             end
                         end

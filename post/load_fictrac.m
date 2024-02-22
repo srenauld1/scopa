@@ -1,5 +1,5 @@
 
-function [md, stim] = process_fictrac_data(datenum, flynum, trialnum, md, pth_fictrac, no_stim_epochs, doplots)
+function [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, no_stim_epochs, doplots)
 
 %note extracting velocity for what should be constant velocity cue can have
 %spikes because of noise in the acquisition/display, zoom in and you will see it
@@ -38,9 +38,9 @@ md.tb = md.dt_b_mean * [1:length(ftData_DAQ.intHD{1})];
 md.total_t = max(md.tb);
 md.ti = linspace(0, md.total_t, md.numvol_o+1)';
 md.ti = md.ti(2:end);
-md.dt_i_mean = 1/md.volrate;
-md.smoothwindow_b = md.smoothwindow_sec/mean(diff(md.tb));
-md.smoothwindow_i = md.smoothwindow_sec/mean(diff(md.ti));
+md.dt_i_mean = mean(diff(md.tb)); %close to 1/md.volrate;
+md.smoothwindow_b = md.smoothwindow_sec/md.dt_b_mean;
+md.smoothwindow_i = md.smoothwindow_sec/md.dt_i_mean;
 
 if datenum<20231119
     md.dark_epoch_time_start = max(md.trialtime(:))-seconds(md.dark_stim_end_duration);

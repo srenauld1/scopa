@@ -8,14 +8,18 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
 
-    env_path = sys.path[0]
-    print("sys.path[0] returns: \n" + env_path)
+    print("sys.path[0] returns: \n" + sys.path[0])
 
     if scopatmpdir:
-        env_path = scopatmpdir
-        print("\n\n\nsetting env_path to scopatmpdir in user's home dir: \n" + env_path)
+        pth_scopatmpdir = scopatmpdir
+        print("\n\n\nsetting pth_scopatmpdir to scopatmpdir in user's home dir: \n" + pth_scopatmpdir)
     else:
-        print("\n\n\nsetting env_path to: \n" + env_path)
+        pp = Path(sys.path[0]).parts #split path
+        split_index = pp.index('scopa') + 1
+        pth_scopatmpdir = os.path.join(*pp[:split_index], 'scopatmpdir') #join to make suffix
+        if not os.path.exists(pth_scopatmpdir):
+            Path(pth_scopatmpdir).mkdir(parents=True, exist_ok=True)
+        print("\n\n\nsetting pth_scopatmpdir to: \n" + pth_scopatmpdir)
 
     in_colab = 'google.colab' in sys.modules
     if in_colab:
@@ -23,9 +27,9 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     else:
         hn = os.popen('hostname').read()
         if re.search('compute.*harvard', hn): #if you're on O2, make compute folder that matches scratch path pattern
-            pth_compute_prefix = '/n/scratch/users/' + env_path.split('/')[-2][0] + '/' + env_path.split('/')[-2] + '/'
+            pth_compute_prefix = '/n/scratch/users/' + pth_scopatmpdir.split('/')[-2][0] + '/' + pth_scopatmpdir.split('/')[-2] + '/'
         else: #else assume you're not on a cluster with specific compute folders (like scratch)
-            pth_compute_prefix = ('/').join(env_path.split('/')[:-1]) + '/' 
+            pth_compute_prefix = ('/').join(pth_scopatmpdir.split('/')[:-2]) + '/' 
 
 
     if folder_with_all_recordings_on_storage_and_compute_filesystems[-1] != '/': 
@@ -45,14 +49,14 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     if not os.path.exists(pth_denoising):
         Path(pth_denoising).mkdir(parents=True, exist_ok=True)
 
-    pth_fldr_fnind = env_path + '/' + 'fnind' + '/' 
+    pth_fldr_fnind = pth_scopatmpdir + '/' + 'fnind' + '/' 
     if not os.path.exists(pth_fldr_fnind):
         Path(pth_fldr_fnind).mkdir(parents=True, exist_ok=True)
 
-    elif do_copyfiles==0: #computing (not copying)
+    if do_copyfiles==0: #computing (not copying)
         pth_allrec = pth_compute
         pth_fldr_copydest_prefix = 'junkpath/' #this won't be used, making dummy name just in case 
-    if do_copyfiles==1: #copying into O2
+    elif do_copyfiles==1: #copying into O2
         pth_allrec = pth_storage
         pth_fldr_copydest_prefix = pth_compute
     elif do_copyfiles==2: #copying out of O2
