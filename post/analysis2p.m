@@ -48,7 +48,8 @@ trial = '*';
 
 suffix_analysis = 'cmrg_dcdn';
 
-regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
+regionex_all = {'pb', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
+
 use_hires = [0, 0, 0, 0, 0];
 use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_morph_auto = [0, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
@@ -68,7 +69,7 @@ opt.vistif.plotinds_z = []; %z indices to plot, empty for all, negative for that
 opt.vistif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.vistif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 opt.vistif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-opt.vistif.rescalefac_wholeplot = [0 1]; %combined plot rescale arguments, [lower, upper]
+opt.vistif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.vistif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.vistif.ncolgif = 128; %color/grey res
 
