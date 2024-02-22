@@ -1,7 +1,7 @@
 
 
 closedinds_initial_light = 0:59;
-closedinds_final_dark = floor(seconds(md.dark_epoch_time_start)):floor(md.total_t);
+closedinds_final_dark = floor(seconds(dark_epoch_time_start)):floor(md.total_t);
 
 cueinc = 20;
 cuesplits = 60:cueinc:520;

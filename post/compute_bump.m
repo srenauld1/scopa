@@ -86,6 +86,7 @@ for fi = 1:length(bump_subdomain)
     domain = domaintmp(centinds);
 
     switch bump_method
+        
         case 'pva'
 
             [mu, rho] = circular_mean_var(domain, resptmp);

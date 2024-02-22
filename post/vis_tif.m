@@ -244,3 +244,9 @@ if any(use_hires)
     end
 end
 
+
+if ndims(stack)~=4
+    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack TO BE 4D (xyzt), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
+end
+
+

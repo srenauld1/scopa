@@ -1,11 +1,13 @@
 
 function resptmp = choose_responses(resp, regionex, extraction_params, norm_params, extraction_method_supplemental, rescale_resp)
 
+
+error("deprecated")
 %for the extraction and norm params indexed at present outsiode this
 %function for the present regionex, and for all other regionex it grabs the
 %first extraction param and first available norm param from the order below
 %and option to rescale everything
-also averages left and right galll
+% also averages left and right galll
 
 rea = fieldnames(resp);
 for reai = 1:length(rea)

@@ -1,5 +1,7 @@
 function organize_epochs(md, data, sampling, tlim_epoch, nanpadlen_min, sorting_target, uniform_numbouts, epochinds)
 
+error("unfinished function")
+
 if strcmp(sampling, 'imaging')
     tfull = md.ti;
     tsamp_ei = md.stimepochinds_i;

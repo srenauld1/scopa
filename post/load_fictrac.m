@@ -1,5 +1,6 @@
 
-function [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, no_stim_epochs, doplots)
+function [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, fictracopts)
+
 
 %note extracting velocity for what should be constant velocity cue can have
 %spikes because of noise in the acquisition/display, zoom in and you will see it
@@ -17,6 +18,8 @@ function [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, n
 
 %RIGHT NOW NOW CROPTIMEINDS FOR FICTRAC DATA THE WAY I DID FOR CLANDININ STIM DATA
 
+no_stim_epochs = fictracopts.no_stim_epochs;
+doplots = fictracopts.doplots;
 
 try
     load(pth_fictrac)
@@ -39,18 +42,19 @@ md.total_t = max(md.tb);
 md.ti = linspace(0, md.total_t, md.numvol_o+1)';
 md.ti = md.ti(2:end);
 md.dt_i_mean = mean(diff(md.tb)); %close to 1/md.volrate;
-md.smoothwindow_b = md.smoothwindow_sec/md.dt_b_mean;
-md.smoothwindow_i = md.smoothwindow_sec/md.dt_i_mean;
 
 if datenum<20231119
-    md.dark_epoch_time_start = max(md.trialtime(:))-seconds(md.dark_stim_end_duration);
+    dark_epoch_time_start = max(md.trialtime(:))-seconds(md.dark_stim_end_duration);
 else
-    md.dark_epoch_time_start = 1e9;
+    dark_epoch_time_start = 1e9;
     md.dark_stim_end_duration = 0;
 end
 
-naninds_i = md.ti>seconds(md.dark_epoch_time_start); %dark gets nans
-naninds_b = md.tb>seconds(md.dark_epoch_time_start); %dark gets nas
+smoothwindow_b = md.smoothwindow_sec/md.dt_b_mean;
+smoothwindow_i = md.smoothwindow_sec/md.dt_i_mean;
+
+naninds_i = md.ti>seconds(dark_epoch_time_start); %dark gets nans
+naninds_b = md.tb>seconds(dark_epoch_time_start); %dark gets nas
 
 ball.vel_f = ftData_DAQ.velFor{:}; 
 ball.spd_f = abs(ball.vel_f);
@@ -59,9 +63,9 @@ ball.spd_r = abs(ball.vel_r);
 ball.inthd = ftData_DAQ.intHD{:};
 ball.ang = wrapToPi(ball.inthd);
 
-if md.smoothwindow_b
-    ball.vel_f_sm = smoothdata(ball.vel_f, 'gaussian', md.smoothwindow_b, 'omitnan');
-    ball.ang_sm = smooth_circular_var(ball.ang, md.smoothwindow_b);
+if smoothwindow_b
+    ball.vel_f_sm = smoothdata(ball.vel_f, 'gaussian', smoothwindow_b, 'omitnan');
+    ball.ang_sm = smooth_circular_var(ball.ang, smoothwindow_b);
     ball.vel_r_sm = differentiate_circular_variable(ball.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
 end
 
@@ -75,8 +79,8 @@ vis.ang_fictrac = ftData_DAQ.cueAngle{:}'; %saving fictrac's angle as convenienc
 
 vis.vel_r = differentiate_circular_variable(vis.ang, md.dt_b_mean, md.slopelen, md.slopeorder);
 
-if md.smoothwindow_b
-    vis.ang_sm = smooth_circular_var(vis.ang, md.smoothwindow_b);
+if smoothwindow_b
+    vis.ang_sm = smooth_circular_var(vis.ang, smoothwindow_b);
     vis.vel_r_sm = differentiate_circular_variable(vis.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
 end
 
@@ -99,16 +103,16 @@ if no_stim_epochs
 else
     
     if datenum<20231119
-        define_stim_epoch_indices %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT  %%%%%%%%%
+        define_stim_epoch_indices %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%
     else
-        define_stim_epoch_indices_2 %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT  %%%%%%%%%
+        define_stim_epoch_indices_2 %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
     end
 
 end
 md.stimepochinds_i = stimepochinds_i;
 md.stimepochinds_b = stimepochinds_b;
 
-%organize_epochs(md, vis, 'imaging', [0 35])
+%organize_epochs(md, vis, 'imaging', [0 35]) %unfinished
 
 stim.vis = vis;
 stim.ball = ball;
