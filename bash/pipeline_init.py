@@ -7,9 +7,6 @@
 
 ##########################################################################################################################################
 import sys
-import os
-SCRIPTRUNDIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPTRUNDIR))
 
 print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
 
