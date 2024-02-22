@@ -40,7 +40,7 @@ else
     pth_super = ['~' filesep parent_folder filesep];
 end
 
-include_behavior = 0;
+include_behavior = 0; %0 to skip behavior
 
 doplots = 0; 
 recdate = '20230627';
@@ -50,12 +50,11 @@ trial = '*';
 suffix_analysis = 'cmrg_dcdn';
 
 regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
-regionex_all = {'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
 
-use_hires = [0, 0, 0, 0, 0];
-use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
-numroi_morph_auto = [0, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
-numroi_func = [0, 0, 0, 0, 16]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+use_hires = [0, 0, 0, 0, 0]; %0 to skip
+use_drawn_rois = [0, 1, 1, 1, 1]; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+numroi_morph_auto = [0, 1, 1, 1, 32]; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
+numroi_func = [0, 0, 0, 0, 16]; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 
 caiman_lr_str_all = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell of strings, empty to skip
 
