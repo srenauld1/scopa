@@ -41,59 +41,55 @@ else
 end
 
 
-doplots = 0;
+doplots = 0; 
 recdate = '20230627';
 fly = '*';
 trial = '*';
+
 suffix_analysis = 'cmrg_dcdn';
 
 regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
-regionex_all = {'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
-% regionex_all = {'eb', 'gar', 'gal', 'no_r', 'no_l'};
-% regionex_all = {'ff', 'gar', 'no_l'}; %third char may not exist, if not will be created
-
 use_hires = [0, 0, 0, 0, 0];
 use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_morph_auto = [0, 1, 1, 1, 32]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 numroi_func = [0, 0, 0, 0, 16]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
 
 caiman_lr_str_all = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell of strings, empty to skip
-% caiman_lr_str_all = {''}; %cell of strings, empty to skip
 
-use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
-caiman_hr_str = '*'; %empty to skip
 
 %params for stacks gif
-suffixes_plot = {
+opt.vistif.suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-rescalefac_wholeplot = [0 1]; %combined plot rescale arguments, [lower, upper]
-smooth_window_temporal = 0;
-ncolgif = 128;
+opt.vistif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.vistif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.vistif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+opt.vistif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
+opt.vistif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
+opt.vistif.rescalefac_wholeplot = [0 1]; %combined plot rescale arguments, [lower, upper]
+opt.vistif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.vistif.ncolgif = 128; %color/grey res
 
 %params for loading/selecting/viewing functional rois (froi)
-opt.froi.min_pixels_per_region = 3;
-opt.froi.min_roi_size = 5;
-opt.froi.max_roi_size = 300;
-opt.froi.max_regions_per_roi = 4;
-opt.froi.within_mask_threshold = 0.5;
-opt.froi.numbins = 20;
-opt.froi.sort_roi_method = 'majoraxis'; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
+opt.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
+opt.froi.min_roi_size = 5;%pixels, roi selection criterion
+opt.froi.max_roi_size = 300; %pixels
+opt.froi.max_regions_per_roi = 4; %for discontiguous rois
+opt.froi.within_mask_threshold = 0.5; %trash roi if more than within_mask_threshold is outside morphological mask (morph mask is all ones if you don't make one)
+opt.froi.numbins = 20; %num hist bins for rval and snr caiman output  
+opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output rsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.froi.numrois_for_gif = 10;
-opt.froi.do_other_plots = 1;
-opt.froi.saturation_factor_background = 0.4; %above this fraction of data is sent to max
-opt.froi.saturation_factor_rois = 0.1; %above this fraction of data is sent to max
-
+opt.froi.numrois_for_gif = 10; %how many roi to put in gif, empty for all, 0 to skip gif
+opt.froi.do_other_plots = 1; %do the other plots 
+opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
+opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
+caiman_hr_str = '*'; %empty to skip
 
 %params for response normalization
 response_normalization_string = {...
@@ -230,7 +226,7 @@ for csi = 1:length(caiman_lr_str_all)
             croplim_all, roiparsm, roiparsf, ...
             plot_stack_order, plot_stack_gif, ...
             datenum, flynum, trialnum, recid] = ...
-            filenames_scopa(pth_use_tmp, suffixes_plot, suffix_analysis, use_hires, ...
+            filenames_scopa(pth_use_tmp, opt.vistif.suffixes_plot, suffix_analysis, use_hires, ...
             numroi_morph_auto, numroi_func, ...
             use_caiman_on_hires, ...
             caiman_lr_str, caiman_hr_str, regionex_all);
@@ -286,11 +282,8 @@ for csi = 1:length(caiman_lr_str_all)
             %% load/visualize movies
 
             stack = vis_tif(md, pth_use_mat, pth_stacks_prefix, ...
-                pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
-                rescale_each_subplot, rescalefac_wholeplot, ...
-                plotinds_t, plotinds_z, ...
-                swapdim, smooth_window_temporal, ...
-                plot_stack_stats, plot_stack_order, plot_stack_gif, ncolgif);
+                pth_fldr, recid, use_hires, pth_hires_prefix, ...
+                plot_stack_stats, plot_stack_order, plot_stack_gif, opt.vistif);
 
             if ndims(stack)~=4
                 error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack TO BE 4D (xyzt), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))

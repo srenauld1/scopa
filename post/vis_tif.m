@@ -19,12 +19,18 @@
 
 
 function stack = vis_tif(md, pth_use_mat, pth_stacks_prefix, ...
-    pth_fldr, recid, use_hires, pth_hires_prefix, nan_numlines, ...
-    rescale_each_subplot, rescalefac_wholeplot, ...
-    plotinds_t, plotinds_z, ...
-    swapdim, smooth_window_temporal, ...
-    plot_stack_stats, plot_stack_order, plot_stack_gif, ncolgif)
+    pth_fldr, recid, use_hires, pth_hires_prefix, ...
+plot_stack_stats, plot_stack_order, plot_stack_gif, opts)
 
+
+plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+plotinds_z = opts.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
+swapdim = opts.swapdim; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+nan_numlines = opts.nan_numlines; %how many lines of nans to insert in dim 1 above each subplot
+rescale_each_subplot = opts.rescale_each_subplot; %rescale each subplot to same range 0-1 before combining
+rescalefac_wholeplot = opts.rescalefac_wholeplot; %combined plot rescale arguments, [lower, upper]
+smooth_window_temporal = opts.smooth_window_temporal; %smooth the stack in time, 0 to skip
+ncolgif = opts.ncolgif; %color/grey res
 
 
 sz = md.sz_o;
