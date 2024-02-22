@@ -1,8 +1,8 @@
-function [mu, rho] = circular_mean_var(stim, resp)
+function [mu, rho] = circular_mean_var(domain, resp)
 
 %uses atan2 and hypot instead of cart2pol for transparency
-weightx = resp.*cos(stim )';
-weighty = resp.*sin(stim )';
+weightx = resp.*cos(domain )';
+weighty = resp.*sin(domain )';
 vecsumx = nansum(weightx);
 vecsumy = nansum(weighty);
 vecsumtheta = atan2(vecsumy,vecsumx);

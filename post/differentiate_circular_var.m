@@ -1,5 +1,5 @@
 
-function vel = differentiate_circular_var(inp, dt, slopelen, slopeorder)
+function vel = differentiate_circular_variable(inp, dt, slopelen, slopeorder)
 
 % differentiate circular variable without using unwrap (unwrapping can
 % cause rare artifactual spikes and mistakes/aliases in circular direction) 

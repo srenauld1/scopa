@@ -1,5 +1,5 @@
 
-function [resp, alpha] = map_rois_to_head_direction(stack, resp, visang, ...
+function [resp, domain] = map_rois_to_head_direction(stack, resp, visang, ...
     pixinds_roi, mapind2ind, stimepochinds_i, dt_i_mean, fitopt, ...
     halfcent, fn_prefix, numcluster_for_bump_domain_resample, doplots)
 
@@ -20,7 +20,7 @@ fitopt.doplots = 1;
 cueang_pref = cueang_pref{1}(:)';
 
 
-%% resample functional alpha
+%% resample functional domain
 
 if numcluster_for_bump_domain_resample
 
@@ -41,11 +41,11 @@ if numcluster_for_bump_domain_resample
     [dfc_right, alpha_right] = resample_compass(resp(rois_right,:), cueang_pref(rois_right), halfcent, resample_smoothfac, doplots);
 
     resp = cat(1, dfc_left, dfc_right);
-    alpha = [alpha_left alpha_right];
+    domain = [alpha_left alpha_right];
 
 else
 
-    alpha = cueang_pref;
+    domain = cueang_pref;
 
 end
 

@@ -140,7 +140,7 @@ text( 0.5, 0.99, figure_title, 'FontSize', font2, ...
 
 %%
 
-upsample_factor = 4; %for uniformly sampling alpha-sorted responses
+upsample_factor = 4; %for uniformly sampling domain-sorted responses
 
 for pii = 1:length(aplot)
 
@@ -155,7 +155,7 @@ for pii = 1:length(aplot)
 
 
     for ii = 1:numel(aplot_sort{pii})/2 %average two halves
-        mnind = [1:2]+2*(ii-1); %alpha is only morphological if we believe in mirror symmetric halves
+        mnind = [1:2]+2*(ii-1); %domain is only morphological if we believe in mirror symmetric halves
         aplot_sort_tmp(ii) = mean(aplot_sort{pii}(mnind));
         dplot_sort_tmp(ii,:) = mean(dplot_sort{pii}(mnind,:), 1);
     end
@@ -365,7 +365,7 @@ for rind = 1:numr/2
             tmptmp = rp_tmp{pltindz(pii)}(bout_indz{rind}{bei});
             rp{rind, pltindz(pii)}(newboutindzstart:newboutindzstop) = [tmptmp nanpad'];
             tmptmp = rpr_tmp{pltindz(pii)}(bout_indz{rind}{bei});
-            rpr{rind, pltindz(pii)}(newboutindzstart:newboutindzstop) = [tmptmp nanpad']; %can't have nan's because thios scales the plot intensity (color vector element 4, ie alpha)
+            rpr{rind, pltindz(pii)}(newboutindzstart:newboutindzstop) = [tmptmp nanpad']; %can't have nan's because thios scales the plot intensity (color vector element 4, ie domain)
             tmptmp = mpz_tmp{pltindz(pii)}(bout_indz{rind}{bei});
             mpz{rind, pltindz(pii)}(newboutindzstart:newboutindzstop) = [tmptmp nanpad'];
 

@@ -161,7 +161,7 @@ for ci = 1:length(err_sorting)
     amp_pb = bump{caiman_ind_selected}.([norm_params_selected '_amppb']);
     amp_mu = bump{caiman_ind_selected}.([norm_params_selected '_ampmu']);
     amp_peak = bump{caiman_ind_selected}.([norm_params_selected '_amppeak']);
-    alpha = bump{caiman_ind_selected}.alpha;
+    domain = bump{caiman_ind_selected}.domain;
 
 
     if ~exist('resp_gar', 'var')

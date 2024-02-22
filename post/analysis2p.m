@@ -100,12 +100,14 @@ md2.croptimeinds = [0 0]; %this is only relevant for carl's old project
 opt.bump.regionpat = {'pb'};
 opt.bump.expat = {'moex*'};
 opt.bump.normpat = {'in_rawf_pc_f_cl_rsc_w_*'};
+opt.bump.bump_method = 'pva'; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet 
 opt.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.bump.numcluster_for_bump_domain_resample = 16; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere) when resampled uniformly, 0 to skip resampling 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+opt.bump.doplots = 1;
 
 %params for modeling responses in fitresp function
 opt.fit.regionpat_fit = {'no_r'};

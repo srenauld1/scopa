@@ -62,7 +62,7 @@ ball.ang = wrapToPi(ball.inthd);
 if md.smoothwindow_b
     ball.vel_f_sm = smoothdata(ball.vel_f, 'gaussian', md.smoothwindow_b, 'omitnan');
     ball.ang_sm = smooth_circular_var(ball.ang, md.smoothwindow_b);
-    ball.vel_r_sm = differentiate_circular_var(ball.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
+    ball.vel_r_sm = differentiate_circular_variable(ball.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
 end
 
 vis.raw = ftData_DAQ.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
@@ -73,11 +73,11 @@ vis.ang = vis.ang  / (md.num_panel_frames + 1) * 2*pi - pi; %put in range -pi to
 
 vis.ang_fictrac = ftData_DAQ.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it 
 
-vis.vel_r = differentiate_circular_var(vis.ang, md.dt_b_mean, md.slopelen, md.slopeorder);
+vis.vel_r = differentiate_circular_variable(vis.ang, md.dt_b_mean, md.slopelen, md.slopeorder);
 
 if md.smoothwindow_b
     vis.ang_sm = smooth_circular_var(vis.ang, md.smoothwindow_b);
-    vis.vel_r_sm = differentiate_circular_var(vis.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
+    vis.vel_r_sm = differentiate_circular_variable(vis.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
 end
 
 iscircular = 1;

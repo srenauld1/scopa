@@ -1,4 +1,4 @@
-function [resp_new, alpha_new] = resample_compass(resp, alpha, numcluster_new, resample_smoothfac, doplots)
+function [resp_new, alpha_new] = resample_compass(resp, domain, numcluster_new, resample_smoothfac, doplots)
 
 % use gaussian to downsample and uniformly sample compass
 % resp should be roi x time, and the rois represent positions on a circle,
@@ -32,9 +32,9 @@ for ai = 1:length(alpha_new)
     end
 
     upsampfac = 2.25; %greater than 2 to more than double nyquist 
-    num_upsamples = 2*pi / (min(abs(angdiff(alpha)))/upsampfac); %new sampling of whole circle
+    num_upsamples = 2*pi / (min(abs(angdiff(domain)))/upsampfac); %new sampling of whole circle
 
-    [alphasort, alphasortinds] = sort(alpha);
+    [alphasort, alphasortinds] = sort(domain);
     alphacat = [alphasort alphasort(1)+2*pi]; %concatenate [first sample + 2pi] to end to make a circle (add 2pi to make sure interpolation goes in right direction
     xup = linspace(1, length(alphacat), num_upsamples+1);
     alphaup = interp1(alphacat, xup);

@@ -44,7 +44,7 @@ for pii = 1:length(region)
             amp_pb = bump{pii}.amp_pb;
             amp_mu = bump{pii}.amp_mu;
             amp_peak = bump{pii}.amp_peak;
-            alpha = bump{pii}.alpha;
+            domain = bump{pii}.domain;
         case 'GA'
             dff_gall = resp{pii}.zscore(1,:);
         case 'NO'
