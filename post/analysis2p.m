@@ -26,10 +26,9 @@ fly = opt.main.fly;
 trial = opt.main.trial;
 suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
-include_behavior = opt.main.include_behavior;
 do_cropping_session = opt.main.do_cropping_session;
-skip_existing = opt.main.skip_existing;
 old_project = opt.main.old_project;
+skip_existing = opt.main.skip_existing;
 
 
 %% loop over extraction param sets all recordings matching those
@@ -58,16 +57,11 @@ for pai = 1:length(pth_all)
 
     [opt, pth, croplim_all, roiparsm, roiparsf, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_usetmp);
 
-    if datenum<20230624
-        use_hires(:) = 0;
-    end
-
-
     %% load and process stimulus/fictrac data and metadata
 
     load(pth.metadata) %file created in initial python part of pipeline
-    ff = @(x,y) cell2struct([struct2cell(md);struct2cell(md2)],[fieldnames(md);fieldnames(md2)]);
-    md = ff(md, md2);
+    ff = @(x,y) cell2struct([struct2cell(md);struct2cell(opt.md)],[fieldnames(md);fieldnames(opt.md)]);
+    md = ff(md, opt.md);
     md.numvol_o = md.numvol;
     md = rmfield(md, 'numvol');
     md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
@@ -88,23 +82,23 @@ for pai = 1:length(pth_all)
     % md.zwid = md.zfov / md.numslice; %do this after conversion to double
     md = orderfields(md);
 
-    if include_behavior
+    if opt.ft.include_behavior
         if old_project
-            [md, stim] = load_stim(md, datenum, flynum, trialnum, fictracopts);
+            [md, stim] = load_stim(md, datenum, flynum, trialnum, opt.ft);
         else
-            [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth.fictrac, fictracopts);
+            [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth.fictrac, opt.ft);
         end
     end
 
 
     %% load/visualize movies
 
-    stack = vis_tif(md, pth, opt.vistif, recid, use_hires);
+    stack = vis_tif(md, pth, opt.vistif, recid, opt.mroi.use_hires);
 
 
     %% load high resolution movie
 
-    if any(use_hires)
+    if any(cell2mat(struct2cell(opt.mroi.use_hires)))
 
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth, stack, md, opt.hires.use_caiman_on_hires);
 
@@ -131,7 +125,7 @@ for pai = 1:length(pth_all)
 
             stack_mnt{rei} = mean(stackcrop, 4);
 
-            if use_hires(rei)
+            if opt.mroi.use_hires.(regionex)
                 if ~isempty(croplim)
                     zinds_hires = ismember(map_hires_lores, croplim(5):croplim(6));
                     map_hires_lores_crop = map_hires_lores(zinds_hires) - (min(croplim(5):croplim(6))-1);
@@ -145,7 +139,7 @@ for pai = 1:length(pth_all)
                 map_hires_lores_crop = [];
             end
 
-            if ~isa(stackcrop, 'single') & ~isa(stackcrop, 'double') & ( use_hires(rei) & ~isa(hiresmntcrop, 'single') & ~isa(hiresmntcrop, 'double') )
+            if ~isa(stackcrop, 'single') & ~isa(stackcrop, 'double') & ( opt.mroi.use_hires.(regionex) & ~isa(hiresmntcrop, 'single') & ~isa(hiresmntcrop, 'double') )
                 error("stacks need to be single or double, there are negatives coming soon")
             end
 

@@ -18,6 +18,11 @@ function [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, f
 
 %RIGHT NOW NOW CROPTIMEINDS FOR FICTRAC DATA THE WAY I DID FOR CLANDININ STIM DATA
 
+dark_stim_end_duration = fictracopts.dark_stim_end_duration;
+num_panel_frames = fictracopts.num_panel_frames;
+smoothwindow_sec = fictracopts.smoothwindow_sec;
+slopelen = fictracopts.slopelen;
+slopeorder = fictracopts.slopeorder;
 no_stim_epochs = fictracopts.no_stim_epochs;
 doplots = fictracopts.doplots;
 
@@ -44,14 +49,14 @@ md.ti = md.ti(2:end);
 md.dt_i_mean = mean(diff(md.tb)); %close to 1/md.volrate;
 
 if datenum<20231119
-    dark_epoch_time_start = max(md.trialtime(:))-seconds(md.dark_stim_end_duration);
+    dark_epoch_time_start = max(md.trialtime(:))-seconds(dark_stim_end_duration);
 else
     dark_epoch_time_start = 1e9;
-    md.dark_stim_end_duration = 0;
+    dark_stim_end_duration = 0;
 end
 
-smoothwindow_b = md.smoothwindow_sec/md.dt_b_mean;
-smoothwindow_i = md.smoothwindow_sec/md.dt_i_mean;
+smoothwindow_b = smoothwindow_sec/md.dt_b_mean;
+smoothwindow_i = smoothwindow_sec/md.dt_i_mean;
 
 naninds_i = md.ti>seconds(dark_epoch_time_start); %dark gets nans
 naninds_b = md.tb>seconds(dark_epoch_time_start); %dark gets nas
@@ -66,22 +71,22 @@ ball.ang = wrapToPi(ball.inthd);
 if smoothwindow_b
     ball.vel_f_sm = smoothdata(ball.vel_f, 'gaussian', smoothwindow_b, 'omitnan');
     ball.ang_sm = smooth_circular_var(ball.ang, smoothwindow_b);
-    ball.vel_r_sm = differentiate_circular_variable(ball.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
+    ball.vel_r_sm = differentiate_circular_variable(ball.ang_sm, md.dt_b_mean, slopelen, slopeorder);
 end
 
 vis.raw = ftData_DAQ.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
 
 vis.ang = vis.raw;
 vis.ang(vis.ang == 193) = 192; %don't just replace all 193s with nan bc sometimes intended 192 is 193
-vis.ang = vis.ang  / (md.num_panel_frames + 1) * 2*pi - pi; %put in range -pi to pi, frame 0 assigned to -pi
+vis.ang = vis.ang  / (num_panel_frames + 1) * 2*pi - pi; %put in range -pi to pi, frame 0 assigned to -pi
 
 vis.ang_fictrac = ftData_DAQ.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it 
 
-vis.vel_r = differentiate_circular_variable(vis.ang, md.dt_b_mean, md.slopelen, md.slopeorder);
+vis.vel_r = differentiate_circular_variable(vis.ang, md.dt_b_mean, slopelen, slopeorder);
 
 if smoothwindow_b
     vis.ang_sm = smooth_circular_var(vis.ang, smoothwindow_b);
-    vis.vel_r_sm = differentiate_circular_variable(vis.ang_sm, md.dt_b_mean, md.slopelen, md.slopeorder);
+    vis.vel_r_sm = differentiate_circular_variable(vis.ang_sm, md.dt_b_mean, slopelen, slopeorder);
 end
 
 iscircular = 1;

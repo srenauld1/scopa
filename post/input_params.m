@@ -13,10 +13,9 @@ opt.main.trial = '*';
 opt.main.suffix_analysis = 'cmrg_dcdn';
 opt.main.regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline
 
-opt.main.include_behavior = 1; %0 to skip behavior
-opt.main.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
+
 opt.main.do_cropping_session = 0; %skip everything except drawing 2d rois
-opt.main.skip_existing = 0; %if savedata file exists, skip computing the data 
+opt.main.skip_existing = 0; %skip analysis if savefile exists for a given regionex
 opt.main.old_project = 0; %for carl
 
 
@@ -34,7 +33,7 @@ opt.vistif.suffixes_plot = {
     %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.vistif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.vistif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.vistif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.vistif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.vistif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 opt.vistif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
@@ -75,12 +74,14 @@ opt.resp.response_normalization_string = {... %different normalization methods, 
 
 
 %params for stimulus/fictrac processing
+opt.ft.include_behavior = 1; %0 to skip behavior
+opt.ft.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
 opt.ft.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
 opt.ft.dark_stim_end_duration = 60; %final seconds
 opt.ft.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.ft.slopeorder = 2; %order of polynomial used to fit local slope
 opt.ft.slopelen = 5; %window length used to fit slope
-
+opt.ft.doplots = 0;
 
 %params for bump in compute_bump function
 opt.bump.regionpat = {'pb'};

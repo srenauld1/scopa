@@ -225,7 +225,7 @@ if any(cell2mat(struct2cell(use_hires)))
     if length(cell2mat( strfind( {ST(:).name}, 'vis_tif' ) ) ) == 1 %since this is called recursively, make sure you're not in an infinite loop, use_hires_new==0 is meant to prevent as well)
         
         %it's okay to overwrite these since none are output from this function
-        use_hires.hires = 0;
+        use_hires = 0;
         md = md.md_hires;
         pth2 = pth;
         pth2.use_mat_hires = {''};
@@ -234,15 +234,13 @@ if any(cell2mat(struct2cell(use_hires)))
         opts_hires.plotinds_t = [1];
         opts_hires.plotinds_z = [];
         opts_hires.smooth_window_temporal = [];
-        opts_hires.plot_stack_stats = plot_stack_stats;
-        opts_hires.plot_stack_order = 1;
-        opts_hires.plot_stack_gif = plot_stack_gif;
 
         %no need to call with output, purpose is just to read hires tif,
         %save as mat, and optionally plot . . . hires will be loaded later in
         %load_hires_stack.m
-        vis_tif(md, pth2, opts_hires, recid, use_hires);
-
+        vis_tif(md, pth2, opts_hires, recid, use_hires, ...
+            plot_stack_stats, plot_stack_order, plot_stack_gif);
+(md, pth2, opts_hires, recid, use_hires)
 
     end
 end
