@@ -23,8 +23,8 @@ opt.main.old_project = 0; %for carl
 
 %params for making morphological rois (manual or automated)
 opt.mroi.use_hires = {'pb'}; %empty string to skip, cell array of regionex you want to use_hires for, uses hi-z-res stack to make morph mask
-opt.mroi.use_drawn_rois =  {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %empty string to skip, cell array of regionex you want to use_drawn_rois for
-opt.mroi.numroi_morph_auto = {'gar-0', 'no_r-1', 'no_l-1', 'pb-32'}; %how many morph rois get automatically defined across the entire region (not hemisphere), cell array of string 'regionex-integer', 'regionex-0', or empty string will skip, or nothing for an existing regionex
+opt.mroi.use_drawn_rois = {'pb'}; %empty string to skip, cell array of regionex you want to use_drawn_rois for
+opt.mroi.numroi_morph_auto = {'pb'}; %empty string to skip, cell array of regionex you want to use_drawn_rois for this is how many centroids/glomeruli across the entire region (not hemisphere)
 opt.mroi.doplots = 1;
 
 
@@ -92,7 +92,7 @@ opt.bump.bump_subdomain = 'all'; %'all', 'right', 'left', 'larger', 'weighted', 
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many centroids/glomeruli across the entire region (not hemisphere) when resampled uniformly, cell array of string 'regionex-integer', 'regionex-0', or empty string will skip, or nothing for an existing regionex, region must be in opt.bump.regionpat to get used 
+opt.bump.numcluster_for_bump_domain_resample = 16; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere) when resampled uniformly, 0 to skip resampling 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.bump.doplots = 1;
 

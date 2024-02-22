@@ -28,7 +28,7 @@ if numcluster_for_bump_domain_resample
 
     resample_smoothfac = 1;
 
-    % if size(resp,1)<numroi_func*2
+    % if size(resp,1)<numcluster_for_bump_domain_resample*2
     %     "TOO FEW ROIS FOR RESAMPLING COMPASS"
     %     error
     % end

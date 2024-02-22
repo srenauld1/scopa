@@ -56,20 +56,21 @@ for i = 1:length(regionex_all)
     end
 
 
-    tmpnum = 0;
     if any(strcmp(regionex_all{i}, use_hires))
-        tmpnum = 1;
+        flag_hires = '1';
+    else
+        flag_hires = '0';
     end
-    flag_hires = num2str(tmpnum);
-    use_hires_new.(regionex_all{i}) = tmpnum;
 
-    tmpnum = 0;
     tmpind = find(~cellfun(@isempty, regexp(numroi_morph_auto, [regionex_all{i} '-\d*'])));
     if tmpind
         tmpnum = sscanf(numroi_morph_auto{tmpind},[regionex_all{i} '-%d']);
+        flag_numroi_morph_auto = num2str(tmpnum);
+        numroi_morph_auto_new.(regionex_all{i}) = tmpnum;
+    else
+        flag_numroi_morph_auto = '0';
+        numroi_morph_auto_new.(regionex_all{i}) = 0;
     end
-    flag_numroi_morph_auto = num2str(tmpnum);
-    numroi_morph_auto_new.(regionex_all{i}) = tmpnum;
 
     paramstr = ['moex_' flag_hires '_' flag_numroi_morph_auto];
     roiparsm{i} = paramstr;
@@ -108,15 +109,14 @@ for i = 1:length(regionex_all)
 
     end
 
-
-    tmpnum = 0;
     tmpind = find(~cellfun(@isempty, regexp(numcluster_for_bump_domain_resample, [regionex_all{i} '-\d*'])));
     if tmpind
-        tmpnum = sscanf(numcluster_for_bump_domain_resample{tmpind},[regionex_all{i} '-%d']);
+        flag_numcluster_for_bump_domain_resample = num2str(sscanf(numcluster_for_bump_domain_resample{tmpind},[regionex_all{i} '-%d']));
+        numcluster_for_bump_domain_resample_new{i} = numcluster_for_bump_domain_resample{tmpind};
+    else
+        flag_numcluster_for_bump_domain_resample = '0';
+        numcluster_for_bump_domain_resample_new{i} = [regionex_all{i} '-0'];
     end
-    flag_numcluster_for_bump_domain_resample = num2str(tmpnum);
-    numcluster_for_bump_domain_resample_new.(regionex_all{i}) = tmpnum;
-
 
     paramstr = [paramstr '_' flag_numcluster_for_bump_domain_resample];
 
@@ -130,12 +130,32 @@ for i = 1:length(regionex_all)
 
     pth_savedata_oneregion{i} = [pth_fldr recid_underscore '_' suffix_analysis '_' paramstr '_' regionex_all{i} '_savedata_.mat'];
 
+
 end
 
+
+uhrstr = sprintf('%.0f,' , use_hires);
+uhrstr = uhrstr(1:end-1);
+nrmstr = sprintf('%.0f,' , numroi_morph_auto);
+nrmstr = nrmstr(1:end-1);
+nrfstr = sprintf('%.0f,' , numcluster_for_bump_domain_resample);
+nrfstr = nrfstr(1:end-1);
+
 if ~isempty(regionex_all)
+    pth_savedata_allregions = [pth_fldr recid_underscore '_' suffix_analysis '_' paramstr '_' uhrstr '_' nrmstr '_' nrfstr '_' strjoin(regionex_all, ',') '_savedata_.mat'];
     delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_nohyphen)
     delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_nohyphen)
+else
+    pth_savedata_allregions = [pth_fldr recid_underscore '_' suffix_analysis '_FIXTHISFILENAME_savedata_.mat'];
+    pth_savedata_oneregion = [pth_fldr recid_underscore '_' suffix_analysis '_FIXTHISFILENAME_savedata_.mat'];
+    pth_roi_morph = '';
+    pth_roi_func_all = '';
+    pth_roi_allmethods = '';
+    croplim_all = [];
+    roiparsm = {};
+    roiparsf = {};
 end
+
 
 if isempty(suffixes_plot)
     plot_stack_gif = 0;
@@ -215,5 +235,4 @@ pth.savedata_oneregion = pth_savedata_oneregion;
 
 opt.bump.flag_numcluster_for_bump_domain_resample = flag_numcluster_for_bump_domain_resample_new; %update field
 opt.mroi.numroi_morph_auto = numroi_morph_auto_new; %update field
-opt.mroi.use_hires = use_hires_new; %update field
 

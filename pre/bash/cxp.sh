@@ -18,6 +18,7 @@
 
 ### CONSIDERING ADDING VARIABLE that requires user defined roi limits before DO_EXTRACT (ie do not operate on default fullfov)
 
+##TO USE cxp.sh, CLONE SCOPA REPO INTO YOUR HOME DIR ON O2 
 
 #set variables that control which jobs are done
 
@@ -111,6 +112,8 @@ fi
 
 ############ MAKE SCOPATMPDIR TO STORE SCOPA TEMP FILES AND OUTPUT IN USER'S HOME DIR ############
 user_homedir=$( getent passwd "$USER" | cut -d: -f6 ) 
+scripdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+PARENDIR="$(dirname "$scripdir")"
 name_of_scopa_tmp_folder=scopatmp
 SCOPATMPDIR=$user_homedir/$name_of_scopa_tmp_folder
 mkdir -p $SCOPATMPDIR
@@ -259,7 +262,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         #run the sbatch file (sbatch_job_name), using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
         arr_id_out=$(sbatch --parsable \
-        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE" \
+        --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE",PARENDIR="$PARENDIR" \
         --array=[$jobarrayind] \
         --dependency="$dep_str" \
         --partition="$partition_str" \

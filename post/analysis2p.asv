@@ -57,9 +57,7 @@ for pai = 1:length(pth_all)
 
     %% assign filenames
 
-    [pth, croplim_all, roiparsm, roiparsf, plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid] = ...
-        filenames_scopa(pth_usetmp, opt.vistif.suffixes_plot, suffix_analysis, use_hires, ...
-        numroi_morph_auto, numroi_func, opt.hires.use_caiman_on_hires, caiman_lr_str, opt.hires.caiman_hr_str, regionex_all);
+    [pth, croplim_all, roiparsm, roiparsf, plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid] = filenames_scopa(pth_usetmp, opt);
 
     if datenum<20230624
         use_hires(:) = 0;
@@ -109,10 +107,6 @@ for pai = 1:length(pth_all)
         %% load/visualize movies
 
         stack = vis_tif(md, pth, opt.vistif, recid, use_hires, plot_stack_stats, plot_stack_order, plot_stack_gif);
-
-        if ndims(stack)~=4
-            error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack TO BE 4D (xyzt), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
-        end
 
 
         %% load high resolution movie
@@ -237,7 +231,7 @@ for pai = 1:length(pth_all)
                                 bump.(regionex).(extraction_params).(norm_params) = ...
                                     compute_bump(stackcrop, resp.(regionex).(extraction_params).(norm_params), ...
                                     stim.(opt.fit.sdom.(regionex){1}).(opt.fit.sdom.(regionex){2}), ...
-                                    numroi_func(rei), fn_save_prefix, md.stimepochinds_i, md.dt_i_mean, ...
+                                    numcluster_for_bump_domain_resample(rei), fn_save_prefix, md.stimepochinds_i, md.dt_i_mean, ...
                                     roiinfo.(regionex).(extraction_params_all{epi}).pixinds_roi, ...
                                     roiinfo.(regionex).(extraction_params_all{epi}).mapind2ind, ...
                                     opt.bump, opt.fit, doplots);
@@ -276,20 +270,12 @@ for pai = 1:length(pth_all)
 
                                 fn_save_prefix = [pth.roi_allmethods{rei}{epi}(1:end-4) norm_params];
 
-                                % resptmp = choose_responses(resp, regionex, ...
-                                %     extraction_params_all{epi}, norm_params_all{npi}, ...
-                                %     extraction_method_supplemental, rescale_resp);
-
-
-
                                 opt.fit.use_saved_model = 1;
                                 opt.fit.modeltype = 'glno4';
-                                % opt.fit.modeltype = 'svd';
                                 opt.fit.length_model_seconds = 2;
 
                                 stimfit(1,:) = stim.(opt.fit.sdom.(regionex){1}{1}).(opt.fit.sdom.(regionex){1}{2});
                                 stimfit(2,:) = bump.pb.(extraction_params).('in_rawf_pc_f_cl_rsc_w_yes').all.mu;
-                                %
                                 % stimfit(1,:) = stim.(opt.fit.sdom.(regionex){1}{1}).(opt.fit.sdom.(regionex){1}{2});
 
                                 [fittmp, goftmp] = ...
@@ -304,12 +290,13 @@ for pai = 1:length(pth_all)
 
 
                                 %% scatterplots
-                                %
-                                % scatterplots(vis.(visang_str), vis.(visvel_str), ball.(ballang_str), ball.(ballvel_str), ...
-                                %     bumptmp.mu, bumptmp.rho, bumptmp.vel, bumptmp.ampmean, bumptmp.amppeak, bumptmp.ampmu, ...
-                                %     resp_gar, resp_gal, resp_nor, resp_nol, resp_ga_mean, resp_no_mean, ...
-                                %     ti, tb, stimepochinds_i, stimepochinds_b, opt.scatter.epochinds, fn_prefix, gif_visibility)
-                                %
+
+
+                                scatterplots(vis.(visang_str), vis.(visvel_str), ball.(ballang_str), ball.(ballvel_str), ...
+                                    bumptmp.mu, bumptmp.rho, bumptmp.vel, bumptmp.ampmean, bumptmp.amppeak, bumptmp.ampmu, ...
+                                    resp_gar, resp_gal, resp_nor, resp_nol, resp_ga_mean, resp_no_mean, ...
+                                    ti, tb, stimepochinds_i, stimepochinds_b, opt.scatter.epochinds, fn_prefix, gif_visibility)
+
 
 
                                 %% plot experiment
@@ -376,6 +363,5 @@ for pai = 1:length(pth_all)
             % end
 
         end
-    end
 end
 
