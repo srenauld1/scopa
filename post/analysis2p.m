@@ -40,6 +40,7 @@ else
     pth_super = ['~' filesep parent_folder filesep];
 end
 
+include_behavior = 0;
 
 doplots = 0; 
 recdate = '20230627';
@@ -48,7 +49,8 @@ trial = '*';
 
 suffix_analysis = 'cmrg_dcdn';
 
-regionex_all = {'pb', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
+regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
+regionex_all = {'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline  
 
 use_hires = [0, 0, 0, 0, 0];
 use_drawn_rois = [0, 1, 1, 1, 1]; %for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere)
@@ -87,10 +89,6 @@ opt.froi.do_other_plots = 1; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
-caiman_hr_str = '*'; %empty to skip
 
 %params for response normalization
 response_normalization_string = {...
@@ -113,6 +111,11 @@ md2.smoothwindow_sec = 0.2; %0.65 full width of gaussian smoothing window (5 tim
 md2.slopeorder = 2; %order of polynomial used to fit local slope
 md2.slopelen = 5; %window length used to fit slope
 md2.croptimeinds = [0 0]; %this is only relevant for carl's old project
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
+caiman_hr_str = '*'; %empty to skip
 
 extraction_method_supplemental = 'morphological';
 rescale_resp = 1;
@@ -270,13 +273,16 @@ for csi = 1:length(caiman_lr_str_all)
             % md.zwid = md.zfov / md.numslice; %do this after conversion to double
             md = orderfields(md);
 
-            if old_project
-                [md, stim] = load_stim_features(md, datenum, flynum, trialnum, no_stim_epochs, doplots);
+            if include_behavior
 
-            else
+                if old_project
+                    [md, stim] = load_stim_features(md, datenum, flynum, trialnum, no_stim_epochs, doplots);
 
-                [md, stim] = process_fictrac_data(datenum, flynum, trialnum, md, pth_fictrac, no_stim_epochs, doplots);
+                else
 
+                    [md, stim] = process_fictrac_data(datenum, flynum, trialnum, md, pth_fictrac, no_stim_epochs, doplots);
+
+                end
             end
 
 
