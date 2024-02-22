@@ -1,4 +1,4 @@
-function offset = bump_pva_offset(smoothwindow, cue, mu)
+function offset = compute_bump_offset(smoothwindow, cue, mu)
 
 mu = smooth_circular_var(mu, smoothwindow);
 

@@ -1,4 +1,4 @@
-function bump = bump_pva(stack, resp, visang, numroi_func, ...
+function bump = compute_bump(stack, resp, visang, numroi_func, ...
     fn_save_prefix, smoothwindow, stimepochinds_i, dt_i_mean, ...
     pixinds_roi, mapind2ind, fitopt, doplots)
 
@@ -90,7 +90,7 @@ for fi = 1%:7
     alpha = alphatmp(centinds);
 
     is_circular = 1;
-    [mu, rho] = stim_response_tuning(alpha, resptmp, is_circular);
+    [mu, rho] = circular_mean_var(alpha, resptmp, is_circular);
 
     mu = mu';
     rho = rho';

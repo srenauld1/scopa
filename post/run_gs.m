@@ -3,8 +3,7 @@ function [ft, gof, predresp, hdata, sdata, vdata, pstim] = ...
     gethue, getsat, getval, supp, ri, pth_fitdata_epoch)
 
 
-% patternsearch satisfies linear constraints at intermediate iterations.
-% does globalsearch?
+% patternsearch satisfies linear constraints at intermediate iterations . . . does globalsearch?
 
 rng default %for reproducibility (do on every loop?)
 
