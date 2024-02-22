@@ -1,12 +1,12 @@
-function [pth, croplim_all, roiparsm, roiparsf, ...
-    plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid_underscore] = ...
-    filenames_scopa(pth_usetmp, opt)
+function [opt, pth, croplim_all, roiparsm, roiparsf, datenum, flynum, trialnum, recid_underscore] = ...
+    filenames_scopa(opt, pth_usetmp)
 
 suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
 suffixes_plot = opt.vistif.suffixes_plot;
 use_hires = opt.mroi.use_hires;
+use_drawn_rois = opt.mroi.use_drawn_rois;
 numroi_morph_auto = opt.mroi.numroi_morph_auto;
 caiman_lr_str = opt.froi.caiman_lr_str;
 numcluster_for_bump_domain_resample = opt.bump.numcluster_for_bump_domain_resample;
@@ -64,6 +64,13 @@ for i = 1:length(regionex_all)
     use_hires_new.(regionex_all{i}) = tmpnum;
 
     tmpnum = 0;
+    if any(strcmp(regionex_all{i}, use_drawn_rois))
+        tmpnum = 1;
+    end
+    flag_use_drawn_rois = num2str(tmpnum);
+    use_drawn_rois_new.(regionex_all{i}) = tmpnum;
+
+    tmpnum = 0;
     tmpind = find(~cellfun(@isempty, regexp(numroi_morph_auto, [regionex_all{i} '-\d*'])));
     if tmpind
         tmpnum = sscanf(numroi_morph_auto{tmpind},[regionex_all{i} '-%d']);
@@ -71,7 +78,7 @@ for i = 1:length(regionex_all)
     flag_numroi_morph_auto = num2str(tmpnum);
     numroi_morph_auto_new.(regionex_all{i}) = tmpnum;
 
-    paramstr = ['moex_' flag_hires '_' flag_numroi_morph_auto];
+    paramstr = ['moex_' flag_hires '_' flag_use_drawn_rois '_' flag_numroi_morph_auto];
     roiparsm{i} = paramstr;
 
     pth_roi_morph{i} = [pth_use_mat(1:end-4) regionex_all{i} '_' croplimstr '_' paramstr '_rois_.mat'];
@@ -213,7 +220,12 @@ pth.roi_allmethods = pth_roi_allmethods;
 pth.fictrac = pth_fictrac;
 pth.savedata_oneregion = pth_savedata_oneregion;
 
-opt.bump.flag_numcluster_for_bump_domain_resample = flag_numcluster_for_bump_domain_resample_new; %update field
+opt.bump.flag_numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field
+
+opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field
 opt.mroi.numroi_morph_auto = numroi_morph_auto_new; %update field
 opt.mroi.use_hires = use_hires_new; %update field
+
+opt.vistif.plot_stack_order = plot_stack_order;
+opt.vistif.plot_stack_gif = plot_stack_gif;
 

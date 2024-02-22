@@ -8,17 +8,17 @@
 ##########################################################################################################################################
 import sys
 import os
-SCRIPTRUNDIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(os.path.dirname(SCRIPTRUNDIR))
+currscriptdir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.dirname(currscriptdir))
 
 print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
 
 if '--pth_parsfile' in sys.argv:
    print("pth_parsfile passed as input to pipeline_init.py, using params from pth_parsfile (e.g., params from cxp.sh)")
-   exec(open('pre/default_params_batch.py').read())
+   exec(open(currscriptdir + '/' + 'default_params_batch.py').read())
 else:
    print("pth_parsfile not passed as input (e.g., interactive mode), using params from pipeline_init.py below")
-   exec(open('pre/default_params_interactive.py').read())
+   exec(open(currscriptdir + '/' + 'default_params_interactive.py').read())
 
 
 from parse_args import parse_command_line

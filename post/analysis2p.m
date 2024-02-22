@@ -29,7 +29,6 @@ regionex_all = opt.main.regionex_all;
 include_behavior = opt.main.include_behavior;
 do_cropping_session = opt.main.do_cropping_session;
 skip_existing = opt.main.skip_existing;
-plot_stack_stats = opt.main.plot_stack_stats;
 old_project = opt.main.old_project;
 
 
@@ -57,7 +56,7 @@ for pai = 1:length(pth_all)
 
     %% assign filenames
 
-    [pth, croplim_all, roiparsm, roiparsf, plot_stack_order, plot_stack_gif, datenum, flynum, trialnum, recid] = filenames_scopa(pth_usetmp, opt);
+    [opt, pth, croplim_all, roiparsm, roiparsf, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_usetmp);
 
     if datenum<20230624
         use_hires(:) = 0;
@@ -100,7 +99,7 @@ for pai = 1:length(pth_all)
 
     %% load/visualize movies
 
-    stack = vis_tif(md, pth, opt.vistif, recid, use_hires, plot_stack_stats, plot_stack_order, plot_stack_gif);
+    stack = vis_tif(md, pth, opt.vistif, recid, use_hires);
 
 
     %% load high resolution movie

@@ -17,7 +17,6 @@ opt.main.include_behavior = 1; %0 to skip behavior
 opt.main.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
 opt.main.do_cropping_session = 0; %skip everything except drawing 2d rois
 opt.main.skip_existing = 0; %if savedata file exists, skip computing the data 
-opt.main.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.main.old_project = 0; %for carl
 
 
@@ -41,6 +40,7 @@ opt.vistif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above ea
 opt.vistif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
 opt.vistif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.vistif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.vistif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.vistif.ncolgif = 128; %color/grey res
 
 %params for loading/selecting/viewing functional rois (applied in load_functional_rois)

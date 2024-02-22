@@ -18,13 +18,13 @@
 % if possible without clipping 
 
 
-function stack = vis_tif(md, pth, opts, recid, use_hires, ...
-plot_stack_stats, plot_stack_order, plot_stack_gif)
+function stack = vis_tif(md, pth, opts, recid, use_hires)
 
 pth_fldr = pth.fldr;
 pth_use_mat = pth.use_mat;
 pth_stacks_prefix = pth.stacks_prefix;
 pth_hires_prefix = pth.hires_prefix;
+
 
 plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = opts.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -34,7 +34,9 @@ rescale_each_subplot = opts.rescale_each_subplot; %rescale each subplot to same 
 rescalefac_wholeplot = opts.rescalefac_wholeplot; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = opts.smooth_window_temporal; %smooth the stack in time, 0 to skip
 ncolgif = opts.ncolgif; %color/grey res
-
+plot_stack_stats = opts.plot_stack_stats;
+plot_stack_order = opts.plot_stack_order;
+plot_stack_gif = opts.plot_stack_gif;
 
 sz = md.sz_o;
 
