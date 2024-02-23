@@ -1,5 +1,7 @@
 function [err_cum, err_std] = compute_bump_error(offset)
 
+error("function needs to be updated")
+
 % err_cum = unwrap(offset, [], 2);
 % err_cum = diff(err_cum, [], 2);
 % err_cum = abs(err_cum);

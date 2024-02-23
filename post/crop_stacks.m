@@ -1,4 +1,4 @@
-function [croplim_all, stack_mnt, zinds_hires, map_hires_lores_crop, hiresmntcrop] = ...
+function [croplim_all, stack_mnt, map_hires_lores_crop, hiresmntcrop] = ...
     crop_stacks(stack, croplim, use_hires, recid, regionex, pth_fldr, sz_crop )
                
 
@@ -6,10 +6,10 @@ if ~isempty(croplim)
     stackcrop = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), :));
 else
     [stackcrop, croplim] = make_croplim(single(stack), sz_crop(4), pth_fldr, recid, regionex);
-    croplim_all{rei} = croplim;
+    croplim_all = croplim;
 end
 
-stack_mnt{rei} = mean(stackcrop, 4);
+stack_mnt = mean(stackcrop, 4);
 
 if use_hires
     if ~isempty(croplim)

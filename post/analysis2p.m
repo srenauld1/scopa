@@ -87,7 +87,7 @@ for pai = 1:length(pth_all)
 
     %% load/visualize movies
 
-    stack = vis_tif(md, pth, opt.vistif, recid, opt.mroi.use_hires);
+    stack = load_stack(md, pth, opt.gif, recid, opt.mroi.use_hires);
 
 
     %% load high resolution movie
@@ -107,11 +107,11 @@ for pai = 1:length(pth_all)
 
             regionex = regionex_all{rei};
             croplim = croplim_all{rei};
-            [croplim_all, stack_mnt, zinds_hires, map_hires_lores_crop, hiresmntcrop] = ...
+            [croplim_all{rei}, stack_mnt{rei}, map_hires_lores_crop, hiresmntcrop] = ...
                 crop_stacks(stack, croplim, opt.mroi.use_hires.(regionex), recid, regionex_all{rei}, pth.fldr, md.sz_crop);
 
 
-            %% make (manual and automated) morphological rois in 2d and 3d
+            %% make (manual and automated) morphological rois in 2d or 3d
 
             [roiinfo.(regionex).(roiparsm{rei})] = ...
                 make_morphological_rois(stackcrop, opt.mroi.use_drawn_rois.(regionex), ...
@@ -127,7 +127,7 @@ for pai = 1:length(pth_all)
                 pth.roi_morph{rei}, opt.norm);
 
 
-            %% compute functional (caiman) roi responses
+            %% load functional (caiman) roi responses, keep them, and also average/normalize them by morphological rois 
 
             for rfi = 1:length(pth.roi_func_all{rei})
 
@@ -243,7 +243,7 @@ for pai = 1:length(pth_all)
                         ti, tb, stimepochinds_i, stimepochinds_b, opt.scatter.epochinds, fn_prefix, gif_visibility)
 
 
-                    %% plot experiment
+                    %% summary plot
 
                     % sorting_targets = {'none'}; %{'none', 'mu'}
                     % for mji = 1:length(sorting_targets)
@@ -288,8 +288,7 @@ for pai = 1:length(pth_all)
                     %     %     bump_method_index_plot, fn_prefix, nanpadlen_min_input)
                     %
                     % end
-
-
+                
                 end
             end
         end

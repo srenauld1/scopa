@@ -88,7 +88,7 @@ for pai = 1:length(pth_all)
 
     %% load/visualize movies
 
-    stack = vis_tif(md, pth, opt.vistif, recid, opt.mroi.use_hires);
+    stack = load_stack(md, pth, opt.vistif, recid, opt.mroi.use_hires);
 
 
     %% load high resolution movie

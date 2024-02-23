@@ -1,17 +1,7 @@
-function stack_hires_mnt_reg = register_3d_hires_to_3d_lores(pth_hires_tif, ...
-    pth_hires_mat_matreg, stack_lores_mnt, map_hires_lores, hires_z_out_of_bounds, doplots)
+function stack_hires_mnt_reg = register_3d_hires_to_3d_lores(stack_hires_mnt, ...
+    pth_hires_mat_matreg, stack_lores_mnt, map_hires_lores, doplots)
 
 
-%% load unregistered hires stack
-
-pth_hires_mat = [pth_hires_tif(1:end-4) '.mat']; %if tif exists, mat was created in vis_tif, like other stack mat files
-stack_hires = struct2cell(load(pth_hires_mat));
-stack_hires = stack_hires{1};
-
-stack_hires = stack_hires - min(stack_hires(:));
-stack_hires = single(stack_hires);
-stack_hires(:,:,hires_z_out_of_bounds,:) = [];
-stack_hires_mnt = rescale(mean(stack_hires, 4));
 
 
 %% preprocess and downsample hires_ds stack to match stack_lores_mnt stack size
@@ -46,7 +36,7 @@ stack_hires_mnt_ds(stack_hires_mnt_ds~=0) = rescale(stack_hires_mnt_ds(stack_hir
 %register downsampled hires_ds to stack_lores_mnt (in 3d)
 disttype = 'monomodal'; % multimodal monomodal
 regtype = 'rigid';
-[stack_hires_mnt_ds_reg, tform] = register_one_stack_to_another(stack_hires_mnt_ds, stack_lores_mnt, disttype, regtype);
+[stack_hires_mnt_ds_reg, tform] = register_one_stack_to_another_in_3d(stack_hires_mnt_ds, stack_lores_mnt, disttype, regtype);
 
 %apply transformation to the hires that has not been downsampled
 stack_hires_mnt_reg = imwarp(stack_hires_mnt,tform,"OutputView",imref3d(size(stack_hires_mnt)));

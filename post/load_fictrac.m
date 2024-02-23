@@ -70,7 +70,7 @@ ball.ang = wrapToPi(ball.inthd);
 
 if smoothwindow_b
     ball.vel_f_sm = smoothdata(ball.vel_f, 'gaussian', smoothwindow_b, 'omitnan');
-    ball.ang_sm = smooth_circular_var(ball.ang, smoothwindow_b);
+    ball.ang_sm = smooth_circular_variable(ball.ang, smoothwindow_b);
     ball.vel_r_sm = differentiate_circular_variable(ball.ang_sm, md.dt_b_mean, slopelen, slopeorder);
 end
 
@@ -85,17 +85,17 @@ vis.ang_fictrac = ftData_DAQ.cueAngle{:}'; %saving fictrac's angle as convenienc
 vis.vel_r = differentiate_circular_variable(vis.ang, md.dt_b_mean, slopelen, slopeorder);
 
 if smoothwindow_b
-    vis.ang_sm = smooth_circular_var(vis.ang, smoothwindow_b);
+    vis.ang_sm = smooth_circular_variable(vis.ang, smoothwindow_b);
     vis.vel_r_sm = differentiate_circular_variable(vis.ang_sm, md.dt_b_mean, slopelen, slopeorder);
 end
 
 iscircular = 1;
-vis.ang_sm_rsmp = downsample_var(md, vis.ang_sm, iscircular); %downsample into imaging rate
-ball.ang_sm_rsmp = downsample_var(md, ball.ang_sm, iscircular); %downsample into imaging rate
+vis.ang_sm_rsmp =downsample_variable(md, vis.ang_sm, iscircular); %downsample into imaging rate
+ball.ang_sm_rsmp =downsample_variable(md, ball.ang_sm, iscircular); %downsample into imaging rate
 iscircular = 0;
-vis.vel_r_sm_rsmp = downsample_var(md, vis.vel_r_sm, iscircular); %downsample into imaging rate
-ball.vel_r_sm_rsmp = downsample_var(md, ball.vel_r_sm, iscircular); %downsample into imaging rate
-ball.vel_f_sm_rsmp = downsample_var(md, ball.vel_f_sm, iscircular); %downsample into imaging rate
+vis.vel_r_sm_rsmp =downsample_variable(md, vis.vel_r_sm, iscircular); %downsample into imaging rate
+ball.vel_r_sm_rsmp =downsample_variable(md, ball.vel_r_sm, iscircular); %downsample into imaging rate
+ball.vel_f_sm_rsmp =downsample_variable(md, ball.vel_f_sm, iscircular); %downsample into imaging rate
 
 vis.ang_sm(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
 vis.vel_r_sm(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)

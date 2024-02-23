@@ -1,4 +1,4 @@
-function outp = downsample_var(md, inp, iscircular)
+function outp =downsample_variable(md, inp, iscircular)
 
 breakout = 0;
 

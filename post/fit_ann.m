@@ -62,7 +62,7 @@ for jj = 1:supp.num_dim_stim %loop over stim dims
         count = count +1;
 
         tmp = num2cell(pars(supp.pind{jj,ii}.L));
-        filt = linear_filter_1d_constrained(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+        filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
 
         predresptmp = sum(stimtmp.*filt, 2); %apply linear filter
 

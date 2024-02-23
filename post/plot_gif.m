@@ -1,8 +1,13 @@
-function plot_gif(in1, filename, ncol, cmap, flipdim, overlay_scatter, titopt, qplot)
+function plot_gif(imin, filename, cmap, flipdim, overlay_scatter, titopt, qplot, ncolors)
 
-szo = size(in1);
-numdims = ndims(in1);
 
+szo = size(imin);
+numdims = ndims(imin);
+
+
+if ~exist('ncolors', 'var') 
+    ncolors = 1;
+end
 
 if ~exist('gif_visibility', 'var') 
     gif_visibility = 1;
@@ -13,22 +18,22 @@ if ~exist('flipdim', 'var')
 end
 
 if numdims==2
-    sznew = [size(in1) 1];
+    sznew = [size(imin) 1];
 elseif numdims==3
-    sznew = size(in1);
+    sznew = size(imin);
     if exist('overlay_scatter', 'var') & size(overlay_scatter,2) == 4
         szo(end+1) = 1;
     end
 elseif numdims>3
     if flipdim
-        in1 = permute(in1, [1 2 4 3]);
-        szo = size(in1);
+        imin = permute(imin, [1 2 4 3]);
+        szo = size(imin);
         if exist('overlay_scatter', 'var') & size(overlay_scatter,2) == 4
             overlay_scatter(:,3:4) = fliplr(overlay_scatter(:,3:4));
         end
     end
-    in1 = reshape(in1, size(in1,1), size(in1,2), []);
-    sznew = size(in1);
+    imin = reshape(imin, size(imin,1), size(imin,2), []);
+    sznew = size(imin);
 end
 
 h = figure;
@@ -41,28 +46,28 @@ for i = 1:sznew(end)
     if i==1
 
         if exist('cmap', 'var')
-            if ~strcmp(class(in1), 'double') & ~strcmp(class(in1), 'single')
+            if ~strcmp(class(imin), 'double') & ~strcmp(class(imin), 'single')
                 "MAKE IT DOUBLE OR SINGLE TO MAP 1 TO FIRST ELEMENT OF CMAP"
                 "for INT and bool 0 will map to first element of cmap"
                 "passing cmap to imshow assumes array is indexed image"
                 error
             end
-            if min(in1(:))<1
+            if min(imin(:))<1
                 "MAKE IT DOUBLE OR SINGLE TO MAP 1 TO FIRST ELEMENT OF CMAP"
                 error
             end
             %round because otherwise cmap in imshow will take floor
-            himg = imshow(round(in1(:,:,i)), cmap, 'InitialMagnification', 'fit');
+            himg = imshow(round(imin(:,:,i)), cmap, 'InitialMagnification', 'fit');
         else
-            himg = imshow(in1(:,:,i), 'InitialMagnification', 'fit');
+            himg = imshow(imin(:,:,i), 'InitialMagnification', 'fit');
         end
 
     else
 
         if exist('cmap', 'var')
-            himg.CData = round(in1(:,:,i));
+            himg.CData = round(imin(:,:,i));
         else
-            himg.CData = in1(:,:,i);
+            himg.CData = imin(:,:,i);
 
         end
 
@@ -104,7 +109,7 @@ for i = 1:sznew(end)
 
     frame = getframe(h);
     im = frame2im(frame);
-    [imind, cm] = rgb2ind(im,ncol);
+    [imind, cm] = rgb2ind(im,ncolors);
 
     if i == 1
         imwrite(imind,cm,filename, 'DelayTime', 0, 'Loopcount',inf);

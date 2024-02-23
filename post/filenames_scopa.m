@@ -155,7 +155,7 @@ if ~ismember(suffix_analysis, suffixes_plot)
     suffixes_plot{end+1} = suffix_analysis;
 end
 suffixes_plot = unique(suffixes_plot, 'stable'); %make sure there aren't accidental repeats
-suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot), suffix_analysis); %make suffix_analysis the last one so it can be output from vis_tif with minimal memory
+suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot), suffix_analysis); %make suffix_analysis the last one so it can be output from load_stack with minimal memory
 
 [~, plot_stack_order] = sort(cellfun(@length, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
 

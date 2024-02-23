@@ -1,4 +1,4 @@
-function [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth, stack, md, use_caiman_on_hires)
+function [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opts_hires, use_caiman_on_hires)
 
 
 pth_hires_prefix = pth.hires_prefix;
@@ -33,6 +33,7 @@ map_hires_lores(hires_z_out_of_bounds) = [];
 
 
 try
+ 
 
     stack_hires_mnt = struct2cell(load(pth_hires_mat_matreg)); %load registered stack
     stack_hires_mnt = stack_hires_mnt{1};
@@ -44,9 +45,13 @@ catch
         lores_z_for_hires_map = setxor(lores_z_out_of_bounds, 1:size(stack, 3)); %crop here so the hires registration is correct
         meanvol_lores = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration
 
-        doplots = 0;
-        stack_hires_mnt = register_3d_hires_to_3d_lores(pth_hires_tif, ...
-            pth_hires_mat_matreg, meanvol_lores, map_hires_lores, hires_z_out_of_bounds, doplots);
+        stack_hires = load_stack(md, pth2, opts_hires, recid);
+
+        stack_hires(:,:,hires_z_out_of_bounds,:) = [];
+        stack_hires_mnt = rescale(mean(stack_hires, 4));
+
+        stack_hires_mnt = register_3d_hires_to_3d_lores(stack_hires_mnt, ...
+            pth_hires_mat_matreg, meanvol_lores, map_hires_lores, opt.hires.do_reg_plots);
 
     catch
 
@@ -69,7 +74,7 @@ if use_caiman_on_hires % load caiman rois extracted from hires if they exist
         "IF YOU WANT TO USE CAIMAN ROI EXTRACTION ON THIS HIRES REGISTERED TIF, \n" + ...
         "YOU COULD INSERT A CALL TO pipeline_init.py HERE \n" + ...
         "BUT YOU HAVE TO ADAPT THE PYTHON CODE TO OPERATE ON FILES WITH STRING hires \n" + ...
-        "AND YOU HAVE TO ADAPT register_3d_hires_to_lores TO OUTPUT THE REGISTERED FULL 4D HIRES, \n" + ...
+        "AND YOU HAVE TO ADAPT register_3d_hires_to_3d_lores TO OUTPUT THE REGISTERED FULL 4D HIRES, \n" + ...
         "RATHER THAN THE CURRENT OUTPUT, WHICH IS REGISTERED TEMPORAL AVERAGE stack_hires_mnt \n" + ...
         "CURRENTLY HIRES IS JUST USED FOR ANATOMY, SO TEMPORAL AVERAGE IS FINE, \n" + ...
         "THE CODE ISN'T WRITTEN FOR HIRES FUNCTIONAL ROI EXTRACTION \n" + ...

@@ -2,7 +2,7 @@ function map_hires_lores_shifted = ...
     register_and_downsample_hires_in_z(lores, hires, ...
     hires_t, sindz, zshift, map_hires_lores)
 
-%this was replaced by register_3d_hires_to_lores
+%this was replaced by register_3d_hires_to_3d_lores
 
 %right now this is not automated, but hope to automate using image comparison across z shifts 
 %averaging chunks to downsample seems more appropriate than more

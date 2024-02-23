@@ -46,7 +46,7 @@ for rci = 1:length(region_choose)
         end
 
 
-        [resp_tmp, params_all_tmp, params_all_tmp_bad] = index_into_extraction_and_normalization(params_all, resp, ex_manual, norm_manual);
+        [resp_tmp, params_all_tmp, params_all_tmp_bad] = index_into_extraction_and_normalization_params(params_all, resp, ex_manual, norm_manual);
 
         resp_tmp = squeeze(resp_tmp);
         % exparams_unique_tmp = unique(params_all_tmp(:,1), 'stable');
@@ -128,7 +128,7 @@ switch err_sorting_method
         ex_manual = {'*'};
         norm_manual = {'in_*_pc_null_cl_null_w_*'};
 
-        [resp_tmp, params_all_tmp, params_all_tmp_bad, idx_manual] = index_into_extraction_and_normalization(params_all, resp, ex_manual, norm_manual);
+        [resp_tmp, params_all_tmp, params_all_tmp_bad, idx_manual] = index_into_extraction_and_normalization_params(params_all, resp, ex_manual, norm_manual);
 
         subsetinds = idx_manual;
         err_sorting = 1:length(err_std_sorted); %undo sorting for manual

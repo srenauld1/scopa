@@ -1,4 +1,4 @@
-function [resp_out, params_out, params_out_bad, idx_full] = index_into_extraction_and_normalization(params_all, resp_in, exman, normman)
+function [resp_out, params_out, params_out_bad, idx_full] = index_into_extraction_and_normalization_params(params_all, resp_in, exman, normman)
 
 exparams_all = unique(params_all(:,1), 'stable');
 

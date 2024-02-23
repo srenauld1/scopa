@@ -1,8 +1,11 @@
 function opt = input_params()
 
-% struct 'opt' holds all input params 
-% substructures are (mostly) used within single functions called from analysis2p
 
+% struct 'opt' holds all input params 
+% substructures within opt are mostly used within single functions called from analysis2p
+
+
+%% MAIN
 
 %params for main pipeline control in file analysis2p
 opt.main.parent_folder = 'stacks'; %folder containing all recording folders (on local or o2)
@@ -15,29 +18,35 @@ opt.main.regionex_all = {'fool', 'gar', 'gal', 'no_r', 'no_l', 'pb'}; %cell arra
 opt.main.old_project = 0; %for carl
 
 
-%params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
-% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.numroi_morph_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
-opt.mroi.use_hires = {}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-opt.mroi.use_drawn_rois =  {}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
-opt.mroi.numroi_morph_auto = {}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into numroi_morph_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; numroi_morph_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
-opt.mroi.doplots = 1; %doplots in make_morphological_rois
+%% STACK VISUALIZATION (GIF)
 
-
-%params for making gif of raw data movies in function vis_tif
-opt.vistif.suffixes_plot = {
+%params for making gif of raw data movies in function load_stack
+opt.gif.suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.vistif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.vistif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.vistif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-opt.vistif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-opt.vistif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-opt.vistif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
-opt.vistif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
-opt.vistif.plot_stack_stats = 0; %function this uses is old and needs to be updated
-opt.vistif.ncolgif = 128; %color/grey res
+opt.gif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.gif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+opt.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
+opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
+opt.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.gif.ncolgif = 128; %color/grey res
+
+
+%% MORPHOLOGICAL ROIS
+
+%params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
+% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.numroi_morph_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+opt.mroi.use_hires = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.use_drawn_rois =  {'pb'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
+opt.mroi.numroi_morph_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into numroi_morph_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; numroi_morph_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
+opt.mroi.doplots = 1; %doplots in make_morphological_rois
+
+%% FUCNTIONAL ROIS
 
 %params for loading/selecting/viewing functional rois (applied in load_functional_rois)
 opt.froi.caiman_lr_str = '2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'; %caiman param string, can use wildcards, empty to skip
@@ -54,22 +63,27 @@ opt.froi.do_other_plots = 1; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
+%% RESPONSE NORMALIZATION
 
 %params for response extraction/normalization
-opt.norm.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
-opt.norm.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
+opt.norm.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi)
+opt.norm.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi)
 opt.norm.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
-opt.norm.response_normalization_string = {... %different normalization methods, default is no normalization, which is given string 'null'
-    'rescale0100', ...
-    % 'rescale595', ...
-    % 'zscore', ...
-    % 'nonnegative', ...
-    % 'dffzscore', ...
-    % 'dff595'...
-    % 'boxcox'...
+opt.norm.response_normalization_string = {... %list of strings, different normalization methods, must have at least one (e.g., 'f', which is no normalization)
+    'f', ... %no normalization 
+    'dff015' %dff, uses last 3 digits as percentile to compute f0 across entire timeseries
+    'dffmv015' %sliding window dff, uses last 3 digits as percentile to compute f0 for each window
+    'rsc', ... %rescale, sending min to 0, max to 1
+    % 'rsc0050095', ... %rescale, sending x percentile to 0, y percentile to 1, where x is first 3 digits (range 000-100), y is next 3 digits (range 000-100), e.g. for rescale001095 x will be 1 and y will be 95
+    % 'fz', ... %zscore
+    % 'nn', ... %make nonnegative by subtracting min
+    % 'dffz', ... %z score of dff
+    % 'dff005095'... % dff with percentiles given by last 6 digits 
+    % 'box'... %box-cox
     };
 opt.norm.doplots = 0;
 
+%% FICTRAC/STIMULUS
 
 %params for stimulus/fictrac processing
 opt.ft.include_behavior = 1; %0 to skip behavior
@@ -80,6 +94,8 @@ opt.ft.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times
 opt.ft.slopeorder = 2; %order of polynomial used to fit local slope
 opt.ft.slopelen = 5; %window length used to fit slope
 opt.ft.doplots = 0;
+
+%% BUMP
 
 %params for bump in compute_bump function
 opt.bump.regionpat = {'pb'};
@@ -96,10 +112,26 @@ opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster
 opt.bump.doplots = 1;
 
 
+%% FIT MODEL
+
+
 %params for modeling responses in fitresp function
+% fitresp fits model describing how input is transformed into response
+% response is specified with opt.fit.regionpat_fit, opt.fit.expat_fit, opt.fit.normpat_fit
+% opt.fit.regionpat_fit are the regionex (can be multiple), opt.fit.expat_fit are the
+% extraction param strings (can be multiple), opt.fit.normpat_fit are the normalization strings (can be multiple)
 opt.fit.regionpat_fit = {'no_r'};
-opt.fit.expat_fit = {'mo*'};
-opt.fit.normpat_fit = {'in_rawf_pc_f_cl_f_w_no'};
+opt.fit.expat_fit = {'mo*'}; %can use wildcards
+opt.fit.normpat_fit = {'in_rawf_pc_f_cl_f_w_no'}; %can use wildcards
+
+% opt.fit.sdom.(regionex) specifies which input to use for fit, 
+% it is a cell array of cell arrays of strings defining variable struct then field of that struct
+% for example opt.fit.sdom.no_r = {{'ball', 'vel_r_sm_rsmp'}, {'bump',
+% 'mu'}} will fit responses (specified as described above) in regionex 'no_r' to
+% two-dimensional input, the first dimension being ball.vel_r_sm_rsmp, the second being bump.mu
+%the name of the innermost nested field must be a regionex that is listed in opt.fit.regionpat_fit
+%since roi responses for all regionex are extracted and normalized before fitresp, responses from all rois, in struct 'resp', are available as input to fitresp  
+%since the bump is computed before fitresp, fields from structure 'bump' are available as input to fitresp
 
 opt.fit.sdom.no_r = {{'ball', 'vel_r_sm_rsmp'}, {'bump', 'mu'}};
 opt.fit.sdom.no_l = {{'ball', 'vel_r_sm_rsmp'}, {'bump', 'mu'}};
@@ -153,20 +185,38 @@ opt.fit.doplots = 1;
 opt.fit.use_saved_model = 1;
 opt.fit.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
+%% SCATTERPLOTS
 
 % params for scatterplots
-opt.scatter.epochinds = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]};
+%scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots 
+opt.scatter.epochinds = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 
+
+%% HIRES
 
 %params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
+%hires stack is only used in making morphological rois, set opt.mroi.use_hires=1 to use
+%params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
+opt.hires.gif.plotinds_t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.hires.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.hires.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
+opt.hires.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
+opt.hires.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
+opt.hires.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.hires.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.hires.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.hires.gif.ncolgif = 128; %color/grey res
+opt.hires.gif.plot_stack_gif = 1;
+opt.hires.do_reg_plots = 1;
 opt.hires.use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
 opt.hires.caiman_hr_str = '*'; %empty to skip
 
-
+%% METADATA (TO ADD TO EXISTING METADATA FROM *metadatanew.mat)
 
 %params to be added to metadata struct that was created in python preprocessing 
 opt.md.croptimeinds = [0 0]; %this is only relevant for carl's old project
 
+%% CARL'S OLD PROJECT
 
 
 %overwrite some params for carl's old project
@@ -183,3 +233,4 @@ fn = fieldnames(opt);
 for fni = 1:length(fn)
     opt.(fn{fni}) = orderfields(opt.(fn{fni}));
 end
+

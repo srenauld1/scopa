@@ -89,7 +89,7 @@ for fi = 1:length(bump_subdomain)
         
         case 'pva'
 
-            [mu, rho] = circular_mean_var(domain, resptmp);
+            [mu, rho] = circular_mean_and_variance(domain, resptmp);
             mu2 = circ_mean(domain, resptmp);
             rho2 = circ_var(domain, resptmp);
             mu3 = weighted_circular_mean(domain, resptmp);
@@ -105,7 +105,7 @@ for fi = 1:length(bump_subdomain)
     rho = rho';
 
     if smoothwindow
-        mu = smooth_circular_var(mu, smoothwindow);
+        mu = smooth_circular_variable(mu, smoothwindow);
         rho = smoothdata(rho, 'gaussian', smoothwindow);
     end
 

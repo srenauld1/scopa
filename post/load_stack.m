@@ -18,12 +18,11 @@
 % if possible without clipping 
 
 
-function stack = vis_tif(md, pth, opts, recid, use_hires)
+function stack = load_stack(md, pth, opts, recid)
 
 pth_fldr = pth.fldr;
 pth_use_mat = pth.use_mat;
 pth_stacks_prefix = pth.stacks_prefix;
-pth_hires_prefix = pth.hires_prefix;
 
 plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds_z = opts.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -34,8 +33,12 @@ rescalefac_wholeplot = opts.rescalefac_wholeplot; %combined plot rescale argumen
 smooth_window_temporal = opts.smooth_window_temporal; %smooth the stack in time, 0 to skip
 ncolgif = opts.ncolgif; %color/grey res
 plot_stack_stats = opts.plot_stack_stats;
-plot_stack_order = opts.plot_stack_order;
 plot_stack_gif = opts.plot_stack_gif;
+if ~isfield(opts, 'plot_stack_order')
+    plot_stack_order = 1;
+else
+    plot_stack_order = opts.plot_stack_order;
+end
 
 sz = md.sz_o;
 
@@ -211,38 +214,6 @@ if plot_stack_gif
         [figtitle_prefix; '_meanframe_.gif'])
 
 
-end
-
-
-if any(cell2mat(struct2cell(use_hires)))
-
-    %it's not straightforward to plot hires stack along with lores using
-    %vis_tif as it is written above (because their z resolutions are
-    %different) it's more readable to just pass it separately, here,
-    % to read, save, and plot the hires stack by itself
-
-    [ST, ~] = dbstack();
-    if length(cell2mat( strfind( {ST(:).name}, 'vis_tif' ) ) ) == 1 %since this is called recursively, make sure you're not in an infinite loop, use_hires_new==0 is meant to prevent as well)
-        
-        %it's okay to overwrite these since none are output from this function
-        use_hires = 0;
-        md = md.md_hires;
-        pth2 = pth;
-        pth2.use_mat_hires = {''};
-        pth2.stacks_prefix = {pth_hires_prefix};
-        opts_hires = opts;
-        opts_hires.plotinds_t = [1];
-        opts_hires.plotinds_z = [];
-        opts_hires.smooth_window_temporal = [];
-
-        %no need to call with output, purpose is just to read hires tif,
-        %save as mat, and optionally plot . . . hires will be loaded later in
-        %load_hires_stack.m
-        vis_tif(md, pth2, opts_hires, recid, use_hires, ...
-            plot_stack_stats, plot_stack_order, plot_stack_gif);
-(md, pth2, opts_hires, recid, use_hires)
-
-    end
 end
 
 
