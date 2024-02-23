@@ -12,7 +12,6 @@ stopband = [10 20]; %set emperically for now, stopband frequency indices keep be
 plotinds_t = -40; %t indices to plot, blank for all, negative for that number equidistant from all available
 plotinds_z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 swapdim_plot = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-ncol = 256; %num colors in plot
 
 len_window_smooth_t = len_window_smooth_t_rsc; %helps with filtering the scan noise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
 
@@ -128,7 +127,7 @@ if makeplots
 
     pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
     title_str = 'filt';
-    plot_gif_fast(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+    plot_gif_fast(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), swapdim_plot, pth_gif, title_str)
 
 end
 
@@ -146,7 +145,7 @@ if makeplots
 
     pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
     title_str = 'filt';
-    plot_gif_fast(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), ncol, swapdim_plot, pth_gif, title_str)
+    plot_gif_fast(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), swapdim_plot, pth_gif, title_str)
 
 end
 

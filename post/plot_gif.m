@@ -6,7 +6,7 @@ numdims = ndims(imin);
 
 
 if ~exist('ncolors', 'var') 
-    ncolors = 1;
+    ncolors = 128;
 end
 
 if ~exist('gif_visibility', 'var') 

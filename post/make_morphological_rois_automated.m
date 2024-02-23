@@ -299,8 +299,8 @@ end
 
 if do_plots
 
-    plot_gif(maskmanual, [pth_save_figs_prefix(1:end-4) '_maskmanual_.gif'], 256)
-    plot_gif(mask_allroi_approx, [pth_save_figs_prefix(1:end-4) '_mask_.gif'], 256)
+    plot_gif(maskmanual, [pth_save_figs_prefix(1:end-4) '_maskmanual_.gif'])
+    plot_gif(mask_allroi_approx, [pth_save_figs_prefix(1:end-4) '_mask_.gif'])
 
     % kbnd = boundary([maskx,masky,maskz]);
     % figure;
@@ -312,9 +312,9 @@ if do_plots
 
         overlayarray = rescale(0.2*rescale(mask_allroi_approx_plot) + rescale(premask, 0, 1));
 
-        plot_gif( overlayarray, [pth_save_figs_prefix(1:end-4) '_mask_premask_overlay_.gif'], 256)
+        plot_gif( overlayarray, [pth_save_figs_prefix(1:end-4) '_mask_premask_overlay_.gif'])
 
-        plot_gif(premask, [pth_save_figs_prefix(1:end-4) '_premask_.gif'], 256)
+        plot_gif(premask, [pth_save_figs_prefix(1:end-4) '_premask_.gif'])
 
         cmap = distinguishable_colors(size(mask_roi_vec,1));
         double_colormap = 0;
@@ -406,8 +406,8 @@ if do_plots
         %     end
         % end
         % flipdim = 1;
-        % plot_gif(tmpall, [filename_im_full(1:end-4) '_fukall_.gif'], 256, flipdim, outz)
-        % plot_gif(tmpall, [filename_im_full(1:end-4) '_fukall_.gif'], 256, flipdim)
+        % plot_gif(tmpall, [filename_im_full(1:end-4) '_fukall_.gif'], flipdim, outz)
+        % plot_gif(tmpall, [filename_im_full(1:end-4) '_fukall_.gif'], flipdim)
 
 
     end

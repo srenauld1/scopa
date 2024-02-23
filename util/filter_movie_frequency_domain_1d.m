@@ -104,10 +104,10 @@ if 0
         end
         %%
 
-        plot_gif_fast(rescale(imin(:,1:30)), ncol, swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
+        plot_gif_fast(rescale(imin(:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
 
 
-        plot_gif_fast(rescale(imout(:,:,:,1:30)), ncol, swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
+        plot_gif_fast(rescale(imout(:,:,:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
 
 
         plot_gif_fast( ...
@@ -116,7 +116,7 @@ if 0
             rescale(log(abs(imfm(:,:,plotindz)))), ...
             rescale(log(abs(imff(:,:,plotindz)))), ...
             rescale(imout(:,:,plotindz))), ...
-            ncol, swapdim, [pth_fldr '/finalcat.gif'], {'3d transform'})
+            swapdim, [pth_fldr '/finalcat.gif'], {'3d transform'})
 
     end
 end

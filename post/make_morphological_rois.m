@@ -151,11 +151,11 @@ if doplots
     axis image
 
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    plot_gif( overlayarray, [pth_stack(1:end-4) '3d_mask_manual_' regionex '_.gif'], 256)
+    plot_gif( overlayarray, [pth_stack(1:end-4) '3d_mask_manual_' regionex '_.gif'])
 
 
-    plot_gif(maskmanual, [pth_stack(1:end-4) '3d_mask_manual_' regionex '_.gif'], 256)
-    plot_gif(mask_allroi, [pth_stack(1:end-4) '3d_mask_simple_' regionex '_.gif'], 256)
+    plot_gif(maskmanual, [pth_stack(1:end-4) '3d_mask_manual_' regionex '_.gif'])
+    plot_gif(mask_allroi, [pth_stack(1:end-4) '3d_mask_simple_' regionex '_.gif'])
 
 end
 

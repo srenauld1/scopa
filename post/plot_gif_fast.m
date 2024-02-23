@@ -1,11 +1,17 @@
-function plot_gif_fast(inp, ncol, swapdim, filename, titall, plotinds_z, plotinds_t)
+function plot_gif_fast(inp, swapdim, filename, titall, plotinds_z, plotinds_t, ncolors)
 
 szo = size(inp);
 numdims = ndims(inp);
 
-if ~exist('swapdim', 'var')
+
+if ~exist('ncolors', 'var')
+    ncolors = 128;
+end
+
+if ~exist('swapdim', 'var') || isempty(dwapdim)
     swapdim = 0;
 end
+
 
 if numdims==2
     sznew = [size(inp) 1];
@@ -44,7 +50,7 @@ for i = 1:sznew(end)
 
     frame = getframe(h);
     im = frame2im(frame);
-    [imind, cm] = rgb2ind(im,ncol);
+    [imind, cm] = rgb2ind(im,ncolors);
 
     if i == 1
         imwrite(imind,cm,filename, 'DelayTime', 0, 'Loopcount',inf);

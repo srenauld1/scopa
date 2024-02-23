@@ -18,7 +18,6 @@ morphological_open_line_len = 17; %cleans up extracted lines in spectrum if leng
 numplotframes = 100;
 plotindz = floor(size(imin, 3)*size(imin, 4) / 2) - floor(numplotframes/2) : floor(size(imin, 3)*size(imin, 4) / 2) + floor(numplotframes/2); %time indices to plot (center of spectrum is where noise is worst)
 %plotindz = 1:size(imin, 3)*size(imin, 4);
-ncol = 128; % num col in gifs
 swapdim = 1; %recommend 1 if plotting gif of multiple z slices through time
 
 
@@ -27,13 +26,13 @@ swapdim = 1; %recommend 1 if plotting gif of multiple z slices through time
 %imin = permute(imin, [1 2 4 3]);
 imin = reshape(imin, size(imin, 1), size(imin, 2), []);  %collapse z and t because we believe dominant structure is through true time (not volume time)
 
-%plot_gif_fast(rescale(imin(:,:,plotindz)), ncol, swapdim, [pth_fldr '/imin.gif'], {'input image'})
+%plot_gif_fast(rescale(imin(:,:,plotindz)), swapdim, [pth_fldr '/imin.gif'], {'input image'})
 
 imf = fftshift(fftn(imin)); %forward transform (take image into freq domain), then shift
 
 imfm = single(abs(imf)); %keep magnitude discard phase
 
-%plot_gif_fast(rescale(log(imfm(:,:,plotindz))), ncol, swapdim, [pth_fldr '/imfm_log.gif'], {'fft mag log'})
+%plot_gif_fast(rescale(log(imfm(:,:,plotindz))), swapdim, [pth_fldr '/imfm_log.gif'], {'fft mag log'})
 
 
 %% create background frames
@@ -45,7 +44,7 @@ thr_bg = histx(thrbinbg);
 foregroundinds = background_mag>=thr_bg;
 background_mag(foregroundinds) = 0;
 
-%plot_gif_fast(rescale(background_mag(:,:,plotindz)), ncol, swapdim, [pth_fldr '/freqfilt_smooththresh.gif'], {'frequency filter smoothed and thresholded'})
+%plot_gif_fast(rescale(background_mag(:,:,plotindz)), swapdim, [pth_fldr '/freqfilt_smooththresh.gif'], {'frequency filter smoothed and thresholded'})
 clear background_mag
 
 numframes_bg = floor(size(imin, 3)/50);
@@ -64,7 +63,7 @@ if spectrum_smooth_window
     imfms = smoothdata(imfm, 3, 'gaussian', spectrum_smooth_window); %smooth spectrum through time because noise spectrum is noisy in time but not space
 end
 
-%plot_gif_fast(rescale(log(imfm(:,:,plotindz))), ncol, swapdim, [pth_fldr '/imfm_logsmooth.gif'], {'fft mag log smooth'})
+%plot_gif_fast(rescale(log(imfm(:,:,plotindz))), swapdim, [pth_fldr '/imfm_logsmooth.gif'], {'fft mag log smooth'})
 
 
 %%apply std filters (horiz. and vert.) to extract spectrum lines (lines have small std in long axis and relatively large std in ortho axis)
@@ -106,9 +105,9 @@ end
 
 %clear imfm
 %freqfilt = imgaussfilt3(freqfilt(:,:,plotindz), [2 2 2]); %smooth again before threshold to remove some isolated hotspots
-%plot_gif_fast(rescale(freqfilt), ncol, swapdim, [pth_fldr '/freqfilt.gif'], {'frequency filter'})
+%plot_gif_fast(rescale(freqfilt), swapdim, [pth_fldr '/freqfilt.gif'], {'frequency filter'})
 
-%plot_gif_fast(rescale(freqfilt(:,:,plotindz)), ncol, swapdim, [pth_fldr '/freqfilt.gif'], {'frequency filter'})
+%plot_gif_fast(rescale(freqfilt(:,:,plotindz)), swapdim, [pth_fldr '/freqfilt.gif'], {'frequency filter'})
 
 %%smooth then threshold extracted "line image"
 
@@ -127,7 +126,7 @@ for i = 1:size(freqfilt, 3)
     freqfilt(:,:,i) = bwmorph(freqfilt(:,:,i), 'bridge', Inf);
 end
 
-%plot_gif_fast(rescale(freqfilt(:,:,plotindz)), ncol, swapdim, [pth_fldr '/freqfilt_smooththresh.gif'], {'frequency filter smoothed and thresholded'})
+%plot_gif_fast(rescale(freqfilt(:,:,plotindz)), swapdim, [pth_fldr '/freqfilt_smooththresh.gif'], {'frequency filter smoothed and thresholded'})
 
 
 %%apply filter by replacing corresponding values in spectrum
@@ -136,13 +135,13 @@ end
 %freqfilt = double(reshape(freqfilt, size(imf)));
 %
 % freqfilt2 = abs(freqfilt - max(freqfilt(:)));
-% %plot_gif_fast(rescale(freqfilt2(:,:,plotindz)), ncol, swapdim, [pth_fldr '/freqfilt_smooththresh.gif'], {'frequency filter smoothed and thresholded'})
+% %plot_gif_fast(rescale(freqfilt2(:,:,plotindz)), swapdim, [pth_fldr '/freqfilt_smooththresh.gif'], {'frequency filter smoothed and thresholded'})
 %
 % imff = imf .* freqfilt2; %apply frequency filter (which has been designed in the "shifted space")
 % logabs = log(abs(imff));
 % logabs(isinf(logabs)) = min(logabs(isfinite(logabs)));
 % logabs(isinf(logabs)) = max(logabs(isfinite(logabs)));
-% plot_gif_fast(rescale(logabs), ncol, 0, [pth_fldr '/imout.gif'], {'filtered spectrum'})
+% plot_gif_fast(rescale(logabs), 0, [pth_fldr '/imout.gif'], {'filtered spectrum'})
 %% 
 
 freqfilt = zeros(size(imfm), 'single');
@@ -170,7 +169,7 @@ for i = 1:size(imf, 3)
 
 end
 
-plot_gif_fast(rescale(log(abs(imff(:,:,plotindz)))), ncol, swapdim, [pth_fldr '/fftfilt.gif'], {'filtered spectrum'})
+plot_gif_fast(rescale(log(abs(imff(:,:,plotindz)))), swapdim, [pth_fldr '/fftfilt.gif'], {'filtered spectrum'})
 
 
 %% return to spatial domain
@@ -178,7 +177,7 @@ plot_gif_fast(rescale(log(abs(imff(:,:,plotindz)))), ncol, swapdim, [pth_fldr '/
 %clear imf
 imout = single(real(ifftn(ifftshift(imff)))); %inverse shift then inverse transform (to go back to spatial domain), then real component to remove residual imaginary components remaining because of floating point error
 
-plot_gif_fast(rescale(imout(:,:,plotindz)), ncol, swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
+plot_gif_fast(rescale(imout(:,:,plotindz)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
 
 %% plots
 
@@ -191,6 +190,6 @@ if doplots
         rescale(freqfilt(:,:,plotindz)), ...
         rescale(log(abs(imff(:,:,plotindz)))), ...
         rescale(imout(:,:,plotindz))), ...
-        ncol, swapdim, [pth_fldr '/finalcat.gif'], {'3d transform'})
+        swapdim, [pth_fldr '/finalcat.gif'], {'3d transform'})
 
 end

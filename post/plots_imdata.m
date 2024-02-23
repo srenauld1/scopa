@@ -142,7 +142,7 @@ for iiii = ctopvec
     end
 end
 
-plot_gif(outall, [filename_prefix '_mov_' maskstring '_.gif'], 256)
+plot_gif(outall, [filename_prefix '_mov_' maskstring '_.gif'])
 
 
 %% plot image with the brightest pixel
@@ -182,7 +182,7 @@ else
     pix_timeseries_all = reshape(inpcrop_allslice, [], sz(4));
 end
 
-%plot_gif(rescale(inpcrop_allslice(:,:,:,round(linspace(1, sz(4), 10)))), [filename_prefix '_movcrop_' maskstring '_.gif'], 256)
+%plot_gif(rescale(inpcrop_allslice(:,:,:,round(linspace(1, sz(4), 10)))), [filename_prefix '_movcrop_' maskstring '_.gif'])
 
 pix_mean_all = mean(pix_timeseries_all, 2);
 ylnew = [min(pix_mean_all(:)) max(pix_mean_all(:))];

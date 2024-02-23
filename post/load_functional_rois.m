@@ -340,7 +340,7 @@ if numrois_for_gif~=0
     end
 
     filename_gif = [pth_roi_func(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, 256, cmap_im)
+    plot_gif(roiinfo.roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, cmap_im)
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -349,7 +349,7 @@ if numrois_for_gif~=0
     end
     
     filename_gif = [pth_roi_func(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    plot_gif(roi_overlay_bad(:,:,:, roi_plot_inds_bad), filename_gif, 256, cmap_im)
+    plot_gif(roi_overlay_bad(:,:,:, roi_plot_inds_bad), filename_gif, cmap_im)
 
 end
 
