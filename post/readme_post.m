@@ -2,6 +2,7 @@
 hires is not processed in python; in matlab it is registered to the registered stack; this seemed simpler 
 
 
+
 %analysis2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
 % first part (motion correction, denoising, and source extraction) is in python, entry point pipeline_init.py:
 
@@ -30,3 +31,10 @@ hires is not processed in python; in matlab it is registered to the registered s
 %note remove_scan_noise should ideally only occur prior to
 %caiman roi extraction, but this pipeline allows the user to run remove_scan_noise afterwards 
 % (need to fix this so the user has the option to use nosn suffix stack for roi extraction)
+
+% rval documentation The algorithm also measures the reliability of the spatial mask by comparing the filters in A
+%      with the average of the movies over samples where exceptional events happen, after  removing (if possible)
+%     frames when neighboring neurons were active
+
+%%g4 frame 0 (in vis.raw) assigned to angle -pi (in vis.ang)
+

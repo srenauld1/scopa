@@ -2,30 +2,28 @@ function opt = input_params()
 
 % struct 'opt' holds all input params 
 % substructures are (mostly) used within single functions called from analysis2p
-% substructure 'main' is (mostly) used in analysis2p directly 
 
 
-%params for main pipeline control in file analysis2
+%params for main pipeline control in file analysis2p
 opt.main.parent_folder = 'stacks'; %folder containing all recording folders (on local or o2)
-opt.main.recdate = '20230627';
-opt.main.fly = '*';
-opt.main.trial = '*';
-opt.main.suffix_analysis = 'cmrg_dcdn';
-opt.main.regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline
+opt.main.recdate = '20230627'; %can use wildcards
+opt.main.fly = '*'; %can use wildcards
+opt.main.trial = '*'; %can use wildcards
+opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+opt.main.regionex_all = {'fool', 'gar', 'gal', 'no_r', 'no_l', 'pb'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append a underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existingregionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, you can ;  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 
-opt.main.include_behavior = 1; %0 to skip behavior
-opt.main.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
+
 opt.main.do_cropping_session = 0; %skip everything except drawing 2d rois
-opt.main.skip_existing = 0; %if savedata file exists, skip computing the data 
-opt.main.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.main.skip_existing = 0; %skip analysis if savefile exists for a given regionex
 opt.main.old_project = 0; %for carl
 
 
-%params for making morphological rois (manual or automated)
-opt.mroi.use_hires = {'pb'}; %empty string to skip, cell array of regionex you want to use_hires for, uses hi-z-res stack to make morph mask
-opt.mroi.use_drawn_rois = {'pb'}; %empty string to skip, cell array of regionex you want to use_drawn_rois for
-opt.mroi.numroi_morph_auto = {'pb'}; %empty string to skip, cell array of regionex you want to use_drawn_rois for this is how many centroids/glomeruli across the entire region (not hemisphere)
-opt.mroi.doplots = 1;
+%params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
+% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.numroi_morph_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+opt.mroi.use_hires = {}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.use_drawn_rois =  {}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
+opt.mroi.numroi_morph_auto = {}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into numroi_morph_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; numroi_morph_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
+opt.mroi.doplots = 1; %doplots in make_morphological_rois
 
 
 %params for making gif of raw data movies in function vis_tif
@@ -35,12 +33,13 @@ opt.vistif.suffixes_plot = {
     %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.vistif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.vistif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.vistif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.vistif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.vistif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 opt.vistif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
 opt.vistif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.vistif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.vistif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.vistif.ncolgif = 128; %color/grey res
 
 %params for loading/selecting/viewing functional rois (applied in load_functional_rois)
@@ -60,10 +59,10 @@ opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is s
 
 
 %params for response extraction/normalization
-opt.resp.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
-opt.resp.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
-opt.resp.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
-opt.resp.response_normalization_string = {... %different normalization methods, default is no normalization, which is given string 'null'
+opt.norm.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
+opt.norm.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
+opt.norm.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
+opt.norm.response_normalization_string = {... %different normalization methods, default is no normalization, which is given string 'null'
     'rescale0100', ...
     % 'rescale595', ...
     % 'zscore', ...
@@ -72,15 +71,18 @@ opt.resp.response_normalization_string = {... %different normalization methods, 
     % 'dff595'...
     % 'boxcox'...
     };
+opt.norm.doplots = 0;
 
 
 %params for stimulus/fictrac processing
+opt.ft.include_behavior = 1; %0 to skip behavior
+opt.ft.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
 opt.ft.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
 opt.ft.dark_stim_end_duration = 60; %final seconds
 opt.ft.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.ft.slopeorder = 2; %order of polynomial used to fit local slope
 opt.ft.slopelen = 5; %window length used to fit slope
-
+opt.ft.doplots = 0;
 
 %params for bump in compute_bump function
 opt.bump.regionpat = {'pb'};
@@ -92,7 +94,7 @@ opt.bump.bump_subdomain = 'all'; %'all', 'right', 'left', 'larger', 'weighted', 
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.bump.numcluster_for_bump_domain_resample = 16; %0 to skip, for each region in regionex, this is how many centroids/glomeruli across the entire region (not hemisphere) when resampled uniformly, 0 to skip resampling 
+opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many centroids/glomeruli across the entire region (not hemisphere) when resampled uniformly, cell array of string 'regionex-integer', 'regionex-0', or empty string will skip, or nothing for an existing regionex, region must be in opt.bump.regionpat to get used 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.bump.doplots = 1;
 

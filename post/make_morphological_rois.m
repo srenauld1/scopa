@@ -150,7 +150,7 @@ if doplots
     trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
     axis image
 
-    overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(stack, 0, 1));
+    overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
     plot_gif( overlayarray, [pth_stack(1:end-4) '3d_mask_manual_' regionex '_.gif'], 256)
 
 

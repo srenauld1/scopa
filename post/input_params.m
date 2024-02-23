@@ -2,28 +2,25 @@ function opt = input_params()
 
 % struct 'opt' holds all input params 
 % substructures are (mostly) used within single functions called from analysis2p
-% substructure 'main' is (mostly) used in analysis2p directly 
 
 
-%params for main pipeline control in file analysis2
+%params for main pipeline control in file analysis2p
 opt.main.parent_folder = 'stacks'; %folder containing all recording folders (on local or o2)
-opt.main.recdate = '20230627';
-opt.main.fly = '*';
-opt.main.trial = '*';
-opt.main.suffix_analysis = 'cmrg_dcdn';
-opt.main.regionex_all = {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %USE UNDERSCORE_SUFFIX TO create new regionex for this matlab part of the pipeline, based on the prefix regionex from the python preprocessing part of the pipeline
+opt.main.recdate = '20230627'; %can use wildcards
+opt.main.fly = '*'; %can use wildcards
+opt.main.trial = '*'; %can use wildcards
+opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+opt.main.regionex_all = {'fool', 'gar', 'gal', 'no_r', 'no_l', 'pb'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append a underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existingregionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 
-
-opt.main.do_cropping_session = 0; %skip everything except drawing 2d rois
-opt.main.skip_existing = 0; %skip analysis if savefile exists for a given regionex
 opt.main.old_project = 0; %for carl
 
 
-%params for making morphological rois (manual or automated)
-opt.mroi.use_hires = {'pb'}; %empty string to skip, cell array of regionex you want to use_hires for, uses hi-z-res stack to make morph mask
-opt.mroi.use_drawn_rois =  {'gar', 'gal', 'no_r', 'no_l', 'pb'}; %empty string to skip, cell array of regionex you want to use_drawn_rois for
-opt.mroi.numroi_morph_auto = {'gar-0', 'no_r-1', 'no_l-1', 'pb-32'}; %how many morph rois get automatically defined across the entire region (not hemisphere), cell array of string 'regionex-integer', 'regionex-0', or empty string will skip, or nothing for an existing regionex
-opt.mroi.doplots = 1;
+%params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
+% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.numroi_morph_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+opt.mroi.use_hires = {}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.use_drawn_rois =  {}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
+opt.mroi.numroi_morph_auto = {}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into numroi_morph_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; numroi_morph_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
+opt.mroi.doplots = 1; %doplots in make_morphological_rois
 
 
 %params for making gif of raw data movies in function vis_tif
