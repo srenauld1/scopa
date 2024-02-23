@@ -59,10 +59,10 @@ opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is s
 
 
 %params for response extraction/normalization
-opt.resp.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
-opt.resp.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
-opt.resp.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
-opt.resp.response_normalization_string = {... %different normalization methods, default is no normalization, which is given string 'null'
+opt.norm.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
+opt.norm.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi) 
+opt.norm.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
+opt.norm.response_normalization_string = {... %different normalization methods, default is no normalization, which is given string 'null'
     'rescale0100', ...
     % 'rescale595', ...
     % 'zscore', ...
@@ -71,6 +71,7 @@ opt.resp.response_normalization_string = {... %different normalization methods, 
     % 'dff595'...
     % 'boxcox'...
     };
+opt.norm.doplots = 0;
 
 
 %params for stimulus/fictrac processing

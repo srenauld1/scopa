@@ -1,8 +1,12 @@
 
-function resp = extract_roi_responses(respin, mask_roi_vec, f0_pct, ...
-    pth_save_prefix, response_normalization_string, ...
-    normalize_before_roi_clustering, normalize_after_roi_clustering, doplots, resp)
+function resp = extract_roi_responses(respin, mask_roi_vec, ...
+    pth_save_prefix, normopts, resp)
 
+response_normalization_string = normopts.response_normalization_string;
+normalize_before_roi_clustering = normopts.normalize_before_roi_clustering;
+normalize_after_roi_clustering = normopts.normalize_after_roi_clustering;
+f0_pct = normopts.f0_pct;
+doplots = normopts.doplots;
 
 %if resp is passed as input, this function's output resp is appended to it
 if ~exist('resp', 'var')
