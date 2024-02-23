@@ -42,7 +42,7 @@ catch
         meanvol_lores = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration
 
         pth2.fldr = pth.fldr;
-        pth2.use_mat = {''};
+        pth2.stack_analysis = {''};
         pth2.stacks_prefix = {pth.hires_prefix};
 
         stack_hires = load_stack(md.md_hires, pth2, opts_hires.gif, recid);

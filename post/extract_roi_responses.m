@@ -5,7 +5,6 @@ function resp = extract_roi_responses(respin, mask_roi_vec, ...
 response_normalization_string = normopts.response_normalization_string;
 normalize_before_roi_clustering = normopts.normalize_before_roi_clustering;
 normalize_after_roi_clustering = normopts.normalize_after_roi_clustering;
-f0_pct = normopts.f0_pct;
 doplots = normopts.doplots;
 
 %if resp is passed as input, this function's output resp is appended to it
@@ -39,7 +38,7 @@ for fnini = 1:length(fnin)
 
     if normalize_before_roi_clustering
         fieldnameprefix = '';
-        [resp1] = normalize_response(resp1.f, response_normalization_string, fieldnameprefix, f0_pct);
+        [resp1] = normalize_response(resp1.f, response_normalization_string, fieldnameprefix);
     end
 
     fn1 = fieldnames(resp1);
@@ -70,7 +69,7 @@ for fnini = 1:length(fnin)
 
         if normalize_after_roi_clustering
             fieldnameprefix = '';
-            [resp2] = normalize_response(resp2.f, response_normalization_string, fieldnameprefix, f0_pct);
+            [resp2] = normalize_response(resp2.f, response_normalization_string, fieldnameprefix);
         end
 
         fn2 = fieldnames(resp2);

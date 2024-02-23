@@ -4,6 +4,12 @@ disp("see ricker.m for 1d filter option")
 disp("change reample bump to 4pi")
 disp("does 2pi ever appear twice as 0 and 1??")
 
+%remove weighting 
+%fix normalization strings 
+%simplify scatterplots
+%fix plot bump
+%plot experiment
+%include flyg gui 
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
@@ -51,31 +57,12 @@ for pai = 1:length(pth_all)
     pth_usetmp = pth_all{pai};
     [opt, pth, croplim_all, roiparsm, roiparsf, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_usetmp);
 
-    %% load and process stimulus/fictrac data and metadata
+    %% load metadata
 
-    load(pth.metadata) %file created in initial python part of pipeline
-    ff = @(x,y) cell2struct([struct2cell(md);struct2cell(opt.md)],[fieldnames(md);fieldnames(opt.md)]);
-    md = ff(md, opt.md);
-    md.numvol_o = md.numvol;
-    md = rmfield(md, 'numvol');
-    md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-    md.numvol_crop = md.numvol_o - sum(md.croptimeinds);
-    md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
+    md = load_metadata(pth.metadata, opt.md);
 
-    if isfield(md,'md_hires')
-        md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
-        md.md_hires.croptimeinds = [0 0];
-        hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
-        md = rmfield(md, 'md_hires');
-    else
-        hires_struct_tmp = [];
-    end
-    md = cell2struct(cellfun(@double,struct2cell(md),'uni',false),fieldnames(md),1); %make everything double bc python made uint64
-    md.md_hires = hires_struct_tmp;
-    md.xwid = md.xfov / md.xpix; %do this after conversion to double
-    % md.zwid = md.zfov / md.numslice; %do this after conversion to double
-    md = orderfields(md);
-
+    %% load and process stimulus/fictrac data
+    
     if opt.ft.include_behavior
         if old_project
             [md, stim] = load_stim(md, datenum, flynum, trialnum, opt.ft);
@@ -85,15 +72,15 @@ for pai = 1:length(pth_all)
     end
 
 
-    %% load/visualize movies
+    %% load/visualize movies (stacks)
 
-    stack = load_stack(md, pth, opt.gif, recid, opt.mroi.use_hires);
+    stack = load_stack(md, pth, opt.gif, recid);
 
 
-    %% load high resolution movie
+    %% load high resolution movie (stack)
 
     if any(cell2mat(struct2cell(opt.mroi.use_hires)))
-        [stack_hires_mnt, map_hires_lores] = load_hires_stack(pth, stack, md, opt.hires.use_caiman_on_hires);
+        [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opt.hires);
     end
 
     %% rois/responses
@@ -103,7 +90,7 @@ for pai = 1:length(pth_all)
     stack_mnt = cell(length(regionex_all), 1);
     for rei = 1:length(regionex_all) %for each region with extracted rois
 
-            %% crop data
+            %% crop movie to regionex cuboid
 
             regionex = regionex_all{rei};
             croplim = croplim_all{rei};
@@ -115,7 +102,7 @@ for pai = 1:length(pth_all)
 
             [roiinfo.(regionex).(roiparsm{rei})] = ...
                 make_morphological_rois(stackcrop, opt.mroi.use_drawn_rois.(regionex), ...
-                opt.mroi.numroi_morph_auto.(regionex), md.xwid, md.zwid, pth.use_mat, ...
+                opt.mroi.numroi_morph_auto.(regionex), md.xwid, md.zwid, pth.stack_analysis, ...
                 hiresmntcrop, map_hires_lores_crop, regionex, opt.mroi.doplots);
 
 
@@ -127,7 +114,7 @@ for pai = 1:length(pth_all)
                 pth.roi_morph{rei}, opt.norm);
 
 
-            %% load functional (caiman) roi responses, keep them, and also average/normalize them by morphological rois 
+            %% load functional (caiman) roi responses, remove any that don't meet morphological criteria (if anyare requested)
 
             for rfi = 1:length(pth.roi_func_all{rei})
 
@@ -137,6 +124,8 @@ for pai = 1:length(pth_all)
                     roiinfo.(regionex).(roiparsm{rei}).centroids_roi, ...
                     roiinfo.(regionex).(roiparsm{rei}).mask_allroi, ...
                     regionex, md.croptimeinds, opt.froi);
+
+                %% compute functional (caiman) roi responses, and also functional (caiman) responses averaged by morphological roi
 
                 %this version not weighted by area by passing pixinds_roi_func
                 resp.(regionex).(roiparsf{rei}{rfi}) = ...

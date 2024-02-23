@@ -1,0 +1,28 @@
+function md = load_metadata(pth_metadata, mdnew)
+
+
+md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
+md = md{1};
+
+ff = @(x,y) cell2struct([struct2cell(md);struct2cell(mdnew)],[fieldnames(md);fieldnames(mdnew)]);
+md = ff(md, mdnew);
+md.numvol_o = md.numvol;
+md = rmfield(md, 'numvol');
+md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
+md.numvol_crop = md.numvol_o - sum(md.croptimeinds);
+md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
+
+if isfield(md,'md_hires')
+    md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
+    md.md_hires.croptimeinds = [0 0];
+    hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
+    md = rmfield(md, 'md_hires');
+else
+    hires_struct_tmp = [];
+end
+md = cell2struct(cellfun(@double,struct2cell(md),'uni',false),fieldnames(md),1); %make everything double bc python made uint64
+md.md_hires = hires_struct_tmp;
+md.xwid = md.xfov / md.xpix; %do this after conversion to double
+% md.zwid = md.zfov / md.numslice; %do this after conversion to double
+md = orderfields(md);
+

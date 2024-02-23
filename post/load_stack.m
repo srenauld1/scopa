@@ -21,7 +21,7 @@
 function stack = load_stack(md, pth, opts, recid)
 
 pth_fldr = pth.fldr;
-pth_use_mat = pth.use_mat;
+pth_stack_analysis = pth.stack_analysis;
 pth_stacks_prefix = pth.stacks_prefix;
 
 plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
@@ -31,7 +31,6 @@ nan_numlines = opts.nan_numlines; %how many lines of nans to insert in dim 1 abo
 rescale_each_subplot = opts.rescale_each_subplot; %rescale each subplot to same range 0-1 before combining
 rescalefac_wholeplot = opts.rescalefac_wholeplot; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = opts.smooth_window_temporal; %smooth the stack in time, 0 to skip
-ncolgif = opts.ncolgif; %color/grey res
 plot_stack_stats = opts.plot_stack_stats;
 plot_stack_gif = opts.plot_stack_gif;
 if ~isfield(opts, 'plot_stack_order')
@@ -169,7 +168,7 @@ for spi = 1:length(pth_stacks_prefix)
         end
 
         if plot_stack_gif
-            if ~strcmp(pth_stack_mat, pth_use_mat) %if it's the stack for analysis outside this function
+            if ~strcmp(pth_stack_mat, pth_stack_analysis) %if it's the stack for analysis outside this function
                 stack = [];
             end
 

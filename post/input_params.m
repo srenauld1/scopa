@@ -24,7 +24,7 @@ opt.main.old_project = 0; %for carl
 opt.gif.suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.gif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.gif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -34,7 +34,6 @@ opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before
 opt.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
-opt.gif.ncolgif = 128; %color/grey res
 
 
 %% MORPHOLOGICAL ROIS
@@ -69,12 +68,12 @@ opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is s
 opt.norm.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi)
 opt.norm.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi)
 opt.norm.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
-opt.norm.response_normalization_string = {... %list of strings, different normalization methods, must have at least one (e.g., 'f', which is no normalization)
-    'f', ... %no normalization 
-    'dff015' %dff, uses last 3 digits as percentile to compute f0 across entire timeseries
-    'dffmv015' %sliding window dff, uses last 3 digits as percentile to compute f0 for each window
+opt.norm.response_normalization_string = {%list of strings, different normalization methods, must have at least one (e.g., 'f', which is no normalization)
+    % 'f', ... %no normalization 
+    'dff015', ... %dff, uses last 3 digits as percentile to compute f0 across entire timeseries
+    'dffmv020015', ... %sliding window dff, uses first 3 digits (leading zeros if necessary) as sliding window length in seconds, last 3 digits (leading zeros if necessary) as percentile to compute f0 for each window
     'rsc', ... %rescale, sending min to 0, max to 1
-    % 'rsc0050095', ... %rescale, sending x percentile to 0, y percentile to 1, where x is first 3 digits (range 000-100), y is next 3 digits (range 000-100), e.g. for rescale001095 x will be 1 and y will be 95
+    % 'rsc0050095', ... %rescale, sending x percentile to 0, y percentile to 1, where x is first 3 digits (leading zeros if necessary), y is next 3 digits (leading zeros if necessary), e.g. for rescale001095 x will be 1 and y will be 95
     % 'fz', ... %zscore
     % 'nn', ... %make nonnegative by subtracting min
     % 'dffz', ... %z score of dff
@@ -205,7 +204,6 @@ opt.hires.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 
 opt.hires.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.hires.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.hires.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
-opt.hires.gif.ncolgif = 128; %color/grey res
 opt.hires.gif.plot_stack_gif = 1;
 opt.hires.do_reg_plots = 1;
 opt.hires.use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)

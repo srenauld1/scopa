@@ -8,7 +8,7 @@ if ~exist('ncolors', 'var')
     ncolors = 128;
 end
 
-if ~exist('swapdim', 'var') || isempty(dwapdim)
+if ~exist('swapdim', 'var') || isempty(swapdim)
     swapdim = 0;
 end
 

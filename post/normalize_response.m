@@ -1,8 +1,10 @@
-function [respout] = normalize_response(respin, response_normalization_string, fieldnameprefix, f0_pct)
+function [respout] = normalize_response(respin, response_normalization_string)
 
 %several normalization methods, input respin is 2d space x time, single or double precision
 
-respout.f = respin; %f is no normalization
+if any(strcmp(response_normalization_string, 'f'))
+    respout.f = respin; %f is no normalization
+end
 
 if any(strcmp(response_normalization_string, 'rsc'))
     rowmin = min(respin, [], 2);
@@ -91,11 +93,3 @@ if any(ismember(response_normalization_string, {'nn', 'box'}))
     end
 
 end
-
-% 
-% fn1 = fieldnames(respout);
-% for fn1i = 1:length(fn1)
-%     fieldnamenew = [fieldnameprefix '_' fn1{fn1i}];
-%     respout.(fieldnamenew) = respout.(fn1{fn1i});
-%     respout = rmfield(respout, fn1{fn1i});
-% end
