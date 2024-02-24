@@ -127,7 +127,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                            extra_roi_pad = 20 #roi number per slice can vary a little, pad in case a later slice has more rois than an earlier slice
+                            extra_roi_pad = 0 #roi number per slice can vary a little, pad in case a later slice has more rois than an earlier slice
                             numroi_stack_pad = cnm2.estimates.A.shape[-1] + extra_roi_pad
                             dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
                             dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )

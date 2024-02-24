@@ -80,8 +80,8 @@ opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is s
     % 'nn' % nonnegative (subtract min)
     % 'box'... %box-cox
 
-opt.norm.precluster = {'f'};
-opt.norm.postcluster = {'f', 'zrsc000100', 'dff000020', 'dff015020rsc000100'};
+opt.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
+opt.norm.postcluster = {'f', 'rsc000100z', 'dff000020', 'dff015000rsc000095'}; %must have at least one string, compsed of syllables above
 opt.norm.doplots = 0;
 
 %% FICTRAC/STIMULUS
