@@ -128,10 +128,9 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                            numroi_stack_pad = max_possible_num_roi
-                            dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
+                            dims_roimask_stack = ( dims_roimask_spatial + (max_possible_num_roi, ) )
                             dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
-                            dims_timeseries_stack = ( numroi_stack_pad, cnm2.estimates.C.shape[1] )
+                            dims_timeseries_stack = ( max_possible_num_roi, cnm2.estimates.C.shape[1] )
 
                             stack_masks = np.zeros(dims_roimask_stack + (len(sliceindz), ) )
                             stack_masks_b = np.zeros(dims_roimask_b_stack + (len(sliceindz), ) )
