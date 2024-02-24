@@ -1,5 +1,5 @@
 function bump = compute_bump(stack, resp, visang, ...
-    fn_save_prefix, stimepochinds_i, dt_i_mean, ...
+    fn_save_prefix, stimepochinds_i, dtmni, ...
     pixinds_roi, mapind2ind, bumpopts, fitopt)
 
 bump_method = bumpopts.bump_method; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet 
@@ -12,7 +12,7 @@ rescale_clusters = bumpopts.rescale_clusters; %just before computing bump, resca
 numcluster_for_bump_domain_resample = bumpopts.numcluster_for_bump_domain_resample;
 doplots = bumpopts.doplots;
 
-smoothwindow = smoothwindow_sec/dt_i_mean;
+smoothwindow = smoothwindow_sec/dtmni;
 
 
 %% define domain (functionally or morphologically)
@@ -32,7 +32,7 @@ end
 if strcmp(domain_method, 'functional')
 
     [resp_cl, domaintmp] = map_rois_to_head_direction(stack, resp, visang, pixinds_roi, ...
-        mapind2ind, stimepochinds_i, dt_i_mean, fitopt, halfcent, fn_save_prefix, ...
+        mapind2ind, stimepochinds_i, dtmni, fitopt, halfcent, fn_save_prefix, ...
         numcluster_for_bump_domain_resample, doplots);
 
 elseif strcmp(domain_method, 'morphological') %morphological domain
@@ -109,7 +109,7 @@ for fi = 1:length(bump_subdomain)
         rho = smoothdata(rho, 'gaussian', smoothwindow);
     end
 
-    bumpvel = differentiate_circular_variable(mu, dt_i_mean, slopelen, slopeorder);
+    bumpvel = differentiate_circular_variable(mu, dtmni, slopelen, slopeorder);
     offset = circ_dist_nan(visang, mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point

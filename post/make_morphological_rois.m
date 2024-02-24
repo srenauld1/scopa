@@ -1,5 +1,5 @@
-function [roiinfo]  = make_morphological_rois(stack, use_drawn_rois, numroi_morph_auto, ...
-    xwid, zwid, pth_stack, stack_hires, map_hires_lores, regionex, doplots)
+function [roiinfo]  = make_morphological_rois(stack, opts_mroi, ...
+    xwid, zwid, pth_stack, stack_hires, map_hires_lores, regionex)
 
 
 %if you want to automate rois from multiple drawn regions, use different
@@ -39,6 +39,10 @@ function [roiinfo]  = make_morphological_rois(stack, use_drawn_rois, numroi_morp
 % and assign the outputs of this function a different name (outside this function)
 
 %% draw rois (polygons/polyhedra)
+
+use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
+numroi_morph_auto = opts_mroi.numroi_morph_auto.(regionex);
+doplots = opts_mroi.doplots;
 
 if use_drawn_rois
 

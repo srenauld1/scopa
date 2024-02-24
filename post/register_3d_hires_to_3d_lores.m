@@ -1,6 +1,5 @@
 function stack_hires_mnt_reg = register_3d_hires_to_3d_lores(stack_hires_mnt, ...
-    pth_hires_mat_matreg, stack_lores_mnt, map_hires_lores, doplots)
-
+    pth_hires_mat_matreg, stack_lores_mnt, map_hires_lores, opts_hires)
 
 
 
@@ -34,9 +33,8 @@ stack_hires_mnt_ds(stack_hires_mnt_ds~=0) = rescale(stack_hires_mnt_ds(stack_hir
 %% register hires_ds to lores
 
 %register downsampled hires_ds to stack_lores_mnt (in 3d)
-disttype = 'monomodal'; % multimodal monomodal
-regtype = 'rigid';
-[stack_hires_mnt_ds_reg, tform] = register_one_stack_to_another_in_3d(stack_hires_mnt_ds, stack_lores_mnt, disttype, regtype);
+
+[stack_hires_mnt_ds_reg, tform] = register_one_stack_to_another_in_3d(stack_hires_mnt_ds, stack_lores_mnt, opts_hires.disttype, opts_hires.regtype);
 
 %apply transformation to the hires that has not been downsampled
 stack_hires_mnt_reg = imwarp(stack_hires_mnt,tform,"OutputView",imref3d(size(stack_hires_mnt)));
@@ -68,7 +66,7 @@ save(pth_hires_mat_matreg, 'stack_hires_mnt_reg', '-v7.3', '-mat')
 %% plots
 
 
-if doplots
+if opts_hires.doplots
 
     % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
     % volshow(stack_hires_mnt_reg,Parent=viewerRegistered,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...

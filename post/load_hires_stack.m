@@ -1,7 +1,6 @@
 function [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opts_hires)
 
 
-
 %% if using a high-z-res stack also, map low resolution z indices to to high resolution z indices
 
 pth_hires_tif = [pth.hires_prefix '.tif'];
@@ -39,10 +38,10 @@ catch
     try
 
         lores_z_for_hires_map = setxor(lores_z_out_of_bounds, 1:size(stack, 3)); %crop here so the hires registration is correct
-        meanvol_lores = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration
+        stack_lores_mnt = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration, may not be quite the same as stackmnt in analysis2p since lores_z_for_hires_map is applied here (using only z that match hires and lores)
 
         pth2.fldr = pth.fldr;
-        pth2.use_mat = {''};
+        pth2.stack_analysis = [pth.hires_prefix '.mat'];
         pth2.stacks_prefix = {pth.hires_prefix};
 
         stack_hires = load_stack(md.md_hires, pth2, opts_hires.gif, recid);
@@ -51,7 +50,7 @@ catch
         stack_hires_mnt = rescale(mean(stack_hires, 4));
 
         stack_hires_mnt = register_3d_hires_to_3d_lores(stack_hires_mnt, ...
-            pth.hires_mat_matreg, meanvol_lores, map_hires_lores, opt.hires.do_reg_plots);
+            pth.hires_mat_matreg, stack_lores_mnt, map_hires_lores, opts_hires);
 
     catch
 

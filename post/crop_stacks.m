@@ -1,4 +1,4 @@
-function [croplim_all, stack_mnt, map_hires_lores_crop, hiresmntcrop] = ...
+function [stackcrop, stack_mnt, map_hires_lores_crop, hiresmntcrop] = ...
     crop_stacks(stack, croplim, use_hires, recid, regionex, pth_fldr, sz_crop )
                
 
@@ -6,7 +6,6 @@ if ~isempty(croplim)
     stackcrop = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), :));
 else
     [stackcrop, croplim] = make_croplim(single(stack), sz_crop(4), pth_fldr, recid, regionex);
-    croplim_all = croplim;
 end
 
 stack_mnt = mean(stackcrop, 4);
@@ -20,13 +19,17 @@ if use_hires
         map_hires_lores_crop = map_hires_lores;
         hiresmntcrop = stack_hires_mnt;
     end
+    if ~isa(hiresmntcrop, 'single') & ~isa(hiresmntcrop, 'double')
+        error("hires stack needs to be single or double, there are negatives coming soon")
+    end
 else
     hiresmntcrop = [];
     map_hires_lores_crop = [];
 end
 
-if ~isa(stackcrop, 'single') & ~isa(stackcrop, 'double') & ( use_hires & ~isa(hiresmntcrop, 'single') & ~isa(hiresmntcrop, 'double') )
-    error("stacks need to be single or double, there are negatives coming soon")
+
+if ~isa(stackcrop, 'single') & ~isa(stackcrop, 'double') 
+    error("stack needs to be single or double, there are negatives coming soon")
 end
 
 end

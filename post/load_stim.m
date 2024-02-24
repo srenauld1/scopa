@@ -58,8 +58,8 @@ ball = [];
 
 md.tb = [];
 
-md.dt_i_mean = 1/md.volrate;
-md.ti = md.dt_i_mean * [1:size(vis.raw, 2)];
+md.dtmni = 1/md.volrate;
+md.ti = md.dtmni * [1:size(vis.raw, 2)];
 md.total_t = max(md.ti);
 md.smoothwindow_i = md.smoothwindow_sec/mean(diff(md.ti));
 

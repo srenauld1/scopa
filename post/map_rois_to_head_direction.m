@@ -1,6 +1,6 @@
 
 function [resp, domain] = map_rois_to_head_direction(stack, resp, visang, ...
-    pixinds_roi, mapind2ind, stimepochinds_i, dt_i_mean, fitopt, ...
+    pixinds_roi, mapind2ind, stimepochinds_i, dtmni, fitopt, ...
     halfcent, fn_prefix, numcluster_for_bump_domain_resample, doplots)
 
 %resp = nonlinearly_transform_response(resp)
@@ -15,7 +15,7 @@ fitopt.doplots = 1;
 
 [~, ~, cueang_pref] = fitresp(stack, stimfit, resp, ...
     pixinds_roi, mapind2ind, stimepochinds_i, ...
-    dt_i_mean, fn_prefix, fitopt);
+    dtmni, fn_prefix, fitopt);
 
 cueang_pref = cueang_pref{1}(:)';
 

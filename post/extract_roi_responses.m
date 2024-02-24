@@ -1,11 +1,7 @@
 
 function resp = extract_roi_responses(respin, mask_roi_vec, ...
-    pth_save_prefix, normopts, resp)
+    pth_save_prefix, normopts, dtmni, resp)
 
-response_normalization_string = normopts.response_normalization_string;
-normalize_before_roi_clustering = normopts.normalize_before_roi_clustering;
-normalize_after_roi_clustering = normopts.normalize_after_roi_clustering;
-doplots = normopts.doplots;
 
 %if resp is passed as input, this function's output resp is appended to it
 if ~exist('resp', 'var')
@@ -36,10 +32,7 @@ for fnini = 1:length(fnin)
 
     resp1.f = respin.(fnin{fnini}); %assign the no-normalization default
 
-    if normalize_before_roi_clustering
-        fieldnameprefix = '';
-        [resp1] = normalize_response(resp1.f, response_normalization_string, fieldnameprefix);
-    end
+    resp1 = normalize_response(resp1.f, normopts.precluster, dtmni);
 
     fn1 = fieldnames(resp1);
 
@@ -50,7 +43,7 @@ for fnini = 1:length(fnin)
         im2d = resp1.(fn1{fn1i});
 
         if ndims(im2d)~=2
-            error %should always be 2d (space by time), caiman rois are before this function, and raw image is reshaped above
+            error("should always be 2d (space by time), raw image is reshaped above, and caiman rois are also 2d space by time")
         end
 
         goodinds = any(im2d, 2) & ~any(isnan(im2d), 2); %so they don't affect the mean, get rid of bad rois here (all zeros or any nans); do before clustering so extraction & normalization param mapping is unaffected, for raw pixels this should do nothing
@@ -67,10 +60,7 @@ for fnini = 1:length(fnin)
             resp2.f = nan;
         end
 
-        if normalize_after_roi_clustering
-            fieldnameprefix = '';
-            [resp2] = normalize_response(resp2.f, response_normalization_string, fieldnameprefix);
-        end
+        resp2 = normalize_response(resp2.f, normopts.postcluster, dtmni);
 
         fn2 = fieldnames(resp2);
 
@@ -82,8 +72,8 @@ for fnini = 1:length(fnin)
     end
 end
 
-%assign the no-normalization/no-clustering fields for functional rois 
-%(morph rois get clustered at least, since otherwise they're just raw pixels)
+%assign the no-normalization/no-clustering fields for functional rois (just plain caiman output)
+%(morph rois get clustered at least, since otherwise they're just single pixels)
 %note these can have different size than the fields that were clustered
 %pc gets f, cl and w get null since there is no clustering for this field 
 if ~raw_image_input
@@ -94,7 +84,7 @@ if ~raw_image_input
 end
 
 
-if doplots
+if normopts.doplots
     
     numroi = size(cluster_f,1);
     indzy = 1:size(cluster_f,2);

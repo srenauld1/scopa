@@ -1,6 +1,6 @@
 function [ft, gof, pstim] = fitresp(stack, stimin, respin, ...
     pixinds_roi, mapind2ind, stimepochinds_i, ...
-    dt_i_mean, pth_fitdata_prefix, fitopt)
+    dtmni, pth_fitdata_prefix, fitopt)
 
 % notes on fitting
 % default is to use globalsearch with solver fmincon
@@ -86,7 +86,7 @@ if strcmp(fitopt.hsv_background, 'pixels')
     respin2 = respin2(cell2mat(pixinds_roi_2), :);
     pth_fitdata_prefix_pix = [pth_fitdata_prefix '_PIX'];
     fitresp(stack, stimfit, respin2, pixinds_roi, mapind2ind, ... %call fitresp on pixels if you want a pixel fit background behind your roi fit background
-        stimepochinds_i, dt_i_mean, pth_fitdata_prefix_pix, opt.fit);
+        stimepochinds_i, dtmni, pth_fitdata_prefix_pix, opt.fit);
 end
 
 
@@ -150,7 +150,7 @@ end
 %% create version of stim that can be passed to optimization code (dimensions x sample)
 
 
-num_samp_model = round(fitopt.length_model_seconds/dt_i_mean);
+num_samp_model = round(fitopt.length_model_seconds/dtmni);
 if num_samp_model==0
     num_samp_model = 1; %a convenience, so user can pass fitopt.length_model_seconds=0 if they don't know volume rate
 end
@@ -174,7 +174,7 @@ end
     fitopt.hrange_out_manual, hue_is_periodic, supp] = ...
     model_setup(fitopt.modeltype, fitopt.huestr, ...
     fitopt.hrange_out_manual, ...
-    stimaug, num_samp_model, num_dim_stimaug, num_dim_stimin, respin, dt_i_mean);
+    stimaug, num_samp_model, num_dim_stimaug, num_dim_stimin, respin, dtmni);
 
 
 %% write response to bin (to allow parfor loop without broadcasting)

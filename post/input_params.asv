@@ -24,7 +24,7 @@ opt.main.old_project = 0; %for carl
 opt.gif.suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.gif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.gif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -64,22 +64,24 @@ opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is s
 
 %% RESPONSE NORMALIZATION
 
-%params for response extraction/normalization
-opt.norm.normalize_before_roi_clustering = 0; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi)
-opt.norm.normalize_after_roi_clustering = 1; %if rois are clustered into larger rois (e.g. functional/caiman rois clustered by morphoplogical roi)
-opt.norm.f0_pct = 15; %percentile defining baseline fluorescence in dff computation applied to morphological rois (whether pixels, morph rois, or morph clustered functional/caiman rois)
-opt.norm.response_normalization_string = {%list of strings, different normalization methods, must have at least one (e.g., 'f', which is no normalization)
-    % 'f', ... %no normalization 
-    'dff015', ... %dff, uses last 3 digits as percentile to compute f0 across entire timeseries
-    'dffmv020015', ... %sliding window dff, uses first 3 digits (leading zeros if necessary) as sliding window length in seconds, last 3 digits (leading zeros if necessary) as percentile to compute f0 for each window
-    'rsc', ... %rescale, sending min to 0, max to 1
-    % 'rsc0050095', ... %rescale, sending x percentile to 0, y percentile to 1, where x is first 3 digits (leading zeros if necessary), y is next 3 digits (leading zeros if necessary), e.g. for rescale001095 x will be 1 and y will be 95
-    % 'fz', ... %zscore
-    % 'nn', ... %make nonnegative by subtracting min
-    % 'dffz', ... %z score of dff
-    % 'dff005095'... % dff with percentiles given by last 6 digits 
+% params for response extraction/normalization
+% precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi) 
+% postcluster normalization is applied after clustering 
+% clustering means averaging data for all pixels or caiman rois within a morphological roi   
+% precluster and postcluster are each a list of strings specifying different
+% normalization methods, each must have at least one string (use 'f' for no normalization) 
+
+% below xxx, yyy, zzz, and www, are 3-character strings converted to integers, string range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
+% all normalizations are applied to individual pixel or roi timeseries
+% normalization strings are:
+    % 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if www is 000 then f0 is computed across the entire timeseries, not a sliding window 
+    % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
+    % 'z' % zscore
+    % 'nn' % nonnegative (subtract min)
     % 'box'... %box-cox
-    };
+
+opt.norm.precluster = {'f'};
+opt.norm.postcluster = {'f', 'zrsc000100', 'dff000020', 'dff015020rsc000100'};
 opt.norm.doplots = 0;
 
 %% FICTRAC/STIMULUS
@@ -206,7 +208,9 @@ opt.hires.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.hires.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.hires.gif.plot_stack_gif = 1;
 opt.hires.do_reg_plots = 1;
-opt.hires.use_caiman_on_hires = [0, 0, 0, 0, 0]; %keep at 0 bc pipeline is poorly written for this option (also doens't seem to help)
+opt.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores 
+opt.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores 
+opt.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
 opt.hires.caiman_hr_str = '*'; %empty to skip
 
 %% METADATA (TO ADD TO EXISTING METADATA FROM *metadatanew.mat)
