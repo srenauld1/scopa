@@ -104,7 +104,6 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                             if 'dview' in locals(): cm.stop_server(dview=dview)
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
         
-                
                         cnm2 = cnm.refit(images_sliced)
 
                         cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
@@ -128,7 +127,8 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                            numroi_stack_pad = cnm2.estimates.A.shape[-1]
+                            extra_roi_pad = 10 #roi number per slice can vary a little, pad in case a later slice has more rois than an earlier slice
+                            numroi_stack_pad = cnm2.estimates.A.shape[-1] + extra_roi_pad
                             dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
                             dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
                             dims_timeseries_stack = ( numroi_stack_pad, cnm2.estimates.C.shape[1] )
