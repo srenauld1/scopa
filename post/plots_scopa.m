@@ -1,6 +1,8 @@
 
 function plots_scopa(filename_sd)
 
+error("plots_scopa is deprecated")
+
 %% set params
 
 %define cue epoch boundaries
@@ -46,7 +48,7 @@ for rci = 1:length(region_choose)
         end
 
 
-        [resp_tmp, params_all_tmp, params_all_tmp_bad] = index_into_extraction_and_normalization_params(params_all, resp, ex_manual, norm_manual);
+        [resp_tmp, params_all_tmp, params_all_tmp_bad] = index_into_extraction_and_normalization_params(pars_all, resp, ex_manual, norm_manual);
 
         resp_tmp = squeeze(resp_tmp);
         % exparams_unique_tmp = unique(params_all_tmp(:,1), 'stable');
@@ -111,7 +113,7 @@ num_panel_frames = md.num_panel_frames;
 
 %% 
 
-totalnumruns = size(params_all, 1);
+totalnumruns = size(pars_all, 1);
 numeachseg = 100;
 %subsetinds = [1:numeachseg, round(totalnumruns/2):round(totalnumruns/2)+numeachseg, totalnumruns-numeachseg:totalnumruns]; top, middle, bottom
 subsetinds = 1:numeachseg;
@@ -128,7 +130,7 @@ switch err_sorting_method
         ex_manual = {'*'};
         norm_manual = {'in_*_pc_null_cl_null_w_*'};
 
-        [resp_tmp, params_all_tmp, params_all_tmp_bad, idx_manual] = index_into_extraction_and_normalization_params(params_all, resp, ex_manual, norm_manual);
+        [resp_tmp, params_all_tmp, params_all_tmp_bad, idx_manual] = index_into_extraction_and_normalization_params(pars_all, resp, ex_manual, norm_manual);
 
         subsetinds = idx_manual;
         err_sorting = 1:length(err_std_sorted); %undo sorting for manual
@@ -150,10 +152,10 @@ for ci = 1:length(err_sorting)
 
     countz = countz+1;
 
-    caiman_params_selected = params_all{err_sorting(ci), 1};
-    caiman_ind_selected = params_all{err_sorting(ci), 2};
-    norm_params_selected = params_all{err_sorting(ci), 3};
-    norm_ind_selected = params_all{err_sorting(ci), 4};
+    caiman_params_selected = pars_all{err_sorting(ci), 1};
+    caiman_ind_selected = pars_all{err_sorting(ci), 2};
+    norm_params_selected = pars_all{err_sorting(ci), 3};
+    norm_ind_selected = pars_all{err_sorting(ci), 4};
 
     dff_pb = resp{caiman_ind_selected}.(norm_params_selected);
     mu = bump{caiman_ind_selected}.([norm_params_selected '_mu']);

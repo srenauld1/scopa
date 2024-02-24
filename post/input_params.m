@@ -39,10 +39,10 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 %% MORPHOLOGICAL ROIS
 
 % params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
-% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.numroi_morph_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 opt.mroi.use_hires = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.use_drawn_rois =  {'pb'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
-opt.mroi.numroi_morph_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into numroi_morph_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; numroi_morph_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
+opt.mroi.num_mroi_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
 opt.mroi.doplots = 1; %doplots in make_morphological_rois
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
@@ -67,7 +67,7 @@ opt.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS
 
-%params for loading/selecting/viewing functional rois (applied in load_functional_rois)
+%params for loading/selecting/viewing functional rois (applied in process_functional_rois)
 opt.froi.caiman_lr_str = '2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'; %caiman param string, can use wildcards, empty to skip
 opt.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
 opt.froi.min_roi_size = 5;%pixels, roi selection criterion
@@ -78,6 +78,7 @@ opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
 opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output rsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
 opt.froi.numrois_for_gif = 10; %how many roi to put in gif, empty for all, 0 to skip gif
+opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 opt.froi.do_other_plots = 1; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max

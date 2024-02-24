@@ -8,7 +8,7 @@ function [roiinfo]  = make_morphological_rois(stack, opts_mroi, ...
 %passed to make_morphological_rois_automated
 
 
-% for numroi_morph argument
+% for num_mroi argument
 % if number is passed, method is automated
 % you can have zero morph rois, which means any functional rois will not get morph selection
 % you can have one morph roi, which will use edge detection to refine and functional rois will get that selection
@@ -24,13 +24,13 @@ function [roiinfo]  = make_morphological_rois(stack, opts_mroi, ...
 % create morphological rois
 % using the mean-time and mean-z projection of the data,
 % manually create 2d mask (maskmanual)
-% that 2d mask is projected into a 3d mask (mask_allroi_morph_simple)
+% that 2d mask is projected into a 3d mask (mask_mroi_all_simple)
 % that is refined using chosen method (edge detection, global threshold, etc)
 % if creating multiple morphological rois, the 3d mask is refined using
 % a high-z-res version of the data, and the mask is mapped back to original resolution
 % find the morphological roi centroids (centroids_roi) of the final 3d mask,
 % and all voxels that are nearest each centroid (mask_roi_vec)
-% if you draw multiple rois in maskmanual, a different mask_allroi_morph_simple will be
+% if you draw multiple rois in maskmanual, a different mask_mroi_all_simple will be
 % made for each, but the 3d refining code cannot accommodate
 % multiple drawn rois currently, so do not do this;
 % if you want multiple rois within the fov passed to this function,
@@ -41,7 +41,7 @@ function [roiinfo]  = make_morphological_rois(stack, opts_mroi, ...
 %% draw rois (polygons/polyhedra)
 
 use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
-numroi_morph_auto = opts_mroi.numroi_morph_auto.(regionex);
+num_mroi_auto = opts_mroi.num_mroi_auto.(regionex);
 doplots = opts_mroi.doplots;
 normopts = opts_mroi.norm;
 
@@ -57,7 +57,7 @@ if use_drawn_rois
         end
     catch
         flag_limit_one_manual_roi = 0;
-        if numroi_morph_auto>1
+        if num_mroi_auto>1
             flag_limit_one_manual_roi = 1;
         end
         maskmanual = drawrois(stack, regionex, pth_maskmanual, flag_limit_one_manual_roi);
@@ -66,23 +66,23 @@ else
     maskmanual = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %otherwise just ones
 end
 
-numroi_morph_manual = size(maskmanual, 4);
+num_mroi_manual_manual = size(maskmanual, 4);
 
 %% make mask_3d (from manual mask plus automated mask, or just manual mask, or just automated mask)
 
-if numroi_morph_manual>1 || numroi_morph_auto==0
+if num_mroi_manual_manual>1 || num_mroi_auto==0
 
-    numroi_morph = numroi_morph_manual;
+    num_mroi = num_mroi_manual_manual;
 
-    if numroi_morph_auto>0
+    if num_mroi_auto>0
         error(sprintf(['ERROR \n' ...
-            'numroi_morph_manual is greater than one AND numroi_morph_auto is greater than zero \n' ...
+            'num_mroi_manual_manual is greater than one AND num_mroi_auto is greater than zero \n' ...
             'DELETE OR RENAME pth_maskmanual AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
             'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
     end
 
-    mask_roi_vec = zeros(numroi_morph, numel(sum(maskmanual, 4)), 'logical');  %initialize a logical matrix that is of dimensions Centroids  x AllPixels
-    for mi = 1:numroi_morph
+    mask_roi_vec = zeros(num_mroi, numel(sum(maskmanual, 4)), 'logical');  %initialize a logical matrix that is of dimensions Centroids  x AllPixels
+    for mi = 1:num_mroi
         tmp = maskmanual(:,:,:,mi);
         [masky, maskx, maskz] = ind2sub(size(tmp), find(tmp));
         mask_roi_vec(mi, sub2ind(size(tmp), masky, maskx, maskz)) = true; %indices of each roi
@@ -94,19 +94,19 @@ if numroi_morph_manual>1 || numroi_morph_auto==0
 
 else
 
-    numroi_morph = numroi_morph_auto;
+    num_mroi = num_mroi_auto;
     do_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
     create_mask_method = 'edge'; %method for defining edges of mask from input premask
     subsample_mask_method = 'equidistant'; %method for subsampling mask into rois
     pth_save_figs_prefix = [pth_stack(1:end-4) '_' regionex];
     [mask_roi_vec, centroids_roi] = ...
         make_morphological_rois_automated(stack, maskmanual, ...
-        numroi_morph_auto, do_3d, create_mask_method, subsample_mask_method, ...
+        num_mroi_auto, do_3d, create_mask_method, subsample_mask_method, ...
         xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, doplots);
 
 end
 
-pixinds_roi = cell(numroi_morph, 1);
+pixinds_roi = cell(num_mroi, 1);
 for ii = 1:length(pixinds_roi)
     pixinds_roi{ii} = find(vec(mask_roi_vec(ii,:)));
 end
@@ -129,7 +129,7 @@ for ii = 1:length(pixinds_allroi) %one pixel at a time
 
 end
 
-roiinfo.numroi = numroi_morph;
+roiinfo.numroi = num_mroi;
 roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
 roiinfo.centroids_roi = centroids_roi;
@@ -147,10 +147,10 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 
 %% compute morphological roi responses
 
-resp.(regionex).(mroipars{rei}) = ...
+resp.(regionex).(pars_mroi{rei}) = ...
     extract_roi_responses(stackcrop, ...
     mask_roi_vec, ...
-    pth.roi_morph{rei}, normopts, dtmni);
+    pthmroi{rei}, normopts, dtmni);
 
 
 %% plots

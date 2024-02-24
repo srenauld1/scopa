@@ -1,4 +1,4 @@
-function [opt, pth, croplim_all, mroipars, froipars, datenum, flynum, trialnum, recid_underscore] = ...
+function [opt, pth, croplim_all, pars_mroi, pars_froi, datenum, flynum, trialnum, recid_underscore] = ...
     filenames_scopa(opt, pth_usetmp)
 
 %% params 
@@ -9,7 +9,7 @@ use_caiman_on_hires = opt.hires.use_caiman_on_hires;
 suffixes_plot = opt.gif.suffixes_plot;
 use_hires = opt.mroi.use_hires;
 use_drawn_rois = opt.mroi.use_drawn_rois;
-numroi_morph_auto = opt.mroi.numroi_morph_auto;
+num_mroi_auto = opt.mroi.num_mroi_auto;
 caiman_lr_str = opt.froi.caiman_lr_str;
 numcluster_for_bump_domain_resample = opt.bump.numcluster_for_bump_domain_resample;
 caiman_hr_str = opt.hires.caiman_hr_str;
@@ -62,7 +62,6 @@ for i = 1:length(regionex_all)
         croplim_all.(regionex) = croplimtmp(vec([1:2]'+2*([3 2 4 1]-1)));
     end
 
-
     tmpnum = 0;
     if any(strcmp(regionex, use_hires))
         tmpnum = 1;
@@ -78,29 +77,29 @@ for i = 1:length(regionex_all)
     use_drawn_rois_new.(regionex) = tmpnum;
 
     tmpnum = 0;
-    tmpind = find(~cellfun(@isempty, regexp(numroi_morph_auto, [regionex '-\d*'])));
+    tmpind = find(~cellfun(@isempty, regexp(num_mroi_auto, [regionex '-\d*'])));
     if tmpind
-        tmpnum = sscanf(numroi_morph_auto{tmpind},[regionex '-%d']);
+        tmpnum = sscanf(num_mroi_auto{tmpind},[regionex '-%d']);
     end
-    flag_numroi_morph_auto = num2str(tmpnum);
-    numroi_morph_auto_new.(regionex) = tmpnum;
+    flag_num_mroi_auto = num2str(tmpnum);
+    num_mroi_auto_new.(regionex) = tmpnum;
 
-    paramstr = ['moex_' flag_hires '_' flag_use_drawn_rois '_' flag_numroi_morph_auto];
-    mroipars.(regionex) = paramstr;
+    paramstr = ['moex_' flag_hires '_' flag_use_drawn_rois '_' flag_num_mroi_auto];
+    pars_mroi.(regionex) = paramstr;
 
-    pth_roi_morph.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_.mat'];
-    pth_roi_allmethods.(regionex){1} = pth_roi_morph.(regionex);
+    pth_mroi.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_.mat'];
+    pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
 
-    pth_roi_func_pat = [pth_fldr recid_underscore '_' suffix_analysis '_' regionex_nounderscore '_*_cmex_' caiman_lr_str '_rois_.mat'];
-    pthfncrall = rdir(pth_roi_func_pat);
-    froipars.(regionex) = cell(length(pthfncrall),1);
-    pth_roi_func_all.(regionex) = cell(length(pthfncrall),1);
-    if ~isempty(pthfncrall) %if caiman file(s) do exist . . .
+    pth_froi_pat = [pth_fldr recid_underscore '_' suffix_analysis '_' regionex_nounderscore '_*_cmex_' caiman_lr_str '_rois_.mat'];
+    pth_froi_all = rdir(pth_froi_pat);
+    pars_froi.(regionex) = cell(length(pth_froi_all),1);
+    pth_froi_all.(regionex) = cell(length(pth_froi_all),1);
+    if ~isempty(pth_froi_all) %if caiman file(s) do exist . . .
 
-        pthfncrall = natsortfiles(pthfncrall);
+        pth_froi_all = natsortfiles(pth_froi_all);
 
-        for ci = 1:length(pthfncrall)
-            [~, fncr, ~] = fileparts(pthfncrall(ci).name);
+        for ci = 1:length(pth_froi_all)
+            [~, fncr, ~] = fileparts(pth_froi_all(ci).name);
             spl = strsplit(fncr, '_');
             insloc = find(strcmp(spl, regionex_nounderscore));
             croplimstr_check = strjoin(spl(insloc+1:insloc+8), '_');
@@ -109,11 +108,11 @@ for i = 1:length(regionex_all)
             end
             croplimstr_prev = croplimstr_check;
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_');
-            froipars.(regionex){ci,1} = strrep(cpatmp, '.', 'p');
-            pth_roi_func_all.(regionex){ci,1} = pthfncrall(ci).name;
+            pars_froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p');
+            pth_froi_all.(regionex){ci,1} = pth_froi_all(ci).name;
 
         end
-        pth_roi_allmethods.(regionex) = cat(1, pth_roi_allmethods.(regionex), pth_roi_func_all.(regionex));
+        pth_roi_allmethods.(regionex) = cat(1, pth_roi_allmethods.(regionex), pth_froi_all.(regionex));
         paramstr = [paramstr '_cmex_' caiman_lr_str];
 
 
@@ -133,7 +132,7 @@ for i = 1:length(regionex_all)
 
     % if use_hires(i)
     %     paramstr = [paramstr '_hr_moex_paramtbd_'];
-    %     mroipars.(regionex) = [mroipars.(regionex) '_hr_moex_paramtbd'];
+    %     pars_mroi.(regionex) = [pars_mroi.(regionex) '_hr_moex_paramtbd'];
     %     if use_caiman_on_hires(i)
     %         paramstr = [paramstr '_hr_cmex_' caiman_hr_str];
     %     end
@@ -203,11 +202,11 @@ end
 if ~isempty(pth_tmp)
     pth_hires_prefix = pth_tmp.name(1:end-4);
     pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];
-    pth_roi_func_hires = [pth_hires_prefix 'caiman' caiman_hr_str '_roishires_.mat'];
+    pth_froi_hires = [pth_hires_prefix 'caiman' caiman_hr_str '_roishires_.mat'];
 else
     pth_hires_prefix = [];
     pth_hires_mat_matreg = [];
-    pth_roi_func_hires = [];
+    pth_froi_hires = [];
 end
 
 %% assign to struct
@@ -217,10 +216,10 @@ pth.stack_analysis = pth_stack_analysis;
 pth.stacks_prefix = pth_stacks_prefix;         
 pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
-pth.roi_func_hires = pth_roi_func_hires;
+pth.froi_hires = pth_froi_hires;
 pth.metadata = pth_metadata;
-pth.roi_morph = pth_roi_morph;
-pth.roi_func_all = pth_roi_func_all;
+pthmroi = pth_mroi;
+pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;         
 pth.fictrac = pth_fictrac;
 pth.savedata_oneregion = pth_savedata_oneregion;
@@ -228,7 +227,7 @@ pth.savedata_oneregion = pth_savedata_oneregion;
 opt.bump.flag_numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field
 
 opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field
-opt.mroi.numroi_morph_auto = numroi_morph_auto_new; %update field
+opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field
 opt.mroi.use_hires = use_hires_new; %update field
 
 opt.gif.plot_stack_order = plot_stack_order;

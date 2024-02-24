@@ -28,6 +28,6 @@ midx = midx(idxmidkeep);
 midy = midy(idxmidkeep);
 midz = midz(idxmidkeep);
 
-xq = linspace(1, length(midy), 2*(numroi_morph) + 1)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that clusters on the edges arent clipped
+xq = linspace(1, length(midy), 2*(num_mroi) + 1)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that clusters on the edges arent clipped
 centroids_mask3d = [interp1(midy,xq), interp1(midx,xq), interp1(midz,xq)]; %interpolate x and y coordinates, now that they are ordered, into evenly spaced centroids (this allows one to oversample the number of pixels, if desired)
 centroids_mask3d = centroids_mask3d(2:2:end-1,:,:); %take every other so that we dont start at the edges, and all are same size

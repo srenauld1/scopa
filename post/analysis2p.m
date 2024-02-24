@@ -31,10 +31,12 @@ pth_all = find_preprocessed_files(opt.main);
 
 for pai = 1:length(pth_all)
 
+    resp = [];
+    pars_all = [];
 
     %% assign filenames
 
-    [opt, pth, croplim_all, mroipars, froipars, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_all{pai});
+    [opt, pth, croplim_all, pars_mroi, pars_froi, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_all{pai});
 
     %% load metadata
 
@@ -62,51 +64,32 @@ for pai = 1:length(pth_all)
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opt.hires);
     end
 
-    %% rois/responses
+    %% rois/responses for each regionex
 
-    clear resp
 
-    stack_mnt = cell(length(opt.main.regionex_all), 1);
     for rei = 1:length(opt.main.regionex_all) %for each region with extracted rois
 
             %% crop movie to regionex cuboid
 
             regionex = opt.main.regionex_all{rei};
-            [stackcrop, stack_mnt{rei}, map_hires_lores_crop, hiresmntcrop] = ...
-                crop_stacks(stack, croplim_all{rei}, opt.mroi.use_hires.(regionex), recid, regionex, pth.fldr, md.sz_crop);
+            [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop] = ...
+                crop_stacks(stack, croplim_all.(regionex), opt.mroi.use_hires.(regionex), recid, regionex, pth.fldr, md.sz_crop);
 
 
             %% make (manual and automated) morphological rois in 2d or 3d
 
-            [roiinfo.(regionex).(mroipars{rei}), resp.(regionex).(mroipars{rei})] = ...
+            [roiinfo.(regionex).(pars_mroi.(regionex)), resp.(regionex).(pars_mroi.(regionex))] = ...
                 make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex);
 
 
             %% load functional (caiman) roi responses, remove any that don't meet morphological criteria (if anyare requested)
 
-            for rfi = 1:length(pth.roi_func_all{rei})
-
-                %load/visualize any previously extracted functional rois, assign to any morphological rois
-                [roiinfo.(regionex).(froipars{rei}{rfi}), resp_roi_func] = ...
-                    load_functional_rois(pth.roi_func_all{rei}{rfi}, stack_mnt{rei}, ...
-                    roiinfo.(regionex).(mroipars{rei}).centroids_roi, ...
-                    roiinfo.(regionex).(mroipars{rei}).mask_allroi, ...
+            for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run
+                [roiinfo.(regionex).(pars_froi.(regionex){rfi}), resp.(regionex).(pars_froi.(regionex){rfi})] = ...
+                    process_functional_rois(pth.froi_all.(regionex){rfi}, stack_mnt.(regionex), ...
+                    roiinfo.(regionex).(pars_mroi.(regionex)).centroids_roi, ...
+                    roiinfo.(regionex).(pars_mroi.(regionex)).mask_allroi, ...
                     regionex, md.croptimeinds, opt.froi);
-
-                %% compute functional (caiman) roi responses, and also functional (caiman) responses averaged by morphological roi
-
-                %this version not weighted by area by passing pixinds_roi_func
-                resp.(regionex).(froipars{rei}{rfi}) = ...
-                    extract_roi_responses(resp_roi_func, ...
-                    roiinfo.(regionex).(froipars{rei}{rfi}).mask_roi_vec, ...
-                    pth.roi_func_all{rei}{rfi}, opt.norm, md.dtmni);
-
-                %this version weighted by area by passing pixinds_roi_func_wt (appends to existing resp)
-                resp.(regionex).(froipars{rei}{rfi}) = ...
-                    extract_roi_responses(resp_roi_func, ...
-                    roiinfo.(regionex).(froipars{rei}{rfi}).mask_roi_vec_wt, ...
-                    pth.roi_func_all{rei}{rfi}, opt.norm, md.dtmni, resp.(regionex).(froipars{rei}{rfi}));
-
             end
 
 
@@ -115,30 +98,30 @@ for pai = 1:length(pth_all)
     %% bump
 
 
-    for rei = 1:length(opt.main.regionex_all) %for each region with extracted rois, loop over extraction and normalization runs
+    for rei = 1:length(opt.main.regionex_all) %for each regionex
         
         regionex = opt.main.regionex_all{rei};
-        stackcrop = crop_stacks(stack, croplim_all{rei});
+        stackcrop = crop_stacks(stack, croplim_all.(regionex));
 
         countz = 0;
-        extraction_params_all = fieldnames(resp.(regionex)); 
-        for epi = 1:length(extraction_params_all) %for each extraction
-            extraction_params = extraction_params_all{epi};
-            norm_params_all = fieldnames(resp.(regionex).(extraction_params_all{epi})); 
-            for npi = 1:length(norm_params_all) %for each response normalization
-                norm_params = norm_params_all{npi};
+        parsex_all = fieldnames(resp.(regionex)); 
+        for epi = 1:length(parsex_all) %for each extraction
+            extraction_params = parsex_all{epi};
+            parsnorm_all = fieldnames(resp.(regionex).(parsex_all{epi})); 
+            for npi = 1:length(parsnorm_all) %for each response normalization
+                norm_params = parsnorm_all{npi};
                 if any(~cellfun(@isempty, regexp(extraction_params, regexptranslate('wildcard', opt.bump.expat)))) && ...
                         any(~cellfun(@isempty, regexp(norm_params, regexptranslate('wildcard', opt.bump.normpat)))) && ...
                         any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.bump.regionpat_bump)))) 
 
-                    fn_save_prefix = [pth.roi_allmethods{rei}{epi}(1:end-4) norm_params];
+                    fn_save_prefix = [pth.roi_allmethods.(regionex){epi}(1:end-4) norm_params];
 
                     bump.(regionex).(extraction_params).(norm_params) = ...
                         compute_bump(stackcrop, resp.(regionex).(extraction_params).(norm_params), ...
                         stim.(opt.fit.sdom.(regionex){1}).(opt.fit.sdom.(regionex){2}), ...
-                        numcluster_for_bump_domain_resample(rei), fn_save_prefix, md.stimepochinds_i, md.dtmni, ...
-                        roiinfo.(regionex).(extraction_params_all{epi}).pixinds_roi, ...
-                        roiinfo.(regionex).(extraction_params_all{epi}).mapind2ind, ...
+                        numcluster_for_bump_domain_resample.(regionex), fn_save_prefix, md.stimepochinds_i, md.dtmni, ...
+                        roiinfo.(regionex).(parsex_all{epi}).pixinds_roi, ...
+                        roiinfo.(regionex).(parsex_all{epi}).mapind2ind, ...
                         opt.bump, opt.fit, doplots);
 
                 end
@@ -148,29 +131,23 @@ for pai = 1:length(pth_all)
 
     %% model/predict
 
-    clear params_all
-
     for rei = 1:length(opt.main.regionex_all) %for each region with extracted rois, loop over extraction and normalization runs
 
         regionex = opt.main.regionex_all{rei};
-        stackcrop = crop_stacks(stack, croplim_all{rei});
+        stackcrop = crop_stacks(stack, croplim_all.(regionex));
 
         countz = 0;
-        extraction_params_all = fieldnames(resp.(regionex)); 
-        for epi = 1:length(extraction_params_all) %for each extraction
-            norm_params_all = fieldnames(resp.(regionex).(extraction_params_all{epi}));
-            for npi = 1:length(norm_params_all) %for each response normalization
-                if any(~cellfun(@isempty, regexp(extraction_params_all{epi}, regexptranslate('wildcard', opt.fit.expat_fit)))) && ...
-                        any(~cellfun(@isempty, regexp(norm_params_all{npi}, regexptranslate('wildcard', opt.fit.normpat_fit)))) && ...
+        parsex_all = fieldnames(resp.(regionex)); 
+        for epi = 1:length(parsex_all) %for each extraction
+            parsnorm_all = fieldnames(resp.(regionex).(parsex_all{epi}));
+            for npi = 1:length(parsnorm_all) %for each response normalization
+                if any(~cellfun(@isempty, regexp(parsex_all{epi}, regexptranslate('wildcard', opt.fit.expat_fit)))) && ...
+                        any(~cellfun(@isempty, regexp(parsnorm_all{npi}, regexptranslate('wildcard', opt.fit.normpat_fit)))) && ...
                         any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.fit.regionpat_fit))))
 
                     countz = countz + 1;
-                    params_all.(regionex){countz, 1} = extraction_params_all{epi};
-                    params_all.(regionex){countz, 2} = epi;
-                    params_all.(regionex){countz, 3} = norm_params_all{npi};
-                    params_all.(regionex){countz, 4} = npi;
-
-                    fn_save_prefix = [pth.roi_allmethods{rei}{epi}(1:end-4) norm_params];
+                    pars_all.(regionex)(countz,:) = {parsex_all{epi}, epi, parsnorm_all{npi}, npi};
+                    fn_save_prefix = [pth.roi_allmethods.(regionex){epi}(1:end-4) norm_params];
 
                     opt.fit.use_saved_model = 1;
                     opt.fit.modeltype = 'glno4';
@@ -182,9 +159,9 @@ for pai = 1:length(pth_all)
 
                     [fittmp, goftmp] = ...
                         fitresp(stackcrop, stimfit, ...
-                        resp.(regionex).(extraction_params_all{epi}).(norm_params_all{npi}), ...
-                        roiinfo.(regionex).(extraction_params_all{epi}).pixinds_roi, ...
-                        roiinfo.(regionex).(extraction_params_all{epi}).mapind2ind, ...
+                        resp.(regionex).(parsex_all{epi}).(parsnorm_all{npi}), ...
+                        roiinfo.(regionex).(parsex_all{epi}).pixinds_roi, ...
+                        roiinfo.(regionex).(parsex_all{epi}).mapind2ind, ...
                         md.stimepochinds_i, md.dtmni, fn_save_prefix, opt.fit);
 
                     % [roi_is_not_selective] = test_roi_selectivity(resp, vis, ball, md, regionex, pth.caimanrois, doplots2);
@@ -239,7 +216,7 @@ for pai = 1:length(pth_all)
                     %     % plot_bump(alpha_plot, resp_plot, mu_plot, rho_plot, visang, ballang, ...
                     %     %     ampmu_plot, amppeak_plot, ampmean_plot, resp_gar, resp_gal, resp_nor, resp_nol, ...
                     %     %     epochinds_plot, md, centinds, halfcent, pltindz, numfram, startsec, stopsec,  ...
-                    %     %     imdata, percentile_to_plot, mask_roi_morph, mask_with_3d_mask, inds_roi, plot_only_outliers, ...
+                    %     %     imdata, percentile_to_plot, mask_mroi, mask_with_3d_mask, inds_roi, plot_only_outliers, ...
                     %     %     plotcolz, xlim_makeroomfac, makeroomfac_rho, makeroomfac_mu, ncol, ...
                     %     %     gif_visibility, separate_vis_and_bump, sorting_target, ...
                     %     %     bump_method_index_plot, fn_prefix, nanpadlen_min_input)

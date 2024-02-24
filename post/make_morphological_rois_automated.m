@@ -1,7 +1,7 @@
 
 function [mask_roi_vec, centroids_roi] = ...
     make_morphological_rois_automated(stack, maskmanual, ...
-    numroi_morph_auto, do_3d, create_mask_method, subsample_mask_method, ...
+    num_mroi_auto, do_3d, create_mask_method, subsample_mask_method, ...
     xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, do_plots)
 
 
@@ -44,14 +44,14 @@ stackmean_masked = stackmean.*maskmanual_allrois; %don't change this variable be
 
 %%
 
-if ~(numroi_morph_auto > 1 && do_3d) %if not multiple auto rois, and not 3d, otherwise premask defined below
+if ~(num_mroi_auto > 1 && do_3d) %if not multiple auto rois, and not 3d, otherwise premask defined below
     premask = stackmean_masked; %define stack used to define mask
 end
 
-%% create special premask if numroi_morph_auto > 1 and do_3d
+%% create special premask if num_mroi_auto > 1 and do_3d
 
 sliceinds_hires = [];
-if numroi_morph_auto > 1
+if num_mroi_auto > 1
 
     if do_3d
 
@@ -153,7 +153,7 @@ mask_allroi_approx = logical(mask_allroi_approx);
 
 %% find 3d mask centroids
 
-if numroi_morph_auto == 1 %for finding a single centroid
+if num_mroi_auto == 1 %for finding a single centroid
 
     centroids_roi = find_roi_centroids(mask_allroi_approx);
 
@@ -191,7 +191,7 @@ else
                 midy = midy(idxmidkeep);
                 midz = midz(idxmidkeep);
 
-                xq = linspace(1, length(midy), 2*(numroi_morph_auto) + 1)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that rois on the edges arent clipped
+                xq = linspace(1, length(midy), 2*(num_mroi_auto) + 1)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that rois on the edges arent clipped
                 centmp = [interp1(midy,xq), interp1(midx,xq), interp1(midz,xq)]; %interpolate x and y coordinates, now that they are ordered, into evenly spaced centroids (this allows one to oversample if desired)
                 centmp = centmp(2:2:end-1,:); %take every other so that we dont start at the edges, and all are same size
 
@@ -233,13 +233,13 @@ idx_cenmorph = flatten_key(maptmp, 1); %this records which cell the nearest morp
 
 %% find indices for each mophological roi
 
-mask_roi_vec = zeros(numroi_morph_auto, numel_stackmnt, 'logical'); %initialize a logical matrix that is of dimensions centroids x voxels
+mask_roi_vec = zeros(num_mroi_auto, numel_stackmnt, 'logical'); %initialize a logical matrix that is of dimensions centroids x voxels
 
 mask_allroi_approx_plot = mask_allroi_approx;
 
 if isempty(sliceinds_hires) %isempty(stack_hires)
 
-    for i = 1:numroi_morph_auto
+    for i = 1:num_mroi_auto
         mask_roi_vec(i, sub2ind(size(mask_allroi_approx), masky(idx_cenmorph==i), maskx(idx_cenmorph==i), maskz(idx_cenmorph==i))) = 1; %indices of each roi
     end
 
@@ -268,7 +268,7 @@ else % else downsample the 3 output variables from hires to lores
     end
 
 
-    for i = 1:numroi_morph_auto
+    for i = 1:num_mroi_auto
         mask_roi_vec(i, sub2ind(size(stackmean_masked), masky(idx_cenmorph==i), maskx(idx_cenmorph==i), maskznew(idx_cenmorph==i))) = 1; %indices of each roi
     end
 
@@ -284,7 +284,7 @@ else % else downsample the 3 output variables from hires to lores
 
 
     %%downsample z component of each subroi of each mophological roi centroid
-    for rci = 1:length(numroi_morph_auto) %loop over rois
+    for rci = 1:length(num_mroi_auto) %loop over rois
         for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois
             centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmean, 3)], centroids_roi{rci}(rci2,3));
         end
@@ -335,7 +335,7 @@ if do_plots
 
         h = figure; hold on
         %imagesc(mean(mean(stack,3),4)) %plot the image again with max intensity over time to show the whole pb
-        for i = 1:numroi_morph_auto %overlay each pixel in its indexed color onto the pb image
+        for i = 1:num_mroi_auto %overlay each pixel in its indexed color onto the pb image
             scatter3( maskx(idx_cenmorph == i), masky(idx_cenmorph == i), maskz(idx_cenmorph == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
         end
         %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline

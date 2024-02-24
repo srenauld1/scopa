@@ -76,10 +76,10 @@ if opts_hires.use_caiman_on_hires % load caiman rois extracted from hires if the
         "YOU CAN USE update_tif BELOW TO WRITE THIS 4D ARRAY TO TIF TO USE IN CAIMAN, \n" + ...
         "ALL OF THESE REQUIRED CHANGES WOULD BE SMALL, AND IS ON THE TODO LIST"))
 
-    fntmp = rdir(pth.roi_func_hires);
+    fntmp = rdir(pth.froi_hires);
     if ~isempty(fntmp)
-        pth.roi_func_hires = fntmp.name;
-        roimask_hires = struct2cell(load(pth.roi_func_hires));
+        pth.froi_hires = fntmp.name;
+        roimask_hires = struct2cell(load(pth.froi_hires));
         roimask_hires = roimask_hires{1};
     else
         disp("WRITING HI RES REGISTERED TIF FOR CAIMAN EXTRACTION")
