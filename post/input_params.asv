@@ -38,12 +38,32 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 %% MORPHOLOGICAL ROIS
 
-%params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
+% params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
 % for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.numroi_morph_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 opt.mroi.use_hires = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.use_drawn_rois =  {'pb'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
 opt.mroi.numroi_morph_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into numroi_morph_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; numroi_morph_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
 opt.mroi.doplots = 1; %doplots in make_morphological_rois
+
+% params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
+% precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi) 
+% postcluster normalization is applied after clustering 
+% clustering means averaging data for all pixels or caiman rois within a morphological roi   
+% precluster and postcluster are each a list of strings specifying different
+% normalization methods, each must have at least one string (use 'f' for no normalization) 
+
+% below xxx, yyy, zzz, and www, are 3-character strings converted to integers, string range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
+% all normalizations are applied to individual pixel or roi timeseries
+% normalization strings are:
+    % 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if www is 000 then f0 is computed across the entire timeseries, not a sliding window 
+    % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
+    % 'z' % zscore
+    % 'nn' % nonnegative (subtract min)
+    % 'box'... %box-cox
+
+opt.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
+opt.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
+opt.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS
 
@@ -62,27 +82,11 @@ opt.froi.do_other_plots = 1; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
-%% RESPONSE NORMALIZATION
+% params for response extraction/normalization of functional roi responses (opt.f.norm)
 
-% params for response extraction/normalization
-% precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi) 
-% postcluster normalization is applied after clustering 
-% clustering means averaging data for all pixels or caiman rois within a morphological roi   
-% precluster and postcluster are each a list of strings specifying different
-% normalization methods, each must have at least one string (use 'f' for no normalization) 
-
-% below xxx, yyy, zzz, and www, are 3-character strings converted to integers, string range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
-% all normalizations are applied to individual pixel or roi timeseries
-% normalization strings are:
-    % 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if www is 000 then f0 is computed across the entire timeseries, not a sliding window 
-    % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
-    % 'z' % zscore
-    % 'nn' % nonnegative (subtract min)
-    % 'box'... %box-cox
-
-opt.norm.precluster = {'f'};
-opt.norm.postcluster = {'f', 'zrsc000100', 'dff000020', 'dff015020rsc000100'};
-opt.norm.doplots = 0;
+opt.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
+opt.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
+opt.mroi.norm.doplots = 0;
 
 %% FICTRAC/STIMULUS
 

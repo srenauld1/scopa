@@ -94,6 +94,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
 
                         cnm = cnmf.CNMF(n_processes, params=opts, dview=dview)
                         cnm = cnm.fit(images_sliced, indices = indices_ex)
+                        max_possible_num_roi = cnm.estimates.A.shape[-1]
 
                         cnm.estimates.evaluate_components(images_sliced, cnm.params, dview=dview)
                         print(('NUM GOOD ROIS ' + str(len(cnm.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm.estimates.idx_components_bad))))
@@ -127,7 +128,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                            numroi_stack_pad = cnm2.estimates.A.shape[-1]
+                            numroi_stack_pad = max_possible_num_roi
                             dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
                             dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
                             dims_timeseries_stack = ( numroi_stack_pad, cnm2.estimates.C.shape[1] )

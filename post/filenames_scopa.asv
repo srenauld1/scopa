@@ -1,8 +1,6 @@
 function [opt, pth, croplim_all, mroipars, froipars, datenum, flynum, trialnum, recid_underscore] = ...
     filenames_scopa(opt, pth_usetmp)
 
-%% params 
-
 suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
@@ -13,8 +11,6 @@ numroi_morph_auto = opt.mroi.numroi_morph_auto;
 caiman_lr_str = opt.froi.caiman_lr_str;
 numcluster_for_bump_domain_resample = opt.bump.numcluster_for_bump_domain_resample;
 caiman_hr_str = opt.hires.caiman_hr_str;
-
-%% variables for all regionex
 
 [pth_fldr, fn_input, ~] = fileparts(pth_usetmp);
 pth_fldr = [pth_fldr filesep];
@@ -34,8 +30,6 @@ pth_metadata = [pth_fldr recid_underscore '_metadatanew_.mat'];
 
 pth_fictrac = [pth_fldr recid_hyphen '_ficTracData_DAQ.mat'];
 
-
-%% variables for each regionex
 
 for i = 1:length(regionex_all)
 
@@ -91,6 +85,9 @@ for i = 1:length(regionex_all)
     pth_roi_morph.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_.mat'];
     pth_roi_allmethods.(regionex){1} = pth_roi_morph.(regionex);
 
+    pth_caimanfails = [pth_fldr recid_underscore '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
+    pth_caimanfails2 = [pth_fldr recid_underscore '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];
+
     pth_roi_func_pat = [pth_fldr recid_underscore '_' suffix_analysis '_' regionex_nounderscore '_*_cmex_' caiman_lr_str '_rois_.mat'];
     pthfncrall = rdir(pth_roi_func_pat);
     froipars.(regionex) = cell(length(pthfncrall),1);
@@ -141,14 +138,11 @@ for i = 1:length(regionex_all)
 
     pth_savedata_oneregion.(regionex) = [pth_fldr recid_underscore '_' suffix_analysis '_' paramstr '_' regionex '_savedata_.mat'];
 
-    pth_caimanfails = [pth_fldr recid_underscore '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
-    pth_caimanfails2 = [pth_fldr recid_underscore '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];
     delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_nounderscore)
     delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_nounderscore)
 
 end
 
-%% gif in load_stacks
 
 if isempty(suffixes_plot)
     plot_stack_gif = 0;
@@ -179,12 +173,14 @@ for spi = 1:length(suffixes_plot)
     if ~isempty(pth_tmp)
         pth_stacks_prefix{spi} = pth_tmp.name(1:end-4);
     else
+
         sprintf(['WARNING, NEITHER TIF NOR MAT FOUND FOR' newline pthpat(1:end-4) newline 'SKIPPING IT FOR PLOT'])
+
     end
+
 
 end
 
-%% hires 
 
 pthpat = [pth_fldr recid_underscore  '_hires_.tif'];
 pth_tmp = rdir(pthpat);
@@ -210,8 +206,7 @@ else
     pth_roi_func_hires = [];
 end
 
-%% assign to struct
-
+%assign to struct
 pth.fldr = pth_fldr;
 pth.stack_analysis = pth_stack_analysis;
 pth.stacks_prefix = pth_stacks_prefix;         

@@ -1,5 +1,5 @@
-function [roiinfo, resp]  = make_morphological_rois(stack, opts_mroi, ...
-    md, pth, stack_hires, map_hires_lores, regionex)
+function [roiinfo]  = make_morphological_rois(stack, opts_mroi, ...
+    xwid, zwid, pth_stack, stack_hires, map_hires_lores, regionex)
 
 
 %if you want to automate rois from multiple drawn regions, use different
@@ -38,21 +38,12 @@ function [roiinfo, resp]  = make_morphological_rois(stack, opts_mroi, ...
 % again with the same inputs, but draw a different single 2d roi,
 % and assign the outputs of this function a different name (outside this function)
 
-%% params
+%% draw rois (polygons/polyhedra)
 
 use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
 numroi_morph_auto = opts_mroi.numroi_morph_auto.(regionex);
 doplots = opts_mroi.doplots;
 normopts = opts_mroi.norm;
-
-pth_stack = pth.stack_analysis;
-pth_roi_morph = pth.roi_morph.(regionex);
-
-xwid = md.xwid;
-zwid = md.zwid; 
-
-%% draw rois (polygons/polyhedra)
-
 
 if use_drawn_rois
 
@@ -138,16 +129,6 @@ for ii = 1:length(pixinds_allroi) %one pixel at a time
 
 end
 
-
-
-%% compute morphological roi responses
-
-
-resp = extract_roi_responses(stackcrop, mask_roi_vec, pth_roi_morph, normopts, dtmni);
-
-
-%% put in struct 'roiinfo'
-
 roiinfo.numroi = numroi_morph;
 roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
@@ -162,6 +143,14 @@ roiinfo.roipixvals_binned = [];
 roiinfo.roipixvals_edges = [];
 roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of pixinds_roi)
 
+
+
+%% compute morphological roi responses
+
+resp.(regionex).(mroipars{rei}) = ...
+    extract_roi_responses(stackcrop, ...
+    mask_roi_vec, ...
+    pth.roi_morph{rei}, normopts, dtmni);
 
 
 %% plots
