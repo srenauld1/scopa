@@ -38,7 +38,7 @@ catch
     try
 
         lores_z_for_hires_map = setxor(lores_z_out_of_bounds, 1:size(stack, 3)); %crop here so the hires registration is correct
-        stack_lores_mnt = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration, may not be quite the same as stackmnt in analysis2p since lores_z_for_hires_map is applied here (using only z that match hires and lores)
+        stack_lores_mnt = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration, may not be quite the same as stackmnt in a2p since lores_z_for_hires_map is applied here (using only z that match hires and lores)
 
         pth2.fldr = pth.fldr;
         pth2.stack_analysis = [pth.hires_prefix '.mat'];

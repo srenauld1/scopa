@@ -42,9 +42,9 @@ mask_mroi_all_xy = sum(mask_mroi_all, 3);
 
 load(pth_froi)
 
-if ~exist('rsnr', 'var')
-    rsnr = snr;
-    rcor = rval;
+if ~exist('cmrval', 'var')
+    cmsnr = snr;
+    cmrval = rval;
     clear snr rval;
 end
 
@@ -68,7 +68,7 @@ if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
     dff = reshape(permute(dff, [1 3 2]), [], size(dff, 2));
     dffr = reshape(permute(dffr, [1 3 2]), [], size(dffr, 2));
     S = reshape(permute(S, [1 3 2]), [], size(S, 2));
-    rcor = rcor(:);
+    cmrval = cmrval(:);
     rsnr = rsnr(:);
 
 end
@@ -269,7 +269,7 @@ catch
 end
 S = S(roisortinds, :);
 
-rcor = rcor(roisortinds);
+cmrval = cmrval(roisortinds);
 rsnr = rsnr(roisortinds);
 roinumpix = roinumpix(roisortinds);
 roipixvals_binned = roipixvals_binned(roisortinds);
@@ -304,7 +304,7 @@ else
 end
 mapind2ind = mapind2ind(good_roi_indices); %for each pixel in a roi, which roi it belongs to
 
-rcor = rcor(good_roi_indices);
+cmrval = cmrval(good_roi_indices);
 rsnr = rsnr(good_roi_indices);
 roinumpix = roinumpix(good_roi_indices);
 roipixvals_binned = roipixvals_binned(good_roi_indices);
@@ -571,7 +571,7 @@ roiinfo.mask_roi_vec_wt = mask_roi_vec_wt; %same as mask_roi_vec but weighted pi
 roiinfo.centroids_roi = centroids_froi;
 roiinfo.mask_allroi = mask_allroi; %boolean mask of all rois
 roiinfo.mapind2ind = mapind2ind; %for each pixel in a roi, which roi it belongs to
-roiinfo.rcor = rcor;
+roiinfo.cmrval = cmrval;
 roiinfo.rsnr = rsnr;
 roiinfo.roinumpix = roinumpix;
 roiinfo.roipixvals_binned = roipixvals_binned;

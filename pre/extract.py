@@ -132,15 +132,15 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                             dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
                             dims_timeseries_stack = ( max_possible_num_roi, cnm2.estimates.C.shape[1] )
 
-                            stack_masks = np.zeros(dims_roimask_stack + (len(sliceindz), ) )
-                            stack_masks_b = np.zeros(dims_roimask_b_stack + (len(sliceindz), ) )
-                            stack_c = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
-                            #stack_yra = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
-                            stack_s = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
-                            stack_df = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
-                            stack_dfr = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
-                            stack_snr = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
-                            stack_rval = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
+                            cma = np.zeros(dims_roimask_stack + (len(sliceindz), ) )
+                            cmb = np.zeros(dims_roimask_b_stack + (len(sliceindz), ) )
+                            cmc = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
+                            #cmyra = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
+                            cms = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
+                            cmdff = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
+                            cmdffr = np.zeros(dims_timeseries_stack + (len(sliceindz), ) )
+                            cmsnr = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
+                            cmrval = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
                             #stack_idx = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
                             #stack_idx_bad = np.zeros((dims_timeseries_stack[0], ) + (len(sliceindz), ) )
 
@@ -149,15 +149,15 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                         dims_mask_slice = (dims_roimask_spatial + (numroi_slice, ) )
                         dims_mask_b_slice = (dims_roimask_spatial + (numroi_b_slice, ) )
                         
-                        stack_masks[..., :numroi_slice, countz] = np.reshape(cnm2.estimates.A.toarray(), dims_mask_slice, order='F') 
-                        stack_masks_b[..., :numroi_b_slice, countz] = np.reshape(cnm2.estimates.b, dims_mask_b_slice, order='F') 
-                        stack_c[:numroi_slice,:,countz] = cnm2.estimates.C 
-                        #stack_yra[:numroi_slice,:,countz] = cnm2.estimates.YrA 
-                        stack_s[:numroi_slice,:,countz] = cnm2.estimates.S 
-                        stack_df[:numroi_slice,:,countz] = dff_residfalse
-                        stack_dfr[:numroi_slice,:,countz] = dff_residtrue
-                        stack_snr[:numroi_slice,countz] = cnm2.estimates.SNR_comp 
-                        stack_rval[:numroi_slice,countz] = cnm2.estimates.r_values 
+                        cma[..., :numroi_slice, countz] = np.reshape(cnm2.estimates.A.toarray(), dims_mask_slice, order='F') 
+                        cmb[..., :numroi_b_slice, countz] = np.reshape(cnm2.estimates.b, dims_mask_b_slice, order='F') 
+                        cmc[:numroi_slice,:,countz] = cnm2.estimates.C 
+                        #cmyra[:numroi_slice,:,countz] = cnm2.estimates.YrA 
+                        cms[:numroi_slice,:,countz] = cnm2.estimates.S 
+                        cmdff[:numroi_slice,:,countz] = dff_residfalse
+                        cmdffr[:numroi_slice,:,countz] = dff_residtrue
+                        cmsnr[:numroi_slice,countz] = cnm2.estimates.SNR_comp 
+                        cmrval[:numroi_slice,countz] = cnm2.estimates.r_values 
                         #stack_idx[:cnm2.estimates.idx_components.shape[0],countz] = cnm2.estimates.idx_components
                         #if cnm2.estimates.idx_components_bad.shape==(1,):
                         #    stack_idx_bad[:cnm2.estimates.idx_components_bad.shape[0],countz] = cnm2.estimates.idx_components_bad 
@@ -169,19 +169,19 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                         os.remove(log_file)
 
                     mdict = {}
-                    mdict['roimasks'] = stack_masks.astype('float32')
-                    mdict['roimasks_b'] = stack_masks_b.astype('float32')
-                    mdict['C'] = stack_c.astype('float32')
-                    #mdict['YrA'] = stack_yra.astype('float32')
-                    mdict['S'] = stack_s.astype('float32')
-                    mdict['dff'] = stack_df.astype('float32')
-                    mdict['dffr'] = stack_dfr.astype('float32')
-                    mdict['rsnr'] = stack_snr.astype('float32')
-                    mdict['rcor'] = stack_rval.astype('float32')
+                    mdict['cma'] = cma.astype('float32')
+                    mdict['cmb'] = cmb.astype('float32')
+                    mdict['cmc'] = cmc.astype('float32')
+                    #mdict['YrA'] = cmyra.astype('float32')
+                    mdict['cms'] = cms.astype('float32')
+                    mdict['cmdff'] = cmdff.astype('float32')
+                    mdict['cmdffr'] = cmdffr.astype('float32')
+                    mdict['cmsnr'] = cmsnr.astype('float32')
+                    mdict['cmrval'] = cmrval.astype('float32')
                     #mdict['idx'] = stack_idx
                     #mdict['idxbad'] = stack_idx_bad
                     
-                    if np.any(stack_masks):
+                    if np.any(cma):
                         pth_mat_ex = pth_tif_write_tmp[:-8] + fnadd + '_rois_.mat'
 
                     else:

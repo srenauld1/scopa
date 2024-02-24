@@ -3,10 +3,10 @@ hires is not processed in python; in matlab it is registered to the registered s
 
 
 
-%analysis2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
+%a2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
 % first part (motion correction, denoising, and source extraction) is in python, entry point pipeline_init.py:
 
-%%analysis2p.m loads output files from python pipeline,
+%%a2p.m loads output files from python pipeline,
 %%if high-z-res stack exists, it can be used to aid with morphological identification
 % register it in 3d (here in matlab) to caiman-registered functional stack
 %%(didn't see the point of registering it in python/caiman)

@@ -2,12 +2,12 @@ function opt = input_params()
 
 
 % struct 'opt' holds all input params 
-% substructures within opt are mostly used within single functions called from analysis2p
+% substructures within opt are mostly used within single functions called from a2p
 
 
 %% MAIN
 
-%params for main pipeline control in file analysis2p
+%params for main pipeline control in file a2p
 opt.main.parent_folder = 'stacks'; %folder containing all recording folders (on local or o2)
 opt.main.recdate = '20230627'; %can use wildcards
 opt.main.fly = '*'; %can use wildcards
