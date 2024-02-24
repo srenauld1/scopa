@@ -108,12 +108,12 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
 
                         cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
                         print(('AFTER REFIT: NUM GOOD ROIS ' + str(len(cnm2.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm2.estimates.idx_components_bad))))
-                        
+
+                        cnm2.estimates.select_components(use_object=True, save_discarded_components=False)
                         cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=False) #use_residuals=False to not include residuals in traces for dff computation (default)
                         dff_residfalse = cnm2.estimates.F_dff 
                         cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=True) #use_residuals=True to include residuals in traces for dff computation
                         dff_residtrue = cnm2.estimates.F_dff 
-                        cnm2.estimates.select_components(use_object=True, save_discarded_components=False)
 
 
                         if makeplots and cnm2.estimates.A.shape[-1]:
@@ -127,8 +127,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
 
-                            extra_roi_pad = 0 #roi number per slice can vary a little, pad in case a later slice has more rois than an earlier slice
-                            numroi_stack_pad = cnm2.estimates.A.shape[-1] + extra_roi_pad
+                            numroi_stack_pad = cnm2.estimates.A.shape[-1]
                             dims_roimask_stack = ( dims_roimask_spatial + (numroi_stack_pad, ) )
                             dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
                             dims_timeseries_stack = ( numroi_stack_pad, cnm2.estimates.C.shape[1] )
