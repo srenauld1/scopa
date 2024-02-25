@@ -46,10 +46,11 @@ doplots = opts_mroi.doplots;
 normopts = opts_mroi.norm;
 
 pth_stack = pth.stack_analysis;
-pth_mroi = pthmroi.(regionex);
+pth_mroi = pth.mroi.(regionex);
 
 xwid = md.xwid;
 zwid = md.zwid; 
+dtmni = md.dtmni;
 
 %% draw rois (polygons/polyhedra)
 
@@ -143,7 +144,7 @@ end
 %% compute morphological roi responses
 
 
-resp = extract_roi_responses(stackcrop, mask_roi_vec, pth_mroi, normopts, dtmni);
+resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi, normopts, dtmni);
 
 
 %% put in struct 'roiinfo'
@@ -156,7 +157,7 @@ roiinfo.mask_allroi = mask_allroi; %boolean mask of all rois
 roiinfo.mapind2ind = mapind2ind; %for each pixel in a roi, which roi it belongs to
 roiinfo.roi_overlay = [];
 roiinfo.cmrval = [];
-roiinfo.rsnr = [];
+roiinfo.cmsnr = [];
 roiinfo.roinumpix = [];
 roiinfo.roipixvals_binned = [];
 roiinfo.roipixvals_edges = [];

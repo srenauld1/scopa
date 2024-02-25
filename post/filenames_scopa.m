@@ -1,5 +1,5 @@
 function [opt, pth, croplim_all, pars_mroi, pars_froi, datenum, flynum, trialnum, recid_underscore] = ...
-    filenames_scopa(opt, pth_usetmp)
+    filenames_scopa(opt, pth_usefile_prefix)
 
 %% params 
 
@@ -16,7 +16,7 @@ caiman_hr_str = opt.hires.caiman_hr_str;
 
 %% variables for all regionex
 
-[pth_fldr, fn_input, ~] = fileparts(pth_usetmp);
+[pth_fldr, fn_input, ~] = fileparts(pth_usefile_prefix);
 pth_fldr = [pth_fldr filesep];
 spl = strjoin(strsplit(fn_input, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
 spl = strsplit(spl, '_'); %then separate by underscore
@@ -91,15 +91,14 @@ for i = 1:length(regionex_all)
     pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
 
     pth_froi_pat = [pth_fldr recid_underscore '_' suffix_analysis '_' regionex_nounderscore '_*_cmex_' caiman_lr_str '_rois_.mat'];
-    pth_froi_all = rdir(pth_froi_pat);
-    pars_froi.(regionex) = cell(length(pth_froi_all),1);
-    pth_froi_all.(regionex) = cell(length(pth_froi_all),1);
-    if ~isempty(pth_froi_all) %if caiman file(s) do exist . . .
+    pth_froi_all_tmp = rdir(pth_froi_pat);
 
-        pth_froi_all = natsortfiles(pth_froi_all);
+    if ~isempty(pth_froi_all_tmp) %if caiman file(s) do exist . . .
 
-        for ci = 1:length(pth_froi_all)
-            [~, fncr, ~] = fileparts(pth_froi_all(ci).name);
+        pth_froi_all_tmp = natsortfiles(pth_froi_all_tmp);
+
+        for ci = 1:length(pth_froi_all_tmp)
+            [~, fncr, ~] = fileparts(pth_froi_all_tmp(ci).name);
             spl = strsplit(fncr, '_');
             insloc = find(strcmp(spl, regionex_nounderscore));
             croplimstr_check = strjoin(spl(insloc+1:insloc+8), '_');
@@ -109,13 +108,15 @@ for i = 1:length(regionex_all)
             croplimstr_prev = croplimstr_check;
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_');
             pars_froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p');
-            pth_froi_all.(regionex){ci,1} = pth_froi_all(ci).name;
+            pth_froi_all.(regionex){ci,1} = pth_froi_all_tmp(ci).name;
 
         end
         pth_roi_allmethods.(regionex) = cat(1, pth_roi_allmethods.(regionex), pth_froi_all.(regionex));
         paramstr = [paramstr '_cmex_' caiman_lr_str];
 
-
+    else
+        pars_froi.(regionex) = [];
+        pth_froi_all.(regionex) = [];
     end
 
 
@@ -218,7 +219,7 @@ pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
 pth.froi_hires = pth_froi_hires;
 pth.metadata = pth_metadata;
-pthmroi = pth_mroi;
+pth.mroi = pth_mroi;
 pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;         
 pth.fictrac = pth_fictrac;

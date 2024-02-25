@@ -5,11 +5,10 @@ function delete_caiman_fails(fn_pattern, fn_prefix, region_extraction)
 
 caimanfail = cell(500, 1);
 
-failmode = strsplit(fn_pattern{ri}, '_');
+failmode = strsplit(fn_pattern, '_');
 failmode = failmode{end-1};
 
-caimanfail{1,ri} = region_extraction{ri};
-failfnall = rdir(fn_pattern{ri});
+failfnall = rdir(fn_pattern);
 clear failtmp
 if length(failfnall)>size(caimanfail, 1)
     error
@@ -21,10 +20,10 @@ if ~isempty(failfnall)
         %keep datestr in case you run more caiman, don't want to
         %overwrite previous fail records (in future should
         %append to existing fail records
-        filename_save = [fn_prefix strjoin(spl(1:4), '_') '_' strjoin(region_extraction, '_') '_caimanfails_' failmode  '_' datestr(now, 30) '_.mat'];
+        filename_save = [fn_prefix strjoin(spl(1:4), '_') '_' region_extraction '_caimanfails_' failmode  '_' datestr(now, 30) '_.mat'];
         failtmp{ci} = strjoin(spl(find(strcmp(spl, 'cmex'))+1:end-2), '_');
     end
-    caimanfail([1:length(failtmp)]+1,ri) = natsortfiles(failtmp(:));
+    caimanfail = natsortfiles(failtmp(:));
     if 1 % delete_failures
         delete(failfnall.name)
     end

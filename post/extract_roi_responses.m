@@ -51,7 +51,7 @@ for fnini = 1:length(fnin)
             error
         end
 
-        im2d = im2d (goodinds, :);
+        im2d = im2d(goodinds, :);
         roiinds_new = mask_roi_vec(:, goodinds);
 
         if ~isempty(im2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)

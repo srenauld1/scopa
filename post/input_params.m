@@ -43,7 +43,7 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.mroi.use_hires = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.use_drawn_rois =  {'pb'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
 opt.mroi.num_mroi_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
-opt.mroi.doplots = 1; %doplots in make_morphological_rois
+opt.mroi.doplots = 0; %doplots in make_morphological_rois
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi) 
@@ -75,7 +75,7 @@ opt.froi.max_roi_size = 300; %pixels
 opt.froi.max_regions_per_roi = 4; %for discontiguous rois
 opt.froi.within_mask_threshold = 0.5; %trash roi if more than within_mask_threshold is outside morphological mask (morph mask is all ones if you don't make one)
 opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
-opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output rsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
+opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
 opt.froi.numrois_for_gif = 10; %how many roi to put in gif, empty for all, 0 to skip gif
 opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
