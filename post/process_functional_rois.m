@@ -349,10 +349,6 @@ if numrois_for_gif~=0
         startcol1, endcol1, saturation_factor_background, ...
         startcol2, endcol2, saturation_factor_rois);
 
-    if isempty(numrois_for_gif)
-        numrois_for_gif = numroi;
-    end
-
 
     if numroi>numrois_for_gif
         roi_plot_inds_good = round(linspace(1, numroi, numrois_for_gif));

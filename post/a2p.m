@@ -111,7 +111,7 @@ for pai = 1:length(pth_usefile_prefix_all)
                 norm_params = parsnorm_all{npi};
                 if any(~cellfun(@isempty, regexp(extraction_params, regexptranslate('wildcard', opt.bump.expat)))) && ...
                         any(~cellfun(@isempty, regexp(norm_params, regexptranslate('wildcard', opt.bump.normpat)))) && ...
-                        any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.bump.regionpat_bump)))) 
+                        any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.bump.regionpat)))) 
 
                     fn_save_prefix = [pth.roi_allmethods.(regionex){epi}(1:end-4) norm_params];
 
@@ -140,9 +140,9 @@ for pai = 1:length(pth_usefile_prefix_all)
         for epi = 1:length(parsex_all) %for each extraction
             parsnorm_all = fieldnames(resp.(regionex).(parsex_all{epi}));
             for npi = 1:length(parsnorm_all) %for each response normalization
-                if any(~cellfun(@isempty, regexp(parsex_all{epi}, regexptranslate('wildcard', opt.fit.expat_fit)))) && ...
-                        any(~cellfun(@isempty, regexp(parsnorm_all{npi}, regexptranslate('wildcard', opt.fit.normpat_fit)))) && ...
-                        any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.fit.regionpat_fit))))
+                if any(~cellfun(@isempty, regexp(parsex_all{epi}, regexptranslate('wildcard', opt.fit.expat)))) && ...
+                        any(~cellfun(@isempty, regexp(parsnorm_all{npi}, regexptranslate('wildcard', opt.fit.normpat)))) && ...
+                        any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.fit.regionpat))))
 
                     countz = countz + 1;
                     pars_all.(regionex)(countz,:) = {parsex_all{epi}, epi, parsnorm_all{npi}, npi};

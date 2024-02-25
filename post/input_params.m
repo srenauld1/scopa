@@ -77,14 +77,13 @@ opt.froi.within_mask_threshold = 0.5; %trash roi if more than within_mask_thresh
 opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
 opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.froi.numrois_for_gif = 10; %how many roi to put in gif, empty for all, 0 to skip gif
+opt.froi.numrois_for_gif = 0; %how many roi to put in gif, big number to plot all, 0 to skip gif
 opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
-opt.froi.do_other_plots = 1; %do the other plots
+opt.froi.do_other_plots = 0; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
-% params for response extraction/normalization of functional roi responses (opt.froi.norm), 
-% same convention as above for opt.mroi.norm)
+% params for response extraction/normalization of functional roi responses (opt.froi.norm), same convention as above for opt.mroi.norm)
 
 opt.froi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 opt.froi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
@@ -127,9 +126,9 @@ opt.bump.doplots = 1;
 % response is specified with opt.fit.regionpat_fit, opt.fit.expat_fit, opt.fit.normpat_fit
 % opt.fit.regionpat_fit are the regionex (can be multiple), opt.fit.expat_fit are the
 % extraction param strings (can be multiple), opt.fit.normpat_fit are the normalization strings (can be multiple)
-opt.fit.regionpat_fit = {'no_r'};
-opt.fit.expat_fit = {'mo*'}; %can use wildcards
-opt.fit.normpat_fit = {'in_rawf_pc_f_cl_f_w_no'}; %can use wildcards
+opt.fit.regionpat = {'no_r'};
+opt.fit.expat = {'mo*'}; %can use wildcards
+opt.fit.normpat = {'in_rawf_pc_f_cl_f_w_no'}; %can use wildcards
 
 % opt.fit.sdom.(regionex) specifies which input to use for fit, 
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
