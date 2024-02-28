@@ -16,7 +16,7 @@ function plot_bump(aplot, dplot, bumpang, bumprho, cueang, ballang, ...
 
 ballang = -ballang;
 
-numnanrow_splitLR = 1; %how many "glomeruli" to insert as nans to separate left and right hemispheres
+numnanrow_splitLR = 1; %how many "ulieruli" to insert as nans to separate left and right hemispheres
 same_y_scale_for_all_epochs = 1;
 
 alpha_min = 0;
@@ -148,10 +148,10 @@ for pii = 1:length(aplot)
     dplot_sort{pii} = dplot{pltindz(pii)}(asort,:);
 
     %leave here bc used regardless of whetyher alpha_is_morphological
-    % map bumpang onto glomerulus index (to deal with non-monotonic domain (two circles), esp when domain midpoint is ill-defined )
+    % map bumpang onto cluster index (to deal with non-monotonic domain (two circles), esp when domain midpoint is ill-defined )
     mtmp = interp1(linspace(-pi, pi, 1000), linspace(1, halfcent+1, 1000), bumpang(:,pii));
     mtmp(mtmp==halfcent+1) = 1;
-    bumpangasglom(:,pii) = mtmp;
+    bumpangasclust(:,pii) = mtmp;
 
 
     for ii = 1:numel(aplot_sort{pii})/2 %average two halves
@@ -162,46 +162,46 @@ for pii = 1:length(aplot)
     aplot_sort{pii} = aplot_sort_tmp;
     dplot_sort{pii} = dplot_sort_tmp;
 
-    bumpangasglom_for_zeroing = round(bumpangasglom(:,pii));
-    bumpangasglom_for_zeroing(bumpangasglom_for_zeroing==halfcent+1) = 1;
+    bumpangasclust_for_zeroing = round(bumpangasclust(:,pii));
+    bumpangasclust_for_zeroing(bumpangasclust_for_zeroing==halfcent+1) = 1;
     halfcent_new = halfcent/2;
     dpsztmp = dplot_sort{pii};
 
     mtmp = interp1(linspace(-pi, pi, 1000), linspace(1, halfcent+1, 1000), cueang);
     mtmp(mtmp==halfcent+1) = 1;
-    cueangasglom(:,pii) = mtmp;
+    cueangasclust(:,pii) = mtmp;
 
     mtmp = interp1(linspace(-pi, pi, 1000), linspace(1, halfcent+1, 1000), ballang);
     mtmp(mtmp==halfcent+1) = 1;
-    ballangasglom(:,pii) = mtmp;
+    ballangasclust(:,pii) = mtmp;
 
 
     %zero the mean
     for ii = 1:size(dplot_sort{pii}, 2)
-        if isnan(bumpangasglom_for_zeroing(ii)) %if nan, it's because there is no activity (consequently, no bump position)
+        if isnan(bumpangasclust_for_zeroing(ii)) %if nan, it's because there is no activity (consequently, no bump position)
             dplot_sort_zero{pii}(:,ii) = circshift(dpsztmp(:,ii), halfcent_new - 0); %in that case subtract 0, won't matter because nothing will be displayed
         else
             try
-                dplot_sort_zero{pii}(:,ii) = circshift(dpsztmp(:,ii), halfcent_new - bumpangasglom_for_zeroing(ii)); %why isn't this the same: circshift(dpsztmp, bumpangasglom_upsampled)
+                dplot_sort_zero{pii}(:,ii) = circshift(dpsztmp(:,ii), halfcent_new - bumpangasclust_for_zeroing(ii)); %why isn't this the same: circshift(dpsztmp, bumpangasclust_upsampled)
             catch
                 fuk=2
             end
         end
     end
-    bumpangplot_zero(:, pltindz(pii)) = mod(bumpangasglom_for_zeroing + (halfcent_new - bumpangasglom_for_zeroing), size(dplot_sort_zero{pii}, 1));
+    bumpangplot_zero(:, pltindz(pii)) = mod(bumpangasclust_for_zeroing + (halfcent_new - bumpangasclust_for_zeroing), size(dplot_sort_zero{pii}, 1));
 
 end
-cueang_zero = mod(cueangasglom + (halfcent_new - bumpangasglom_for_zeroing), size(dplot_sort_zero{pii}, 1));
-ballang_zero = mod(ballangasglom + (halfcent_new - bumpangasglom_for_zeroing), size(dplot_sort_zero{pii}, 1));
+cueang_zero = mod(cueangasclust + (halfcent_new - bumpangasclust_for_zeroing), size(dplot_sort_zero{pii}, 1));
+ballang_zero = mod(ballangasclust + (halfcent_new - bumpangasclust_for_zeroing), size(dplot_sort_zero{pii}, 1));
 
 
 %determine time axis for each epoch and bout
 for rind = 1:numr/2
 
     if epochinds
-        indz1 = find(md.stimepochinds_i==epochinds(rind));
+        indz1 = find(md.trialepochinds_i==epochinds(rind));
     else
-        indz1 = 1:length(md.stimepochinds_i);
+        indz1 = 1:length(md.trialepochinds_i);
     end
 
 
@@ -283,7 +283,7 @@ for rind = 1:numr/2
         dps_tmp{pltindz(pii)} = dplot_sort{pltindz(pii)}(:,indz{rind});
         dpsz_tmp{pltindz(pii)} = dplot_sort_zero{pltindz(pii)}(:,indz{rind});
         mp_tmp{pltindz(pii)} = bumpang(indz{rind}, pltindz(pii))';
-        mgh_tmp{pltindz(pii)} = bumpangasglom(indz{rind}, pltindz(pii))';
+        mgh_tmp{pltindz(pii)} = bumpangasclust(indz{rind}, pltindz(pii))';
         rp_tmp{pltindz(pii)} = bumprho(indz{rind}, pltindz(pii))';
         rpr_tmp{pltindz(pii)} = rescale(rp_tmp{pltindz(pii)}, alpha_min, 1);
         mpz_tmp{pltindz(pii)} = bumpangplot_zero(indz{rind}, pltindz(pii))';
@@ -485,7 +485,7 @@ for rind = 1:numr/2
     end
 end
 
-%insert nans separating left and right hemisphere bumps, and adjust bumpangasglom/mgh (creating left and right versions)
+%insert nans separating left and right hemisphere bumps, and adjust bumpangasclust/mgh (creating left and right versions)
 for rind = 1:numr/2
     for pii=1:length(pltindz)
         nanins_splitLR = nan(numnanrow_splitLR, size(dp{rind, pltindz(pii)}, 2));
@@ -495,11 +495,11 @@ for rind = 1:numr/2
     end
 end
 
-max_num_glom_whole = -1;
-max_num_glom_half = -1;
+max_num_clust_whole = -1;
+max_num_clust_half = -1;
 for pii=1:length(pltindz)
-    max_num_glom_whole = max([max_num_glom_whole size(dp{1, pltindz(1)}, 1)]);
-    max_num_glom_half = max([max_num_glom_half size(dpsz{1, pltindz(1)}, 1)]);
+    max_num_clust_whole = max([max_num_clust_whole size(dp{1, pltindz(1)}, 1)]);
+    max_num_clust_half = max([max_num_clust_half size(dpsz{1, pltindz(1)}, 1)]);
 end
 
 for rind = 1:numr/2
@@ -520,9 +520,9 @@ if same_y_scale_for_all_epochs
 end
 
 
-extrax = max_num_glom_whole*xlim_makeroomfac;
+extrax = max_num_clust_whole*xlim_makeroomfac;
 extrax2 = 2*pi*xlim_makeroomfac;
-extrax3 = max_num_glom_half*xlim_makeroomfac;
+extrax3 = max_num_clust_half*xlim_makeroomfac;
 line_length = 0.25; %fraction of 1 (whole height of fig)
 numsidelines = length(sideline);
 sidelinepos = linspace(0, extrax2, numsidelines+2);
@@ -562,14 +562,14 @@ for ii = 1:numfram
                 hpl{spco(cind)+numtot*(pii-1)} = plot(hax{spco(cind)}, dp{rind, pltindz(pii)}(:,ii), 'Color', plotcolz{pltindz(pii)}, 'Marker', 'none', 'LineStyle', '-');
                 hlin{spco(cind)+numtot*(pii-1)} = xline(hax{spco(cind)}, mgh_right{rind, pltindz(pii)}(ii), 'Color', plotcolz{pltindz(pii)});
                 hlin{spco(cind)+numtot*(pii-1)+numtot*length(pltindz)} = xline(hax{spco(cind)}, mgh_left{rind, pltindz(pii)}(ii), 'Color', plotcolz{pltindz(pii)});
-                first_glom_index = 1; %it's not 0, at the least it's 1
-                hax{spco(cind)}.XLim = [first_glom_index  size(dp{rind, pltindz(1)}, 1)];
+                first_clust_index = 1; %it's not 0, at the least it's 1
+                hax{spco(cind)}.XLim = [first_clust_index  size(dp{rind, pltindz(1)}, 1)];
                 xlm = hax{spco(cind)}.XLim;
                 hax{spco(cind)}.XTick = [xlm(1) halfcent halfcent+2 xlm(2)]; %linspace(xlm(1), xlm(2), 3);
                 hax{spco(cind)}.XAxis.TickLabel = {1, halfcent, 1, halfcent};
                 hax{spco(cind)}.XAxis.TickLabelFormat = '%d';
                 hax{spco(cind)}.XAxis.FontSize = font1;
-                hax{spco(cind)}.XLim = [first_glom_index - extrax size(dp{rind, pltindz(1)}, 1) + extrax];
+                hax{spco(cind)}.XLim = [first_clust_index - extrax size(dp{rind, pltindz(1)}, 1) + extrax];
 
                 hax{spco(cind)}.YAxis(pii).Limits = [minyval(rind, pii) maxyval(rind, pii)];
                 ylm = hax{spco(cind)}.YAxis(pii).Limits;

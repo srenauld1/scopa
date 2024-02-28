@@ -1,14 +1,14 @@
 
-function predresp = fit_ann(pars, stim, supp, pthspre)
+function preddepv = fit_ann(pars, indv, supp, pthspre)
 
-%could change how stim is organized before this function for speed (since
+%could change how indv is organized before this function for speed (since
 %it's organized for pure linear fits right now)
 
 % artificial neural network: sums of outputs of LN units
 % (1d linear filters with static nonlinearities)
 % nonlinearity is generalized logistic function
 % single layer
-% each stim dim gets numLN LN units
+% each indv dim gets numLN LN units
 % pass nonempty pthspre to plot/save model params
 
 
@@ -19,10 +19,10 @@ if exist('pthspre', 'var') && ~isempty(pthspre)
     [~, fn_save, ~] = fileparts(pth_save);
     fn_save = strrep(fn_save, '_', ' ');
     
-    stimmin = min(stim(:));
-    stimmax = max(stim(:));
+    indvmin = min(indv(:));
+    indvmax = max(indv(:));
     extra_xlim_fac = 0.1;
-    extrax = extra_xlim_fac*range(stim(:));
+    extrax = extra_xlim_fac*range(indv(:));
 
     fontsmall = 13;
     fontmedium = 20;
@@ -49,31 +49,31 @@ C = 1; %hard coded param
 Q = 1; %hard coded param
 filtnorm = 1; %hard coded param
 doplots_filt = 0;
-predresp = zeros(size(stim, 1), 1);
+preddepv = zeros(size(indv, 1), 1);
 count = 0;
 
-for jj = 1:supp.num_dim_stim %loop over stim dims
+for jj = 1:supp.num_dim_indv %loop over indv dims
 
-    stiminds = [1:supp.num_samp_model]*2-(2-jj); %since stim is organized this way, dims alternate in vec
-    stimtmp = stim(:,stiminds);
+    ivinds = [1:supp.num_samp_model]*2-(2-jj); %since indv is organized this way, dims alternate in vec
+    indvtmp = indv(:,ivinds);
 
-    for ii = 1:supp.num_LN_per_stimdim %loop over LN units
+    for ii = 1:supp.num_LN_per_indvdim %loop over LN units
 
         count = count +1;
 
         tmp = num2cell(pars(supp.pind{jj,ii}.L));
         filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
 
-        predresptmp = sum(stimtmp.*filt, 2); %apply linear filter
+        preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
 
         if pthspre
-            predresplin = predresptmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
+            preddepvlin = preddepvtmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
         end
 
         tmp = num2cell(pars(supp.pind{jj,ii}.N));
-        predresptmp = static_genlog(predresptmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+        preddepvtmp = static_genlog(preddepvtmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
 
-        predresp = predresp + predresptmp; %sum outputs across loop
+        preddepv = preddepv + preddepvtmp; %sum outputs across loop
 
 
         if pthspre
@@ -93,10 +93,10 @@ for jj = 1:supp.num_dim_stim %loop over stim dims
             hax{sfi}.Title.FontSize = fontsmall;
 
             sfi = 2;
-            [predresplin, idx] = sort(predresplin);
-            plot(hax{sfi}, predresplin, predresptmp(idx)); %sorting prevents an odd plotting error
+            [preddepvlin, idx] = sort(preddepvlin);
+            plot(hax{sfi}, preddepvlin, preddepvtmp(idx)); %sorting prevents an odd plotting error
 
-            hax{sfi}.XAxis.Limits = [min(predresplin(:)) max(predresplin(:))];
+            hax{sfi}.XAxis.Limits = [min(preddepvlin(:)) max(preddepvlin(:))];
             xlm = hax{sfi}.XLim;
             hax{sfi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
             hax{sfi}.XAxis.TickLabelFormat = '%.2f';

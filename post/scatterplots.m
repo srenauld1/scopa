@@ -1,14 +1,14 @@
 function scatterplots(cueangtmp, cueveltmp, ballangtmp, ballveltmp, ...
     bumpmutmp, bumprhotmp, bumpveltmp, ampmeantmp, amppeaktmp, ampmutmp, ...
     respgartmp, respgaltmp, respnortmp, respnoltmp, meangtmp, meanntmp, ...
-    ti, tb, stimepochinds_i, stimepochinds_b, epochindstmp, fn_prefix, gif_visibility)
+    ti, tb, trialepochinds_i, trialepochinds_b, epochindstmp, fn_prefix, gif_visibility)
 
 
 allow_response_upsample = 0;
 
 if length(respgartmp) < length(cueveltmp) & allow_response_upsample
 
-    tsamp_ei = stimepochinds_b;
+    tsamp_ei = trialepochinds_b;
     tsamp = tb;
     respgartmp = interp1(ti,respgartmp,tb)'; %upsample resp rather than downsample stim
     respgaltmp = interp1(ti,respgaltmp,tb)'; %upsample resp rather than downsample stim
@@ -25,7 +25,7 @@ if length(respgartmp) < length(cueveltmp) & allow_response_upsample
 
 elseif length(respgartmp) == length(cueveltmp)
 
-    tsamp_ei = stimepochinds_i;
+    tsamp_ei = trialepochinds_i;
     tsamp = ti;
 
 else
@@ -108,7 +108,7 @@ for rind = 1:length(epochindstmp)
         'cueang', 'cuevel', 'ballang', 'ballvel', ...
         'bumpmu', 'bumprho', 'bumpvel', 'ampmean', 'amppeak', 'ampmu', ...
         'respgar', 'respgal', 'respnor', 'respnol', 'meang', 'meann', ...
-        'ti', 'tb', 'stimepochinds_i', 'stimepochinds_b', 'epochinds', '-v7.3', '-mat')
+        'ti', 'tb', 'trialepochinds_i', 'trialepochinds_b', 'epochinds', '-v7.3', '-mat')
 
 
 

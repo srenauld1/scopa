@@ -64,8 +64,8 @@ md.total_t = max(md.ti);
 md.smoothwindow_i = md.smoothwindow_sec/mean(diff(md.ti));
 
 if no_stim_epochs
-    md.stimepochinds_i = ones(length(md.ti), 1);
-    md.stimepochinds_b = [];
+    md.trialepochinds_i = ones(length(md.ti), 1);
+    md.trialepochinds_b = [];
 end
 
 stim.vis = vis;

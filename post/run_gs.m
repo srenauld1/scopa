@@ -1,5 +1,5 @@
-function [ft, gof, predresp, hdata, sdata, vdata, pstim] = ...
-    run_gs(slvrl, objfcn, resp, stim, x0, lbnd, ubnd, linineq_A, linineq_b, ...
+function [ft, gof, preddepv, hdata, sdata, vdata, indvpref] = ...
+    run_gs(slvrl, objfcn, depv, indv, x0, lbnd, ubnd, linineq_A, linineq_b, ...
     gethue, getsat, getval, supp, ri, pth_fitdata_epoch)
 
 
@@ -36,11 +36,11 @@ save_unique_sol_count_global = 1;
 
 slvrg = GlobalSearch; %globalsearch can only use fmincon
 
-slvrg.NumTrialPoints = 100000; %1000
+slvrg.NumTrialPoints = supp.NumTrialPoints; %1000
 slvrg.BasinRadiusFactor = 0.2000; %0.2000
 slvrg.DistanceThresholdFactor = 0.7500; %0.7500
 slvrg.MaxWaitCycle = 20; %20
-slvrg.NumStageOnePoints = 20000; %200
+slvrg.NumStageOnePoints = supp.NumStageOnePoints; %200
 slvrg.PenaltyThresholdFactor = 0.2000; %0.2000
 slvrg.Display = 'final'; %'final'
 slvrg.FunctionTolerance = 1.0000e-06; %1.0000e-06
@@ -85,7 +85,7 @@ optopts.OutputFcn = @outfcn_local; %[];
 
 optprob = createOptimProblem(slvrl);
 
-optprob.objective = @(b) sum(( resp - objfcn(b, stim, supp) ).^2); %fmincon requires objective function be sse explicitly
+optprob.objective = @(b) sum(( depv - objfcn(b, indv, supp) ).^2); %fmincon requires objective function be sse explicitly
 optprob.x0 = x0;
 optprob.Aineq = linineq_A;
 optprob.bineq = linineq_b;
@@ -106,14 +106,14 @@ optprob.options = optopts;
 %% compute output variables
 
 
-predresp = objfcn(ft, stim, supp); %predresp is predicted response
-gof = mse(resp, predresp); %error
+preddepv = objfcn(ft, indv, supp); %preddepv is predicted depv
+gof = mse(depv, preddepv); %error
 
-hdata = gethue(ft, stim, predresp);
+hdata = gethue(ft, indv, preddepv);
 sdata = getsat(gof);
-vdata = getval(resp);
+vdata = getval(depv);
 
-pstim = stim(find(max(predresp)==predresp,1));
+indvpref = indv(find(max(preddepv)==preddepv,1));
 
 save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
 

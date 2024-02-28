@@ -103,8 +103,8 @@ vis.ang_sm_rsmp(naninds_i) = nan; %put nans where the cue doesn't exist (dark ep
 vis.vel_r_sm_rsmp(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 
 if no_stim_epochs
-    stimepochinds_i = ones(length(md.ti), 1);
-    stimepochinds_b = ones(length(md.tb), 1);
+    trialepochinds_i = ones(length(md.ti), 1);
+    trialepochinds_b = ones(length(md.tb), 1);
 else
     
     if datenum<20231119
@@ -114,8 +114,8 @@ else
     end
 
 end
-md.stimepochinds_i = stimepochinds_i;
-md.stimepochinds_b = stimepochinds_b;
+md.trialepochinds_i = trialepochinds_i;
+md.trialepochinds_b = trialepochinds_b;
 
 %organize_epochs(md, vis, 'imaging', [0 35]) %unfinished
 
@@ -186,8 +186,8 @@ if doplots
     figure; plot(md.tb, vis.vel_r_sm); hold on; plot(md.ti, vis.vel_r_sm_rsmp); title(titopt)
 
 
-    figure; plot(md.ti, stimepochinds_i); ylim([0 max(stimepochinds_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
-    hold on; plot(md.tb, stimepochinds_b); ylim([0 max(stimepochinds_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
+    figure; plot(md.ti, trialepochinds_i); ylim([0 max(trialepochinds_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
+    hold on; plot(md.tb, trialepochinds_b); ylim([0 max(trialepochinds_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
 
 
 end

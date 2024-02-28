@@ -6,7 +6,7 @@
                     %     if strcmp(sorting_target, 'none') %if not sorting
                     %         numfram = 1e10;
                     %         for epi = 1:length(epochinds_plot) %find min epoch length, and plot that many frames (so they can be contiguous)
-                    %             numfram = min([numfram numel(find(stimepochinds_i==epochinds_plot(epi)))]);
+                    %             numfram = min([numfram numel(find(trialepochinds_i==epochinds_plot(epi)))]);
                     %         end
                     %     else
                     %         numfram = 150; %if sorting, plot less (not strictly necessary, could plot all)
@@ -31,7 +31,7 @@
                     %     gif_visibility = 'on';
                     %     separate_vis_and_bump = 0;
                     %
-                    %     % "DONT FORGET ROTATE THE MASK PLOT POSTERIOR TO SHOW ALL GLOM"
+                    %     % "DONT FORGET ROTATE THE MASK PLOT POSTERIOR TO SHOW ALL CLUST_"
                     %     % plot_bump(alpha_plot, resp_plot, mu_plot, rho_plot, visang, ballang, ...
                     %     %     ampmu_plot, amppeak_plot, ampmean_plot, resp_gar, resp_gal, resp_nor, resp_nol, ...
                     %     %     epochinds_plot, md, centinds, halfcent, pltindz, numfram, startsec, stopsec,  ...

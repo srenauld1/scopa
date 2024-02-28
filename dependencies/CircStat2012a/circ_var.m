@@ -1,4 +1,4 @@
-function [S s] = circ_var(alpha, w, d, dim)
+function [S s r] = circ_var(alpha, w, d, dim)
 % s = circ_var(alpha, w, d, dim)
 %   Computes circular variance for circular data 
 %   (equ. 26.17/18, Zar).   

@@ -225,11 +225,11 @@ pth.roi_allmethods = pth_roi_allmethods;
 pth.fictrac = pth_fictrac;
 pth.savedata_oneregion = pth_savedata_oneregion;
 
-opt.bump.flag_numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field
+opt.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field, change from user input formatting
 
-opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field
-opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field
-opt.mroi.use_hires = use_hires_new; %update field
+opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field, change from user input formatting
+opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting
+opt.mroi.use_hires = use_hires_new; %update field, change from user input formatting
 
 opt.gif.plot_stack_order = plot_stack_order;
 opt.gif.plot_stack_gif = plot_stack_gif;

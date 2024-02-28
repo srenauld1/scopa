@@ -3,6 +3,7 @@ function [resp, domain] = map_rois_to_head_direction(stack, resp, visang, ...
     roiinfo, md, fitopt, halfcent, fn_prefix, numcluster_for_bump_domain_resample, doplots)
 
 
+indvar = visang;
 fitopt.hsv_background = 'rois';
 fitopt.modeltype = 'vonmises';
 fitopt.sort_method = 'unbiased';
@@ -12,7 +13,7 @@ fitopt.doplots = 1;
 fitopt.use_saved_model = 1;
 
 
-[~, ~, cueang_pref] = fitmdl(stack, visang, resp, ...
+[~, ~, cueang_pref] = fitmdl(stack, stimfit, resp, ...
     roiinfo, md, fn_prefix, fitopt);
 
 cueang_pref = cueang_pref{1}(:)';

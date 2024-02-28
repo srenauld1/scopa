@@ -1,4 +1,4 @@
-function [mean_out std_out] = weighted_circular_std(ang, w)
+function std_out = weighted_circular_std(ang, w)
 %
 % function [mean_out std_out] = weighted_circular_std(ang, weights)
 %

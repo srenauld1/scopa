@@ -4,10 +4,10 @@ error("unfinished function")
 
 if strcmp(sampling, 'imaging')
     tfull = md.ti;
-    tsamp_ei = md.stimepochinds_i;
+    tsamp_ei = md.trialepochinds_i;
 elseif strcmp(sampling, 'behavior')
     tfull = md.tb;
-    tsamp_ei = md.stimepochinds_b;
+    tsamp_ei = md.trialepochinds_b;
 end
 
 if ~exist('tlim_epoch', 'var') | isempty(tlim_epoch)
@@ -34,7 +34,7 @@ if ~exist('uniform_numbouts', 'var') | isempty(uniform_numbouts)
 end
 
 if ~exist('epochinds', 'var') | isempty(epochinds)
-    epochinds = num2cell(unique(md.stimepochinds_i));
+    epochinds = num2cell(unique(md.trialepochinds_i));
 end
 
 %determine time axis for each epoch and bout

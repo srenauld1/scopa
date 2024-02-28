@@ -1,6 +1,5 @@
-function [ft, gof, pstim] = fitresp(stack, stimin, respin, ...
-    pixinds_roi, mapind2ind, stimepochinds_i, ...
-    dtmni, pth_fitdata_prefix, fitopt)
+function [ft, gof, indvpref] = fitmdl(stack, indvin, depvin, ...
+    roiinfo, md, pth_fitdata_prefix, fitopt)
 
 % notes on fitting
 % default is to use globalsearch with solver fmincon
@@ -48,6 +47,11 @@ function [ft, gof, pstim] = fitresp(stack, stimin, respin, ...
 
 %% check/correct inputs
 
+pixinds_roi = roiinfo.pixinds_roi;
+mapind2ind = roiinfo.mapind2ind;
+trialepochinds_i = md.trialepochinds_i;
+dtmni = md.dtmni;
+
 if ~exist('plot_3d', 'var')
     fitopt.plot3d = 1;
 end
@@ -58,8 +62,8 @@ if strcmp(fitopt.huenorm, 'native') && (strcmp(fitopt.modeltype, 'linear') || st
     disp("WARNING, NO NATIVE HUENORM FOR MODELTYPES linear, plane, or svd, SWITCHING TO RELATIVE")
     fitopt.huenorm = 'relative'; %hue normalization method, see model_setup
 end
-if isvector(stimin) & iscolumn(stimin)
-    stimin = stimin(:)';
+if isvector(indvin) & iscolumn(indvin)
+    indvin = indvin(:)';
 end
 if ~exist('stack', 'var')
     stack = [];
@@ -82,26 +86,26 @@ pth_fitdata_prefix = [pth_fitdata_prefix '_' fitopt.modeltype '_' num2str(fitopt
 
 if strcmp(fitopt.hsv_background, 'pixels')
     pixinds_roi_2 = logical(sum(pixinds_roi)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
-    respin2 = reshape(stack, [], size(stack, 4));
-    respin2 = respin2(cell2mat(pixinds_roi_2), :);
+    depvin2 = reshape(stack, [], size(stack, 4));
+    depvin2 = depvin2(cell2mat(pixinds_roi_2), :);
     pth_fitdata_prefix_pix = [pth_fitdata_prefix '_PIX'];
-    fitresp(stack, stimfit, respin2, pixinds_roi, mapind2ind, ... %call fitresp on pixels if you want a pixel fit background behind your roi fit background
-        stimepochinds_i, dtmni, pth_fitdata_prefix_pix, opt.fit);
+    fitmdl(stack, indvfit, depvin2, pixinds_roi, mapind2ind, ... %call fitmdl on pixels if you want a pixel fit background behind your roi fit background
+        trialepochinds_i, dtmni, pth_fitdata_prefix_pix, opt.fit);
 end
 
 
-%% synthesize responses to test optimization 
+%% synthesize depv to test optimization 
 
-if fitopt.synthesize_resp
-    synthesize_responses %mock data to test fitting
+if fitopt.synthesize_depv
+    synthesize_depv %mock data to test fitting
 end
 
-%% check stim/response size
+%% check indv/depv size
 
-[ num_dim_stimin, num_samp_stimin ] = size( stimin );
-[ numresps, num_samp_respin ] = size(respin);
+[ num_dim_indvin, num_samp_indvin ] = size( indvin );
+[ numdepvs, num_samp_depvin ] = size(depvin);
 
-if num_samp_stimin~=num_samp_respin | ndims(respin)~=2 | ndims(stimin)~=2
+if num_samp_indvin~=num_samp_depvin | ndims(depvin)~=2 | ndims(indvin)~=2
     error("fix inputs")
 else
     time_dimension = 2;
@@ -110,44 +114,44 @@ end
 
 %% optional preprocessing of inputs
 
-if fitopt.smoothresp
-    smoothdata(respin, time_dimension, 'gaussian', fitopt.smoothresp);
+if fitopt.smoothdepv
+    smoothdata(depvin, time_dimension, 'gaussian', fitopt.smoothdepv);
 end
 
-% num_stim_bins = 12;
-% stimbinned = discretize(stimin, linspace(min(stimin(:)), max(stimin(:)), num_stim_bins));
+% num_indv_bins = 12;
+% indv_binned = discretize(indvin, linspace(min(indvin(:)), max(indvin(:)), num_indv_bins));
 
 
 %% exclude
 
 if strcmp(fitopt.excludeopts, 'triangle')
-    [histdt, histx] = hist(abs(stimin(:)), round(numel(stimin)/10));
+    [histdt, histx] = hist(abs(indvin(:)), round(numel(indvin)/10));
     thrbin = triangle_threshold(histdt, 'R', 0);
     thrvel = histx(thrbin);
-    excludeinds = abs(stimin)<thrvel;
-    stimin(excludeinds) = nan;
+    excludeinds = abs(indvin)<thrvel;
+    indvin(excludeinds) = nan;
 end
 
-%% standardize stim and response (optional)
+%% standardize indv and depvonse (optional)
 
-if fitopt.standardize_stim
-    for ri = 1:num_dim_stimin
-        stimin(ri,:) = (stimin(ri,:) - nanmean(stimin(ri,:))) / nanstd(stimin(ri,:));
+if fitopt.standardize_indv
+    for ri = 1:num_dim_indvin
+        indvin(ri,:) = (indvin(ri,:) - nanmean(indvin(ri,:))) / nanstd(indvin(ri,:));
     end
 end
 
-if fitopt.standardize_resp
-    respinmeans = zeros(numresps, 1);
-    respinstds = zeros(numresps, 1);
-    for ri = 1:numresps
-        respinmeans(ri) = nanmean(respin(ri,:));
-        respinstds(ri) = nanstd(respin(ri,:));
-        respin(ri,:) = (respin(ri,:) - respinmeans(ri)) / respinstds(ri);
+if fitopt.standardize_depv
+    depvinmeans = zeros(numdepvs, 1);
+    depvinstds = zeros(numdepvs, 1);
+    for ri = 1:numdepvs
+        depvinmeans(ri) = nanmean(depvin(ri,:));
+        depvinstds(ri) = nanstd(depvin(ri,:));
+        depvin(ri,:) = (depvin(ri,:) - depvinmeans(ri)) / depvinstds(ri);
     end
 end
 
 
-%% create version of stim that can be passed to optimization code (dimensions x sample)
+%% create version of indv that can be passed to optimization code (dimensions x sample)
 
 
 num_samp_model = round(fitopt.length_model_seconds/dtmni);
@@ -155,14 +159,14 @@ if num_samp_model==0
     num_samp_model = 1; %a convenience, so user can pass fitopt.length_model_seconds=0 if they don't know volume rate
 end
 
-num_dim_stimaug = num_dim_stimin*num_samp_model;
-num_samp_stimaug_full = num_samp_stimin-(num_samp_model-1)-fitopt.num_samp_lag;
+num_dim_indvaug = num_dim_indvin*num_samp_model;
+num_samp_indvaug_full = num_samp_indvin-(num_samp_model-1)-fitopt.num_samp_lag;
 
-stimaug = zeros( num_dim_stimaug, num_samp_stimaug_full );
-stimepochindsaug = zeros( num_samp_model, num_samp_stimaug_full );
-for ii = 1 : num_samp_stimaug_full
-    stimaug(:,ii) = reshape( flip(stimin(:,ii:ii+num_samp_model-1), time_dimension), [], 1 ); %stimaug makes time samples into past just another stim dim, for model with 2 dims a and b and 4 time samples into past, with lag zero, stimaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
-    stimepochindsaug(:,ii) = flip(stimepochinds_i(ii:ii+num_samp_model-1), time_dimension); %do the same for epoch inds, to make sure model doesn't include any samples from wrong epoch
+indvaug = zeros( num_dim_indvaug, num_samp_indvaug_full );
+trialepochindsaug = zeros( num_samp_model, num_samp_indvaug_full );
+for ii = 1 : num_samp_indvaug_full
+    indvaug(:,ii) = reshape( flip(indvin(:,ii:ii+num_samp_model-1), time_dimension), [], 1 ); %indvaug makes time samples into past just another indv dim, for model with 2 dims a and b and 4 time samples into past, with lag zero, indvaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
+    trialepochindsaug(:,ii) = flip(trialepochinds_i(ii:ii+num_samp_model-1), time_dimension); %do the same for epoch inds, to make sure model doesn't include any samples from wrong epoch
 end
 
 
@@ -174,42 +178,42 @@ end
     fitopt.hrange_out_manual, hue_is_periodic, supp] = ...
     model_setup(fitopt.modeltype, fitopt.huestr, ...
     fitopt.hrange_out_manual, ...
-    stimaug, num_samp_model, num_dim_stimaug, num_dim_stimin, respin, dtmni);
+    indvaug, num_samp_model, num_dim_indvaug, num_dim_indvin, depvin, dtmni);
 
 
-%% write response to bin (to allow parfor loop without broadcasting)
+%% write depvonse to bin (to allow parfor loop without broadcasting)
 
-pth_respin_bin = [pth_fitdata_prefix 'respin_.bin'];
-fid = fopen(pth_respin_bin, 'w');
-respin_class = class(respin);
-fwrite(fid, respin, respin_class); %write full respin, read/index according to epoch right before parfor to avoid large broadcast var
+pth_depvin_bin = [pth_fitdata_prefix 'depvin_.bin'];
+fid = fopen(pth_depvin_bin, 'w');
+depvin_class = class(depvin);
+fwrite(fid, depvin, depvin_class); %write full depvin, read/index according to epoch right before parfor to avoid large broadcast var
 fclose(fid);
-clear respin
+clear depvin
 
 %% loop over epochs
 
-keepinds_resp = cell(1, length(fitopt.epochinds));
-stim_plot = cell(1, length(fitopt.epochinds));
-resp_plot = cell(1, length(fitopt.epochinds));
-predresp_plot = cell(1, length(fitopt.epochinds));
+keepinds_depv = cell(1, length(fitopt.epochinds));
+indv_plot = cell(1, length(fitopt.epochinds));
+depv_plot = cell(1, length(fitopt.epochinds));
+preddepv_plot = cell(1, length(fitopt.epochinds));
 ft = cell(1, length(fitopt.epochinds));
 gof = cell(1, length(fitopt.epochinds));
-pstim = cell(1, length(fitopt.epochinds)); %preferred stim (stim at max predicted response, often not the same as a fit param)
+indvpref = cell(1, length(fitopt.epochinds)); %preferred indv (indv at max predicted depvonse, often not the same as a fit param)
 
-for epi = 1:length(fitopt.epochinds) %for each stim epoch, crop stim and response according to epoch indices, then fit model to cropped stim/response
+for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depvonse according to epoch indices, then fit model to cropped indv/depv
 
-    keepinds_stimaug = find(all(ismember(stimepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case stimepochaug is singleton
-    keepinds_resp{epi} = keepinds_stimaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired stim vs resp lag, and number timepoints in model (which includes current so -1)
+    keepinds_indvaug = find(all(ismember(trialepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
+    keepinds_depv{epi} = keepinds_indvaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
 
-    stimauge = stimaug(:, keepinds_stimaug);
-    stimauge = stimauge.'; %columns of stim and response should be number samples, could change above or just transpose here
+    indvauge = indvaug(:, keepinds_indvaug);
+    indvauge = indvauge.'; %columns of indv and depvonse should be number samples, could change above or just transpose here
 
-    num_samp_data{epi} = length(keepinds_stimaug); %number samples of stim/response given to optimization code
+    num_samp_data{epi} = length(keepinds_indvaug); %number samples of indv/depv given to optimization code
 
-    fid = fopen(pth_respin_bin, 'r');
-    respintmp = fread(fid, [ numresps, num_samp_respin ], [respin_class '=>' respin_class]); %read resp then crop, to prevent broadcasting in parfor loop below
+    fid = fopen(pth_depvin_bin, 'r');
+    depvintmp = fread(fid, [ numdepvs, num_samp_depvin ], [depvin_class '=>' depvin_class]); %read depv then crop, to prevent broadcasting in parfor loop below
     fclose(fid);
-    respintmp = respintmp(:, keepinds_resp{epi}).'; %crop to account for fit samples (if >1), respin trails stimin, do this outside parfor
+    depvintmp = depvintmp(:, keepinds_depv{epi}).'; %crop to account for fit samples (if >1), depvin trails indvin, do this outside parfor
 
     pth_fitdata_epoch_pattern = [pth_fitdata_prefix '_' epochinds_str{epi} '_*_fitdata_.mat'];
     fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
@@ -225,43 +229,43 @@ for epi = 1:length(fitopt.epochinds) %for each stim epoch, crop stim and respons
 
     if dofit
 
-        fttmp = zeros(numresps, numftpars); % was num_dim_stimin*num_samp_model, then num_dim_stimin*numftpars
-        goftmp = zeros(numresps, 1);
-        predresp = zeros(size(respintmp), respin_class);
-        hdata = zeros(numresps, 1);
-        sdata = zeros(numresps, 1);
-        vdata = zeros(numresps, 1);
-        pstimtmp = zeros(numresps, 1);
+        fttmp = zeros(numdepvs, numftpars); % was num_dim_indvin*num_samp_model, then num_dim_indvin*numftpars
+        goftmp = zeros(numdepvs, 1);
+        preddepv = zeros(size(depvintmp), depvin_class);
+        hdata = zeros(numdepvs, 1);
+        sdata = zeros(numdepvs, 1);
+        vdata = zeros(numdepvs, 1);
+        indvpreftmp = zeros(numdepvs, 1);
 
         if strcmp(fitopt.modeltype, 'tm')
-            stimauge = stimauge.';
+            indvauge = indvauge.';
         end
         tic
-        for ri = 1:numresps %fit model to each pixel and/or roi
+        for ri = 1:numdepvs %fit model to each pixel and/or roi
 
-            resp = double(respintmp(:, ri));
+            depv = double(depvintmp(:, ri));
 
             if strcmp(fitopt.modeltype, 'svd')
                 pvar = 0.8;
-                [ fttmp(ri,:), goftmp(ri), predresp(:,ri), hdata(ri), sdata(ri), vdata(ri), pstimtmp(ri) ] = ...
-                    run_svd( objfcn, stimauge, resp, pvar, gethue, getsat, getval)
+                [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri) ] = ...
+                    run_svd( objfcn, indvauge, depv, pvar, gethue, getsat, getval)
             else
                 if strcmp(fitopt.slvrg, 'globalsearch')
-                    [ fttmp(ri,:), goftmp(ri), predresp(:,ri), hdata(ri), sdata(ri), vdata(ri), pstimtmp(ri)] = ...
-                        run_gs(fitopt.slvrl, objfcn, resp, stimauge, x0, lbnd, ubnd, linineq_A, linineq_b, gethue, getsat, getval, supp, ri, pth_fitdata_epoch);
+                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri)] = ...
+                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, gethue, getsat, getval, supp, ri, pth_fitdata_epoch);
                 end
             end
             % %if you want to see each fit (before model_plots below), change parfor above to for and uncomment this section
             % if ri==1
             %     hfg = figure;
             %     hax = axes( 'Parent', hfg);
-            %     hpl = plot(hax, resp);
+            %     hpl = plot(hax, depv);
             %     hold(hax, 'on')
-            %     hpl2 = plot(hax, predresp);
+            %     hpl2 = plot(hax, preddepv);
             % else
-            %     hpl.YData = resp;
+            %     hpl.YData = depv;
             %     hold(hax, 'on')
-            %     hpl2.YData = predresp;
+            %     hpl2.YData = preddepv;
             % end
             % pause(0.2) %pause is required for fig to appear during loop(??)
 
@@ -269,19 +273,19 @@ for epi = 1:length(fitopt.epochinds) %for each stim epoch, crop stim and respons
         end
 
         if strcmp(fitopt.modeltype, 'tm')
-            stimauge = stimauge.';
+            indvauge = indvauge.';
         end
         toc
 
-        save(pth_fitdata_epoch, 'fttmp', 'goftmp', 'predresp', 'hdata', 'sdata', 'vdata', 'pstimtmp', '-v7.3', '-mat')
+        save(pth_fitdata_epoch, 'fttmp', 'goftmp', 'preddepv', 'hdata', 'sdata', 'vdata', 'indvpreftmp', '-v7.3', '-mat')
 
     end
 
     %select which pixels/rois get detail view and how they're sorted
     switch fitopt.sort_method
         case 'unbiased' %equidistant fitopt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
-            sortinds = fliplr(1:numresps);
-            sortinds = 1:numresps;
+            sortinds = fliplr(1:numdepvs);
+            sortinds = 1:numdepvs;
         case 'majoraxis' %equidistant fitopt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
             [~, sortinds] = sort(mapind2ind,  'descend');
         case 'gof' %sort by gof (sdata), then equidistant fitopt.maxnumroiplot, descending order
@@ -293,14 +297,14 @@ for epi = 1:length(fitopt.epochinds) %for each stim epoch, crop stim and respons
 
     end
 
-    if fitopt.maxnumroiplot>=numresps
+    if fitopt.maxnumroiplot>=numdepvs
         roiinds_plot = sortinds;
     else
-        roiinds_plot = sortinds(round(linspace(1, numresps, fitopt.maxnumroiplot)));
+        roiinds_plot = sortinds(round(linspace(1, numdepvs, fitopt.maxnumroiplot)));
     end
 
     %organize and normalize model data into hsv map
-    [ hsvmap{epi} ] = form_hsv( stimauge, respintmp, goftmp, ...
+    [ hsvmap{epi} ] = form_hsv( indvauge, depvintmp, goftmp, ...
         hdata, sdata, vdata, ...
         fitopt.huenorm, fitopt.satnorm, fitopt.valnorm, ...
         gethr_native, gethr_relative, ...
@@ -311,24 +315,24 @@ for epi = 1:length(fitopt.epochinds) %for each stim epoch, crop stim and respons
         fitopt.hueshift, hue_is_periodic);
 
     %subset to create potentially smaller variables
-    stim_plot{epi} = stimauge;
-    respintmp = respintmp(:, roiinds_plot).';
-    predresptmp = predresp( :, roiinds_plot).';
-    if fitopt.standardize_resp
-        resp_plot{epi} = respintmp.*respinstds(roiinds_plot) + respinmeans(roiinds_plot); %rescale to original
-        predresp_plot{epi} = predresptmp.*respinstds(roiinds_plot) + respinmeans(roiinds_plot); %rescale to original
+    indv_plot{epi} = indvauge;
+    depvintmp = depvintmp(:, roiinds_plot).';
+    preddepvtmp = preddepv( :, roiinds_plot).';
+    if fitopt.standardize_depv
+        depv_plot{epi} = depvintmp.*depvinstds(roiinds_plot) + depvinmeans(roiinds_plot); %rescale to original
+        preddepv_plot{epi} = preddepvtmp.*depvinstds(roiinds_plot) + depvinmeans(roiinds_plot); %rescale to original
     else
-        resp_plot{epi} = respintmp;
-        predresp_plot{epi} = predresptmp;
+        depv_plot{epi} = depvintmp;
+        preddepv_plot{epi} = preddepvtmp;
     end
     pixinds_roi_plot = pixinds_roi(roiinds_plot);
     ft{epi} = fttmp;
     gof{epi} = goftmp;
-    pstim{epi} = pstimtmp;
+    indvpref{epi} = indvpreftmp;
 
 end
 
-clear respintmp predresp goftmp fttmp
+clear depvintmp preddepv goftmp fttmp
 
 %% plot everything
 
@@ -336,12 +340,12 @@ if fitopt.doplots
 
     doplots = [0 0 1 1 0];
 
-    model_plots(hsvmap, stim_plot, resp_plot, predresp_plot, stack, stackmean, ...
+    model_plots(hsvmap, indv_plot, depv_plot, preddepv_plot, stack, stackmean, ...
         fitopt.epochinds, pixinds_roi_plot, roiinds_plot, fitopt.hsv_background, ...
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
-        fitopt.responseplot_norm, fitopt.plot_class, ...
-        keepinds_resp, stimepochinds_i, epochinds_str, ...
+        fitopt.depvonseplot_norm, fitopt.plot_class, ...
+        keepinds_depv, trialepochinds_i, epochinds_str, ...
         pth_fitdata_prefix, fitopt.gif_visibility, objfcn, ft, supp, doplots)
 
 

@@ -1,16 +1,16 @@
-function [ft, gof, predresp, hdata, sdata, vdata, pstim] = ...
-    run_svd( objfcn, stim, resp, pvar, gethue, getsat, getval)
+function [ft, gof, preddepv, hdata, sdata, vdata, indvpref] = ...
+    run_svd( objfcn, indv, depv, pvar, gethue, getsat, getval)
 
-ft = objfcn( stim, resp, pvar);
+ft = objfcn( indv, depv, pvar);
 
-predresp = stim*ft;
+preddepv = indv*ft;
 
-mserr = mse(resp, predresp); 
+mserr = mse(depv, preddepv); 
 
 gof = mserr; 
 
-hdata = gethue(ft, stim, predresp);
+hdata = gethue(ft, indv, preddepv);
 sdata = getsat(gof);
-vdata = getval(resp);
+vdata = getval(depv);
 
-pstim = stim(find(max(predresp)==predresp,1));
+indvpref = indv(find(max(preddepv)==preddepv,1));

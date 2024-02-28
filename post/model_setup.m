@@ -4,7 +4,7 @@ function [objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, numftpars, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     hrange_out_manual, hue_is_periodic, supp] = ...
     model_setup(modeltype, huestr, hrange_out_manual, ...
-    stimaug, num_samp_model, num_dim_stimaug, num_dim_stimin, respin, dtmni)
+    indvaug, num_samp_model, num_dim_indvaug, num_dim_ivin, depvin, dtmni)
 
 %how to do "inline if" (iif)
 iif = @(varargin) varargin{2 * find([varargin{1:2:end}], 1, 'first')}();
@@ -26,7 +26,7 @@ switch modeltype
         objfcn = @fit_svd;
         lbnd = [];
         ubnd = [];
-        x0 = zeros(1, num_dim_stimaug);
+        x0 = zeros(1, num_dim_indvaug);
         switch huestr
             case 'loc'
                 gethue = @(ft, st, pr) ft(1);
@@ -65,9 +65,9 @@ switch modeltype
 
         %objfcn = @(b,x,supp) b(1) * x(:,1) + b(2) * x(:,2) + b(3) * x(:,3) + b(4) * x(:,4) + b(5);
         objfcn = @fit_plane;
-        lbnd = [ones(1, num_dim_stimaug)*3000 -inf]; %[0,0,0,-pi]; %a, c, k, u
-        ubnd = [ones(1, num_dim_stimaug)*3000 inf]; %[inf,inf,inf,pi];
-        x0 = [ones(1, num_dim_stimaug)*2 0];
+        lbnd = [ones(1, num_dim_indvaug)*3000 -inf]; %[0,0,0,-pi]; %a, c, k, u
+        ubnd = [ones(1, num_dim_indvaug)*3000 inf]; %[inf,inf,inf,pi];
+        x0 = [ones(1, num_dim_indvaug)*2 0];
 
         switch huestr
             case 'loc'
@@ -110,7 +110,7 @@ switch modeltype
         x0 = [0,0,0,0];
         switch huestr
             case 'loc'
-                gethue = @(ft, st, pr) st(find(max(pr) == pr, 1)); %value of stim at max predicted response; doing this instead of just ft(3) because ft(3) is preferred head direction when ft(1)*ft(2) is positive, but null head direction when negative, and mse is worse with bounds that force nonnegative
+                gethue = @(ft, st, pr) st(find(max(pr) == pr, 1)); %value of indv at max predicted depv; doing this instead of just ft(3) because ft(3) is preferred head direction when ft(1)*ft(2) is positive, but null head direction when negative, and mse is worse with bounds that force nonnegative
                 gethr_native = @(ft,st,rs) [0 2*pi];
             case 'wid'
                 gethue = @(ft, st, pr) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
@@ -120,6 +120,8 @@ switch modeltype
                 gethr_native = @(ft,st,rs) [min(rs(:)) max(rs(:))];
         end
         supp.num_par_total = length(lbnd);
+        supp.NumTrialPoints = 1000;
+        supp.NumStageOnePoints = 200;
 
 
     case 'gaussian'
@@ -145,7 +147,7 @@ switch modeltype
 
     case {'glno3', 'glno4', 'glno5'}
         [objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, supp, gethue, gethr_native] = ...
-            fit_glno(modeltype, stimaug, respin, num_samp_model, num_dim_stimin, huestr);
+            fit_glno(modeltype, indvaug, depvin, num_samp_model, num_dim_ivin, huestr);
 
     case 'tm'
         objfcn = @nonadaptive_tm; 
@@ -154,7 +156,7 @@ switch modeltype
         x0 = [10, 10, ones(1,14)];
         switch huestr
             case 'loc'
-                gethue = @(ft, st, pr) st(find(max(pr) == pr, 1)); %value of stim at max predicted response; doing this instead of just ft(3) because ft(3) is preferred head direction when ft(1)*ft(2) is positive, but null head direction when negative, and mse is worse with bounds that force nonnegative
+                gethue = @(ft, st, pr) st(find(max(pr) == pr, 1)); %value of indv at max predicted depv; doing this instead of just ft(3) because ft(3) is preferred head direction when ft(1)*ft(2) is positive, but null head direction when negative, and mse is worse with bounds that force nonnegative
                 gethr_native = @(ft,st,rs) [0 2*pi];
             case 'wid'
                 gethue = @(ft, st, pr) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
@@ -164,15 +166,15 @@ switch modeltype
                 gethr_native = @(ft,st,rs) [min(rs(:)) max(rs(:))];
         end
 
-        vert_load_path = [filesep 'Users' filesep 'wienecke' filesep 'Documents' filesep 'GitHub' filesep 'flyMax' filesep 'stimGeneration' filesep]; %%path to folder containing vertices
+        vert_load_path = [filesep 'Users' filesep 'wienecke' filesep 'Documents' filesep 'GitHub' filesep 'flyMax' filesep 'indvGeneration' filesep]; %%path to folder containing vertices
         filename_vertices = 'vertices_8000_0.txt';
         pth = rdir([vert_load_path filename_vertices]);
         phimx = 0.769961614088224; %image max phi
         vert = dlmread( pth.name );
-        vert = vert(max(vert(:, 3),-1) >= cos(phimx), :); %crop vertices to be within stimulus cap, do after find_arc_length
+        vert = vert(max(vert(:, 3),-1) >= cos(phimx), :); %crop vertices to be within indv cap, do after find_arc_length
         vert = vert./vecnorm(vert,2, 2);  %normalize it to lie on the sphere!!
-        disp("WARNING, HARD CODED CROP TO num_dim_stimin VERTICES")
-        vert = vert(1:num_dim_stimin,:);
+        disp("WARNING, HARD CODED CROP TO num_dim_ivin VERTICES")
+        vert = vert(1:num_dim_ivin,:);
         supp.vert = vert;
 
 end
