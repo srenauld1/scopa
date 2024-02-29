@@ -157,7 +157,7 @@ if doplots
 
 
     filename_gif = [fn_save_prefix '_ampsortedglom_' fn{fni} '.gif'];
-    epochinds = {num2cell(unique(md.stimepochinds_i))};
+    epochinds = {num2cell(unique(md.trialepochinds_i))};
     numclusterplot = 8;
     ncolgif = 128;
     dvecc = round(linspace(1, numcluster, numclusterplot));
@@ -169,9 +169,9 @@ if doplots
         hfg = figure;
 
         if epochinds{epi}
-            indz = find(md.stimepochinds_i==epochinds{epi});
+            indz = find(md.trialepochinds_i==epochinds{epi});
         else
-            indz = 1:length(stimepochinds);
+            indz = 1:length(trialepochinds);
         end
 
         [~, md1a]=sort(resp_cl(:,indz), 'ascend');
