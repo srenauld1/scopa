@@ -58,7 +58,7 @@ end
 
 for fi = 1:length(bump_subdomain)
 
-    if any(strcmp(bump_subdomain{fi}, 'all')) %regular pva, all glomeruli, same as mean of both halves
+    if any(strcmp(bump_subdomain{fi}, 'all')) %regular pva, all clusters, same as mean of both halves
         centinds = 1:numcluster;
         resptmp = resp_cl;
     elseif any(strcmp(bump_subdomain{fi}, 'right')) %right half
@@ -71,7 +71,7 @@ for fi = 1:length(bump_subdomain)
         centinds = 1:halfcent;
         maxinds = sum(resp_cl(centinds,:),1) > sum(resp_cl(centinds+halfcent,:),1);
         resptmp = resp_cl(centinds,:).*maxinds + resp_cl(centinds+halfcent,:).*~maxinds;
-    elseif any(strcmp(bump_subdomain{fi}, 'weighted')) %weighted mean of both halves, if you use equal weighting it will be same as all glomeruli
+    elseif any(strcmp(bump_subdomain{fi}, 'weighted')) %weighted mean of both halves, if you use equal weighting it will be same as all clusters
         centinds = 1:halfcent;
         wt1 = 0.5;
         wt2 = 0.5;
@@ -156,7 +156,7 @@ if doplots
     end
 
 
-    filename_gif = [fn_save_prefix '_ampsortedglom_' fn{fni} '.gif'];
+    filename_gif = [fn_save_prefix '_ampsortedclust_' fn{fni} '.gif'];
     epochinds = {num2cell(unique(md.trialepochinds_i))};
     numclusterplot = 8;
     ncolgif = 128;
