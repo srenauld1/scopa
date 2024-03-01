@@ -22,7 +22,7 @@ if strcmp(region_extraction, 'no_l') | strcmp(region_extraction, 'no_r') %we wan
     stim_is_circular = 0;
 
     vel_rescale_mag = 1;
-    cuevel = cue.vel_r_sm_rsmp;
+    cuevel = cue.velrsd;
     cuevel_rscl = cuevel; %copy so 0 gets rescaled for each direction
     cuevel_rscl(cuevel<=0) = rescale(cuevel_rscl(cuevel<=0), -vel_rescale_mag, 0); %rescale velocity independently for each direction
     cuevel_rscl(cuevel>=0) = rescale(cuevel_rscl(cuevel>=0), 0, vel_rescale_mag); %rescale velocity independently for each direction
@@ -34,7 +34,7 @@ if strcmp(region_extraction, 'no_l') | strcmp(region_extraction, 'no_r') %we wan
     tuning.preferred_velocity_cue = mean(lfit_cue(:));
     tuning.gof_velocity_cue = norm(vec(lfit_cue), 1);
 
-    ballvel = ball.vel_r_sm_rsmp;
+    ballvel = ball.velrsd;
     ballvel_rscl = ballvel; %copy so 0 gets rescaled for each direction
     ballvel_rscl(ballvel<=0) = rescale(ballvel_rscl(ballvel<=0), -vel_rescale_mag, 0); %rescale velocity independently for each direction
     ballvel_rscl(ballvel>=0) = rescale(ballvel_rscl(ballvel>=0), 0, vel_rescale_mag); %rescale velocity independently for each direction
@@ -67,7 +67,7 @@ elseif strcmp(region_extraction, 'gal') | strcmp(region_extraction, 'gar') | str
 %     pvar = 0.9; %dimensionality reduction in svd if linfit_method=svd (how much variance to keep)
 %     stim_is_circular = 1;
 % 
-%     cueang = cue.ang_sm_rsmp;
+%     cueang = cue.angsd;
 % 
 %     stim = [cos(cueang(:)) sin(cueang(:))]';
 % 

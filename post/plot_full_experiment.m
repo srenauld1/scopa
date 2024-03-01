@@ -1,4 +1,4 @@
-function plot_full_experiment(cue, mu, intHD, ...
+function plot_full_experiment(cue, mu, angint, ...
     amp_PB_standin, dff_ga_hf, dff_no_hf, tb, splits2, openinds, ...
     closedinds, alp, stradd, pth_save, offset, rho)
 
@@ -36,7 +36,7 @@ figure;
 hold on
 plot(tb,unwrap(cue),'k','linewidth',2)
 plot(tb, -unwrap(mu),'b','linewidth',2)
-plot(tb, -unwrap(intHD),'r','linewidth',2)
+plot(tb, -unwrap(angint),'r','linewidth',2)
 
 if exist('offset', 'var')
 

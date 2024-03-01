@@ -1,5 +1,5 @@
 function bump = compute_bump(stack, resp, visang, ...
-    roiinfo, bumpopts, fitopt, md, fn_save_prefix, regionex)
+    roiinfo, bumpopts, md, fn_save_prefix, regionex)
 
 
 %% params
@@ -14,6 +14,7 @@ rescale_clusters = bumpopts.rescale_clusters; %just before computing bump, resca
 numcluster_for_bump_domain_resample = bumpopts.numcluster_for_bump_domain_resample.(regionex);
 doplots = bumpopts.doplots;
 
+fitopts = bumpopts.fit;
 smoothwindow = smoothwindow_sec/md.dtmni;
 
 
@@ -34,7 +35,7 @@ end
 if strcmp(domain_method, 'functional')
 
     [resp_cl, domaintmp] = map_rois_to_head_direction(stack, resp, visang, ...
-        roiinfo, md, fitopt, halfcent, fn_save_prefix, ...
+        roiinfo, md, fitopts, halfcent, fn_save_prefix, ...
         numcluster_for_bump_domain_resample, doplots);
 
 elseif strcmp(domain_method, 'morphological') %morphological domain

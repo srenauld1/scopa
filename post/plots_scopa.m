@@ -179,7 +179,7 @@ for ci = 1:length(err_sorting)
     %%%%%%%%%%%%%%%%%%smooth imaging and fictrac data, and interp imaging onto fictrac%%%%%%%%%%%%%%%
 
     mu = unwrap(mu); %unwrap to perform circular smoothing. keeps radians continuous, so that smoothing 0 and 2pi doesnt go to 1pi
-    intHD = unwrap(ball.intHD);
+    angint = unwrap(ball.angint);
     cue_new = unwrap(cue / num_panel_frames * 2*pi - pi);
 
     for i = 1:smooth_iter*extra_smooth_fac %smooth fictrac data n times, since fictrac is super noisy.
@@ -194,7 +194,7 @@ for ci = 1:length(err_sorting)
         f_speed = smoothdata(f_speed,'gaussian',smoothfac_b);
         r_vel = smoothdata(r_vel,'gaussian',smoothfac_b);
         r_speed = smoothdata(r_speed,'gaussian',smoothfac_b);
-        intHD = smoothdata(intHD,'gaussian',smoothfac_b);
+        angint = smoothdata(angint,'gaussian',smoothfac_b);
         cue_new = smoothdata(cue_new,'gaussian',smoothfac_b);
     end
 
@@ -209,8 +209,8 @@ for ci = 1:length(err_sorting)
     "I THINK THE RE WRAPPIUNG IS OFF BY ONE - 2PI APPEARS TWICE AS ZERO AND 2PI"
     mu = mod(mu,2*pi); %rewrap heading data, and put between -pi and pi.
     mu(mu > pi) = mu(mu > pi) - 2*pi;
-    intHD = mod(intHD,2*pi);
-    intHD(intHD > pi) = intHD(intHD > pi) - 2*pi;
+    angint = mod(angint,2*pi);
+    angint(angint > pi) = angint(angint > pi) - 2*pi;
     cue_new = mod(cue_new,2*pi);
     cue_new(cue_new > pi) = cue_new(cue_new > pi) - 2*pi;
 
@@ -224,7 +224,7 @@ for ci = 1:length(err_sorting)
 
     for sai = 1:length(stradd2)
         stradd = ['ind' num2str(err_sorting(ci)) '_' caiman_params_selected '_norm_' norm_params_selected '_' stradd2{sai} '_'];
-        plot_full_experiment(cue_new, mu, intHD, ...
+        plot_full_experiment(cue_new, mu, angint, ...
             amp_mu, dff_gall, dff_no, tb, splits2, openinds, closedinds, alp, stradd, pth_save)
         %close all
     end

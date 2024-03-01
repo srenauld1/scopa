@@ -92,14 +92,14 @@ opt.froi.norm.doplots = 0;
 %% FICTRAC/STIMULUS
 
 %params for stimulus/fictrac processing
-opt.ft.include_behavior = 1; %0 to skip behavior
-opt.ft.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
-opt.ft.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
-opt.ft.dark_stim_end_duration = 60; %final seconds
-opt.ft.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.ft.slopeorder = 2; %order of polynomial used to fit local slope
-opt.ft.slopelen = 5; %window length used to fit slope
-opt.ft.doplots = 0;
+opt.ftrac.include_behavior = 1; %0 to skip behavior
+opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
+opt.ftrac.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
+opt.ftrac.dark_stim_end_duration = 60; %final seconds
+opt.ftrac.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
+opt.ftrac.slopeorder = 2; %order of polynomial used to fit local slope
+opt.ftrac.slopelen = 5; %window length used to fit slope
+opt.ftrac.doplots = 0;
 
 %% BUMP
 
@@ -118,6 +118,27 @@ opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster
 opt.bump.doplots = 0;
 
 
+opt.bump.fit(1).depv = {...
+    ['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no'], ...
+    };
+opt.bump.fit(1).indv = {...
+    {['ball, velrsd']}...
+    {['bump, pb, mo*, inraw*, all, mu']}, ...
+    };
+opt.bump.fit(1).outercellcombine = 'any'; %any or each
+
+
+opt.bump.fit.hsv_background = 'rois';
+opt.bump.fit.modeltype = 'vonmises';
+opt.bump.fit.sort_method = 'unbiased';
+opt.bump.fit.epochinds = {[4]};
+opt.bump.fit.length_model_seconds = 0;
+opt.bump.fit.doplots = 1;
+opt.bump.fit.use_saved_model = 1;
+
+opt.bump.fit = default_fit_params(opt.bump.fit);
+
+
 %% FIT MODEL
 
 
@@ -126,70 +147,43 @@ opt.bump.doplots = 0;
 % depv is specified with opt.fit.regionpat_fit, opt.fit.expat_fit, opt.fit.normpat_fit
 % opt.fit.regionpat_fit are the regionex (can be multiple), opt.fit.expat_fit are the
 % extraction param strings (can be multiple), opt.fit.normpat_fit are the normalization strings (can be multiple)
-opt.fit.regionpat = {'no_r'};
-opt.fit.expat = {'mo*'}; %can use wildcards
-opt.fit.normpat = {'in_rawf_pc_f_cl_f_w_no'}; %can use wildcards
+opt.fit.depv.regionpat = {'no_r'};
+opt.fit.depv.expat = {'mo*'}; %can use wildcards
+opt.fit.depv.normpat = {'in_rawf_pc_f_cl_f_w_no'}; %can use wildcards
 
-% opt.fit.sdom.(regionex) specifies which input to use for fit, 
+% opt.fit.indv.(regionex) specifies which input to use for fit, 
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fit.sdom.no_r = {{'ball', 'vel_r_sm_rsmp'}, {'bump',
+% for example opt.fit.indv.no_r = {{'ball', 'velrsd'}, {'bump',
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
-% two-dimensional input, the first dimension being ball.vel_r_sm_rsmp, the second being bump.mu
+% two-dimensional input, the first dimension being ball.velrsd, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fit.regionpat_fit
 %since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl  
 %since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
+%subfield not listed, uses all, like wildcard
 
-opt.fit.sdom.no_r = {{'ball', 'vel_r_sm_rsmp'}, {'bump', 'mu'}};
-opt.fit.sdom.no_l = {{'ball', 'vel_r_sm_rsmp'}, {'bump', 'mu'}};
-opt.fit.sdom.pb = {'vis', 'ang_sm_rsmp'};
-opt.fit.sdom.fullfov = {'vis', 'raw'};
 
-opt.fit.hsv_background = 'rois'; %'rois' or 'pixels' or 'raw';
-opt.fit.synthesize_depv = 0;
-opt.fit.epochinds = {[4]};
-opt.fit.num_samp_lag = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
-opt.fit.length_model_seconds = 2; %seconds, 0 is one sample
+opt.fit(1).depv = {...
+    ['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no'], ...
+    };
+opt.fit(1).indv = {...
+    {['ball, velrsd']}...
+    {['bump, pb, mo*, inraw*, all, mu']}, ...
+    };
+opt.fit(1).outercellcombine = 'any'; %any or each
 
-opt.fit.slvrg = 'globalsearch';
-opt.fit.slvrl = 'fmincon'; %'lsqcurvefit';
-opt.fit.modeltype = 'glno'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
-opt.fit.huestr = 'loc'; %loc or amp for modeltype linear . . . loc, amp, or wid for modeltype vonmises or gaussian
-opt.fit.lnth = 25; %for modeltype svd
-opt.fit.pvar = 0.8; %for modeltype svd
 
-opt.fit.huenorm = 'native'; %hue normalization method, see model_setup
-opt.fit.satnorm = 'relative'; %sat normalization method, see model_setup
-opt.fit.valnorm = 'relative';%val normalization method, see model_setup
-opt.fit.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see form_hsv
-opt.fit.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see form_hsv
-opt.fit.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see form_hsv
-opt.fit.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in model_setup to [0 1] when plotting periodic param (e.g. von mises center, ie modeltype 'vonmises' huestr 'loc'), see form_hsv
-opt.fit.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see form_hsv
-opt.fit.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see form_hsv
-opt.fit.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see form_hsv
-opt.fit.ignorehue = 0; %1 ignores it, makes constant 1
-opt.fit.ignoresat = 1; %1 ignores it, makes constant 1
-opt.fit.ignoreval = 1; %1 ignores it, makes constant 1
+opt.fit(2).depv = {...
+    ['resp, eb, mo*, inraw*'], ...
+    ['resp, pb, cm*, inraw*']...
+    };
+opt.fit(2).indv = {...
+    {['bump, pb, mo*, inraw*, mu'], ['resp, pb, mo*, inraw*']}, ...
+    {['ball, velrsd']}...
+    };
+opt.fit(2).outercellcombine = 'any'; %any or each
 
-opt.fit.depvplot_norm = 'each'; %amplotude normalization for the detail plots at bottom, 'all' normalizes to population, 'each' normalizes to each
-opt.fit.maxnumroiplot = 100; %number of rois that get detail view on the bottom, one per gif frame
-opt.fit.sort_method = 'unbiased'; %'majoraxis', 'unbiased', 'gof', 'custom'; %how to select rois for detail plots, 'unbiased' for equidistant maxnumroiplot, 'gof' for equidistant maxnumroiplot sorted by gof in descending order (so starts with best fit ends with worst)
+opt.fit = default_fit_params(opt.fit);
 
-opt.fit.standardize_indv = 0;
-opt.fit.standardize_depv = 1; %1 makes each depv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
-opt.fit.smoothdepv = 0; %gaussian window std is one fifth total length
-
-opt.fit.gif_visibility = 'on'; %on shows gif while plotting/writing/saving, off saves/writes but doesn't show it
-opt.fit.max_tinds = 1000; %1000; %for the timeseries view of depv, how many samples to plot at the most (will take indices 1:max_tinds), big number to plot all
-opt.fit.timeseries_numsegments = 3; %how many equispaced segments to display in setail view, ending at final frame
-
-opt.fit.plot_class = 'hsv'; %hsv only shows one epoch per plot/gif frame, epoch shows multiple epochs but no hsv map
-opt.fit.excludeopts = '';
-
-opt.fit.plot3d = 0;
-opt.fit.doplots = 1;
-opt.fit.use_saved_model = 1;
-opt.fit.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
 %% SCATTERPLOTS
 
@@ -235,6 +229,8 @@ if strcmp(opt.main.recdate(1:2), '22') %override some settings for old project
     opt.fit.num_samp_lag = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
     opt.fit.length_model_seconds = 1.25;
 end
+
+%% order fields 
 
 fn = fieldnames(opt);
 for fni = 1:length(fn)

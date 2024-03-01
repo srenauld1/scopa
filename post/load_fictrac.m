@@ -1,5 +1,5 @@
 
-function [md, stim] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, fictracopts)
+function [md, ball, vis] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, fictracopts)
 
 
 %note extracting velocity for what should be constant velocity cue can have
@@ -61,17 +61,17 @@ smoothwindow_i = smoothwindow_sec/md.dtmni;
 naninds_i = md.ti>seconds(dark_epoch_time_start); %dark gets nans
 naninds_b = md.tb>seconds(dark_epoch_time_start); %dark gets nas
 
-ball.vel_f = ftData_DAQ.velFor{:}; 
-ball.spd_f = abs(ball.vel_f);
-ball.vel_r = ftData_DAQ.velYaw{:};
-ball.spd_r = abs(ball.vel_r);
-ball.inthd = ftData_DAQ.intHD{:};
-ball.ang = wrapToPi(ball.inthd);
+ball.velf = ftData_DAQ.velFor{:}; 
+ball.spdf = abs(ball.velf);
+ball.velr = ftData_DAQ.velYaw{:};
+ball.spdr = abs(ball.velr);
+ball.angint = ftData_DAQ.intHD{:};
+ball.ang = wrapToPi(ball.angint);
 
 if smoothwindow_b
-    ball.vel_f_sm = smoothdata(ball.vel_f, 'gaussian', smoothwindow_b, 'omitnan');
-    ball.ang_sm = smooth_circular_variable(ball.ang, smoothwindow_b);
-    ball.vel_r_sm = differentiate_circular_variable(ball.ang_sm, md.dtmnb, slopelen, slopeorder);
+    ball.velfs = smoothdata(ball.velf, 'gaussian', smoothwindow_b, 'omitnan');
+    ball.angs = smooth_circular_variable(ball.ang, smoothwindow_b);
+    ball.velrs = differentiate_circular_variable(ball.angs, md.dtmnb, slopelen, slopeorder);
 end
 
 vis.raw = ftData_DAQ.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
@@ -82,25 +82,25 @@ vis.ang = vis.ang  / (num_panel_frames + 1) * 2*pi - pi; %put in range -pi to pi
 
 vis.ang_fictrac = ftData_DAQ.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it 
 
-vis.vel_r = differentiate_circular_variable(vis.ang, md.dtmnb, slopelen, slopeorder);
+vis.velr = differentiate_circular_variable(vis.ang, md.dtmnb, slopelen, slopeorder);
 
 if smoothwindow_b
-    vis.ang_sm = smooth_circular_variable(vis.ang, smoothwindow_b);
-    vis.vel_r_sm = differentiate_circular_variable(vis.ang_sm, md.dtmnb, slopelen, slopeorder);
+    vis.angs = smooth_circular_variable(vis.ang, smoothwindow_b);
+    vis.velrs = differentiate_circular_variable(vis.angs, md.dtmnb, slopelen, slopeorder);
 end
 
 iscircular = 1;
-vis.ang_sm_rsmp =downsample_variable(md, vis.ang_sm, iscircular); %downsample into imaging rate
-ball.ang_sm_rsmp =downsample_variable(md, ball.ang_sm, iscircular); %downsample into imaging rate
+vis.angsd = downsample_variable(md, vis.angs, iscircular); %downsample into imaging rate
+ball.angsd = downsample_variable(md, ball.angs, iscircular); %downsample into imaging rate
 iscircular = 0;
-vis.vel_r_sm_rsmp =downsample_variable(md, vis.vel_r_sm, iscircular); %downsample into imaging rate
-ball.vel_r_sm_rsmp =downsample_variable(md, ball.vel_r_sm, iscircular); %downsample into imaging rate
-ball.vel_f_sm_rsmp =downsample_variable(md, ball.vel_f_sm, iscircular); %downsample into imaging rate
+vis.velrsd =downsample_variable(md, vis.velrs, iscircular); %downsample into imaging rate
+ball.velrsd =downsample_variable(md, ball.velrs, iscircular); %downsample into imaging rate
+ball.velfsd =downsample_variable(md, ball.velfs, iscircular); %downsample into imaging rate
 
-vis.ang_sm(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.vel_r_sm(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.ang_sm_rsmp(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.vel_r_sm_rsmp(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.angs(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.velrs(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.angsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.velrsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 
 if no_stim_epochs
     trialepochinds_i = ones(length(md.ti), 1);
@@ -119,8 +119,6 @@ md.trialepochinds_b = trialepochinds_b;
 
 %organize_epochs(md, vis, 'imaging', [0 35]) %unfinished
 
-stim.vis = vis;
-stim.ball = ball;
 
 if doplots
 
@@ -134,56 +132,56 @@ if doplots
 
     ballang_unwrap = unwrap(ball.ang);
     ballang_unwrap = ballang_unwrap - ballang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
-    ballangsm_unwrap = unwrap(ball.ang_sm);
-    ballangsm_unwrap = ballangsm_unwrap - ballangsm_unwrap(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
+    ballangsu = unwrap(ball.angs);
+    ballangsu = ballangsu - ballangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
 
     titopt = 'raw vs smoothed ball angle';
-    figure; plot(ball.ang(t_ind_b)); hold on; plot(ball.ang_sm(t_ind_b)); title(titopt)
-    figure; plot(ballang_unwrap(t_ind_b)); hold on; plot(ballangsm_unwrap(t_ind_b)); title(titopt)
-    figure; plot(ballang_unwrap); hold on; plot(ballangsm_unwrap); title(titopt)
+    figure; plot(ball.ang(t_ind_b)); hold on; plot(ball.angs(t_ind_b)); title(titopt)
+    figure; plot(ballang_unwrap(t_ind_b)); hold on; plot(ballangsu(t_ind_b)); title(titopt)
+    figure; plot(ballang_unwrap); hold on; plot(ballangsu); title(titopt)
     titopt = 'smoothed ball angle vs smoothed ball rot vel';
-    figure; plot(ballangsm_unwrap(t_ind_b)); yyaxis right; plot(ball.vel_r_sm(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ballangsm_unwrap); yyaxis right; plot(ball.vel_r_sm); yline(0); title(titopt)
+    figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
+    figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
     titopt = 'smoothed ball angle vs smoothed ball rot vel';
-    figure; plot(ballangsm_unwrap(t_ind_b)); yyaxis right; plot(ball.vel_r_sm(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ballangsm_unwrap); yyaxis right; plot(ball.vel_r_sm); yline(0); title(titopt)
+    figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
+    figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
     titopt = 'ball rot vel vs smoothed ball rot vel';
-    figure; plot(ball.vel_r(t_ind_b)); hold on; plot(ball.vel_r_sm(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ball.vel_r); hold on; plot(ball.vel_r_sm); yline(0); title(titopt)
+    figure; plot(ball.velr(t_ind_b)); hold on; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
+    figure; plot(ball.velr); hold on; plot(ball.velrs); yline(0); title(titopt)
 
 
     cueang_unwrap = unwrap(vis.ang);
     cueang_unwrap = cueang_unwrap - cueang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
-    cueangsm_unwrap = unwrap(vis.ang_sm);
-    cueangsm_unwrap = cueangsm_unwrap - cueangsm_unwrap(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
+    cueangsu = unwrap(vis.angs);
+    cueangsu = cueangsu - cueangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
 
     titopt = 'raw vs smoothed cue rot vel, behavior sampling';
-    figure; plot(md.tb(t_ind_b), vis.vel_r(t_ind_b)); hold on; plot(md.tb(t_ind_b), vis.vel_r_sm(t_ind_b)); title(titopt)
+    figure; plot(md.tb(t_ind_b), vis.velr(t_ind_b)); hold on; plot(md.tb(t_ind_b), vis.velrs(t_ind_b)); title(titopt)
 
     titopt = 'raw vs smoothed cue angle';
-    figure; plot(vis.ang(t_ind_b)); hold on; plot(vis.ang_sm(t_ind_b)); title(titopt)
-    figure; plot(cueang_unwrap(t_ind_b)); hold on; plot(cueangsm_unwrap(t_ind_b)); title(titopt)
-    figure; plot(cueang_unwrap); hold on; plot(cueangsm_unwrap); title(titopt)
+    figure; plot(vis.ang(t_ind_b)); hold on; plot(vis.angs(t_ind_b)); title(titopt)
+    figure; plot(cueang_unwrap(t_ind_b)); hold on; plot(cueangsu(t_ind_b)); title(titopt)
+    figure; plot(cueang_unwrap); hold on; plot(cueangsu); title(titopt)
     titopt = 'smoothed cue angle vs smoothed cue rot vel';
-    figure; plot(cueangsm_unwrap(t_ind_b)); yyaxis right; plot(vis.vel_r_sm(t_ind_b)); yline(0); title(titopt)
-    figure; plot(cueangsm_unwrap); yyaxis right; plot(vis.vel_r_sm); yline(0); title(titopt)
+    figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(vis.velrs(t_ind_b)); yline(0); title(titopt)
+    figure; plot(cueangsu); yyaxis right; plot(vis.velrs); yline(0); title(titopt)
     % titopt = 'smoothed cue angle vs smoothed cue rot vel med filtered';
-    % visvelrsm_med = movmedian(vis.vel_r_sm, [8 8], 'omitnan');
-    % figure; plot(cueangsm_unwrap(t_ind_b)); yyaxis right; plot(visvelrsm_med(t_ind_b)); yline(0); title(titopt)
-    % figure; plot(cueangsm_unwrap); yyaxis right; plot(visvelrsm_med); yline(0); title(titopt)
+    % visvelrs_med = movmedian(vis.velrs, [8 8], 'omitnan');
+    % figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(visvelrs_med(t_ind_b)); yline(0); title(titopt)
+    % figure; plot(cueangsu); yyaxis right; plot(visvelrs_med); yline(0); title(titopt)
 
     titopt = 'behavior vs imaging sampling of ball angle';
-    figure; plot(md.tb(t_ind_b), ball.ang_sm(t_ind_b)); hold on; plot(md.ti(t_ind_i), ball.ang_sm_rsmp(t_ind_i)); title(titopt)
-    figure; plot(md.tb, ball.ang_sm); hold on; plot(md.ti, ball.ang_sm_rsmp); title(titopt)
+    figure; plot(md.tb(t_ind_b), ball.angs(t_ind_b)); hold on; plot(md.ti(t_ind_i), ball.angsd(t_ind_i)); title(titopt)
+    figure; plot(md.tb, ball.angs); hold on; plot(md.ti, ball.angsd); title(titopt)
     titopt = 'behavior vs imaging sampling of cue angle';
-    figure; plot(md.tb(t_ind_b), vis.ang_sm(t_ind_b)); hold on; plot(md.ti(t_ind_i), vis.ang_sm_rsmp(t_ind_i)); title(titopt)
-    figure; plot(md.tb, vis.ang_sm); hold on; plot(md.ti, vis.ang_sm_rsmp); title(titopt)
+    figure; plot(md.tb(t_ind_b), vis.angs(t_ind_b)); hold on; plot(md.ti(t_ind_i), vis.angsd(t_ind_i)); title(titopt)
+    figure; plot(md.tb, vis.angs); hold on; plot(md.ti, vis.angsd); title(titopt)
     titopt = 'behavior vs imaging sampling of ball velocity';
-    figure; plot(md.tb(t_ind_b), ball.vel_r_sm(t_ind_b)); hold on; plot(md.ti(t_ind_i), ball.vel_r_sm_rsmp(t_ind_i)); title(titopt)
-    figure; plot(md.tb, ball.vel_r_sm); hold on; plot(md.ti, ball.vel_r_sm_rsmp); title(titopt)
+    figure; plot(md.tb(t_ind_b), ball.velrs(t_ind_b)); hold on; plot(md.ti(t_ind_i), ball.velrsd(t_ind_i)); title(titopt)
+    figure; plot(md.tb, ball.velrs); hold on; plot(md.ti, ball.velrsd); title(titopt)
     titopt = 'behavior vs imaging sampling of cue velocity';
-    figure; plot(md.tb(t_ind_b), vis.vel_r_sm(t_ind_b)); hold on; plot(md.ti(t_ind_i), vis.vel_r_sm_rsmp(t_ind_i)); title(titopt)
-    figure; plot(md.tb, vis.vel_r_sm); hold on; plot(md.ti, vis.vel_r_sm_rsmp); title(titopt)
+    figure; plot(md.tb(t_ind_b), vis.velrs(t_ind_b)); hold on; plot(md.ti(t_ind_i), vis.velrsd(t_ind_i)); title(titopt)
+    figure; plot(md.tb, vis.velrs); hold on; plot(md.ti, vis.velrsd); title(titopt)
 
 
     figure; plot(md.ti, trialepochinds_i); ylim([0 max(trialepochinds_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')

@@ -132,7 +132,7 @@ if strcmp(fitopt.excludeopts, 'triangle')
     indvin(excludeinds) = nan;
 end
 
-%% standardize indv and depvonse (optional)
+%% standardize indv and depv (optional)
 
 if fitopt.standardize_indv
     for ri = 1:num_dim_indvin
@@ -176,12 +176,13 @@ end
     gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     fitopt.hrange_out_manual, hue_is_periodic, supp] = ...
-    model_setup(fitopt.modeltype, fitopt.huestr, ...
-    fitopt.hrange_out_manual, ...
-    indvaug, num_samp_model, num_dim_indvaug, num_dim_indvin, depvin, dtmni);
+        model_setup(...
+            fitopt.modeltype, fitopt.huestr, ...
+            fitopt.hrange_out_manual,indvaug, num_samp_model, ...
+            num_dim_indvaug, num_dim_indvin, depvin, dtmni);
 
 
-%% write depvonse to bin (to allow parfor loop without broadcasting)
+%% write depv to bin (to allow parfor loop without broadcasting)
 
 pth_depvin_bin = [pth_fitdata_prefix 'depvin_.bin'];
 fid = fopen(pth_depvin_bin, 'w');
@@ -198,15 +199,15 @@ depv_plot = cell(1, length(fitopt.epochinds));
 preddepv_plot = cell(1, length(fitopt.epochinds));
 ft = cell(1, length(fitopt.epochinds));
 gof = cell(1, length(fitopt.epochinds));
-indvpref = cell(1, length(fitopt.epochinds)); %preferred indv (indv at max predicted depvonse, often not the same as a fit param)
+indvpref = cell(1, length(fitopt.epochinds)); %preferred indv (indv at max predicted depv, often not the same as a fit param)
 
-for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depvonse according to epoch indices, then fit model to cropped indv/depv
+for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
 
     keepinds_indvaug = find(all(ismember(trialepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
     keepinds_depv{epi} = keepinds_indvaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
 
     indvauge = indvaug(:, keepinds_indvaug);
-    indvauge = indvauge.'; %columns of indv and depvonse should be number samples, could change above or just transpose here
+    indvauge = indvauge.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
     num_samp_data{epi} = length(keepinds_indvaug); %number samples of indv/depv given to optimization code
 
@@ -344,7 +345,7 @@ if fitopt.doplots
         fitopt.epochinds, pixinds_roi_plot, roiinds_plot, fitopt.hsv_background, ...
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
-        fitopt.depvonseplot_norm, fitopt.plot_class, ...
+        fitopt.depvplot_norm, fitopt.plot_class, ...
         keepinds_depv, trialepochinds_i, epochinds_str, ...
         pth_fitdata_prefix, fitopt.gif_visibility, objfcn, ft, supp, doplots)
 

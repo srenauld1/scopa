@@ -1,11 +1,10 @@
 % use svd to find best linear fit to function defined by indv and depv;
-% indv - (m,n) array for indv at m spatial points and n time points;
-% depv - (1,n) array for depv to indv;
-% lnth - number of time points for linear fit;  if lnth<=n/(m+1), fit is unique;
+% indv - (n,m) array for independent variable, n samples, m features, 
+%        where m = d*l, where d is number features and l is number samples into the past;
+% depv - (n,1) array for dependent variable, n samples;
 % pvar - fraction of the data variance that the linear fit should account for;
 %        if not 1.0, pvar eliminates smaller singular values from pseudoinverse;
-% notc - if not [], data is not centered (mean not subtracted) before fitting;
-% lfit - (m,lnth) array for the coefficients of the linear fit;
+% ft - (m,lnth) array for the coefficients of the linear fit, ;
 % invp - (m*lnth,n-lnth+1) array for the pseudoinverse of the fitting problem;
 function ft = fit_svd( indv, depv, pvar)
 
