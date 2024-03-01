@@ -72,7 +72,7 @@ def crop_fov(Y, regionex, pth_prefix, dims):
                     "OR YOU MUST REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
 
                 zlimits = literal_eval(input ("CHOOSE Z LIMITS (ONE-INDEXED) FOR REGIONEX '" + regionex + "' AS TUPLE, i.e. USING FORMAT (FIRSTFRAME,LASTFRAME): "))
-                Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]-1], axis = 2)
+                Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]], axis = 2)
             ylimits, xlimits = select_fov_xy(Ymtz)
             tlimits = (1, dims[0])
             croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
