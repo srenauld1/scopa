@@ -39,7 +39,11 @@ if fitcount==1
                     tstmp{1} = ts;
                     fn = fieldnames(tstmp{1});
                     keepfields = [];
-                    keepfields{1} = fn(find( ~cellfun( @isempty, regexp( fn, regexptranslate('wildcard', varsubstr{1}) ) ) ) );
+                    if contains(varsubstr{1}, '*')
+                        keepfields{1} = fn(find( ~cellfun( @isempty, regexp( fn, regexptranslate('wildcard', varsubstr{1} ) ) ) ) );
+                    else
+                        keepfields{1} = fn(strcmp( fn, varsubstr{1} ) );
+                    end
                     if isempty(keepfields{1})
                         if opt(ofi).ignore_missing_vars
                             disp("REQUESTED SUBFIELD '" + varsubstr{1} + "' DOES NOT CURRENTLY EXIST IN STRUCT 'ts'")
@@ -52,7 +56,11 @@ if fitcount==1
                         for fi = 1:length(keepfields(ssi-1)) %for each matching field
                             try
                                 fn = fieldnames(tstmp{ssi-1}.(keepfields{ssi-1}{fi})); %list all fields
-                                keepfields{ssi} = fn( find( ~cellfun( @isempty, regexp( fn, regexptranslate('wildcard', varsubstr{ssi})  ) ) ) ); %find matching fields
+                                if contains(varsubstr{ssi}, '*')
+                                    keepfields{ssi} = fn( find( ~cellfun( @isempty, regexp( fn, regexptranslate('wildcard', varsubstr{ssi})  ) ) ) ); %find matching fields
+                                else
+                                    keepfields{ssi} = fn( strcmp( fn, varsubstr{ssi} ) ); %find matching fields
+                                end
                                 tstmp{ssi} = tstmp{ssi-1}.(keepfields{ssi-1}{fi}); %enter matching subfield
                             catch
                                 if opt(ofi).ignore_missing_vars

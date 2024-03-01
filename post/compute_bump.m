@@ -93,7 +93,7 @@ for fi = 1:length(bump_subdomain)
         case 'pva'
 
             [mu, rho, circvar] = circular_mean_and_variance(domain, resptmp); %alternative form of circ_mean and circ_var above, same result but ignores nans
-            % mu = circ_mean(repmat(domain', [1 size(resptmp, 2)]), resptmp);
+            % mu2 = circ_mean(repmat(domain', [1 size(resptmp, 2)]), resptmp);
             % [rho, ~, sel] = circ_var(repmat(domain', [1 size(resptmp, 2)]), resptmp);
             % for rti = 1:size(resptmp, 2)
             %     mu_true(:, rti) = deg2rad(weighted_circular_mean(rad2deg(domain), resptmp(:,rti))); % "true circular mean", so far results are not very different
@@ -116,7 +116,7 @@ for fi = 1:length(bump_subdomain)
     end
 
     bumpvel = differentiate_circular_variable(mu, md.dtmni, slopelen, slopeorder);
-    offset = circ_dist_nan(visang, mu);
+    offset = circ_dist_nan(visang.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point
     i2 = ii' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
