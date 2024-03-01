@@ -210,6 +210,9 @@ else
     pth_froi_hires = [];
 end
 
+pth_parsall_bump = [pth_fldr 'parsall_bumpfits_' opt.main.timestr '_.mat'];
+pth_parsall_fit = [pth_fldr 'parsall_finfits_' opt.main.timestr '_.mat'];
+
 %% assign to struct
 
 pth.fldr = pth_fldr;
@@ -224,6 +227,8 @@ pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;         
 pth.fictrac = pth_fictrac;
 pth.savedata_oneregion = pth_savedata_oneregion;
+pth.parsall_bump = pth_parsall_bump;
+pth.parsall_fit = pth_parsall_fit;
 
 opt.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field, change from user input formatting
 

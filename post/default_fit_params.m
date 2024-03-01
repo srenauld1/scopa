@@ -7,7 +7,7 @@ indv = {...
     {['resp, *, *, *']}...
     };
 outercellcombine = 'any'; %any or each
-
+ignore_missing_vars = 0;
 
 hsv_background = 'rois'; %'rois' or 'pixels' or 'raw';
 synthesize_depv = 0; %create toy data for testing fit
@@ -53,7 +53,6 @@ excludeopts = '';
 plot3d = 0;
 doplots = 1;
 use_saved_model = 1;
-timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
 
 %% assign to struct 

@@ -19,8 +19,12 @@ disp("make hemisphere no hemisphere option")
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
-
-% struct 'ts' holds timeseries (in various sub-structs with indices corresponding to md.ti (imaging frame timestamps)  
+% struct 'opt' holds input params in various sub-structs, which are each used predominantly in a function below 
+% struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.ti (imaging frame timestamps)  
+% struct 'roiinfo' holds roi info for morphological and functional rois 
+% struct 'md' holds metadata
+% struct 'paths' holds paths
+% numeric array 'stack' is the imaging movie chosen for analysis (using 'opt.main.suffix_analysis')
 
 %% params
 
@@ -99,66 +103,48 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     %% bump
 
+    dofit = 1;
+    fitcount = 0;
+    while dofit
 
-    for rei = 1:length(opt.main.regionex_all) %for each regionex
-        
-        regionex = opt.main.regionex_all{rei};
+        fitcount = fitcount + 1;
+        [fitin, regionex, parsex, parsnorm, dofit, varspecstr_single] = ...
+            choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, fitcount, dofit);
+
         stackcrop = crop_stacks(stack, croplim_all.(regionex));
+        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount) '_.mat'];
 
-        countz = 0;
-        parsex_all = fieldnames(ts.resp.(regionex)); 
-        for epi = 1:length(parsex_all) %for each extraction
-            parsex = parsex_all{epi};
-            parsnorm_all = fieldnames(ts.resp.(regionex).(parsex)); 
-            for npi = 1:length(parsnorm_all) %for each response normalization
-                parsnorm = parsnorm_all{npi};
-                if any(~cellfun(@isempty, regexp(parsex, regexptranslate('wildcard', opt.bump.expat)))) && ...
-                        any(~cellfun(@isempty, regexp(parsnorm, regexptranslate('wildcard', opt.bump.normpat)))) && ...
-                        any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.bump.regionpat)))) 
+        ts.bump.(regionex).(parsex).(parsnorm) = ...
+            compute_bump(stackcrop, fitin.depv, fitin.indv, ...
+            roiinfo.(regionex).(parsex), opt.bump, md, fn_save_prefix, regionex);
 
-                    fn_save_prefix = [pth.roi_allmethods.(regionex){epi}(1:end-4) parsnorm];
-
-                    ts.bump.(regionex).(parsex).(parsnorm) = ...
-                        compute_bump(stackcrop, ...
-                            ts.resp.(regionex).(parsex).(parsnorm), ...
-                            ts.(opt.fit.indv.(regionex){1}).(opt.fit.indv.(regionex){2}), ...
-                            roiinfo.(regionex).(parsex), ...
-                            opt.bump, opt.fit, md, fn_save_prefix, regionex);
-
-                end
-            end
-        end
     end
 
     %% model/predict
 
-    for rei = 1:length(opt.main.regionex_all) %for each region 
+    dofit = 1;
+    fitcount = 0;
+    while dofit
 
-        regionex = opt.main.regionex_all{rei};
+        fitcount = fitcount + 1;
+        [fitin, regionex, parsex, parsnorm, dofit, varspecstr_single] = ...
+            choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, fitcount, dofit);
+
         stackcrop = crop_stacks(stack, croplim_all.(regionex));
+        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount) '_.mat'];
 
-        countz = 0;
-        parsex_all = fieldnames(ts.resp.(regionex));
-        for epi = 1:length(parsex_all) %for each extraction
-            parsex = parsex_all{epi};
-            parsnorm_all = fieldnames(ts.resp.(regionex).(parsex));
-            for npi = 1:length(parsnorm_all) %for each normalization
-                parsnorm = parsnorm_all{npi};
-                if any(~cellfun(@isempty, regexp(parsex, regexptranslate('wildcard', opt.fit.expat)))) && ...
-                        any(~cellfun(@isempty, regexp(parsnorm, regexptranslate('wildcard', opt.fit.normpat)))) && ...
-                        any(~cellfun(@isempty, regexp(regionex, regexptranslate('wildcard', opt.fit.regionpat))))
+        ts.bump.(regionex).(parsex).(parsnorm) = ...
+            compute_bump(stackcrop, fitin.depv, fitin.indv, ...
+            roiinfo.(regionex).(parsex), opt.bump, md, fn_save_prefix, regionex);
 
-                    countz = countz + 1;
-                    pars_all.(regionex)(countz,:) = {parsex, epi, parsnorm, npi};
+    end
+
+
                     fn_save_prefix = [pth.roi_allmethods.(regionex){epi}(1:end-4) parsnorm];
 
                     opt.fit.use_saved_model = 1;
                     opt.fit.modeltype = 'glno4';
                     opt.fit.length_model_seconds = 2;
-
-                    indv(1,:) = ts.(opt.fit.indv.(regionex){1}{1}).(opt.fit.indv.(regionex){1}{2});
-                    indv(2,:) = ts.bump.pb.(parsex).(parsnorm).all.mu;
-                    % indv(1,:) = ts.(opt.fit.indv.(regionex){1}{1}).(opt.fit.indv.(regionex){1}{2});
 
                     depv = ts.resp.(regionex).(parsex).(parsnorm);
 
@@ -171,20 +157,13 @@ for pai = 1:length(pth_usefile_prefix_all)
 
                     %% scatterplots
 
-                    scatterplots(ts, opt.scatter.epochinds, fn_save_prefix)
+                    scatterplots(ts, opt.scatter, fn_save_prefix)
 
 
                     %% summary plot
 
                     % plot_experiment
 
-                end
-            end
-        end
-
-        %save_scopa_env()
-
-    end
 
 
 end
