@@ -1,4 +1,4 @@
-function [fitin, regionex, parsex, parsnorm, dofit, varspecstr_single] = ...
+function [fitin, regionex, parsex, parsnorm, dofit, fieldspecstr_single] = ...
     choose_timeseries(opt, ts, md, pth_parsall_save, fitcount, dofit)
 
 
@@ -8,19 +8,19 @@ if fitcount>1 %isfile(pth_parsall_save)
     load(pth_parsall_save)
 
 else
-    varspec_parent_fields = {'indv', 'depv'};
+    fieldspec_parent_fields = {'indv', 'depv'};
 
-    count = zeros(length(varspec_parent_fields), 1);
+    count = zeros(length(fieldspec_parent_fields), 1);
     for ofi = 1:length(opt)
 
         combinecell = {};
-        for vpfi = 1:length(varspec_parent_fields)
-            combinecell{vpfi} = opt(ofi).(varspec_parent_fields{vpfi});
+        for vpfi = 1:length(fieldspec_parent_fields)
+            combinecell{vpfi} = opt(ofi).(fieldspec_parent_fields{vpfi});
         end
         if strcmp(opt(ofi).depv_indv_combine, 'any')
             combinecell = table2cell(combinations(combinecell{:})); %make all combos of indv/depv outer cells
-            for vpfi = 1:length(varspec_parent_fields)
-                opt(ofi).(varspec_parent_fields{vpfi}) = combinecell(:, vpfi);
+            for vpfi = 1:length(fieldspec_parent_fields)
+                opt(ofi).(fieldspec_parent_fields{vpfi}) = combinecell(:, vpfi);
             end
         elseif strcmp(opt(ofi).depv_indv_combine, 'each')
             fuke=2;
@@ -28,8 +28,8 @@ else
         end
 
 
-        for vpfi = 1:length(varspec_parent_fields)
-            outercell = opt(ofi).(varspec_parent_fields{vpfi});
+        for vpfi = 1:length(fieldspec_parent_fields)
+            outercell = opt(ofi).(fieldspec_parent_fields{vpfi});
             for oci = 1:length(outercell) %for each outer cell (results are kept separate)
                 count(vpfi) = count(vpfi)+1;
                 innercell = outercell{oci};
@@ -86,7 +86,7 @@ else
                     for tci = 1:size(tmpcat, 1)
                         strcount = strcount+1;
                         suffixtmp = strjoin(tmpcat(tci,:), '.');
-                        varspecstr(count(vpfi)).(varspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
+                        fieldspecstr(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
                     end
 
 
@@ -95,24 +95,24 @@ else
                 maxlen = max(cellfun(@width, tmp));
                 tmp = cellfun(@(s) [s, repmat({''}, height(s), maxlen - width(s))], tmp, 'UniformOutput', false); %can't cat to empty for the max len tables, so doing loop
                 tmpcat = vertcat(tmp{:});
-                varspec(count(vpfi)).(varspec_parent_fields{vpfi}) = tmpcat;
+                fieldspec(count(vpfi)).(fieldspec_parent_fields{vpfi}) = tmpcat;
 
 
             end
         end
     end
 
-    save(pth_parsall_save, 'varspecstr', 'varspec', '-v7.3', '-mat')
+    save(pth_parsall_save, 'fieldspecstr', 'fieldspec', '-v7.3', '-mat')
 
 end
 
 
-varspecstr_single = varspecstr(fitcount);
-fn = fieldnames(varspecstr_single);
+fieldspecstr_single = fieldspecstr(fitcount);
+fn = fieldnames(fieldspecstr_single);
 for fi = 1:length(fn)
     fitin.(fn{fi}) = [];
-    for vsi2 = 1:length(varspecstr_single(fitcount).(fn{fi}))
-        tmp = eval(varspecstr_single(fitcount).(fn{fi}){vsi2});
+    for vsi2 = 1:length(fieldspecstr_single(fitcount).(fn{fi}))
+        tmp = eval(fieldspecstr_single(fitcount).(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end
@@ -121,14 +121,14 @@ for fi = 1:length(fn)
         end
         fitin.(fn{fi}) = cat(1, fitin.(fn{fi}), tmp);
         if strcmp(fn{fi}, 'depv')
-            regionex = varspec(fitcount).(fn{fi}){vsi2,2}{1};
-            parsex = varspec(fitcount).(fn{fi}){vsi2,3}{1};
-            parsnorm = varspec(fitcount).(fn{fi}){vsi2,4}{1};
+            regionex = fieldspec(fitcount).(fn{fi}){vsi2,2}{1};
+            parsex = fieldspec(fitcount).(fn{fi}){vsi2,3}{1};
+            parsnorm = fieldspec(fitcount).(fn{fi}){vsi2,4}{1};
         end
     end
 end
 
 
-if fitcount==length(varspecstr) %quit flag on final
+if fitcount==length(fieldspecstr) %quit flag on final
     dofit = 0;
 end

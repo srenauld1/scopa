@@ -69,12 +69,12 @@ opt.mroi.norm.doplots = 0;
 %% FUCNTIONAL ROIS
 
 %params for loading/selecting/viewing functional rois (applied in process_functional_rois)
-opt.froi.caiman_lr_str = '2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'; %caiman param string, can use wildcards, empty to skip
+opt.froi.caiman_lr_str = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
 opt.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
 opt.froi.min_roi_size = 5;%pixels, roi selection criterion
 opt.froi.max_roi_size = 300; %pixels
 opt.froi.max_regions_per_roi = 4; %for discontiguous rois
-opt.froi.within_mask_threshold = 0.5; %trash roi if more than within_mask_threshold is outside morphological mask (morph mask is all ones if you don't make one)
+opt.froi.within_mask_threshold = 0.5; %discard roi if more than within_mask_threshold is outside morphological mask (morph mask is all ones if you don't make one)
 opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
 opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
@@ -110,6 +110,18 @@ opt.ftrac.doplots = 0;
 % if opt.bump.domain_methodis 'functional', these preferred headings are used as the angle, and opt.bump.fit.depv as the magnitude, in computing pva
 % if the regionex in opt.bump.fit.depv is in opt.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude) 
 % if opt.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range 
+
+% opt.bump.fit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
+    %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
+    %the selected timeseries will be assigned to depv
+    %selecting indv uses the same approach
+    %depv and indv are matched at the outer cell level
+    %at the inner cell level, there can be multiple field specifiers (fieldspec)
+    %each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'  
+    %depv and indv are composed of all timeseries matching fieldspecs
+    %if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries 
+    %if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
+% opt.bump.fit(1).indv{1} = {['vis, angsd']};
 
 %params for fitting bump using fitmdl
 opt.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
@@ -158,23 +170,23 @@ opt.bump.doplots = 0;
 %subfield not listed, uses all, like wildcard
 
 % to specify independent and dependent variables for model fitting, use opt.fit.indv and opt.fit.depv
-    % format opt.fit(i).depv{j} = {varspec1, varspec2, ... varspecN};
-    % format opt.fit(i).indv{j} = {varspec1, varspec2, ... varspecN};
+    % format opt.fit(i).depv{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+    % format opt.fit(i).indv{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
-% where varspec is a string, with substrings separated by comma then space 
-% varspec specifies the data to use from struct 'ts', which stores various timeseries 
-% for example, for ts.resp, varspec requires 4 delimiters (', '), since there are 4 levels in the struct ts.resp, 
+% where fieldspec is a string, with substrings separated by comma then space 
+% fieldspec specifies the data to use from struct 'ts', which stores various timeseries 
+% for example, for ts.resp, fieldspec requires 4 delimiters (', '), since there are 4 levels in the struct ts.resp, 
 % namely ts.resp.tsclass.regionex.parsex.normex, 
-% so varspec would follow the pattern ['tsclass, regionex, parsex, normex']
+% so fieldspec would follow the pattern ['tsclass, regionex, parsex, normex']
 % where tsclass is a field in the first level of struct 'ts' 
 % regionex is region extraction string in opt.main.regionex_all above, 
 % parsex is extraction param string 
 % normex is normalization param string 
-% for ts.ball and ts.vis, varspec only has two levels, since ball and vis are not derived from specific brain regions, or roi extraction runs
-% for ts.bump, varspec has 6 levels (the same four as bump.resp, with 2 more specifying bump domain, and bump parameter, following this pattern
+% for ts.ball and ts.vis, fieldspec only has two levels, since ball and vis are not derived from specific brain regions, or roi extraction runs
+% for ts.bump, fieldspec has 6 levels (the same four as bump.resp, with 2 more specifying bump domain, and bump parameter, following this pattern
 % ['tsclass, regionex, parsex, normex, bumpdomain, bumpparam']
-% for all substrings in varspec, you can use '*' as wildcard, all matches will be used
-% you can use multiple varspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
+% for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used
+% you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
 % opt.fit.indv and opt.fit.depv are matched by index i in opt.fit(i) 
 % within a single opt.fit(i).indv or opt.fit(i).depv, you can specify multiple cells with index j, in single opt.fit(i).indv{j} or opt.fit(i).depv{j}
 % indv and depv are matched by index j if opt.fit(i).depv_indv_combine is 'each', 

@@ -51,6 +51,7 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     %% load and process stimulus/fictrac data
 
+    
     if opt.main.old_project
         [md, ts.vis] = load_stim(md, datenum, flynum, trialnum, opt.ftrac);
     else
@@ -62,6 +63,7 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     %% load/visualize movies (stacks)
 
+
     stack = load_stack(md, pth, opt.gif, recid);
 
 
@@ -71,27 +73,24 @@ for pai = 1:length(pth_usefile_prefix_all)
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opt.hires);
     end
 
-    %% rois/responses for each regionex
-
+    %% create/load/select rois/responses for each regionex 
 
     for rei = 1:length(opt.main.regionex_all) %for each regionex
 
-        %% crop movie to regionex cuboid
-
         regionex = opt.main.regionex_all{rei};
+
+        %%crop movie to regionex cuboid
         [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop] = ...
             crop_stacks(stack, croplim_all.(regionex), recid, regionex, pth.fldr, ...
             md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores);
 
 
-        %% make (manual and automated) morphological rois in 2d or 3d, extract their responses
-
+        %%make (manual and automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(pars_mroi.(regionex)), ts.resp.(regionex).(pars_mroi.(regionex))] = ...
             make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex);
 
 
-        %% load/process functional (caiman) roi responses
-
+        %%load/process functional (caiman) roi responses
         for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run
             [roiinfo.(regionex).(pars_froi.(regionex){rfi}), ts.resp.(regionex).(pars_froi.(regionex){rfi})] = ...
                 process_functional_rois(stack_mnt.(regionex), roiinfo.(regionex).(pars_mroi.(regionex)), ...
@@ -108,13 +107,13 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit
 
         fitcount = fitcount + 1;
-        [fitin, regionex, parsex, parsnorm, dofit, varspecstr_single] = ...
+        [fitin, regionex, parsex, parsnorm, dofit, fieldspecstr_single] = ... %select indv/depv for fit using input params
             choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, fitcount, dofit);
 
-        stackcrop = crop_stacks(stack, croplim_all.(regionex));
+        stackcrop = crop_stacks(stack, croplim_all.(regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
         fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
 
-        ts.bump.(regionex).(parsex).(parsnorm) = ...
+        ts.bump.(regionex).(parsex).(parsnorm) = ... %fit bump (fit depv to indv)
             compute_bump(stackcrop, fitin.depv, fitin.indv, ...
             roiinfo.(regionex).(parsex), opt.bump, md, fn_save_prefix, regionex);
 
@@ -127,21 +126,14 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit
 
         fitcount = fitcount + 1;
-        [fitin, regionex, parsex, parsnorm, dofit, varspecstr_single] = ...
+        [fitin, regionex, parsex, parsnorm, dofit, fieldspecstr_single] = ... %select indv/depv for fit using input params
             choose_timeseries(opt.fit, ts, md, pth.parsall_fit, fitcount, dofit);
 
-        stackcrop = crop_stacks(stack, croplim_all.(regionex));
+        stackcrop = crop_stacks(stack, croplim_all.(regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
         fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
-
-        opt.fit.use_saved_model = 1;
-        opt.fit.modeltype = 'svd';
-        opt.fit.length_model_seconds = 2;
-        opt.fit.epochinds = {[2:4]};
 
         [fittmp, goftmp] = fitmdl(stackcrop, fitin.indv, fitin.depv, ...
             roiinfo.(regionex).(parsex), md, fn_save_prefix, opt.fit);
-
-        % [roi_is_not_selective] = test_roi_selectivity(resp, ts.vis, ts.ball, md, regionex, pth.caimanrois, doplots2);
 
     end
 
