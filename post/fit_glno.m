@@ -25,7 +25,7 @@ elseif strcmp(modeltype, 'glno4')
 elseif strcmp(modeltype, 'glno5')
     objfcn = @fit_ann;
     polarity_types_per_indv_dim = {'excitatory', 'inhibitory'}; %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid)
-    linfilt_types_per_indv_dim = {'differentiating'}; %integrator (monophasic linear filter) as opposed to differentiator (biphasic linear filter)
+    linfilt_types_per_indv_dim = {'integrating'}; %integrator (monophasic linear filter) as opposed to differentiator (biphasic linear filter)
     nonlinearity_types_per_indv_dim = {'none'}; %'none' to skip, 'genlog' for 5-param sigmoid
 end
 
@@ -115,8 +115,8 @@ supp.num_dim_indv = num_dim_ivin;
 supp.num_samp_model = num_samp_model;
 supp.pind = pind;
 supp.num_model_functions = 2;
-supp.NumTrialPoints = 100000;
-supp.NumStageOnePoints = 20000;
+supp.NumTrialPoints = 10000;
+supp.NumStageOnePoints = 2000;
 
 %% make sure doubles
 

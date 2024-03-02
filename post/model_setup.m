@@ -59,6 +59,8 @@ switch modeltype
                 gethr_native = @(ft,st,rs) [min(rs(:)) max(rs(:))];
         end
         supp.num_par_total = length(lbnd);
+        supp.NumTrialPoints = 1000;
+        supp.NumStageOnePoints = 200;
 
 
     case 'plane'

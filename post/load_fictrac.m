@@ -46,7 +46,7 @@ md.tb = md.dtmnb * [1:length(ftData_DAQ.intHD{1})];
 md.total_t = max(md.tb);
 md.ti = linspace(0, md.total_t, md.numvol_o+1)';
 md.ti = md.ti(2:end);
-md.dtmni = mean(diff(md.tb)); %close to 1/md.volrate;
+md.dtmni = mean(diff(md.ti)); %close to 1/md.volrate;
 
 if datenum<20231119
     dark_epoch_time_start = max(md.trialtime(:))-seconds(dark_stim_end_duration);

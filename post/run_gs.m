@@ -9,8 +9,8 @@ rng default %for reproducibility (do on every loop?)
 
 %% variables for output functions
 
-histfit.max_iter_local = 10000;
-histfit.max_iter_global = 5;
+histfit.max_iter_local = 5000;
+histfit.max_iter_global = 1;
 histfit.max_unique_sol_global = 3; %run indefinite global search iterations until it finds histfit.max_iter_global unique local solutions . . .  make empty to not set limit
 histfit.local_sol_is_unique_thresh = 1e-4; %local solution flagged as unique (recorded in histfit.unique_local_fval) if it differs from all other local solutions by at least histfit.local_sol_is_unique_thresh
 histfit.save_iter_spacing = 3; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)

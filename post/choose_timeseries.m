@@ -3,8 +3,11 @@ function [fitin, regionex, parsex, parsnorm, dofit, varspecstr_single] = ...
 
 
 
-if fitcount==1
+if fitcount>1 %isfile(pth_parsall_save)
 
+    load(pth_parsall_save)
+
+else
     varspec_parent_fields = {'indv', 'depv'};
 
     count = zeros(length(varspec_parent_fields), 1);
@@ -14,12 +17,12 @@ if fitcount==1
         for vpfi = 1:length(varspec_parent_fields)
             combinecell{vpfi} = opt(ofi).(varspec_parent_fields{vpfi});
         end
-        if strcmp(opt(ofi).outercellcombine, 'any')
+        if strcmp(opt(ofi).depv_indv_combine, 'any')
             combinecell = table2cell(combinations(combinecell{:})); %make all combos of indv/depv outer cells
             for vpfi = 1:length(varspec_parent_fields)
                 opt(ofi).(varspec_parent_fields{vpfi}) = combinecell(:, vpfi);
             end
-        elseif strcmp(opt(ofi).outercellcombine, 'each')
+        elseif strcmp(opt(ofi).depv_indv_combine, 'each')
             fuke=2;
 
         end
@@ -101,11 +104,6 @@ if fitcount==1
 
     save(pth_parsall_save, 'varspecstr', 'varspec', '-v7.3', '-mat')
 
-
-else
-
-    load(pth_parsall_save)
-
 end
 
 
@@ -113,7 +111,7 @@ varspecstr_single = varspecstr(fitcount);
 fn = fieldnames(varspecstr_single);
 for fi = 1:length(fn)
     fitin.(fn{fi}) = [];
-    for vsi2 = 1:length(varspecstr_single(fitcount))
+    for vsi2 = 1:length(varspecstr_single(fitcount).(fn{fi}))
         tmp = eval(varspecstr_single(fitcount).(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';

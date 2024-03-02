@@ -112,7 +112,7 @@ for pai = 1:length(pth_usefile_prefix_all)
             choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, fitcount, dofit);
 
         stackcrop = crop_stacks(stack, croplim_all.(regionex));
-        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount) '_.mat'];
+        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
 
         ts.bump.(regionex).(parsex).(parsnorm) = ...
             compute_bump(stackcrop, fitin.depv, fitin.indv, ...
@@ -131,11 +131,12 @@ for pai = 1:length(pth_usefile_prefix_all)
             choose_timeseries(opt.fit, ts, md, pth.parsall_fit, fitcount, dofit);
 
         stackcrop = crop_stacks(stack, croplim_all.(regionex));
-        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount) '_.mat'];
+        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
 
         opt.fit.use_saved_model = 1;
-        opt.fit.modeltype = 'glno4';
+        opt.fit.modeltype = 'svd';
         opt.fit.length_model_seconds = 2;
+        opt.fit.epochinds = {[2:4]};
 
         [fittmp, goftmp] = fitmdl(stackcrop, fitin.indv, fitin.depv, ...
             roiinfo.(regionex).(parsex), md, fn_save_prefix, opt.fit);

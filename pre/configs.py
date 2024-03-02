@@ -56,7 +56,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
         indices_ex = [slice(None), slice(None), slice(None)]
 
 
-    only_init = False #only use the initialization run for extraction
+    only_init = True #only use the initialization run for extraction
 
     p = 0 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
     merge_thresh = 0.9
@@ -124,7 +124,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     # another exmaple: when stride_to_rf_ratio = 0.8, patch is ~3 times larger and stride is 50% larger
     # since, patch dia = ceil(neuron_dia/stride_to_rf_ratio)+1)*2 and patch stride = ceil(ceil(neuron_dia/stride_to_rf_ratio)+1)*stride_to_rf_ratio)+1
     stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8
-    use_patch_size_threshold = 50 #skip patch extraction if all dims are smaller than this 
+    use_patch_size_threshold = 50000000 #skip patch extraction if all dims are smaller than this 
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
