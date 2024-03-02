@@ -4,17 +4,17 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     max_tinds, timeseries_numsegments, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
-    keepinds_depv, trialepochinds, epochinds_str, ...
+    keepinds_depv, trialepochindsaug, epochinds_str, ...
     pth_prefix, gif_visibility, objfcn, ft, supp, doplots)
 
 
-unioqueepochinds = unique(trialepochinds);
-pureepochtmp = zeros(1, size(trialepochinds, 2));
-for tei = 1:length(unioqueepochinds)
-    pureepochtmp(1,find(all(ismember(trialepochinds, unioqueepochinds(tei)), 1))) = unioqueepochinds(tei);
+uniqueepochinds = unique(trialepochindsaug);
+pureepochtmp = zeros(1, size(trialepochindsaug, 2));
+for tei = 1:length(uniqueepochinds)
+    pureepochtmp(1,find(all(ismember(trialepochindsaug, uniqueepochinds(tei)), 1))) = uniqueepochinds(tei);
 end
 for epi = 1:length(epochinds)
-    pureepoch{epi} = pureepochtmp(ismember(pureepochtmp, epochinds{epi}));
+    pureepoch{epi} = pureepochtmp(ismember_single(pureepochtmp, epochinds{epi})); %samples where all timepoints of model fall within any of the epochinds
 end
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
@@ -260,14 +260,14 @@ for epi = 1:length(epochinds)
 
     depvnan_cont{epi} = depv{epi}( :, tinds_cont{1});
     preddepvnan_cont{epi} = preddepv{epi}( :, tinds_cont{1});
-    % pureepochnan_cont{epi} = pureepoch{epi}( :, tinds_cont{1});
+    pureepochnan_cont{epi} = pureepoch{epi}( :, tinds_cont{1});
     nanpad = nan(size(depv{epi}, 1), numsampnan);
     nanpadvec = nanpad(1,:);
     tinds_cont_nan{1} = tinds_cont{1};
     for tbi = 2:length(tinds_cont) %pad any discontinuities with nan
         depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad, depv{epi}( :, tinds_cont{tbi}));
         preddepvnan_cont{epi} = cat(2, preddepvnan_cont{epi},  nanpad, preddepv{epi}( :, tinds_cont{tbi}));
-        % pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch{epi}( :, tinds_cont{tbi}));
+        pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch{epi}( :, tinds_cont{tbi}));
         tinds_cont_nan{tbi} = [tinds_cont_nan{tbi-1}(end)+1:tinds_cont_nan{tbi-1}(end)+1+numsampnan tinds_cont{tbi}+numsampnan];
     end
 
@@ -292,11 +292,11 @@ for epi = 1:length(epochinds)
 
     depvnan_seg{epi} = depvnan_cont{epi}( :, tinds_seg{1});
     preddepvnan_seg{epi} = preddepvnan_cont{epi}( :, tinds_seg{1});
-    % pureepochnan_seg{epi} = pureepochnan_cont{epi}( :, tinds_seg{1});
+    pureepochnan_seg{epi} = pureepochnan_cont{epi}( :, tinds_seg{1});
     for tnsi = 2:timeseries_numsegments
         depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad, depvnan_cont{epi}( :, tinds_seg{tnsi}));
         preddepvnan_seg{epi} = cat(2, preddepvnan_seg{epi}, nanpad, preddepvnan_cont{epi}( :, tinds_seg{tnsi}));
-        % pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpadvec, pureepochnan_cont{epi}( :, tinds_seg{tnsi}));
+        pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpadvec, pureepochnan_cont{epi}( :, tinds_seg{tnsi}));
     end
 
 

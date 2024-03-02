@@ -7,7 +7,7 @@ function scatterplots_4d(cueang, cuevel, ballang, ballvel, ...
 
 % [outputArray, cmap, colorScaled] = dogmodel_colormap(inputArray, minwghts, nColors);
 
-if any(ismember([1 4], epochinds)) %2 and 3 are constant cuevel, and 5 is no cue (dark)
+if any(ismember_single([1 4], epochinds)) %2 and 3 are constant cuevel, and 5 is no cue (dark)
     skip_cuevel = 0;
 else
     skip_cuevel = 1;

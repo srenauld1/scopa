@@ -107,15 +107,12 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit
 
         fitcount = fitcount + 1;
-        [fitin, regionex, parsex, parsnorm, dofit, fieldspecstr_single] = ... %select indv/depv for fit using input params
-            choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, fitcount, dofit);
+        [fitin, fieldspecstr, dofit] = choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, pth.stack_analysis, fitcount, dofit);  %select indv/depv for fit using input params
 
-        stackcrop = crop_stacks(stack, croplim_all.(regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
-        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
+        stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-        ts.bump.(regionex).(parsex).(parsnorm) = ... %fit bump (fit depv to indv)
-            compute_bump(stackcrop, fitin.depv, fitin.indv, ...
-            roiinfo.(regionex).(parsex), opt.bump, md, fn_save_prefix, regionex);
+        ts.bump.(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = ...
+            compute_bump(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), opt.bump, md, regionex); %fit bump
 
     end
 
@@ -126,21 +123,18 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit
 
         fitcount = fitcount + 1;
-        [fitin, regionex, parsex, parsnorm, dofit, fieldspecstr_single] = ... %select indv/depv for fit using input params
-            choose_timeseries(opt.fit, ts, md, pth.parsall_fit, fitcount, dofit);
+        [fitin, fieldspecstr, dofit] = choose_timeseries(opt.fit, ts, md, pth.parsall_fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
 
-        stackcrop = crop_stacks(stack, croplim_all.(regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
-        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
+        stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-        [fittmp, goftmp] = fitmdl(stackcrop, fitin.indv, fitin.depv, ...
-            roiinfo.(regionex).(parsex), md, fn_save_prefix, opt.fit);
+        [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
     end
 
 
     %% scatterplots
 
-    scatterplots(ts, opt.scatter, fn_save_prefix)
+    scatterplots(ts, opt.scatter, fn_save_prefix) %3d scatterplots (2d plus color) of all available timeseries
 
 
     %% summary plot

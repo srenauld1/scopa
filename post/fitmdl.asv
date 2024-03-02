@@ -1,5 +1,4 @@
-function [ft, gof, indvpref] = fitmdl(stack, indvin, depvin, ...
-    roiinfo, md, pth_fitdata_prefix, fitopt)
+function [ft, gof, indvpref] = fitmdl(stack, fitin, roiinfo, md, pth, fitopt, pixfitflag)
 
 % notes on fitting
 % default is to use globalsearch with solver fmincon
@@ -45,13 +44,30 @@ function [ft, gof, indvpref] = fitmdl(stack, indvin, depvin, ...
 
 % there are other options still, but above seems to me to be the most general, small set of functions for our purposes
 
-%% check/correct inputs
+%% params
 
+depvin = fitin.depv;
+indvin = fitin.indv;
+regionex = fitin.regionex;
+parsex = fitin.parsex;
+parsnorm = fitin.parsnorm;
+fitcount = fitin.fitcount;
 pixinds_roi = roiinfo.pixinds_roi;
 mapind2ind = roiinfo.mapind2ind;
 trialepochinds_i = md.trialepochinds_i;
 dtmni = md.dtmni;
+pth_stack_analysis = pth.stack_analysis;
 
+%% check/correct inputs
+
+if ~exist('pixfitflag', 'var')
+    pixfitflag = 0;
+    pixfitflagstr = '';
+else
+    if pixfitflag==1
+        pixfitflagstr = 'PIX';
+    end
+end
 if ~exist('plot_3d', 'var')
     fitopt.plot3d = 1;
 end
@@ -79,22 +95,25 @@ for epi = 1:length(fitopt.epochinds)
     epochinds_str{epi} = epochinds_str{epi}(1:end-1);
 end
 
-pth_fitdata_prefix = [pth_fitdata_prefix '_' fitopt.modeltype '_' num2str(fitopt.length_model_seconds) '_' num2str(fitopt.num_samp_lag)];
+pth_fitdata_prefix = [pth_stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount) '_' fitopt.modeltype '_' num2str(fitopt.length_model_seconds) '_' num2str(fitopt.num_samp_lag) '_' pixfitflagstr];
 
-%% create pixelwise fit for background if requested
+%% create pixelwise fit for background if requested by recursively calling fitmdl with pixfitflag==1
 
 
-if strcmp(fitopt.hsv_background, 'pixels')
-    pixinds_roi_2 = logical(sum(pixinds_roi)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
-    depvin2 = reshape(stack, [], size(stack, 4));
-    depvin2 = depvin2(cell2mat(pixinds_roi_2), :);
-    pth_fitdata_prefix_pix = [pth_fitdata_prefix '_PIX'];
-    fitmdl(stack, indvfit, depvin2, pixinds_roi, mapind2ind, ... %call fitmdl on pixels if you want a pixel fit background behind your roi fit background
-        trialepochinds_i, dtmni, pth_fitdata_prefix_pix, opt.fit);
+if strcmp(fitopt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion 
+    pixfitflag = 1;
+    pixinds_roi2 = logical(sum(pixinds_roi)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
+    depv2 = reshape(stack, [], size(stack, 4));
+    depv2 = depv2(cell2mat(pixinds_roi2), :);
+    fitin2.depv = depv2;
+    roiinfo2 = roiinfo;
+    roiinfo2.pixinds_roi = pixinds_roi2;
+    fitmdl(stack, fitin2, roiinfo2, md, pth, fitopt, pixfitflag); %call fitmdl on pixels if you want a pixel fit background behind your roi fit background
+    pixfitflag = 0; %reset to zero 
 end
 
 
-%% synthesize depv to test optimization 
+%% synthesize depv to test optimization
 
 if fitopt.synthesize_depv
     synthesize_depv %mock data to test fitting
@@ -176,10 +195,10 @@ end
     gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     fitopt.hrange_out_manual, hue_is_periodic, supp] = ...
-        model_setup(...
-            fitopt.modeltype, fitopt.huestr, ...
-            fitopt.hrange_out_manual,indvaug, num_samp_model, ...
-            num_dim_indvaug, num_dim_indvin, depvin, dtmni);
+    model_setup(...
+    fitopt.modeltype, fitopt.huestr, ...
+    fitopt.hrange_out_manual,indvaug, num_samp_model, ...
+    num_dim_indvaug, num_dim_indvin, depvin, dtmni);
 
 
 %% write depv to bin (to allow parfor loop without broadcasting)
@@ -203,7 +222,12 @@ indvpref = cell(1, length(fitopt.epochinds)); %preferred indv (indv at max predi
 
 for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
 
-    keepinds_indvaug = find(all(ismember(trialepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
+    indices = cell(size(fitopt.epochinds{epi}));  % Pre-allocate
+    for k = 1:numel(fitopt.epochinds{epi})
+        indices{k} = find(fitopt.epochinds{epi}(k) == trialepochindsaug);
+    end
+
+    keepinds_indvaug = find(all(ismember_single(trialepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
     keepinds_depv{epi} = keepinds_indvaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
 
     indvauge = indvaug(:, keepinds_indvaug);
@@ -249,7 +273,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             if strcmp(fitopt.modeltype, 'svd')
                 pvar = 0.8;
                 [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri) ] = ...
-                    run_svd( objfcn, indvauge, depv, pvar, gethue, getsat, getval)
+                    run_svd( objfcn, indvauge, depv, pvar, gethue, getsat, getval);
             else
                 if strcmp(fitopt.slvrg, 'globalsearch')
                     [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri)] = ...
@@ -346,7 +370,7 @@ if fitopt.doplots
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
         fitopt.depvplot_norm, fitopt.plot_class, ...
-        keepinds_depv, trialepochinds_i, epochinds_str, ...
+        keepinds_depv, trialepochindsaug, epochinds_str, ...
         pth_fitdata_prefix, fitopt.gif_visibility, objfcn, ft, supp, doplots)
 
 

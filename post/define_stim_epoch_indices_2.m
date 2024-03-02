@@ -42,35 +42,35 @@ end
 
 
 trialepochinds_i = zeros(size(md.ti));
-trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), closedinds_initial_light);
-trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), openinds_slow);
-trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), openinds_fast);
-trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), openinds_dark);
-trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), closedinds);
+trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), closedinds_initial_light);
+trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), openinds_slow);
+trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), openinds_fast);
+trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), openinds_dark);
+trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), closedinds);
 if all(trialepochinds_i==1)
     trialepochinds_i = zeros(size(md.ti));
-    trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), closedinds_initial_light)*1;
-    trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), openinds_slow)*2;
-    trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), openinds_fast)*3;
-    trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), openinds_dark)*4;
-    trialepochinds_i = trialepochinds_i + ismember(fix(md.ti), closedinds)*5;
+    trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), closedinds_initial_light)*1;
+    trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), openinds_slow)*2;
+    trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), openinds_fast)*3;
+    trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), openinds_dark)*4;
+    trialepochinds_i = trialepochinds_i + ismember_single(fix(md.ti), closedinds)*5;
 else
 error
 end
 
 trialepochinds_b = zeros(size(md.tb));
-trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), closedinds_initial_light);
-trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), openinds_slow);
-trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), openinds_fast);
-trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), openinds_dark);
-trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), closedinds);
+trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), closedinds_initial_light);
+trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), openinds_slow);
+trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), openinds_fast);
+trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), openinds_dark);
+trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), closedinds);
 if all(trialepochinds_b==1)
     trialepochinds_b = zeros(size(md.tb));
-    trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), closedinds_initial_light)*1;
-    trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), openinds_slow)*2;
-    trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), openinds_fast)*3;
-    trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), openinds_dark)*4;
-    trialepochinds_b = trialepochinds_b + ismember(fix(md.tb), closedinds)*5;
+    trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), closedinds_initial_light)*1;
+    trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), openinds_slow)*2;
+    trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), openinds_fast)*3;
+    trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), openinds_dark)*4;
+    trialepochinds_b = trialepochinds_b + ismember_single(fix(md.tb), closedinds)*5;
 else
 error
 end

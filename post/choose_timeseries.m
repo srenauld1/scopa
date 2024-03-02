@@ -1,5 +1,5 @@
-function [fitin, regionex, parsex, parsnorm, dofit, fieldspecstr_single] = ...
-    choose_timeseries(opt, ts, md, pth_parsall_save, fitcount, dofit)
+function [fitin, fieldspecstr, dofit] = ...
+    choose_timeseries(opt, ts, md, pth_parsall_save, pth_stack_analysis, fitcount, dofit)
 
 
 
@@ -86,7 +86,7 @@ else
                     for tci = 1:size(tmpcat, 1)
                         strcount = strcount+1;
                         suffixtmp = strjoin(tmpcat(tci,:), '.');
-                        fieldspecstr(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
+                        fieldspecstr_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
                     end
 
 
@@ -95,24 +95,24 @@ else
                 maxlen = max(cellfun(@width, tmp));
                 tmp = cellfun(@(s) [s, repmat({''}, height(s), maxlen - width(s))], tmp, 'UniformOutput', false); %can't cat to empty for the max len tables, so doing loop
                 tmpcat = vertcat(tmp{:});
-                fieldspec(count(vpfi)).(fieldspec_parent_fields{vpfi}) = tmpcat;
+                fieldspec_all(count(vpfi)).(fieldspec_parent_fields{vpfi}) = tmpcat;
 
 
             end
         end
     end
 
-    save(pth_parsall_save, 'fieldspecstr', 'fieldspec', '-v7.3', '-mat')
+    save(pth_parsall_save, 'fieldspecstr_all', 'fieldspec_all', '-v7.3', '-mat')
 
 end
 
 
-fieldspecstr_single = fieldspecstr(fitcount);
-fn = fieldnames(fieldspecstr_single);
+fieldspecstr = fieldspecstr_all(fitcount);
+fn = fieldnames(fieldspecstr);
 for fi = 1:length(fn)
     fitin.(fn{fi}) = [];
-    for vsi2 = 1:length(fieldspecstr_single(fitcount).(fn{fi}))
-        tmp = eval(fieldspecstr_single(fitcount).(fn{fi}){vsi2});
+    for vsi2 = 1:length(fieldspecstr(fitcount).(fn{fi}))
+        tmp = eval(fieldspecstr(fitcount).(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end
@@ -121,14 +121,17 @@ for fi = 1:length(fn)
         end
         fitin.(fn{fi}) = cat(1, fitin.(fn{fi}), tmp);
         if strcmp(fn{fi}, 'depv')
-            regionex = fieldspec(fitcount).(fn{fi}){vsi2,2}{1};
-            parsex = fieldspec(fitcount).(fn{fi}){vsi2,3}{1};
-            parsnorm = fieldspec(fitcount).(fn{fi}){vsi2,4}{1};
+            fitin.regionex = fieldspec_all(fitcount).(fn{fi}){vsi2,2}{1};
+            fitin.parsex = fieldspec_all(fitcount).(fn{fi}){vsi2,3}{1};
+            fitin.parsnorm = fieldspec_all(fitcount).(fn{fi}){vsi2,4}{1};
+            fitin.fitcount = fitcount;
+            fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.fitcount)];
         end
     end
 end
 
 
-if fitcount==length(fieldspecstr) %quit flag on final
+if fitcount==length(fieldspecstr_all) %quit flag on final
     dofit = 0;
 end
+

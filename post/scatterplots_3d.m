@@ -7,7 +7,7 @@ function scatterplots_3d(cueang, cuevel, ballang, ballvel, ...
 
 % [outputArray, cmap, colorScaled] = dogmodel_colormap(inputArray, minwghts, nColors);
 
-if any(ismember([1 4 5], epochinds))
+if any(ismember_single([1 4 5], epochinds))
     maxsecond = 5;
 else
     maxsecond = 4;

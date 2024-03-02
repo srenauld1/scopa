@@ -1,11 +1,10 @@
 
-function [resp, domain] = map_rois_to_head_direction(stack, resp, visang, ...
-    roiinfo, md, fitopt, halfcent, fn_prefix, numcluster_for_bump_domain_resample, doplots)
+function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
+    roiinfo, md, fitopt, halfcent, numcluster_for_bump_domain_resample, doplots)
 
+resptmp = fitin.depv;
 
-
-[~, ~, cueang_pref] = fitmdl(stack, visang, resp, ...
-    roiinfo, md, fn_prefix, fitopt);
+[~, ~, cueang_pref] = fitmdl(stack, fitin, roiinfo, md, fitopt);
 
 cueang_pref = cueang_pref{1}(:)';
 
@@ -14,23 +13,23 @@ cueang_pref = cueang_pref{1}(:)';
 
 if numcluster_for_bump_domain_resample
 
-    ["resampling original numrois " num2str(size(resp, 1))]
+    ["resampling original numrois " num2str(size(resptmp, 1))]
 
     resample_smoothfac = 1;
 
-    % if size(resp,1)<numcluster_for_bump_domain_resample*2
+    % if size(resptmp,1)<numcluster_for_bump_domain_resample*2
     %     "TOO FEW ROIS FOR RESAMPLING COMPASS"
     %     error
     % end
 
     %%%should change this to sampling 4*pi rather than right/left
-    rois_left = 1:size(resp, 1)/2;
-    rois_right = size(resp, 1)/2+1:size(resp, 1);
+    rois_left = 1:size(resptmp, 1)/2;
+    rois_right = size(resptmp, 1)/2+1:size(resptmp, 1);
 
-    [dfc_left, alpha_left] = resample_compass(resp(rois_left,:), cueang_pref(rois_left), halfcent, resample_smoothfac, doplots);
-    [dfc_right, alpha_right] = resample_compass(resp(rois_right,:), cueang_pref(rois_right), halfcent, resample_smoothfac, doplots);
+    [dfc_left, alpha_left] = resample_compass(resptmp(rois_left,:), cueang_pref(rois_left), halfcent, resample_smoothfac, doplots);
+    [dfc_right, alpha_right] = resample_compass(resptmp(rois_right,:), cueang_pref(rois_right), halfcent, resample_smoothfac, doplots);
 
-    resp = cat(1, dfc_left, dfc_right);
+    resptmp = cat(1, dfc_left, dfc_right);
     domain = [alpha_left alpha_right];
 
 else

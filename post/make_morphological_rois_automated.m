@@ -252,7 +252,7 @@ else % else downsample the 3 output variables from hires to lores
     % later the roi signal will be sum across voxels with these weights,
     % this assumes equal contribution from all rois sharing a voxel,
     % which is wrong if there are multiple rois contributing unequally to a voxel
-    % but this is better than not accounting for any overlap
+    % but i prefer this to not accounting for any overlap
     % this approach could be improved further
     % automated rois created with skeleton centroids and pdist2 are not overlapping at first,
     % but they do overlap if the mask is mapped to a smaller mask (hires to lores, eg)
@@ -264,7 +264,7 @@ else % else downsample the 3 output variables from hires to lores
         else
             zrange = sliceinds_hires(ii):size(premask, 3);
         end
-        maskznew(ismember(maskznew, zrange)) = ii;
+        maskznew(ismember_single(maskznew, zrange)) = ii;
     end
 
 

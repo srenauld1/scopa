@@ -40,7 +40,7 @@ end
 %determine time axis for each epoch and bout
 for epi = 1:length(epochinds)
 
-    tind = find(ismember(tsamp_ei, epochinds{epi}));
+    tind = find(ismember_single(tsamp_ei, epochinds{epi}));
 
     tsub = tfull(tind);
     % [~,idd1] = min(abs(xf-startsec));
