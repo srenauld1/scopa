@@ -4,18 +4,10 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     max_tinds, timeseries_numsegments, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
-    keepinds_depv, trialepochindsaug, epochinds_str, ...
+    keepinds_depv, epochinds_str, pureepoch, ...
     pth_prefix, gif_visibility, objfcn, ft, supp, doplots)
 
 
-uniqueepochinds = unique(trialepochindsaug);
-pureepochtmp = zeros(1, size(trialepochindsaug, 2));
-for tei = 1:length(uniqueepochinds)
-    pureepochtmp(1,find(all(ismember(trialepochindsaug, uniqueepochinds(tei)), 1))) = uniqueepochinds(tei);
-end
-for epi = 1:length(epochinds)
-    pureepoch{epi} = pureepochtmp(ismember_single(pureepochtmp, epochinds{epi})); %samples where all timepoints of model fall within any of the epochinds
-end
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as figsidelength does not exceed

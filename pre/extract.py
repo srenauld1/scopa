@@ -105,7 +105,8 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                             if 'dview' in locals(): cm.stop_server(dview=dview)
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
         
-                        cnm2 = cnm.refit(images_sliced)
+                        #cnm2 = cnm.refit(images_sliced)
+                        cnm2 = cnm
 
                         cnm2.estimates.evaluate_components(images_sliced, cnm2.params, dview=dview)
                         print(('AFTER REFIT: NUM GOOD ROIS ' + str(len(cnm2.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm2.estimates.idx_components_bad))))
@@ -121,9 +122,9 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
                             pth_results = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT1.mov'
                             caiman_plots_all(cnm, opts, images_sliced, dims_spatial_ex, extract_in_2d, pth_results)
 
-                        if makeplots and cnm2.estimates.A.shape[-1]:
-                            pth_results2 = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT2.mov'
-                            caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, extract_in_2d, pth_results2)
+                        # if makeplots and cnm2.estimates.A.shape[-1]:
+                        #     pth_results2 = pth_tif_write_tmp[:-8] + fnadd + '_' + str(si) + '_OUT_FIT2.mov'
+                        #     caiman_plots_all(cnm2, opts, images_sliced, dims_spatial_ex, extract_in_2d, pth_results2)
                         
                 
                         if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 

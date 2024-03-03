@@ -86,12 +86,12 @@ def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, extract_in_2d, pth_
         print(Cn.shape)
         Cn[np.isnan(Cn)] = 0
         print('you may need to change the data rate to generate nb_view_components: use jupyter notebook --NotebookApp.iopub_data_rate_limit=1.0e10 before opening jupyter notebook')                
-        cnm.estimates.plot_contours(img=Cn) #img=None for mean projection
+        #cnm.estimates.plot_contours(img=Cn) #img=None for mean projection
         cnm.estimates.view_components(img=Cn)
-        cnm.estimates.play_movie(images_sliced, q_min=1, q_max=99.75, gain_res=2, magnification=2, 
-                                 include_bck=False, frame_range=slice(0,100,1), bpx=False, thr=1, 
-                                 save_movie=True, movie_name=pth_results, display=True, opencv_codec='H264',
-                                 use_color=False, gain_color=4, gain_bck=0.2)
+        # cnm.estimates.play_movie(images_sliced, q_min=1, q_max=99.75, gain_res=2, magnification=2, 
+        #                          include_bck=False, frame_range=slice(0,100,1), bpx=False, thr=1, 
+        #                          save_movie=True, movie_name=pth_results, display=True, opencv_codec='H264',
+        #                          use_color=False, gain_color=4, gain_bck=0.2)
         
         # A2 = np.reshape(cnm.estimates.A.toarray(), dims_spatial + (-1,), order='F')
         # A2 = A2.reshape( A2.shape[:-2] + (np.prod(A2.shape[2:]), ) )

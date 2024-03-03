@@ -9,13 +9,6 @@ disp("change reample bump to 4pi")
 disp("does 2pi ever appear twice as 0 and 1??")
 disp("make hemisphere no hemisphere option")
 
-%remove weighting
-%fix normalization strings
-%simplify scatterplots
-%fix plot bump
-%plot experiment
-%include flyg gui
-%index into epochs during experiment, save at end, then get rid of find epochs functions
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 

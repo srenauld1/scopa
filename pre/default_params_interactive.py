@@ -43,7 +43,7 @@ do_crop = 0 #skip everything but FOV selection for all entries in regionex, must
 do_extract = 1 #caiman source extraction 
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 regionex = ['pbtest'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
-index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
+index_extraction_param_set = -160 #'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
 do_analysis = 0 #matlab analysis, various functions in analyze_movie
 
@@ -56,6 +56,6 @@ do_analysis = 0 #matlab analysis, various functions in analyze_movie
 use_cluster = 0 #leave as 0 because cluster isn't working (except on google colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
 cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant if use_cluster=0
 
-makeplots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
+makeplots = 1 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 
 first_job = 1 #this should always be 1 if you're running pipeline_init.py directly/interactively, first_job is only used when pipeline_init.py is called from cxp.sh, as part of a larger pipeline 

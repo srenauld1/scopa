@@ -199,7 +199,8 @@ opt.bump.doplots = 0;
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit(1).depv{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
 opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
-
+opt.fit.epochinds = {[2 3 4]};
+opt.fit.modeltypes = 'glno5';
 
 opt.fit = default_fit_params(opt.fit);
 
