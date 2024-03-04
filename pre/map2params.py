@@ -9,7 +9,7 @@ class map2params():
         self.params['m2p_nb'] = [1]
         self.params['SC_sigma'] = [1]
         self.params['lambda_gnmf'] = [1]
-        self.params['perc_baseline_snmf'] = [0] #[10, 20, 40]
+        self.params['perc_baseline_snmf'] = [20] #[10, 20, 40]
         self.params['max_iter_snmf'] = [1000]
 
         self.map = []

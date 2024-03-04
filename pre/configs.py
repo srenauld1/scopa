@@ -134,8 +134,8 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     #   when stride_to_rf_ratio = 0.3, patch is ~7 times larger than neuron diameter, max(gsiz), and stride is 50% larger
     #   when stride_to_rf_ratio = 0.8, patch is ~3 times larger than neuron diameter, max(gsiz), and stride is still 50% larger
     
-    stride_to_rf_ratio = 0.1  #keep in approxoimate range 0.3 - 0.8
-    use_patch_size_threshold = 50000000 #skip patch extraction if all dims are smaller than this 
+    stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8
+    use_patch_size_threshold = 500000 #skip patch extraction if all dims are smaller than this 
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
