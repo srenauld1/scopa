@@ -78,12 +78,12 @@ for pai = 1:length(pth_usefile_prefix_all)
             md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores);
 
 
-        %%make (manual and automated) morphological rois in 2d or 3d, and extract their responses
+        %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(pars_mroi.(regionex)), ts.resp.(regionex).(pars_mroi.(regionex))] = ...
             make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex);
 
 
-        %%load/process functional (caiman) roi responses
+        %%load/select functional (caiman) roi responses
         for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run
             [roiinfo.(regionex).(pars_froi.(regionex){rfi}), ts.resp.(regionex).(pars_froi.(regionex){rfi})] = ...
                 process_functional_rois(stack_mnt.(regionex), roiinfo.(regionex).(pars_mroi.(regionex)), ...

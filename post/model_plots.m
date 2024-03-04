@@ -4,7 +4,7 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     max_tinds, timeseries_numsegments, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
-    keepinds_depv, epochinds_str, pureepoch, ...
+    keepinds_depv, epochinds_str, pureepoch_keepinds, ...
     pth_prefix, gif_visibility, objfcn, ft, supp, doplots)
 
 
@@ -53,8 +53,9 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
 
 %% params
 
- hackindvdim = 1; %haven't yet expanded this plotting function for multidimensional indvuli, for now just choosing one dim 
+hackindvdim = 1; %haven't yet expanded this plotting function for multidimensional indvuli, for now just choosing one dim
 
+epoch_patch_face_alpha = 0.05;
 preddepv_linewidth = 0.5;
 preddepv_transparency = 1;
 numsampnan = 20;
@@ -235,8 +236,11 @@ end
 
 depvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 preddepvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
+pureepochnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
+tinds_cont_nan = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created (to save plotting space)
 preddepvnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
+pureepochnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
 indvsort = cell(1, length(epochinds));
 preddepv_sort = cell(1, length(epochinds));
 truncstr = cell(1, length(epochinds));
@@ -244,26 +248,36 @@ seglength = cell(1, length(epochinds));
 
 for epi = 1:length(epochinds)
 
-    %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed by epochinds)
+
+    %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
+    tinds_cont = [];
     seg_endpoints = [0 find(diff(keepinds_depv{epi})~=1) length(keepinds_depv{epi})];
     for bei = 2:length(seg_endpoints)
         tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
     end
 
-    depvnan_cont{epi} = depv{epi}( :, tinds_cont{1});
-    preddepvnan_cont{epi} = preddepv{epi}( :, tinds_cont{1});
-    pureepochnan_cont{epi} = pureepoch{epi}( :, tinds_cont{1});
+    depvnan_cont{epi} = [];
+    preddepvnan_cont{epi} = [];
+    pureepochnan_cont{epi} = [];
+    tinds_cont_nan{epi} = [];
     nanpad = nan(size(depv{epi}, 1), numsampnan);
     nanpadvec = nanpad(1,:);
-    tinds_cont_nan{1} = tinds_cont{1};
-    for tbi = 2:length(tinds_cont) %pad any discontinuities with nan
+    for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
         depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad, depv{epi}( :, tinds_cont{tbi}));
         preddepvnan_cont{epi} = cat(2, preddepvnan_cont{epi},  nanpad, preddepv{epi}( :, tinds_cont{tbi}));
-        pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch{epi}( :, tinds_cont{tbi}));
-        tinds_cont_nan{tbi} = [tinds_cont_nan{tbi-1}(end)+1:tinds_cont_nan{tbi-1}(end)+1+numsampnan tinds_cont{tbi}+numsampnan];
+        pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch_keepinds{epi}( :, tinds_cont{tbi}));
+        if tbi==1
+            tmpstart = 1;
+        else
+            tmpstart = tinds_cont_nan{tbi-1}(end)+1;
+        end
+        tinds_cont_nan{tbi} = [ tmpstart : tmpstart+(numsampnan-1)+length(tinds_cont{tbi}) ];
+    end
+    if ~isempty(find(diff(cell2mat(tinds_cont_nan(:)'))~=1))
+        error("tinds_cont_nan must be contiguous")
     end
 
-    %%%%%% NEXT SELECT SEGMENTS TO TRUNCATE THE PLOT (IN CASE IT'S TOO LONG TO SEE EASILY) AND PAD THOSE DISCONTINUITIES WITH NAN ALSO
+    %%%%%% NEXT SELECT SEGMENTS TO TRUNCATE THE PLOT (IN CASE IT'S TOO LONG TO SEE EASILY) AND PAD THOSE DISCONTINUITIES WITH NAN ALSO, these have suffix *_seg
     tinds_seg = cell(1, timeseries_numsegments);
     if isempty(max_tinds) || max_tinds > size(depvnan_cont{epi}, 2)  %if too many samples to see, plot only the first max_tinds of them
         tinds_seg{1} = 1:size(depvnan_cont{epi}, 2);
@@ -636,6 +650,8 @@ end
 
 %% TIMESERIES PLOTS ONLY
 
+%use *_cont rather than *_seg, since the timeseries only plot does not truncate for space 
+
 if doplots(3)
 
     title_add_each = 'TIMESERIES';
@@ -644,7 +660,7 @@ if doplots(3)
     tittmp = strsplit(filename_save(1:end-4), '/');
     figure_title = strrep(tittmp{end}, '_', ' ');
 
-    numrows_ts = 4;
+    numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4 
     numcolumns_ts = 1;
     margins_fig = 0.04;
     margins_subfig = 0.02;
@@ -658,62 +674,86 @@ if doplots(3)
     minis = min(minis, minis2);
     maxis = max(maxis, maxis2);
 
-    hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
-    hfg.Position = [0 0.2 0.8 0.6]; %make square inner size (excludes top menu bar), plot in bottom left
+    num_total_epochs_in_gif = numel(unique(cell2mat(epochinds)));
+    cmap = distinguishable_colors(num_total_epochs_in_gif);
 
-    bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', ...
-        'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, ...
-        'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
-    htx.String = [figure_title];
+    hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+    hfg.Position = [0 0.2 0.8 0.6]; 
+
+    bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+    htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+    htx.String = figure_title;
 
 
     contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuous segments per row 
     framecount_gif = 0;
     for epi = 1:length(epochinds)
 
+        shadex = [];
+        shadey = [];
+        shadec = [];
+        tinds_row = [];
+        for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualization)
+            contseginds = [1:contseg_per_row]+contseg_per_row*(nsi-1); %indices of contiguous segments for row nsi
+            contseginds(contseginds>length(tinds_cont_nan)) = [];
+            tinds_row{nsi} = cell2mat(tinds_cont_nan(contseginds));
+            count = 0;
+            for epi2 = 1:length(epochinds{epi}) %for each epoch within epochinds
+                tmp = find(pureepochnan_cont{epi}==epochinds{epi}(epi2));
+                tmp = tmp(tmp>=min(tinds_row{nsi}) & tmp<=max(tinds_row{nsi}));
+                shadextmp = [0 find(diff(tmp)~=1) length(tmp)];
+                for bei = 2:length(shadextmp) %for each pure epoch segment in a single row
+                    count = count + 1;
+                    x1 = tmp(shadextmp(bei-1)+1);
+                    x2 = tmp(shadextmp(bei));
+                    shadex{nsi}(:, count) = [x1; x2; x2; x1] - min(tinds_row{nsi}) + 1; %subtract indices to shift on x axis for each row, since time is modified in this plot 
+                    shadey{nsi}(:, count) = [minis; minis; maxis; maxis];
+                    shadec{nsi}(count, 1) = epochinds{epi}(epi2);
+                end
+            end
+        end
+
         for ri = 1:size(depvnan_cont{epi}, 1)
 
             framecount_gif = framecount_gif + 1;
 
             for nsi = 1:numrows_ts
-                
-                contseginds = [1:contseg_per_row]+contseg_per_row*(nsi-1); %indices of contiguous segments for row nsi
-                contseginds(contseginds>length(tinds_cont_nan)) = [];
-                tinds_row = cell2mat(tinds_cont_nan(contseginds));
 
                 if ri==1
 
                     hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] );
+                    colormap(hax{nsi}, cmap);
                     hold(hax{nsi}, 'on')
-                    hpl{nsi} = plot(hax{nsi}, depvnan_cont{epi}(ri, tinds_row));
-                    hpl2{nsi} = plot(hax{nsi}, preddepvnan_cont{epi}(ri, tinds_row));
-                    % for k = 1:size(bands,1)
-                    %     patch(xp(k,:), yp(k,:), [1 1 1]*0.25, 'FaceAlpha',0.5, 'EdgeColor',[1 1 1]*0.25) %shading by epoch
-                    % end
+                    hpl{nsi} = plot(hax{nsi}, depvnan_cont{epi}(ri, tinds_row{nsi}), 'k');
+                    hpl2{nsi} = plot(hax{nsi}, preddepvnan_cont{epi}(ri, tinds_row{nsi}), 'r');
+                    hpl3{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
+
+                    xlm = hax{nsi}.XLim;
+                    hax{nsi}.XAxis.TickValues = [];
+                    hax{nsi}.XAxis.TickLabels = [];
+                    hax{nsi}.YLim = [minis maxis];
 
                     if nsi==numrows_ts
 
-                        xlm = hax{nsi}.XLim;
-                        hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
-                        hax{nsi}.XAxis.TickLabelFormat = '%.1f';
-                        hax{nsi}.XAxis.FontSize = fontsmall;
+                        % hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
+                        % hax{nsi}.XAxis.TickLabelFormat = '%.1f';
+                        % hax{nsi}.XAxis.FontSize = fontsmall;
 
-                        hax{nsi}.YLim = [minis maxis];
                         ylm = hax{nsi}.YLim;
                         hax{nsi}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
                         hax{nsi}.YAxis.TickLabelFormat = '%.1f';
                         hax{nsi}.YAxis.FontSize = fontsmall;
 
                     else
+                        hax{nsi}.XAxis.TickValues = [];
                         hax{nsi}.XAxis.TickLabels = [];
                         hax{nsi}.YAxis.TickLabels = [];
                     end
 
                 else
 
-                    hpl{nsi}.YData = depvnan_cont{epi}(ri, tinds_row);
-                    hpl2{nsi}.YData = preddepvnan_cont{epi}(ri, tinds_row);
+                    hpl{nsi}.YData = depvnan_cont{epi}(ri, tinds_row{nsi});
+                    hpl2{nsi}.YData = preddepvnan_cont{epi}(ri, tinds_row{nsi});
 
                 end
             end

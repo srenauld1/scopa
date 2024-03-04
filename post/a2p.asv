@@ -9,13 +9,6 @@ disp("change reample bump to 4pi")
 disp("does 2pi ever appear twice as 0 and 1??")
 disp("make hemisphere no hemisphere option")
 
-%remove weighting
-%fix normalization strings
-%simplify scatterplots
-%fix plot bump
-%plot experiment
-%include flyg gui
-%index into epochs during experiment, save at end, then get rid of find epochs functions
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
@@ -85,12 +78,12 @@ for pai = 1:length(pth_usefile_prefix_all)
             md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores);
 
 
-        %%make (manual and automated) morphological rois in 2d or 3d, and extract their responses
+        %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(pars_mroi.(regionex)), ts.resp.(regionex).(pars_mroi.(regionex))] = ...
             make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex);
 
 
-        %%load/process functional (caiman) roi responses
+        %%load/select functional (caiman) roi responses
         for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run
             [roiinfo.(regionex).(pars_froi.(regionex){rfi}), ts.resp.(regionex).(pars_froi.(regionex){rfi})] = ...
                 process_functional_rois(stack_mnt.(regionex), roiinfo.(regionex).(pars_mroi.(regionex)), ...
@@ -107,14 +100,12 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit
 
         fitcount = fitcount + 1;
-        [fitin, fieldspecstr, dofit] = ... %select indv/depv for fit using input params
-            choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, fitcount, dofit);
+        [fitin, fieldspecstr, dofit] = choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, pth.stack_analysis, fitcount, dofit);  %select indv/depv for fit using input params
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
-        fn_save_prefix = [pth.stack_analysis(1:end-4) regionex '_' parsex '_' parsnorm '_fit' num2str(fitcount)];
 
-        ts.bump.(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = compute_bump(stackcrop, fitin, ...
-            roiinfo.(regionex).(parsex), opt.bump, md, fn_save_prefix, regionex);
+        ts.bump.(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = ...
+            compute_bump(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), opt.bump, md, regionex); %fit bump
 
     end
 
@@ -125,19 +116,18 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit
 
         fitcount = fitcount + 1;
-        [fitin, fieldspecstr, dofit] = ... %select indv/depv for fit using input params
-            choose_timeseries(opt.fit, ts, md, pth.parsall_fit, fitcount, dofit);
+        [fitin, fieldspecstr, dofit] = choose_timeseries(opt.fit, ts, md, pth.parsall_fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-        [fittmp, goftmp] = fitmdl(stackcrop, fitin.indv, fitin.depv, roiinfo.(fitin.regionex).(fitin.parsex), md, pth, opt.fit);
+        [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
     end
 
 
     %% scatterplots
 
-    scatterplots(ts, opt.scatter, fn_save_prefix)
+    scatterplots(ts, opt.scatter, fn_save_prefix) %3d scatterplots (2d plus color) of all available timeseries
 
 
     %% summary plot

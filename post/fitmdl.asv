@@ -218,15 +218,15 @@ preddepv_plot = cell(1, length(fitopt.epochinds));
 ft = cell(1, length(fitopt.epochinds));
 gof = cell(1, length(fitopt.epochinds));
 indvpref = cell(1, length(fitopt.epochinds)); %preferred indv (indv at max predicted depv, often not the same as a fit param)
+pureepoch_keepinds = cell(1, length(fitopt.epochinds));
 
 for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
 
-    pure_epoch_model_samples_epochinds = zeros(1, size(trialepochindsaug, 2));
+    puretmp = zeros(1, size(trialepochindsaug, 2));
     for eii = 1:length(fitopt.epochinds{epi})
-        pure_epoch_model_samples_epochinds = pure_epoch_model_samples_epochinds + fitopt.epochinds{epi}(eii) * all(ismember(trialepochindsaug, fitopt.epochinds{epi}(eii)), 1); %epoch indices where the epoch is constant across all model timepoints 
+        puretmp = puretmp + fitopt.epochinds{epi}(eii) * all(ismember(trialepochindsaug, fitopt.epochinds{epi}(eii)), 1); %epoch indices where the epoch is constant across all model timepoints 
     end
-    pure_epoch_model_samples = logical(pure_epoch_model_samples_epochinds);
-    if any(pure_epoch_model_samples_epochinds(:)>max(fitopt.epochinds{epi}(:)))
+    if any(puretmp(:)>max(fitopt.epochinds{epi}(:)))
         error("should not have overlapping pure epoch samples")
     end
 
@@ -234,7 +234,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     if keep_transition_zones %includes epoch transition zones if transitioning between epochs listed in epochinds
         keepinds_indvaug = find(all(ismember_single(trialepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
     else %does not include epoch transition zones, even if between epochs listed in epochinds
-        keepinds_indvaug = find(pure_epoch_model_samples);
+        keepinds_indvaug = find(puretmp);
     end
 
     keepinds_depv{epi} = keepinds_indvaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
@@ -243,6 +243,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     indvauge = indvauge.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
     num_samp_data{epi} = length(keepinds_indvaug); %number samples of indv/depv given to optimization code
+
+    pureepoch_keepinds{epi} = puretmp(keepinds_indvaug);
 
     fid = fopen(pth_depvin_bin, 'r');
     depvintmp = fread(fid, [ numdepvs, num_samp_depvin ], [depvin_class '=>' depvin_class]); %read depv then crop, to prevent broadcasting in parfor loop below
@@ -379,7 +381,7 @@ if fitopt.doplots
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
         fitopt.depvplot_norm, fitopt.plot_class, ...
-        keepinds_depv, trialepochindsaug, epochinds_str, ...
+        keepinds_depv, epochinds_str, pureepoch_depv, pureepoch_keepinds, ...
         pth_fitdata_prefix, fitopt.gif_visibility, objfcn, ft, supp, doplots)
 
 

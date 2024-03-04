@@ -36,8 +36,7 @@ end
 
 if strcmp(domain_method, 'functional')
 
-    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, ...
-        roiinfo, md, fitopts, halfcent, ...
+    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roiinfo, md, fitopts, halfcent, ...
         numcluster_for_bump_domain_resample, doplots);
 
 elseif strcmp(domain_method, 'morphological') %morphological domain
