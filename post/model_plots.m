@@ -655,6 +655,7 @@ end
 
 %use *_cont rather than *_seg, since the timeseries only plot does not truncate for space
 
+
 if doplots(3)
 
     plot_indv = 1;
@@ -747,6 +748,14 @@ if doplots(3)
 
         end
 
+        for ri = 1:size(depvrow{1}, 1) %for each neuron, concatenate hitfit (do before plotting loop )
+            pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
+            fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+            if ~isempty(fitdata_saved_files)
+                load(fitdata_saved_files(end).name, 'histfit') %load most recent, based on timestamp in filename
+                histfit_all(ri) = histfit;
+            end
+        end
 
         %plotting loop
         for ri = 1:size(depvrow{1}, 1) %for each neuron
@@ -761,11 +770,9 @@ if doplots(3)
 
                 framecount_gif = framecount_gif + 1;
 
-                % pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
-                % fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
-                % if ~isempty(fitdata_saved_files)
-                %     load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
-                % end
+                if plot_preddepv
+                    histfit = histfit_all.(ri);
+                end
 
                 hax = cell(1, numrows_ts);
                 for nsi = 1:numrows_ts %for each subplot row

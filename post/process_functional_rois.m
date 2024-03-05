@@ -42,17 +42,23 @@ mask_mroi_all_xy = sum(mask_mroi_all, 3);
 
 load(pth_froi)
 
-if ~exist('cmrval', 'var')
-    if exist('rcor', 'var')
-        cmsnr = rsnr;
-        cmrval = rcor;
-        clear rsnr rcor;
-    end
-    if exist('rval', 'var')
-        cmsnr = snr;
-        cmrval = rval;
-        clear snr rval;
-    end
+if exist('rcor', 'var')%rename vars in old files
+    cmsnr = rsnr;
+    cmrval = rcor;
+    clear rsnr rcor;
+end
+if exist('rval', 'var')%rename vars in old files
+    cmsnr = snr;
+    cmrval = rval;
+    clear snr rval;
+end
+if exist('roimasks', 'var') %rename vars in old files
+    cma = roimasks;
+    cmc = C;
+    cms = S;
+    cmdff = dff;
+    cmdffr = dffr;
+    clear roimasks C S dff dffr;
 end
 
 cma = permute(cma, [2 1 3 4]);
