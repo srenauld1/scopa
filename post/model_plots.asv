@@ -739,7 +739,7 @@ if doplots(3)
         end
 
 
-        for ri = 1:size(depvnan_cont{epi}, 1)
+        for ri = 1:size(depvrow{1}, 1)
 
             for wpi = 1:2 %loop to plot or omit preddep, omitting can help with comparing depv and indv
 
@@ -752,13 +752,11 @@ if doplots(3)
                 framecount_gif = framecount_gif + 1;
 
 
-                % pth_fitdata_epoch_pattern = [pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_*_HISTFIT_.mat'];
-                % fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
-                %
-                % if ~isempty(fitdata_saved_files)
-                %     load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
-                % end
-                % load([pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_HISTFIT_.mat'])
+                pth_fitdata_epoch_pattern = [pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_*_HISTFIT_.mat'];
+                fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+                if ~isempty(fitdata_saved_files)
+                    load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
+                end
 
                 hax = cell(1, numrows_ts);
                 for nsi = 1:numrows_ts
@@ -777,12 +775,12 @@ if doplots(3)
                         if plot_indv
                             yyaxis right
                             for nip = 1:num_indv_to_plot
-                                hpl3{nsi} = plot(hax{nsi}, indvnan_cont{epi}(:, nip), 'Color', cmap_indv(nip,:), 'LineStyle', '-');
+                                hpl3{nsi} = plot(hax{nsi}, indvrow{nsi}(:, nip), 'Color', cmap_indv(nip,:), 'LineStyle', '-');
                             end
                         end
                         hold(hax{nsi}, 'off')
 
-                        xlm = hax{nsi}.XLim;
+                        hax{nsi}.XLim = [1 length(depvrow{nsi}(ri,:))];
                         hax{nsi}.XAxis.TickValues = [];
                         hax{nsi}.XAxis.TickLabels = [];
                         hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
@@ -798,6 +796,7 @@ if doplots(3)
 
                         if nsi==numrows_ts
 
+                            % xlm = hax{nsi}.XLim;
                             % hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
                             % hax{nsi}.XAxis.TickLabelFormat = '%.1f';
                             % hax{nsi}.XAxis.FontSize = fontsmall;
