@@ -3,6 +3,7 @@ function scatterplots(cueangtmp, cueveltmp, ballangtmp, ballveltmp, ...
     respgartmp, respgaltmp, respnortmp, respnoltmp, meangtmp, meanntmp, ...
     ti, tb, trialepochinds_i, trialepochinds_b, epochindstmp, fn_prefix, gif_visibility)
 
+error("don't use this yet")
 
 allow_response_upsample = 0;
 
