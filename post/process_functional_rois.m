@@ -55,58 +55,56 @@ if ~exist('cmrval', 'var')
     end
 end
 
-roimasks = permute(roimasks, [2 1 3 4]);
+cma = permute(cma, [2 1 3 4]);
 
 if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
 
     %convert 2d rois into 3d (by inserting each roi in 3d array in correct slice)
-    roimasks_new = zeros(size(roimasks,1), size(roimasks,2), size(roimasks,4), size(roimasks,4), size(roimasks,3), 'single');
-    for si = 1:size(roimasks,4)
-        for ri = 1:size(roimasks,3)
-            if any(vec(roimasks(:,:,ri,si)))
-                roimasks_new(:,:,si,si,ri) = roimasks(:,:,ri,si);
+    roimasks_new = zeros(size(cma,1), size(cma,2), size(cma,4), size(cma,4), size(cma,3), 'single');
+    for si = 1:size(cma,4)
+        for ri = 1:size(cma,3)
+            if any(vec(cma(:,:,ri,si)))
+                roimasks_new(:,:,si,si,ri) = cma(:,:,ri,si);
             end
         end
     end
-    roimasks = reshape(roimasks_new, size(roimasks_new,1), size(roimasks_new,2), size(roimasks_new,3), size(roimasks_new,4)*size(roimasks_new,5));
+    cma = reshape(roimasks_new, size(roimasks_new,1), size(roimasks_new,2), size(roimasks_new,3), size(roimasks_new,4)*size(roimasks_new,5));
     clear roimasks_new
 
-    C = reshape(permute(C, [1 3 2]), [], size(C, 2));
-    dff = reshape(permute(dff, [1 3 2]), [], size(dff, 2));
-    dffr = reshape(permute(dffr, [1 3 2]), [], size(dffr, 2));
-    S = reshape(permute(S, [1 3 2]), [], size(S, 2));
+    cmc = reshape(permute(cmc, [1 3 2]), [], size(cmc, 2));
+    cmdff = reshape(permute(cmdff, [1 3 2]), [], size(cmdff, 2));
+    cmdffr = reshape(permute(cmdffr, [1 3 2]), [], size(cmdffr, 2));
+    cms = reshape(permute(cms, [1 3 2]), [], size(cms, 2));
     cmrval = cmrval(:);
     cmsnr = cmsnr(:);
 
 end
 
-if ~isequal( [size(roimasks, 1), size(roimasks, 2)], [size(stack_mnt_rs, 1), size(stack_mnt_rs, 2)] ) %make sure roimask and stack_mnt sizes match
+if ~isequal( [size(cma, 1), size(cma, 2)], [size(stack_mnt_rs, 1), size(stack_mnt_rs, 2)] ) %make sure roimask and stack_mnt sizes match
     error("roimask and stack_mnt sizes do not match")
 end
-if ndims(roimasks)~=4
-    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES roimasks TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
+if ndims(cma)~=4
+    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
 end
 
 if croptimeinds
-    C = C(:,croptimeinds(1)+1:end-croptimeinds(2));
-    S = S(:,croptimeinds(1)+1:end-croptimeinds(2));
-    dff = dff(:,croptimeinds(1)+1:end-croptimeinds(2));
-    dffr = dffr(:,croptimeinds(1)+1:end-croptimeinds(2));
+    cmc = cmc(:,croptimeinds(1)+1:end-croptimeinds(2));
+    cms = cms(:,croptimeinds(1)+1:end-croptimeinds(2));
 end
 
-numrois = size(roimasks, 4);
+numrois = size(cma, 4);
 
 
 
 %% find roi centroids
 
 
-centroids_froi = find_roi_centroids(roimasks);
+centroids_froi = find_roi_centroids(cma);
 
 %% loop over rois, applying morphological selection criteria
 
 
-% tmp = roimasks(roimasks~=0);
+% tmp = cma(cma~=0);
 % [~, kneeidx] = knee_pt(tmp(:), [], 1, 1);
 % thr_global = tmp(kneeidx); %global threshold on spatial correlation
 
@@ -122,12 +120,12 @@ good_roi_indices = zeros(numrois, 1);
 roinumpix = zeros(1, numrois);
 roipixvals_binned = cell(numrois, 1);
 roipixvals_edges = cell(numrois, 1);
-roi_overlay = zeros(size(roimasks), 'single');
+roi_overlay = zeros(size(cma), 'single');
 pixinds_roi = cell(numrois, 1); %suffix 'pixels' distinguishes this from inds_froi_all and inds_froi_wt_all, which are indices into set of roi timeseries, rather than pixel indices like inds_mroi, but nevertheless are used in extract_volue_responses the same way as inds_mroi, since they are applied to "stack" of roi timeseries rather than movie stack (stack of pixel timeseries)
 subroi_primary = ones(numrois, 1);
 for ci = 1:numrois
 
-    imtmp = roimasks(:,:,:,ci);
+    imtmp = cma(:,:,:,ci);
     imtmp_xy = sum(imtmp, 3);
 
 
@@ -264,17 +262,17 @@ good_roi_indices = good_roi_indices(roisortinds);
 mask_roi_vec = mask_roi_vec(:,roisortinds);
 mask_roi_vec_wt = mask_roi_vec_wt(:,roisortinds);
 centroids_froi = centroids_froi(roisortinds);
-roimasks = roimasks(:,:,:,roisortinds);
+cma = cma(:,:,:,roisortinds);
 
-C = C(roisortinds, :);
-dff = dff(roisortinds, :);
+cmc = cmc(roisortinds, :);
+cmdff = cmdff(roisortinds, :);
 try
-    dffr = dffr(roisortinds, :);
+    cmdffr = cmdffr(roisortinds, :);
 catch
     disp("nodffr")
-    dffr = dff(roisortinds, :);
+    cmdffr = cmdff(roisortinds, :);
 end
-S = S(roisortinds, :);
+cms = cms(roisortinds, :);
 
 cmrval = cmrval(roisortinds);
 cmsnr = cmsnr(roisortinds);
@@ -293,10 +291,10 @@ roi_overlay_bad = roi_overlay(:,:,:,bad_roi_indices); %no need to save bad rois 
 good_roi_indices = find(good_roi_indices);
 roi_overlay = roi_overlay(:,:,:,good_roi_indices);
 
-%cmc = single(C(good_roi_indices, :)); %components denoised by caiman (nonnegative . . . that seems bad)
-%cmdff = single(dff(good_roi_indices, :)); %dff computed on C
-cmdffr = single(dffr(good_roi_indices, :)); %dff computed with residuals (no caiman denoising)
-%cms = single(S(good_roi_indices, :)); %deconvolved version of c, not using for now
+cmc = single(cmc(good_roi_indices, :)); %components denoised by caiman (nonnegative . . . that seems bad)
+%cmdff = single(cmdff(good_roi_indices, :)); %cmdff computed on cmc
+%cmdffr = single(cmdffr(good_roi_indices, :)); %cmdff computed with residuals (no caiman denoising)
+%cms = single(cms(good_roi_indices, :)); %deconvolved version of c, not using for now
 
 numroi = length(good_roi_indices);
 pixinds_roi = pixinds_roi(good_roi_indices);  %pixel indices of each roi, one roi per cell
@@ -304,9 +302,9 @@ mask_roi_vec = mask_roi_vec(:,good_roi_indices); %boolean mask vector of each ro
 mask_roi_vec_wt = mask_roi_vec_wt(:,good_roi_indices); %same as mask_roi_vec but weighted pixel indices
 centroids_roi = centroids_froi(good_roi_indices);
 if any(good_roi_indices) %if there are any rois remaining (don't actually need this except for the logical call below would error)
-    mask_allroi = logical(mean(roimasks(:,:,:,good_roi_indices), 4)); %boolean mask of all rois
+    mask_allroi = logical(mean(cma(:,:,:,good_roi_indices), 4)); %boolean mask of all rois
 else
-    mask_allroi = mean(roimasks(:,:,:,good_roi_indices), 4); %boolean mask of all rois
+    mask_allroi = mean(cma(:,:,:,good_roi_indices), 4); %boolean mask of all rois
 end
 mapind2ind = mapind2ind(good_roi_indices); %for each pixel in a roi, which roi it belongs to
 
@@ -326,7 +324,7 @@ end
 
 %% compute functional (caiman) responses averaged by which morphological roi they belong to (while also saving the original caiman responses too)
 
-resptmp.cmdffr = cmdffr; %put into struct before passing to extract_roi_responses
+resptmp.cmc = cmc; %put into struct before passing to extract_roi_responses
 resp = extract_roi_responses(resptmp, mask_roi_vec, pth_froi, normopts, dtmni); %this version not weighted by area by passing mask_roi_vec
 
 % resp = extract_roi_responses(resp_froi, mask_roi_vec_wt, pth_froi, normopts, dtmni, resp);  %this version weighted by area by passing mask_roi_vec_wt, appends output resp to input resp, so the nonweighted version is retained
@@ -370,11 +368,11 @@ if numrois_for_gif~=0
 
 end
 
-%variable 'roimasks' has not been subset by good_roi_indices
+%variable 'cma' has not been subset by good_roi_indices
 
 if do_other_plots
 
-    tmp = roimasks(:,:,:,good_roi_indices);
+    tmp = cma(:,:,:,good_roi_indices);
 
     %plot pixel energies (kind of like the strength of each pixel's contribution to the roi signal)
     tmpnz = tmp(tmp~=0);
@@ -456,7 +454,7 @@ if do_other_plots
 
 
     % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
-    % volshow(rescale(sum(roimasks, 4)),Parent=viewerRegistered,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...
+    % volshow(rescale(sum(cma, 4)),Parent=viewerRegistered,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...
     %     Colormap=[0 1 0],Alphamap=0.1);
 
 
@@ -475,11 +473,11 @@ if do_other_plots
 
     % restrict_to_max = 0;
     % if restrict_to_max
-    %     maxes = max(reshape(roimasks, [], numrois));
+    %     maxes = max(reshape(cma, [], numrois));
     %     for mi = 1:length(maxes)
-    %         roimasks_maxes(:,:,:,mi) = roimasks(:,:,:,mi).*(roimasks(:,:,:,mi)==maxes(mi));
+    %         roimasks_maxes(:,:,:,mi) = cma(:,:,:,mi).*(cma(:,:,:,mi)==maxes(mi));
     %     end
-    %     roimasks = roimasks_maxes;
+    %     cma = roimasks_maxes;
     % end
 
     %%
@@ -492,7 +490,7 @@ if do_other_plots
     filenamegif = [pth_froi(1:end-4) '_roimaskkneeeach_.gif'];
 
     for ci = 1:numrois
-        furn = vec(roimasks(:,:,:,ci));
+        furn = vec(cma(:,:,:,ci));
         furn = furn(furn~=0);
         if ~isempty(furn)
             furnsort = sort(furn);
@@ -535,7 +533,7 @@ if do_other_plots
     %%
 
 
-    furn = vec(roimasks);
+    furn = vec(cma);
 
     furn = furn(furn~=0);
     furnsort = sort(furn);

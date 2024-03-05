@@ -5,7 +5,7 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
     keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-    pth_prefix, pth_fitdata_epoch, gif_visibility, objfcn, ft, supp, doplots)
+    pth_prefix, gif_visibility, objfcn, ft, supp, doplots)
 
 
 
@@ -660,20 +660,27 @@ if doplots(3)
     plot_indv = 1;
     epoch_patch_face_alpha = 0.05;
 
-
-    title_add_each = 'TIMESERIES';
-    figext = '.gif';
-    filename_save = [pth_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
-    tittmp = strsplit(filename_save(1:end-4), '/');
-    figure_title = strrep(tittmp{end}, '_', ' ');
-
     numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
     numcolumns_ts = 1;
     margins_fig = 0.04;
     margins_subfig = 0.02;
 
+    title_add_each = 'TIMESERIES';
+    figext = '.gif';
+    filename_save = [pth_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
+
+    %axes
+    hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+    hfg.Position = [0 0.2 0.8 0.6];
+    bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     [axx, axy, axw, axh] = arrange_subplots(numrows_ts, numcolumns_ts, margins_fig, margins_subfig);
 
+    %title string
+    htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+    tittmp = strsplit(filename_save(1:end-4), '/');
+    htx.String = strrep(tittmp{end}, '_', ' ');
+
+    %mins and maxes constant scale across gif
     minis_i =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
     maxis_i =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
     minis_d =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
@@ -683,8 +690,8 @@ if doplots(3)
     minis_d = min(minis_d, minis_p);
     maxis_d = max(maxis_d, maxis_p);
 
-    % num_total_epochs_in_gif = numel(unique(cell2mat(epochinds)));
-    num_total_possible_epochs = 6; %do it this way so same color is associated weith same epoch across different fits
+    %colormaps
+    num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochinds))), so same color is associated weith same epoch across different fits
     max_num_indv_to_plot = 2;
     num_indv_to_plot = size(indvnan_cont{epi}, 2);
     if num_indv_to_plot>max_num_indv_to_plot
@@ -694,15 +701,11 @@ if doplots(3)
     cmap_patch = distinguishable_colors(num_total_possible_epochs+num_indv_to_plot+num_depv_to_plot);
     cmap_patch = cmap_patch(4:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
     cmap_indv = [0 0 1; 0 1 1];
-
-    hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
-    hfg.Position = [0 0.2 0.8 0.6];
-
-    bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
-    htx.String = figure_title;
+    color_preddepv = [1 0 0 0.3];
+    color_depv = [0 0 0 1];
 
 
+    %per row variables to plot
     contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuous segments per row
     framecount_gif = 0;
     for epi = 1:length(epochinds)
@@ -739,9 +742,10 @@ if doplots(3)
         end
 
 
-        for ri = 1:size(depvrow{1}, 1)
+        %plotting loop
+        for ri = 1:size(depvrow{1}, 1) %for each neuron
 
-            for wpi = 1:2 %loop to plot or omit preddep, omitting can help with comparing depv and indv
+            for wpi = 0:om %plot (1) or omit (2) preddep
 
                 if wpi==1
                     plot_preddepv = 1;
@@ -751,26 +755,22 @@ if doplots(3)
 
                 framecount_gif = framecount_gif + 1;
 
-
-                pth_fitdata_epoch_pattern = [pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_*_HISTFIT_.mat'];
-                fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
-                if ~isempty(fitdata_saved_files)
-                    load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
-                end
+                % pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
+                % fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+                % if ~isempty(fitdata_saved_files)
+                %     load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
+                % end
 
                 hax = cell(1, numrows_ts);
-                for nsi = 1:numrows_ts
+                for nsi = 1:numrows_ts %for each subplot row
 
-                    if ri==1
+                    if ri==1 %if on the first neuron
 
-                        hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] );
-                        colormap(hax{nsi}, cmap_patch);
+                        hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] ); %make the subplot
                         hold(hax{nsi}, 'on')
                         yyaxis left
-                        hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', [0 0 0 1], 'LineStyle', '-');
-                        if plot_preddepv
-                            hpl2{nsi} = plot(hax{nsi}, preddepvrow{nsi}(ri,:), 'Color', [1 0 0 0.3], 'LineStyle', '-');
-                        end
+                        hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
+                        hpl2{nsi} = plot(hax{nsi}, preddepvrow{nsi}(ri,:), 'Color', color_preddepv, 'LineStyle', '-');
                         hplp{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
                         if plot_indv
                             yyaxis right
@@ -794,7 +794,7 @@ if doplots(3)
                             hax{nsi}.YAxis(2).Color = [0 0 1];
                         end
 
-                        if nsi==numrows_ts
+                        if nsi==numrows_ts %if on the final/bottom row, include axis ticks and labels 
 
                             % xlm = hax{nsi}.XLim;
                             % hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
@@ -808,24 +808,33 @@ if doplots(3)
                                 hax{nsi}.YAxis(2).FontSize = fontsmall;
                             end
 
-                        else
+                        else %if not on the final/bottom row, skip axis ticks and labels 
+
                             hax{nsi}.XAxis.TickValues = [];
                             hax{nsi}.XAxis.TickLabels = [];
                             hax{nsi}.YAxis(1).TickLabels = [];
                             if plot_indv
                                 hax{nsi}.YAxis(2).TickLabels = [];
                             end
+                        
                         end
 
-                    else
+                    else %if not on the first neuron
 
                         hpl{nsi}.YData = depvrow{nsi}(ri,:);
-                        if plot_preddepv
-                            hpl2{nsi}.YData = preddepvrow{nsi}(ri,:);
-                        end
+                        hpl2{nsi}.YData = preddepvrow{nsi}(ri,:);
+
                     end
+
+                    if plot_preddepv
+                        hpl2{nsi}.Color = color_preddepv; %make preddepv visible
+                    else
+                        hpl2{nsi}.Color = 'none'; %make preddepv invisible
+                    end
+
                 end
 
+                %write to gif
                 frame = getframe(hfg);
                 im = frame2im(frame);
                 [imind, cm] = rgb2ind(im, ncolgif);
