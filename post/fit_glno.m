@@ -115,8 +115,8 @@ supp.num_dim_indv = num_dim_ivin;
 supp.num_samp_model = num_samp_model;
 supp.pind = pind;
 supp.num_model_functions = 2;
-supp.NumTrialPoints = 100000;
-supp.NumStageOnePoints = 20000;
+supp.NumTrialPoints = 10000;
+supp.NumStageOnePoints = 2000;
 
 %% make sure doubles
 

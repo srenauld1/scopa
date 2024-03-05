@@ -95,6 +95,7 @@ for epi = 1:length(fitopt.epochinds)
 end
 
 pth_fitdata_prefix = [fitin.fn_save_prefix  '_' fitopt.modeltype '_' num2str(fitopt.length_model_seconds) '_' num2str(fitopt.num_samp_lag) '_' pixfitflagstr];
+pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 %% create pixelwise fit for background if requested by recursively calling fitmdl with pixfitflag==1
 
@@ -255,7 +256,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
     timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
-    pth_fitdata_epoch = strrep(pth_fitdata_epoch_pattern, '*', timestr);
+    pth_fitdata_epoch{epi} = strrep(pth_fitdata_epoch_pattern, '*', timestr);
 
     dofit = 1;
     if fitopt.use_saved_model && ~isempty(fitdata_saved_files)
@@ -288,7 +289,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             else
                 if strcmp(fitopt.slvrg, 'globalsearch')
                     [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri)] = ...
-                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, gethue, getsat, getval, supp, ri, pth_fitdata_epoch);
+                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, gethue, getsat, getval, supp, ri, pth_fitdata_epoch{epi});
                 end
             end
             % %if you want to see each fit (before model_plots below), change parfor above to for and uncomment this section
@@ -313,7 +314,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         end
         toc
 
-        save(pth_fitdata_epoch, 'fttmp', 'goftmp', 'preddepv', 'hdata', 'sdata', 'vdata', 'indvpreftmp', '-v7.3', '-mat')
+        save(pth_fitdata_epoch{epi}, 'fttmp', 'goftmp', 'preddepv', 'hdata', 'sdata', 'vdata', 'indvpreftmp', '-v7.3', '-mat')
 
     end
 
@@ -382,7 +383,7 @@ if fitopt.doplots
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
         fitopt.depvplot_norm, fitopt.plot_class, ...
         keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-        pth_fitdata_prefix, fitopt.gif_visibility, objfcn, ft, supp, doplots)
+        pth_fitdata_prefix, pth_fitdata_epoch, fitopt.gif_visibility, objfcn, ft, supp, doplots)
 
 
 end

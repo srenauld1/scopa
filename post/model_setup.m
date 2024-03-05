@@ -151,6 +151,7 @@ switch modeltype
         [objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, supp, gethue, gethr_native] = ...
             fit_glno(modeltype, indvaug, depvin, num_samp_model, num_dim_ivin, huestr);
 
+        
     case 'tm'
         objfcn = @nonadaptive_tm; 
         lbnd = [0, 0, -inf(1,14)];

@@ -104,8 +104,7 @@ for pai = 1:length(pth_usefile_prefix_all)
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-        ts.bump.(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = ...
-            compute_bump(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), opt.bump, md, regionex); %fit bump
+        ts.bump.(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = compute_bump(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), opt.bump, md, regionex); %fit bump
 
     end
 

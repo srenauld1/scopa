@@ -5,7 +5,7 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
     keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-    pth_prefix, gif_visibility, objfcn, ft, supp, doplots)
+    pth_prefix, pth_fitdata_epoch, gif_visibility, objfcn, ft, supp, doplots)
 
 
 
@@ -55,10 +55,9 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
 
 hackindvdim = 1; %haven't yet expanded this plotting function for multidimensional indvuli, for now just choosing one dim
 
-epoch_patch_face_alpha = 0.05;
 preddepv_linewidth = 0.5;
 preddepv_transparency = 1;
-numsampnan = 20;
+numsampnan = 10;
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 mkrsz = 5;
 r_val_dummy_single = 0.5;
@@ -234,6 +233,7 @@ end
 %% pad discontinuities in depv and predicted depv variables for timeseries plots (not the other plots)
 
 
+indvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 preddepvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 pureepochnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
@@ -256,15 +256,18 @@ for epi = 1:length(epochinds)
         tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
     end
 
+    indvnan_cont{epi} = [];
     depvnan_cont{epi} = [];
     preddepvnan_cont{epi} = [];
     pureepochnan_cont{epi} = [];
     tinds_cont_nan{epi} = [];
-    nanpad = nan(size(depv{epi}, 1), numsampnan);
-    nanpadvec = nanpad(1,:);
+    nanpad_indv = nan(numsampnan, size(indv{epi}, 2));
+    nanpad_depv = nan(size(depv{epi}, 1), numsampnan);
+    nanpadvec = nanpad_depv(1,:);
     for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
-        depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad, depv{epi}( :, tinds_cont{tbi}));
-        preddepvnan_cont{epi} = cat(2, preddepvnan_cont{epi},  nanpad, preddepv{epi}( :, tinds_cont{tbi}));
+        indvnan_cont{epi} = cat(1, indvnan_cont{epi},  nanpad_indv, indv{epi}( tinds_cont{tbi}, :));
+        depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad_depv, depv{epi}( :, tinds_cont{tbi}));
+        preddepvnan_cont{epi} = cat(2, preddepvnan_cont{epi},  nanpad_depv, preddepv{epi}( :, tinds_cont{tbi}));
         pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch_keepinds{epi}( :, tinds_cont{tbi}));
         if tbi==1
             tmpstart = 1;
@@ -300,8 +303,8 @@ for epi = 1:length(epochinds)
     preddepvnan_seg{epi} = preddepvnan_cont{epi}( :, tinds_seg{1});
     pureepochnan_seg{epi} = pureepochnan_cont{epi}( :, tinds_seg{1});
     for tnsi = 2:timeseries_numsegments
-        depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad, depvnan_cont{epi}( :, tinds_seg{tnsi}));
-        preddepvnan_seg{epi} = cat(2, preddepvnan_seg{epi}, nanpad, preddepvnan_cont{epi}( :, tinds_seg{tnsi}));
+        depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad_depv, depvnan_cont{epi}( :, tinds_seg{tnsi}));
+        preddepvnan_seg{epi} = cat(2, preddepvnan_seg{epi}, nanpad_depv, preddepvnan_cont{epi}( :, tinds_seg{tnsi}));
         pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpadvec, pureepochnan_cont{epi}( :, tinds_seg{tnsi}));
     end
 
@@ -650,9 +653,13 @@ end
 
 %% TIMESERIES PLOTS ONLY
 
-%use *_cont rather than *_seg, since the timeseries only plot does not truncate for space 
+%use *_cont rather than *_seg, since the timeseries only plot does not truncate for space
 
 if doplots(3)
+
+    plot_indv = 1;
+    epoch_patch_face_alpha = 0.05;
+
 
     title_add_each = 'TIMESERIES';
     figext = '.gif';
@@ -660,117 +667,178 @@ if doplots(3)
     tittmp = strsplit(filename_save(1:end-4), '/');
     figure_title = strrep(tittmp{end}, '_', ' ');
 
-    numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4 
+    numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
     numcolumns_ts = 1;
     margins_fig = 0.04;
     margins_subfig = 0.02;
 
     [axx, axy, axw, axh] = arrange_subplots(numrows_ts, numcolumns_ts, margins_fig, margins_subfig);
 
-    minis =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
-    maxis =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
-    minis2 =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepv,  'UniformOutput',  false))); %min pred depv across all epochs
-    maxis2 =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepv,  'UniformOutput',  false))); %max pred depv across all epochs
-    minis = min(minis, minis2);
-    maxis = max(maxis, maxis2);
+    minis_i =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
+    maxis_i =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
+    minis_d =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
+    maxis_d =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
+    minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepv,  'UniformOutput',  false))); %min pred depv across all epochs
+    maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepv,  'UniformOutput',  false))); %max pred depv across all epochs
+    minis_d = min(minis_d, minis_p);
+    maxis_d = max(maxis_d, maxis_p);
 
-    num_total_epochs_in_gif = numel(unique(cell2mat(epochinds)));
-    cmap = distinguishable_colors(num_total_epochs_in_gif);
+    % num_total_epochs_in_gif = numel(unique(cell2mat(epochinds)));
+    num_total_possible_epochs = 6; %do it this way so same color is associated weith same epoch across different fits
+    max_num_indv_to_plot = 2;
+    num_indv_to_plot = size(indvnan_cont{epi}, 2);
+    if num_indv_to_plot>max_num_indv_to_plot
+        num_indv_to_plot = max_num_indv_to_plot;
+    end
+    num_depv_to_plot = 2;
+    cmap_patch = distinguishable_colors(num_total_possible_epochs+num_indv_to_plot+num_depv_to_plot);
+    cmap_patch = cmap_patch(4:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
+    cmap_indv = [0 0 1; 0 1 1];
 
     hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
-    hfg.Position = [0 0.2 0.8 0.6]; 
+    hfg.Position = [0 0.2 0.8 0.6];
 
     bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
     htx.String = figure_title;
 
 
-    contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuous segments per row 
+    contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuous segments per row
     framecount_gif = 0;
     for epi = 1:length(epochinds)
 
-        shadex = [];
-        shadey = [];
-        shadec = [];
-        tinds_row = [];
+        shadex = cell(1, numrows_ts);
+        shadey = cell(1, numrows_ts);
+        shadec = cell(1, numrows_ts);
+        depvrow = cell(1, numrows_ts);
+        preddepvrow = cell(1, numrows_ts);
+        indvrow = cell(1, numrows_ts);
         for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualization)
             contseginds = [1:contseg_per_row]+contseg_per_row*(nsi-1); %indices of contiguous segments for row nsi
             contseginds(contseginds>length(tinds_cont_nan)) = [];
-            tinds_row{nsi} = cell2mat(tinds_cont_nan(contseginds));
+            tinds_row = cell2mat(tinds_cont_nan(contseginds));
             count = 0;
             for epi2 = 1:length(epochinds{epi}) %for each epoch within epochinds
                 tmp = find(pureepochnan_cont{epi}==epochinds{epi}(epi2));
-                tmp = tmp(tmp>=min(tinds_row{nsi}) & tmp<=max(tinds_row{nsi}));
+                tmp = tmp(tmp>=min(tinds_row) & tmp<=max(tinds_row));
                 shadextmp = [0 find(diff(tmp)~=1) length(tmp)];
                 for bei = 2:length(shadextmp) %for each pure epoch segment in a single row
                     count = count + 1;
                     x1 = tmp(shadextmp(bei-1)+1);
                     x2 = tmp(shadextmp(bei));
-                    shadex{nsi}(:, count) = [x1; x2; x2; x1] - min(tinds_row{nsi}) + 1; %subtract indices to shift on x axis for each row, since time is modified in this plot 
-                    shadey{nsi}(:, count) = [minis; minis; maxis; maxis];
-                    shadec{nsi}(count, 1) = epochinds{epi}(epi2);
+                    shadex{nsi}(:, count) = [x1; x2; x2; x1] - min(tinds_row) + 1; %subtract indices to shift on x axis for each row, since time is modified in this plot
+                    shadey{nsi}(:, count) = [minis_d; minis_d; maxis_d; maxis_d];
+                    shadec{nsi}(count, 1, :) = reshape(cmap_patch(epochinds{epi}(epi2), :), [1 1 3]); %put color triplet in 3rd dim for patch arg c
                 end
             end
+
+            depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            preddepvrow{nsi} = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+
         end
+
 
         for ri = 1:size(depvnan_cont{epi}, 1)
 
-            framecount_gif = framecount_gif + 1;
+            for wpi = 1:2 %loop to plot or omit preddep, omitting can help with comparing depv and indv
 
-            for nsi = 1:numrows_ts
+                if wpi==1
+                    plot_preddepv = 1;
+                else
+                    plot_preddepv = 0;
+                end
 
-                if ri==1
+                framecount_gif = framecount_gif + 1;
 
-                    hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] );
-                    colormap(hax{nsi}, cmap);
-                    hold(hax{nsi}, 'on')
-                    hpl{nsi} = plot(hax{nsi}, depvnan_cont{epi}(ri, tinds_row{nsi}), 'k');
-                    hpl2{nsi} = plot(hax{nsi}, preddepvnan_cont{epi}(ri, tinds_row{nsi}), 'r');
-                    hpl3{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'FaceAlpha', epoch_patch_face_alpha);
 
-                    % patch(hax{nsi}, shade_x, shade_y, 'FaceColor', shade_c, 'EdgeColor',[1 1 1]*0.25, 'FaceAlpha',0.5) %shading by epoch
+                % pth_fitdata_epoch_pattern = [pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_*_HISTFIT_.mat'];
+                % fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+                %
+                % if ~isempty(fitdata_saved_files)
+                %     load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
+                % end
+                % load([pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_HISTFIT_.mat'])
 
-                    xlm = hax{nsi}.XLim;
-                    hax{nsi}.YLim = [minis maxis];
-                    ylm = hax{nsi}.YLim;
+                hax = cell(1, numrows_ts);
+                for nsi = 1:numrows_ts
 
-                    if nsi==numrows_ts
+                    if ri==1
 
-                        % hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
-                        % hax{nsi}.XAxis.TickLabelFormat = '%.1f';
-                        % hax{nsi}.XAxis.FontSize = fontsmall;
+                        hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] );
+                        colormap(hax{nsi}, cmap_patch);
+                        hold(hax{nsi}, 'on')
+                        yyaxis left
+                        hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', [0 0 0 1], 'LineStyle', '-');
+                        if plot_preddepv
+                            hpl2{nsi} = plot(hax{nsi}, preddepvrow{nsi}(ri,:), 'Color', [1 0 0 0.3], 'LineStyle', '-');
+                        end
+                        hplp{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
+                        if plot_indv
+                            yyaxis right
+                            for nip = 1:num_indv_to_plot
+                                hpl3{nsi} = plot(hax{nsi}, indvnan_cont{epi}(:, nip), 'Color', cmap_indv(nip,:), 'LineStyle', '-');
+                            end
+                        end
+                        hold(hax{nsi}, 'off')
+
+                        xlm = hax{nsi}.XLim;
                         hax{nsi}.XAxis.TickValues = [];
                         hax{nsi}.XAxis.TickLabels = [];
+                        hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                        ylm = hax{nsi}.YAxis(1).Limits;
+                        hax{nsi}.YAxis(1).TickValues = linspace(ylm(1), ylm(2), 3);
+                        hax{nsi}.YAxis(1).Color = [0 0 0];
+                        if plot_indv
+                            hax{nsi}.YAxis(2).Limits = [minis_i maxis_i];
+                            ylm = hax{nsi}.YAxis(2).Limits;
+                            hax{nsi}.YAxis(2).TickValues = linspace(ylm(1), ylm(2), 3);
+                            hax{nsi}.YAxis(2).Color = [0 0 1];
+                        end
 
-                        hax{nsi}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                        hax{nsi}.YAxis.TickLabelFormat = '%.1f';
-                        hax{nsi}.YAxis.FontSize = fontsmall;
+                        if nsi==numrows_ts
+
+                            % hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
+                            % hax{nsi}.XAxis.TickLabelFormat = '%.1f';
+                            % hax{nsi}.XAxis.FontSize = fontsmall;
+
+                            hax{nsi}.YAxis(1).TickLabelFormat = '%.1f';
+                            hax{nsi}.YAxis(1).FontSize = fontsmall;
+                            if plot_indv
+                                hax{nsi}.YAxis(2).TickLabelFormat = '%.1f';
+                                hax{nsi}.YAxis(2).FontSize = fontsmall;
+                            end
+
+                        else
+                            hax{nsi}.XAxis.TickValues = [];
+                            hax{nsi}.XAxis.TickLabels = [];
+                            hax{nsi}.YAxis(1).TickLabels = [];
+                            if plot_indv
+                                hax{nsi}.YAxis(2).TickLabels = [];
+                            end
+                        end
 
                     else
-                        hax{nsi}.XAxis.TickValues = [];
-                        hax{nsi}.XAxis.TickLabels = [];
-                        hax{nsi}.YAxis.TickLabels = [];
+
+                        hpl{nsi}.YData = depvrow{nsi}(ri,:);
+                        if plot_preddepv
+                            hpl2{nsi}.YData = preddepvrow{nsi}(ri,:);
+                        end
                     end
-
-                else
-
-                    hpl{nsi}.YData = depvnan_cont{epi}(ri, tinds_row{nsi});
-                    hpl2{nsi}.YData = preddepvnan_cont{epi}(ri, tinds_row{nsi});
-
                 end
+
+                frame = getframe(hfg);
+                im = frame2im(frame);
+                [imind, cm] = rgb2ind(im, ncolgif);
+
+                if framecount_gif==1
+                    imwrite(imind, cm, filename_save, 'DelayTime', 0, 'Loopcount', inf);
+                else
+                    imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
+                end
+
+
             end
-
-            frame = getframe(hfg);
-            im = frame2im(frame);
-            [imind, cm] = rgb2ind(im, ncolgif);
-
-            if framecount_gif==1
-                imwrite(imind, cm, filename_save, 'DelayTime', 0, 'Loopcount', inf);
-            else
-                imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
-            end
-
-
         end
     end
 end
