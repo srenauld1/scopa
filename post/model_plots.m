@@ -752,13 +752,13 @@ if doplots(3)
                 framecount_gif = framecount_gif + 1;
 
 
-                % pth_fitdata_epoch_pattern = [pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_*_HISTFIT_.mat'];
-                % fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
-                %
-                % if ~isempty(fitdata_saved_files)
-                %     load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
-                % end
-                % load([pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_HISTFIT_.mat'])
+                pth_fitdata_epoch_pattern = [pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_*_HISTFIT_.mat'];
+                fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+
+                if ~isempty(fitdata_saved_files)
+                    load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
+                end
+                load([pth_fitdata_epoch{epi}(1:end-4) num2str(ri) '_HISTFIT_.mat'])
 
                 hax = cell(1, numrows_ts);
                 for nsi = 1:numrows_ts

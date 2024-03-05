@@ -56,7 +56,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
 
 
     p = 1 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
-    merge_thresh = 0.9
+    merge_thresh = 0.85
     gSig_z = 1 # gSig in z dimension (ignored if extract_in_2d==True), anything below 1 will have same effect as 1, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1
     gSig = [2, 2, gSig_z] #forced to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
     nb = 1 #num background components
@@ -101,7 +101,6 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
 
     rolling_sum = True #think (?) only relevant for init method greedy_roi
 
-
     #during refinement, in update_spatial, the following params are used in function threshold_components
     thr_method = 'nrg' #or 'max'
     maxthr = 0.1 #for  thr_method = 'max' keep pixels above this threshold
@@ -135,7 +134,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     #   when stride_to_rf_ratio = 0.8, patch is ~3 times larger than neuron diameter, max(gsiz), and stride is still 50% larger
     
     stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8
-    use_patch_size_threshold = 500000 #skip patch extraction if all dims are smaller than this 
+    use_patch_size_threshold = 50 #skip patch extraction if all dims are smaller than this 
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         if md['dims'][1]==1:
