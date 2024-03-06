@@ -13,7 +13,7 @@ opt.main.recdate = '20230627'; %can use wildcards
 opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
-opt.main.regionex_all = {'fool', 'gar', 'gal', 'no_r', 'no_l', 'pb'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append a underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existingregionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+opt.main.regionex_all = {'test', 'gar', 'gal', 'no_r', 'no_l', 'pb'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append a underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existingregionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
 opt.main.old_project = 0; %for carl
@@ -41,10 +41,10 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 % params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
 % for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
-opt.mroi.use_hires = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-opt.mroi.use_drawn_rois =  {'pb'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
-opt.mroi.num_mroi_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
-opt.mroi.doplots = 0; %doplots in make_morphological_rois
+opt.mroi.use_hires = {}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.use_drawn_rois =  {'test'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
+opt.mroi.num_mroi_auto = {'test-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex) 
+opt.mroi.doplots = 1; %doplots in make_morphological_rois
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi) 

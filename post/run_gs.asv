@@ -1,7 +1,19 @@
-function [ft, gof, preddepv, hdata, sdata, vdata, indvpref] = ...
-    run_gs(slvrl, objfcn, depv, indv, x0, lbnd, ubnd, linineq_A, linineq_b, ...
-    gethue, getsat, getval, supp, ri, pth_fitdata_epoch)
+function [ft, gof, preddepv] = run_gs(slvrl, objfcn, depv, indv, x0, lbnd, ...
+    ubnd, linineq_A, linineq_b, nlcon, supp, ri, pth_fitdata_epoch)
 
+fitin.slvrl
+fitin.objfcn
+fitin.depv
+fitin.indv
+fitin.x0
+fitin.lbnd
+fitin.ubnd
+fitin.linineq_A
+fitin.linineq_b
+fitin.nlcon
+fitin.supp
+ri
+pth_fitdata_epoch
 
 % patternsearch satisfies linear constraints at intermediate iterations . . . does globalsearch?
 
@@ -93,7 +105,7 @@ optprob.Aeq = [];
 optprob.beq = [];
 optprob.lb = lbnd;
 optprob.ub = ubnd;
-optprob.nonlcon = @nlcon_l1norm;
+optprob.nonlcon = nlcon;
 optprob.solver = slvrl;
 optprob.options = optopts;
 
@@ -109,11 +121,6 @@ optprob.options = optopts;
 preddepv = objfcn(ft, indv, supp); %preddepv is predicted depv
 gof = mse(depv, preddepv); %error
 
-hdata = gethue(ft, indv, preddepv);
-sdata = getsat(gof);
-vdata = getval(depv);
-
-indvpref = indv(find(max(preddepv)==preddepv,1));
 
 save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
 

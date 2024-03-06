@@ -95,6 +95,7 @@ for epi = 1:length(fitopt.epochinds)
 end
 
 pth_fitdata_prefix = [fitin.fn_save_prefix  '_' fitopt.modeltype '_' num2str(fitopt.length_model_seconds) '_' num2str(fitopt.num_samp_lag) '_' pixfitflagstr];
+pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 %% create pixelwise fit for background if requested by recursively calling fitmdl with pixfitflag==1
 
@@ -190,13 +191,12 @@ end
 
 %% set up model fitting and plotting options
 
-[objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, numftpars, ...
+[objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, numftpars, ...
     gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     fitopt.hrange_out_manual, hue_is_periodic, supp] = ...
-    model_setup(...
-    fitopt.modeltype, fitopt.huestr, ...
-    fitopt.hrange_out_manual,indvaug, num_samp_model, ...
+    model_setup(fitopt.modeltype, fitopt.huestr, ...
+    fitopt.hrange_out_manual, indvaug, num_samp_model, ...
     num_dim_indvaug, num_dim_indvin, depvin, dtmni);
 
 
@@ -255,10 +255,11 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
     timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
-    pth_fitdata_epoch = strrep(pth_fitdata_epoch_pattern, '*', timestr);
+    pth_fitdata_epoch{epi} = strrep(pth_fitdata_epoch_pattern, '*', timestr);
 
     dofit = 1;
     if fitopt.use_saved_model && ~isempty(fitdata_saved_files)
+        fitdata_saved_files = natsortfiles(fitdata_saved_files);
         load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
         dofit = 0;
     end
@@ -277,43 +278,34 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             indvauge = indvauge.';
         end
         tic
-        for ri = 1:numdepvs %fit model to each pixel and/or roi
+        parfor ri = 1:numdepvs %fit model to each pixel and/or roi
 
             depv = double(depvintmp(:, ri));
 
             if strcmp(fitopt.modeltype, 'svd')
-                pvar = 0.8;
-                [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri) ] = ...
-                    run_svd( objfcn, indvauge, depv, pvar, gethue, getsat, getval);
+                [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = ...
+                    run_svd( objfcn, indvauge, depv, fitopt.pvar, gethue, getsat, getval);
             else
                 if strcmp(fitopt.slvrg, 'globalsearch')
-                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri)] = ...
-                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, gethue, getsat, getval, supp, ri, pth_fitdata_epoch);
+                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri)] = ...
+                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, supp, ri, pth_fitdata_epoch{epi});
                 end
             end
-            % %if you want to see each fit (before model_plots below), change parfor above to for and uncomment this section
-            % if ri==1
-            %     hfg = figure;
-            %     hax = axes( 'Parent', hfg);
-            %     hpl = plot(hax, depv);
-            %     hold(hax, 'on')
-            %     hpl2 = plot(hax, preddepv);
-            % else
-            %     hpl.YData = depv;
-            %     hold(hax, 'on')
-            %     hpl2.YData = preddepv;
-            % end
-            % pause(0.2) %pause is required for fig to appear during loop(??)
 
+            hdata(ri) = gethue(fttmp(ri,:), indvauge, preddepv(:,ri));
+            sdata(ri) = getsat(goftmp(ri));
+            vdata(ri) = getval(depv);
+            indvpref(ri) = indv(find(max(preddepv(:,ri))==preddepv(:,ri), 1));
 
         end
+
 
         if strcmp(fitopt.modeltype, 'tm')
             indvauge = indvauge.';
         end
         toc
 
-        save(pth_fitdata_epoch, 'fttmp', 'goftmp', 'preddepv', 'hdata', 'sdata', 'vdata', 'indvpreftmp', '-v7.3', '-mat')
+        save(pth_fitdata_epoch{epi}, 'fttmp', 'goftmp', 'preddepv', 'hdata', 'sdata', 'vdata', 'indvpreftmp', '-v7.3', '-mat')
 
     end
 
@@ -381,7 +373,7 @@ if fitopt.doplots
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
         fitopt.depvplot_norm, fitopt.plot_class, ...
-        keepinds_depv, epochinds_str, pureepoch_depv, pureepoch_keepinds, ...
+        keepinds_depv, epochinds_str, pureepoch_keepinds, ...
         pth_fitdata_prefix, fitopt.gif_visibility, objfcn, ft, supp, doplots)
 
 

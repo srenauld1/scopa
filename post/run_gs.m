@@ -1,6 +1,17 @@
-function [ft, gof, preddepv, hdata, sdata, vdata, indvpref] = ...
-    run_gs(slvrl, objfcn, depv, indv, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, ...
-    gethue, getsat, getval, supp, ri, pth_fitdata_epoch)
+function [fitin] = run_gs(fitin, ri)
+
+slvrl = fitin.slvrl;
+objfcn = fitin.objfcn;
+depv = fitin.depv;
+indv = fitin.indv;
+x0 = fitin.x0;
+lbnd = fitin.lbnd;
+ubnd = fitin.ubnd;
+linineq_A = fitin.linineq_A;
+linineq_b = fitin.linineq_b;
+nlcon = fitin.nlcon;
+supp = fitin.supp;
+pth_fitdata_epoch = fitin.pth_fitdata_epoch;
 
 
 % patternsearch satisfies linear constraints at intermediate iterations . . . does globalsearch?
@@ -109,14 +120,15 @@ optprob.options = optopts;
 preddepv = objfcn(ft, indv, supp); %preddepv is predicted depv
 gof = mse(depv, preddepv); %error
 
-hdata = gethue(ft, indv, preddepv);
-sdata = getsat(gof);
-vdata = getval(depv);
-
-indvpref = indv(find(max(preddepv)==preddepv,1));
 
 save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
 
+
+%% assign to struct 
+
+fitin.ft = ft;
+fitin.gof = gof;
+fitin.preddepv = preddepv;
 
 %% (nested) output and plotting functions
 

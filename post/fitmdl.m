@@ -191,6 +191,7 @@ end
 
 %% set up model fitting and plotting options
 
+
 [objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, numftpars, ...
     gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
@@ -278,35 +279,27 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             indvauge = indvauge.';
         end
         tic
-        for ri = 1:numdepvs %fit model to each pixel and/or roi
+        parfor ri = 1:numdepvs %fit model to each pixel and/or roi
 
             depv = double(depvintmp(:, ri));
 
             if strcmp(fitopt.modeltype, 'svd')
-                [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri) ] = ...
+                [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = ...
                     run_svd( objfcn, indvauge, depv, fitopt.pvar, gethue, getsat, getval);
             else
                 if strcmp(fitopt.slvrg, 'globalsearch')
-                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri)] = ...
-                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, gethue, getsat, getval, supp, ri, pth_fitdata_epoch{epi});
+                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri)] = ...
+                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, supp, ri, pth_fitdata_epoch{epi});
                 end
             end
-            % %if you want to see each fit (before model_plots below), change parfor above to for and uncomment this section
-            % if ri==1
-            %     hfg = figure;
-            %     hax = axes( 'Parent', hfg);
-            %     hpl = plot(hax, depv);
-            %     hold(hax, 'on')
-            %     hpl2 = plot(hax, preddepv);
-            % else
-            %     hpl.YData = depv;
-            %     hold(hax, 'on')
-            %     hpl2.YData = preddepv;
-            % end
-            % pause(0.2) %pause is required for fig to appear during loop(??)
 
+            hdata(ri) = gethue(fttmp(ri,:), indvauge, preddepv(:,ri));
+            sdata(ri) = getsat(goftmp(ri));
+            vdata(ri) = getval(depv);
+            indvpreftmp(ri) = indv(find(max(preddepv(:,ri))==preddepv(:,ri), 1));
 
         end
+
 
         if strcmp(fitopt.modeltype, 'tm')
             indvauge = indvauge.';
