@@ -1,5 +1,5 @@
 function [ft, gof, preddepv, hdata, sdata, vdata, indvpref] = ...
-    run_gs(slvrl, objfcn, depv, indv, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, ...
+    run_gs(slvrl, objfcn, depv, indv, x0, lbnd, ubnd, linineq_A, linineq_b, ...
     gethue, getsat, getval, supp, ri, pth_fitdata_epoch)
 
 
@@ -93,7 +93,7 @@ optprob.Aeq = [];
 optprob.beq = [];
 optprob.lb = lbnd;
 optprob.ub = ubnd;
-optprob.nonlcon = nlcon;
+optprob.nonlcon = @nlcon_l1norm;
 optprob.solver = slvrl;
 optprob.options = optopts;
 

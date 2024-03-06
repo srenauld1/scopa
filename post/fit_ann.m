@@ -62,8 +62,11 @@ for jj = 1:supp.num_dim_indv %loop over indv dims
         count = count +1;
 
         tmp = num2cell(pars(supp.pind{jj,ii}.L));
-        filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
-
+        if strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'freeform')
+            filt = cell2mat(tmp); %optimize filter weights directly 
+        else
+            filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+        end
         preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
 
         if pthspre
@@ -71,8 +74,9 @@ for jj = 1:supp.num_dim_indv %loop over indv dims
         end
 
         tmp = num2cell(pars(supp.pind{jj,ii}.N));
-        preddepvtmp = static_genlog(preddepvtmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
-
+        if ~isempty(tmp)
+            preddepvtmp = static_genlog(preddepvtmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+        end
         preddepv = preddepv + preddepvtmp; %sum outputs across loop
 
 

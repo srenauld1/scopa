@@ -1,5 +1,6 @@
 function [stackcrop, stack_mnt, map_hires_lores_crop, hiresmntcrop] = ...
-    crop_stacks(stack, croplim, recid, regionex, pth_fldr, sz_crop, use_hires, stack_hires_mnt, map_hires_lores )
+    crop_stacks(stack, croplim, recid, regionex, pth_fldr, sz_crop, ...
+    use_hires, stack_hires_mnt, map_hires_lores )
             
 if ~exist('use_hires', 'var')
     use_hires = 0;

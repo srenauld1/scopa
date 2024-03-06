@@ -64,6 +64,9 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     if any(cell2mat(struct2cell(opt.mroi.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opt.hires);
+    else
+        stack_hires_mnt = [];
+        map_hires_lores = [];
     end
 
     %% create/load/select rois/responses for each regionex 

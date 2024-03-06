@@ -232,7 +232,6 @@ end
 
 %% pad discontinuities in depv and predicted depv variables for timeseries plots (not the other plots)
 
-
 indvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 preddepvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
@@ -274,7 +273,8 @@ for epi = 1:length(epochinds)
         else
             tmpstart = tinds_cont_nan{tbi-1}(end)+1;
         end
-        tinds_cont_nan{tbi} = [ tmpstart : tmpstart+(numsampnan-1)+length(tinds_cont{tbi}) ];
+        tinds_cont_nan{tbi} = [ tmpstart : tmpstart+(numsampnan-1)+length(tinds_cont{tbi}) ]; %indices into nan padded array with the nans
+        tinds_cont_nan_nonan{tbi} = [ tmpstart+numsampnan : tmpstart+(numsampnan-1)+length(tinds_cont{tbi}) ]; %indices into nan padded array without the nans
     end
     if ~isempty(find(diff(cell2mat(tinds_cont_nan(:)'))~=1))
         error("tinds_cont_nan must be contiguous")
@@ -659,6 +659,12 @@ end
 if doplots(3)
 
     plot_indv = 1;
+    max_numfits_to_plot = 0;
+    use_last_global = 1;
+    include_best_fit = 1;
+    num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochinds))), so same color is associated weith same epoch across different fits
+    max_num_indv_to_plot = 2;
+    num_depv_to_plot = 2;
     epoch_patch_face_alpha = 0.05;
 
     numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
@@ -692,20 +698,18 @@ if doplots(3)
     maxis_d = max(maxis_d, maxis_p);
 
     %colormaps
-    num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochinds))), so same color is associated weith same epoch across different fits
-    max_num_indv_to_plot = 2;
+
     num_indv_to_plot = size(indvnan_cont{epi}, 2);
     if num_indv_to_plot>max_num_indv_to_plot
         num_indv_to_plot = max_num_indv_to_plot;
     end
-    num_depv_to_plot = 2;
     cmap_patch = distinguishable_colors(num_total_possible_epochs+num_indv_to_plot+num_depv_to_plot);
     cmap_patch = cmap_patch(4:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
     cmap_indv = [0 0 1; 0 1 1];
     color_preddepv = [1 0 0 0.3];
     color_depv = [0 0 0 1];
 
-    %set whether to copy each frame with and without model response  
+    %set whether to copy each frame with and without model response
     if num_indv_to_plot<2
         toggle_preddepv_visibility = 0;
     else
@@ -717,16 +721,50 @@ if doplots(3)
     framecount_gif = 0;
     for epi = 1:length(epochinds)
 
+        numroi_plot = size(depvnan_cont{epi}, 1);
+        preddepvrow = cell(numroi_plot, numrows_ts);
+        preddepv_hist = cell(1, numroi_plot ); %original full history, not split by row
+
         shadex = cell(1, numrows_ts);
         shadey = cell(1, numrows_ts);
         shadec = cell(1, numrows_ts);
         depvrow = cell(1, numrows_ts);
-        preddepvrow = cell(1, numrows_ts);
         indvrow = cell(1, numrows_ts);
+
+        if max_numfits_to_plot>0
+            for ri = 1:numroi_plot %for each neuron, concatenate hitfit (do before plotting loop )
+                pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
+                fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+                if ~isempty(fitdata_saved_files)
+                    fitdata_saved_files = natsortfiles(fitdata_saved_files);
+                    load(fitdata_saved_files(end).name, 'histfit') %load most recent, based on timestamp in filename
+                    % histfit_all(ri) = hxistfit;
+                    if use_last_global
+                        globalkeepinds = size(histfit.x_l, 3);
+                    end
+                    histxtmp = reshape(histfit.x_l(:,:,globalkeepinds), size(histfit.x_l,1), []);
+                    histxtmp = histxtmp(:,~all(histxtmp==0));
+                    if size(histxtmp, 2)>max_numfits_to_plot
+                        keepinds_histfit = round(linspace(1, size(histxtmp, 2), max_numfits_to_plot));
+                    else
+                        keepinds_histfit = 1:size(histxtmp, 2);
+                    end
+                    numfits_to_plot = length(keepinds_histfit);
+                    preddepv_hist{ri} = zeros(numfits_to_plot, size(indv{epi}, 1), 'single');
+                    for hxi = 1:numfits_to_plot
+                        preddepv_hist{ri}(hxi,:) = objfcn(histxtmp(:,keepinds_histfit(hxi)), indv{epi}, supp);
+                    end
+                end
+            end
+        end
+
         for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualization)
             contseginds = [1:contseg_per_row]+contseg_per_row*(nsi-1); %indices of contiguous segments for row nsi
             contseginds(contseginds>length(tinds_cont_nan)) = [];
+            tinds_cont_row = cell2mat(tinds_cont(contseginds));
             tinds_row = cell2mat(tinds_cont_nan(contseginds));
+            tinds_row_nonan = cell2mat(tinds_cont_nan_nonan(contseginds));
+            tinds_row_nonan = tinds_row_nonan-(min(tinds_row_nonan)-numsampnan)+1; %subtract to start each row after numsampnan
             count = 0;
             for epi2 = 1:length(epochinds{epi}) %for each epoch within epochinds
                 tmp = find(pureepochnan_cont{epi}==epochinds{epi}(epi2));
@@ -742,47 +780,57 @@ if doplots(3)
                 end
             end
 
+            %subset to get one row, and also add nan to end for symmetry at same time
             depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-            preddepvrow{nsi} = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
 
-        end
 
-        for ri = 1:size(depvrow{1}, 1) %for each neuron, concatenate hitfit (do before plotting loop )
-            pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
-            fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
-            if ~isempty(fitdata_saved_files)
-                load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
+            for ri = 1:numroi_plot
+                if max_numfits_to_plot>0
+                    preddepvrow{ri,nsi} = nan(size(preddepv_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
+                    preddepvrow{ri,nsi}(1:end-1,tinds_row_nonan) = preddepv_hist{ri}(:,tinds_cont_row); %history of fits
+                    preddepvrow{ri,nsi}(end,:) = preddepvrow_tmp(ri,:); %best fit at end
+                else
+                    preddepvrow{ri,nsi} = preddepvrow_tmp(ri,:); %just the best fit
+                end
             end
+
         end
+           
+
+        end
+        preddepv_hist = [];
+
+        % minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepvrow,  'UniformOutput',  false))); %min pred depv across all epochs
+        % maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepvrow,  'UniformOutput',  false))); %max pred depv across all epochs
+        % minis_d = min(minis_d, minis_p);
+        % maxis_d = max(maxis_d, maxis_p);
+
 
         %plotting loop
-        for ri = 1:size(depvrow{1}, 1) %for each neuron
+        for ri = 1:numroi_plot %for each neuron
 
-            for tpvi = 0:toggle_preddepv_visibility %plot (1) or omit (2) preddep
+            for fhi = 1:size(preddepvrow{ri,1}, 1) + toggle_preddepv_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
 
-                if tpvi==0
-                    plot_preddepv = 1;
-                elseif tpvi==1
+                if fhi==size(preddepvrow{ri,1}, 1)+1 %if there's an extra loop iteration, it's to turn off preddepv for one frame, to show indv and depv alone, at the end
                     plot_preddepv = 0;
+                else
+                    plot_preddepv = 1;
                 end
 
                 framecount_gif = framecount_gif + 1;
 
-                if plot_preddepv
-                    histfit = histfit_all.(ri);
-                end
-
                 hax = cell(1, numrows_ts);
                 for nsi = 1:numrows_ts %for each subplot row
 
-                    if ri==1 %if on the first neuron
+                    if framecount_gif==1 %if on the first frame
 
                         hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] ); %make the subplot
                         hold(hax{nsi}, 'on')
                         yyaxis left
                         hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
-                        hpl2{nsi} = plot(hax{nsi}, preddepvrow{nsi}(ri,:), 'Color', color_preddepv, 'LineStyle', '-');
+                        hpl2{nsi} = plot(hax{nsi}, preddepvrow{ri,nsi}(fhi, :), 'Color', color_preddepv, 'LineStyle', '-');
                         hplp{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
                         if plot_indv
                             yyaxis right
@@ -806,7 +854,7 @@ if doplots(3)
                             hax{nsi}.YAxis(2).Color = [0 0 1];
                         end
 
-                        if nsi==numrows_ts %if on the final/bottom row, include axis ticks and labels 
+                        if nsi==numrows_ts %if on the final/bottom row, include axis ticks and labels
 
                             % xlm = hax{nsi}.XLim;
                             % hax{nsi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 6);
@@ -820,7 +868,7 @@ if doplots(3)
                                 hax{nsi}.YAxis(2).FontSize = fontsmall;
                             end
 
-                        else %if not on the final/bottom row, skip axis ticks and labels 
+                        else %if not on the final/bottom row, skip axis ticks and labels
 
                             hax{nsi}.XAxis.TickValues = [];
                             hax{nsi}.XAxis.TickLabels = [];
@@ -828,14 +876,15 @@ if doplots(3)
                             if plot_indv
                                 hax{nsi}.YAxis(2).TickLabels = [];
                             end
-                        
+
                         end
 
-                    else %if not on the first neuron
+                    else %if not on the first frame
 
                         hpl{nsi}.YData = depvrow{nsi}(ri,:);
-                        hpl2{nsi}.YData = preddepvrow{nsi}(ri,:);
-
+                        if plot_preddepv
+                            hpl2{nsi}.YData =  preddepvrow{ri,nsi}(fhi, :);
+                        end
                     end
 
                     if plot_preddepv
@@ -845,6 +894,7 @@ if doplots(3)
                     end
 
                 end
+
 
                 %write to gif
                 frame = getframe(hfg);
@@ -856,7 +906,6 @@ if doplots(3)
                 else
                     imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
                 end
-
 
             end
         end

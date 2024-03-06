@@ -145,7 +145,7 @@ opt.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many centroids/clusters across the entire region (not hemisphere) when resampled uniformly, cell array of string 'regionex-integer', 'regionex-0', or empty string will skip, or nothing for an existing regionex, region must be in opt.bump.regionpat to get used 
+opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.bump.fit.depv  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.bump.doplots = 0;
 

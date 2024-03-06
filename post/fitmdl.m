@@ -191,13 +191,12 @@ end
 
 %% set up model fitting and plotting options
 
-[objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, numftpars, ...
+[objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, numftpars, ...
     gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     fitopt.hrange_out_manual, hue_is_periodic, supp] = ...
-    model_setup(...
-    fitopt.modeltype, fitopt.huestr, ...
-    fitopt.hrange_out_manual,indvaug, num_samp_model, ...
+    model_setup(fitopt.modeltype, fitopt.huestr, ...
+    fitopt.hrange_out_manual, indvaug, num_samp_model, ...
     num_dim_indvaug, num_dim_indvin, depvin, dtmni);
 
 
@@ -260,6 +259,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
     dofit = 1;
     if fitopt.use_saved_model && ~isempty(fitdata_saved_files)
+        fitdata_saved_files = natsortfiles(fitdata_saved_files);
         load(fitdata_saved_files(end).name) %load most recent, based on timestamp in filename
         dofit = 0;
     end
@@ -283,13 +283,12 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             depv = double(depvintmp(:, ri));
 
             if strcmp(fitopt.modeltype, 'svd')
-                pvar = 0.8;
                 [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri) ] = ...
-                    run_svd( objfcn, indvauge, depv, pvar, gethue, getsat, getval);
+                    run_svd( objfcn, indvauge, depv, fitopt.pvar, gethue, getsat, getval);
             else
                 if strcmp(fitopt.slvrg, 'globalsearch')
                     [ fttmp(ri,:), goftmp(ri), preddepv(:,ri), hdata(ri), sdata(ri), vdata(ri), indvpreftmp(ri)] = ...
-                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, gethue, getsat, getval, supp, ri, pth_fitdata_epoch{epi});
+                        run_gs(fitopt.slvrl, objfcn, depv, indvauge, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, gethue, getsat, getval, supp, ri, pth_fitdata_epoch{epi});
                 end
             end
             % %if you want to see each fit (before model_plots below), change parfor above to for and uncomment this section

@@ -10,8 +10,8 @@ objfcn = @fit_ann;
 %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid), or none
 %integrating (monophasic linear filter) as opposed to differentiating (biphasic linear filter), freeform optimizes weights directly rather than parametric linear filter
 if strcmp(modeltype, 'glno3')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'}; 
-    linfilt_types_per_indv_dim = {'integrating', 'differentiating'}; 
+    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'}; %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid)
+    linfilt_types_per_indv_dim = {'integrating', 'differentiating'}; %integrator (monophasic linear filter) as opposed to differentiator (biphasic linear filter)
 elseif strcmp(modeltype, 'glno4')
     nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'}; 
     linfilt_types_per_indv_dim = {'differentiating'}; 
@@ -98,9 +98,11 @@ for jj = 1:num_dim_indvin
         if  strcmp(LN_specs_per_indv_dim.nonlinearity_types_per_indv_dim{ii}, 'excitatory')  %left asymptote <= right asymptote will make positive slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
             linineq_A_tmp(length(lbnd_lin)+2) = 1;
             linineq_A_tmp(length(lbnd_lin)+3) = -1;
+            linineq_b_tmp = 0 + linineq_min_difference;
         elseif strcmp(LN_specs_per_indv_dim.nonlinearity_types_per_indv_dim{ii}, 'inhibitory')  %right asymptote <= left asymptote will make negative slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
             linineq_A_tmp(length(lbnd_lin)+2) = -1;
             linineq_A_tmp(length(lbnd_lin)+3) = 1;
+            linineq_b_tmp = 0 + linineq_min_difference;
         end
 
         lbnd = [lbnd lbnd_lin lbnd_nonlin];

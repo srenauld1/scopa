@@ -1,5 +1,5 @@
 
-function [objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, numftpars, ...
+function [objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, numftpars, ...
     gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     hrange_out_manual, hue_is_periodic, supp] = ...
@@ -11,7 +11,7 @@ iif = @(varargin) varargin{2 * find([varargin{1:2:end}], 1, 'first')}();
 
 linineq_A = [];
 linineq_b = [];
-
+nlcon = [];
 
 hue_is_periodic = 0;
 if strcmp(modeltype, 'vonmises') & strcmp(huestr, 'loc') %only if the param assigned to hue is periodic, make hrange the full circle
@@ -147,11 +147,11 @@ switch modeltype
         supp = [];
 
 
-    case {'glno3', 'glno4', 'glno5'}
-        [objfcn, lbnd, ubnd, linineq_A, linineq_b, x0, supp, gethue, gethr_native] = ...
+    case {'glno3', 'glno4', 'glno5', 'glno6'}
+        [objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, supp, gethue, gethr_native] = ...
             fit_glno(modeltype, indvaug, depvin, num_samp_model, num_dim_ivin, huestr);
 
-        
+
     case 'tm'
         objfcn = @nonadaptive_tm; 
         lbnd = [0, 0, -inf(1,14)];

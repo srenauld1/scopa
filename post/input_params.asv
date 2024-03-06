@@ -118,7 +118,9 @@ opt.ftrac.doplots = 0;
     %depv and indv are matched at the outer cell level
     %at the inner cell level, there can be multiple field specifiers (fieldspec)
     %each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'  
-    %depv and indv are composed of all timeseries matching fieldspecs, concaten 
+    %depv and indv are composed of all timeseries matching fieldspecs
+    %if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries 
+    %if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
 % opt.bump.fit(1).indv{1} = {['vis, angsd']};
 
 %params for fitting bump using fitmdl
@@ -143,7 +145,7 @@ opt.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many centroids/clusters across the entire region (not hemisphere) when resampled uniformly, cell array of string 'regionex-integer', 'regionex-0', or empty string will skip, or nothing for an existing regionex, region must be in opt.bump.regionpat to get used 
+opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer' . . . 'regionex-0', or empty string will skip resampling, can also skip by not listing an existing regionex here, regionex listed here must be in opt.bump.regionpat to get used 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.bump.doplots = 0;
 
@@ -196,8 +198,10 @@ opt.bump.doplots = 0;
 %for now, depv at single struct and outer cell level should come from single regionex
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit(1).depv{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
-opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
-
+% opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
+opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
+opt.fit.epochinds = {[2 3 4]};
+opt.fit.modeltypes = 'glno5';
 
 opt.fit = default_fit_params(opt.fit);
 
