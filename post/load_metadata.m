@@ -24,5 +24,9 @@ md = cell2struct(cellfun(@double,struct2cell(md),'uni',false),fieldnames(md),1);
 md.md_hires = hires_struct_tmp;
 md.xwid = md.xfov / md.xpix; %do this after conversion to double
 % md.zwid = md.zfov / md.numslice; %do this after conversion to double
+
+md.dtmni = 1/md.volrate;
+
+
 md = orderfields(md);
 

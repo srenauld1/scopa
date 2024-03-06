@@ -93,7 +93,7 @@ opt.froi.norm.doplots = 0;
 %% FICTRAC/STIMULUS
 
 %params for stimulus/fictrac processing
-opt.ftrac.include_behavior = 1; %0 to skip behavior
+opt.ftrac.include_behavior = 0; %0 to skip behavior
 opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
 opt.ftrac.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
 opt.ftrac.dark_stim_end_duration = 60; %final seconds
