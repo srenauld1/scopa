@@ -6,13 +6,13 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from helpers import stitch_registered_z_slices, tracefunc 
+from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, tracefunc 
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 
-def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
     ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
@@ -193,5 +193,11 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
             #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
             filename_gif = pth_write[:-4] + '.gif'
             plot_gif(np.transpose(Y.reshape(dim_time_rg, len(zindall), dims_spatial_rg[1], dims_spatial_rg[0]), (0,3,2,1)), filename_gif, indsz = slice(3, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+
+
+    if carls_old_project: 
+        separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume)
+    else:
+        separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume)
 
 

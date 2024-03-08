@@ -111,8 +111,8 @@ fieldspecstr = fieldspecstr_all(fitcount);
 fn = fieldnames(fieldspecstr);
 for fi = 1:length(fn)
     fitin.(fn{fi}) = [];
-    for vsi2 = 1:length(fieldspecstr(fitcount).(fn{fi}))
-        tmp = eval(fieldspecstr(fitcount).(fn{fi}){vsi2});
+    for vsi2 = 1:length(fieldspecstr.(fn{fi}))
+        tmp = eval(fieldspecstr.(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end

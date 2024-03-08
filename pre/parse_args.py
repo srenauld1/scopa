@@ -33,8 +33,8 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
-                      do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
-                      use_background_subtracted, use_denoised, epoch_choose_denoise, do_stitch, 
+                      do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
                       do_analysis, first_job):
@@ -114,12 +114,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[len_window_smooth_t_mcp],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--do_separate",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_separate],  # default if nothing is provided
-    )
-    CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
@@ -148,12 +142,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         nargs=1, 
         type=int,
         default=[epoch_choose_denoise],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_stitch",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_stitch],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_remove",  # name on the CLI - drop the `--` for positional/required parameters
@@ -320,7 +308,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     register_in_2d = int(args.register_in_2d[0])
     len_window_bgsub = int(args.len_window_bgsub[0])
     len_window_smooth_t_mcp = int(args.len_window_smooth_t_mcp[0])
-    do_separate = int(args.do_separate[0])
     do_denoise = int(args.do_denoise[0])
     denoise_volume = int(args.denoise_volume[0])
 
@@ -337,7 +324,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     use_denoised = int(args.use_denoised[0])
     epoch_choose_denoise = int(args.epoch_choose_denoise[0])
     
-    do_stitch = int(args.do_stitch[0])
     do_remove = int(args.do_remove[0])
     len_window_smooth_t_rsc = int(args.len_window_smooth_t_rsc[0])
     do_crop = int(args.do_crop[0])
@@ -368,8 +354,8 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
-                      do_separate, do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
-                      use_background_subtracted, use_denoised, epoch_choose_denoise, do_stitch, 
+                      do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
                       do_analysis, first_job)

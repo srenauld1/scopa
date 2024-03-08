@@ -8,24 +8,40 @@ TO DO:
 --requeue save/load
 --deepcad GOF
 --memory allocation based on file size
+--proper caiman averaging
 --shared matlab engine
 --submit cxp with ssh
 --integrate into flyg
 
 analysis pipeline for volumetric (xyzt) 2p imaging while presenting visual stimuli and measuring locomotion with fictrac
 
+the pipeline is automated (except for an option to draw morphological rois)
+the pipeline has various features for paralellization on O2 
+the pipeline has various features for parameter exploration
+if you're running on o2, the pipeline will automatically copy whatever files you need from the storage server onto O2, and then any new files gert copied back to storage server
+the pipeline uses caiman and deepcad dependencies that are on our shared wilson lab folder, so if you're running scopa on O2, you don't have to install any dependencies, except scopa itself (just git clone scopa into your home folder)
+the pipeline has a script (cxp.sh) that lets you string together jobs on O2  (in any application or language available on O2), handles parallelization, job dependencies, resource  allocation . . . so cxp.sh is useful as a master pipeline script, and has a simple layout that can be extended/adpated 
 
 there are two main sub-pipelines: 
-        'pre': in folder pre, mostly python, entrypoint is pipeline_init.py in interactive mode, or cxp.sh in 
-                batch mode (cxp.sh calls pipeline_init.py), 'pre' has the following modules:
-                        --registration (caiman Normcorre)
-                        --denoising (deepcadrt)
+        'pre': in folder pre, mostly python, entrypoint is pipeline_init.py in interactive mode (run VS code on O2 portal), or cxp.sh in 
+                batch mode (run ./cxp.sh on O2 command line . . . cxp.sh calls pipeline_init.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
+                        --registration (caiman Normcorre), with line-by-line background subtraction and temporal 
+                                smoothing submodules to deal with noisy recordings, prior to registration 
+                        --denoising (deepcadrt), with "best model" selection
                         --source extraction (caiman cnmf)
-        'post': in folder post, mostly matlab, entrypoint is a2p.m
+        'post': in folder post, mostly matlab, entrypoint is a2p.m, operates on output of 'pre', and also optional stimulus and behavior data, has the following modules:
+                        --plotting output from 'pre' pipeline as gif (compare raw, registered, denoised in one figure)
+                        --basic statistical metrics for output from 'pre' pipeline 
+                        --morphological roi extraction (manual drawing or automated, or an interaction)
+                        --caiman functioal roi loading and selection, and optional clustering according to morphological rois 
+                        --roi response normalization 
+                        --bump computation: fitting roi preferred heading, resampling compass, then vector average, using any type of roi 
+                        --input/output timeseries model fitting: various model architectures (including ann) using matlab global optimization toolbox; models can be fit to each roi, or each pixel, or both, with various plots for comparison
+                        --2d or 3d scatterplots for all available timeseries
+                        --various diagnostic figures throughout these submodules aimed at building intuition for the data 
 
- the second part of the pipeline is in matlab (entry point is a2p.m), and operates on the output of this first part (imaging data) and also behavior and stimulus data
 
-caiman_plots_all (in file vis.py)
+
 
  if recording_index = 'all', pipeline_init.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
@@ -107,7 +123,7 @@ there are a few spots in the pipeline built to accommodate carl's old project, t
 
 ############
 
-INSTALLING THINGS
+INSTALLING THINGS 
 
  before running register and extract, caiman and a few other packages need to be installed; to do that, log into O2 compute cluster and run these commands from your home folder 
 
