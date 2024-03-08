@@ -25,9 +25,9 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_separate=0 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
+do_separate=1 #0 or 1, no space after =, separate registered z slices into separate tifs for denoising (denoising can still operate on volume this way)
 do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
-do_stitch=0 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
+do_stitch=1 #0 or 1, no space after =, stitch denoised z slice tifs into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
@@ -238,7 +238,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=00:20:00
                 ntasks_str=1
                 cpus_per_task_str=5
-                mem_per_cpu_str=10G
+                mem_per_cpu_str=2G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=11:40:00

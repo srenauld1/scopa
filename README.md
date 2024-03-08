@@ -1,6 +1,6 @@
  scopa
  
- updated carl wienecke 240218
+ updated carl wienecke 240308
 
 TO DO:
 --filling GPU without time increase
@@ -8,16 +8,20 @@ TO DO:
 --requeue save/load
 --deepcad GOF
 --memory allocation based on file size
---integrate matlab pipeline
 --shared matlab engine
---submit cxp to O2 from local with ssh 
+--submit cxp with ssh
 --integrate into flyg
 
 analysis pipeline for volumetric (xyzt) 2p imaging while presenting visual stimuli and measuring locomotion with fictrac
 
-entrypoint is pipeline_init.py in interactive mode, or cxp.sh in batch mode (cxp.sh calls pipeline_init.py)
 
-there are 7 modules: registration, 
+there are two main sub-pipelines: 
+        'pre': in folder pre, mostly python, entrypoint is pipeline_init.py in interactive mode, or cxp.sh in 
+                batch mode (cxp.sh calls pipeline_init.py), 'pre' has the following modules:
+                        --registration (caiman Normcorre)
+                        --denoising (deepcadrt)
+                        --source extraction (caiman cnmf)
+        'post': in folder post, mostly matlab, entrypoint is a2p.m
 
  the second part of the pipeline is in matlab (entry point is a2p.m), and operates on the output of this first part (imaging data) and also behavior and stimulus data
 
