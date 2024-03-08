@@ -45,8 +45,6 @@ num_mroi_auto = opts_mroi.num_mroi_auto.(regionex);
 doplots = opts_mroi.doplots;
 normopts = opts_mroi.norm;
 
-create_mask_method = opts_mroi.create_mask_method;
-subsample_mask_method = opts_mroi.subsample_mask_method;
 edgethresh = opts_mroi.edgethresh;
 edgesig = opts_mroi.edgesig;
 closing_element_size = opts_mroi.closing_element_size;
@@ -112,6 +110,8 @@ else
 
     num_mroi = num_mroi_auto;
     do_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
+    create_mask_method = 'edge'; %method for defining edges of mask from input premask
+    subsample_mask_method = 'equidistant'; %method for subsampling mask into rois
     pth_save_figs_prefix = [pth_stack(1:end-4) '_' regionex];
     [mask_roi_vec, centroids_roi] = ...
         make_morphological_rois_automated(stack, maskmanual, ...

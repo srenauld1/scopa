@@ -27,6 +27,5 @@ md.xwid = md.xfov / md.xpix; %do this after conversion to double
 
 md.dtmni = 1/md.volrate;
 
-
 md = orderfields(md);
 

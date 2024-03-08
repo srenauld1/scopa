@@ -11,7 +11,7 @@ hires is not processed in python; in matlab it is registered to the registered s
 % register it in 3d (here in matlab) to caiman-registered functional stack
 %%(didn't see the point of registering it in python/caiman)
 
-%%for each region_extraction, draw 2d mask
+%%for each regionex, draw 2d mask
 %%3d mask is automatically extracted (using hi-z-res stack if it exists, otherwise just the lo-z-res)
 %%use 3d mask to define morphological rois, which can optionally be used in response quantification
 %%normalize responses

@@ -2,8 +2,8 @@
 function [mask_roi_vec, centroids_roi] = ...
     make_morphological_rois_automated(stack, maskmanual, ...
     num_mroi_auto, do_3d, create_mask_method, subsample_mask_method, ...
-    xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, do_plots)
-
+    xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
+    edgethresh, edgesig, closing_element_size, do_plots)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -52,10 +52,8 @@ end
 
 sliceinds_hires = [];
 if num_mroi_auto > 1
-
     if do_3d
-
-        
+       
         if ~isempty(stack_hires) %if using a hi-z-res stack to help make the 3d mask
 
             F = griddedInterpolant(single(maskmanual_allrois), 'linear');
@@ -87,6 +85,7 @@ if num_mroi_auto > 1
             sliceinds_hires = round(sliceinds_hires); %this z rounding is one source of imprecision in the mapping
 
         end
+
     end
 end
 
@@ -99,13 +98,11 @@ switch create_mask_method
     case 'edge' %find 3d mask edges, smooth them, apply morphological close       
         
         if do_3d
-            do_edge_3d = 1; %2d just seems more sensitive given the same edgethresh
+            do_edge_3d = 1; 
         else
-            do_edge_3d = 0; %2d just seems more sensitive given the same edgethresh
+            do_edge_3d = 0; %2d edge detection just seems more sensitive given the same edgethresh
         end
         
-        edgethresh = [.1 .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
-        edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for 3d (not 2d), can define smoothing filter sigma for each dim, or use one value for all dim
         if do_edge_3d && size(premask, 3)>1
             bookend = zeros(size(premask, 1), size(premask, 2));
             premask = cat(3, bookend, premask, bookend); %bookend with zeros to help 3d edge detection in z
@@ -117,9 +114,7 @@ switch create_mask_method
                 mask_allroi_approx(:,:,tui) = edge(premask(:,:,tui), 'canny', edgethresh, edgesig(1));
             end
         end
-        closing_element_size = 8;
         mask_allroi_approx = imclose(mask_allroi_approx, strel('disk',closing_element_size)); %this appears to work in 2d or 3d basically the same, 2d keeps this section of code shorter
-
 
     case 'outlier' %mask is outlier
 

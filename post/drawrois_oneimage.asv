@@ -27,10 +27,10 @@ axis image
 
 title({title_prefix}, 'FontSize', fontsize);
 
-if flag_one_image && ~flag_croplim
+if flag_one_image
     tmptitle = {'THIS IS THE ONLY IMAGE IN THE STACK, OR THE MEAN Z IMAGE'};
-    hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
 end
+hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
 
 if flag_croplim
     tmptitle = {'YOU MUST DRAW A ROI ON THIS IMAGE'};
@@ -40,8 +40,12 @@ else
         'PRESS "r" TO QUIT THE CURRENT ROI (WILL SKIP ANY REMAINING IMAGES IN STACK)'; ...
         'PRESS "s" TO MOVE TO THE NEXT SLICE IN THE STACK (WILL QUIT THE CURRENT ROI IF THERE ARE NO MORE SLICES)'; ...
         %'PRESS "backspace" TO UNDO LAST POLYGON'; ...
-        'PRESS "d" TO DRAW A ROI THAT IS DISCONTIGUOUS IN THIS IMAGE (ROI CAN BE CONTINUED ON OTHER SLICES, IF THEY EXIST)', ...
         };
+end
+hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
+
+if ~flag_croplim
+    tmptitle = {'PRESS "d" TO DRAW A ROI THAT IS DISCONTIGUOUS IN THIS IMAGE (ROI CAN BE CONTINUED ON OTHER SLICES, IF THEY EXIST)'};
 end
 hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
 
@@ -100,21 +104,17 @@ while true
 
     if flag_do
         him.Parent.XLabel.String{1} = 'DRAW NOW . . . SINGLE CLICK TO PLACE VERTEX, DRAG VERTEX AFTER CLOSURE TO ADJUST, DOUBLE CLICK AFTER CLOSURE TO FINISH';
-        if flag_croplim
-            him.Parent.XLabel.String{3} = ['THE BOUNDING BOX OF THE ONE POLYGON YOU DRAW WILL COMPRISE THE XY LIMITS FOR "' regionex ];
-        else
-            if flag_one_image
-                if flag_single_roi_per_stack
-                    him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex ];
-                else
-                    him.Parent.XLabel.String{3} = ['EACH POLYGON, AND EACH DISCONTIGUOUS UNION, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex ];
-                end
+        if flag_one_image
+            if flag_single_roi_per_stack
+                him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex ];
             else
-                if flag_single_roi_per_stack
-                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex ];
-                else
-                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS CYCLE THROUGH THE STACK WILL COMPRISE A SINGLE ROI FOR REGION "' regionex " . . . REPEAT UNTIL YOU ARE DONE"];
-                end
+                him.Parent.XLabel.String{3} = ['EACH POLYGON, AND EACH DISCONTIGUOUS UNION, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex ];
+            end
+        else
+            if flag_single_roi_per_stack
+                him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex ];
+            else
+                him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS CYCLE THROUGH THE STACK WILL COMPRISE A SINGLE ROI FOR REGION "' regionex " . . . REPEAT UNTIL YOU ARE DONE"];
             end
         end
         hfg.Children.Title.String{end} = [];
@@ -244,7 +244,7 @@ while true
         end
     end
 
-    him.Parent.XLabel.FontSize = 20;
+    him.Parent.XLabel.FontSize = 25;
 
 end
 

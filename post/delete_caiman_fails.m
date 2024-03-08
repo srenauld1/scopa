@@ -1,5 +1,5 @@
 
-function delete_caiman_fails(fn_pattern, fn_prefix, region_extraction)
+function delete_caiman_fails(fn_pattern, fn_prefix, regionex)
 
 %save caiman params that failed for each region and delete files
 
@@ -20,7 +20,7 @@ if ~isempty(failfnall)
         %keep datestr in case you run more caiman, don't want to
         %overwrite previous fail records (in future should
         %append to existing fail records
-        filename_save = [fn_prefix strjoin(spl(1:4), '_') '_' region_extraction '_caimanfails_' failmode  '_' datestr(now, 30) '_.mat'];
+        filename_save = [fn_prefix strjoin(spl(1:4), '_') '_' regionex '_caimanfails_' failmode  '_' datestr(now, 30) '_.mat'];
         failtmp{ci} = strjoin(spl(find(strcmp(spl, 'cmex'))+1:end-2), '_');
     end
     caimanfail = natsortfiles(failtmp(:));

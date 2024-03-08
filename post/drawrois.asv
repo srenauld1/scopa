@@ -70,17 +70,17 @@ if draw_manual
         while szi <= size(stackroidraw, 3)
 
             if flag_limit_one_manual_roi
-                title_prefix = ['THIS IS REGION "' regionex '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ROI #1 (THE ONLY ALLOWED ROI) ON THIS IMAGE'];
+                title_prefix = ['THIS IS: REGION "' regionex '", MEAN t, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ', NOW DRAW ROI #1 (THE ONLY ALLOWED ROI) '];
             else
                 if flag_one_image
-                    title_prefix = ['THIS IS REGION "' regionex '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ALL ROIS ON THIS IMAGE '];
+                    title_prefix = ['THIS IS: REGION "' regionex '", MEAN t, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ', NOW DRAW ALL ROIS ON THIS IMAGE '];
                 else
-                    title_prefix = ['THIS IS REGION "' regionex '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ROI #' num2str(roicount) ' ON THIS IMAGE'];
+                    title_prefix = ['THIS IS: REGION "' regionex '", MEAN t, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ', ROI #' num2str(roicount)];
                 end
             end
 
             [maskmanual_tmp, flag_quit_one_roi, flag_quit_all_rois] = ...
-                drawrois_oneimage(stackroidraw(:,:,szi), regionex, title_prefix, flag_one_image, flag_limit_one_manual_roi);
+                drawrois_oneimage(stackroidraw(:,:,szi), title_prefix, flag_one_image, flag_limit_one_manual_roi);
 
             if flag_one_image
                 maskmanual_tmp2 = maskmanual_tmp;
@@ -141,11 +141,11 @@ end
 function strout = titleaddendum(flag_one_image, draw_on_meanzt, szi)
 
 if draw_on_meanzt
-    strout = 'MEAN Z';
+    strout = 'mean z';
 else
-    strout = ['Z SLICE ' num2str(szi)];
+    strout = ['z slice ' num2str(szi)];
     if flag_one_image
-        strout = ['Z SLICE ' num2str(szi) '(THE ONLY SLICE IN THE STACK)'];
+        strout = ['z slice ' num2str(szi) '(only slice in stack)'];
     end
 end
 

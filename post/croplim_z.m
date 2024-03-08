@@ -1,4 +1,4 @@
-function [zinds, stack3d] = croplim_z(stack3d, region_extraction)
+function [zinds, stack3d] = croplim_z(stack3d, regionex)
 
 fontsize_title = 20;
 fontsize_xlabel = 25;
@@ -35,7 +35,7 @@ axis image
 
 
 title({
-    ['choose z indices for region "' region_extraction '" from this mean t image'];
+    ['choose z indices for region "' regionex '" from this mean t image'];
     'press up / down arrows to adjust contrast up / down 10% (50% while also pressing shift) ';
     'press number keys to choose lower z limit (one-indexed), then accept with "enter", then choose upper z limit, then accept with "enter" ';
     'press "delete" to redo last step';
