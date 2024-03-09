@@ -34,20 +34,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims):
     if countz != dims[1]:
         raise Exception("not all slices present")
 
-    mnmv = np.min(Y).astype('float32')
-    Y -= mnmv #make nonnegative before writing to uint16
-    if np.max(Y) > 65535:
-        raise Exception("clipping will occur when converting to uint16")
-    print("MIN AFTER REGISTRATION " + str(mnmv))
-
-    Y = Y.astype('uint16')
-
-    print(Y.shape)
-
-    Y = Y.reshape(dims[0] * dims[1], dims[2], dims[3]) #(tz)yx
-    print(Y.shape)
-    #imwrite(pth_tif_reg, Y.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
-    imwrite(pth_tif_reg, Y, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
+    Y = np.transpose(Y, (0,3,2,1)) #transpose to txyz, to match caiman output
 
     for f in pth_tif_all:
         os.remove(f)

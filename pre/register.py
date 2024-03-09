@@ -162,42 +162,39 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
         
         if register_in_2d and movie_is_4d:
-            pth_write = pth_tif_write[:-4] + str(si) + '_z_.tif'
-            imwrite(pth_write, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-        else:
-            pth_write = pth_tif_write
-            mnmv = np.min(Ynew).astype('float32')
-            Ynew -= mnmv #make nonnegative before writing to uint16
-            print("MIN AFTER MOTION CORRECTION " + str(mnmv))
-            if makeplots:
-                mxmv = np.max(Y)
-                #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
-                filename_gif = pth_write[:-4] + '.gif'
-                plot_gif(Ynew, filename_gif, indsz = slice(2, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
-
-            if len(Ynew.shape)==3:# or Y.shape[3]==1:
-                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-            else:
-                imwrite(pth_write, np.transpose(Ynew.astype('uint16'), (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-
+            pth_write_oneslice = pth_tif_write[:-4] + str(si) + '_z_.tif'
+            imwrite(pth_write_oneslice, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+            if si==sliceindz: #on final slice, if register_in_2d
+                Ynew = stitch_registered_z_slices(pth_tif_write, md['dims']) #output is all slices, txyz
+        
         countz = countz + 1
 
     Y = None
 
-    if register_in_2d and movie_is_4d:
-        
-        Y = stitch_registered_z_slices(pth_tif_write, md['dims'])
+    if makeplots:
+        mxmv = np.max(Ynew)
+        #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
+        filename_gif = pth_tif_write[:-4] + '.gif'
+        plot_gif(Ynew, filename_gif, indsz = slice(3, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
-        if makeplots:
-            mxmv = np.max(Y)
-            #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
-            filename_gif = pth_write[:-4] + '.gif'
-            plot_gif(np.transpose(Y.reshape(dim_time_rg, len(zindall), dims_spatial_rg[1], dims_spatial_rg[0]), (0,3,2,1)), filename_gif, indsz = slice(3, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+
+    mnmv = np.min(Ynew).astype('float32')
+    Ynew -= mnmv #make nonnegative before converting to uint16
+    if np.max(Ynew) > 65535:
+        raise Exception("clipping will occur when converting to uint16")
+    print("MIN AFTER REGISTRATION " + str(mnmv))
+    Ynew = Ynew.astype('uint16')
+    print(Ynew.shape)
+    if len(Ynew.shape)==3:# or Y.shape[3]==1: #transpose into tzyx, collapse t and z (if z exists) 
+        Ynew = np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])
+    else:
+        Ynew = np.transpose(Ynew, (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])
+    imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
     if carls_old_project: 
-        separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume)
+        separate_z_slices_for_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
     else:
-        separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume)
+        separate_z_slices_for_denoising(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
 
 
