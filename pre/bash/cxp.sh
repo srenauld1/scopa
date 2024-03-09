@@ -25,7 +25,7 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
+do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
@@ -40,8 +40,8 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 # gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
 # gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
 # gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
-#gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
-gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
+gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+#gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
 # gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
 # this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
 
@@ -88,10 +88,10 @@ LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
 NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
+EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, thisn is faster than rerunning denoising, but still stupid, fix it soon) 
 
 USE_BACKGROUND_SUBTRACTED=(0) #note: value assigned here used in do_extract 
 USE_DENOISED=(1)
-EPOCH_CHOOSE_DENOISE=(5) #denoising training epoch used for denoising, denoised stack saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, thisn is faster than rerunning denoising, but still stupid, fix it soon) 
 
 LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise 
 

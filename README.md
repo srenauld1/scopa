@@ -28,6 +28,7 @@ there are two main sub-pipelines:
                         --registration (caiman Normcorre), with line-by-line background subtraction and temporal 
                                 smoothing submodules to deal with noisy recordings, prior to registration 
                         --denoising (deepcadrt), with "best model" selection
+                        --remove scan noise with line by line fft (for very noisy recordings, structured scan noise may appear after denoising )
                         --source extraction (caiman cnmf)
         'post': in folder post, mostly matlab, entrypoint is a2p.m, operates on output of 'pre', and also optional stimulus and behavior data, has the following modules:
                         --plotting output from 'pre' pipeline as gif (compare raw, registered, denoised in one figure)
