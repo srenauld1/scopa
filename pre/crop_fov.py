@@ -44,11 +44,11 @@ def crop_fov(Y, regionex, pth_prefix, dims):
     
     try:
         
-        fn_croplim_pattern = pth_prefix + '_' + regionex + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
-        fn_croplim = glob.glob(fn_croplim_pattern)
-        if len(fn_croplim) > 1:
+        pth_croplim_pat = pth_prefix + '_' + regionex + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        pth_croplim = glob.glob(pth_croplim_pat)
+        if len(pth_croplim) > 1:
             raise Exception("too many crop files")
-        with open(fn_croplim[0], 'rb') as fnc:
+        with open(pth_croplim[0], 'rb') as fnc:
             croplim = np.load(fnc)
 
     except:
@@ -78,8 +78,8 @@ def crop_fov(Y, regionex, pth_prefix, dims):
             croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
             
     limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-    fn_crop_lim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
-    with open(fn_crop_lim, 'wb') as fncrop:
+    pth_croplim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
+    with open(pth_croplim, 'wb') as fncrop:
         np.save(fncrop, croplim) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
 
     slt = slice(croplim[0]-1, croplim[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 

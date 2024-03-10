@@ -351,8 +351,9 @@ def mat2tif_carls_old_project(pth_datafile):
     return mat_file_shape
             
 
-def copy_files_scopa(do_copyfiles, do_denoise, pth_tif_read, 
-                     pth_md, pth_fldr_copydest_prefix, pth_fldr, folder_with_all_recordings_on_storage_and_compute_filesystems):
+def copy_files_scopa(do_copyfiles, do_denoise, do_extract, pth_prefix, pth_tif_read, 
+                     pth_md, pth_fldr_copydest_prefix, pth_fldr, 
+                     folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
     pp = Path(pth_fldr).parts #split path
@@ -375,6 +376,22 @@ def copy_files_scopa(do_copyfiles, do_denoise, pth_tif_read,
             Path(pth_fldr_copydest).mkdir(parents=True, exist_ok=True)
             shutil.copy2(pth_tif_read, pth_fldr_copydest)
             shutil.copy2(pth_md, pth_fldr_copydest)
+            
+            if do_extract:
+                pth_croplim_pat = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
+                pth_croplim_all = glob.glob(pth_croplim_pat)
+                if pth_croplim_all:
+                    print("\n\n\ncopying all croplim files for requested recording from storage server into the following O2 directory: \n" + pth_fldr_copydest + "\nhere are the copied croplim files:\n")
+                    for pth_croplim in pth_croplim_all:
+                        print(pth_croplim + "\n")
+                        shutil.copy2(pth_croplim, pth_fldr_copydest)
+                else:
+                    print("there are no croplim files to copy from storage path into compute path, \
+                          \nyou will be prompted to create them in interactive mode; \
+                          \nyou cannot run extract in batch mode without a croplim file, \
+                          \nunless your regionex is 'fullfov'")
+
+
 
     elif do_copyfiles==2: #copy from O2 to storage server 
         
