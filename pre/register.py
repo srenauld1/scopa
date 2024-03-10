@@ -184,11 +184,12 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
         raise Exception("clipping will occur when converting to uint16")
     print("MIN AFTER REGISTRATION " + str(mnmv))
     Ynew = Ynew.astype('uint16')
-    print(Ynew.shape)
+    Ynew_shape = Ynew.shape
+    print(Ynew_shape)
     if len(Ynew.shape)==3:# or Y.shape[3]==1: #transpose into tzyx, collapse t and z (if z exists) 
-        Ynew = np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0])
+        Ynew = np.transpose(Ynew, (0, 2, 1)).reshape(Ynew_shape[0], Ynew_shape[2], Ynew_shape[1])
     else:
-        Ynew = np.transpose(Ynew, (0, 3, 2, 1)).reshape(dim_time_rg * dims_spatial_rg[2], dims_spatial_rg[1], dims_spatial_rg[0])
+        Ynew = np.transpose(Ynew, (0, 3, 2, 1)).reshape(Ynew_shape[0] * Ynew_shape[3], Ynew_shape[2], Ynew_shape[1])
     imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
