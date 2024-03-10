@@ -1,5 +1,7 @@
 function optout = default_fit_params(optin)
 
+do_predict = 1;
+
 depv = {...
     ['resp, *, *, *'], ...
     };

@@ -277,7 +277,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             indvauge = indvauge.';
         end
         tic
-        parfor ri = 1:numdepvs %fit model to each pixel and/or roi
+        for ri = 1:numdepvs %fit model to each pixel and/or roi
 
             depv = double(depvintmp(:, ri));
 
@@ -293,7 +293,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             hdata(ri) = gethue(fttmp(ri,:), indvauge, preddepv(:,ri));
             sdata(ri) = getsat(goftmp(ri));
             vdata(ri) = getval(depv);
-            indvpreftmp(ri) = indvauge(find(max(preddepv(:,ri))==preddepv(:,ri), 1));
+            indvpreftmp(ri) = indv(find(max(preddepv(:,ri))==preddepv(:,ri), 1));
 
         end
 

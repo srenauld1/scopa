@@ -1,10 +1,13 @@
 
-function [objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, numftpars, ...
-    gethue, getsat, getval, gethr_native, gethr_relative, ...
+function [fitin, numftpars, gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
-    hrange_out_manual, hue_is_periodic, supp] = ...
-    model_setup(modeltype, huestr, hrange_out_manual, ...
-    indvaug, num_samp_model, num_dim_indvaug, num_dim_ivin, depvin, dtmni)
+    hrange_out_manual, hue_is_periodic] = ...
+    model_setup(fitopt, indvaug, num_samp_model, num_dim_indvaug, num_dim_ivin, depvin, dtmni)
+
+modeltype = fitopt.modeltype;
+huestr = fitopt.huestr;
+hrange_out_manual = fitopt.hrange_out_manual;
+slvrl = fitopt.slvrl;
 
 %how to do "inline if" (iif)
 iif = @(varargin) varargin{2 * find([varargin{1:2:end}], 1, 'first')}();
@@ -205,7 +208,18 @@ getvr_relative = @(vdata) iif( ...
     );
 
 
-end
+
+%% 
+
+fitin.slvrl = slvrl;
+fitin.objfcn = objfcn;
+fitin.x0 = x0;
+fitin.lbnd = lbnd;
+fitin.ubnd = ubnd;
+fitin.linineq_A = linineq_A;
+fitin.linineq_b = linineq_b;
+fitin.nlcon = nlcon;
+fitin.supp = supp;
 
 
 

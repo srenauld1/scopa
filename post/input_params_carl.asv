@@ -1,4 +1,4 @@
-function opt = input_params_default()
+function opt = input_params_carl()
 
 
 % struct 'opt' holds all input params 
@@ -79,7 +79,7 @@ opt.mroi.norm.doplots = 0;
 %% FUCNTIONAL ROIS
 
 %params for loading/selecting/viewing functional rois (applied in process_functional_rois)
-opt.froi.caiman_lr_str = {'2_1_0.9_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
+opt.froi.caiman_lr_str = {'2_1_*_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
 opt.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
 opt.froi.min_roi_size = 5;%pixels, roi selection criterion
 opt.froi.max_roi_size = 300; %pixels
@@ -133,22 +133,8 @@ opt.ftrac.doplots = 0;
     %if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
 % opt.bump.fit(1).indv{1} = {['vis, angsd']};
 
-%params for fitting bump using fitmdl
-opt.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
-opt.bump.fit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
-opt.bump.fit(1).indv{1} = {['vis, angsd']};
-
-opt.bump.fit.modeltype = 'vonmises';
-opt.bump.fit.epochinds = {[4]};
-opt.bump.fit.length_model_seconds = 0;
-opt.bump.fit.hsv_background = 'rois';
-opt.bump.fit.sort_method = 'unbiased';
-opt.bump.fit.use_saved_model = 1;
-opt.bump.fit.doplots = 1;
-
-opt.bump.fit = default_fit_params(opt.bump.fit);
-
-%remaining params for computing bump
+%params for computing bump
+opt.bump.do_bump = 1; %0 to skip compute_bump
 opt.bump.bump_method = 'pva'; %'pva' for vector average
 opt.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
@@ -156,10 +142,25 @@ opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to c
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.bump.fit.depv  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+opt.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.bump.doplots = 0;
 
+%params for finding preferred heading using fitmdl
+opt.bump.fit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.bump.fit(1).depv{1} = {};
+opt.bump.fit(1).depv{1} = {['resp, pb, cm*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.bump.fit(1).depv{1} = {};
+opt.bump.fit(1).indv{1} = {['vis, angsd']};
+opt.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
+opt.bump.fit(1).modeltype = 'vonmises';
+opt.bump.fit(1).epochinds = {[4]};
+opt.bump.fit(1).length_model_seconds = 0;
+opt.bump.fit(1).hsv_background = 'rois';
+opt.bump.fit(1).sort_method = 'unbiased';
+opt.bump.fit(1).use_saved_model = 1;
+opt.bump.fit(1).doplots = 1;
+
+opt.bump.fit = default_fit_params(opt.bump.fit);
 
 %% FIT MODEL
 
@@ -205,11 +206,12 @@ opt.bump.doplots = 0;
 %    opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
-opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
-opt.fit(1).depv{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
+opt.fit.do_predict = 1; %0 to skip fit_mdl
+opt.fit(1).depv{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
 % opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
 opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
 opt.fit(1).indv{2} = {['ball, velrsd'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
+opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit.epochinds = {[2 3 4]};
 opt.fit.modeltypes = 'glno6';
 
@@ -220,6 +222,7 @@ opt.fit = default_fit_params(opt.fit);
 
 % params for scatterplots
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots 
+opt.scatter.do_scatter = 1;
 opt.scatter.epochinds = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 
 

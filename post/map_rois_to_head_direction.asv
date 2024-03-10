@@ -63,7 +63,7 @@ if doplots
 
     %resampled compass plot
     if numcluster_for_bump_domain_resample
-        numtinds = 100;
+        numtinds = 1;
         filename_save = [fitin.fn_save_prefix '_RESAMPCOMP_.gif'];
         ncolgif = 128;
         hfg = figure;
@@ -71,6 +71,7 @@ if doplots
         framecount_gif = 0;
         for ind = round(linspace(1, size(resptmp, 2), numtinds))
             framecount_gif = framecount_gif + 1;
+            ind = 200
 
             if framecount_gif==1
                 hpl1 = plot(hax, 1:size(resptmp, 1), resptmp(:,ind));

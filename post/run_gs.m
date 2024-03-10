@@ -1,9 +1,7 @@
-function [fitin] = run_gs(fitin, ri)
+function [ft, gof, preddepv] = run_gs(fitin, indv, depv, ri)
 
 slvrl = fitin.slvrl;
 objfcn = fitin.objfcn;
-depv = fitin.depv;
-indv = fitin.indv;
 x0 = fitin.x0;
 lbnd = fitin.lbnd;
 ubnd = fitin.ubnd;
@@ -12,7 +10,6 @@ linineq_b = fitin.linineq_b;
 nlcon = fitin.nlcon;
 supp = fitin.supp;
 pth_fitdata_epoch = fitin.pth_fitdata_epoch;
-
 
 % patternsearch satisfies linear constraints at intermediate iterations . . . does globalsearch?
 
@@ -123,12 +120,6 @@ gof = mse(depv, preddepv); %error
 
 save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
 
-
-%% assign to struct 
-
-fitin.ft = ft;
-fitin.gof = gof;
-fitin.preddepv = preddepv;
 
 %% (nested) output and plotting functions
 

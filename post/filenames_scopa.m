@@ -1,4 +1,4 @@
-function [opt, pth, croplim_all, pars_mroi, pars_froi, datenum, flynum, trialnum, recid_underscore] = ...
+function [opt, pth, croplim_all, parstr_mroi, parstr_froi, datenum, flynum, trialnum, recid_underscore] = ...
     filenames_scopa(opt, pth_usefile_prefix)
 
 %% params 
@@ -85,7 +85,7 @@ for i = 1:length(regionex_all)
     num_mroi_auto_new.(regionex) = tmpnum;
 
     paramstr = ['moex_' flag_hires '_' flag_use_drawn_rois '_' flag_num_mroi_auto];
-    pars_mroi.(regionex) = paramstr;
+    parstr_mroi.(regionex) = paramstr;
 
     pth_mroi.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_.mat'];
     pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
@@ -109,7 +109,7 @@ for i = 1:length(regionex_all)
             croplimstr_check{ci} = strjoin(spl(insloc+1:insloc+8), '_');
            
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_'); %everything in filename after 'cmex'
-            pars_froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
+            parstr_froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
             pth_froi_all.(regionex){ci,1} = pth_froi_all_tmp{ci};
 
         end
@@ -120,7 +120,7 @@ for i = 1:length(regionex_all)
         paramstr = [paramstr '_cmex_' caiman_lr_str];
 
     else
-        pars_froi.(regionex) = [];
+        parstr_froi.(regionex) = [];
         pth_froi_all.(regionex) = [];
     end
 
@@ -138,7 +138,7 @@ for i = 1:length(regionex_all)
 
     % if use_hires(i)
     %     paramstr = [paramstr '_hr_moex_paramtbd_'];
-    %     pars_mroi.(regionex) = [pars_mroi.(regionex) '_hr_moex_paramtbd'];
+    %     parstr_mroi.(regionex) = [parstr_mroi.(regionex) '_hr_moex_paramtbd'];
     %     if use_caiman_on_hires(i)
     %         paramstr = [paramstr '_hr_cmex_' caiman_hr_str];
     %     end
@@ -151,6 +151,18 @@ for i = 1:length(regionex_all)
     delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_nounderscore)
     delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_nounderscore)
 
+end
+
+
+%% do flags
+
+
+if all(cellfun(@isempty, [opt.bump.fit.depv]))
+    opt.bump.do_bump = 0;
+end
+
+if all(cellfun(@isempty, [opt.fit.depv]))
+    opt.fit.do_predict = 0;
 end
 
 %% gif in load_stacks

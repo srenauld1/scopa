@@ -98,7 +98,7 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     dofit = 1;
     fitcount = 0;
-    while dofit && opt.bump.do_bump
+    while dofit
 
         fitcount = fitcount + 1;
         [fitin, fieldspecstr, dofit] = choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, pth.stack_analysis, fitcount, dofit);  %select indv/depv for fit using input params
@@ -113,7 +113,7 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     dofit = 1;
     fitcount = 0;
-    while dofit && opt.fit.do_predict
+    while dofit
 
         fitcount = fitcount + 1;
         [fitin, fieldspecstr, dofit] = choose_timeseries(opt.fit, ts, md, pth.parsall_fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
@@ -127,9 +127,8 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     %% scatterplots
 
-    if opt.scatter.do_scatter
-        scatterplots(ts, opt.scatter, fn_save_prefix) %3d scatterplots (2d plus color) of all available timeseries
-    end
+    scatterplots(ts, opt.scatter, fn_save_prefix) %3d scatterplots (2d plus color) of all available timeseries
+
 
     %% summary plot
 
