@@ -49,7 +49,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
         mxmv = np.max(Y)
         #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
         filename_gif = pth_tif_read[:-4] + '.gif'
-        plot_gif(Y, filename_gif, indsz = slice(0, 2, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+        plot_gif(Y, filename_gif, indsz = slice(0, 2, 1), indst = slice(0, 20, 1))  #view gif before registration, can pass xyzt indices, otherwise will do all indices for each 
 
  
     if Y.shape[3]>1:
@@ -164,7 +164,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
         if register_in_2d and movie_is_4d:
             pth_write_oneslice = pth_tif_write[:-4] + str(si) + '_z_.tif'
             imwrite(pth_write_oneslice, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-            if si==sliceindz: #on final slice, if register_in_2d
+            if si==sliceindz[-1]: #on final slice, if register_in_2d
                 Ynew = stitch_registered_z_slices(pth_tif_write, md['dims']) #output is all slices, txyz
         
         countz = countz + 1
