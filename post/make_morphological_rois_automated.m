@@ -279,7 +279,7 @@ else % else downsample the 3 output variables from hires to lores
 
 
     %%downsample z component of each subroi of each mophological roi centroid
-    for rci = 1:length(num_mroi_auto) %loop over rois
+    for rci = 1:num_mroi_auto %loop over rois
         for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois
             centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmean, 3)], centroids_roi{rci}(rci2,3));
         end
@@ -287,7 +287,6 @@ else % else downsample the 3 output variables from hires to lores
 
 
 end
-
 
 %% 
 

@@ -134,7 +134,6 @@ for ci = 1:numrois
     imtmp = cma(:,:,:,ci);
     imtmp_xy = sum(imtmp, 3);
 
-    noresponseflag = 1;
 
     if any(centroids_froi{ci}(:)) && ~isempty(centroids_froi{ci}) %if roi exists, apply tests (caiman makes empty rois sometimes, not sure why)
 
@@ -371,8 +370,6 @@ if numrois_for_gif~=0
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     plot_gif(roi_overlay_bad(:,:,:, roi_plot_inds_bad), filename_gif, cmap_im)
-
-    figure; imagesc(mask_roi_vec); title("which caiman rois are closest to which morph roi")
 
 end
 
