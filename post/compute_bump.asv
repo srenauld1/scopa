@@ -25,7 +25,7 @@ fn_save_prefix = fitin.fn_save_prefix;
 if numcluster_for_bump_domain_resample
     numcluster = numcluster_for_bump_domain_resample;
 else
-    numcluster = size(fitin.resp, 1);
+    numcluster = size(fitin.depv, 1);
 end
 
 if numcluster==1
@@ -41,9 +41,9 @@ if strcmp(domain_method, 'functional')
 
 elseif strcmp(domain_method, 'morphological') %morphological domain
 
-    domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of PB clusters (only occurs if nonoverlapping)
+    domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
     domaintmp = domaintmp(1:end-1);
-    resp_cl = fitin.resp; %no downsampling for morph rois
+    resp_cl = fitin.depv; %no downsampling for morphological domain
 
 end
 

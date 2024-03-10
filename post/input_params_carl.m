@@ -144,6 +144,7 @@ opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 tim
 opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.bump.fit.depv  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+opt.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 opt.bump.doplots = 0;
 
 %params for finding preferred heading using fitmdl

@@ -277,7 +277,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             indvauge = indvauge.';
         end
         tic
-        parfor ri = 1:numdepvs %fit model to each pixel and/or roi
+        depv_good_inds = ~any(isnan(depvintmp));
+        parfor ri = depv_good_inds %fit model to each pixel and/or roi
 
             depv = double(depvintmp(:, ri));
 

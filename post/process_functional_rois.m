@@ -116,6 +116,7 @@ centroids_froi = find_roi_centroids(cma);
 
 
 roi_does_not_exist = ones(numrois, 1);
+roi_has_no_response = ones(numrois, 1);
 proportion_within_mask = ones(numrois, 1);
 centroid_is_outside_mask = ones(numrois, 1);
 roi_is_mostly_outside_mask = ones(numrois, 1);
@@ -142,6 +143,10 @@ for ci = 1:numrois
         [~, subroi_primary(ci)] = max([roiprops(:).MaxIntensity]);
 
         roi_does_not_exist(ci) = 0;
+
+        if any(cmc(ci,:))
+            roi_has_no_response(ci) = 0;
+        end
 
         numpix_within_mask_2d = sum(boolean(imtmp_xy .* mask_mroi_all_xy), "all");
         numpix_outside_mask_2d = sum(boolean(imtmp_xy .* ~mask_mroi_all_xy), "all");
@@ -185,6 +190,7 @@ for ci = 1:numrois
 
 
     if ~(roi_does_not_exist(ci) || ...
+            roi_has_no_response(ci) || ...
             centroid_is_outside_mask(ci) || ...
             roi_is_mostly_outside_mask(ci) || ...
             roi_is_outside_size_limits(ci) || ...

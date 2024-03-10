@@ -12,6 +12,7 @@ smoothwindow_sec = bumpopts.smoothwindow_sec; %full width of gaussian smoothing 
 rescale_clusters = bumpopts.rescale_clusters; %just before computing bump, rescale each cluster's timeseries to range 0-1
 numcluster_for_bump_domain_resample = bumpopts.numcluster_for_bump_domain_resample.(regionex);
 resample_smoothfac = bumpopts.resample_smoothfac;
+omitnan_bump = bumpopts.omitnan;
 doplots = bumpopts.doplots;
 
 fitopts = bumpopts.fit;
@@ -25,7 +26,7 @@ fn_save_prefix = fitin.fn_save_prefix;
 if numcluster_for_bump_domain_resample
     numcluster = numcluster_for_bump_domain_resample;
 else
-    numcluster = size(fitin.resp, 1);
+    numcluster = size(fitin.depv, 1);
 end
 
 if numcluster==1
@@ -41,9 +42,9 @@ if strcmp(domain_method, 'functional')
 
 elseif strcmp(domain_method, 'morphological') %morphological domain
 
-    domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of PB clusters (only occurs if nonoverlapping)
+    domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
     domaintmp = domaintmp(1:end-1);
-    resp_cl = fitin.resp; %no downsampling for morph rois
+    resp_cl = fitin.depv; %no downsampling for morphological domain
 
 end
 
@@ -92,7 +93,7 @@ for fi = 1:length(bump_subdomain)
 
         case 'pva'
 
-            [mu, rho, circvar] = circular_mean_and_variance(domain, resptmp); %alternative form of circ_mean and circ_var above, same result but ignores nans
+            [mu, rho, circvar] = circular_mean_and_variance(domain, resptmp, omitnan_bump); %alternative form of circ_mean and circ_var above, same result but ignores nans
             % mu2 = circ_mean(repmat(domain', [1 size(resptmp, 2)]), resptmp);
             % [rho, ~, sel] = circ_var(repmat(domain', [1 size(resptmp, 2)]), resptmp);
             % for rti = 1:size(resptmp, 2)

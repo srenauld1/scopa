@@ -48,7 +48,7 @@ for fnini = 1:length(fnin)
 
         goodinds = any(im2d, 2) & ~any(isnan(im2d), 2); %so they don't affect the mean, get rid of bad rois here (all zeros or any nans); do before clustering so extraction & normalization param mapping is unaffected, for raw pixels this should do nothing
         if raw_image_input & numel(find(goodinds)) ~= size(im2d, 1)
-            error
+            error("for raw pixel input, all pixels should be goodinds")
         end
 
         im2d = im2d(goodinds, :);
