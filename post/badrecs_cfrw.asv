@@ -1,0 +1,19 @@
+
+%recids to be exlucded
+%different outer cells for different classes of exclusion 
+
+%% for dataset one, 5 Hz, PB, GA, NO, dates 20230609 to 20230627
+
+badrecid{1} = {
+    '20230613_4_1', ... %high res PB only
+    '20230620_1_1', ... %phase mis-offset
+    '20230620_1_2', ... %phase mis-offset
+    '20230620_2_1', ... %phase mis-offset
+    };
+
+badrecid{2} = {
+    '20230609_3_1', ... %not pretty 
+    '20230610_3_2', ... %not pretty
+    '20230613_1_1', ... %not pretty
+    '20230627_3_1', ... %not pretty
+    };

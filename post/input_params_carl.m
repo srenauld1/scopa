@@ -149,7 +149,6 @@ opt.bump.doplots = 0;
 
 %params for finding preferred heading using fitmdl
 opt.bump.fit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.bump.fit(1).depv{1} = {};
-opt.bump.fit(1).depv{1} = {['resp, pb, cm*, in_cmc_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.bump.fit(1).depv{1} = {};
 opt.bump.fit(1).indv{1} = {['vis, angsd']};
 opt.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 

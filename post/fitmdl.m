@@ -276,7 +276,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         if strcmp(fitopt.modeltype, 'tm')
             indvauge = indvauge.';
         end
-        
+
         tic
         depv_good_inds = ~any(isnan(depvintmp));
         parfor ri = 1:numel(depv_good_inds)
@@ -298,9 +298,11 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
                 sdata(ri) = getsat(goftmp(ri));
                 vdata(ri) = getval(depv);
                 indvpreftmp(ri) = indvauge(find(max(preddepv(:,ri))==preddepv(:,ri), 1));
-            
+
+            else
+                indvpreftmp(ri) = nan;
             end
-        
+
         end
         toc
 

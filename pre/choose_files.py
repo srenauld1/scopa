@@ -58,11 +58,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
         if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
             
-            fn_suffix_flyg = '*.tif'
             if filepatspec[2]=='*':
-                fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_*_' + fn_suffix_flyg
+                fn_suffix_flyg = '_*_trial_*_*.tif'
             else:
-                fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_' + fn_suffix_flyg  
+                fn_suffix_flyg = '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_*.tif'  #this suffix actually includes a filepatspec for trial, oh well
+            fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + fn_suffix_flyg
             # pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
             pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_flyg, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since both patterns are valid as input
