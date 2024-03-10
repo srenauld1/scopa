@@ -22,7 +22,7 @@ disp("make hemisphere no hemisphere option")
 %% params
 
 
-opt = input_params();
+opt = input_params_carl(); %input_params_default();
 
 
 %% loop over files
@@ -87,7 +87,7 @@ for pai = 1:length(pth_usefile_prefix_all)
 
 
         %%load/select functional (caiman) roi responses
-        for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run
+        for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run (each roi file)
             [roiinfo.(regionex).(pars_froi.(regionex){rfi}), ts.resp.(regionex).(pars_froi.(regionex){rfi})] = ...
                 process_functional_rois(stack_mnt.(regionex), roiinfo.(regionex).(pars_mroi.(regionex)), ...
                 pth.froi_all.(regionex){rfi}, regionex, md, opt.froi);

@@ -1,4 +1,4 @@
-function opt = input_params()
+function opt = input_params_carl()
 
 
 % struct 'opt' holds all input params 
