@@ -498,10 +498,9 @@ if do_other_plots
 
 
     hfg = figure;
-    ncolgif = 128;
     spl1 = subplot(2,1,1);
     spl2 = subplot(2,1,2);
-    filenamegif = [pth_froi(1:end-4) '_roimaskkneeeach_.gif'];
+    filename_gif = [pth_froi(1:end-4) '_roimaskkneeeach_.gif'];
 
     for ci = 1:numrois
         furn = vec(cma(:,:,:,ci));
@@ -533,15 +532,7 @@ if do_other_plots
             sgtitle("spatial correlation (?) for single roi")
         end
 
-        frame = getframe(hfg);
-        im = frame2im(frame);
-        [imind, cm] = rgb2ind(im, ncolgif);
-
-        if ci==1
-            imwrite(imind, cm, filenamegif, 'DelayTime', 0, 'Loopcount', inf);
-        else
-            imwrite(imind, cm, filenamegif,'DelayTime', 0, 'WriteMode', 'append');
-        end
+        fig2gif(hfg, ci, filename_gif)
 
     end
     %%

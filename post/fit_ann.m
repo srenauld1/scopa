@@ -26,7 +26,6 @@ if exist('pthspre', 'var') && ~isempty(pthspre)
 
     fontsmall = 13;
     fontmedium = 20;
-    ncolgif = 128;
     numrows_plot = supp.num_model_functions;
     numcolumns_plot = 1;
     margins_fig = 0.04;
@@ -50,7 +49,7 @@ Q = 1; %hard coded param
 filtnorm = 1; %hard coded param
 doplots_filt = 0;
 preddepv = zeros(size(indv, 1), 1);
-count = 0;
+framecount = 0;
 
 for jj = 1:supp.num_dim_indv %loop over indv dims
 
@@ -59,7 +58,7 @@ for jj = 1:supp.num_dim_indv %loop over indv dims
 
     for ii = 1:supp.num_LN_per_indvdim %loop over LN units
 
-        count = count +1;
+        framecount = framecount +1;
 
         tmp = num2cell(pars(supp.pind{jj,ii}.L));
         if strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'freeform')
@@ -113,16 +112,9 @@ for jj = 1:supp.num_dim_indv %loop over indv dims
             hax{sfi}.Title.FontSize = fontsmall;
 
             htx.String = fn_save;
+            
+            fig2gif(hfg, framecount, pth_save)
 
-            frame = getframe(hfg);
-            im = frame2im(frame);
-            [imind, cm] = rgb2ind(im, ncolgif);
-
-            if count==1
-                imwrite(imind, cm, pth_save, 'DelayTime', 0, 'Loopcount', inf);
-            else
-                imwrite(imind, cm, pth_save,'DelayTime', 0, 'WriteMode', 'append');
-            end
 
 
         end

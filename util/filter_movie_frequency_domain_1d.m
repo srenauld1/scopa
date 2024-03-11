@@ -25,12 +25,12 @@ for indi = 1:size(imin, 2)
 
     if mod(indi, 120)==10 & doplots
         subplot(4,2,1)
-        plot(log(abs(fdt))) 
+        plot(log(abs(fdt)))
         hold on;
         plot(idx(2:5),log(abs(fdt(idx(2:5)))),'r.') % DC-component first, then positive and negative components have equal magnitudes and appear consecutively in idx
         hold off
         subplot(4,2,3)
-        plot(log(abs(fdtt)))  
+        plot(log(abs(fdtt)))
         subplot(4,2,5)
         plot(imint)
         subplot(4,2,7)
@@ -87,20 +87,11 @@ if 0
 
         swapdim = 1;
         ncol = 128;
-        fnouou = [pth_fldr '/imout.gif'];
+        fngif = [pth_fldr '/imout.gif'];
         hfg = figure;
         for mmi = 1:300
             plot(imfm_log(:,mmi))
-
-            frame = getframe(hfg);
-            im = frame2im(frame);
-            [imind, cm] = rgb2ind(im,ncol);
-
-            if mmi == 1
-                imwrite(imind,cm,fnouou, 'DelayTime', 0, 'Loopcount',inf);
-            else
-                imwrite(imind,cm,fnouou,'DelayTime', 0,'WriteMode','append');
-            end
+            fig2gif(hfg, mmi, fngif)
         end
         %%
 

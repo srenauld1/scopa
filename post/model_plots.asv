@@ -68,6 +68,7 @@ fonthuge = 20;
 quivercenter_xy = [1, 1];
 quivermaxlen = 1;
 supp_line_width = 2;
+ncolgif = 128;
 % axroomindv = range(indv(:))*0.1;
 num_grayscales_bg = 256; %arbitrary
 
@@ -347,10 +348,10 @@ if doplots(1)
 
     totalplotframes = length(roiinds_plot)*length(epochinds);
 
-    for framecount = 1:totalplotframes
+    for plotframecount = 1:totalplotframes
 
-        epi = ceil(framecount/length(roiinds_plot)); %index into epochinds
-        ri = mod(framecount-1, length(roiinds_plot))+1; %index into roiinds_plot
+        epi = ceil(plotframecount/length(roiinds_plot)); %index into epochinds
+        ri = mod(plotframecount-1, length(roiinds_plot))+1; %index into roiinds_plot
 
         [py, px, pz] = ind2sub(size(stackmean), pixinds_roi{roiinds_plot(ri)}); %y, x, z of selected pixel
 
@@ -372,7 +373,7 @@ if doplots(1)
             [cit, rit] = ind2sub([numcolumnstop, numrowstop], sit); %reverse output since subplots are column-major
             zslicecount = zslicecount+1;
 
-            if framecount==1
+            if plotframecount==1
 
                 if zslicecount<size(img{epi}, 3)+1
                     hat{sit} = axes( 'Parent', hfg, 'Position', [xtop(cit), ytop(rit), wtop, htop] );
@@ -398,7 +399,7 @@ if doplots(1)
                 end
 
 
-            elseif framecount>1
+            elseif plotframecount>1
 
                 if zslicecount<size(img{epi}, 3)+1
 
@@ -435,7 +436,7 @@ if doplots(1)
 
             if cib == 1 %occupies cib 1 and 2 (bottom column 1 and 2, ie double width column)
 
-                if framecount==1
+                if plotframecount==1
 
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot*2, hbot] );
                     hold(hab{sib}, 'on');
@@ -480,7 +481,7 @@ if doplots(1)
 
             elseif cib == 3
 
-                if framecount==1
+                if plotframecount==1
 
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                     hold(hab{sib}, 'on');
@@ -537,7 +538,7 @@ if doplots(1)
 
             elseif cib == 4
 
-                if framecount==1
+                if plotframecount==1
 
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                     hold(hab{sib}, 'on');
@@ -582,7 +583,7 @@ if doplots(1)
         end
 
 
-        fig2gif(hfg, framecount, filename_save)
+        fig2gif(hfg, plotframecount, filename_save)
 
 
 
@@ -606,10 +607,10 @@ if doplots(2)
 
     hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
 
-    framecount = 0;
+    plotframecount = 0;
     zslicecount = 0;
     for sit = 1:numplotstop
-        framecount = framecount+1;
+        plotframecount = plotframecount+1;
 
         [cit, rit] = ind2sub([numrowstop, numcolumnstop], sit); %reverse output since subplots are column-major
         zslicecount = zslicecount+1;
@@ -629,7 +630,7 @@ if doplots(2)
             axis ij
         end
 
-        fig2gif(hfg, framecount, filename_save)
+        fig2gif(hfg, plotframecount, filename_save)
 
 
     end
@@ -709,7 +710,7 @@ if doplots(3)
 
     %per row variables to plot
     contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuous segments per row
-    framecount = 0;
+    framecount_gif = 0;
     for epi = 1:length(epochinds)
 
         numroi_plot = size(depvnan_cont{epi}, 1);
@@ -822,12 +823,12 @@ if doplots(3)
                     plot_preddepv = 1;
                 end
 
-                framecount = framecount + 1;
+                framecount_gif = framecount_gif + 1;
 
                 hax = cell(1, numrows_ts);
                 for nsi = 1:numrows_ts %for each subplot row
 
-                    if framecount==1 %if on the first frame
+                    if framecount_gif==1 %if on the first frame
 
                         hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] ); %make the subplot
                         hold(hax{nsi}, 'on')

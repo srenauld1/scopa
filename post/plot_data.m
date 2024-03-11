@@ -1,4 +1,4 @@
-function plot_data(inp, opt, params, filenameGIF, inp2, inp3, running, simultaneous)
+function plot_data(inp, opt, params, fngif, inp2, inp3, running, simultaneous)
 
 if ~exist('running', 'var')
     running = 0;
@@ -147,14 +147,8 @@ if strcmp(opt, 'resp')
                 ylim(ylnew2)
             end
 
-            frame = getframe(h3);
-            im = frame2im(frame);
-            [imind, cm] = rgb2ind(im,ncol);
-            if min(svichoose{svi}) == 1
-                imwrite(imind,cm,filenameGIF, 'DelayTime', 0, 'Loopcount',inf);
-            else
-                imwrite(imind,cm,filenameGIF,'DelayTime', 0,'WriteMode','append');
-            end
+            fig2gif(h3, min(svichoose{svi}), fngif)
+
             if running
                 hold(ax1, 'on')
             else
@@ -168,7 +162,7 @@ if strcmp(opt, 'resp')
 
 elseif strcmp(opt, 'hist')
 
-    filenameGIF = ['~/Documents/ambrose/filtergifs/' datestr(now,30) '_respsyn_.gif'];
+    fngif = ['~/Documents/ambrose/filtergifs/' datestr(now,30) '_respsyn_.gif'];
     h = figure; hold on;
     if exist('inp2', 'var')
         h1 = histogram(vec(inp2));
@@ -177,14 +171,9 @@ elseif strcmp(opt, 'hist')
     for svi = 1:length(inp)
         h2 = histogram(inp{svi}(:));
         h2.FaceColor = 'r';
-        frame = getframe(h);
-        im = frame2im(frame);
-        [imind, cm] = rgb2ind(im,ncol);
-        if svi == 1
-            imwrite(imind,cm,filenameGIF, 'DelayTime', 0, 'Loopcount',inf);
-        else
-            imwrite(imind,cm,filenameGIF,'DelayTime', 0,'WriteMode','append');
-        end
+
+        fig2gif(h, svi, fngif)
+        
         delete(h2);
     end
 

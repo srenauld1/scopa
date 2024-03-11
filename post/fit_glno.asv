@@ -27,6 +27,21 @@ elseif strcmp(modeltype, 'glno7')
 end
 
 
+lb = -5;
+ub = 5;
+N = 1000;
+[psi,xval] = mexihat(lb,ub,N);
+plot(xval,psi)
+title('Mexican Hat Wavelet')
+%% 
+
+hfg = figure;
+hax = axes('Parent', hfg);
+bwall = linspace(0.2, 2, 20);
+for bwi = 1:bwall
+    [rw,t] = ricker(1.5,11,.2,0);
+    plot(hax, t,rw), xlabel('Time'), ylabel('Amplitude'); title(num2str(sum(rw)))
+end
 %%
 
 LN_specs_per_indv_dim = combinations(nonlinearity_types_per_indv_dim, linfilt_types_per_indv_dim);

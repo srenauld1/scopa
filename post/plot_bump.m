@@ -23,7 +23,7 @@ alpha_min = 0;
 
 linwid = 1.5;
 
-filenameGIF = [fn_prefix 'e' strrep(num2str(epochinds), ' ', '_') '_sort_' sorting_target_metric '_mthd_' num2str(bump_method_index) '_BUMP_.gif'];
+fngif = [fn_prefix 'e' strrep(num2str(epochinds), ' ', '_') '_sort_' sorting_target_metric '_mthd_' num2str(bump_method_index) '_BUMP_.gif'];
 
 "FLIPPING ORDER OF EPOCHINDS BECAUSE PLOT IS BOTTOM TO TOP"
 epochinds = flip(epochinds);
@@ -117,7 +117,7 @@ wp = wlab - room_for_labels*2;
 yp = ylab + room_for_labels;
 hp = hlab - room_for_labels;
 
-tittmp = strsplit(filenameGIF(1:end-4), '/');
+tittmp = strsplit(fngif(1:end-4), '/');
 figure_title = strrep(tittmp{end}, '_', ' ');
 
 hfg = figure( 'Units', 'normalized', 'Position', [0.4, 0.4, 0.6, 0.6], ...
@@ -824,15 +824,9 @@ for ii = 1:numfram
 
     end
 
-    frame = getframe(hfg);
-    im = frame2im(frame);
-    [imind, cm] = rgb2ind(im,ncol);
+    
+    fig2gif(hfg, ii, fngif)
 
-    if ii == 1
-        imwrite(imind,cm,filenameGIF, 'DelayTime', 0, 'Loopcount', inf);
-    else
-        imwrite(imind,cm,filenameGIF,'DelayTime', 0,'WriteMode','append');
-    end
 
     %
     % for hi = 1:length(hndllin)

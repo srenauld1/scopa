@@ -1,4 +1,4 @@
-function plot_gif_fast(inp, swapdim, filename, titall, plotinds_z, plotinds_t, ncolors)
+function plot_gif_fast(inp, swapdim, fngif, titall, plotinds_z, plotinds_t, ncolors)
 
 szo = size(inp);
 numdims = ndims(inp);
@@ -48,15 +48,8 @@ for i = 1:sznew(end)
 
     sgtitle(titallnew{i}, 'FontSize', 10)
 
-    frame = getframe(h);
-    im = frame2im(frame);
-    [imind, cm] = rgb2ind(im,ncolors);
+    fig2gif(h, i, fngif)
 
-    if i == 1
-        imwrite(imind,cm,filename, 'DelayTime', 0, 'Loopcount',inf);
-    else
-        imwrite(imind,cm,filename,'DelayTime', 0,'WriteMode','append');
-    end
 end
 
 end

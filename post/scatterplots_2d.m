@@ -159,7 +159,7 @@ for cvi = 1:length(colorvars)
             else
                 tittmp = [labtmp1 '_xth_' labtmp2 '_yr_' labcolor '_colz_epoch_' epochstring '_' dimstring ]; %keep order
             end
-            fn_scat = [fn_prefix '_' tittmp '_.gif' ];
+            fngif = [fn_prefix '_' tittmp '_.gif' ];
             figure_title = strrep(tittmp, '_', ' ');
 
             hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], ...
@@ -186,7 +186,7 @@ for cvi = 1:length(colorvars)
 
                     lagcount = lagcount+1;
 
-        
+
                     %first apply xy lag
                     if lagsxy(lxyi)<=0 %negative lag, first variable follows second (first var shifted left) (but should be opposite prob)
                         dtmptmp1 = vec(dattmp1(1+abs(lagsxy(lxyi)):end));
@@ -385,17 +385,10 @@ for cvi = 1:length(colorvars)
 
                     end
 
-                    frame = getframe(hfg);
-                    im = frame2im(frame);
-                    [imind, cm] = rgb2ind(im,ncol);
+                    fig2gif(hfg, lagcount, fngif)
 
-                    if lagcount == 1
-                        imwrite(imind,cm,fn_scat, 'DelayTime', 0, 'Loopcount', inf);
-                    else
-                        imwrite(imind,cm,fn_scat, 'DelayTime', 0, 'WriteMode', 'append');
-                    end
                     if do3d
-                        saveas( gcf, [fn_scat(1:end-4) num2str(lagsxy(lxyi)) '_.fig'])
+                        saveas( gcf, [fngif(1:end-4) num2str(lagsxy(lxyi)) '_.fig'])
                     end
 
                 end

@@ -327,7 +327,7 @@ if do_plots
         axis image;
         view(3);
 
-        h = figure; hold on
+        hfg = figure; hold on
         %imagesc(mean(mean(stack,3),4)) %plot the image again with max intensity over time to show the whole pb
         for i = 1:num_mroi_auto %overlay each pixel in its indexed color onto the pb image
             scatter3( maskx(idx_cenmorph == i), masky(idx_cenmorph == i), maskz(idx_cenmorph == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
@@ -341,20 +341,10 @@ if do_plots
         set(gca,'CameraViewAngle',8)
         rotinc = 30;
         views = -180:rotinc:180;
-        filenameGIF_cnt = [pth_save_figs_prefix(1:end-4) '_maskfin_.gif'];
-        for i = 1:length(views) - 1
-
-            view(views(i)+2, 20)
-
-            frame = getframe(h);
-            im = frame2im(frame);
-            [imind, cm] = rgb2ind(im,256);
-
-            if i == 1
-                imwrite(imind,cm,filenameGIF_cnt, 'DelayTime', 0, 'Loopcount',inf);
-            else
-                imwrite(imind,cm,filenameGIF_cnt,'DelayTime', 0,'WriteMode','append');
-            end
+        fngif = [pth_save_figs_prefix(1:end-4) '_maskfin_.gif'];
+        for framecount = 1:length(views) - 1
+            view(views(framecount)+2, 20)
+            fig2gif(hfg, framecount, fngif)
         end
 
 

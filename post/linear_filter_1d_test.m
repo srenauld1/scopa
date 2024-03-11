@@ -2,7 +2,6 @@ function linear_filter_1d_test(tau1, tau2, shift, tc, filtnorm, numsamp, filenam
 
 if exist('filename_save', 'var') && ~isempty(filename_save)
     fontmedium = 12;
-    ncolgif = 128;
     figsidelength = 0.5; %proportion of your screen occupied by fig
     hfg = figure; %hold on;
     aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
@@ -57,15 +56,7 @@ for qi = 1:length(numsamp) %kind of like x shift / when curve starts to rise  (i
                                 ' numsamp: ' num2str(round(numsamp(qi), 2)), ...
                                 ];
 
-                            frame = getframe(hfg);
-                            im = frame2im(frame);
-                            [imind, cm] = rgb2ind(im, ncolgif);
-
-                            if countz==1
-                                imwrite(imind, cm, filename_save, 'DelayTime', 0, 'Loopcount', inf);
-                            else
-                                imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
-                            end
+                            fig2gif(hfg, countz, filename_save)
 
 
 

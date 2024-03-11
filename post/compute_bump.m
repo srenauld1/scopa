@@ -161,7 +161,6 @@ if doplots
     filename_gif = [fn_save_prefix '_ampsortedclust_' fn{fni} '.gif'];
     epochinds = {num2cell(unique(md.trialepochinds_i))};
     numclusterplot = 8;
-    ncolgif = 128;
     dvecc = round(linspace(1, numcluster, numclusterplot));
     countz = 0;
     framecount_gif = 0;
@@ -194,15 +193,9 @@ if doplots
             sgtitle({['epoch ' epochinds{epi}]; [num2str(length(dvecc)) ' equispaced clusters of ' num2str(numcluster) ' total']; ['amp-sorted per-timepoint']})
         end
     end
-    frame = getframe(hfg);
-    im = frame2im(frame);
-    [imind, cm] = rgb2ind(im, ncolgif);
 
-    if framecount_gif==1
-        imwrite(imind, cm, filename_gif, 'DelayTime', 0, 'Loopcount', inf);
-    else
-        imwrite(imind, cm, filename_gif,'DelayTime', 0, 'WriteMode', 'append');
-    end
+    fig2gif(hfg, framecount_gif, filename_gif)
+
 
 
 end

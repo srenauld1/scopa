@@ -18,10 +18,10 @@ rng default %for reproducibility (do on every loop?)
 %% variables for output functions
 
 histfit.max_iter_local = 2000;
-histfit.max_iter_global = 2;
-histfit.max_unique_sol_global = 3; %run indefinite global search iterations until it finds histfit.max_iter_global unique local solutions . . .  make empty to not set limit
+histfit.max_iter_global = 10;
+histfit.max_unique_sol_global = 10; %run indefinite global search iterations until it finds histfit.max_iter_global unique local solutions . . .  make empty to not set limit
 histfit.local_sol_is_unique_thresh = 1e-4; %local solution flagged as unique (recorded in histfit.unique_local_fval) if it differs from all other local solutions by at least histfit.local_sol_is_unique_thresh
-histfit.save_iter_spacing = 3; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)
+histfit.save_iter_spacing = 2; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)
 histfit.dummyval = 61616161; %written to histfit.x_l and histfit.fval_l to help easily distinguish init rows (start of global iteration) by eye
 histfit.precision = 'single';
 
@@ -31,7 +31,7 @@ histfit.iter_l = zeros(histfit.max_iter_local, histfit.max_iter_global, histfit.
 histfit.x_g = zeros(supp.num_par_total, histfit.max_iter_global, histfit.precision); %x across global iterations,
 histfit.fval_g = zeros(histfit.max_iter_global, 1, histfit.precision); %fval across global iterations,
 histfit.iter_g = zeros(histfit.max_iter_global, 1, histfit.precision);
-histfit.exitflag_g = []; %don't index into zeros for this one because it might contain zeros we don't want to remove 
+histfit.exitflag_g = []; %don't index into zeros for this one because it might contain zeros we don't want to remove
 histfit.bestx_g = [];
 histfit.bestfval_g = [];
 histfit.unique_local_fval = [];
@@ -118,12 +118,13 @@ preddepv = objfcn(ft, indv, supp); %preddepv is predicted depv
 gof = mse(depv, preddepv); %error
 
 
-save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3', '-mat')
+savepath = [pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+parsave(savepath, histfit) %save histfit, must use separate function
 
 
 %% (nested) output and plotting functions
 
-    
+
     function stop = outfcn_local(x,optimValues,state)
         stop = false;
         switch state
@@ -141,8 +142,8 @@ save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3
     end
 
 
-    
-    
+
+
     function stop = outfcn_global(optimValues, state)
         stop = false;
         switch state
@@ -173,7 +174,7 @@ save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3
 
                 fns = fieldnames(histfit);
                 for fi = 1:length(fns) %remove all-zero rows/columns/slices for each field
-                    if ~strcmp(fns{fi}, 'exitflag_g') %don't remove all-zero dimension for exitflag_g since they are meaningful 
+                    if ~strcmp(fns{fi}, 'exitflag_g') %don't remove all-zero dimension for exitflag_g since they are meaningful
                         histfit.(fns{fi}) = histfit.(fns{fi})(any(histfit.(fns{fi}) ~= 0,[2 3]), any(histfit.(fns{fi}) ~= 0,[1 3]), any(histfit.(fns{fi}) ~= 0,[1 2]));
                     end
                 end
@@ -183,6 +184,16 @@ save([pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'], 'histfit', '-v7.3
 
 
     end
+
+%% save function
+
+
+    function parsave(savepath, histfit)
+
+        save(savepath, 'histfit', '-v7.3', '-mat')
+
+    end
+
 
 end
 

@@ -59,13 +59,12 @@ if doplots
     plot(uwtmp)
     ylim([0 16])
     saveas( gcf, [fitin.fn_save_prefix '_PREFHD_.png'])
-%% 
+    %%
 
     %resampled compass plot
     if numcluster_for_bump_domain_resample
         numtinds = 100;
         filename_save = [fitin.fn_save_prefix '_RESAMPCOMP_.gif'];
-        ncolgif = 128;
         hfg = figure;
         hax = axes( 'Parent', hfg); %make the subplot
         framecount_gif = 0;
@@ -86,19 +85,12 @@ if doplots
 
             end
 
-            frame = getframe(hfg);
-            im = frame2im(frame);
-            [imind, cm] = rgb2ind(im, ncolgif);
+            fig2gif(hfg, framecount_gif, filename_save)
 
-            if framecount_gif==1
-                imwrite(imind, cm, filename_save, 'DelayTime', 0, 'Loopcount', inf);
-            else
-                imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
-            end
 
         end
     end
-%% 
+    %%
 
 end
 

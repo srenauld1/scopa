@@ -32,14 +32,7 @@ for rfi = 1:size(respfit, 1)
         end
 
 
-        frame = getframe(hfg);
-        im = frame2im(frame);
-        [imind, cm] = rgb2ind(im,ncol);
+        fig2gif(hfg, rf2i, fngif)
 
-        if rf2i == 1
-            imwrite(imind,cm,fngif, 'DelayTime', 0, 'Loopcount',inf);
-        else
-            imwrite(imind,cm,fngif,'DelayTime', 0,'WriteMode','append');
-        end
     end
 end

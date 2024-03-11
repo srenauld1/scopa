@@ -2,7 +2,6 @@ function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(x, 
 
 if doplots
     fontmedium = 12;
-    ncolgif = 128;
     figsidelength = 0.5; %proportion of your screen occupied by fig
     hfg = figure; %hold on;
     aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
@@ -51,16 +50,8 @@ for ci = 1:length(C) %changes right asymptote value, above 1 makes it exponentia
                                     ' C: ' num2str(round(C(ci), 2)), ...
                                     ];
 
-                                frame = getframe(hfg);
-                                im = frame2im(frame);
-                                [imind, cm] = rgb2ind(im, ncolgif);
 
-                                if countz==1
-                                    imwrite(imind, cm, filename_save, 'DelayTime', 0, 'Loopcount', inf);
-                                else
-                                    imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
-                                end
-
+                                    fig2gif(hfg, countz, filename_save)
 
 
                             end
