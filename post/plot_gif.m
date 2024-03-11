@@ -1,4 +1,4 @@
-function plot_gif(imin, filename, cmap, flipdim, overlay_scatter, titopt, qplot, ncolors)
+function plot_gif(imin, fngif, cmap, flipdim, overlay_scatter, titopt, qplot, ncolors)
 
 
 szo = size(imin);
@@ -107,15 +107,8 @@ for i = 1:sznew(end)
         sgtitle(['pd ' num2str(rad2deg(titopt{i,1})) ' gof ' num2str(titopt{i,2})])
     end
 
-    frame = getframe(h);
-    im = frame2im(frame);
-    [imind, cm] = rgb2ind(im,ncolors);
+    fig2gif(h, i, fngif)
 
-    if i == 1
-        imwrite(imind,cm,filename, 'DelayTime', 0, 'Loopcount',inf);
-    else
-        imwrite(imind,cm,filename,'DelayTime', 0,'WriteMode','append');
-    end
 end
 
 end
