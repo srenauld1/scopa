@@ -24,42 +24,14 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
+do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
+do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=1 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
-do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+do_copyfiles_sequence=(0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0-27 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
-
-############ SET PARAMS FOR RESOURCE REQUEST ############
-
-
-# gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
-# gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
-# gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
-# gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
-gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
-#gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
-# gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
-# this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
-
-if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then 
-    gpu_partition=gpu_requeue
-    gpu_time=11:00:00
-elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
-    gpu_partition=gpu_requeue
-    gpu_time=6:00:00 #tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
-elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
-    gpu_partition=gpu_quad 
-    gpu_time=0:30:00
-elif [ "$gpu_to_use" == a100:1,vram:80G ]; then 
-    gpu_partition=gpu_quad 
-    gpu_time=3:00:00
-fi
-
-requeue_str=--begin=now #don't change this dummy variable, only overwritten if using the gpu_requeue partition 
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
@@ -67,6 +39,8 @@ requeue_str=--begin=now #don't change this dummy variable, only overwritten if u
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
 #matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
+
+
 #THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 
 
@@ -78,6 +52,7 @@ FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
+
 
 ############ SET PARAMS FOR ANALYSIS ############
 
@@ -99,6 +74,34 @@ EXTRACT_IN_2D=(1)
 REGIONEX=('pb')
 INDEX_EXTRACTION_PARAM_SET=('default')
 
+
+############ SET PARAMS FOR RESOURCE REQUEST ############
+
+# gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+# gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
+# gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
+# gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
+gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+#gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
+# gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
+# this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
+
+
+if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then 
+    gpu_partition=gpu_requeue
+    gpu_time=12:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
+elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
+    gpu_partition=gpu_requeue
+    gpu_time=6:00:00 #tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
+    gpu_partition=gpu_quad 
+    gpu_time=6:00:00
+elif [ "$gpu_to_use" == a100:1,vram:80G ]; then 
+    gpu_partition=gpu_quad 
+    gpu_time=3:00:00
+fi
+
+
 ############ CREATE PREFIX FOR TXT FILES THAT WILL MAP FOUND FILENAMES TO PARALLEL JOB INDICES ############
 
 if [ -z "${fnind_fn_prefix_override}" ]; then #on the first loop, use first_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
@@ -109,6 +112,7 @@ else #on subsequent loops, use dependencies, and turn off first_job flag
 fi
 
 ############ MAKE SCOPATMPDIR TO STORE SCOPA TEMP FILES AND OUTPUT IN USER'S HOME DIR ############
+
 user_homedir=$( getent passwd "$USER" | cut -d: -f6 ) 
 scripdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PARENDIR="$(dirname "$scripdir")"
@@ -176,7 +180,6 @@ fi
 
 ############ LOOP OVER SBATCH JOBS AND DO_COPYFILES DIRECTIVES (TODO: RESOURCES SET IN LOOP BELOW FOR NOW, MAKE THIS AUTOMATED SOON) ############
 
-
 echo -e "STARTING SCOPA PIPELINE \n SUBMITTING THE FOLLOWING SBATCH JOBS \n "${sbatch_job_name_sequence[@]}""
 echo LIST OF PATHS AVAILABLE TO cxp.sh: ; echo ; echo "${PATH//:/$'\n'}" ; echo
 
@@ -193,6 +196,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
         fi
 
+        requeue_str=--begin=now #don't change this dummy variable, only overwritten if using the gpu_requeue partition 
         gres_str=--begin=now #this is a dummy string to make gres_str work properly for all jobs (denoising with dnp.sbatch, when gres_str is actully functional by setting gpu, and otherwise, when this dummy string is used to make the job begin "now", which is default anyway . . . empty string doesn't work)
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"

@@ -4,7 +4,6 @@ clear all
 close all
 clc
 
-disp("see ricker.m for 1d filter option")
 disp("make hemisphere no hemisphere option")
 
 
@@ -36,43 +35,6 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     [opt, pth, croplim_all, parstr_mroi, parstr_froi, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_usefile_prefix_all{pai});
 
-%% 
-
-    % lb = -5;
-    % ub = 5;
-    % N = 1000;
-    % [psi,xval] = mexihat(lb,ub,N);
-    % plot(xval,psi)
-    % title('Mexican Hat Wavelet')
-    
-
-    filename_save = [pth.fldr '00wavelettest.gif'];
-    hfg = figure;
-    hax = axes('Parent', hfg);
-    bwall = linspace(0.2, 2, 10);
-    bwall = 0.5
-    filtc = linspace(-1, 1, 20);
-
-    framecount = 0;
-    for bi = 1:length(bwall)
-        for ci = 1:length(filtc)
-            framecount = framecount + 1;
-            % [rw,rwt] = ricker(bwall(bi), 11, .2, filtc(ci));
-            [rw,rwt] = ricker2(bwall(bi), 11, .2, filtc(ci));
-            rwnorm = norm(rw(:), 1);
-            rw = rw / rwnorm;
-            if framecount==1
-                hpl = plot(hax, rwt, rw);
-                xlabel('Time');
-                ylabel('Amplitude');
-                title(num2str(rwnorm))
-            else
-                hpl.YData = rw;
-                hax.Title.String = num2str(rwnorm);
-            end
-            fig2gif(hfg, framecount, filename_save)
-        end
-    end
 
     %% load metadata
 
@@ -158,7 +120,8 @@ for pai = 1:length(pth_usefile_prefix_all)
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-        opt.fit.epochinds = {[4]}; opt.fit.modeltype = 'glno3'; opt.fit.use_saved_model = 1; opt.fit.length_model_seconds = 1.4;
+        %opt.fit.epochinds = {[4]}; 
+        opt.fit.modeltype = 'glno3'; opt.fit.use_saved_model = 0; opt.fit.length_model_seconds = 3;
         [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
     end

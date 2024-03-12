@@ -1,7 +1,20 @@
 function [objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, supp, gethue, gethr_native] = ...
-    fit_glno(modeltype, indv, depv, num_samp_model, num_dim_indvin, huestr)
+    fit_glno(modeltype, indv, depv, num_samp_model, dt, num_dim_indvin, huestr)
 
 
+% % num_samp_model = (T/dt)+1; 0 indexed
+% T = dt*(num_samp_model-1); %0 indexed
+T = dt*(num_samp_model-1);
+t = 0:dt:T;
+% useless_shift = 0;
+% t = t-t0;
+% t02 = t02/dt;
+% f = f/dt;
+padlen_sec = 4;
+padlen = round(padlen_sec/dt);
+tmppad = zeros(1, length(t)+padlen*2);
+tnew = 0:length(tmppad)-1;
+filtnorm = 1;
 
 objfcn = @fit_ann;
 
@@ -10,13 +23,14 @@ objfcn = @fit_ann;
 %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid), or none
 %integrating (monophasic linear filter) as opposed to differentiating (biphasic linear filter), freeform optimizes weights directly rather than parametric linear filter
 if strcmp(modeltype, 'glno3')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'}; 
-    linfilt_types_per_indv_dim = {'integrating', 'differentiating'}; 
+    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
+    nonlinearity_types_per_indv_dim = {'none'};
+    linfilt_types_per_indv_dim = {'integrating', 'differentiating'};
 elseif strcmp(modeltype, 'glno4')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'}; 
-    linfilt_types_per_indv_dim = {'differentiating'}; 
+    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
+    linfilt_types_per_indv_dim = {'differentiating'};
 elseif strcmp(modeltype, 'glno5')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'}; 
+    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
     linfilt_types_per_indv_dim = {'integrating'};
 elseif strcmp(modeltype, 'glno6')
     nonlinearity_types_per_indv_dim = {'none'};
@@ -40,14 +54,19 @@ maxindv = max(indv(:));
 %% define all possible params for single LN (some will not be used, depending on LN type)
 
 % 3-element vectors below are [lowerbound, upperbound, startpoint]
-tau1 = [0.1, 2, 0.5];
-tau2 = [0.1, 2, 0.5]; %fraction by which tau2 is larger than tau1 (better behaved)
-filtshift = [0, 3, 0.01];   %linear interpolation time shift
-tc = [0, 1, 0.1]; %L1 norm of tau2 filter, redundant with filtnorm somewhat, so make filtnorm constant
-filtnorm = [-inf, inf, 1]; %L1 norm of whole filter (tau1 filter minus tau2 filter, assuming latter is not norm zero )
-sigmoid_slope = [0, inf, 1];  %force positive, letting left/right asymptotes determine sign without redundancy from slope (no constraint that left must be greater than right)
-sigmoid_asympleft = [-inf, inf, min(depv(:))];
-sigmoid_asympright = [-inf, inf, max(depv(:))];
+
+tau1 = [dt/2, 0.3, dt]; %this is in domain of time, don't tranform into samples since filter is implemented in time not samples
+filtshift_sec = [0, 1, 0.01];   %linear interpolation time shift
+filtshift = filtshift_sec/dt;   %but do transform this variable into samples, that's how the interp shift is implemented 
+
+% differentiating_old filter params, now trying derivative of monophasic
+% tau2 = [0.1, 2, 0.5]; %fraction by which tau2 is larger than tau1 (better behaved)
+% tc = [0, 1, 0.1]; %L1 norm of tau2 filter, redundant with filtnorm somewhat, so make filtnorm constant
+% filtnorm = [-inf, inf, 1]; %L1 norm of whole filter (tau1 filter minus tau2 filter, assuming latter is not norm zero )
+
+sigmoid_slope = [0.1, inf, 1];  %force positive, letting left/right asymptotes determine sign without redundancy from slope (no constraint that left must be greater than right)
+sigmoid_asympleft = [-max(depv(:))*2, max(depv(:))*2, min(depv(:))];
+sigmoid_asympright = [-max(depv(:))*2, max(depv(:))*2, max(depv(:))];
 sigmoid_inflection = [0, inf, 1]; %must be positive
 sigmoid_xshift = [minindv, maxindv, mean([minindv maxindv])];  %since filtnorm is forced to be 1, filter output will be on order of indv
 
@@ -70,6 +89,10 @@ for jj = 1:num_dim_indvin
             ubnd_lin = [tau1(2), filtshift(2)];
             x0_lin = [tau1(3), filtshift(3)];
         elseif strcmp(LN_specs_per_indv_dim.linfilt_types_per_indv_dim{ii}, 'differentiating') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
+            lbnd_lin = [tau1(1), filtshift(1)];
+            ubnd_lin = [tau1(2), filtshift(2)];
+            x0_lin = [tau1(3), filtshift(3)];
+        elseif strcmp(LN_specs_per_indv_dim.linfilt_types_per_indv_dim{ii}, 'differentiating_old') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
             lbnd_lin = [tau1(1), filtshift(1), tau2(1), tc(1)];
             ubnd_lin = [tau1(2), filtshift(2), tau2(2), tc(2)];
             x0_lin = [tau1(3), filtshift(3), tau2(3), tc(3)];
@@ -148,6 +171,8 @@ supp.num_model_functions = 2;
 supp.NumTrialPoints = 100000;
 supp.NumStageOnePoints = 20000;
 
+supp.lf2 = @linear_filter_1d_2;
+
 %% make sure doubles
 
 lbnd = double(lbnd);
@@ -171,4 +196,28 @@ switch huestr
 end
 
 
+
+    function filt = linear_filter_1d_2(flagdiff, doplots, tau1, shift)
+
+
+        tmp = t./tau1^2.*exp(-t./tau1);
+        if flagdiff
+            tmp = [0 diff(tmp)];
+        end
+
+        if doplots
+            tmpplot = tmp / norm(tmp(:),1) * filtnorm; %normalize by L1
+            figure; plot(t, tmpplot); hold on;
+        end
+
+        tmppad(padlen+1:end-padlen) = tmp;
+        tmppad = spline(tnew+shift,tmppad,tnew);
+        filt = tmppad(padlen+1:end-padlen);
+        filt = filt / norm(filt(:),1) * filtnorm; %normalize by L1
+
+        if doplots
+            plot(t, filt);
+        end
+
+    end
 end

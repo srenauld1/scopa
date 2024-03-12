@@ -279,7 +279,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
         tic
         depv_good_inds = ~any(isnan(depvintmp));
-        parfor ri = 1:numel(depv_good_inds)
+        for ri = 1:numel(depv_good_inds)
 
             if depv_good_inds(ri)
 

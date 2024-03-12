@@ -642,21 +642,17 @@ end
 
 if doplots(3)
 
+    
     plot_indv = 1;
-    if size(depvnan_cont{epi}, 1)>1
-        max_numfits_to_plot_par = 50;
-        max_numfits_to_plot_ts = 50;
-    else
-        max_numfits_to_plot_par = 300;
-        max_numfits_to_plot_ts = 300;
-    end
     use_best_global = 1;
     include_best_fit = 1;
     num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochinds))), so same color is associated weith same epoch across different fits
     max_num_indv_to_plot = 2;
-    num_depv_to_plot = 2;
+    num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
     epoch_patch_face_alpha = 0.05;
     ylim_track_pred = 1;
+    depv_alpha = 1;
+    preddepv_alpha = 0.7;
 
     numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
     numcolumns_ts = 1;
@@ -666,6 +662,22 @@ if doplots(3)
     title_add_each = 'TIMESERIES';
     figext = '.gif';
     filename_save = [pth_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
+
+    max_numrois_to_plot_fithist = 5;
+    if size(depvnan_cont{epi}, 1)>1
+        max_numfits_to_plot_par = 3;
+        max_numfits_to_plot_ts = 3;
+    else
+        max_numfits_to_plot_par = 300;
+        max_numfits_to_plot_ts = 300;
+    end
+
+    if size(depvnan_cont{epi}, 1)>max_numrois_to_plot_fithist
+        rois_to_plot_fithist = round(linspace(1, size(depvnan_cont{epi}, 1), max_numrois_to_plot_fithist));
+    else
+        rois_to_plot_fithist = 1:size(depvnan_cont{epi}, 1);
+    end
+
 
     %axes
     hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
@@ -685,23 +697,25 @@ if doplots(3)
     maxis_d =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
     minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepv,  'UniformOutput',  false))); %min pred depv across all epochs
     maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepv,  'UniformOutput',  false))); %max pred depv across all epochs
-    minis_d = min(minis_d, minis_p);
-    maxis_d = max(maxis_d, maxis_p);
+    minis_a = min(minis_d, minis_p);
+    maxis_a = max(maxis_d, maxis_p);
 
     %colormaps
 
-    num_indv_to_plot = size(indvnan_cont{epi}, 2);
+    num_indv_to_plot = supp.num_dim_indv;
     if num_indv_to_plot>max_num_indv_to_plot
         num_indv_to_plot = max_num_indv_to_plot;
     end
-    cmap_patch = distinguishable_colors(num_total_possible_epochs+num_indv_to_plot+num_depv_to_plot);
-    cmap_patch = cmap_patch(4:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
-    cmap_indv = [0 0 1; 0 1 1];
-    color_preddepv = [1 0 0 0.3];
-    color_depv = [0 0 0 1];
+    cmap_patch = distinguishable_colors(num_total_possible_epochs+max_num_indv_to_plot+num_depv_to_plot);
+    cmap_patch = cmap_patch(max_num_indv_to_plot+num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
+    indv_base_color = [0 0 1];
+    cmap_indv = repmat(indv_base_color, [num_indv_to_plot 1]);
+    cmap_indv(:,2) = linspace(1, 0, num_indv_to_plot);
+    color_preddepv = [1 0 0 preddepv_alpha];
+    color_depv = [0 0 0 depv_alpha];
 
     %set whether to copy each frame with and without model response
-    if num_indv_to_plot<2
+    if 0% num_indv_to_plot<2
         toggle_preddepv_visibility = 0;
     else
         toggle_preddepv_visibility = 1;
@@ -712,9 +726,11 @@ if doplots(3)
     framecount = 0;
     for epi = 1:length(epochinds)
 
+        indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_d, maxis_d);
+
         numroi_plot = size(depvnan_cont{epi}, 1);
         preddepvrow = cell(numroi_plot, numrows_ts);
-        preddepv_hist = cell(1, numroi_plot ); %original full history, not split by row
+        preddepv_hist = cell(1, numroi_plot); %original full history, not split by row
 
         shadex = cell(1, numrows_ts);
         shadey = cell(1, numrows_ts);
@@ -744,7 +760,9 @@ if doplots(3)
                         keepinds_histfit = 1:size(histxtmp, 2);
                     end
 
-                    plot_fit_history(histxtmp(:,keepinds_histfit), pth_prefix, epochinds_str_all) %this way you can plot entire history before subset with keepinds_histfit
+                    if ismember(ri, rois_to_plot_fithist)
+                        plot_fit_history(histxtmp(:,keepinds_histfit), pth_prefix, epochinds_str_all) %this way you can plot entire history before subset with keepinds_histfit
+                    end
 
                     if size(histxtmp, 2)>max_numfits_to_plot_ts
                         keepinds_histfit = round(linspace(1, size(histxtmp, 2), max_numfits_to_plot_ts));
@@ -779,7 +797,7 @@ if doplots(3)
                     x1 = tmp(shadextmp(bei-1)+1);
                     x2 = tmp(shadextmp(bei));
                     shadex{nsi}(:, count) = [x1; x2; x2; x1] - min(tinds_row) + 1; %subtract indices to shift on x axis for each row, since time is modified in this plot
-                    shadey{nsi}(:, count) = [minis_d; minis_d; maxis_d; maxis_d];
+                    shadey{nsi}(:, count) = [minis_a; minis_a; maxis_a; maxis_a];
                     shadec{nsi}(count, 1, :) = reshape(cmap_patch(epochinds{epi}(epi2), :), [1 1 3]); %put color triplet in 3rd dim for patch arg c
                 end
             end
@@ -787,9 +805,9 @@ if doplots(3)
             %subset to get one row, and also add nan to end for symmetry at same time
             depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-            indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-
-
+            % indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            indvrow{nsi} = cat(1, indvnan_cont_rescale(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            
             for ri = 1:numroi_plot
                 if max_numfits_to_plot_ts>0
                     preddepvrow{ri,nsi} = nan(size(preddepv_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
@@ -805,13 +823,15 @@ if doplots(3)
         end
         preddepv_hist = [];
 
-        minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepvrow,  'UniformOutput',  false))); %min pred depv across all epochs
-        maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepvrow,  'UniformOutput',  false))); %max pred depv across all epochs
-        minis_d = min(minis_d, minis_p);
-        maxis_d = max(maxis_d, maxis_p);
+        minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepvrow,  'UniformOutput',  false))); %min pred depv across all epochs
+        maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepvrow,  'UniformOutput',  false))); %max pred depv across all epochs
+        % minis_a = min(minis_a, minis_pa);
+        % maxis_a = max(maxis_a, maxis_pa);
 
 
         %plotting loop
+        hax = cell(1, numrows_ts);
+
         for ri = 1:numroi_plot %for each neuron
 
             for fhi = 1:size(preddepvrow{ri,1}, 1) + toggle_preddepv_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
@@ -824,19 +844,18 @@ if doplots(3)
 
                 framecount = framecount + 1;
 
-                hax = cell(1, numrows_ts);
                 for nsi = 1:numrows_ts %for each subplot row
 
                     if framecount==1 %if on the first frame
 
                         hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] ); %make the subplot
                         hold(hax{nsi}, 'on')
-                        yyaxis left
+                        % yyaxis left
                         hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
                         hpl2{nsi} = plot(hax{nsi}, preddepvrow{ri,nsi}(fhi, :), 'Color', color_preddepv, 'LineStyle', '-');
                         hplp{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
                         if plot_indv
-                            yyaxis right
+                            % yyaxis right
                             for nip = 1:num_indv_to_plot
                                 hpl3{nsi} = plot(hax{nsi}, indvrow{nsi}(:, nip), 'Color', cmap_indv(nip,:), 'LineStyle', '-');
                             end
@@ -846,20 +865,7 @@ if doplots(3)
                         hax{nsi}.XLim = [1 length(depvrow{nsi}(ri,:))];
                         hax{nsi}.XAxis.TickValues = [];
                         hax{nsi}.XAxis.TickLabels = [];
-                        if ylim_track_pred
-                            hax{nsi}.YAxis(1).Limits = [min(preddepvrow{ri,nsi}(fhi, :)) max(preddepvrow{ri,nsi}(fhi, :))];
-                        else
-                            hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
-                        end
-                        ylm = hax{nsi}.YAxis(1).Limits;
-                        hax{nsi}.YAxis(1).TickValues = linspace(ylm(1), ylm(2), 3);
-                        hax{nsi}.YAxis(1).Color = [0 0 0];
-                        if plot_indv
-                            hax{nsi}.YAxis(2).Limits = [minis_i maxis_i];
-                            ylm = hax{nsi}.YAxis(2).Limits;
-                            hax{nsi}.YAxis(2).TickValues = linspace(ylm(1), ylm(2), 3);
-                            hax{nsi}.YAxis(2).Color = [0 0 1];
-                        end
+
 
                         if nsi==numrows_ts %if on the final/bottom row, include axis ticks and labels
 
@@ -870,19 +876,19 @@ if doplots(3)
 
                             hax{nsi}.YAxis(1).TickLabelFormat = '%.1f';
                             hax{nsi}.YAxis(1).FontSize = fontsmall;
-                            if plot_indv
-                                hax{nsi}.YAxis(2).TickLabelFormat = '%.1f';
-                                hax{nsi}.YAxis(2).FontSize = fontsmall;
-                            end
+                            % if plot_indv
+                            %     hax{nsi}.YAxis(2).TickLabelFormat = '%.1f';
+                            %     hax{nsi}.YAxis(2).FontSize = fontsmall;
+                            % end
 
                         else %if not on the final/bottom row, skip axis ticks and labels
 
                             hax{nsi}.XAxis.TickValues = [];
                             hax{nsi}.XAxis.TickLabels = [];
                             hax{nsi}.YAxis(1).TickLabels = [];
-                            if plot_indv
-                                hax{nsi}.YAxis(2).TickLabels = [];
-                            end
+                            % if plot_indv
+                            %     hax{nsi}.YAxis(2).TickLabels = [];
+                            % end
 
                         end
 
@@ -894,6 +900,28 @@ if doplots(3)
                         end
                     end
 
+
+                    if fhi==size(preddepvrow{ri,1}, 1) % when showing final model, ylim is min/max all
+                        hax{nsi}.YAxis(1).Limits = [minis_a maxis_a];
+                    elseif fhi>size(preddepvrow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
+                        hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                    elseif fhi<size(preddepvrow{ri,1}, 1) %if showing prediction fit history
+                        if ylim_track_pred %ylim is min/max fit 
+                            hax{nsi}.YAxis(1).Limits = [min(preddepvrow{ri,nsi}(fhi, :)) max(preddepvrow{ri,nsi}(fhi, :))];
+                        else %ylim is min/max depv
+                            hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                        end
+                    end
+                    ylm = hax{nsi}.YAxis(1).Limits;
+                    hax{nsi}.YAxis(1).TickValues = linspace(ylm(1), ylm(2), 3);
+                    hax{nsi}.YAxis(1).Color = [0 0 0];
+                    % if plot_indv
+                    %     hax{nsi}.YAxis(2).Limits = [minis_i maxis_i];
+                    %     ylm = hax{nsi}.YAxis(2).Limits;
+                    %     hax{nsi}.YAxis(2).TickValues = linspace(ylm(1), ylm(2), 3);
+                    %     hax{nsi}.YAxis(2).Color = [0 0 1];
+                    % end
+
                     if plot_preddepv
                         hpl2{nsi}.Color = color_preddepv; %make preddepv visible
                     else
@@ -902,7 +930,7 @@ if doplots(3)
 
                 end
 
-                fig2gif(hfg, framecout_gif, filename_save)
+                fig2gif(hfg, framecount, filename_save)
 
 
             end

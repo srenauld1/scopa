@@ -1,6 +1,5 @@
 function filt = linear_filter_1d(numsamp, filtnorm, doplots, varargin)
 
-% disp("see ricker.m")
 
 padlen = 5;
 
@@ -17,7 +16,8 @@ else
 end
 
 
-x = 0:numsamp-1;
+x = 0:numsamp-1; 
+
 
 b1 = x./tau1^2.*exp(-x./tau1);
 b1 = b1 / norm(vec(b1(:)),1);
@@ -40,7 +40,7 @@ filt = spline(x+shift,filt,x);
 filt = filt(padlen+1:end-padlen);
 x = 0:length(filt)-1;
 
-% filt = fraccircshift(filt,shift); %circshift with non-integer allowed
+% filt = fraccircshift(filt,shift); %circshift with non-integer allowed, but this linear interp isn't differentiable 
 
 filt = filt / norm(vec(filt(:)),1) * filtnorm; %normalize by L1
 

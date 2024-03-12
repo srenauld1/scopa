@@ -7,3 +7,13 @@ gcamp_filter = y2-y1; %2 minus 1 then norm-1 normalization same as 1 minus 2 the
 gcamp_filter = gcamp_filter / norm(vec(gcamp_filter(:)),1); %normalize by L1
 %gcamp_filter = fliplr(gcamp_filter);
 
+
+cnst = 0;
+
+%ydata = Exponential2_1D( A , xdata );
+
+y_1 = a1_1 * exp(-1 / tau1_1 * (xdata - t1_1)) + b_1;
+y_2 = a1_2 * exp(-1 / tau1_2 * (xdata - t1_2)) + b_2;
+
+
+ydata = y_1 - y_2 + cnst;

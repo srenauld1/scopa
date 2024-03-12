@@ -12,7 +12,6 @@ function preddepv = fit_ann(pars, indv, supp, pthspre)
 % pass nonempty pthspre to plot/save model params
 
 
-
 if exist('pthspre', 'var') && ~isempty(pthspre)
 
     pth_save = [pthspre '_MODELCOMPS.gif'];
@@ -46,14 +45,13 @@ end
 
 C = 1; %hard coded param
 Q = 1; %hard coded param
-filtnorm = 1; %hard coded param
-doplots_filt = 0;
+doplots = 0;
 preddepv = zeros(size(indv, 1), 1);
 framecount = 0;
 
 for jj = 1:supp.num_dim_indv %loop over indv dims
 
-    ivinds = [1:supp.num_samp_model]*2-(2-jj); %since indv is organized this way, dims alternate in vec
+    ivinds = [1:supp.num_samp_model]*supp.num_dim_indv-(supp.num_dim_indv-jj); %since indv is organized this way, dims alternate in vec
     indvtmp = indv(:,ivinds);
 
     for ii = 1:supp.num_LN_per_indvdim %loop over LN units
@@ -62,9 +60,14 @@ for jj = 1:supp.num_dim_indv %loop over indv dims
 
         tmp = num2cell(pars(supp.pind{jj,ii}.L));
         if strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'freeform')
-            filt = cell2mat(tmp); %optimize filter weights directly 
-        else
-            filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            filt = cell2mat(tmp); %optimize filter weights directly
+        elseif strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'integrating')
+            flagdiff = 0;
+            filt = supp.lf2(flagdiff, doplots, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            % old differentiating filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+        elseif strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'differentiating')
+            flagdiff = 1;
+            filt = supp.lf2(flagdiff, doplots, tmp{:});
         end
         preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
 
