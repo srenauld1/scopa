@@ -108,6 +108,7 @@ for running the pipeline in batch (non-interactive) mode . . .
         cxp.sh and has a simple layout that can be extended/adpated 
         call it by typing cxp.sh in the O2 command line 
 
+also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined regionex (or they're all 'fullfov') then it will run through all found files, whether in interactive mode or batch mode
 
 
 ############################## INTERACTIVE ON O2 ######################################
