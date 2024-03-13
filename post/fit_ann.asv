@@ -20,7 +20,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
     make_figure = 1;
     supp.extra_xlim_fac = 0.1;
-    supp.fontsmall = 2;
+    supp.fontsmall = 10;
 
     if (iscell(optin) && any(strcmp(cellfun(@(x) get(x, 'type'), optin, 'UniformOutput', false), 'axes'))) || ...
             (~iscell(optin) && strcmp(get(optin, 'type'), 'axes')) %add to existing figure passed as optin
@@ -79,14 +79,7 @@ for jj = 1:supp.num_dim_indvin %loop over indv dims
 
         LN_unit_count = LN_unit_count +1;
 
-        tmptmp = num2cell(pars(supp.pind{jj,ii}.L));
-        if length(tmptmp)==3
-            tmp = tmptmp(1:2);
-            filtbias = tmptmp{3};
-        else
-            tmp = tmptmp;
-            filtbias = 0;
-        end
+        tmp = num2cell(pars(supp.pind{jj,ii}.L));
         if strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'freeform')
             filt = cell2mat(tmp); %optimize filter weights directly
         elseif strcmp(supp.LN_specs_per_indv_dim{ii,'linfilt_types_per_indv_dim'}, 'integrating')
@@ -98,7 +91,6 @@ for jj = 1:supp.num_dim_indvin %loop over indv dims
             % messier 'differentiating_old' approach here ---> filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
         end
         preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
-        preddepvtmp = preddepvtmp + filtbias;
 
         if make_figure
             preddepvlin = preddepvtmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
@@ -122,8 +114,8 @@ for jj = 1:supp.num_dim_indvin %loop over indv dims
 
                 xlm = hax{sfi}.XLim;
                 extrax = supp.extra_xlim_fac*range(xlm(:));
-                hax{sfi}.XAxis.TickValues = linspace(0, supp.num_samp_model, 3);
-                hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.dt, 2);
+                hax{sfi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
+                hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues/supp.dt, 2);
                 hax{sfi}.XAxis.TickLabelFormat = '%.1f';
                 hax{sfi}.XAxis.FontSize = supp.fontsmall;
                 hax{sfi}.XLim = [xlm(1) - extrax xlm(2) + extrax];

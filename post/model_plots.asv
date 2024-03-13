@@ -5,7 +5,8 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
     keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-    pth_prefix, gif_visibility, objfcn, ft, supp, doplots)
+    pth_prefix, gif_visibility, objfcn, ft, supp, doplots, valfold, vfi, ...
+    standardize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
 
 
 
@@ -651,8 +652,10 @@ if doplots(3)
     num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
     epoch_patch_face_alpha = 0.05;
     ylim_track_pred = 1;
+    depv_alpha = 1;
+    preddepv_alpha = 0.7;
 
-    numrows_ts = 4; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
+    numrows_ts = 6; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
     numcolumns_ts = 1;
     margins_fig = 0.04;
     margins_subfig = 0.02;
@@ -663,8 +666,8 @@ if doplots(3)
 
     max_numrois_to_plot_fithist = 5;
     if size(depvnan_cont{epi}, 1)>1
-        max_numfits_to_plot_par = 3;
-        max_numfits_to_plot_ts = 3;
+        max_numfits_to_plot_par = 0;
+        max_numfits_to_plot_ts = 5;
     else
         max_numfits_to_plot_par = 300;
         max_numfits_to_plot_ts = 300;
@@ -676,12 +679,33 @@ if doplots(3)
         rois_to_plot_fithist = 1:size(depvnan_cont{epi}, 1);
     end
 
+    num_total_subplots = numrows_ts+supp.num_total_model_functions;
 
     %axes
     hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
     hfg.Position = [0 0.2 0.8 0.6];
     bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     [axx, axy, axw, axh] = arrange_subplots(numrows_ts, numcolumns_ts, margins_fig, margins_subfig);
+    leftfrac = 0.6;
+    axw = axw*leftfrac;
+
+    numrows_ts2 = supp.num_total_model_functions/supp.num_model_functions_per_indvdim; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
+    numcolumns_ts2 = supp.num_model_functions_per_indvdim;
+    [axx2, axy2, axw2, axh2] = arrange_subplots(numrows_ts2, numcolumns_ts2, margins_fig, margins_subfig);
+
+    axw2 = axw2*(1-leftfrac)-margins_subfig;
+    for axxi = 1:numel(axx2)
+        onecolumn_lefside_hack = 1;
+        axx2(axxi) = axx(onecolumn_lefside_hack)+axw(onecolumn_lefside_hack)+axw2(axxi)*((ceil(axxi/numrows_ts2))-1)+margins_subfig;
+        if axh2>axh(1)
+            axh2(:) = axh(onecolumn_lefside_hack);
+        end
+    end
+
+    axx = cat(1, axx, axx2);
+    axy = cat(1, axy, axy2);
+    axw = cat(1, axw, axw2);
+    axh = cat(1, axh, axh2);
 
     %title string
     htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
@@ -700,18 +724,20 @@ if doplots(3)
 
     %colormaps
 
-    num_indv_to_plot = supp.num_dim_indv;
+    num_indv_to_plot = supp.num_dim_indvin;
     if num_indv_to_plot>max_num_indv_to_plot
         num_indv_to_plot = max_num_indv_to_plot;
     end
     cmap_patch = distinguishable_colors(num_total_possible_epochs+max_num_indv_to_plot+num_depv_to_plot);
     cmap_patch = cmap_patch(max_num_indv_to_plot+num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
-    cmap_indv = [0 0 1; 0 1 1];
-    color_preddepv = [1 0 0 0.3];
-    color_depv = [0 0 0 1];
+    indv_base_color = [0 0 1];
+    cmap_indv = repmat(indv_base_color, [num_indv_to_plot 1]);
+    cmap_indv(:,2) = linspace(1, 0, num_indv_to_plot);
+    color_preddepv = [1 0 0 preddepv_alpha];
+    color_depv = [0 0 0 depv_alpha];
 
     %set whether to copy each frame with and without model response
-    if 0% num_indv_to_plot<2
+    if max_numfits_to_plot_ts == 0 %num_indv_to_plot==1 && num_indv_to_plot<2
         toggle_preddepv_visibility = 0;
     else
         toggle_preddepv_visibility = 1;
@@ -727,6 +753,7 @@ if doplots(3)
         numroi_plot = size(depvnan_cont{epi}, 1);
         preddepvrow = cell(numroi_plot, numrows_ts);
         preddepv_hist = cell(1, numroi_plot); %original full history, not split by row
+        histxsave = cell(1, numroi_plot); %original full history, not split by row
 
         shadex = cell(1, numrows_ts);
         shadey = cell(1, numrows_ts);
@@ -734,9 +761,10 @@ if doplots(3)
         depvrow = cell(1, numrows_ts);
         indvrow = cell(1, numrows_ts);
 
+
         if max_numfits_to_plot_ts>0
             for ri = 1:numroi_plot %for each neuron, concatenate hitfit (do before plotting loop )
-                pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
+                pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_' num2str(ri) '_HISTFIT_.mat'];
                 fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
                 if ~isempty(fitdata_saved_files)
                     fitdata_saved_files = natsortfiles(fitdata_saved_files);
@@ -750,27 +778,46 @@ if doplots(3)
                     histxtmp = reshape(histfit.x_l(:,:,globalkeepinds), size(histfit.x_l,1), []);
                     histxtmp = histxtmp(:,~all(histxtmp==0));
 
-                    if size(histxtmp, 2)>max_numfits_to_plot_par
-                        keepinds_histfit = round(linspace(1, size(histxtmp, 2), max_numfits_to_plot_par));
+                    if size(histxtmp, 2)>max_numfits_to_plot_par %can shorten these bc too many on x axis is hard to read 
+                        keepinds_histfit_par = round(linspace(1, size(histxtmp, 2), max_numfits_to_plot_par));
                     else
-                        keepinds_histfit = 1:size(histxtmp, 2);
+                        keepinds_histfit_par = 1:size(histxtmp, 2);
                     end
 
-                    if ismember(ri, rois_to_plot_fithist)
-                        plot_fit_history(histxtmp(:,keepinds_histfit), pth_prefix, epochinds_str_all) %this way you can plot entire history before subset with keepinds_histfit
-                    end
+                    % if ismember(ri, rois_to_plot_fithist)
+                    %     plot_fit_history(histxtmp(:,keepinds_histfit_par), pth_prefix, epochinds_str_all) %this way you can plot entire history before subset with keepinds_histfit
+                    % end
 
                     if size(histxtmp, 2)>max_numfits_to_plot_ts
-                        keepinds_histfit = round(linspace(1, size(histxtmp, 2), max_numfits_to_plot_ts));
+                        keepinds_histfit_ts = round(linspace(1, size(histxtmp, 2), max_numfits_to_plot_ts));
                     else
-                        keepinds_histfit = 1:size(histxtmp, 2);
+                        keepinds_histfit_ts = 1:size(histxtmp, 2);
                     end
 
-                    numfits_to_plot = length(keepinds_histfit);
+                    numfits_to_plot = length(keepinds_histfit_ts);
                     preddepv_hist{ri} = zeros(numfits_to_plot, size(indv{epi}, 1), 'single');
+                    histxsave{ri} = zeros(numfits_to_plot, size(histxtmp, 1));
+        
                     for hxi = 1:numfits_to_plot
-                        preddepv_hist{ri}(hxi,:) = objfcn(histxtmp(:,keepinds_histfit(hxi))', indv{epi}, supp);
+                        histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
+                        preddepv_hist{ri}(hxi,:) = objfcn(histxsave{ri}(hxi,:), indv{epi}, supp);
+                        if standardize_depv
+                            preddepv_hist{ri}(hxi,:) = preddepv_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                        end
                     end
+
+                    for hxi = 1:size(histxtmp, 2) 
+                        gof_val(hxi) = mse(depv{epi}(ri,valinds_raw_use), objfcn(histxtmp(:,hxi)', indv{epi}(valinds_raw_use,:), supp)');
+                    end
+                    [~, bestind] = min(gof_val);
+                    bestindall{ri} = bestind;
+                    histxsave{ri}(end,:) = histxtmp(:,bestind)';
+                    preddepv_hist{ri}(end,:) = objfcn(histxsave{ri}(end,:), indv{epi}, supp);
+                    if standardize_depv
+                        preddepv_hist{ri}(end,:) = preddepv_hist{ri}(end,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                    end
+
+
                 end
             end
         end
@@ -800,7 +847,7 @@ if doplots(3)
 
             %subset to get one row, and also add nan to end for symmetry at same time
             depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-            preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            % preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             % indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             indvrow{nsi} = cat(1, indvnan_cont_rescale(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             
@@ -808,16 +855,26 @@ if doplots(3)
                 if max_numfits_to_plot_ts>0
                     preddepvrow{ri,nsi} = nan(size(preddepv_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
                     preddepvrow{ri,nsi}(1:end-1,tinds_row_nonan) = preddepv_hist{ri}(:,tinds_cont_row); %history of fits
-                    preddepvrow{ri,nsi}(end,:) = preddepvrow_tmp(ri,:); %best fit at end
+                    preddepvrow{ri,nsi}(end,:) = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
+                    % preddepvrow{ri,nsi}(end,:) = preddepv_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+                    % preddepvrow{ri,nsi}(end,:) = preddepvrow_tmp(ri,:); %best fit at end
                 else
-                    preddepvrow{ri,nsi} = preddepvrow_tmp(ri,:); %just the best fit
+                    preddepvrow{ri,nsi} = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
+                    % preddepvrow{ri,nsi} = preddepv_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+                    % preddepvrow{ri,nsi} = preddepvrow_tmp(ri,:); %just the best fit
                 end
             end
 
-
-
         end
         preddepv_hist = [];
+
+        for ri = 1:numroi_plot 
+            if max_numfits_to_plot_ts>0
+                histxsave{ri} = cat(1, histxsave{ri}, ft{epi}(ri,:)); %cat the final model to history 
+            else
+                histxsave{ri} = ft{epi}(ri,:); %assign the final model as only  
+            end
+        end
 
         minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepvrow,  'UniformOutput',  false))); %min pred depv across all epochs
         maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepvrow,  'UniformOutput',  false))); %max pred depv across all epochs
@@ -826,7 +883,7 @@ if doplots(3)
 
 
         %plotting loop
-        hax = cell(1, numrows_ts);
+        hax = cell(1, num_total_subplots);
 
         for ri = 1:numroi_plot %for each neuron
 
@@ -844,7 +901,7 @@ if doplots(3)
 
                     if framecount==1 %if on the first frame
 
-                        hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw, axh] ); %make the subplot
+                        hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw(nsi), axh(nsi)] ); %make the subplot
                         hold(hax{nsi}, 'on')
                         % yyaxis left
                         hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
@@ -894,6 +951,7 @@ if doplots(3)
                         if plot_preddepv
                             hpl2{nsi}.YData =  preddepvrow{ri,nsi}(fhi, :);
                         end
+
                     end
 
 
@@ -924,6 +982,18 @@ if doplots(3)
                         hpl2{nsi}.Color = 'none'; %make preddepv invisible
                     end
 
+                end
+
+                supp.starting_hax = numrows_ts;
+                if framecount==1
+                    for tffi = 1:supp.num_total_model_functions
+                        tffi2 = tffi + supp.starting_hax;
+                        hax{tffi2} = axes( 'Parent', hfg, 'Position', [axx(tffi2), axy(tffi2), axw(tffi2), axh(tffi2)] ); %make the subplot
+                    end
+                end
+                supp.framecount = framecount;
+                if plot_preddepv
+                    [~, hax] = objfcn(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
                 end
 
                 fig2gif(hfg, framecount, filename_save)

@@ -43,7 +43,7 @@ extract_in_2d = 1 #caiman source extraction for each plane independently (WARNIN
 regionex = ['fullfov'] ##DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 
 
-do_analysis = 0 #matlab analysis, various functions in analyze_movie
+do_analysis = 0 #matlab analysis 'post', various functions in a2p.m
 
 # caiman note on starting cluster
 # The default backend mode for parallel processing is through the multiprocessing package. 

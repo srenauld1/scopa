@@ -106,7 +106,7 @@ if num_mroi_manual_manual>1 || num_mroi_auto==0
 
     centroids_roi = find_roi_centroids(maskmanual);
 
-    fprintf("WARNING, if sort_roi_method is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, since long axis extraction requires automated morph roi extraction")
+    sprintf("WARNING,\nif sort_roi_method is 'morph_long_axis', rois will be sorted by drawn roi index, \nnot morph long axis, \nsince long axis extraction requires automated morph roi extraction")
 
 else
 

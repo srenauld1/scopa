@@ -25,10 +25,10 @@ opt.main.old_project = 0; %for carl
 opt.gif.suffixes_plot = {
     % 'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.gif.plotinds_t = [10.2]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.gif.plotinds_z = [2, 3]; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.gif.plotinds_t = [10.1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
@@ -152,6 +152,8 @@ opt.bump.fit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %w
 opt.bump.fit(1).indv{1} = {['vis, angsd']};
 opt.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
+opt.bump.fit(1).validation_fraction = 0.2;
+opt.bump.fit(1).validation_fold = 0;
 opt.bump.fit(1).modeltype = 'vonmises';
 opt.bump.fit(1).epochinds = {[4]};
 opt.bump.fit(1).length_model_seconds = 0;
@@ -209,12 +211,14 @@ opt.bump.fit = default_fit_params(opt.bump.fit);
 opt.fit.do_predict = 1; %0 to skip fit_mdl
 opt.fit(1).depv{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
 % opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
-opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
-opt.fit(1).indv{3} = {['ball, velrsd']};
-opt.fit(1).indv{2} = {['ball, velrsd'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
+opt.fit(1).indv{1} = {['ball, velrsd']};
+opt.fit(1).indv{2} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
+opt.fit(1).indv{3} = {['ball, velrsd'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit.epochinds = {[2 3 4]};
 opt.fit.modeltypes = 'glno3';
+opt.fit.validation_fraction = 0.2;
+opt.fit.validation_fold = 6;
 
 opt.fit = default_fit_params(opt.fit);
 

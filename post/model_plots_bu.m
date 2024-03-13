@@ -5,8 +5,8 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
     keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-    pth_prefix, gif_visibility, objfcn, ft, supp, doplots,  ...
-    standardize_depv, depvinstds_plot, depvinmeans_plot)
+    pth_prefix, gif_visibility, objfcn, ft, supp, doplots, valfold, vfi, ...
+    standardize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
 
 
 
@@ -651,7 +651,7 @@ if doplots(3)
     max_num_indv_to_plot = 2;
     num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
     epoch_patch_face_alpha = 0.05;
-    ylim_track_pred = 0;
+    ylim_track_pred = 1;
     depv_alpha = 1;
     preddepv_alpha = 0.7;
 
@@ -669,8 +669,8 @@ if doplots(3)
         max_numfits_to_plot_par = 0;
         max_numfits_to_plot_ts = 0;
     else
-        max_numfits_to_plot_par = 50;
-        max_numfits_to_plot_ts = 50;
+        max_numfits_to_plot_par = 300;
+        max_numfits_to_plot_ts = 300;
     end
 
     if size(depvnan_cont{epi}, 1)>max_numrois_to_plot_fithist
@@ -764,7 +764,7 @@ if doplots(3)
 
         if max_numfits_to_plot_ts>0
             for ri = 1:numroi_plot %for each neuron, concatenate hitfit (do before plotting loop )
-                pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_*_' num2str(ri) '_HISTFIT_.mat'];
+                pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_' num2str(ri) '_HISTFIT_.mat'];
                 fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
                 if ~isempty(fitdata_saved_files)
                     fitdata_saved_files = natsortfiles(fitdata_saved_files);
@@ -806,7 +806,19 @@ if doplots(3)
                         end
                     end
 
-                 
+                    gof_val = [];
+                    for hxi = 1:size(histxtmp, 2) 
+                        gof_val(hxi) = mse(depv{epi}(ri,valinds_raw_use), objfcn(histxtmp(:,hxi)', indv{epi}(valinds_raw_use,:), supp)');
+                    end
+                    [~, bestind] = min(gof_val);
+                    bestindall{ri} = bestind;
+                    histxsave{ri}(end,:) = histxtmp(:,bestind)';
+                    preddepv_hist{ri}(end,:) = objfcn(histxsave{ri}(end,:), indv{epi}, supp);
+                    if standardize_depv
+                        preddepv_hist{ri}(end,:) = preddepv_hist{ri}(end,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                    end
+
+
                 end
             end
         end
@@ -836,7 +848,7 @@ if doplots(3)
 
             %subset to get one row, and also add nan to end for symmetry at same time
             depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-            preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            % preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             % indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             indvrow{nsi} = cat(1, indvnan_cont_rescale(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             
@@ -844,13 +856,13 @@ if doplots(3)
                 if max_numfits_to_plot_ts>0
                     preddepvrow{ri,nsi} = nan(size(preddepv_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
                     preddepvrow{ri,nsi}(1:end-1,tinds_row_nonan) = preddepv_hist{ri}(:,tinds_cont_row); %history of fits
-                    % preddepvrow{ri,nsi}(end,tinds_row_nonan) = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
+                    preddepvrow{ri,nsi}(end,tinds_row_nonan) = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
                     % preddepvrow{ri,nsi}(end,:) = preddepv_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-                    preddepvrow{ri,nsi}(end,:) = preddepvrow_tmp(ri,:); %best fit at end
+                    % preddepvrow{ri,nsi}(end,:) = preddepvrow_tmp(ri,:); %best fit at end
                 else
-                    % preddepvrow{ri,nsi} = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
+                    preddepvrow{ri,nsi} = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
                     % preddepvrow{ri,nsi} = preddepv_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-                    preddepvrow{ri,nsi} = preddepvrow_tmp(ri,:); %just the best fit
+                    % preddepvrow{ri,nsi} = preddepvrow_tmp(ri,:); %just the best fit
                 end
             end
 

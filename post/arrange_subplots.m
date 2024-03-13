@@ -30,5 +30,8 @@ tmp = [p(:) q(:)];
 axx = tmp(:,1);
 axy = tmp(:,2);
 
+axw = vec(repelem(axw, numel(axx)));
+axh = vec(repelem(axh, numel(axx)));
+
 
 end

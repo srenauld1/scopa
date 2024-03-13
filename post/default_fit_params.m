@@ -17,6 +17,9 @@ epochinds = {[4]};
 num_samp_lag = 1; %how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
 length_model_seconds = 2; %seconds, 0 is one sample
 
+validation_fraction = 0.2;
+validation_fold = 0;
+
 slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';
 modeltype = 'glno'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'

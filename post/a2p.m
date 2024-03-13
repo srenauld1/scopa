@@ -121,7 +121,7 @@ for pai = 1:length(pth_usefile_prefix_all)
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
         %opt.fit.epochinds = {[4]}; 
-        opt.fit.modeltype = 'glno3'; opt.fit.use_saved_model = 0; opt.fit.length_model_seconds = 3;
+        opt.fit.modeltype = 'glno7'; opt.fit.use_saved_model = 1; opt.fit.length_model_seconds = 3;
         [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
     end

@@ -1,15 +1,13 @@
 function [objfcn, lbnd, ubnd, linineq_A, linineq_b, nlcon, x0, supp, gethue, gethr_native] = ...
     fit_glno(modeltype, indv, depv, num_samp_model, dt, num_dim_indvin, huestr)
 
+supp.NumTrialPoints = 1000;
+supp.NumStageOnePoints = 200;
+supp.lf2 = @linear_filter_1d_2;
 
-% % num_samp_model = (T/dt)+1; 0 indexed
-% T = dt*(num_samp_model-1); %0 indexed
 T = dt*(num_samp_model-1);
-t = 0:dt:T;
-% useless_shift = 0;
-% t = t-t0;
-% t02 = t02/dt;
-% f = f/dt;
+t = 0:dt:T; %zero-indexed time for filter
+
 padlen_sec = 4;
 padlen = round(padlen_sec/dt);
 tmppad = zeros(1, length(t)+padlen*2);
@@ -23,25 +21,30 @@ objfcn = @fit_ann;
 %excitatory (positive slope sigmoid) as opposed to inhibitory (negative slope sigmoid), or none
 %integrating (monophasic linear filter) as opposed to differentiating (biphasic linear filter), freeform optimizes weights directly rather than parametric linear filter
 if strcmp(modeltype, 'glno3')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
-    nonlinearity_types_per_indv_dim = {'none'};
-    linfilt_types_per_indv_dim = {'integrating', 'differentiating'};
-elseif strcmp(modeltype, 'glno4')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
-    linfilt_types_per_indv_dim = {'differentiating'};
-elseif strcmp(modeltype, 'glno5')
-    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
     linfilt_types_per_indv_dim = {'integrating'};
-elseif strcmp(modeltype, 'glno6')
     nonlinearity_types_per_indv_dim = {'none'};
-    linfilt_types_per_indv_dim = {'freeform'};
-elseif strcmp(modeltype, 'glno7')
+elseif strcmp(modeltype, 'glno4')
+    linfilt_types_per_indv_dim = {'integrating', 'differentiating'};
+    nonlinearity_types_per_indv_dim = {'none'};
+elseif strcmp(modeltype, 'glno5')
+    linfilt_types_per_indv_dim = {'integrating', 'differentiating'};
+    nonlinearity_types_per_indv_dim = {'excitatory'};
+elseif strcmp(modeltype, 'glno6')
+    linfilt_types_per_indv_dim = {'integrating'};
     nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
-    linfilt_types_per_indv_dim = {'freeform'};
+elseif strcmp(modeltype, 'glno7')
+    linfilt_types_per_indv_dim = {'integrating', 'differentiating'};
+    nonlinearity_types_per_indv_dim = {'excitatory', 'inhibitory'};
 end
 
 
 %%
+
+if strcmp(nonlinearity_types_per_indv_dim, 'none')
+    num_model_functions_per_indvdim = 1;
+else
+    num_model_functions_per_indvdim = 2;
+end
 
 LN_specs_per_indv_dim = combinations(nonlinearity_types_per_indv_dim, linfilt_types_per_indv_dim);
 
@@ -57,8 +60,8 @@ maxindv = max(indv(:));
 
 tau1 = [dt/2, 0.3, dt]; %this is in domain of time, don't tranform into samples since filter is implemented in time not samples
 filtshift_sec = [0, 1, 0.01];   %linear interpolation time shift
-filtshift = filtshift_sec/dt;   %but do transform this variable into samples, that's how the interp shift is implemented 
-
+filtshift = filtshift_sec/dt;   %but do transform this variable into samples, that's how the interp shift is implemented
+filtbias = [0, max(depv(:)), 0.01]; %"y intercept", "bias", added to linear filter output 
 % differentiating_old filter params, now trying derivative of monophasic
 % tau2 = [0.1, 2, 0.5]; %fraction by which tau2 is larger than tau1 (better behaved)
 % tc = [0, 1, 0.1]; %L1 norm of tau2 filter, redundant with filtnorm somewhat, so make filtnorm constant
@@ -85,13 +88,13 @@ for jj = 1:num_dim_indvin
         LN_ind_total = LN_ind_total + 1;
 
         if strcmp(LN_specs_per_indv_dim.linfilt_types_per_indv_dim{ii}, 'integrating') %makes monophasic filter, 2 params
-            lbnd_lin = [tau1(1), filtshift(1)];
-            ubnd_lin = [tau1(2), filtshift(2)];
-            x0_lin = [tau1(3), filtshift(3)];
+            lbnd_lin = [tau1(1), filtshift(1), filtbias(1)];
+            ubnd_lin = [tau1(2), filtshift(2), filtbias(2)];
+            x0_lin = [tau1(3), filtshift(3), filtbias(3)];
         elseif strcmp(LN_specs_per_indv_dim.linfilt_types_per_indv_dim{ii}, 'differentiating') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
-            lbnd_lin = [tau1(1), filtshift(1)];
-            ubnd_lin = [tau1(2), filtshift(2)];
-            x0_lin = [tau1(3), filtshift(3)];
+            lbnd_lin = [tau1(1), filtshift(1), filtbias(1)];
+            ubnd_lin = [tau1(2), filtshift(2), filtbias(2)];
+            x0_lin = [tau1(3), filtshift(3), filtbias(3)];
         elseif strcmp(LN_specs_per_indv_dim.linfilt_types_per_indv_dim{ii}, 'differentiating_old') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
             lbnd_lin = [tau1(1), filtshift(1), tau2(1), tc(1)];
             ubnd_lin = [tau1(2), filtshift(2), tau2(2), tc(2)];
@@ -160,18 +163,13 @@ end
 
     end
 
-supp.num_par_total = length(lbnd);
 supp.num_LN_per_indvdim = num_LN_per_indvdim;
 supp.num_LN_total = num_LN_total;
 supp.LN_specs_per_indv_dim = LN_specs_per_indv_dim;
-supp.num_dim_indv = num_dim_indvin;
-supp.num_samp_model = num_samp_model;
 supp.pind = pind;
-supp.num_model_functions = 2;
-supp.NumTrialPoints = 100000;
-supp.NumStageOnePoints = 20000;
+supp.num_model_functions_per_indvdim = num_model_functions_per_indvdim;
+supp.num_total_model_functions = num_LN_total*supp.num_model_functions_per_indvdim;
 
-supp.lf2 = @linear_filter_1d_2;
 
 %% make sure doubles
 
@@ -200,23 +198,25 @@ end
     function filt = linear_filter_1d_2(flagdiff, doplots, tau1, shift)
 
 
-        tmp = t./tau1^2.*exp(-t./tau1);
+        tmp = t./tau1^2.*exp(-t./tau1); %t = t-shift does not work for this, so using interp below for shift
         if flagdiff
             tmp = [0 diff(tmp)];
         end
 
         if doplots
             tmpplot = tmp / norm(tmp(:),1) * filtnorm; %normalize by L1
-            figure; plot(t, tmpplot); hold on;
+            hfg = figure; hax = axes('Parent', hfg); plot(hax, t, tmpplot); hold on;
         end
 
+        tmppad(:) = 0;
         tmppad(padlen+1:end-padlen) = tmp;
         tmppad = spline(tnew+shift,tmppad,tnew);
         filt = tmppad(padlen+1:end-padlen);
         filt = filt / norm(filt(:),1) * filtnorm; %normalize by L1
 
         if doplots
-            plot(t, filt);
+            plot(hax, t, filt);
+            close(hfg)
         end
 
     end

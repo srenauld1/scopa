@@ -287,7 +287,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
                 depv = double(depvintmp(:, ri));
 
                 if strcmp(fitopt.modeltype, 'svd')
-                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_svd( fitin.objfcn, indvauge, depv, fitopt.pvar);
+                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = ...
+                        run_svd( objfcn, indvauge, depv, fitopt.pvar, gethue, getsat, getval);
                 else
                     if strcmp(fitopt.slvrg, 'globalsearch')
                         [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_gs(fitin, indvauge, depv, ri);
@@ -354,8 +355,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     depvintmp = depvintmp(:, roiinds_plot).';
     preddepvtmp = preddepv( :, roiinds_plot).';
     if fitopt.standardize_depv
-        depv_plot{epi} = depvintmp.*depvinstds_plot{epi}(roiinds_plot) + depvinmeans_plot{epi}(roiinds_plot); %rescale to original
-        preddepv_plot{epi} = preddepvtmp.*depvinstds_plot{epi}(roiinds_plot) + depvinmeans_plot{epi}(roiinds_plot); %rescale to original
+        depv_plot{epi} = depvintmp.*depvinstds(roiinds_plot) + depvinmeans(roiinds_plot); %rescale to original
+        preddepv_plot{epi} = preddepvtmp.*depvinstds(roiinds_plot) + depvinmeans(roiinds_plot); %rescale to original
     else
         depv_plot{epi} = depvintmp;
         preddepv_plot{epi} = preddepvtmp;

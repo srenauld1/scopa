@@ -2,7 +2,6 @@
 hires is not processed in python; in matlab it is registered to the registered stack; this seemed simpler 
 
 
-
 %a2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
 % first part (motion correction, denoising, and source extraction) is in python, entry point pipeline_init.py:
 
