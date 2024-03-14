@@ -94,6 +94,11 @@ for running the pipeline in interactive mode . . .
                 adjust input params in file default_params_interactive.py
         entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
+        if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 
+                install, you can still step through the code during debugging in vscode if you add this line to file launch.json, which is in hidden folder .vscode, in the scopa repo 
+                        "justMyCode": false
+                in general this is how you step through 3rd-party libraries during debugging in VS code, the dev mode install let's you step into code without adding this line, and makes changing the code easier
+                the shared caiman on O2 is dev mode, so you don't need this line on o2 
         in interactive mode on O2, do_copyfiles does not work yet, so make sure your files are on O2 before session
         in interactive mode on O2, deepcad denoising does not work yet (only works in batch/non-interactive mode on O2)
         if you are running on your local machine, you can't use deepcad denoising unless you have a gpu, 
@@ -295,8 +300,6 @@ denoising folder is separate from data folder because it can get big (if multipl
 
 there are a few spots in the pipeline built to accommodate carl's old project, they are flagged with carls_old_project==1, and in some cases have their own functions (which are named with suffix 'carls_old_project') 
 
-if you want to step through 3rd party libraries (like deepcad, if you installed with pip install deepcad) during debugging in VS code, add this line to file launch.json, which is in hidden folder .vscode 
-        "justMyCode": false,
 
 ############################## INSTALLING THINGS ######################################
 
