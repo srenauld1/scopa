@@ -50,7 +50,10 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_sha
             mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
             mdt['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
             mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta)[0].replace(";",","))
-            mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
+            if isinstance(mdt['zstartpos'], int):
+                mdt['zfov'] = mdt['zwid']
+            else:
+                mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
             mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
             mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta)[0])
         
