@@ -165,6 +165,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
             pth_write_oneslice = pth_tif_write[:-4] + str(si) + '_z_.tif'
             imwrite(pth_write_oneslice, np.transpose(Ynew, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
             if si==sliceindz[-1]: #on final slice, if register_in_2d
+                Ynew = None
                 Ynew = stitch_registered_z_slices(pth_tif_write, md['dims']) #output is all slices, txyz
         
         countz = countz + 1
