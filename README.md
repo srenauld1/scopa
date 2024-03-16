@@ -33,7 +33,20 @@ the pipeline has various features for parameter exploration
 
 ############################## AUTOMATED FILE TRANSFER ######################################
 
-if do_copyfiles==1, the pipeline will automatically copy whatever files you need from the storage server onto O2, and then any new files get copied back to storage server
+automated file transfer is intended to make batch mode on O2 (running cxp.sh) more convenient, although it can be used on O2 or local, and in interactive or batch mode
+
+if do_copyfiles==1 no computation occurs, but the pipeline will automatically copy whatever files you need from a storage location to a compute location, if do_copyfiles==0 computation occurs, but no copy occurs, if do_copyfiles==2 no computation occurs, but any new files are copied back into storage location . . . the relevant files are determined by the pipeline module you're running
+
+to use do_copyfiles=1 or do_copyfiles=2 on O2, you must have access to the transfer job partition (write rchelp@hms.harvard.edu to request access to the transfer job partition)
+
+if files have the same name but their modification times differ by more than one second, the copy will overwrite the detination file with the source file 
+
+if files have the same name and same modification times, no copy occurs 
+
+files that exist in destination but not source will remain in destination (since it's a per-file copy not a directory sync) 
+
+  the storage server onto O2, and then any new files get copied back to storage server
+
         files are copied from storage location (e.g. wilson lab stoarge server)
                 pth_storage_prefix/folder_with_all_recordings_on_storage_and_compute_filesystems/**/folder_with_data/
         into compute location (e.g. O2)

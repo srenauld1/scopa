@@ -18,7 +18,7 @@ recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all',
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
 do_register = 1 #caiman normCorre registration 
-register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
+register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 len_window_bgsub = 0 #full width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
 len_window_smooth_t_mcp = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp = 0 skips smoothing)
 
