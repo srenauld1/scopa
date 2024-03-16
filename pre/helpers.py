@@ -32,7 +32,7 @@ def stitch_registered_z_slices(pth_tif_reg, dims):
         Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
 
     if countz != dims[1]:
-        raise Exception("not all slices present")
+        raise Exception("incorrect number of registered files present")
 
     Y = np.transpose(Y, (0,3,2,1)) #transpose to txyz, to match caiman output
 

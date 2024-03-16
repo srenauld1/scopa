@@ -30,7 +30,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
 
 
     if md['dims'][1]==1 or register_in_2d:
-        is3D_mc = False #if not 3d, correct each slice . . . 
+        is3D_mc = False #if not 3d, register each slice . . . 
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
         overlaps_mc = (12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch overlap
