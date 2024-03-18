@@ -233,8 +233,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=01:30:00
                 ntasks_str=1
-                cpus_per_task_str=5
-                mem_per_cpu_str=4G
+                cpus_per_task_str=1
+                mem_per_cpu_str=20G
             elif [ "$sbatch_job_name" == mlp.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=01:00:00
