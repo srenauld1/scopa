@@ -29,9 +29,9 @@ if old_project %not volumetric
 
     stack_size_x = 256;
     stack_size_y = 128;
-    stack_size_t = 5869;
+    stack_size_t = 4447;
     if do_volume
-        stack_size_z = 6;
+        stack_size_z = 1;
     else
         stack_size_z = 1;
     end
@@ -39,9 +39,9 @@ if old_project %not volumetric
 
 else
 
-    stack_size_x = 256;
-    stack_size_y = 140;
-    stack_size_t = 3047;
+    stack_size_x = 140;
+    stack_size_y = 256;
+    stack_size_t = 4447;
     stack_size_z = 15;
     volume_rate = 5.08; %hz
 
@@ -73,8 +73,8 @@ if do_volume %to train on whole volume (not bothering calculating this for numst
         overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
 
     else
-        train_datasets_size = 26000;
-        patch_t_seconds = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+        train_datasets_size = 26000%26000;
+        patch_t_seconds = 25; %my personal fairly uneducated guess is that this should be at least 20 sec
         patch_x = 120;
         patch_y = 120;
         patch_t = ceil(patch_t_seconds*volume_rate);
@@ -125,8 +125,8 @@ total_vram_for_one_slurm_job = patch_x * patch_y * patch_t * bytes_per_element *
     "a few (?) GB less than " num2str(single_GPU_VRAM)
     " and total VRAM is : " num2str(total_vram_for_one_slurm_job)]
 
-gap_t
-
-overlap_t
+% gap_t
+% 
+% overlap_t
 
 %%

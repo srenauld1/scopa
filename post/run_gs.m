@@ -18,7 +18,7 @@ rng default %for reproducibility (do on every loop?)
 %% variables for output functions
 
 histfit.max_iter_local = 1000;
-histfit.max_iter_global = 3;
+histfit.max_iter_global = 2;
 histfit.max_unique_sol_global = 10; %run indefinite global search iterations until it finds histfit.max_iter_global unique local solutions . . .  make empty to not set limit
 histfit.local_sol_is_unique_thresh = 1e-4; %local solution flagged as unique (recorded in histfit.unique_local_fval) if it differs from all other local solutions by at least histfit.local_sol_is_unique_thresh
 histfit.save_iter_spacing = 2; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)
@@ -108,12 +108,12 @@ optprob.options = optopts;
 
 %% run
 
+
 [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(slvrg, optprob); %ft are fit params
 
 %[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optprob.objective, ft, [], [], [], [], lbnd, ubnd, [], optprob.options); %single run of local solver
 
 %% compute output variables
-
 
 preddepv = objfcn(ft, indv, supp); %preddepv is predicted depv
 gof = mse(depv, preddepv); %error

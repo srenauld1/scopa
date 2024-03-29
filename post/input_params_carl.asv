@@ -232,9 +232,8 @@ opt.fit.validation_fraction = 0.2; %applied to all modeltypes; if < 1, fraction 
     %   then optional C followed by number denoting input channel (optional, if omitted, will apply the same arhcitecture to all channels in the layer)
     % where each 'neuron' string (which can appear an arbitrary number of times after the position string), is: 
     %   set of characters denoting parallel artificial neurons applied at the position denoted by the last position string; additional distinct neurons are separated by underscores, 
-    %   if the neuron string begins with a number, q, that neuron is repeated q times at its position
-    %   the neuron string must contain at least two characters (besides the optional initial quantifier, q), denoting linear function and nonlinear function 
-    %   if the neuron string contains more than 2 characters, then all combinations of listed types for both functions are applied to the input channel  
+    %   if the neuron string begins with a number, j, that neuron is repeated j times
+        % if the neuron string contains more than 2 characters, then all combinations of listed types for both functions are applied to the input channel  
         % linear filter functions:
             % l: to skip/omit 'linear' function
             % s: is for 'sum', monophasic linear filter (summation/integration)
@@ -251,11 +250,10 @@ opt.fit.validation_fraction = 0.2; %applied to all modeltypes; if < 1, fraction 
             %           'c' for 'channel' (each independent variable input to fitmdl, not necessarily >1) 
             %           't' for 'time' (lags, or samples preceding response, not necessarily >1)  
             %           'n' for 'neuron' (each artificial neuron, not necessarily >1)
-    % 'la' (skipping linear and activation functions) is not a valid neuron, and will be automatically removed if it arises from combining all specifiers 
     % currently cannot stack multiple linear functions or multiple activation functions in a single 'neuron' (but you can stack multiple neurons into 'layers')
     % example: ann_L1Cx_sieh16x applies 4 neurons to all input channels in a single layer; 4 neurons are all combinations of linear functions 's' and 'i'  
 
-opt.fit.modeltypes = 'ann_L1_sh16x'; 
+opt.fit.modeltypes = 'ann_L1Cx_sh16x'; 
 
 opt.fit = default_fit_params(opt.fit);
 

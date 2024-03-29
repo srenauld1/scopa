@@ -1,13 +1,30 @@
 
-function [ hsvmap ] = form_hsv( indv, depv, gof, ...
-    hdata, sdata, vdata, ...
-    huenorm, satnorm, valnorm, ...
-    gethr_native, gethr_relative, ...
-    getsr_native, getsr_relative, ...
-    getvr_native, getvr_relative, ...
-    hrange_in_manual, srange_in_manual, vrange_in_manual, ...
-    hrange_out_manual, srange_out_manual, vrange_out_manual, ...
-    hueshift, hue_is_periodic)
+function hsvmap = form_hsv( indv, depv, gof, hdata, sdata, vdata, plt, modeltype)
+
+
+huenorm = plt.huenorm;
+satnorm = plt.satnorm;
+valnorm = plt.valnorm;
+gethr_native = plt.gethr_native;
+gethr_relative = plt.gethr_relative;
+getsr_native = plt.getsr_native;
+getsr_relative = plt.getsr_relative;
+getvr_native = plt.getvr_native;
+getvr_relative = plt.getvr_relative;
+hrange_in_manual = plt.hrange_in_manual;
+srange_in_manual = plt.srange_in_manual;
+vrange_in_manual = plt.vrange_in_manual;
+hrange_out_manual = plt.hrange_out_manual;
+srange_out_manual = plt.srange_out_manual;
+vrange_out_manual = plt.vrange_out_manual;
+hueshift = plt.hueshift;
+hue_is_periodic = plt.hue_is_periodic;
+
+
+if strcmp(huenorm, 'native') && (strcmp(modeltype, 'linear') || strcmp(modeltype, 'plane') || startsWith(modeltype, 'svd'))
+    disp("WARNING, NO NATIVE HUENORM FOR MODELTYPES linear, plane, or svd, SWITCHING TO RELATIVE")
+    huenorm = 'relative'; %hue normalization method, see setup_model_all
+end
 
 %use hrange_out_manual to restrict hue range after normalization (e.g. when domain is not
 %periodic, since full hue range [0 1] is periodic)

@@ -1,7 +1,8 @@
-function [preddepv, hax] = objfcn_vonmises(pars, indv, supp, optin)
+function [preddepv, hax, binmns] = objfcn_vonmises(pars, indv, supp, optin)
 
 
 hax = [];
+binmns = [];
 make_figure = 0;
 
 
@@ -35,7 +36,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         fontmedium = 20;
         numrows_plot = 1;%supp.num_model_functions;
-        numcolumns_plot = 1;%supp.num_dim_indvin*supp.num_LN_per_indvdim;
+        numcolumns_plot = 1;%supp.num_dim_indvin*supp.num_neuron;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -96,7 +97,7 @@ if make_figure
     hax{sfi}.Title.FontSize = supp.fontsmall;
 
     if ~optin_is_figure
-        if LN_unit_count==supp.num_LN_total
+        if LN_unit_count==supp.num_neuron_total
             htx.String = fn_save;
             fig2gif(hfg, framecount, pth_save)
         end

@@ -129,6 +129,9 @@ for li = 1:num_lay
                         preddepvtmp(:) = 0;
                         if strcmp(anntmp.annspec.independently_discretized_hot_dims{ni}, 'x') %after all input channels and current neurons
                             [preddepvtmp, binmns] = anntmp.nl_hot{ni}(doplots_hot, outflag, pthspre, preddepvtmp2, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                            if make_figure
+                                preddepvlin = preddepvtmp2; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
+                            end
                         end
                     elseif ismember(anntmp.annspec.independently_discretized_hot_dims{ni}, {'c', 't', 'n'})
                         [preddepvtmp, binmns] = anntmp.nl_hot{ni}(doplots_hot, outflag, pthspre, preddepvtmp, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
@@ -183,8 +186,8 @@ for li = 1:num_lay
 
                     if supp.framecount==1
                         if binmns
-                            % scatter3(hax{sfi}, preddepvtmp2(:,1), preddepvtmp2(:,2), preddepvtmp, 'filled'); %sorting prevents an odd plotting error
-                            scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(anntmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
+                            scatter3(hax{sfi}, preddepvlin(:,1), preddepvlin(:,2), preddepvtmp, 'filled'); %sorting prevents an odd plotting error
+                            % scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(anntmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
                         else
                             plot(hax{sfi}, preddepvlin, preddepvtmp(idx)); %sorting prevents an odd plotting error
                         end

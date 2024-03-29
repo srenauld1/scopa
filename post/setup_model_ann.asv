@@ -1,0 +1,298 @@
+function [objfcn, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, supp] = ...
+    setup_model_ann(modeltype, chopt, indv, depv, num_samp_model, dt, num_dim_indvin)
+
+objfcn = @fit_ann;
+supp.modeltype = modeltype;
+supp.NumTrialPoints = 1000;
+supp.NumStageOnePoints = 200;
+
+padlen_sec = 4;
+
+annspec = parse_model_string(modeltype, chopt, num_dim_indvin);
+
+lbnd = [];
+ubnd = [];
+x0 = [];
+linineq_A = [];
+rwprev = 0;
+clprev = 0;
+linineq_b = [];
+
+supp.num_neuron_total = 0;
+supp.num_total_model_functions = 0;
+supp.max_num_fun_per_neuron = 0;
+pindmax_prev = 0;
+
+
+fnl = fieldnames(annspec);
+for li = 1:length(fnl)
+    fnc = fieldnames(annspec.(fnl{li}));
+    lastchannel = 0;
+    for ci = 1:length(fnc)
+
+        if ci==length(fnc)
+            lastchannel = 1;
+        end
+
+        [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, anntmp, freeformflag] = ...
+            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), indv, depv, num_samp_model, dt, num_dim_indvin, padlen_sec, lastchannel);
+
+        lbnd = [lbnd lbnd_tmp];
+        ubnd = [ubnd ubnd_tmp];
+        x0 = [x0 x0_tmp];
+        rwindsnew = rwprev+1:rwprev+1+size(linineq_A_tmp, 1)-1;
+        clindsnew = clprev+1:clprev+1+size(linineq_A_tmp, 2)-1;
+        linineq_A(rwindsnew, clindsnew) = linineq_A_tmp;
+        rwprev = size(linineq_A, 1);
+        clprev = size(linineq_A, 2);
+        linineq_b = [linineq_b linineq_b_tmp];
+
+        for ni2 = 1:anntmp.num_neuron
+            anntmp.pind(ni2) = structfun(@(x) x+pindmax_prev, anntmp.pind(ni2), 'UniformOutput', false); %max param index for single position (layer+channel)
+        end
+        for ni2 = 1:anntmp.num_neuron
+            tmpcl = cellfun(@max, struct2cell(anntmp.pind(ni2)), 'UniformOutput', false);
+            tmpcl = tmpcl(~cellfun(@isempty, tmpcl));
+            pindmax_prev = max(vertcat(pindmax_prev, vec(cell2mat(tmpcl)))); %max param index for single position (layer+channel)
+        end
+
+        supp.ann.(fnl{li}).(fnc{ci}) = anntmp;
+        supp.num_neuron_total = supp.num_neuron_total + size(anntmp.annspec, 1);
+        supp.num_total_model_functions = supp.num_total_model_functions + anntmp.max_num_fun_per_neuron;
+        supp.max_num_fun_per_neuron = max(supp.max_num_fun_per_neuron, anntmp.max_num_fun_per_neuron);
+
+    end
+end
+
+if any(freeformflag) %set up nonlinear constraint for freeform linear function
+    nlcon = @nlcon_l1norm;
+
+    %simplify nested function nlcon by giving it a simpler param index array that what is saved in supp.ann.pind (but keep that for use in fit_ann)
+    count = 0;
+    fnl = fieldnames(supp.ann);
+    for li = 1:length(fnl)
+        fnc = fieldnames(supp.ann.(fnl{li}));
+        for ci = 1:length(fnc)
+            for ni = 1:length(supp.ann.(fnl{li}).(fnc{ci}).pind)
+                count = count+1;
+                pind_Lfree{count} = supp.ann.(fnl{li}).(fnc{ci}).pind(ni).L; %make L1 norm = 1 for linear filters with 'freeform' flag
+            end
+        end
+    end
+
+
+else
+    nlcon = [];
+end
+
+
+if all(linineq_A(:)==0) %if all zeros, then linineq_A_tmp above remained zero because stract='none' for all LN units, so set to empty rather than zero
+    linineq_A = [];
+    linineq_b = [];
+end
+
+lbnd = double(lbnd);
+ubnd = double(ubnd);
+x0 = double(x0);
+linineq_A = double(linineq_A);
+linineq_b = double(linineq_b);
+
+
+    function [c,ceq] = nlcon_l1norm(x)
+
+        for i = 1:length(pind_Lfree)
+            ceq(i) = norm(vec(x(pind_Lfree{i})),1) - 1; %make L1 norm = 1 for linear filters with 'freeform' flag
+        end
+        c = [];
+
+    end
+
+
+end
+
+function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
+    setup_model_ann_oneposition(annspec, indv, depv, num_samp_model, dt, num_dim_indvin, padlen_sec, lastchannel)
+
+% in annspec, strlin for linear functions, stract for activation (nonlinear) functions
+% strlin 's' and 'd' and 'f' make linear filters (s is monophasic; d is biphasic, formed from derivative of s; f is freeform, can take any shape)
+% strlin 'l' skips linear filter stage
+% stract 'e' and 'i' make generalized logistic functions (includes sigmoids), with constraints on params controlling slope and horizontal asymptotes
+% forcing 'e' to be positive true slope (left horiz asymptote<right horiz asymptote with positive slope param)
+% and 'i' to be negative true slope  (left horiz asymptote>right horiz asymptote with positive slope param)
+% stract that starts with 'h' makes hot encoded nonlinear function (can take any shape)
+% stract 'a' skips activation function stage
+
+%% define time domain for linear filters
+
+T = dt*(num_samp_model-1);
+t = 0:dt:T; %zero-indexed time for filter
+
+padlen = round(padlen_sec/dt);
+tmppad = zeros(1, length(t)+padlen*2);
+tnew = 0:length(tmppad)-1;
+filtnorm = 1;
+
+%% some useful variables for this function
+
+max_num_fun_per_neuron = max(sum(cellfun(@any, regexp([annspec.strlin(:) annspec.stract(:)], '[^l|a]')), 2));
+num_neuron = size(annspec, 1);
+minindv = min(indv(:));
+maxindv = max(indv(:));
+extremeindv = max(abs(indv(:)));
+mindepv = min(depv(:));
+maxdepv = max(depv(:));
+extremedepv = max(abs(depv(:)));
+meandepv = mean(depv(:));
+
+%% define all possible params for each artificial neuron (some will not be used, depending on neuron type)
+
+% 3-element vectors below are [lowerbound, upperbound, startpoint]
+
+tau1 = [dt/2, 0.3, dt]; %this is in domain of time, don't tranform into samples since filter is implemented in time not samples
+filtshift_sec = [0, 1, 0.01];   %linear interpolation time shift
+filtshift = filtshift_sec/dt;   %but do transform this variable into samples, that's how the interp shift is implemented
+filtbias = [-extremedepv, extremedepv, 0.01]; %"y intercept", "bias", added to linear filter output
+
+% old 'd' filter params, now trying derivative of monophasic
+% tau2 = [0.1, 2, 0.5]; %fraction by which tau2 is larger than tau1 (better behaved)
+% tc = [0, 1, 0.1]; %L1 norm of tau2 filter, redundant with filtnorm somewhat, so make filtnorm constant
+% filtnorm = [-inf, inf, 1]; %L1 norm of whole filter (tau1 filter minus tau2 filter, assuming latter is not norm zero )
+
+sigmoid_slope = [0.1, inf, 1];  %force positive, letting left/right asymptotes determine sign without redundancy from slope (no constraint that left must be greater than right)
+sigmoid_asympleft = [-extremedepv*2, extremedepv*2, mindepv];
+sigmoid_asympright = [-extremedepv*2, extremedepv*2, maxdepv];
+sigmoid_inflection = [0, inf, 1]; %must be positive
+sigmoid_xshift = [-extremeindv*2, extremeindv*2, mean([minindv maxindv])];  %since filtnorm is forced to be 1, filter output will be on order of indv
+
+hotnonlin_weights = [-extremedepv*2, extremedepv*2, meandepv];
+
+%%
+
+
+lbnd = [];
+ubnd = [];
+x0 = [];
+linineq_min_difference = 0; %zero allows equality, could try -2*options.ConstraintTolerance instead of zero (why -2, why not just -options.ConstraintTolerance?)
+neuron_ind_total = 0;
+num_par_running_total = 0;
+
+for ni = 1:num_neuron
+
+    neuron_ind_total = neuron_ind_total + 1;
+
+    if strcmp(annspec.strlin{ni}, 'l') %skips linear filter
+        lbnd_lin = [];
+        ubnd_lin = [];
+        x0_lin = [];
+    elseif strcmp(annspec.strlin{ni}, 's') %makes monophasic filter, 2 params
+        lbnd_lin = [tau1(1), filtshift(1), filtbias(1)];
+        ubnd_lin = [tau1(2), filtshift(2), filtbias(2)];
+        x0_lin = [tau1(3), filtshift(3), filtbias(3)];
+    elseif strcmp(annspec.strlin{ni}, 'd') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
+        lbnd_lin = [tau1(1), filtshift(1), filtbias(1)];
+        ubnd_lin = [tau1(2), filtshift(2), filtbias(2)];
+        x0_lin = [tau1(3), filtshift(3), filtbias(3)];
+    elseif strcmp(annspec.strlin{ni}, 'd2') %old approach for d filter, 'd2' specifier currently not supported %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
+        lbnd_lin = [tau1(1), filtshift(1), tau2(1), tc(1)];
+        ubnd_lin = [tau1(2), filtshift(2), tau2(2), tc(2)];
+        x0_lin = [tau1(3), filtshift(3), tau2(3), tc(3)];
+    elseif strcmp(annspec.strlin{ni}, 'f') %freeform filter, can take any shape
+        lbnd_lin = -inf(1, num_samp_model);
+        ubnd_lin = inf(1, num_samp_model);
+        x0_lin = rand(1, num_samp_model);
+        x0_lin = x0_lin / norm(vec(x0_lin(:)),1); %L1 norm=1
+    end
+
+
+    ann.nl_hot{ni} = [];
+    if strcmp(annspec.stract{ni}, 'a') || strcmp(annspec.stract{ni}, 'y') %skip activation function
+        lbnd_nonlin = [];
+        ubnd_nonlin = [];
+        x0_nonlin = [];
+    elseif any(strcmp(annspec.stract{ni}, {'e', 'i'}))
+        lbnd_nonlin = [sigmoid_slope(1), sigmoid_asympleft(1), sigmoid_asympright(1), sigmoid_inflection(1), sigmoid_xshift(1)];
+        ubnd_nonlin = [sigmoid_slope(2), sigmoid_asympleft(2), sigmoid_asympright(2), sigmoid_inflection(2), sigmoid_xshift(2)];
+        x0_nonlin = [sigmoid_slope(3), sigmoid_asympleft(3), sigmoid_asympright(3), sigmoid_inflection(3), sigmoid_xshift(3)];
+    elseif startsWith(annspec.stract{ni}, 'h')
+        lbnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(1);
+        ubnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(2);
+        x0_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(3);
+
+        ann = setup_model_onehot(ann, annspec, ni, num_dim_indvin, num_samp_model, num_neuron);
+
+    end
+
+    num_par_this_neuron = length(x0_lin)+length(x0_nonlin);
+    parind_this_neuron = [1:num_par_this_neuron] + num_par_running_total;
+    num_par_running_total = num_par_running_total + num_par_this_neuron;
+    pind(ni).L = parind_this_neuron(1:length(x0_lin));
+    pind(ni).N = parind_this_neuron(length(x0_lin)+1:end);
+    if strcmp(annspec.strlin{ni}, 'f')
+        pind(ni).Lfree = parind_this_neuron(1:length(x0_lin));
+    end
+
+    linineq_A_tmp = zeros(1, num_par_this_neuron);
+    if strcmp(annspec.stract{ni}, 'e')  %left asymptote <= right asymptote will make positive slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
+        linineq_A_tmp(length(x0_lin)+2) = 1;
+        linineq_A_tmp(length(x0_lin)+3) = -1;
+    elseif strcmp(annspec.stract{ni}, 'i')  %right asymptote <= left asymptote will make negative slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
+        linineq_A_tmp(length(x0_lin)+2) = -1;
+        linineq_A_tmp(length(x0_lin)+3) = 1;
+    end
+
+    lbnd = [lbnd lbnd_lin lbnd_nonlin];
+    ubnd = [ubnd ubnd_lin ubnd_nonlin];
+    x0 = [x0 x0_lin x0_nonlin];
+    linineq_A(neuron_ind_total, parind_this_neuron) = linineq_A_tmp;
+    linineq_b(neuron_ind_total) = 0 + linineq_min_difference;
+
+end
+
+
+if any(strcmp(annspec.strlin, 'f'))
+    freeformflag = 1;
+else
+    freeformflag = 0;
+end
+
+ann.num_neuron = num_neuron;
+ann.annspec = annspec;
+ann.pind = pind;
+ann.max_num_fun_per_neuron = max_num_fun_per_neuron;
+ann.lf_2 = @linear_filter_1d_2;
+
+
+%% nested linear filter functions
+
+
+    function filt = linear_filter_1d_2(flagdiff, doplots, tau1, shift)
+
+
+        tmp = t./tau1^2.*exp(-t./tau1); %t = t-shift does not work for this, so using interp below for shift
+        if flagdiff
+            tmp = [0 diff(tmp)];
+        end
+
+        if doplots
+            tmpplot = tmp / norm(tmp(:),1) * filtnorm; %normalize by L1
+            hfg = figure; hax = axes('Parent', hfg); plot(hax, t, tmpplot); hold on;
+        end
+
+        tmppad(:) = 0;
+        tmppad(padlen+1:end-padlen) = tmp;
+        tmppad = spline(tnew+shift,tmppad,tnew);
+        filt = tmppad(padlen+1:end-padlen);
+        filt = filt / norm(filt(:),1) * filtnorm; %normalize by L1
+
+        if doplots
+            plot(hax, t, filt);
+            close(hfg)
+        end
+
+    end
+
+
+
+
+end
+

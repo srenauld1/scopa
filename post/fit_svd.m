@@ -15,7 +15,7 @@ r = cumsum( t.*t );
 p = find( 1/r(end)*r>=pvar, 1 );
 r = zeros( size(s) );
 r( i(1:p) ) = 1 ./ t(1:p);
-invp = v * r.' * u';
-ft = invp*depv;
+pseudoinv = v * r.' * u';
+ft = pseudoinv*depv;
 
 end

@@ -57,6 +57,8 @@ mapind2ind = roiinfo.mapind2ind;
 trialepochinds_i = md.trialepochinds_i;
 dtmni = md.dtmni;
 
+plt = fitopt.plt;
+
 %% check/correct inputs
 
 if ~exist('pixfitflag', 'var')
@@ -67,16 +69,7 @@ else
         pixfitflagstr = '_PIX';
     end
 end
-if ~exist('plot_3d', 'var')
-    fitopt.plot3d = 1;
-end
-if ~exist('fitopt.maxnumroiplot', 'var')
-    fitopt.maxnumroiplot = 100;
-end
-if strcmp(fitopt.huenorm, 'native') && (strcmp(fitopt.modeltype, 'linear') || strcmp(fitopt.modeltype, 'plane') || strcmp(fitopt.modeltype, 'svd'))
-    disp("WARNING, NO NATIVE HUENORM FOR MODELTYPES linear, plane, or svd, SWITCHING TO RELATIVE")
-    fitopt.huenorm = 'relative'; %hue normalization method, see model_setup
-end
+
 if isvector(indvin) & iscolumn(indvin)
     indvin = indvin(:)';
 end
@@ -84,7 +77,7 @@ if ~exist('stack', 'var')
     stack = [];
 else
     stackmean = mean(stack, 4);
-    if strcmp(fitopt.plot_class, 'epoch') & ~fitopt.plot3d
+    if strcmp(plt.plot_class, 'epoch') & ~plt.plot3d
         stackmean = mean(stackmean, 3);
     end
 end
@@ -100,7 +93,7 @@ pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 %% create pixelwise fit for background if requested by recursively calling fitmdl with pixfitflag==1
 
 
-if strcmp(fitopt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion
+if strcmp(plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion
     pixfitflag = 1;
     pixinds_roi2 = logical(sum(pixinds_roi)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
     depv2 = reshape(stack, [], size(stack, 4));
@@ -173,6 +166,7 @@ end
 %% create version of indv that can be passed to optimization code (dimensions x sample)
 
 
+
 num_samp_model = round(fitopt.length_model_seconds/dtmni);
 if num_samp_model==0
     num_samp_model = 1; %a convenience, so user can pass fitopt.length_model_seconds=0 if they don't know volume rate
@@ -188,16 +182,19 @@ for ii = 1 : num_samp_indvaug_full
     trialepochindsaug(:,ii) = flip(trialepochinds_i(ii:ii+num_samp_model-1), time_dimension); %do the same for epoch inds, to make sure model doesn't include any samples from wrong epoch
 end
 
+% if startsWith(fitopt.modeltype, 'onehot')
+%     numbinhot = 3;
+%     collapse_input_by_ineractions = 1;
+%     doplots_hot = 0;
+%     [indvaug, num_dim_indvaug, num_samp_model, levs_full_hot] = ...
+%         one_hot_encode_input(numbinhot, collapse_input_by_ineractions, indvaug, num_dim_indvin, num_samp_model, pth_fitdata_prefix, doplots_hot);
+% end
+
 
 %% set up model fitting and plotting options
 
-
-
-[fitin, gethue, getsat, getval, gethr_native, gethr_relative, ...
-    getsr_native, getsr_relative, getvr_native, getvr_relative, ...
-    fitopt.hrange_out_manual, hue_is_periodic] = ...
-    model_setup(fitopt, indvaug, num_samp_model, ...
-    num_dim_indvaug, num_dim_indvin, depvin, dtmni);
+[fitin, plt] = setup_model_all(fitopt, plt, indvaug, num_samp_model, ...
+    num_dim_indvaug, num_dim_indvin, depvin, dtmni, pth_fitdata_prefix);
 
 
 %% write depv to bin (to allow parfor loop without broadcasting)
@@ -274,7 +271,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         vdata = zeros(numdepvs, 1);
         indvpreftmp = zeros(numdepvs, 1);
 
-        if strcmp(fitopt.modeltype, 'tm')
+        if startsWith(fitopt.modeltype, 'tm')
             indvauge = indvauge.';
         end
 
@@ -286,17 +283,17 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
                 depv = double(depvintmp(:, ri));
 
-                if strcmp(fitopt.modeltype, 'svd')
-                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_svd( fitin.objfcn, indvauge, depv, fitopt.pvar);
+                if startsWith(fitopt.modeltype, 'svd')
+                    [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_svd( fitin, indvauge, depv);
                 else
                     if strcmp(fitopt.slvrg, 'globalsearch')
                         [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_gs(fitin, indvauge, depv, ri);
                     end
                 end
 
-                hdata(ri) = gethue(fttmp(ri,:), indvauge, preddepv(:,ri));
-                sdata(ri) = getsat(goftmp(ri));
-                vdata(ri) = getval(depv);
+                hdata(ri) = plt.gethue(fttmp(ri,:), indvauge, preddepv(:,ri));
+                sdata(ri) = plt.getsat(goftmp(ri));
+                vdata(ri) = plt.getval(depv);
                 indvpreftmp(ri) = indvauge(find(max(preddepv(:,ri))==preddepv(:,ri), 1));
 
             else
@@ -306,7 +303,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         end
         toc
 
-        if strcmp(fitopt.modeltype, 'tm')
+        if startsWith(fitopt.modeltype, 'tm')
             indvauge = indvauge.';
         end
 
@@ -315,13 +312,13 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     end
 
     %select which pixels/rois get detail view and how they're sorted
-    switch fitopt.sort_method
-        case 'unbiased' %equidistant fitopt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
+    switch plt.sort_method
+        case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
             sortinds = fliplr(1:numdepvs);
             sortinds = 1:numdepvs;
-        case 'majoraxis' %equidistant fitopt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
+        case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
             [~, sortinds] = sort(mapind2ind,  'descend');
-        case 'gof' %sort by gof (sdata), then equidistant fitopt.maxnumroiplot, descending order
+        case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
             [~, sortinds] = sort(sdata, 'descend');
         case 'custom'
             sortonetmp = find(abs(hdata)>2);
@@ -330,22 +327,15 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
     end
 
-    if fitopt.maxnumroiplot>=numdepvs
+    if plt.maxnumroiplot>=numdepvs
         roiinds_plot = sortinds;
     else
-        roiinds_plot = sortinds(round(linspace(1, numdepvs, fitopt.maxnumroiplot)));
+        roiinds_plot = sortinds(round(linspace(1, numdepvs, plt.maxnumroiplot)));
     end
 
     %organize and normalize model data into hsv map
-    [ hsvmap{epi} ] = form_hsv( indvauge, depvintmp, goftmp, ...
-        hdata, sdata, vdata, ...
-        fitopt.huenorm, fitopt.satnorm, fitopt.valnorm, ...
-        gethr_native, gethr_relative, ...
-        getsr_native, getsr_relative, ...
-        getvr_native, getvr_relative, ...
-        fitopt.hrange_in_manual, fitopt.srange_in_manual, fitopt.vrange_in_manual, ...
-        fitopt.hrange_out_manual, fitopt.srange_out_manual, fitopt.vrange_out_manual, ...
-        fitopt.hueshift, hue_is_periodic);
+    plt.hsvmap{epi} = form_hsv( indvauge, depvintmp, goftmp, hdata, sdata, vdata, plt, fitopt.modeltype);
+
 
     %subset to create potentially smaller variables
     depvinstds_plot{epi} = depvinstds(roiinds_plot);
@@ -371,19 +361,15 @@ clear depvintmp preddepv goftmp fttmp
 
 %% plot everything
 
-if fitopt.doplots
+if plt.doplots
 
-    doplots = [0 0 1 0 0];
+    plt.doplots = [0 0 1 0 0];
 
-    model_plots(hsvmap, indv_plot, depv_plot, preddepv_plot, stack, stackmean, ...
-        fitopt.epochinds, pixinds_roi_plot, roiinds_plot, fitopt.hsv_background, ...
-        fitopt.max_tinds, fitopt.timeseries_numsegments, ...
-        fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
-        fitopt.depvplot_norm, fitopt.plot_class, ...
+    model_plots(plt, indv_plot, depv_plot, preddepv_plot, stack, stackmean, ...
+        fitopt.epochinds, pixinds_roi_plot, roiinds_plot, ...
         keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-        pth_fitdata_prefix, fitopt.gif_visibility, fitin.objfcn, ft, fitin.supp, doplots, ...
+        pth_fitdata_prefix, fitin.objfcn, ft, fitin.supp, ...
         fitopt.standardize_depv, depvinstds_plot, depvinmeans_plot)
 
-    
 
 end
