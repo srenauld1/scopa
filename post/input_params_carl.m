@@ -153,7 +153,6 @@ opt.bump.fit(1).indv{1} = {['vis, angsd']};
 opt.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
 opt.bump.fit(1).validation_fraction = 0.2;
-opt.bump.fit(1).validation_fold = 0;
 opt.bump.fit(1).modeltype = 'vonmises';
 opt.bump.fit(1).epochinds = {[4]};
 opt.bump.fit(1).length_model_seconds = 0;
@@ -209,11 +208,13 @@ opt.bump.fit = default_fit_params(opt.bump.fit);
 
 %for now, depv at single struct and outer cell level should come from single regionex
 opt.fit.do_predict = 1; %0 to skip fit_mdl
-opt.fit(1).depv{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
+opt.fit(1).depv{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
+opt.fit(1).depv{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
 % opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
 opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
 opt.fit(1).indv{2} = {['ball, velrsd'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
 opt.fit(1).indv{3} = {['ball, velrsd']};
+
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit.epochinds = {[2 3 4]}; 
 opt.fit.validation_fraction = 0.2; %applied to all modeltypes; if < 1, fraction of total samples in opt.fit.epochinds for k-fold cross-validation, where k=1/opt.fit.validation_fraction; if scalar integer or vector of integers >=1, denotes epochinds for validation, by default one bout of those epochinds for each k; 

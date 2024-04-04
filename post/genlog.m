@@ -38,7 +38,7 @@ for ci = 1:length(C) %changes right asymptote value, above 1 makes it exponentia
 
                                 [xs, idx] = sort(x);
                                 hpl = plot(hax, xs, out(idx)); %sorting prevents an odd plotting error
-                                % ylim([-20 20])
+                                %ylim([-3 3])
                                 % xlim([-20 20])
                                 htx.String = [...
                                     ' B: ' num2str(round(B(bi), 2)), ...

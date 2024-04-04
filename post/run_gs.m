@@ -22,7 +22,7 @@ histfit.max_iter_global = 2;
 histfit.max_unique_sol_global = 10; %run indefinite global search iterations until it finds histfit.max_iter_global unique local solutions . . .  make empty to not set limit
 histfit.local_sol_is_unique_thresh = 1e-4; %local solution flagged as unique (recorded in histfit.unique_local_fval) if it differs from all other local solutions by at least histfit.local_sol_is_unique_thresh
 histfit.save_iter_spacing = 2; %record optimization data in histfit.local fields every histfit.save_iter_spacing iteration of the local solver (continuous across global iterations)
-histfit.dummyval = 61616161; %written to histfit.x_l and histfit.fval_l to help easily distinguish init rows (start of global iteration) by eye
+histfit.dummyval = inf; %written to histfit.x_l and histfit.fval_l to help easily distinguish init rows (start of global iteration) by eye
 histfit.precision = 'single';
 
 histfit.x_l = zeros(supp.num_par_total, histfit.max_iter_local, histfit.max_iter_global, histfit.precision); %x across local iterations, continuous across global iterations
@@ -46,18 +46,18 @@ save_unique_sol_count_global = 1;
 slvrg = GlobalSearch; %globalsearch can only use fmincon
 
 slvrg.NumTrialPoints = supp.NumTrialPoints; %1000
-slvrg.BasinRadiusFactor = 0.2000; %0.2000
-slvrg.DistanceThresholdFactor = 0.7500; %0.7500
-slvrg.MaxWaitCycle = 20; %20
+slvrg.BasinRadiusFactor = supp.BasinRadiusFactor; %0.2000
+slvrg.DistanceThresholdFactor = supp.DistanceThresholdFactor; %0.7500
+slvrg.MaxWaitCycle = supp.MaxWaitCycle; %20
 slvrg.NumStageOnePoints = supp.NumStageOnePoints; %200
-slvrg.PenaltyThresholdFactor = 0.2000; %0.2000
+slvrg.PenaltyThresholdFactor = supp.PenaltyThresholdFactor; %0.2000
 slvrg.Display = 'final'; %'final'
-slvrg.FunctionTolerance = 1.0000e-06; %1.0000e-06
+slvrg.FunctionTolerance = supp.FunctionTolerance; %1.0000e-06
 slvrg.MaxTime = Inf; %Inf
 slvrg.OutputFcn = @outfcn_global; %[]
-slvrg.PlotFcn = [];%{@gsplotbestf, @gsplotfunccount}; %[]
+slvrg.PlotFcn = []; %{@gsplotbestf, @gsplotfunccount}; %[]
 slvrg.StartPointsToRun = 'bounds-ineqs'; %'all'
-slvrg.XTolerance = 1.0000e-06; %1.0000e-06
+slvrg.XTolerance = supp.XTolerance; %1.0000e-06
 
 
 %% local solver options
@@ -111,7 +111,7 @@ optprob.options = optopts;
 
 [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(slvrg, optprob); %ft are fit params
 
-%[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optprob.objective, ft, [], [], [], [], lbnd, ubnd, [], optprob.options); %single run of local solver
+%[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optprob.objective, x0, [], [], [], [], lbnd, ubnd, [], optprob.options); %single run of local solver
 
 %% compute output variables
 

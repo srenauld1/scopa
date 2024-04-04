@@ -91,11 +91,11 @@ for jj = 1:supp.num_dim_indvin %loop over indv dims
             filt = cell2mat(tmp); %optimize filter weights directly
         elseif strcmp(supp.annspec{ii,'linfilt_types_per_indv_dim'}, 'integrating')
             flagdiff = 0;
-            filt = supp.lf_2(flagdiff, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            filt = supp.linfun(flagdiff, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
         elseif strcmp(supp.annspec{ii,'linfilt_types_per_indv_dim'}, 'differentiating')
             flagdiff = 1;
-            filt = supp.lf_2(flagdiff, doplots_filt, tmp{:});
-            % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            filt = supp.linfun(flagdiff, doplots_filt, tmp{:});
+            % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
         end
         preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
         preddepvtmp = preddepvtmp + filtbias;

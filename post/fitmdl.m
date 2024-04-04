@@ -44,19 +44,14 @@ function [ft, gof, indvpref] = fitmdl(stack, fitin, roiinfo, md, fitopt, pixfitf
 
 % there are other options still, but above seems to me to be the most general, small set of functions for our purposes
 
-%% params
+%% unpack some params
 
 depvin = fitin.depv;
 indvin = fitin.indv;
-regionex = fitin.regionex;
-parsex = fitin.parsex;
-parsnorm = fitin.parsnorm;
-fitcount = fitin.fitcount;
 pixinds_roi = roiinfo.pixinds_roi;
 mapind2ind = roiinfo.mapind2ind;
 trialepochinds_i = md.trialepochinds_i;
 dtmni = md.dtmni;
-
 plt = fitopt.plt;
 
 %% check/correct inputs
@@ -106,11 +101,6 @@ if strcmp(plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag=
 end
 
 
-%% synthesize depv to test optimization
-
-if fitopt.synthesize_depv
-    synthesize_depv %mock data to test fitting
-end
 
 %% check indv/depv size
 
@@ -127,12 +117,8 @@ end
 %% optional preprocessing of inputs
 
 if fitopt.smoothdepv
-    smoothdata(depvin, time_dimension, 'gaussian', fitopt.smoothdepv);
+    depvin = smoothdata(depvin, time_dimension, 'gaussian', fitopt.smoothdepv);
 end
-
-% num_indv_bins = 12;
-% indv_binned = discretize(indvin, linspace(min(indvin(:)), max(indvin(:)), num_indv_bins));
-
 
 %% exclude
 
@@ -166,7 +152,6 @@ end
 %% create version of indv that can be passed to optimization code (dimensions x sample)
 
 
-
 num_samp_model = round(fitopt.length_model_seconds/dtmni);
 if num_samp_model==0
     num_samp_model = 1; %a convenience, so user can pass fitopt.length_model_seconds=0 if they don't know volume rate
@@ -195,6 +180,7 @@ end
 
 [fitin, plt] = setup_model_all(fitopt, plt, indvaug, num_samp_model, ...
     num_dim_indvaug, num_dim_indvin, depvin, dtmni, pth_fitdata_prefix);
+
 
 
 %% write depv to bin (to allow parfor loop without broadcasting)
@@ -261,6 +247,12 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         dofit = 0;
     end
 
+    if fitopt.num_synthetic_depv %if not 0, replace depvintmp with synthetic data
+        dofit = 1;
+        doplots_syn = 0;
+        [depvintmp, numdepvs, ftsyn] = synthesize_depv(fitin, double(depvintmp), indvauge, doplots_syn, fitopt.num_synthetic_depv);
+    end
+
     if dofit
 
         fttmp = zeros(numdepvs, fitin.supp.num_par_total); % was num_dim_indvin*num_samp_model, then num_dim_indvin*fitin.supp.num_par_total
@@ -287,7 +279,21 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
                     [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_svd( fitin, indvauge, depv);
                 else
                     if strcmp(fitopt.slvrg, 'globalsearch')
+%% 
+
+                        fitin.supp.NumTrialPoints = 2000; %1000
+                        fitin.supp.NumStageOnePoints = 1000; %200
+                        fitin.supp.BasinRadiusFactor = 0.2000; %0.2000
+                        fitin.supp.DistanceThresholdFactor = 0.7500; %0.7500
+                        fitin.supp.MaxWaitCycle = 20; %20
+                        fitin.supp.PenaltyThresholdFactor = 0.2000; %0.2000
+                        fitin.supp.XTolerance = 1e-6; %1e-6
+                        fitin.supp.FunctionTolerance = 1e-6; %1e-6
                         [ fttmp(ri,:), goftmp(ri), preddepv(:,ri) ] = run_gs(fitin, indvauge, depv, ri);
+                        %tinds = 1:300; hfg = figure; subplot(2,1,1); plot(double(preddepv(tinds, ri))); hold on; plot(depv(tinds)); subplot(2,1,2); plot(fttmp(ri,:)); hold on; plot(ftsyn(ri,:)); fig2gif(hfg, 1, [fitin.supp.pthspre '_' datestr(now, 30) '_testpred.gif'])
+                        %tinds = 1:1100; hfg = figure; subplot(2,1,1); plot(double(preddepv(tinds, ri))); hold on; plot(depv(tinds)); subplot(2,1,2); plot(fttmp(ri,:));fig2gif(hfg, 1, [fitin.supp.pthspre '_' datestr(now, 30) '_testpred.gif'])
+%% 
+
                     end
                 end
 
@@ -300,6 +306,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
                 indvpreftmp(ri) = nan;
             end
 
+            % fitin.objfcn(ftsyn(ri,:), indvauge, fitin.supp, [fitin.supp.pthspre '_' datestr(now, 30)])
+            %fitin.objfcn(fttmp(ri,:), indvauge, fitin.supp, [fitin.supp.pthspre '_' datestr(now, 30)])
         end
         toc
 

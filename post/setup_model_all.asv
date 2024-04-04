@@ -133,11 +133,10 @@ fitin.supp = supp;
     function ftsyn = synthesize_params()
         ubndtmp = ubnd;
         lbndtmp = lbnd;
-        dummybnd = 10;
-        ubndtmp(isinf(ubndtmp)&ubndtmp>0) = dummybnd; %replace inf with a (relatively) big number
-        ubndtmp(isinf(ubndtmp)&ubndtmp<0) = -dummybnd; %replace -inf with a (relatively) small number
-        lbndtmp(isinf(lbndtmp)&lbndtmp>0) = dummybnd; %replace inf with a (relatively) big number
-        lbndtmp(isinf(lbndtmp)&lbndtmp<0) = -dummybnd; %replace -inf with a (relatively) small number
+        ubndtmp(isinf(ubndtmp)&ubndtmp>0) = 1e10; %replace inf with a big number
+        ubndtmp(isinf(ubndtmp)&ubndtmp<0) = -1e10; %replace -inf with a small number
+        lbndtmp(isinf(lbndtmp)&lbndtmp>0) = 1e10; %replace inf with a big number
+        lbndtmp(isinf(lbndtmp)&lbndtmp<0) = -1e10; %replace -inf with a small number
         ftsyn = lbndtmp + (ubndtmp-lbndtmp).*rand(size(x0)); %synthetic params (random, within bounds), to generate synthetic depv in case testing optimization code
     end
 

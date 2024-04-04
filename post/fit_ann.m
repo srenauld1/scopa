@@ -17,7 +17,13 @@ binmns = [];
 make_figure = 0;
 outflag = 0;
 pthspre = supp.pthspre; %default here, can be overwritten by input 'optin'
-
+if isfield(supp, 'framecount')
+    framecount = supp.framecount;
+    do_increment_framecount = 0;
+else
+    framecount = 0;
+    do_increment_framecount = 1;
+end
 
 if exist('optin', 'var') && ~isempty(optin)
 
@@ -26,13 +32,7 @@ if exist('optin', 'var') && ~isempty(optin)
     supp.extra_xlim_fac = 0.1;
     supp.fontsmall = 2;
 
-    if (iscell(optin) && any(strcmp(cellfun(@(x) get(x, 'type'), optin, 'UniformOutput', false), 'axes'))) || ...
-            (~iscell(optin) && strcmp(get(optin, 'type'), 'axes')) %add to existing figure passed as optin
-
-        optin_is_figure = 1;
-        hax = optin;
-
-    elseif ischar(optin) || isstring(optin) %create new figure with filename optin
+    if ischar(optin) || isstring(optin) %create new figure with filename optin
 
         optin_is_figure = 0;
         supp.starting_hax = 0;
@@ -49,7 +49,7 @@ if exist('optin', 'var') && ~isempty(optin)
         supp.fontsmall = 10;
         fontmedium = 20;
         numrows_plot = supp.max_num_fun_per_neuron;
-        numcolumns_plot = supp.num_dim_indvin*supp.num_neuron;
+        numcolumns_plot = supp.num_neuron_total;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -60,16 +60,21 @@ if exist('optin', 'var') && ~isempty(optin)
         bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
         htx = text( 0.05, 0.99, '', 'FontSize', supp.fontsmall, 'VerticalAlignment', 'top', 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
         for si = 1:length(axx)
-            hax{si} = axes( 'Parent', hfg, 'Position', [axx(si), axy(si), axw, axh] );
+            hax{si} = axes( 'Parent', hfg, 'Position', [axx(si), axy(si), axw(si), axh(si)] );
         end
 
+    elseif (iscell(optin) && any(strcmp(cellfun(@(x) get(x, 'type'), optin, 'UniformOutput', false), 'axes'))) || ...
+            (~iscell(optin) && strcmp(get(optin, 'type'), 'axes')) %add to existing figure passed as optin
+
+        optin_is_figure = 1;
+        hax = optin;
+    
     end
 
 end
 
 
-C = 1; %hard coded param
-Q = 1; %hard coded param
+
 preddepv = zeros(size(indv, 1), 1);
 doplots_filt = 0;
 doplots_hot = 0;
@@ -77,11 +82,17 @@ doplots_hot = 0;
 fnl = fieldnames(supp.ann);
 num_lay = length(fnl);
 
+plotcols = distinguishable_colors(supp.num_neuron_total);
+
 for li = 1:num_lay
 
     fnc = fieldnames(supp.ann.(fnl{li}));
     num_chan = length(fnc);
     neuron_count_single_layer = 0;
+    if do_increment_framecount
+        framecount = framecount + 1;
+    end
+
 
     for ci = 1:num_chan %1:supp.num_dim_indvin %loop over input channels (indv dims in layer 1)
 
@@ -104,18 +115,22 @@ for li = 1:num_lay
                 tmp = tmptmp;
                 filtbias = 0;
             end
-            if strcmp(anntmp.annspec.strlin{ni}, 'f')
-                filt = cell2mat(tmp); %optimize filter weights directly
-            elseif strcmp(anntmp.annspec.strlin{ni}, 's')
-                flagdiff = 0;
-                filt = anntmp.lf_2(flagdiff, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
-            elseif strcmp(anntmp.annspec.strlin{ni}, 'd')
-                flagdiff = 1;
-                filt = anntmp.lf_2(flagdiff, doplots_filt, tmp{:});
-                % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            if strcmp(anntmp.annspec.strlin{ni}, 'l')
+                error("how to deal with this when onehot nonlin?")
+            else
+                if strcmp(anntmp.annspec.strlin{ni}, 'f')
+                    filt = cell2mat(tmp); %optimize filter weights directly
+                elseif strcmp(anntmp.annspec.strlin{ni}, 's')
+                    flagdiff = 0;
+                    filt = anntmp.linfun(flagdiff, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+                elseif strcmp(anntmp.annspec.strlin{ni}, 'd')
+                    flagdiff = 1;
+                    filt = anntmp.linfun(flagdiff, doplots_filt, tmp{:});
+                    % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+                end
+                preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
+                preddepvtmp = preddepvtmp + filtbias;
             end
-            preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
-            preddepvtmp = preddepvtmp + filtbias;
 
             if make_figure
                 preddepvlin = preddepvtmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
@@ -128,13 +143,13 @@ for li = 1:num_lay
                         preddepvtmp2(:,neuron_count_single_layer) = preddepvtmp;
                         preddepvtmp(:) = 0;
                         if strcmp(anntmp.annspec.independently_discretized_hot_dims{ni}, 'x') %after all input channels and current neurons
-                            [preddepvtmp, binmns] = anntmp.nl_hot{ni}(doplots_hot, outflag, pthspre, preddepvtmp2, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                            [preddepvtmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, preddepvtmp2, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
                         end
                     elseif ismember(anntmp.annspec.independently_discretized_hot_dims{ni}, {'c', 't', 'n'})
-                        [preddepvtmp, binmns] = anntmp.nl_hot{ni}(doplots_hot, outflag, pthspre, preddepvtmp, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                        [preddepvtmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, preddepvtmp, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
                     end
                 else
-                    preddepvtmp = static_genlog(preddepvtmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+                    preddepvtmp = anntmp.actfun{ni}(preddepvtmp, tmp{:}); %apply activation function
                 end
             end
             preddepv = preddepv + preddepvtmp; %sum outputs across loop
@@ -146,8 +161,13 @@ for li = 1:num_lay
                 sfi = sfi_i+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
                 sfi = sfi+supp.starting_hax;
 
-                if supp.framecount==1
-                    plot(hax{sfi}, filt);
+                if framecount==1
+                    if strcmp(anntmp.annspec.stract{ni}, 'y') || startsWith(anntmp.annspec.stract{ni}, 'h')
+                        filtcol = plotcols(neuron_count_single_layer,:);
+                    else
+                        filtcol = plotcols(1,:);
+                    end
+                    plot(hax{sfi}, filt, 'Color', filtcol);
 
                     xlm = hax{sfi}.XLim;
                     extrax = supp.extra_xlim_fac*range(xlm(:));
@@ -181,10 +201,13 @@ for li = 1:num_lay
 
                     [preddepvlin, idx] = sort(preddepvlin);
 
-                    if supp.framecount==1
+                    if framecount==1
                         if binmns
                             % scatter3(hax{sfi}, preddepvtmp2(:,1), preddepvtmp2(:,2), preddepvtmp, 'filled'); %sorting prevents an odd plotting error
-                            scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(anntmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
+                            % scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(anntmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
+                            for bmi = 1:size(binmns, 1)
+                                scatter(hax{sfi}, binmns(bmi,:), pars(anntmp.pind(ni).N), 15, plotcols(bmi,:), 'filled'); hold on; %sorting prevents an odd plotting error
+                            end
                         else
                             plot(hax{sfi}, preddepvlin, preddepvtmp(idx)); %sorting prevents an odd plotting error
                         end
@@ -231,30 +254,6 @@ for li = 1:num_lay
     end
 
 end
-%%
-%
-% B = [0.9]; %slope, 0 is horizontal line
-% A = [-15000]; %left asymptote value
-% K = [15000]; %right asymptote (exactly if C=1, otherwise a function of C, A, K, V)
-% V = linspace(1, 1, 1 ); %[.2]; %inflection point, 1 is balanced in center; can't be negative, approaches ylim asymptotically
-% M = linspace(0, 0, 1); %[1]; %x shift, larger and more direct effect than Q
-% Q = [1];%linspace(1, 1, 1); %[-1.2 -0.8 -.1 0 0.1 0.8 1.2];  %kind of like x shift / when curve starts to rise  (i think this needs to be positive??)
-% C = [1]; %maybe can force this to be 1, changes right asymptote value, above 1 makes it exponentially closer to lower asymptote, and below eponentially furthe
-% x = linspace(-10, 10, 1000);
-% genlog(x, B,A,K,V,M,Q,C, 1, pth_save)
-
-%%
-%
-% tau1 = linspace(0.1, 2, 10);
-% tau2 = linspace(0.1, 4, 6);
-% % tau2 = [tau1+tau1*0.2 tau1+tau1*0.4 tau1+tau1*0.6 tau1+tau1*0.8];
-% shift = linspace(0, 0, 1);
-% tc = linspace(0, 1, 3 );
-% filtnorm = linspace(1, 1, 1);
-% numsamp = linspace(10, 10, 1);
-% linear_filter_1d_test(tau1, tau2, shift, tc, filtnorm, numsamp, ['~/Documents/' datestr(now,30) '_.gif'])
-
-%%
 
 
 end

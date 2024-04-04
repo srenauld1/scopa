@@ -1,4 +1,4 @@
-function filt = linear_filter_1d(numsamp, filtnorm, doplots, varargin)
+function filt = linear_filter_1d_deprecated(numsamp, filtnorm, doplots, varargin)
 
 
 padlen = 5;

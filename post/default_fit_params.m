@@ -11,7 +11,7 @@ indv = {...
 depv_indv_combine = 'any'; %any or each
 ignore_missing_vars = 0;
 
-synthesize_depv = 0; %create toy data for testing fit
+num_synthetic_depv = 0; %create synthetic data (using requested modeltype params, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
 epochinds = {[4]};
 num_samp_lag = 1; %how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
 length_model_seconds = 2; %seconds, 0 is one sample

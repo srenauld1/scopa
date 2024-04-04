@@ -741,6 +741,7 @@ if doplots(3)
     indv_base_color = [0 0 1];
     cmap_indv = repmat(indv_base_color, [num_indv_to_plot 1]);
     cmap_indv(:,2) = linspace(1, 0, num_indv_to_plot);
+    cmap_indv = flip(cmap_indv, 1);
     color_preddepv = [1 0 0 preddepv_alpha];
     color_depv = [0 0 0 depv_alpha];
 

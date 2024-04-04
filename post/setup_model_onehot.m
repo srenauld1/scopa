@@ -21,7 +21,7 @@ if strcmp(annspec.independently_discretized_hot_dims{ni}, 'x') %artificial neuro
 end
 
 
-ann.nl_hot{ni} = @one_hot_nonlinearity;
+ann.actfun{ni} = @one_hot_nonlinearity;
 
 
 %% nested nonlinearity functions

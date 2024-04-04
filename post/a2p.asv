@@ -6,7 +6,6 @@ clc
 
 disp("make hemisphere no hemisphere option")
 
-
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % struct 'opt' holds input params in various sub-structs, which are each used predominantly in a function below
@@ -120,8 +119,9 @@ for pai = 1:length(pth_usefile_prefix_all)
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-        opt.fit.epochinds = {[2 3]}; 
-        opt.fit.modeltype = 'ann_L1_sh32x'; opt.fit.use_saved_model = 0; opt.fit.length_model_seconds = 1;
+        opt.fit.epochinds = {[2 3 4]}; 
+        opt.fit.num_synthetic_depv = 0;
+        opt.fit.modeltype = 'ann_L1_sa'; opt.fit.use_saved_model = 1; opt.fit.length_model_seconds = 2;
         [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
 
