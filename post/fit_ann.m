@@ -213,9 +213,13 @@ for li = 1:num_lay
                         end
                     else
                         if binmns
-                            hax{sfi}.Children.XData = binmns(1,:);
-                            hax{sfi}.Children.YData = binmns(2,:);
-                            hax{sfi}.Children.ZData = pars(anntmp.pind(ni).N);
+                            for bmi = 1:size(binmns, 1)
+                                hax{sfi}.Children(bmi).XData = binmns(bmi,:);
+                                hax{sfi}.Children(bmi).YData = pars(anntmp.pind(ni).N);
+                                % hax{sfi}.Children(bmi).XData = binmns(bmi,:);
+                                % hax{sfi}.Children(bmi).YData = binmns(bmi,:);
+                                % hax{sfi}.Children(bmi).ZData = pars(anntmp.pind(ni).N);
+                            end
                         else
                             hax{sfi}.Children.XData = preddepvlin;
                             hax{sfi}.Children.YData = preddepvtmp(idx);

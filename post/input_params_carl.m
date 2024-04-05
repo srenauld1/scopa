@@ -1,6 +1,7 @@
 function opt = input_params_carl()
 
 
+
 % struct 'opt' holds all input params 
 % substructures within opt are mostly used within single functions called from a2p
 
@@ -43,11 +44,11 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 % for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-opt.mroi.use_drawn_rois =  {'pb'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot
+opt.mroi.use_drawn_rois_str =  {'pb', 'no_r', 'no_l'}; %let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.num_mroi_auto = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-opt.mroi.use_hires = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.num_mroi_auto_str = {'pb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+opt.mroi.use_hires_str = {'pb'}; %use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.create_mask_method = 'edge'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 opt.mroi.subsample_mask_method = 'equidistant'; %method for subsampling mask into rois
 opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
@@ -134,14 +135,14 @@ opt.ftrac.doplots = 0;
 % opt.bump.fit(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
-opt.bump.do_bump = 1; %0 to skip compute_bump
+opt.bump.do = 1; %0 to skip compute_bump
 opt.bump.bump_method = 'pva'; %'pva' for vector average
 opt.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
 opt.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.bump.numcluster_for_bump_domain_resample = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.bump.fit.depv  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+opt.bump.numcluster_for_bump_domain_resample_str = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.bump.fit.depv  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass 
 opt.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)

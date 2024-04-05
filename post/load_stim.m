@@ -1,4 +1,8 @@
-function [md, stim] = load_stim(md, datenum, flynum, trialnum, no_stim_epochs, doplots)
+function [md, stim] = load_stim(md, ids, no_stim_epochs, doplots)
+
+datenum = ids.datenum;
+flynum = ids.flynum;
+trialnum = ids.trialnum;
 
 recid = [num2str(datenum) num2str(flynum)];
 

@@ -128,6 +128,9 @@ fitin.linineq_b = linineq_b;
 fitin.nlcon = nlcon;
 fitin.supp = supp;
 
+[optimg, optiml, optimp] = set_optimization_options(supp);
+
+%%
 
 
     function ftsyn = synthesize_params()

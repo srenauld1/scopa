@@ -15,24 +15,27 @@ disp("make hemisphere no hemisphere option")
 % struct 'paths' holds paths
 % numeric array 'stack' is the imaging movie chosen for analysis (using 'opt.main.suffix_analysis')
 
+% substuct 'opt.fit' holds options used in function 'fitmdl'
+% struct 'fitin' (stands for 'fit input') holds data used in function 'fitmdl'
+
 %% params
 
 
-opt = input_params_carl(); %input_params_default();
+opt = input_params_carl();
 
 
-%% loop over files
+%% loop over recordings
 
 pth_usefile_prefix_all = find_preprocessed_files(opt.main);
 
-for pai = 1:length(pth_usefile_prefix_all)
+for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     resp = [];
     pars_all = [];
 
     %% assign filenames
 
-    [opt, pth, croplim_all, parstr_mroi, parstr_froi, datenum, flynum, trialnum, recid] = filenames_scopa(opt, pth_usefile_prefix_all{pai});
+    [opt, pth, croplim_all, parstr, ids] = filenames_scopa(opt, pth_usefile_prefix_all{pai});
 
 
     %% load metadata
@@ -43,10 +46,10 @@ for pai = 1:length(pth_usefile_prefix_all)
 
 
     if opt.main.old_project
-        [md, ts.vis] = load_stim(md, datenum, flynum, trialnum, opt.ftrac);
+        [md, ts.vis] = load_stim(md, ids, opt.ftrac);
     else
         if opt.ftrac.include_behavior
-            [md, ts.ball, ts.vis] = load_fictrac(datenum, flynum, trialnum, md, pth.fictrac, opt.ftrac);
+            [md, ts.ball, ts.vis] = load_fictrac(ids, md, pth.fictrac, opt.ftrac);
         end
     end
 
@@ -54,13 +57,13 @@ for pai = 1:length(pth_usefile_prefix_all)
     %% load/visualize movies (stacks)
 
 
-    stack = load_stack(md, pth, opt.gif, recid);
+    stack = load_stack(md, pth, opt.gif, ids.recid);
 
 
     %% load high resolution movie (stack)
 
     if any(cell2mat(struct2cell(opt.mroi.use_hires)))
-        [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opt.hires);
+        [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
     else
         stack_hires_mnt = [];
         map_hires_lores = [];
@@ -74,19 +77,19 @@ for pai = 1:length(pth_usefile_prefix_all)
 
         %%crop movie to regionex cuboid
         [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop] = ...
-            crop_stacks(stack, croplim_all.(regionex), recid, regionex, pth.fldr, ...
+            crop_stacks(stack, croplim_all.(regionex), ids.recid, regionex, pth.fldr, ...
             md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores);
 
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
-        [roiinfo.(regionex).(parstr_mroi.(regionex)), ts.resp.(regionex).(parstr_mroi.(regionex))] = ...
+        [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
             make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex);
 
 
         %%load/select functional (caiman) roi responses
         for rfi = 1:length(pth.froi_all.(regionex)) %for each caiman extraction run (each roi file)
-            [roiinfo.(regionex).(parstr_froi.(regionex){rfi}), ts.resp.(regionex).(parstr_froi.(regionex){rfi})] = ...
-                process_functional_rois(stack_mnt.(regionex), roiinfo.(regionex).(parstr_mroi.(regionex)), ...
+            [roiinfo.(regionex).(parstr.froi.(regionex){rfi}), ts.resp.(regionex).(parstr.froi.(regionex){rfi})] = ...
+                process_functional_rois(stack_mnt.(regionex), roiinfo.(regionex).(parstr.mroi.(regionex)), ...
                 pth.froi_all.(regionex){rfi}, regionex, md, opt.froi);
         end
 
@@ -97,10 +100,10 @@ for pai = 1:length(pth_usefile_prefix_all)
 
     dofit = 1;
     fitcount = 0;
-    while dofit && opt.bump.do_bump
+    while dofit && opt.bump.do
 
         fitcount = fitcount + 1;
-        [fitin, fieldspecstr, dofit] = choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, pth.stack_analysis, fitcount, dofit);  %select indv/depv for fit using input params
+        [fitin, dofit] = choose_timeseries(opt.bump.fit, ts, md, pth.parsall_bump, pth.stack_analysis, fitcount, dofit);  %select indv/depv for fit using input params
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
@@ -115,13 +118,13 @@ for pai = 1:length(pth_usefile_prefix_all)
     while dofit && opt.fit.do_predict
 
         fitcount = fitcount + 1;
-        [fitin, fieldspecstr, dofit] = choose_timeseries(opt.fit, ts, md, pth.parsall_fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
+        [fitin, dofit] = choose_timeseries(opt.fit, ts, md, pth.parsall_fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
 
         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
         opt.fit.epochinds = {[2 3 4]}; 
         opt.fit.num_synthetic_depv = 0;
-        opt.fit.modeltype = 'ann_L1_sa'; opt.fit.use_saved_model = 1; opt.fit.length_model_seconds = 2;
+        opt.fit.modeltype = 'ann_L1_sh16x'; opt.fit.use_saved_model = 1; opt.fit.length_model_seconds = 2;
         [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
 

@@ -22,7 +22,7 @@ slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';
 modeltype = 'ann_L1_sh16x'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
 
-standardize_indv = 0;
+standardize_indv = 1;%1 makes each indv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
 standardize_depv = 1; %1 makes each depv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
 smoothdepv = 0; %gaussian window std is one fifth total length
 

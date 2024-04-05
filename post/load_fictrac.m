@@ -1,6 +1,5 @@
 
-function [md, ball, vis] = load_fictrac(datenum, flynum, trialnum, md, pth_fictrac, fictracopts)
-
+function [md, ball, vis] = load_fictrac(ids, md, pth_fictrac, fictracopts)
 
 %note extracting velocity for what should be constant velocity cue can have
 %spikes because of noise in the acquisition/display, zoom in and you will see it
@@ -17,6 +16,10 @@ function [md, ball, vis] = load_fictrac(datenum, flynum, trialnum, md, pth_fictr
 
 
 %RIGHT NOW NOW CROPTIMEINDS FOR FICTRAC DATA THE WAY I DID FOR CLANDININ STIM DATA
+
+datenum = ids.datenum;
+flynum = ids.flynum;
+trialnum = ids.trialnum;
 
 dark_stim_end_duration = fictracopts.dark_stim_end_duration;
 num_panel_frames = fictracopts.num_panel_frames;

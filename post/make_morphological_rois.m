@@ -82,17 +82,17 @@ else
     maskmanual = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %otherwise just ones
 end
 
-num_mroi_manual_manual = size(maskmanual, 4);
+num_mroi_manual = size(maskmanual, 4);
 
 %% make mask_3d (from manual mask plus automated mask, or just manual mask, or just automated mask)
 
-if num_mroi_manual_manual>1 || num_mroi_auto==0
+if num_mroi_manual>1 || num_mroi_auto==0
 
-    num_mroi = num_mroi_manual_manual;
+    num_mroi = num_mroi_manual;
 
     if num_mroi_auto>0
         error(sprintf(['ERROR \n' ...
-            'num_mroi_manual_manual is greater than one AND num_mroi_auto is greater than zero \n' ...
+            'num_mroi_manual is greater than one AND num_mroi_auto is greater than zero \n' ...
             'DELETE OR RENAME pth_maskmanual AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
             'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
     end

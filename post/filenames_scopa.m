@@ -1,5 +1,4 @@
-function [opt, pth, croplim_all, parstr_mroi, parstr_froi, datenum, flynum, trialnum, recid_underscore] = ...
-    filenames_scopa(opt, pth_usefile_prefix)
+function [opt, pth, croplim_all, parstr, ids] = filenames_scopa(opt, pth_usefile_prefix)
 
 %% params 
 
@@ -7,11 +6,11 @@ suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
 suffixes_plot = opt.gif.suffixes_plot;
-use_hires = opt.mroi.use_hires;
-use_drawn_rois = opt.mroi.use_drawn_rois;
-num_mroi_auto = opt.mroi.num_mroi_auto;
+use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname use_hires
+use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
+num_mroi_auto = opt.mroi.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
 caiman_lr_str = opt.froi.caiman_lr_str;
-numcluster_for_bump_domain_resample = opt.bump.numcluster_for_bump_domain_resample;
+numcluster_for_bump_domain_resample = opt.bump.numcluster_for_bump_domain_resample_str; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample 
 caiman_hr_str = opt.hires.caiman_hr_str;
 
 %% variables for all regionex
@@ -85,7 +84,7 @@ for i = 1:length(regionex_all)
     num_mroi_auto_new.(regionex) = tmpnum;
 
     paramstr = ['moex_' flag_hires '_' flag_use_drawn_rois '_' flag_num_mroi_auto];
-    parstr_mroi.(regionex) = paramstr;
+    parstr.mroi.(regionex) = paramstr;
 
     pth_mroi.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_.mat'];
     pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
@@ -109,7 +108,7 @@ for i = 1:length(regionex_all)
             croplimstr_check{ci} = strjoin(spl(insloc+1:insloc+8), '_');
            
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_'); %everything in filename after 'cmex'
-            parstr_froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
+            parstr.froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
             pth_froi_all.(regionex){ci,1} = pth_froi_all_tmp{ci};
 
         end
@@ -120,7 +119,7 @@ for i = 1:length(regionex_all)
         paramstr = [paramstr '_cmex_' caiman_lr_str];
 
     else
-        parstr_froi.(regionex) = [];
+        parstr.froi.(regionex) = [];
         pth_froi_all.(regionex) = [];
     end
 
@@ -138,7 +137,7 @@ for i = 1:length(regionex_all)
 
     % if use_hires(i)
     %     paramstr = [paramstr '_hr_moex_paramtbd_'];
-    %     parstr_mroi.(regionex) = [parstr_mroi.(regionex) '_hr_moex_paramtbd'];
+    %     parstr.mroi.(regionex) = [parstr.mroi.(regionex) '_hr_moex_paramtbd'];
     %     if use_caiman_on_hires(i)
     %         paramstr = [paramstr '_hr_cmex_' caiman_hr_str];
     %     end
@@ -158,7 +157,7 @@ end
 
 
 if all(cellfun(@isempty, [opt.bump.fit.depv]))
-    opt.bump.do_bump = 0;
+    opt.bump.do = 0;
 end
 
 if all(cellfun(@isempty, [opt.fit.depv]))
@@ -231,6 +230,11 @@ pth_parsall_bump = [pth_fldr 'parsall_bumpfits_' opt.main.timestr '_.mat'];
 pth_parsall_fit = [pth_fldr 'parsall_finfits_' opt.main.timestr '_.mat'];
 
 %% assign to struct
+
+ids.datenum = datenum;
+ids.flynum = flynum;
+ids.trialnum = trialnum;
+ids.recid = recid_underscore;
 
 pth.fldr = pth_fldr;
 pth.stack_analysis = pth_stack_analysis;

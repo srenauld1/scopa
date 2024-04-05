@@ -1,4 +1,4 @@
-function [fitin, fieldspecstr, dofit] = ...
+function [fitin, dofit] = ...
     choose_timeseries(opt, ts, md, pth_parsall_save, pth_stack_analysis, fitcount, dofit)
 
 
@@ -108,12 +108,12 @@ else
 end
 
 
-fieldspecstr = fieldspecstr_all(fitcount);
-fn = fieldnames(fieldspecstr);
+fitin.fieldspecstr = fieldspecstr_all(fitcount);
+fn = fieldnames(fitin.fieldspecstr);
 for fi = 1:length(fn)
     fitin.(fn{fi}) = [];
-    for vsi2 = 1:length(fieldspecstr.(fn{fi}))
-        tmp = eval(fieldspecstr.(fn{fi}){vsi2});
+    for vsi2 = 1:length(fitin.fieldspecstr.(fn{fi}))
+        tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end
