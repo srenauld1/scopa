@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
-    setup_model_ann_oneposition(annspec, indv, depv, num_samp_model, dt, num_dim_indvin, padlen_sec)
+    setup_model_ann_oneposition(annspec, num_samp_model, dt, num_dim_indv_pre, padlen_sec)
 
 % in annspec, strlin for linear functions, stract for activation (nonlinear) functions
 % strlin 's' and 'd' and 'f' make linear filters (s is monophasic; d is biphasic, formed from derivative of s; f is freeform, can take any shape)
@@ -37,13 +37,6 @@ Q = 1; %hard coded param
 
 max_num_fun_per_neuron = max(sum(cellfun(@any, regexp([annspec.strlin(:) annspec.stract(:)], '[^l|a]')), 2));
 num_neuron = size(annspec, 1);
-minindv = min(indv(:));
-maxindv = max(indv(:));
-extremeindv = max(abs(indv(:)));
-mindepv = min(depv(:));
-maxdepv = max(depv(:));
-extremedepv = max(abs(depv(:)));
-meandepv = mean(depv(:));
 
 %% define all possible params for each artificial neuron (some will not be used, depending on neuron type)
 
@@ -114,7 +107,7 @@ for ni = 1:num_neuron
         ubnd_nonlin = [sigmoid_slope(2), sigmoid_asympleft(2), sigmoid_asympright(2), sigmoid_inflection(2), sigmoid_xshift(2)];
         x0_nonlin = [sigmoid_slope(3), sigmoid_asympleft(3), sigmoid_asympright(3), sigmoid_inflection(3), sigmoid_xshift(3)];
     elseif startsWith(annspec.stract{ni}, 'h')
-        ann = setup_model_onehot(ann, annspec, ni, num_dim_indvin, num_samp_model, num_neuron);
+        ann = setup_model_onehot(ann, annspec, ni, num_dim_indv_pre, num_samp_model, num_neuron);
         lbnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(1);
         ubnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(2);
         x0_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(3);

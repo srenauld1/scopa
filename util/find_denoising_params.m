@@ -66,18 +66,18 @@ if do_volume %to train on whole volume (not bothering calculating this for numst
 
     if old_project
         train_datasets_size = 13000;
-        patch_t_seconds = 10; %my personal fairly uneducated guess is that this should be at least 20 sec
+        patch_t_sec = 10; %my personal fairly uneducated guess is that this should be at least 20 sec
         patch_x = 120;
         patch_y = 120;
-        patch_t = ceil(patch_t_seconds*volume_rate);
+        patch_t = ceil(patch_t_sec*volume_rate);
         overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
 
     else
         train_datasets_size = 26000%26000;
-        patch_t_seconds = 25; %my personal fairly uneducated guess is that this should be at least 20 sec
+        patch_t_sec = 25; %my personal fairly uneducated guess is that this should be at least 20 sec
         patch_x = 120;
         patch_y = 120;
-        patch_t = ceil(patch_t_seconds*volume_rate);
+        patch_t = ceil(patch_t_sec*volume_rate);
         overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
     end
 
@@ -86,18 +86,18 @@ else
 
     if old_project
         train_datasets_size = 13000;
-        patch_t_seconds = 10; %my personal fairly uneducated guess is that this should be at least 20 sec
+        patch_t_sec = 10; %my personal fairly uneducated guess is that this should be at least 20 sec
         patch_x = 120;
         patch_y = 120;
-        patch_t = ceil(patch_t_seconds*volume_rate);
+        patch_t = ceil(patch_t_sec*volume_rate);
         overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
 
     else
         train_datasets_size = 6000;
         patch_x = 120;
         patch_y = 45;
-        patch_t_seconds = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
-        patch_t = ceil(patch_t_seconds*volume_rate);
+        patch_t_sec = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+        patch_t = ceil(patch_t_sec*volume_rate);
         overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
     end
 

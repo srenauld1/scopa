@@ -1,11 +1,11 @@
 
-function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
+function model_plots(hsvmap, indv, depv, depvp, stack, stackmean, ...
     epochinds, pixinds_roi, roiinds_plot, hsv_background, ...
     max_tinds, timeseries_numsegments, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
     keepinds_depv, epochinds_str, pureepoch_keepinds, ...
-    pth_prefix, gif_visibility, objfcn, ft, supp, doplots, valfold, vfi, ...
+    pth_prefix, gif_visibility, modfun, ft, supp, doplots, valfold, vfi, ...
     standardize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
 
 
@@ -56,8 +56,8 @@ function model_plots(hsvmap, indv, depv, preddepv, stack, stackmean, ...
 
 hackindvdim = 1; %haven't yet expanded this plotting function for multidimensional indvuli, for now just choosing one dim
 
-preddepv_linewidth = 0.5;
-preddepv_transparency = 1;
+depvp_linewidth = 0.5;
+depvp_transparency = 1;
 numsampnan = 10;
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 mkrsz = 5;
@@ -234,14 +234,14 @@ end
 
 indvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-preddepvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
+depvpnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 pureepochnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 tinds_cont_nan = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created (to save plotting space)
-preddepvnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
+depvpnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
 pureepochnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
 indvsort = cell(1, length(epochinds));
-preddepv_sort = cell(1, length(epochinds));
+depvp_sort = cell(1, length(epochinds));
 truncstr = cell(1, length(epochinds));
 seglength = cell(1, length(epochinds));
 
@@ -257,7 +257,7 @@ for epi = 1:length(epochinds)
 
     indvnan_cont{epi} = [];
     depvnan_cont{epi} = [];
-    preddepvnan_cont{epi} = [];
+    depvpnan_cont{epi} = [];
     pureepochnan_cont{epi} = [];
     tinds_cont_nan{epi} = [];
     nanpad_indv = nan(numsampnan, size(indv{epi}, 2));
@@ -266,7 +266,7 @@ for epi = 1:length(epochinds)
     for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
         indvnan_cont{epi} = cat(1, indvnan_cont{epi},  nanpad_indv, indv{epi}( tinds_cont{tbi}, :));
         depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad_depv, depv{epi}( :, tinds_cont{tbi}));
-        preddepvnan_cont{epi} = cat(2, preddepvnan_cont{epi},  nanpad_depv, preddepv{epi}( :, tinds_cont{tbi}));
+        depvpnan_cont{epi} = cat(2, depvpnan_cont{epi},  nanpad_depv, depvp{epi}( :, tinds_cont{tbi}));
         pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch_keepinds{epi}( :, tinds_cont{tbi}));
         if tbi==1
             tmpstart = 1;
@@ -300,11 +300,11 @@ for epi = 1:length(epochinds)
 
 
     depvnan_seg{epi} = depvnan_cont{epi}( :, tinds_seg{1});
-    preddepvnan_seg{epi} = preddepvnan_cont{epi}( :, tinds_seg{1});
+    depvpnan_seg{epi} = depvpnan_cont{epi}( :, tinds_seg{1});
     pureepochnan_seg{epi} = pureepochnan_cont{epi}( :, tinds_seg{1});
     for tnsi = 2:timeseries_numsegments
         depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad_depv, depvnan_cont{epi}( :, tinds_seg{tnsi}));
-        preddepvnan_seg{epi} = cat(2, preddepvnan_seg{epi}, nanpad_depv, preddepvnan_cont{epi}( :, tinds_seg{tnsi}));
+        depvpnan_seg{epi} = cat(2, depvpnan_seg{epi}, nanpad_depv, depvpnan_cont{epi}( :, tinds_seg{tnsi}));
         pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpadvec, pureepochnan_cont{epi}( :, tinds_seg{tnsi}));
     end
 
@@ -319,7 +319,7 @@ epochinds_str_all = strjoin(epochinds_str, ',,');
 
 for epi = 1:length(epochinds)
     [indvsort{epi}, indvsortidx] = sort(indv{epi}(:,hackindvdim));
-    preddepv_sort{epi} = preddepv{epi}(:, indvsortidx);
+    depvp_sort{epi} = depvp{epi}(:, indvsortidx);
 end
 
 %% FOV, DEPVS, AND MODEL PLOTS
@@ -362,8 +362,8 @@ if doplots(1)
         end
 
         if strcmp(depvplot_norm, 'each') %scale for each roi scanges, if depvplot_norm is 'each' rather than 'all'
-            minis = min([depv{epi}( ri, :) preddepv{epi}( ri, :)]);
-            maxis = max([depv{epi}( ri, :) preddepv{epi}( ri, :)]);
+            minis = min([depv{epi}( ri, :) depvp{epi}( ri, :)]);
+            maxis = max([depv{epi}( ri, :) depvp{epi}( ri, :)]);
         end
 
 
@@ -441,7 +441,7 @@ if doplots(1)
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot*2, hbot] );
                     hold(hab{sib}, 'on');
                     hp1b{sib} = plot(hab{sib}, depvnan_seg{epi}( ri, :), 'color', [0 0 1]);
-                    hp2b{sib} = plot(hab{sib}, preddepvnan_seg{epi}( ri, :), 'color', [1 0 0]);
+                    hp2b{sib} = plot(hab{sib}, depvpnan_seg{epi}( ri, :), 'color', [1 0 0]);
                     yline(hab{sib}, 0)
 
                     xlm = hab{sib}.XLim;
@@ -458,7 +458,7 @@ if doplots(1)
                     xlabel('time (sec)', 'fontsize', fontsmall)
                     ylabel('dff', 'fontsize', fontsmall)
                     if rib==1
-                        title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (preddepv) tuning for raw indv
+                        title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
                     end
                     if rib~=numrowsbottom
                         hab{sib}.XAxis.Visible='off';
@@ -469,7 +469,7 @@ if doplots(1)
                 else
 
                     hp1b{sib}.YData = depvnan_seg{epi}( ri, :);
-                    hp2b{sib}.YData = preddepvnan_seg{epi}( ri, :);
+                    hp2b{sib}.YData = depvpnan_seg{epi}( ri, :);
 
                     hab{sib}.YLim = [minis maxis];
                     ylm = hab{sib}.YLim;
@@ -485,7 +485,7 @@ if doplots(1)
 
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                     hold(hab{sib}, 'on');
-                    hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), preddepv{epi}( ri, :), 5, 'filled');
+                    hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), depvp{epi}( ri, :), 5, 'filled');
                     hp2b{sib} = plot(depv{epi}( ri,  :), depv{epi}( ri,  :), 'k');
                     if strcmp(hsv_background, 'rois') %0 is meaningful if passing dff, for now only data in rois method uses dff
                         xline(hab{sib}, 0)
@@ -508,7 +508,7 @@ if doplots(1)
                     xlabel('depv', 'fontsize', fontsmall)
                     %ylabel('pred')
                     if rib==1
-                        title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (preddepv) tuning for raw indv
+                        title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
                     end
                     if rib~=numrowsbottom
                         hab{sib}.XAxis.Visible='off';
@@ -519,7 +519,7 @@ if doplots(1)
                 else
 
                     hp1b{sib}.XData = depv{epi}(ri, :);
-                    hp1b{sib}.YData = preddepv{epi}(ri, :);
+                    hp1b{sib}.YData = depvp{epi}(ri, :);
                     hp2b{sib}.XData = depv{epi}(ri, :);
                     hp2b{sib}.YData = depv{epi}(ri, :);
 
@@ -543,7 +543,7 @@ if doplots(1)
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                     hold(hab{sib}, 'on');
                     hp1b{sib} = scatter(hab{sib}, indv{epi}(:, hackindvdim), depv{epi}(ri, :), 5, 'filled');
-                    hp2b{sib} = plot(hab{sib}, indvsort{epi}, preddepv_sort{epi}(ri, :), 'LineWidth', preddepv_linewidth, 'Color', [1, 0, 0, preddepv_transparency]);
+                    hp2b{sib} = plot(hab{sib}, indvsort{epi}, depvp_sort{epi}(ri, :), 'LineWidth', depvp_linewidth, 'Color', [1, 0, 0, depvp_transparency]);
                     yline(hab{sib}, 0)
 
                     hab{sib}.YLim = [minis maxis];
@@ -566,7 +566,7 @@ if doplots(1)
                     hp1b{sib}.XData = indv{epi}(:,hackindvdim);
                     hp1b{sib}.YData = depv{epi}(ri, :);
                     hp2b{sib}.XData = indvsort{epi};
-                    hp2b{sib}.YData = preddepv_sort{epi}(ri, :);
+                    hp2b{sib}.YData = depvp_sort{epi}(ri, :);
 
                     hab{sib}.YLim = [minis maxis];
                     ylm = hab{sib}.YLim;
@@ -653,7 +653,7 @@ if doplots(3)
     epoch_patch_face_alpha = 0.05;
     ylim_track_pred = 1;
     depv_alpha = 1;
-    preddepv_alpha = 0.7;
+    depvp_alpha = 0.7;
 
     numrows_ts = 6; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
     numcolumns_ts = 1;
@@ -717,14 +717,14 @@ if doplots(3)
     maxis_i =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
     minis_d =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
     maxis_d =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
-    minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepv,  'UniformOutput',  false))); %min pred depv across all epochs
-    maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepv,  'UniformOutput',  false))); %max pred depv across all epochs
+    minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  depvp,  'UniformOutput',  false))); %min pred depv across all epochs
+    maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  depvp,  'UniformOutput',  false))); %max pred depv across all epochs
     minis_a = min(minis_d, minis_p);
     maxis_a = max(maxis_d, maxis_p);
 
     %colormaps
 
-    num_indv_to_plot = supp.num_dim_indvin;
+    num_indv_to_plot = supp.num_dim_indv_pre;
     if num_indv_to_plot>max_num_indv_to_plot
         num_indv_to_plot = max_num_indv_to_plot;
     end
@@ -733,14 +733,14 @@ if doplots(3)
     indv_base_color = [0 0 1];
     cmap_indv = repmat(indv_base_color, [num_indv_to_plot 1]);
     cmap_indv(:,2) = linspace(1, 0, num_indv_to_plot);
-    color_preddepv = [1 0 0 preddepv_alpha];
+    color_depvp = [1 0 0 depvp_alpha];
     color_depv = [0 0 0 depv_alpha];
 
     %set whether to copy each frame with and without model response
     if max_numfits_to_plot_ts == 0 %num_indv_to_plot==1 && num_indv_to_plot<2
-        toggle_preddepv_visibility = 0;
+        toggle_depvp_visibility = 0;
     else
-        toggle_preddepv_visibility = 1;
+        toggle_depvp_visibility = 1;
     end
 
     %per row variables to plot
@@ -751,8 +751,8 @@ if doplots(3)
         indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_d, maxis_d);
 
         numroi_plot = size(depvnan_cont{epi}, 1);
-        preddepvrow = cell(numroi_plot, numrows_ts);
-        preddepv_hist = cell(1, numroi_plot); %original full history, not split by row
+        depvprow = cell(numroi_plot, numrows_ts);
+        depvp_hist = cell(1, numroi_plot); %original full history, not split by row
         histxsave = cell(1, numroi_plot); %original full history, not split by row
 
         shadex = cell(1, numrows_ts);
@@ -795,27 +795,27 @@ if doplots(3)
                     end
 
                     numfits_to_plot = length(keepinds_histfit_ts);
-                    preddepv_hist{ri} = zeros(numfits_to_plot, size(indv{epi}, 1), 'single');
+                    depvp_hist{ri} = zeros(numfits_to_plot, size(indv{epi}, 1), 'single');
                     histxsave{ri} = zeros(numfits_to_plot, size(histxtmp, 1));
         
                     for hxi = 1:numfits_to_plot
                         histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
-                        preddepv_hist{ri}(hxi,:) = objfcn(histxsave{ri}(hxi,:), indv{epi}, supp);
+                        depvp_hist{ri}(hxi,:) = modfun(histxsave{ri}(hxi,:), indv{epi}, supp);
                         if standardize_depv
-                            preddepv_hist{ri}(hxi,:) = preddepv_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                            depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                         end
                     end
 
                     gof_val = [];
                     for hxi = 1:size(histxtmp, 2) 
-                        gof_val(hxi) = mse(depv{epi}(ri,valinds_raw_use), objfcn(histxtmp(:,hxi)', indv{epi}(valinds_raw_use,:), supp)');
+                        gof_val(hxi) = mse(depv{epi}(ri,valinds_raw_use), modfun(histxtmp(:,hxi)', indv{epi}(valinds_raw_use,:), supp)');
                     end
                     [~, bestind] = min(gof_val);
                     bestindall{ri} = bestind;
                     histxsave{ri}(end,:) = histxtmp(:,bestind)';
-                    preddepv_hist{ri}(end,:) = objfcn(histxsave{ri}(end,:), indv{epi}, supp);
+                    depvp_hist{ri}(end,:) = modfun(histxsave{ri}(end,:), indv{epi}, supp);
                     if standardize_depv
-                        preddepv_hist{ri}(end,:) = preddepv_hist{ri}(end,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                        depvp_hist{ri}(end,:) = depvp_hist{ri}(end,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                     end
 
 
@@ -848,26 +848,26 @@ if doplots(3)
 
             %subset to get one row, and also add nan to end for symmetry at same time
             depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-            % preddepvrow_tmp = cat(2, preddepvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+            % depvprow_tmp = cat(2, depvpnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             % indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             indvrow{nsi} = cat(1, indvnan_cont_rescale(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
             
             for ri = 1:numroi_plot
                 if max_numfits_to_plot_ts>0
-                    preddepvrow{ri,nsi} = nan(size(preddepv_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
-                    preddepvrow{ri,nsi}(1:end-1,tinds_row_nonan) = preddepv_hist{ri}(:,tinds_cont_row); %history of fits
-                    preddepvrow{ri,nsi}(end,tinds_row_nonan) = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
-                    % preddepvrow{ri,nsi}(end,:) = preddepv_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-                    % preddepvrow{ri,nsi}(end,:) = preddepvrow_tmp(ri,:); %best fit at end
+                    depvprow{ri,nsi} = nan(size(depvp_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
+                    depvprow{ri,nsi}(1:end-1,tinds_row_nonan) = depvp_hist{ri}(:,tinds_cont_row); %history of fits
+                    depvprow{ri,nsi}(end,tinds_row_nonan) = depvp_hist{ri}(end,tinds_cont_row); %best validation fit at end
+                    % depvprow{ri,nsi}(end,:) = depvp_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+                    % depvprow{ri,nsi}(end,:) = depvprow_tmp(ri,:); %best fit at end
                 else
-                    preddepvrow{ri,nsi} = preddepv_hist{ri}(end,tinds_cont_row); %best validation fit at end
-                    % preddepvrow{ri,nsi} = preddepv_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-                    % preddepvrow{ri,nsi} = preddepvrow_tmp(ri,:); %just the best fit
+                    depvprow{ri,nsi} = depvp_hist{ri}(end,tinds_cont_row); %best validation fit at end
+                    % depvprow{ri,nsi} = depvp_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+                    % depvprow{ri,nsi} = depvprow_tmp(ri,:); %just the best fit
                 end
             end
 
         end
-        preddepv_hist = [];
+        depvp_hist = [];
 
         for ri = 1:numroi_plot 
             if max_numfits_to_plot_ts>0
@@ -877,8 +877,8 @@ if doplots(3)
             end
         end
 
-        minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  preddepvrow,  'UniformOutput',  false))); %min pred depv across all epochs
-        maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  preddepvrow,  'UniformOutput',  false))); %max pred depv across all epochs
+        minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  depvprow,  'UniformOutput',  false))); %min pred depv across all epochs
+        maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  depvprow,  'UniformOutput',  false))); %max pred depv across all epochs
         % minis_a = min(minis_a, minis_pa);
         % maxis_a = max(maxis_a, maxis_pa);
 
@@ -888,12 +888,12 @@ if doplots(3)
 
         for ri = 1:numroi_plot %for each neuron
 
-            for fhi = 1:size(preddepvrow{ri,1}, 1) + toggle_preddepv_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
+            for fhi = 1:size(depvprow{ri,1}, 1) + toggle_depvp_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
 
-                if fhi==size(preddepvrow{ri,1}, 1)+1 %if there's an extra loop iteration, it's to turn off preddepv for one frame, to show indv and depv alone, at the end
-                    plot_preddepv = 0;
+                if fhi==size(depvprow{ri,1}, 1)+1 %if there's an extra loop iteration, it's to turn off depvp for one frame, to show indv and depv alone, at the end
+                    plot_depvp = 0;
                 else
-                    plot_preddepv = 1;
+                    plot_depvp = 1;
                 end
 
                 framecount = framecount + 1;
@@ -906,7 +906,7 @@ if doplots(3)
                         hold(hax{nsi}, 'on')
                         % yyaxis left
                         hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
-                        hpl2{nsi} = plot(hax{nsi}, preddepvrow{ri,nsi}(fhi, :), 'Color', color_preddepv, 'LineStyle', '-');
+                        hpl2{nsi} = plot(hax{nsi}, depvprow{ri,nsi}(fhi, :), 'Color', color_depvp, 'LineStyle', '-');
                         hplp{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
                         if plot_indv
                             % yyaxis right
@@ -949,20 +949,20 @@ if doplots(3)
                     else %if not on the first frame
 
                         hpl{nsi}.YData = depvrow{nsi}(ri,:);
-                        if plot_preddepv
-                            hpl2{nsi}.YData =  preddepvrow{ri,nsi}(fhi, :);
+                        if plot_depvp
+                            hpl2{nsi}.YData =  depvprow{ri,nsi}(fhi, :);
                         end
 
                     end
 
 
-                    if fhi==size(preddepvrow{ri,1}, 1) % when showing final model, ylim is min/max all
+                    if fhi==size(depvprow{ri,1}, 1) % when showing final model, ylim is min/max all
                         hax{nsi}.YAxis(1).Limits = [minis_a maxis_a];
-                    elseif fhi>size(preddepvrow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
+                    elseif fhi>size(depvprow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
                         hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
-                    elseif fhi<size(preddepvrow{ri,1}, 1) %if showing prediction fit history
+                    elseif fhi<size(depvprow{ri,1}, 1) %if showing prediction fit history
                         if ylim_track_pred %ylim is min/max fit 
-                            hax{nsi}.YAxis(1).Limits = [min(preddepvrow{ri,nsi}(fhi, :)) max(preddepvrow{ri,nsi}(fhi, :))];
+                            hax{nsi}.YAxis(1).Limits = [min(depvprow{ri,nsi}(fhi, :)) max(depvprow{ri,nsi}(fhi, :))];
                         else %ylim is min/max depv
                             hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
                         end
@@ -977,10 +977,10 @@ if doplots(3)
                     %     hax{nsi}.YAxis(2).Color = [0 0 1];
                     % end
 
-                    if plot_preddepv
-                        hpl2{nsi}.Color = color_preddepv; %make preddepv visible
+                    if plot_depvp
+                        hpl2{nsi}.Color = color_depvp; %make depvp visible
                     else
-                        hpl2{nsi}.Color = 'none'; %make preddepv invisible
+                        hpl2{nsi}.Color = 'none'; %make depvp invisible
                     end
 
                 end
@@ -993,8 +993,8 @@ if doplots(3)
                     end
                 end
                 supp.framecount = framecount;
-                if plot_preddepv
-                    [~, hax] = objfcn(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
+                if plot_depvp
+                    [~, hax] = modfun(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
                 end
 
                 fig2gif(hfg, framecount, filename_save)
@@ -1011,10 +1011,10 @@ end
 if doplots(4)
 
 
-    if isequal(objfcn, @fit_svd)
+    if isequal(modfun, @fit_svd)
         % plot_svd(ft{epi})
     else
-        objfcn(ft{epi}, indv{epi}, supp, pth_prefix);
+        modfun(ft{epi}, indv{epi}, supp, pth_prefix);
     end
 
 

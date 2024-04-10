@@ -1,5 +1,5 @@
 
-function [preddepv, hax, binmns] = fit_ann(pars, indv, supp, optin)
+function [depvp, hax, binmns] = fit_ann(pars, indv, supp, optin)
 
 %could change how indv is organized before this function for speed (since
 %it's organized for pure linear fits right now)
@@ -75,7 +75,7 @@ end
 
 
 
-preddepv = zeros(size(indv, 1), 1);
+depvp = zeros(size(indv, 1), 1);
 doplots_filt = 0;
 doplots_hot = 0;
 
@@ -94,11 +94,11 @@ for li = 1:num_lay
     end
 
 
-    for ci = 1:num_chan %1:supp.num_dim_indvin %loop over input channels (indv dims in layer 1)
+    for ci = 1:num_chan %1:supp.num_dim_indv_pre %loop over input channels (indv dims in layer 1)
 
         anntmp = supp.ann.(fnl{li}).(fnc{ci});
 
-        ivinds = [1:supp.num_samp_model]*supp.num_dim_indvin-(supp.num_dim_indvin-ci); %since indv is organized this way, dims alternate in vec
+        ivinds = [1:supp.num_samp_model]*supp.num_dim_indv_pre-(supp.num_dim_indv_pre-ci); %since indv is organized this way, dims alternate in vec
         indvtmp = indv(:,ivinds);
 
         for ni = 1:anntmp.num_neuron %supp.num_neuron %loop over artificial neurons
@@ -128,31 +128,31 @@ for li = 1:num_lay
                     filt = anntmp.linfun(flagdiff, doplots_filt, tmp{:});
                     % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
                 end
-                preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
-                preddepvtmp = preddepvtmp + filtbias;
+                depvptmp = sum(indvtmp.*filt, 2); %apply linear filter
+                depvptmp = depvptmp + filtbias;
             end
 
             if make_figure
-                preddepvlin = preddepvtmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
+                depvplin = depvptmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
             end
 
             tmp = num2cell(pars(anntmp.pind(ni).N));
             if ~isempty(tmp) || startsWith(anntmp.annspec.stract{ni}, 'h') || strcmp(anntmp.annspec.stract{ni}, 'y') 
                 if startsWith(anntmp.annspec.stract{ni}, 'h') || strcmp(anntmp.annspec.stract{ni}, 'y') 
                     if isempty(anntmp.annspec.independently_discretized_hot_dims{ni}) || strcmp(anntmp.annspec.independently_discretized_hot_dims{ni}, 'x')
-                        preddepvtmp2(:,neuron_count_single_layer) = preddepvtmp;
-                        preddepvtmp(:) = 0;
+                        depvptmp2(:,neuron_count_single_layer) = depvptmp;
+                        depvptmp(:) = 0;
                         if strcmp(anntmp.annspec.independently_discretized_hot_dims{ni}, 'x') %after all input channels and current neurons
-                            [preddepvtmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, preddepvtmp2, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                            [depvptmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, depvptmp2, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
                         end
                     elseif ismember(anntmp.annspec.independently_discretized_hot_dims{ni}, {'c', 't', 'n'})
-                        [preddepvtmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, preddepvtmp, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                        [depvptmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, depvptmp, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
                     end
                 else
-                    preddepvtmp = anntmp.actfun{ni}(preddepvtmp, tmp{:}); %apply activation function
+                    depvptmp = anntmp.actfun{ni}(depvptmp, tmp{:}); %apply activation function
                 end
             end
-            preddepv = preddepv + preddepvtmp; %sum outputs across loop
+            depvp = depvp + depvptmp; %sum outputs across loop
 
 
             if make_figure
@@ -199,17 +199,17 @@ for li = 1:num_lay
                     sfi = sfi_i+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
                     sfi = sfi+supp.starting_hax;
 
-                    [preddepvlin, idx] = sort(preddepvlin);
+                    [depvplin, idx] = sort(depvplin);
 
                     if framecount==1
                         if binmns
-                            % scatter3(hax{sfi}, preddepvtmp2(:,1), preddepvtmp2(:,2), preddepvtmp, 'filled'); %sorting prevents an odd plotting error
+                            % scatter3(hax{sfi}, depvptmp2(:,1), depvptmp2(:,2), depvptmp, 'filled'); %sorting prevents an odd plotting error
                             % scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(anntmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
                             for bmi = 1:size(binmns, 1)
                                 scatter(hax{sfi}, binmns(bmi,:), pars(anntmp.pind(ni).N), 15, plotcols(bmi,:), 'filled'); hold on; %sorting prevents an odd plotting error
                             end
                         else
-                            plot(hax{sfi}, preddepvlin, preddepvtmp(idx)); %sorting prevents an odd plotting error
+                            plot(hax{sfi}, depvplin, depvptmp(idx)); %sorting prevents an odd plotting error
                         end
                     else
                         if binmns
@@ -221,12 +221,12 @@ for li = 1:num_lay
                                 % hax{sfi}.Children(bmi).ZData = pars(anntmp.pind(ni).N);
                             end
                         else
-                            hax{sfi}.Children.XData = preddepvlin;
-                            hax{sfi}.Children.YData = preddepvtmp(idx);
+                            hax{sfi}.Children.XData = depvplin;
+                            hax{sfi}.Children.YData = depvptmp(idx);
                         end
                     end
 
-                    hax{sfi}.XAxis.Limits = [min(preddepvlin(:)) max(preddepvlin(:))];
+                    hax{sfi}.XAxis.Limits = [min(depvplin(:)) max(depvplin(:))];
                     xlm = hax{sfi}.XLim;
                     hax{sfi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
                     hax{sfi}.XAxis.TickLabels = hax{sfi}.XAxis.TickValues;

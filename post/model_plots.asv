@@ -57,6 +57,22 @@ if strcmp(fitin.plt.plot_class, 'epoch') & ~fitin.plt.plot3d
     stackmean = mean(stackmean, 3);
 end
 
+
+frm.a.type = 'timeseries';
+frm.b.type = 'fov';
+
+fn = fieldnames(frm);
+for fi = 1:numel(frm)
+    switch frm.(fn{fi}).type
+        case 'timeseries'
+            model_plots_timeseries
+        case 'fov'
+            model_plots_fov
+        case 'model'
+            modfun
+    end
+end
+
 %% various plots
 
 if fitin.plt.doplots(1)

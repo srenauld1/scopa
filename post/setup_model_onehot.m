@@ -1,8 +1,8 @@
-function ann = setup_model_onehot(ann, annspec, ni, num_dim_indvin, num_samp_model, num_neuron)
+function ann = setup_model_onehot(ann, annspec, ni, num_dim_indv_pre, num_samp_model, num_neuron)
 
 hotpower = 1;
 if any(contains(annspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
-    hotpower = num_dim_indvin;
+    hotpower = num_dim_indv_pre;
 end
 if any(contains(annspec.independently_discretized_hot_dims{ni}, 't')) %time (model samples into the past)
     hotpower = hotpower*num_samp_model;
@@ -17,7 +17,7 @@ end
 levs_each_hot = repmat({[1:annspec.numbinhot{ni}]}, [hotpower 1]);
 hotcombos = cell2mat(table2cell(combinations(levs_each_hot{:})));
 if strcmp(annspec.independently_discretized_hot_dims{ni}, 'x') %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
-    hotcombos = repmat(hotcombos, [1 num_dim_indvin]);
+    hotcombos = repmat(hotcombos, [1 num_dim_indv_pre]);
 end
 
 
@@ -27,7 +27,7 @@ ann.actfun{ni} = @one_hot_nonlinearity;
 %% nested nonlinearity functions
 
 
-    function [preddepv, binmns] = one_hot_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
+    function [depvp, binmns] = one_hot_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
 
 
         if doplots
@@ -67,7 +67,7 @@ ann.actfun{ni} = @one_hot_nonlinearity;
         end
 
 
-        preddepv = indv*ft'; %x0 = zeros(81,1);
+        depvp = indv*ft'; %x0 = zeros(81,1);
 
     end
 

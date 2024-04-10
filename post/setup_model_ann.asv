@@ -1,5 +1,5 @@
 function [objfcn, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, supp] = ...
-    setup_model_ann(modeltype, chopt, indv, depv, num_samp_model, dt, num_dim_indvin)
+    setup_model_ann(modeltype, chopt, indv, depv, num_samp_model, dt, num_dim_indv_pre)
 
 objfcn = @fit_ann;
 supp.modeltype = modeltype;
@@ -8,7 +8,7 @@ supp.NumStageOnePoints = 200;
 
 padlen_sec = 4;
 
-annspec = parse_model_string(modeltype, chopt, num_dim_indvin);
+annspec = parse_model_string(modeltype, chopt, num_dim_indv_pre);
 
 lbnd = [];
 ubnd = [];
@@ -30,7 +30,7 @@ for li = 1:length(fnl)
     for ci = 1:length(fnc)
 
         [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, anntmp, freeformflag] = ...
-            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), indv, depv, num_samp_model, dt, num_dim_indvin, padlen_sec);
+            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), indv, depv, num_samp_model, dt, num_dim_indv_pre, padlen_sec);
 
         lbnd = [lbnd lbnd_tmp];
         ubnd = [ubnd ubnd_tmp];
@@ -108,7 +108,7 @@ linineq_b = double(linineq_b);
 end
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
-    setup_model_ann_oneposition(annspec, indv, depv, num_samp_model, dt, num_dim_indvin, padlen_sec)
+    setup_model_ann_oneposition(annspec, indv, depv, num_samp_model, dt, num_dim_indv_pre, padlen_sec)
 
 % in annspec, strlin for linear functions, stract for activation (nonlinear) functions
 % strlin 's' and 'd' and 'f' make linear filters (s is monophasic; d is biphasic, formed from derivative of s; f is freeform, can take any shape)
@@ -218,7 +218,7 @@ for ni = 1:num_neuron
         ubnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(2);
         x0_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(3);
 
-        ann = setup_model_onehot(ann, annspec, ni, num_dim_indvin, num_samp_model, num_neuron);
+        ann = setup_model_onehot(ann, annspec, ni, num_dim_indv_pre, num_samp_model, num_neuron);
 
     end
 

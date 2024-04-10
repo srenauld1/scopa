@@ -26,7 +26,7 @@ fn_save_prefix = fitin.fn_save_prefix;
 if numcluster_for_bump_domain_resample
     numcluster = numcluster_for_bump_domain_resample;
 else
-    numcluster = size(fitin.depv, 1);
+    numcluster = size(fitin.depv_pre, 1);
 end
 
 if numcluster==1
@@ -44,7 +44,7 @@ elseif strcmp(domain_method, 'morphological') %morphological domain
 
     domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
     domaintmp = domaintmp(1:end-1);
-    resp_cl = fitin.depv; %no downsampling for morphological domain
+    resp_cl = fitin.depv_pre; %no downsampling for morphological domain
 
 end
 
@@ -117,7 +117,7 @@ for fi = 1:length(bump_subdomain)
     end
 
     bumpvel = differentiate_circular_variable(mu, md.dtmni, slopelen, slopeorder);
-    offset = circ_dist_nan(fitin.indv.', mu);
+    offset = circ_dist_nan(fitin.indv_pre.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point
     i2 = ii' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
@@ -149,10 +149,10 @@ if doplots
 
         mutmp = bump.(fn{fni}).mu;
 
-        figure; plot(mutmp); yyaxis right; plot(fitin.indv)
+        figure; plot(mutmp); yyaxis right; plot(fitin.indv_pre)
         saveas( gcf, [fn_save_prefix '_bump_v_visang_' fn{fni} '_.png'])
 
-        figure; plot(unwrap(mutmp)); yyaxis right; plot(unwrap(fitin.indv))
+        figure; plot(unwrap(mutmp)); yyaxis right; plot(unwrap(fitin.indv_pre))
         saveas( gcf, [fn_save_prefix '_bump_v_visang_uw_' fn{fni} '.png'])
 
     end

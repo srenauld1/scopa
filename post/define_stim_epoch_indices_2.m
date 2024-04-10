@@ -14,8 +14,8 @@ closedinds_initial_light = 0:arbitrary_crap;
 
 num_total_epochs = 10;  %not counting initial closed/light epoch 
 num_bouts_per_epoch = 6; 
-bout_duration_seconds = 20;
-boutstarttimes = closedinds_initial_light(end)+1:bout_duration_seconds:round(seconds(md.trialtime(end)));
+bout_duration_sec = 20;
+boutstarttimes = closedinds_initial_light(end)+1:bout_duration_sec:round(seconds(md.trialtime(end)));
 
 
 epoch_ind = {[1 5], [3 7], [9], [2 4 6 8 10]};
@@ -25,7 +25,7 @@ for eii = 1:length(epoch_ind)
     boutstarttimes_epoch{eii} = boutstarttimes(boutinds{eii});
     boutinds_epoch{eii} = [];
     for bstei = 1:length(boutstarttimes_epoch{eii})
-        boutinds_epoch{eii} = cat(2, boutinds_epoch{eii}, boutstarttimes_epoch{eii}(bstei) : boutstarttimes_epoch{eii}(bstei) + bout_duration_seconds - 1);
+        boutinds_epoch{eii} = cat(2, boutinds_epoch{eii}, boutstarttimes_epoch{eii}(bstei) : boutstarttimes_epoch{eii}(bstei) + bout_duration_sec - 1);
     end
 end
 

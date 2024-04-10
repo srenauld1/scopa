@@ -1,14 +1,12 @@
-function [objfcn, x0, lbnd, ubnd, linineq_A, linineq_b, nlcon, supp] = ...
-    setup_model_ann(modeltype, chopt, indv, depv, num_samp_model, dt, num_dim_indvin)
+function [opop, supp] = setup_model_ann(modeltype, chopt, num_samp_model, dt, num_dim_indv_pre)
 
-objfcn = @fit_ann;
 supp.modeltype = modeltype;
 supp.NumTrialPoints = 1000;
 supp.NumStageOnePoints = 200;
 
 padlen_sec = 4;
 
-annspec = parse_model_string(modeltype, chopt, num_dim_indvin);
+annspec = parse_model_string(modeltype, chopt, num_dim_indv_pre);
 
 lbnd = [];
 ubnd = [];
@@ -30,7 +28,7 @@ for li = 1:length(fnl)
     for ci = 1:length(fnc)
 
         [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, anntmp, freeformflag] = ...
-            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), indv, depv, num_samp_model, dt, num_dim_indvin, padlen_sec);
+            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), num_samp_model, dt, num_dim_indv_pre, padlen_sec);
 
         lbnd = [lbnd lbnd_tmp];
         ubnd = [ubnd ubnd_tmp];
@@ -65,16 +63,17 @@ if all(linineq_A(:)==0) %if all zeros, then linineq_A_tmp above remained zero be
     linineq_b = [];
 end
 
-lbnd = double(lbnd);
-ubnd = double(ubnd);
-x0 = double(x0);
-linineq_A = double(linineq_A);
-linineq_b = double(linineq_b);
+opop.objective = @fit_ann;
+opop.lb = double(lbnd);
+opop.ub = double(ubnd);
+opop.x0 = double(x0);
+opop.Aineq = double(linineq_A);
+opop.bineq = double(linineq_b);
 
 
 if any(freeformflag) %set up nonlinear constraint for freeform linear function
 
-    nlcon = @nlcon_l1norm;
+    opop.nonlcon = @nlcon_l1norm;
 
     %simplify nested function nlcon by giving it a simpler param index array (pind_Lfree, created here) than what is saved in supp.ann.pind (but keep that for use in fit_ann)
     count = 0;
@@ -91,7 +90,7 @@ if any(freeformflag) %set up nonlinear constraint for freeform linear function
 
 
 else
-    nlcon = [];
+    opop.nonlcon = [];
 end
 
 

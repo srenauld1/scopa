@@ -1,4 +1,4 @@
-function [preddepv, hax, binmns] = objfcn_vonmises(pars, indv, supp, optin)
+function [depvp, hax, binmns] = objfcn_vonmises(pars, indv, supp, optin)
 
 
 hax = [];
@@ -36,7 +36,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         fontmedium = 20;
         numrows_plot = 1;%supp.num_model_functions;
-        numcolumns_plot = 1;%supp.num_dim_indvin*supp.num_neuron;
+        numcolumns_plot = 1;%supp.num_dim_indv_pre*supp.num_neuron;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -60,7 +60,7 @@ if exist('optin', 'var') && ~isempty(optin)
 end
 
 
-preddepv = pars(1)*exp(pars(2)*cos(indv-pars(3)))+pars(4);
+depvp = pars(1)*exp(pars(2)*cos(indv-pars(3)))+pars(4);
 
 
 if make_figure
@@ -74,7 +74,7 @@ if make_figure
 
     if supp.framecount==1
 
-        plot(hax{sfi}, indvsort, preddepv(indvsortidx)); %sort to avoid weird plotting error
+        plot(hax{sfi}, indvsort, depvp(indvsortidx)); %sort to avoid weird plotting error
 
         xlm = hax{sfi}.XLim;
         extrax = supp.extra_xlim_fac*range(xlm(:));
@@ -86,7 +86,7 @@ if make_figure
     else
 
         hax{sfi}.Children.XData = indvsort;
-        hax{sfi}.Children.YData = preddepv(indvsortidx);
+        hax{sfi}.Children.YData = depvp(indvsortidx);
 
     end
 

@@ -101,10 +101,10 @@ end
 if do_volume
 
     train_datasets_size = 25000;
-    patch_t_seconds = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+    patch_t_sec = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
     patch_x = 120;
     patch_y = 120;
-    patch_t = ceil(patch_t_seconds*volume_rate);
+    patch_t = ceil(patch_t_sec*volume_rate);
     overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
 
 else
@@ -112,8 +112,8 @@ else
     train_datasets_size = 6000;
     patch_x = 110;
     patch_y = 110;
-    patch_t_seconds = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
-    patch_t = ceil(patch_t_seconds*volume_rate);
+    patch_t_sec = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+    patch_t = ceil(patch_t_sec*volume_rate);
     overlap_factor = 0.85; %smaller means more temporal overlap, less spatial (balance point depends on other params)
 
 end
@@ -200,12 +200,12 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
     n_epochs = num_epochs_denoise  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
     epochs_choose = list(range(1,n_epochs+1)) #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), default here is to test (denoise) with model state after all epochs 
 
-    patch_t_seconds = 20 #20 seconds is my total guess for what seems reasonable 
+    patch_t_sec = 20 #20 seconds is my total guess for what seems reasonable 
     padinc = 5 #this is probably pointless and can probably be zero 
 
     patch_x = 120 if dims[3]>120 + padinc else int(dims[3] - padinc) # 110 #int(np.ceil(Lx/4)) #extent of patch in x
     patch_y = 120 if dims[2]>120 + padinc else int(dims[2] - padinc) #120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
-    patch_t = int(np.ceil(patch_t_seconds*volrate)) #102 # 300 #extent of patch in t
+    patch_t = int(np.ceil(patch_t_sec*volrate)) #102 # 300 #extent of patch in t
     overlap_factor = 0.8 # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
 
     # TO DO: need to make train_datasets_size assignment automated . . . maybe to always use the same gap_t (patch stride in time)

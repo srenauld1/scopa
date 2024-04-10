@@ -1,0 +1,130 @@
+function fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix)
+
+
+depv_pre = fitin.depv_pre;% does this double memory, or is it also a pointer here??
+indv_pre = fitin.indv_pre;% does this double memory, or is it also a pointer here??
+num_dim_indv_pre = fitin.num_dim_indv_pre;
+num_dim_depv_pre = fitin.num_dim_depv_pre;
+num_samp_indv_pre = fitin.num_samp_indv_pre;
+trialepochinds_i = md.trialepochinds_i;
+dtmni = md.dtmni;
+
+
+time_dimension = 2;
+
+
+%% smooth in time (optional)
+
+if opts.smoothdepv
+    depv_pre = smoothdata(depv_pre, time_dimension, 'gaussian', opts.smoothdepv);
+end
+if opts.smoothdepv
+    for ri = 1:num_dim_indv_pre
+        indv_pre(ri,:) = smoothdata(indv_pre(ri,:), time_dimension, 'gaussian', opts.smoothindv);
+    end
+end
+
+%% exclude samples (optional)
+
+if strcmp(opts.excludeopts, 'triangle')
+    [histdt, histx] = hist(abs(indv_pre(:)), round(numel(indv_pre)/10));
+    thrbin = triangle_threshold(histdt, 'R', 0);
+    thrvel = histx(thrbin);
+    excludeinds = abs(indv_pre)<thrvel;
+    indv_pre(excludeinds) = nan;
+end
+
+%% standardize indv and depv (optional)
+
+if opts.standardize_indv
+    indv_pre_mean_eachdim = zeros(num_dim_indv_pre, 1);
+    indv_pre_std_eachdim = zeros(num_dim_indv_pre, 1);
+    for ri = 1:num_dim_indv_pre
+        indv_pre_mean_eachdim(ri) = nanmean(indv_pre(ri,:));
+        indv_pre_std_eachdim(ri) = nanstd(indv_pre(ri,:));
+        indv_pre(ri,:) = (indv_pre(ri,:) - indv_pre_mean_eachdim(ri)) / indv_pre_std_eachdim(ri);
+    end
+end
+
+if opts.standardize_depv
+    depv_pre_mean_eachdim = zeros(num_dim_depv_pre, 1);
+    depv_pre_std_eachdim = zeros(num_dim_depv_pre, 1);
+    for ri = 1:num_dim_depv_pre
+        depv_pre_mean_eachdim(ri) = nanmean(depv_pre(ri,:));
+        depv_pre_std_eachdim(ri) = nanstd(depv_pre(ri,:));
+        depv_pre(ri,:) = (depv_pre(ri,:) - depv_pre_mean_eachdim(ri)) / depv_pre_std_eachdim(ri);
+    end
+end
+
+%% recorganize indv into [dimensions, samples]
+
+
+num_samp_model = round(opts.model_length_sec/dtmni);
+if num_samp_model==0
+    num_samp_model = 1; %a convenience, so user can pass opts.model_length_sec=0 if they don't know volume rate
+end
+num_samp_lag = round(opts.model_lag_sec/dtmni);
+if num_samp_lag==0
+    num_samp_lag = 1; %a convenience, so user can pass opts.model_lag_sec=0 if they don't know volume rate
+end
+
+num_dim_indvaug = num_dim_indv_pre*num_samp_model;
+num_samp_indvaug_full = num_samp_indv_pre-(num_samp_model-1)-num_samp_lag;
+
+indvaug = zeros( num_dim_indvaug, num_samp_indvaug_full );
+trialepochindsaug = zeros( num_samp_model, num_samp_indvaug_full );
+for ii = 1 : num_samp_indvaug_full
+    indvaug(:,ii) = reshape( flip(indv_pre(:,ii:ii+num_samp_model-1), time_dimension), [], 1 ); %indvaug makes time samples into past just another indv dim, for model with 2 dims a and b and 4 time samples into past, with lag zero, indvaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
+    trialepochindsaug(:,ii) = flip(trialepochinds_i(ii:ii+num_samp_model-1), time_dimension); %do the same for epoch inds, to make sure model doesn't include any samples from wrong epoch
+end
+
+%% if modeltype starts with 'ohe', one hot encode indv
+
+if startsWith(opts.modeltype, 'ohe') %one hot encode indv, if modeltype is ohe
+    doplots_hot = 0;
+    [indvaug, num_dim_indvaug, num_samp_model, ~] = ...
+        one_hot_encode_input(opts.modeltype, indvaug, num_dim_indv_pre, num_samp_model, pth_fitdata_prefix, doplots_hot);
+end
+
+
+%% compute basic stats from depv and indv for repeated use later 
+
+fitin.stats.indv_pre_lim_alldim = [min(indv_pre(:)) max(indv_pre(:))];
+fitin.stats.indv_pre_extreme_alldim = max(abs(indv_pre(:)));
+fitin.stats.indv_pre_mean_alldim = nanmean(indv_pre(:));
+fitin.stats.indv_pre_std_alldim = nanstd(indv_pre(:));
+fitin.stats.depv_pre_lim_alldim = [min(depv_pre(:)) max(depv_pre(:))];
+fitin.stats.depv_pre_extreme_alldim = max(abs(depv_pre(:)));
+fitin.stats.depv_pre_mean_alldim = nanmean(depv_pre(:));
+fitin.stats.depv_pre_std_alldim = nanstd(depv_pre(:));
+
+
+%% write depv_pre and indvaug to bin to prevent broadcasting a potentially large variable to parfor loop below (e.g., depv_pre can be entire stack for pixelwise fits)
+
+if ~isequal([num_dim_indvaug, num_samp_indvaug_full], size(indvaug))
+    error("wrong write size")
+end
+pth_indvaug_bin = write_mdl_var(indvaug, pth_fitdata_prefix, 'indvaug');
+
+if ~isequal([ num_dim_depv_pre, num_samp_depv_pre ], size(fitin.depv_pre))
+    error("wrong write size")
+end
+pth_depv_pre_bin = write_mdl_var(fitin.depv_pre, pth_fitdata_prefix, 'depv_pre');
+
+
+%% output struct 
+
+fitin.num_dim_indvaug = num_dim_indvaug;
+fitin.num_samp_indvaug_full = num_samp_indvaug_full;
+fitin.num_samp_model = num_samp_model;
+fitin.num_samp_lag = num_samp_lag;
+fitin.trialepochindsaug = trialepochindsaug;
+fitin.num_dim_indvaug = num_dim_indvaug;
+fitin.pth_depv_pre_bin = pth_depv_pre_bin;
+fitin.pth_indvaug_bin = pth_indvaug_bin;
+fitin.depv_pre_mean_eachdim = depv_pre_mean_eachdim;
+fitin.depv_pre_std_eachdim = depv_pre_std_eachdim;
+fitin.indv_pre_mean_eachdim = indv_pre_mean_eachdim;
+fitin.indv_pre_std_eachdim = indv_pre_std_eachdim;
+fitin = orderfields(fitin);
+

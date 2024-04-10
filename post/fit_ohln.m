@@ -1,5 +1,5 @@
 
-function [preddepv, hax] = fit_ann(pars, indv, supp, optin)
+function [depvp, hax] = fit_ann(pars, indv, supp, optin)
 
 %could change how indv is organized before this function for speed (since
 %it's organized for pure linear fits right now)
@@ -45,7 +45,7 @@ if exist('optin', 'var') && ~isempty(optin)
         supp.fontsmall = 10;
         fontmedium = 20;
         numrows_plot = supp.max_num_fun_per_neuron;
-        numcolumns_plot = supp.num_dim_indvin*supp.num_neuron;
+        numcolumns_plot = supp.num_dim_indv_pre*supp.num_neuron;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -66,13 +66,13 @@ end
 
 C = 1; %hard coded param
 Q = 1; %hard coded param
-preddepv = zeros(size(indv, 1), 1);
+depvp = zeros(size(indv, 1), 1);
 doplots_filt = 0;
 LN_unit_count = 0;
 
-for jj = 1:supp.num_dim_indvin %loop over indv dims
+for jj = 1:supp.num_dim_indv_pre %loop over indv dims
 
-    ivinds = [1:supp.num_samp_model]*supp.num_dim_indvin-(supp.num_dim_indvin-jj); %since indv is organized this way, dims alternate in vec
+    ivinds = [1:supp.num_samp_model]*supp.num_dim_indv_pre-(supp.num_dim_indv_pre-jj); %since indv is organized this way, dims alternate in vec
     indvtmp = indv(:,ivinds);
 
     for ii = 1:supp.num_neuron %loop over LN units
@@ -97,18 +97,18 @@ for jj = 1:supp.num_dim_indvin %loop over indv dims
             filt = supp.linfun(flagdiff, doplots_filt, tmp{:});
             % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
         end
-        preddepvtmp = sum(indvtmp.*filt, 2); %apply linear filter
-        preddepvtmp = preddepvtmp + filtbias;
+        depvptmp = sum(indvtmp.*filt, 2); %apply linear filter
+        depvptmp = depvptmp + filtbias;
 
         if make_figure
-            preddepvlin = preddepvtmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
+            depvplin = depvptmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
         end
 
         tmp = num2cell(pars(supp.pind{jj,ii}.N));
         if ~isempty(tmp)
-            preddepvtmp = static_genlog(preddepvtmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            depvptmp = static_genlog(depvptmp, C, Q, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
         end
-        preddepv = preddepv + preddepvtmp; %sum outputs across loop
+        depvp = depvp + depvptmp; %sum outputs across loop
 
 
         if make_figure
@@ -150,16 +150,16 @@ for jj = 1:supp.num_dim_indvin %loop over indv dims
                 sfi = sfi_i+supp.max_num_fun_per_neuron*(LN_unit_count-1);
                 sfi = sfi+supp.starting_hax;
 
-                [preddepvlin, idx] = sort(preddepvlin);
+                [depvplin, idx] = sort(depvplin);
 
                 if supp.framecount==1
-                    plot(hax{sfi}, preddepvlin, preddepvtmp(idx)); %sorting prevents an odd plotting error
+                    plot(hax{sfi}, depvplin, depvptmp(idx)); %sorting prevents an odd plotting error
                 else
-                    hax{sfi}.Children.XData = preddepvlin;
-                    hax{sfi}.Children.YData = preddepvtmp(idx);
+                    hax{sfi}.Children.XData = depvplin;
+                    hax{sfi}.Children.YData = depvptmp(idx);
                 end
 
-                hax{sfi}.XAxis.Limits = [min(preddepvlin(:)) max(preddepvlin(:))];
+                hax{sfi}.XAxis.Limits = [min(depvplin(:)) max(depvplin(:))];
                 xlm = hax{sfi}.XLim;
                 hax{sfi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
                 hax{sfi}.XAxis.TickLabels = hax{sfi}.XAxis.TickValues;

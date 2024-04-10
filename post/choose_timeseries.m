@@ -1,15 +1,16 @@
 function [fitin, dofit] = ...
-    choose_timeseries(opt, ts, md, pth_parsall_save, pth_stack_analysis, fitcount, dofit)
+    choose_timeseries(opt, ts, md, pth_tsuse_save, pth_stack_analysis, fitcount, dofit)
 
+% for convenience, saves substrings used to match variable within 'ts' 
+% as table ('fieldspec_all') and as string ('fieldspecstr_all')
 
+if fitcount>1 %the set of all indv/depv combos is determined on the first fit (fitcount==1), so subsequent calls to choose_timeseries just  
 
-if fitcount>1 %isfile(pth_parsall_save)
-
-    load(pth_parsall_save)
+    load(pth_tsuse_save)
 
 else
     
-    fieldspec_parent_fields = {'indv', 'depv'};
+    fieldspec_parent_fields = {'indv_pre_str', 'depv_pre_str'};
 
     count = zeros(length(fieldspec_parent_fields), 1);
     for ofi = 1:length(opt)
@@ -103,7 +104,7 @@ else
         end
     end
 
-    save(pth_parsall_save, 'fieldspecstr_all', 'fieldspec_all', '-v7.3', '-mat')
+    save(pth_tsuse_save, 'fieldspecstr_all', 'fieldspec_all', '-v7.3', '-mat')
 
 end
 
@@ -111,7 +112,8 @@ end
 fitin.fieldspecstr = fieldspecstr_all(fitcount);
 fn = fieldnames(fitin.fieldspecstr);
 for fi = 1:length(fn)
-    fitin.(fn{fi}) = [];
+    outfn = erase(fn{fi}, '_str');
+    fitin.(outfn) = [];
     for vsi2 = 1:length(fitin.fieldspecstr.(fn{fi}))
         tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
@@ -120,8 +122,8 @@ for fi = 1:length(fn)
         if size(tmp, 2)~=length(md.ti)
             error("timeseries is does not match number imaging volumes (length md.ti)")
         end
-        fitin.(fn{fi}) = cat(1, fitin.(fn{fi}), tmp);
-        if strcmp(fn{fi}, 'depv')
+        fitin.(outfn) = cat(1, fitin.(outfn), tmp);
+        if strcmp(fn{fi}, 'depv_pre_str')
             fitin.regionex = fieldspec_all(fitcount).(fn{fi}){vsi2,2}{1};
             fitin.parsex = fieldspec_all(fitcount).(fn{fi}){vsi2,3}{1};
             fitin.parsnorm = fieldspec_all(fitcount).(fn{fi}){vsi2,4}{1};

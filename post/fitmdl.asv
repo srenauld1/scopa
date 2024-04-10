@@ -56,5 +56,13 @@ for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv acco
     fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
 end
 
-model_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
+%% plot everything
+
+ft = fitin.(epochinds_str).ft;
+pureepoch_keepinds = fitin.(epochinds_str).pureepoch_keepinds;
+keepinds_depv = fitin.(epochinds_str).keepinds_depv;
+
+model_plots(plt, roiinfo, stack, opts.epochinds,  ...
+    pth_fitdata_prefix, fitin.opop.optimp.objective, fitin.supp, ...
+    opts.standardize_depv, depvinstds_plot, depvinmeans_plot)
 

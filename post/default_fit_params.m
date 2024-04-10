@@ -2,10 +2,10 @@ function optout = default_fit_params(optin)
 
 do_predict = 1;
 
-depv = {...
+depv_pre_str = {...
     ['resp, *, *, *'], ...
     };
-indv = {...
+indv_pre_str = {...
     {['resp, *, *, *']}...
     };
 depv_indv_combine = 'any'; %any or each
@@ -13,8 +13,10 @@ ignore_missing_vars = 0;
 
 num_synthetic_depv = 0; %create synthetic data (using requested modeltype params, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
 epochinds = {[4]};
-num_samp_lag = 1; %how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
-length_model_seconds = 2; %seconds, 0 is one sample
+model_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
+model_length_sec = 2; %seconds, 0 is one sample
+
+keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
 
 validation_fraction = 0.2; %fraction of samples for k-fold cross-validation, k=1/opt.fit.validation_fraction
 
@@ -22,25 +24,29 @@ slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';
 modeltype = 'ann_L1_sh16x'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
 
+excludeopts = '';
+
 standardize_indv = 1;%1 makes each indv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
 standardize_depv = 1; %1 makes each depv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
 smoothdepv = 0; %gaussian window std is one fifth total length
+smoothindv = 0; %gaussian window std is one fifth total length
 
 use_saved_model = 1;
-excludeopts = '';
+omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
+save_optim_history = 1;
 
 plt.hsv_background = 'rois'; %'rois' or 'pixels' or 'raw';
 plt.huestr = 'loc'; %loc or amp for modeltype linear . . . loc, amp, or wid for modeltype vonmises or gaussian
-plt.huenorm = 'native'; %hue normalization method, see setup_model_all
-plt.satnorm = 'relative'; %sat normalization method, see setup_model_all
-plt.valnorm = 'relative';%val normalization method, see setup_model_all
-plt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see form_hsv
-plt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see form_hsv
-plt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see form_hsv
-plt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model_all to [0 1] when plotting periodic param (e.g. von mises center, ie modeltype 'vonmises' huestr 'loc'), see form_hsv
-plt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see form_hsv
-plt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see form_hsv
-plt.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see form_hsv
+plt.huenorm = 'native'; %hue normalization method, see setup_model
+plt.satnorm = 'relative'; %sat normalization method, see setup_model
+plt.valnorm = 'relative';%val normalization method, see setup_model
+plt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+plt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+plt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+plt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model to [0 1] when plotting periodic param (e.g. von mises center, ie modeltype 'vonmises' huestr 'loc'), see compute_hsv
+plt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see compute_hsv
+plt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see compute_hsv
+plt.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see compute_hsv
 plt.ignorehue = 0; %1 ignores it, makes constant 1
 plt.ignoresat = 1; %1 ignores it, makes constant 1
 plt.ignoreval = 1; %1 ignores it, makes constant 1
@@ -59,6 +65,9 @@ plt.plot3d = 0;
 plt.doplots = 1;
 
 
+
+%%
+
 %character options for different categories in different modeltypes chopt.modeltypePrefix.category (modeltypePrefix means modeltype string before any optional underscore suffixes)
 chopt.ann.lay = {'L'};
 chopt.ann.chan = {'C'};
@@ -76,14 +85,31 @@ par_defaults = rmfield(par_defaults, 'optin');
 eval(structvars(par_defaults,0).');
 par_defaults = orderfields(par_defaults);
 
-
 for ofi = 1:length(optin) %for struct index in optin
-    optout(ofi) = par_defaults;
-    fn = fieldnames(optout(ofi));
-    for fi = 1:length(fn)
-        if isfield(optin(ofi), fn{fi})
-            optout(ofi).(fn{fi}) = optin(ofi).(fn{fi}); %overwrite default with user-defined input 
+    optout(ofi) = param_struct_recurse(optin(ofi), par_defaults);
+end
+
+
+end
+
+function optout = param_struct_recurse(optin, optout)
+
+fn = fieldnames(optout);
+for fi = 1:length(fn)
+    if isfield(optin, fn{fi})
+        if isstruct(optin.(fn{fi}))
+            if ~isstruct(optout.(fn{fi})) && ~isobject(optout.(fn{fi})) %optim struct can refer to object not struct
+                error("input struct where there is no default struct")
+            else
+                optout.(fn{fi}) = param_struct_recurse(optin.(fn{fi}), optout.(fn{fi}));
+            end
+        else
+            if ~isempty(optin.(fn{fi}))
+                optout.(fn{fi}) = optin.(fn{fi}); %overwrite default with user-defined input
+            end
         end
     end
+end
+
 end
 

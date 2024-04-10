@@ -1,6 +1,6 @@
-function [opt, pth, croplim_all, parstr, ids] = filenames_scopa(opt, pth_usefile_prefix)
+function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix)
 
-%% params 
+%% params
 
 suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
@@ -10,7 +10,7 @@ use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname u
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
 num_mroi_auto = opt.mroi.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
 caiman_lr_str = opt.froi.caiman_lr_str;
-numcluster_for_bump_domain_resample = opt.bump.numcluster_for_bump_domain_resample_str; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample 
+numcluster_for_bump_domain_resample = opt.pf.bump.numcluster_for_bump_domain_resample_str; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
 caiman_hr_str = opt.hires.caiman_hr_str;
 
 %% variables for all regionex
@@ -39,8 +39,8 @@ pth_fictrac = [pth_fldr recid_hyphen '_ficTracData_DAQ.mat'];
 for i = 1:length(regionex_all)
 
     regionex = regionex_all{i};
-    spl = strsplit(regionex, '_'); 
-    regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionex cuboid from python preprocessing 
+    spl = strsplit(regionex, '_');
+    regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionex cuboid from python preprocessing
 
     pthcroplimall = rdir([pth_fldr recid_underscore '_' regionex_nounderscore '_*_croplim_.*']);
 
@@ -106,7 +106,7 @@ for i = 1:length(regionex_all)
             spl = strsplit(fncr, '_');
             insloc = find(strcmp(spl, regionex_nounderscore));
             croplimstr_check{ci} = strjoin(spl(insloc+1:insloc+8), '_');
-           
+
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_'); %everything in filename after 'cmex'
             parstr.froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
             pth_froi_all.(regionex){ci,1} = pth_froi_all_tmp{ci};
@@ -156,11 +156,14 @@ end
 %% do flags
 
 
-if all(cellfun(@isempty, [opt.bump.fit.depv]))
-    opt.bump.do = 0;
+pffn = fieldnames(opt.pf);
+for pfi = 1:numel(pffn)
+    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fit.depv_pre_str]))
+        opt.pf.(pffn{pfi}).do = 0;
+    end
 end
 
-if all(cellfun(@isempty, [opt.fit.depv]))
+if all(cellfun(@isempty, [opt.fit.depv_pre_str]))
     opt.fit.do_predict = 0;
 end
 
@@ -200,7 +203,7 @@ for spi = 1:length(suffixes_plot)
 
 end
 
-%% hires 
+%% hires
 
 pthpat = [pth_fldr recid_underscore  '_hires_.tif'];
 pth_tmp = rdir(pthpat);
@@ -226,8 +229,12 @@ else
     pth_froi_hires = [];
 end
 
-pth_parsall_bump = [pth_fldr 'parsall_bumpfits_' opt.main.timestr '_.mat'];
-pth_parsall_fit = [pth_fldr 'parsall_finfits_' opt.main.timestr '_.mat'];
+pffn = fieldnames(opt.pf);
+for pfi = 1:numel(pffn)
+    pth.tsuse.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi} '_.mat'];
+end
+
+pth.tsuse.fit = [pth_fldr 'tsuse_finfits_.mat'];
 
 %% assign to struct
 
@@ -238,20 +245,19 @@ ids.recid = recid_underscore;
 
 pth.fldr = pth_fldr;
 pth.stack_analysis = pth_stack_analysis;
-pth.stacks_prefix = pth_stacks_prefix;         
+pth.stacks_prefix = pth_stacks_prefix;
 pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
 pth.froi_hires = pth_froi_hires;
 pth.metadata = pth_metadata;
 pth.mroi = pth_mroi;
 pth.froi_all = pth_froi_all;
-pth.roi_allmethods = pth_roi_allmethods;         
+pth.roi_allmethods = pth_roi_allmethods;
 pth.fictrac = pth_fictrac;
 pth.savedata_oneregion = pth_savedata_oneregion;
-pth.parsall_bump = pth_parsall_bump;
-pth.parsall_fit = pth_parsall_fit;
 
-opt.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field, change from user input formatting
+
+opt.pf.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field, change from user input formatting
 
 opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field, change from user input formatting
 opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting

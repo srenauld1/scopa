@@ -1,0 +1,53 @@
+function [indv, depv_all, roiinfo, fitdata, revstandvar_indv, revstandvar_depv] = ...
+    model_plots_prepvars(fitin, plt, roiinfo, fitdata, modeltype, standardize_indv, standardize_depv)
+
+%organize and normalize model data into hsv map
+fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, modeltype, fitin.stats);
+
+
+%select which pixels/rois get detail view and how they're sorted
+switch plt.sort_method
+    case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
+        sortinds = fliplr(1:fitin.num_dim_depv_pre);
+        sortinds = 1:fitin.num_dim_depv_pre;
+    case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
+        [~, sortinds] = sort(roiinfo.mapind2ind,  'descend');
+    case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
+        [~, sortinds] = sort(fitdata.gof, 'descend');
+    case 'custom' %ad hoc sort method, checking for an error  
+        sortonetmp = find(abs(plt.hsvmap(:,1))>2);
+        sorttwotmp = setxor(1:length(plt.hsvmap), sortonetmp);
+        sortinds = [sortonetmp; sorttwotmp];
+end
+
+roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depv_pre, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depv_pre
+
+
+%% read full indv and depv from bin, then subsample
+
+indv = read_mdl_var(fitin.pth_indvaug_bin);
+indv = indv(:, fitdata.keepinds_indv).'; %columns of indv and depv should be number samples, could change above or just transpose here
+
+depv_all = read_mdl_var(fitin.pth_depv_pre_bin);
+depv_all = depv_all(roiinds_plot, fitdata.keepinds_depv).'; %columns of indv and depv should be number samples, could change above or just transpose here
+
+fitdata.depvp = fitdata.depvp(:, roiinds_plot);
+roiinfo.pixinds_roi = roiinfo.pixinds_roi(roiinds_plot);
+
+%% reverse standardization, if it occurred
+
+if standardize_indv
+    revstandvar_indv = reverse_standardize_mdl_var(fitin.stats.indv_pre_std_eachdim, fitin.stats.indv_pre_mean_eachdim);
+    indv = revstandvar_indv(indv);
+end
+
+if standardize_depv
+    revstandvar_depv = reverse_standardize_mdl_var(fitin.stats.depv_pre_std_eachdim, fitin.stats.depv_pre_mean_eachdim);
+    depv_all = revstandvar_depv(depv_all);
+    fitdata.depvp = revstandvar_depv(fitdata.depvp);
+end
+
+
+%% output struct
+
+fitdata.roiinds_plot = roiinds_plot;
