@@ -98,7 +98,8 @@ fitin.plt = setup_model_plotting(modeltype, opts.plt);
 %% optimization options 
 
 fitin.opop.optimp = optimp;
-fitin.opop.optimg.maxiterg = 4;
+fitin.opop.max_iter_local = 1001;  %will be assigned to fitin.opop.optiml.MaxIterations
+fitin.opop.max_iter_global = 4; %this will not be assigned to globalsearch object; instead is used in output function for optimization problem, to stop optimization 
 fitin.opop.optimg.NumTrialPoints = 2000;
 fitin.opop.optimg.NumStageOnePoints = 1000; 
 

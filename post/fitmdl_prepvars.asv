@@ -4,14 +4,13 @@ function fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix)
 depv_pre = fitin.depv_pre;% does this double memory, or is it also a pointer here??
 indv_pre = fitin.indv_pre;% does this double memory, or is it also a pointer here??
 num_dim_indv_pre = fitin.num_dim_indv_pre;
-num_dim_depv_pre = fitin.num_dim_depv_pre;
 num_samp_indv_pre = fitin.num_samp_indv_pre;
+num_dim_depv_pre = fitin.num_dim_depv_pre;
+num_samp_depv_pre = fitin.num_samp_depv_pre;
 trialepochinds_i = md.trialepochinds_i;
 dtmni = md.dtmni;
 
-
 time_dimension = 2;
-
 
 %% smooth in time (optional)
 
@@ -37,23 +36,26 @@ end
 %% standardize indv and depv (optional)
 
 if opts.standardize_indv
-    indv_pre_mean_eachdim = zeros(num_dim_indv_pre, 1);
-    indv_pre_std_eachdim = zeros(num_dim_indv_pre, 1);
+    indv_pre_mean_eachdim = zeros(1, num_dim_indv_pre);
+    indv_pre_std_eachdim = zeros(1, num_dim_indv_pre);
     for ri = 1:num_dim_indv_pre
         indv_pre_mean_eachdim(ri) = nanmean(indv_pre(ri,:));
         indv_pre_std_eachdim(ri) = nanstd(indv_pre(ri,:));
         indv_pre(ri,:) = (indv_pre(ri,:) - indv_pre_mean_eachdim(ri)) / indv_pre_std_eachdim(ri);
     end
+    fitin.revstandvar_indv = reverse_standardize_mdl_var(indv_pre_std_eachdim, indv_pre_mean_eachdim);%save function handle to reverse it later
 end
 
 if opts.standardize_depv
-    depv_pre_mean_eachdim = zeros(num_dim_depv_pre, 1);
-    depv_pre_std_eachdim = zeros(num_dim_depv_pre, 1);
+    depv_pre_mean_eachdim = zeros(1, num_dim_depv_pre);
+    depv_pre_std_eachdim = zeros(1, num_dim_depv_pre);
     for ri = 1:num_dim_depv_pre
         depv_pre_mean_eachdim(ri) = nanmean(depv_pre(ri,:));
         depv_pre_std_eachdim(ri) = nanstd(depv_pre(ri,:));
         depv_pre(ri,:) = (depv_pre(ri,:) - depv_pre_mean_eachdim(ri)) / depv_pre_std_eachdim(ri);
     end
+            fitin.revstandvar_depv = reverse_standardize_mdl_var(depv_pre_std_eachdim, depv_pre_mean_eachdim); %save function handle to reverse it later
+
 end
 
 %% recorganize indv into [dimensions, samples]
@@ -87,6 +89,19 @@ if startsWith(opts.modeltype, 'ohe') %one hot encode indv, if modeltype is ohe
 end
 
 
+%% write depv_pre and indvaug to bin to prevent broadcasting a potentially large variable to parfor loop below (e.g., depv_pre can be entire stack for pixelwise fits)
+
+if ~isequal([num_dim_indvaug, num_samp_indvaug_full], size(indvaug))
+    error("wrong write size")
+end
+pth_indvaug_bin = write_mdl_var(indvaug, pth_fitdata_prefix, 'indvaug');
+
+if ~isequal([ num_dim_depv_pre, num_samp_depv_pre ], size(fitin.depv_pre))
+    error("wrong write size")
+end
+pth_depv_pre_bin = write_mdl_var(fitin.depv_pre, pth_fitdata_prefix, 'depvpre');
+
+
 %% compute basic stats from depv and indv for repeated use later 
 
 fitin.stats.indv_pre_lim_alldim = [min(indv_pre(:)) max(indv_pre(:))];
@@ -98,18 +113,10 @@ fitin.stats.depv_pre_extreme_alldim = max(abs(depv_pre(:)));
 fitin.stats.depv_pre_mean_alldim = nanmean(depv_pre(:));
 fitin.stats.depv_pre_std_alldim = nanstd(depv_pre(:));
 
-
-%% write depv_pre and indvaug to bin to prevent broadcasting a potentially large variable to parfor loop below (e.g., depv_pre can be entire stack for pixelwise fits)
-
-if ~isequal([num_dim_indvaug, num_samp_indvaug_full], size(indvaug))
-    error("wrong write size")
-end
-pth_indvaug_bin = write_mdl_var(indvaug, pth_fitdata_prefix, 'indvaug');
-
-if ~isequal([ num_dim_depv_pre, num_samp_depv_pre ], size(fitin.depv_pre))
-    error("wrong write size")
-end
-pth_depv_pre_bin = write_mdl_var(fitin.depv_pre, pth_fitdata_prefix, 'depv_pre');
+fitin.stats.indv_pre_mean_eachdim = indv_pre_mean_eachdim;
+fitin.stats.indv_pre_std_eachdim = indv_pre_std_eachdim;
+fitin.stats.depv_pre_mean_eachdim = depv_pre_mean_eachdim;
+fitin.stats.depv_pre_std_eachdim = depv_pre_std_eachdim;
 
 
 %% output struct 
@@ -122,9 +129,5 @@ fitin.trialepochindsaug = trialepochindsaug;
 fitin.num_dim_indvaug = num_dim_indvaug;
 fitin.pth_depv_pre_bin = pth_depv_pre_bin;
 fitin.pth_indvaug_bin = pth_indvaug_bin;
-fitin.depv_pre_mean_eachdim = depv_pre_mean_eachdim;
-fitin.depv_pre_std_eachdim = depv_pre_std_eachdim;
-fitin.indv_pre_mean_eachdim = indv_pre_mean_eachdim;
-fitin.indv_pre_std_eachdim = indv_pre_std_eachdim;
 fitin = orderfields(fitin);
 

@@ -43,6 +43,7 @@ if opts.standardize_indv
         indv_pre_std_eachdim(ri) = nanstd(indv_pre(ri,:));
         indv_pre(ri,:) = (indv_pre(ri,:) - indv_pre_mean_eachdim(ri)) / indv_pre_std_eachdim(ri);
     end
+    fitin.revstandvar_indv = reverse_standardize_mdl_var(indv_pre_std_eachdim, indv_pre_mean_eachdim); %save function handle to reverse it later
 end
 
 if opts.standardize_depv
@@ -53,6 +54,7 @@ if opts.standardize_depv
         depv_pre_std_eachdim(ri) = nanstd(depv_pre(ri,:));
         depv_pre(ri,:) = (depv_pre(ri,:) - depv_pre_mean_eachdim(ri)) / depv_pre_std_eachdim(ri);
     end
+    fitin.revstandvar_depv = reverse_standardize_mdl_var(depv_pre_std_eachdim, depv_pre_mean_eachdim); %save function handle to reverse it later
 end
 
 %% recorganize indv into [dimensions, samples]

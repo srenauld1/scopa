@@ -156,7 +156,7 @@ opt.pf.bump.fit(1).depv_pre_str{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100
 opt.pf.bump.fit(1).indv_pre_str{1} = {['vis, angsd']};
 opt.pf.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
-opt.pf.bump.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+opt.pf.bump.fit(1).validation_fold = 0.2; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 opt.pf.bump.fit(1).modeltype = 'vonmises';
 opt.pf.bump.fit(1).epochinds = {[4]};
 opt.pf.bump.fit(1).model_length_sec = 0;

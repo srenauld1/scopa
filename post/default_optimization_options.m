@@ -13,8 +13,6 @@ end
 
 optimg = GlobalSearch; %globalsearch can only use fmincon
 
-optimg.maxiterg = 100; %this is not a native globalsearch variable, but used in output function to stop optimization 
-
 optimg.NumTrialPoints = 1000; %1000
 optimg.BasinRadiusFactor = 0.2; %0.2000
 optimg.DistanceThresholdFactor = 0.75; %0.7500
@@ -48,7 +46,11 @@ optiml.FiniteDifferenceType = 'central'; %'forward'
 % optiml.HessianMultiplyFcn = [];
 % optiml.HonorBounds = 1;
 optiml.MaxFunctionEvaluations = Inf; %3000 for interior-point, 100*numvariables for others
-optiml.MaxIterations = 1000; %1000 for interior-point, 400 for others
+if isfield(optin, 'max_iter_local')
+    optiml.MaxIterations = optin.max_iter_local; %1000 for interior-point, 400 for others
+else
+    optiml.MaxIterations = 1000; %1000 for interior-point, 400 for others
+end
 % optiml.ObjectiveLimit = -1.0000e+20;
 % optiml.OptimalityTolerance = 1.0000e-06;
 optiml.OutputFcn = []; %[];

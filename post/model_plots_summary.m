@@ -65,7 +65,7 @@ end
 numcolumnsbottom = 5; %really number grid lines in which the plots are arranged
 numplotsbottom = numrowsbottom*numcolumnsbottom;
 
-[xbot2, ybot2, wbot2, hbot2] = arrange_subplots(numrowsbottom, numcolumnsbottom, margins_fig, marginsbottom);
+% [xbot2, ybot2, wbot2, hbot2] = arrange_subplots(numrowsbottom, numcolumnsbottom, margins_fig, marginsbottom);
 
 bottomregionminx = 0+marginsbottom+leftmost_extra_margin;
 bottomregionmaxx = 1-marginsbottom;
@@ -203,364 +203,271 @@ for epi = 1:length(epochinds)
 
 end
 
-%% pad discontinuities in depv and predicted depv variables for timeseries plots (not the other plots)
-
-indvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-depvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-depvpnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-pureepochnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-tinds_cont_nan = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-depvnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created (to save plotting space)
-depvpnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
-pureepochnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
-indvsort = cell(1, length(epochinds));
-depvp_sort = cell(1, length(epochinds));
-truncstr = cell(1, length(epochinds));
-seglength = cell(1, length(epochinds));
-
-for epi = 1:length(epochinds)
-
-
-    %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
-    tinds_cont = [];
-    seg_endpoints = [0 find(diff(keepinds_depv{epi})~=1) length(keepinds_depv{epi})];
-    for bei = 2:length(seg_endpoints)
-        tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
-    end
-
-    indvnan_cont{epi} = [];
-    depvnan_cont{epi} = [];
-    depvpnan_cont{epi} = [];
-    pureepochnan_cont{epi} = [];
-    tinds_cont_nan{epi} = [];
-    nanpad_indv = nan(numsampnan, size(indv{epi}, 2));
-    nanpad_depv = nan(size(depv{epi}, 1), numsampnan);
-    nanpadvec = nanpad_depv(1,:);
-    for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
-        indvnan_cont{epi} = cat(1, indvnan_cont{epi},  nanpad_indv, indv{epi}( tinds_cont{tbi}, :));
-        depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad_depv, depv{epi}( :, tinds_cont{tbi}));
-        depvpnan_cont{epi} = cat(2, depvpnan_cont{epi},  nanpad_depv, depvp{epi}( :, tinds_cont{tbi}));
-        pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpadvec, pureepoch_keepinds{epi}( :, tinds_cont{tbi}));
-        if tbi==1
-            tmpstart = 1;
-        else
-            tmpstart = tinds_cont_nan{tbi-1}(end)+1;
-        end
-        tinds_cont_nan{tbi} = [ tmpstart : tmpstart+(numsampnan-1)+length(tinds_cont{tbi}) ]; %indices into nan padded array with the nans
-        tinds_cont_nan_nonan{tbi} = [ tmpstart+numsampnan : tmpstart+(numsampnan-1)+length(tinds_cont{tbi}) ]; %indices into nan padded array without the nans
-    end
-    if ~isempty(find(diff(cell2mat(tinds_cont_nan(:)'))~=1))
-        error("tinds_cont_nan must be contiguous")
-    end
-
-    %%%%%% NEXT SELECT SEGMENTS TO TRUNCATE THE PLOT (IN CASE IT'S TOO LONG TO SEE EASILY) AND PAD THOSE DISCONTINUITIES WITH NAN ALSO, these have suffix *_seg
-    tinds_seg = cell(1, timeseries_numsegments);
-    if isempty(max_tinds) || max_tinds > size(depvnan_cont{epi}, 2)  %if too many samples to see, plot only the first max_tinds of them
-        tinds_seg{1} = 1:size(depvnan_cont{epi}, 2);
-        truncstr{epi} = '';
-    else
-        if timeseries_numsegments>1
-            seglength{epi} = floor(max_tinds/timeseries_numsegments);
-            segspacing = floor(size(depvnan_cont{epi}, 2)/timeseries_numsegments);
-            for tnsi = 1:timeseries_numsegments
-                tinds_seg{tnsi} = [1:seglength{epi}]+segspacing*(tnsi-1)+segspacing-seglength{epi};
-            end
-        else
-            tinds_seg{1} = 1:max_tinds;
-        end
-    end
-    truncstr{epi} = ['TRUNC' num2str(timeseries_numsegments) 'SEG'];
-
-
-    depvnan_seg{epi} = depvnan_cont{epi}( :, tinds_seg{1});
-    depvpnan_seg{epi} = depvpnan_cont{epi}( :, tinds_seg{1});
-    pureepochnan_seg{epi} = pureepochnan_cont{epi}( :, tinds_seg{1});
-    for tnsi = 2:timeseries_numsegments
-        depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad_depv, depvnan_cont{epi}( :, tinds_seg{tnsi}));
-        depvpnan_seg{epi} = cat(2, depvpnan_seg{epi}, nanpad_depv, depvpnan_cont{epi}( :, tinds_seg{tnsi}));
-        pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpadvec, pureepochnan_cont{epi}( :, tinds_seg{tnsi}));
-    end
-
-
-end
-
-minis =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
-maxis =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
-
-epochinds_str_all = strjoin(epochinds_str, ',,');
-
-
-for epi = 1:length(epochinds)
-    [indvsort{epi}, indvsortidx] = sort(indv{epi}(:,hackindvdim));
-    depvp_sort{epi} = depvp{epi}(:, indvsortidx);
-end
 
 %% FOV, DEPVS, AND MODEL PLOTS
 
-if doplots(1)
 
-    title_add_each = 'MODELFIT';
-    figext = '.gif';
+title_add_each = 'MODELFIT';
+figext = '.gif';
 
-    filename_save = [pth_fitdata_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
-    tittmp = strsplit(filename_save(1:end-4), '/');
-    figure_title = strrep(tittmp{end}, '_', ' ');
+filename_save = [pth_fitdata_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
+tittmp = strsplit(filename_save(1:end-4), '/');
+figure_title = strrep(tittmp{end}, '_', ' ');
 
 
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
+hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+if aspect_screen>1
+    hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
+else
+    hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
+end
+bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', ...
+    'XLim', [0, 1], 'YLim', [0, 1] ) ;
+htx = text( 0.02, 0.99, '', 'FontSize', fontmedium, ...
+    'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+
+
+totalplotframes = length(roiinds_plot)*length(epochinds);
+
+for framecount = 1:totalplotframes
+
+    epi = ceil(framecount/length(roiinds_plot)); %index into epochinds
+    ri = mod(framecount-1, length(roiinds_plot))+1; %index into roiinds_plot
+
+    [py, px, pz] = ind2sub(size(stackmean), pixinds_roi{roiinds_plot(ri)}); %y, x, z of selected pixel
+
+    if strcmp(hsv_background, 'pixels')
+        htx.String = [figure_title ' --- roi centroid (xyz): ' num2str(py) ' ' num2str(py) ' ' num2str(pz)];
     else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
+        htx.String = [figure_title];
     end
-    bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', ...
-        'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    htx = text( 0.02, 0.99, '', 'FontSize', fontmedium, ...
-        'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+
+    if strcmp(depvplot_norm, 'each') %scale for each roi scanges, if depvplot_norm is 'each' rather than 'all'
+        minis = min([depv{epi}( ri, :) depvp{epi}( ri, :)]);
+        maxis = max([depv{epi}( ri, :) depvp{epi}( ri, :)]);
+    end
 
 
-    totalplotframes = length(roiinds_plot)*length(epochinds);
+    zslicecount = 0; %this variable is redundant with sit, but keeping it for clarity (and future flexibility)
+    for sit = 1:numplotstop
 
-    for framecount = 1:totalplotframes
+        [cit, rit] = ind2sub([numcolumnstop, numrowstop], sit); %reverse output since subplots are column-major
+        zslicecount = zslicecount+1;
 
-        epi = ceil(framecount/length(roiinds_plot)); %index into epochinds
-        ri = mod(framecount-1, length(roiinds_plot))+1; %index into roiinds_plot
+        if framecount==1
 
-        [py, px, pz] = ind2sub(size(stackmean), pixinds_roi{roiinds_plot(ri)}); %y, x, z of selected pixel
+            if zslicecount<size(img{epi}, 3)+1
+                hat{sit} = axes( 'Parent', hfg, 'Position', [xtop(cit), ytop(rit), wtop, htop] );
+                hold(hat{sit}, 'on');
+                switch hsv_background
+                    case 'pixels'
+                        hp1t{sit} = image(hat{sit}, squeeze(img{epi}(:,:,zslicecount,:)));
+                    case 'rois'
+                        hp1t{sit} = image(hat{sit}, squeeze(img{epi}(:,:,zslicecount,:,ri)));
+                end
+                axis image %should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
+                axis off
+                axis ij
+                if strcmp(hsv_background, 'pixels')
+                    if zslicecount==pz
+                        hp2t{sit} = xline(hat{sit}, px, 'w', 'LineStyle', '-');
+                        hp3t{sit} = yline(hat{sit}, py, 'w', 'LineStyle', '-');
+                    else
+                        hp2t{sit} = xline(hat{sit}, px, 'w', 'LineStyle', 'none');
+                        hp3t{sit} = yline(hat{sit}, py, 'w', 'LineStyle', 'none');
+                    end
+                end
+            end
 
-        if strcmp(hsv_background, 'pixels')
-            htx.String = [figure_title ' --- roi centroid (xyz): ' num2str(py) ' ' num2str(py) ' ' num2str(pz)];
-        else
-            htx.String = [figure_title];
+
+        elseif framecount>1
+
+            if zslicecount<size(img{epi}, 3)+1
+
+                switch hsv_background
+                    case 'pixels'
+                        hp1t{sit}.CData = squeeze(img{epi}(:,:,zslicecount,:));
+                    case 'rois'
+                        hp1t{sit}.CData = squeeze(img{epi}(:,:,zslicecount,:,ri));
+                end
+
+                if strcmp(hsv_background, 'pixels')
+                    if zslicecount==pz
+                        hp2t{sit}.Value = px;
+                        hp3t{sit}.Value = py;
+                        hp2t{sit}.LineStyle = '-';
+                        hp3t{sit}.LineStyle = '-';
+                    else
+                        hp2t{sit}.LineStyle = 'none';
+                        hp3t{sit}.LineStyle = 'none';
+                    end
+                end
+            end
         end
 
-        if strcmp(depvplot_norm, 'each') %scale for each roi scanges, if depvplot_norm is 'each' rather than 'all'
-            minis = min([depv{epi}( ri, :) depvp{epi}( ri, :)]);
-            maxis = max([depv{epi}( ri, :) depvp{epi}( ri, :)]);
-        end
+
+    end
 
 
-        zslicecount = 0; %this variable is redundant with sit, but keeping it for clarity (and future flexibility)
-        for sit = 1:numplotstop
 
-            [cit, rit] = ind2sub([numcolumnstop, numrowstop], sit); %reverse output since subplots are column-major
-            zslicecount = zslicecount+1;
+
+    for sib = 1:numplotsbottom
+
+        [cib, rib] = ind2sub([numcolumnsbottom, numrowsbottom], sib);
+
+        if cib == 1 %occupies cib 1 and 2 (bottom column 1 and 2, ie double width column)
 
             if framecount==1
 
-                if zslicecount<size(img{epi}, 3)+1
-                    hat{sit} = axes( 'Parent', hfg, 'Position', [xtop(cit), ytop(rit), wtop, htop] );
-                    hold(hat{sit}, 'on');
-                    switch hsv_background
-                        case 'pixels'
-                            hp1t{sit} = image(hat{sit}, squeeze(img{epi}(:,:,zslicecount,:)));
-                        case 'rois'
-                            hp1t{sit} = image(hat{sit}, squeeze(img{epi}(:,:,zslicecount,:,ri)));
-                    end
-                    axis image %should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
-                    axis off
-                    axis ij
-                    if strcmp(hsv_background, 'pixels')
-                        if zslicecount==pz
-                            hp2t{sit} = xline(hat{sit}, px, 'w', 'LineStyle', '-');
-                            hp3t{sit} = yline(hat{sit}, py, 'w', 'LineStyle', '-');
-                        else
-                            hp2t{sit} = xline(hat{sit}, px, 'w', 'LineStyle', 'none');
-                            hp3t{sit} = yline(hat{sit}, py, 'w', 'LineStyle', 'none');
-                        end
-                    end
+                hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot*2, hbot] );
+                hold(hab{sib}, 'on');
+                hp1b{sib} = plot(hab{sib}, depvnan_seg{epi}( ri, :), 'color', [0 0 1]);
+                hp2b{sib} = plot(hab{sib}, depvpnan_seg{epi}( ri, :), 'color', [1 0 0]);
+                yline(hab{sib}, 0)
+
+                xlm = hab{sib}.XLim;
+                hab{sib}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
+                hab{sib}.XAxis.TickLabelFormat = '%.1f';
+                hab{sib}.XAxis.FontSize = fontsmall;
+
+                hab{sib}.YLim = [minis maxis];
+                ylm = hab{sib}.YLim;
+                hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
+                hab{sib}.YAxis.TickLabelFormat = '%.1f';
+                hab{sib}.YAxis.FontSize = fontsmall;
+
+                xlabel('time (sec)', 'fontsize', fontsmall)
+                ylabel('dff', 'fontsize', fontsmall)
+                if rib==1
+                    title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
                 end
-
-
-            elseif framecount>1
-
-                if zslicecount<size(img{epi}, 3)+1
-
-                    switch hsv_background
-                        case 'pixels'
-                            hp1t{sit}.CData = squeeze(img{epi}(:,:,zslicecount,:));
-                        case 'rois'
-                            hp1t{sit}.CData = squeeze(img{epi}(:,:,zslicecount,:,ri));
-                    end
-
-                    if strcmp(hsv_background, 'pixels')
-                        if zslicecount==pz
-                            hp2t{sit}.Value = px;
-                            hp3t{sit}.Value = py;
-                            hp2t{sit}.LineStyle = '-';
-                            hp3t{sit}.LineStyle = '-';
-                        else
-                            hp2t{sit}.LineStyle = 'none';
-                            hp3t{sit}.LineStyle = 'none';
-                        end
-                    end
+                if rib~=numrowsbottom
+                    hab{sib}.XAxis.Visible='off';
                 end
+                hold(hab{sib}, 'off');
+
+
+            else
+
+                hp1b{sib}.YData = depvnan_seg{epi}( ri, :);
+                hp2b{sib}.YData = depvpnan_seg{epi}( ri, :);
+
+                hab{sib}.YLim = [minis maxis];
+                ylm = hab{sib}.YLim;
+                hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
+                hab{sib}.YAxis.TickLabelFormat = '%.1f';
+                hab{sib}.YAxis.FontSize = fontsmall;
+
             end
 
+        elseif cib == 3
 
-        end
+            if framecount==1
 
-
-
-
-        for sib = 1:numplotsbottom
-
-            [cib, rib] = ind2sub([numcolumnsbottom, numrowsbottom], sib);
-
-            if cib == 1 %occupies cib 1 and 2 (bottom column 1 and 2, ie double width column)
-
-                if framecount==1
-
-                    hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot*2, hbot] );
-                    hold(hab{sib}, 'on');
-                    hp1b{sib} = plot(hab{sib}, depvnan_seg{epi}( ri, :), 'color', [0 0 1]);
-                    hp2b{sib} = plot(hab{sib}, depvpnan_seg{epi}( ri, :), 'color', [1 0 0]);
+                hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
+                hold(hab{sib}, 'on');
+                hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), depvp{epi}( ri, :), 5, 'filled');
+                hp2b{sib} = plot(depv{epi}( ri,  :), depv{epi}( ri,  :), 'k');
+                if strcmp(hsv_background, 'rois') %0 is meaningful if passing dff, for now only data in rois method uses dff
+                    xline(hab{sib}, 0)
                     yline(hab{sib}, 0)
-
-                    xlm = hab{sib}.XLim;
-                    hab{sib}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
-                    hab{sib}.XAxis.TickLabelFormat = '%.1f';
-                    hab{sib}.XAxis.FontSize = fontsmall;
-
-                    hab{sib}.YLim = [minis maxis];
-                    ylm = hab{sib}.YLim;
-                    hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                    hab{sib}.YAxis.TickLabelFormat = '%.1f';
-                    hab{sib}.YAxis.FontSize = fontsmall;
-
-                    xlabel('time (sec)', 'fontsize', fontsmall)
-                    ylabel('dff', 'fontsize', fontsmall)
-                    if rib==1
-                        title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
-                    end
-                    if rib~=numrowsbottom
-                        hab{sib}.XAxis.Visible='off';
-                    end
-                    hold(hab{sib}, 'off');
-
-
-                else
-
-                    hp1b{sib}.YData = depvnan_seg{epi}( ri, :);
-                    hp2b{sib}.YData = depvpnan_seg{epi}( ri, :);
-
-                    hab{sib}.YLim = [minis maxis];
-                    ylm = hab{sib}.YLim;
-                    hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                    hab{sib}.YAxis.TickLabelFormat = '%.1f';
-                    hab{sib}.YAxis.FontSize = fontsmall;
-
                 end
 
-            elseif cib == 3
 
-                if framecount==1
+                hab{sib}.XLim = [minis maxis];
+                xlm = hab{sib}.XLim;
+                hab{sib}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
+                hab{sib}.XAxis.TickLabelFormat = '%.1f';
+                hab{sib}.XAxis.FontSize = fontsmall;
 
-                    hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
-                    hold(hab{sib}, 'on');
-                    hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), depvp{epi}( ri, :), 5, 'filled');
-                    hp2b{sib} = plot(depv{epi}( ri,  :), depv{epi}( ri,  :), 'k');
-                    if strcmp(hsv_background, 'rois') %0 is meaningful if passing dff, for now only data in rois method uses dff
-                        xline(hab{sib}, 0)
-                        yline(hab{sib}, 0)
-                    end
-
-
-                    hab{sib}.XLim = [minis maxis];
-                    xlm = hab{sib}.XLim;
-                    hab{sib}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
-                    hab{sib}.XAxis.TickLabelFormat = '%.1f';
-                    hab{sib}.XAxis.FontSize = fontsmall;
-
-                    hab{sib}.YLim = [minis maxis];
-                    ylm = hab{sib}.YLim;
-                    hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                    hab{sib}.YAxis.TickLabel = [];
+                hab{sib}.YLim = [minis maxis];
+                ylm = hab{sib}.YLim;
+                hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
+                hab{sib}.YAxis.TickLabel = [];
 
 
-                    xlabel('depv', 'fontsize', fontsmall)
-                    %ylabel('pred')
-                    if rib==1
-                        title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
-                    end
-                    if rib~=numrowsbottom
-                        hab{sib}.XAxis.Visible='off';
-                    end
-                    hold(hab{sib}, 'off');
-
-
-                else
-
-                    hp1b{sib}.XData = depv{epi}(ri, :);
-                    hp1b{sib}.YData = depvp{epi}(ri, :);
-                    hp2b{sib}.XData = depv{epi}(ri, :);
-                    hp2b{sib}.YData = depv{epi}(ri, :);
-
-                    hab{sib}.XLim = [minis maxis];
-                    xlm = hab{sib}.XLim;
-                    hab{sib}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
-
-                    hab{sib}.YLim = [minis maxis];
-                    ylm = hab{sib}.YLim;
-                    hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                    hab{sib}.YAxis.TickLabel = [];
-
-
-
+                xlabel('depv', 'fontsize', fontsmall)
+                %ylabel('pred')
+                if rib==1
+                    title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
                 end
-
-            elseif cib == 4
-
-                if framecount==1
-
-                    hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
-                    hold(hab{sib}, 'on');
-                    hp1b{sib} = scatter(hab{sib}, indv{epi}(:, hackindvdim), depv{epi}(ri, :), 5, 'filled');
-                    hp2b{sib} = plot(hab{sib}, indvsort{epi}, depvp_sort{epi}(ri, :), 'LineWidth', depvp_linewidth, 'Color', [1, 0, 0, depvp_transparency]);
-                    yline(hab{sib}, 0)
-
-                    hab{sib}.YLim = [minis maxis];
-                    ylm = hab{sib}.YLim;
-                    hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                    hab{sib}.YAxis.TickLabel = [];
-
-                    xlabel('indv sorted', 'fontsize', fontsmall)
-                    % ylabel('dff')
-                    if rib==1
-                        title(hab{sib}, 'depv vs indvlag', 'fontsize', fontsmall); %raw depv tuning for raw indv raw, depv vs raw indv, doesn't include any invalid first indices in depv (if model samples>1)
-                    end
-                    if rib~=numrowsbottom
-                        hab{sib}.XAxis.Visible='off';
-                    end
-                    hold(hab{sib}, 'off');
-
-                else
-
-                    hp1b{sib}.XData = indv{epi}(:,hackindvdim);
-                    hp1b{sib}.YData = depv{epi}(ri, :);
-                    hp2b{sib}.XData = indvsort{epi};
-                    hp2b{sib}.YData = depvp_sort{epi}(ri, :);
-
-                    hab{sib}.YLim = [minis maxis];
-                    ylm = hab{sib}.YLim;
-                    hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
-                    hab{sib}.YAxis.TickLabel = [];
-
-
+                if rib~=numrowsbottom
+                    hab{sib}.XAxis.Visible='off';
                 end
+                hold(hab{sib}, 'off');
+
+
+            else
+
+                hp1b{sib}.XData = depv{epi}(ri, :);
+                hp1b{sib}.YData = depvp{epi}(ri, :);
+                hp2b{sib}.XData = depv{epi}(ri, :);
+                hp2b{sib}.YData = depv{epi}(ri, :);
+
+                hab{sib}.XLim = [minis maxis];
+                xlm = hab{sib}.XLim;
+                hab{sib}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
+
+                hab{sib}.YLim = [minis maxis];
+                ylm = hab{sib}.YLim;
+                hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
+                hab{sib}.YAxis.TickLabel = [];
 
 
 
             end
 
+        elseif cib == 4
+
+            if framecount==1
+
+                hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
+                hold(hab{sib}, 'on');
+                hp1b{sib} = scatter(hab{sib}, indv{epi}(:, hackindvdim), depv{epi}(ri, :), 5, 'filled');
+                hp2b{sib} = plot(hab{sib}, indvsort{epi}, depvp_sort{epi}(ri, :), 'LineWidth', depvp_linewidth, 'Color', [1, 0, 0, depvp_transparency]);
+                yline(hab{sib}, 0)
+
+                hab{sib}.YLim = [minis maxis];
+                ylm = hab{sib}.YLim;
+                hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
+                hab{sib}.YAxis.TickLabel = [];
+
+                xlabel('indv sorted', 'fontsize', fontsmall)
+                % ylabel('dff')
+                if rib==1
+                    title(hab{sib}, 'depv vs indvlag', 'fontsize', fontsmall); %raw depv tuning for raw indv raw, depv vs raw indv, doesn't include any invalid first indices in depv (if model samples>1)
+                end
+                if rib~=numrowsbottom
+                    hab{sib}.XAxis.Visible='off';
+                end
+                hold(hab{sib}, 'off');
+
+            else
+
+                hp1b{sib}.XData = indv{epi}(:,hackindvdim);
+                hp1b{sib}.YData = depv{epi}(ri, :);
+                hp2b{sib}.XData = indvsort{epi};
+                hp2b{sib}.YData = depvp_sort{epi}(ri, :);
+
+                hab{sib}.YLim = [minis maxis];
+                ylm = hab{sib}.YLim;
+                hab{sib}.YAxis.TickValues = linspace(ylm(1), ylm(2), 3);
+                hab{sib}.YAxis.TickLabel = [];
+
+
+            end
+
+
+
         end
-
-
-        fig2gif(hfg, framecount, filename_save)
-
-
 
     end
 
 
+    fig2gif(hfg, framecount, filename_save)
+
+
+
 end
+
+

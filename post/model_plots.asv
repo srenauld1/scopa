@@ -47,8 +47,8 @@ end
 
 fitnames = fieldnames(fitin.fits);
 for ei = 1:numel(fitnames)
-    [indv, depv_all, roiinfo, fitin.fits.(fitnames{ei}), revstandvar_indv, revstandvar_depv] = ...
-        model_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(fitnames{ei}), opts.modeltype, opts.standardize_indv, opts.standardize_depv);
+    fitin.fits.(fitnames{ei})
+    plotvars = model_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(fitnames{ei}), opts.modeltype, opts.standardize_indv, opts.standardize_depv);
 end
 
 

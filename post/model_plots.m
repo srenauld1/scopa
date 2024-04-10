@@ -45,16 +45,34 @@ if strcmp(plot_dimension_order, 'rve') %set order of plot variables prior to mod
     disp("plot dimension order is: roi, validation, epoch")
 end
 
-fitnames = fieldnames(fitin.fits);
-for ei = 1:numel(fitnames)
-    [indv, depv_all, roiinfo, fitin.fits.(fitnames{ei}), revstandvar_indv, revstandvar_depv] = ...
-        model_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(fitnames{ei}), opts.modeltype, opts.standardize_indv, opts.standardize_depv);
+enm = fieldnames(fitin.fits);
+for ei = 1:numel(enm)
+    vnm = fieldnames(fitin.fits.(enm{ei}));
+    for vi = 1:numel(vnm)
+        [plotvars, do_read_indv, do_read_depv] = model_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(enm{ei}).(vnm{vi}), opts.modeltype, opts.standardize_indv, opts.standardize_depv, do_read_indv, do_read_depv);
+    end
 end
 
 
 stackmean = mean(stack, 4);
 if strcmp(fitin.plt.plot_class, 'epoch') & ~fitin.plt.plot3d
     stackmean = mean(stackmean, 3);
+end
+
+
+frm.a.type = 'timeseries';
+frm.b.type = 'fov';
+
+fn = fieldnames(frm);
+for fi = 1:numel(frm)
+    switch frm.(fn{fi}).type
+        case 'timeseries'
+            model_plots_timeseries
+        case 'fov'
+            model_plots_fov
+        case 'model'
+            modfun
+    end
 end
 
 %% various plots
