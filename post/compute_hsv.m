@@ -21,7 +21,7 @@ end
 
 switch plt.huenorm
     case 'native'
-        hrange_in = plt.gethr_native(stats.indv_pre_lim_alldim, stats.depv_pre_lim_alldim);
+        hrange_in = plt.gethr_native(stats.indvpre_lim_alldim, stats.depvpre_lim_alldim);
     case 'relative'
         hrange_in = plt.gethr_relative(hdata);
     case 'manual'

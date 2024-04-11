@@ -28,8 +28,8 @@ end
 
 if exist('plotinds_z', 'var') & exist('plotinds_t', 'var')
     titopt = repelem(plotinds_z, length(plotinds_t));
-    for ti = 1:length(titopt)
-        titallnew{ti} = cat(1, titall, ['z slice ' num2str(titopt(ti))]);
+    for i = 1:length(titopt)
+        titallnew{i} = cat(1, titall, ['z slice ' num2str(titopt(i))]);
     end
 else
     titallnew{1} = titall;

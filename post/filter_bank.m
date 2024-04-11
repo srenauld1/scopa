@@ -11,10 +11,10 @@ padlen = 20;
 tmppad = zeros(1, length(tshift)+padlen*2);
 filtall = zeros(length(type),length(tshift));
 
-for ti = 1:length(type)
+for i = 1:length(type)
     tmp = [];
 
-    switch type{ti}
+    switch type{i}
 
         case 'ricker'
             %ricker (f is bandwidth)
@@ -73,7 +73,7 @@ for ti = 1:length(type)
         plot(tshift, filt);
     end   
 
-    filtall(ti,:) = filt;
+    filtall(i,:) = filt;
 
 end
 

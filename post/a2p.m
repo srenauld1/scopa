@@ -8,10 +8,11 @@ disp("make hemisphere no hemisphere option")
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
-% variables organized into structs to reduce complexity (often unpacked/packed upon entering/exiting function)
+% variables are organized into structs to reduce complexity 
+% variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing 
 
 % struct 'opt' holds input params in various sub-structs, which are each used predominantly in a function below
-% struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.ti (imaging frame timestamps)
+% struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.t_ts_i (imaging frame timestamps)
 % struct 'roiinfo' holds roi info for morphological and functional rois
 % struct 'md' holds metadata
 % struct 'paths' holds paths
@@ -19,6 +20,13 @@ disp("make hemisphere no hemisphere option")
 
 % struct 'opt.fit' holds options that do not change across all calls function 'fitmdl'
 % struct 'fitin' (stands for 'fit input') holds data (e.g. depv & indv) used in each individual call to function 'fitmdl' (can change across calls)
+
+
+% in variable names
+%   prefix, infix, or suffix 'ts' denotes 'timeseries'
+%   suffix '*_i' denotes imaging sampling, suffix '*_b' denotes behavior sampling (suffix can be used for timeseries variable, or variable used exclusively with one or the other sampling regimes)
+%   suffix '*_m' denotes model sampling (e.g., in a linear model integrating 5 imaging samples into the past, num_samp
+    
 
 %% params
 
@@ -118,7 +126,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
         opt.fit.epochinds = {[2 3 4]}; 
         opt.fit.num_synthetic_depv = 0;
-        opt.fit.modeltype = 'ann_L1_sh16x'; opt.fit.use_saved_model = 1; opt.fit.model_length_sec = 2;
+        opt.fit.modeltype = 'ann_L1_sh16x'; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2;
         [fittmp, goftmp] = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit); %fit model using any available timeseries
 
 

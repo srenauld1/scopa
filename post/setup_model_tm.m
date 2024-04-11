@@ -17,7 +17,7 @@ phimx = 0.769961614088224; %image max phi
 vert = dlmread( pth.name );
 vert = vert(max(vert(:, 3),-1) >= cos(phimx), :); %crop vertices to be within indv cap, do after find_arc_length
 vert = vert./vecnorm(vert,2, 2);  %normalize it to lie on the sphere!!
-disp("WARNING, HARD CODED CROP TO num_dim_indv_pre VERTICES")
-vert = vert(1:num_dim_indv_pre,:);
+disp("WARNING, HARD CODED CROP TO num_dim_indvpre VERTICES")
+vert = vert(1:num_dim_indvpre,:);
 supp.vert = vert;
 

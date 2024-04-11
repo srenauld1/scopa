@@ -2,9 +2,9 @@
 function [fitin, opts] = setup_model(fitin, opts, dtmni, pth_fitdata_prefix)
 
 
-num_samp_model = fitin.num_samp_model;
-num_dim_indvaug = fitin.num_dim_indvaug;
-num_dim_indv_pre = fitin.num_dim_indv_pre;
+num_samp_mdl = fitin.num_samp_mdl;
+num_dim_indv = fitin.num_dim_indv;
+num_dim_indvpre = fitin.num_dim_indvpre;
 
 modeltype = opts.modeltype;
 
@@ -40,9 +40,9 @@ elseif startsWith(modeltype, 'linear')
 elseif startsWith(modeltype, 'plane')
 
     optimp.modfun = @fit_plane;
-    optimp.lb = [ones(1, num_dim_indvaug)*3000 -inf]; %[0,0,0,-pi]; %a, c, k, u
-    optimp.ub = [ones(1, num_dim_indvaug)*3000 inf]; %[inf,inf,inf,pi];
-    optimp.x0 = [ones(1, num_dim_indvaug)*2 0];
+    optimp.lb = [ones(1, num_dim_indv)*3000 -inf]; %[0,0,0,-pi]; %a, c, k, u
+    optimp.ub = [ones(1, num_dim_indv)*3000 inf]; %[inf,inf,inf,pi];
+    optimp.x0 = [ones(1, num_dim_indv)*2 0];
 
     supp = [];
 
@@ -81,7 +81,7 @@ elseif startsWith(modeltype, 'gaussian')
 
 elseif startsWith(modeltype, 'ann')
 
-    supp = setup_model_ann(modeltype, chopt, num_samp_model, dtmni, num_dim_indv_pre);
+    supp = setup_model_ann(modeltype, chopt, num_samp_mdl, dtmni, num_dim_indvpre);
 
 
 elseif startsWith(modeltype, 'tm')
@@ -109,10 +109,10 @@ fitin.opop = default_optimization_options(fitin.opop);
 
 supp.pthspre = pth_fitdata_prefix;
 supp.dt = dtmni;
-supp.num_dim_indv_pre = num_dim_indv_pre;
-supp.num_samp_model = num_samp_model;
+supp.num_dim_indvpre = num_dim_indvpre;
+supp.num_samp_mdl = num_samp_mdl;
 if strcmp(modeltype, 'svd') || strcmp(modeltype, 'onehot') || strcmp(modeltype, 'onehot_svd')
-    supp.num_par_total = num_dim_indvaug;
+    supp.num_par_total = num_dim_indv;
 else
     supp.num_par_total = numel(optimp.x0);
 end

@@ -1,7 +1,7 @@
 
 function plots_imdata(inp, mask, sindz, tindz, tindz_sub, szo, filename_prefix)
 
-%%this function is old and needs to be updated
+error("this function is very old and needs to be updated")
 
 filename_prefix = filename_prefix(1:end-4);
 
@@ -66,17 +66,17 @@ plot_histogram_gif(histinp, numbin, title_hist, filename_hist_gif)
 
 numpixmask_max = 0;
 for sli = sindz
-    for ti = 1:szsub(4)
-        subcond = find(maskreptsubz==sli & maskreptsubt==ti);
+    for i = 1:szsub(4)
+        subcond = find(maskreptsubz==sli & maskreptsubt==i);
         numpixmask_max = max([numpixmask_max length(subcond)]);
     end
 end
 histinp = nan(numpixmask_max, length(sindz), szsub(4));
 for sli = sindz
-    for ti = 1:szsub(4)
-        subcond = find(maskreptsubz==sli & maskreptsubt==ti);
+    for i = 1:szsub(4)
+        subcond = find(maskreptsubz==sli & maskreptsubt==i);
         maskvecinds = sub2ind(size(maskreptsub), maskreptsuby(subcond),maskreptsubx(subcond),maskreptsubz(subcond),maskreptsubt(subcond));
-        histinp(1:length(maskvecinds), sli, ti) = inpsub(maskvecinds);
+        histinp(1:length(maskvecinds), sli, i) = inpsub(maskvecinds);
         if masked
             tlev(sli) = multithresh(histinp(~isnan(histinp)));
         end

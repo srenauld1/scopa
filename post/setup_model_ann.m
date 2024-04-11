@@ -1,4 +1,4 @@
-function [opop, supp] = setup_model_ann(modeltype, chopt, num_samp_model, dt, num_dim_indv_pre)
+function [opop, supp] = setup_model_ann(modeltype, chopt, num_samp_mdl, dt, num_dim_indvpre)
 
 supp.modeltype = modeltype;
 supp.NumTrialPoints = 1000;
@@ -6,7 +6,7 @@ supp.NumStageOnePoints = 200;
 
 padlen_sec = 4;
 
-annspec = parse_model_string(modeltype, chopt, num_dim_indv_pre);
+annspec = parse_model_string(modeltype, chopt, num_dim_indvpre);
 
 lbnd = [];
 ubnd = [];
@@ -28,7 +28,7 @@ for li = 1:length(fnl)
     for ci = 1:length(fnc)
 
         [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, anntmp, freeformflag] = ...
-            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), num_samp_model, dt, num_dim_indv_pre, padlen_sec);
+            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), num_samp_mdl, dt, num_dim_indvpre, padlen_sec);
 
         lbnd = [lbnd lbnd_tmp];
         ubnd = [ubnd ubnd_tmp];

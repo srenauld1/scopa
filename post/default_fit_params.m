@@ -2,10 +2,10 @@ function optout = default_fit_params(optin)
 
 do_predict = 1;
 
-depv_pre_str = {...
+depvpre_str = {...
     ['resp, *, *, *'], ...
     };
-indv_pre_str = {...
+indvpre_str = {...
     {['resp, *, *, *']}...
     };
 depv_indv_combine = 'any'; %any or each
@@ -13,12 +13,13 @@ ignore_missing_vars = 0;
 
 num_synthetic_depv = 0; %create synthetic data (using requested modeltype params, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
 epochinds = {[4]};
-model_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
-model_length_sec = 2; %seconds, 0 is one sample
+mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
+mdl_length_sec = 2; %seconds, 0 is one sample
 
 keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
 
 validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+validation_split_style = 'samples'; %'samples' or 'bouts' %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
 slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';

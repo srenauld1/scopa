@@ -2,17 +2,18 @@ function [ft, gof, indvpref] = fitmdl(stack, fitin, roiinfo, md, opts, pixfitfla
 
 % for docs, see file fitmdl_notes.m
 
+% indvpre and depvpre are independent and dependent variables before processing 
 
 %% check some inputs and prepare save path
 
-if isvector(fitin.indv_pre) & iscolumn(fitin.indv_pre)
-    fitin.indv_pre = fitin.indv_pre(:)';
+if isvector(fitin.indvpre) & iscolumn(fitin.indvpre)
+    fitin.indvpre = fitin.indvpre(:)';
 end
 
-[ fitin.num_dim_indv_pre, fitin.num_samp_indv_pre ] = size( fitin.indv_pre );
-[ fitin.num_dim_depv_pre, fitin.num_samp_depv_pre ] = size(fitin.depv_pre);
+[ fitin.num_dim_indvpre, fitin.num_samp_indvpre ] = size( fitin.indvpre );
+[ fitin.num_dim_depvpre, fitin.num_samp_depvpre ] = size(fitin.depvpre);
 
-if fitin.num_samp_indv_pre~=fitin.num_samp_depv_pre | ndims(fitin.depv_pre)~=2 | ndims(fitin.indv_pre)~=2
+if fitin.num_samp_indvpre~=fitin.num_samp_depvpre | ndims(fitin.depvpre)~=2 | ndims(fitin.indvpre)~=2
     error("incorrectly sized input(s)")
 end
 
@@ -25,7 +26,7 @@ else
     end
 end
 
-pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.modeltype '_' num2str(opts.model_length_sec) '_' num2str(opts.model_lag_sec) pixfitflagstr];
+pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.modeltype '_' num2str(opts.mdl_length_sec) '_' num2str(opts.mdl_lag_sec) pixfitflagstr];
 pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 %% create pixelwise fit for background of hsv plot (if requested) by calling fitmdl here, with pixfitflag==1
@@ -53,9 +54,7 @@ fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix);
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 
 for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-    for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-        fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
-    end
+    fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
 end
 
 model_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)

@@ -143,13 +143,13 @@ if normopts.doplots
         figure;
         subplot(3,1,1)
         plot(pfn)
-        title(std(pfn))
+        title(std(pfn, 1)) %2nd arg is 1 to normalize by n, not n-1
         subplot(3,1,2)
         plot(pdfn)
-        title(std(pdfn))
+        title(std(pdfn, 1)) %2nd arg is 1 to normalize by n, not n-1
         subplot(3,1,3)
         plot(pzfn)
-        title(std(pzfn))
+        title(std(pzfn, 1)) %2nd arg is 1 to normalize by n, not n-1
 
         saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprctnorm_.png'])
 

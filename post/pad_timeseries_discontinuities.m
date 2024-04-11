@@ -7,7 +7,7 @@ numsampnan = 10;
 
 %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
 tinds_cont = [];
-seg_endpoints = [0 find(diff(fitdata.keepinds_depv)~=1) length(fitdata.keepinds_depv)];
+seg_endpoints = [0 find(diff(fitdata.sampinds_depvpre)~=1) length(fitdata.sampinds_depvpre)];
 for bei = 2:length(seg_endpoints)
     tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
 end
@@ -17,14 +17,14 @@ depvnan_cont = [];
 depvpnan_cont = [];
 pureepochnan_cont = [];
 tinds_cont_nan = [];
-nanpad_indv = nan(numsampnan, fitin.num_dim_indv_pre);
-nanpad_depv = nan(numsampnan, fitin.num_dim_depv_pre);
+nanpad_indv = nan(numsampnan, fitin.num_dim_indvpre);
+nanpad_depv = nan(numsampnan, fitin.num_dim_depvpre);
 nanpadvec = nanpad_depv(:,1);
 for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
     indvnan_cont = cat(1, indvnan_cont,  nanpad_indv, indv( tinds_cont{tbi}, :));
-    depvnan_cont = cat(1, depvnan_cont,  nanpad_depv, depv_all( tinds_cont{tbi}, :));
+    depvnan_cont = cat(1, depvnan_cont,  nanpad_depv, depv_allrois( tinds_cont{tbi}, :));
     depvpnan_cont = cat(1, depvpnan_cont,  nanpad_depv, fitdata.depvp( tinds_cont{tbi}, :));
-    pureepochnan_cont = cat(1, pureepochnan_cont,  nanpadvec, fitdata.pureepoch_keepinds( tinds_cont{tbi}));
+    pureepochnan_cont = cat(1, pureepochnan_cont,  nanpadvec, fitdata.epochinds_pure_ts_m( tinds_cont{tbi}));
     if tbi==1
         tmpstart = 1;
     else

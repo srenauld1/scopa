@@ -36,7 +36,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         fontmedium = 20;
         numrows_plot = 1;%supp.num_model_functions;
-        numcolumns_plot = 1;%supp.num_dim_indv_pre*supp.num_neuron;
+        numcolumns_plot = 1;%supp.num_dim_indvpre*supp.num_neuron;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -65,9 +65,9 @@ depvp = pars(1)*exp(pars(2)*cos(indv-pars(3)))+pars(4);
 
 if make_figure
 
-    sfi_i = 1;
-    sfi = sfi_i;
-    % sfi = sfi_i+supp.num_model_functions*(LN_unit_count-1);
+    sfi_tmp = 1;
+    sfi = sfi_tmp;
+    % sfi = sfi_tmp+supp.num_model_functions*(LN_unit_count-1);
     sfi = sfi+supp.starting_hax;
 
     [indvsort, indvsortidx] = sort(indv);

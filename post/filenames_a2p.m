@@ -158,12 +158,12 @@ end
 
 pffn = fieldnames(opt.pf);
 for pfi = 1:numel(pffn)
-    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fit.depv_pre_str]))
+    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fit.depvpre_str]))
         opt.pf.(pffn{pfi}).do = 0;
     end
 end
 
-if all(cellfun(@isempty, [opt.fit.depv_pre_str]))
+if all(cellfun(@isempty, [opt.fit.depvpre_str]))
     opt.fit.do_predict = 0;
 end
 

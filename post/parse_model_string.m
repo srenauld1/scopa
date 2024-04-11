@@ -1,4 +1,4 @@
-function annspec = parse_model_string(modeltype, chopt, num_dim_indv_pre)
+function annspec = parse_model_string(modeltype, chopt, num_dim_indvpre)
 
 %right now order of characters within an underscore doesn't matter, so the code doesn't treat order 
 
@@ -19,7 +19,7 @@ exprbin = [chopt.hot '%d'];
 exprhotx = [chopt.hot '\d*x'];
 
 
-numchan_total_currlay = num_dim_indv_pre; %total for input layer, wll be updated for each layer
+numchan_total_currlay = num_dim_indvpre; %total for input layer, wll be updated for each layer
 prevlayer = 1;
 allchan = [];
 spl = strsplit(modeltype, '_');

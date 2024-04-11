@@ -45,11 +45,11 @@ md.trialtime = ftData_DAQ.trialTime{:};
 md.dts_b = [nan; seconds(diff(md.trialtime))];
 md.dtmnb = mean(seconds(diff(md.trialtime)));
 
-md.tb = md.dtmnb * [1:length(ftData_DAQ.intHD{1})];
-md.total_t = max(md.tb);
-md.ti = linspace(0, md.total_t, md.numvol_o+1)';
-md.ti = md.ti(2:end);
-md.dtmni = mean(diff(md.ti)); %close to 1/md.volrate;
+md.t_ts_b = md.dtmnb * [1:numel(ftData_DAQ.intHD{1})];
+md.total_t = max(md.t_ts_b);
+md.t_ts_i = linspace(0, md.total_t, md.numvol_o+1)';
+md.t_ts_i = md.t_ts_i(2:end);
+md.dtmni = mean(diff(md.t_ts_i)); %close to 1/md.volrate;
 
 if datenum<20231119
     dark_epoch_time_start = max(md.trialtime(:))-seconds(dark_stim_end_duration);
@@ -61,8 +61,8 @@ end
 smoothwindow_b = smoothwindow_sec/md.dtmnb;
 smoothwindow_i = smoothwindow_sec/md.dtmni;
 
-naninds_i = md.ti>seconds(dark_epoch_time_start); %dark gets nans
-naninds_b = md.tb>seconds(dark_epoch_time_start); %dark gets nas
+naninds_i = md.t_ts_i>seconds(dark_epoch_time_start); %dark gets nans
+naninds_b = md.t_ts_b>seconds(dark_epoch_time_start); %dark gets nas
 
 ball.velf = ftData_DAQ.velFor{:}; 
 ball.spdf = abs(ball.velf);
@@ -106,8 +106,8 @@ vis.angsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 vis.velrsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 
 if no_stim_epochs
-    trialepochinds_i = ones(length(md.ti), 1);
-    trialepochinds_b = ones(length(md.tb), 1);
+    epochinds_ts_i = ones(length(md.t_ts_i), 1);
+    epochinds_ts_b = ones(length(md.t_ts_b), 1);
 else
     
     if datenum<20231119
@@ -117,8 +117,8 @@ else
     end
 
 end
-md.trialepochinds_i = trialepochinds_i;
-md.trialepochinds_b = trialepochinds_b;
+md.epochinds_ts_i = epochinds_ts_i;
+md.epochinds_ts_b = epochinds_ts_b;
 
 %organize_epochs(md, vis, 'imaging', [0 35]) %unfinished
 
@@ -127,11 +127,11 @@ if doplots
 
     numsamp_i_subset = 500;
     numsec_subset = numsamp_i_subset*md.dtmni;
-    startsec_i_subset = round(md.ti(end) / 2); %arbitrarily in the middle
+    startsec_i_subset = round(md.t_ts_i(end) / 2); %arbitrarily in the middle
     plot_t_inds_sec = startsec_i_subset:startsec_i_subset+numsec_subset;
 
-    t_ind_b = md.tb>plot_t_inds_sec(1) & md.tb<plot_t_inds_sec(end);
-    t_ind_i = md.ti>plot_t_inds_sec(1) & md.ti<plot_t_inds_sec(end);
+    t_ind_b = md.t_ts_b>plot_t_inds_sec(1) & md.t_ts_b<plot_t_inds_sec(end);
+    t_ind_i = md.t_ts_i>plot_t_inds_sec(1) & md.t_ts_i<plot_t_inds_sec(end);
 
     ballang_unwrap = unwrap(ball.ang);
     ballang_unwrap = ballang_unwrap - ballang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
@@ -159,7 +159,7 @@ if doplots
     cueangsu = cueangsu - cueangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
 
     titopt = 'raw vs smoothed cue rot vel, behavior sampling';
-    figure; plot(md.tb(t_ind_b), vis.velr(t_ind_b)); hold on; plot(md.tb(t_ind_b), vis.velrs(t_ind_b)); title(titopt)
+    figure; plot(md.t_ts_b(t_ind_b), vis.velr(t_ind_b)); hold on; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); title(titopt)
 
     titopt = 'raw vs smoothed cue angle';
     figure; plot(vis.ang(t_ind_b)); hold on; plot(vis.angs(t_ind_b)); title(titopt)
@@ -174,21 +174,21 @@ if doplots
     % figure; plot(cueangsu); yyaxis right; plot(visvelrs_med); yline(0); title(titopt)
 
     titopt = 'behavior vs imaging sampling of ball angle';
-    figure; plot(md.tb(t_ind_b), ball.angs(t_ind_b)); hold on; plot(md.ti(t_ind_i), ball.angsd(t_ind_i)); title(titopt)
-    figure; plot(md.tb, ball.angs); hold on; plot(md.ti, ball.angsd); title(titopt)
+    figure; plot(md.t_ts_b(t_ind_b), ball.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.angsd(t_ind_i)); title(titopt)
+    figure; plot(md.t_ts_b, ball.angs); hold on; plot(md.t_ts_i, ball.angsd); title(titopt)
     titopt = 'behavior vs imaging sampling of cue angle';
-    figure; plot(md.tb(t_ind_b), vis.angs(t_ind_b)); hold on; plot(md.ti(t_ind_i), vis.angsd(t_ind_i)); title(titopt)
-    figure; plot(md.tb, vis.angs); hold on; plot(md.ti, vis.angsd); title(titopt)
+    figure; plot(md.t_ts_b(t_ind_b), vis.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.angsd(t_ind_i)); title(titopt)
+    figure; plot(md.t_ts_b, vis.angs); hold on; plot(md.t_ts_i, vis.angsd); title(titopt)
     titopt = 'behavior vs imaging sampling of ball velocity';
-    figure; plot(md.tb(t_ind_b), ball.velrs(t_ind_b)); hold on; plot(md.ti(t_ind_i), ball.velrsd(t_ind_i)); title(titopt)
-    figure; plot(md.tb, ball.velrs); hold on; plot(md.ti, ball.velrsd); title(titopt)
+    figure; plot(md.t_ts_b(t_ind_b), ball.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.velrsd(t_ind_i)); title(titopt)
+    figure; plot(md.t_ts_b, ball.velrs); hold on; plot(md.t_ts_i, ball.velrsd); title(titopt)
     titopt = 'behavior vs imaging sampling of cue velocity';
-    figure; plot(md.tb(t_ind_b), vis.velrs(t_ind_b)); hold on; plot(md.ti(t_ind_i), vis.velrsd(t_ind_i)); title(titopt)
-    figure; plot(md.tb, vis.velrs); hold on; plot(md.ti, vis.velrsd); title(titopt)
+    figure; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.velrsd(t_ind_i)); title(titopt)
+    figure; plot(md.t_ts_b, vis.velrs); hold on; plot(md.t_ts_i, vis.velrsd); title(titopt)
 
 
-    figure; plot(md.ti, trialepochinds_i); ylim([0 max(trialepochinds_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
-    hold on; plot(md.tb, trialepochinds_b); ylim([0 max(trialepochinds_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
+    figure; plot(md.t_ts_i, epochinds_ts_i); ylim([0 max(epochinds_ts_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
+    hold on; plot(md.t_ts_b, epochinds_ts_b); ylim([0 max(epochinds_ts_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
 
 
 end

@@ -6,7 +6,7 @@
                     %     if strcmp(sorting_target, 'none') %if not sorting
                     %         numfram = 1e10;
                     %         for epi = 1:length(epochinds_plot) %find min epoch length, and plot that many frames (so they can be contiguous)
-                    %             numfram = min([numfram numel(find(trialepochinds_i==epochinds_plot(epi)))]);
+                    %             numfram = min([numfram numel(find(epochinds_ts_i==epochinds_plot(epi)))]);
                     %         end
                     %     else
                     %         numfram = 150; %if sorting, plot less (not strictly necessary, could plot all)

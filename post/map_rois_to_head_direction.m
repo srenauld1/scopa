@@ -2,7 +2,7 @@
 function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
     roiinfo, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots)
 
-resptmp = fitin.depv_pre;
+resptmp = fitin.depvpre;
 
 [~, ~, prefang] = fitmdl(stack, fitin, roiinfo, md, fitopt);
 
@@ -76,12 +76,12 @@ if doplots
                 hold(hax, 'on');
                 hpl2 = plot(hax, 1:size(resptmp2, 1), resptmp2(:,ind));
                 yyaxis right;
-                hpl3 = plot(hax, linspace(1, size(resptmp, 1), size(fitin.depv_pre, 1)), fitin.depv_pre(:,ind));
+                hpl3 = plot(hax, linspace(1, size(resptmp, 1), size(fitin.depvpre, 1)), fitin.depvpre(:,ind));
                 hold(hax, 'off');
             else
                 hpl1.YData = resptmp(:,ind);
                 hpl2.YData = resptmp2(:,ind);
-                hpl3.YData = fitin.depv_pre(:,ind);
+                hpl3.YData = fitin.depvpre(:,ind);
 
             end
 

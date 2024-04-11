@@ -4,7 +4,7 @@ plt = fitin.plt;
 supp = fitin.supp;
 
 modfun = fitin.opop.optimp.modfun;
-num_dim_depv_pre = fitin.num_dim_depv_pre;
+num_dim_depvpre = fitin.num_dim_depvpre;
 
 standardize_depv = opts.standardize_depv;
 epochinds = opts.epochinds;

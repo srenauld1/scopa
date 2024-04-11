@@ -18,10 +18,10 @@ copyfile(pth_read, pth_write)
 inp = reshape(inp, size(inp, 1), size(inp, 2), []);
 tw = Tiff(pth_write, 'r+');
 
-for ti = 1:size(inp, 3)
+for i = 1:size(inp, 3)
 
-    tw.write(inp(:,:,ti));
-    if ti<size(inp, 3)
+    tw.write(inp(:,:,i));
+    if i<size(inp, 3)
         tw.nextDirectory()
     end
 

@@ -1,7 +1,7 @@
 function scatterplots(cueangtmp, cueveltmp, ballangtmp, ballveltmp, ...
     bumpmutmp, bumprhotmp, bumpveltmp, ampmeantmp, amppeaktmp, ampmutmp, ...
     respgartmp, respgaltmp, respnortmp, respnoltmp, meangtmp, meanntmp, ...
-    ti, tb, trialepochinds_i, trialepochinds_b, epochindstmp, fn_prefix, gif_visibility)
+    ti, tb, epochinds_ts_i, epochinds_ts_b, epochindstmp, fn_prefix, gif_visibility)
 
 error("don't use this yet")
 
@@ -9,7 +9,7 @@ allow_response_upsample = 0;
 
 if length(respgartmp) < length(cueveltmp) & allow_response_upsample
 
-    tsamp_ei = trialepochinds_b;
+    tsamp_ei = epochinds_ts_b;
     tsamp = tb;
     respgartmp = interp1(ti,respgartmp,tb)'; %upsample resp rather than downsample stim
     respgaltmp = interp1(ti,respgaltmp,tb)'; %upsample resp rather than downsample stim
@@ -26,7 +26,7 @@ if length(respgartmp) < length(cueveltmp) & allow_response_upsample
 
 elseif length(respgartmp) == length(cueveltmp)
 
-    tsamp_ei = trialepochinds_i;
+    tsamp_ei = epochinds_ts_i;
     tsamp = ti;
 
 else
@@ -64,8 +64,8 @@ for rind = 1:length(epochindstmp)
     %%
 
     % noise_scalefac = 0;
-    % noiseadd = noise_scalefac*std(ballvel)*(rand(size(ballvel)));
-    % noiseaddpos = noise_scalefac*std(ballvel)*(rand(size(ballvel)));
+    % noiseadd = noise_scalefac*std(ballvel,1)*(rand(size(ballvel)));
+    % noiseaddpos = noise_scalefac*std(ballvel,1)*(rand(size(ballvel)));
     % ballvelnoise = ballvel + noiseadd;
     % ballvelnoisepos = 6*ballvel.^3 + 2*ballvel.^2 + noiseaddpos + 0;
     % ballvelnoisepos = ballvel + noiseaddpos + 0;
@@ -109,7 +109,7 @@ for rind = 1:length(epochindstmp)
         'cueang', 'cuevel', 'ballang', 'ballvel', ...
         'bumpmu', 'bumprho', 'bumpvel', 'ampmean', 'amppeak', 'ampmu', ...
         'respgar', 'respgal', 'respnor', 'respnol', 'meang', 'meann', ...
-        'ti', 'tb', 'trialepochinds_i', 'trialepochinds_b', 'epochinds', '-v7.3', '-mat')
+        'ti', 'tb', 'epochinds_ts_i', 'epochinds_ts_b', 'epochinds', '-v7.3', '-mat')
 
 
 

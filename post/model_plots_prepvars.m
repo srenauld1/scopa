@@ -10,8 +10,8 @@ fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata
 
 switch plt.sort_method
     case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
-        sortinds = fliplr(1:fitin.num_dim_depv_pre);
-        sortinds = 1:fitin.num_dim_depv_pre;
+        sortinds = fliplr(1:fitin.num_dim_depvpre);
+        sortinds = 1:fitin.num_dim_depvpre;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
         [~, sortinds] = sort(roiinfo.mapind2ind,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
@@ -22,25 +22,25 @@ switch plt.sort_method
         sortinds = [sortonetmp; sorttwotmp];
 end
 
-roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depv_pre, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depv_pre
+roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvpre
 
 
 %% read full indv and depv from bin, then subsample
 
 if do_read_indv
     indv = read_mdl_var(fitin.pth_indvaug_bin);
-    indv = indv(:, fitdata.keepinds_indv).'; %columns of indv and depv should be number samples, could change above or just transpose here
+    indv = indv(:, fitdata.sampinds_indvpreaug).'; %columns of indv and depv should be number samples, could change above or just transpose here
     if standardize_indv
-        indv = fitin.revstandvar_indv(indv);
+        indv = fitin.standmdlvar_indv(indv, 'reverse');
     end
     do_read_indv = 0;
 end
 if do_read_depv
-    depv_all = read_mdl_var(fitin.pth_depv_pre_bin);
-    depv_all = depv_all(roiinds_plot, fitdata.keepinds_depv).'; %columns of indv and depv should be number samples, could change above or just transpose here
+    depv_allrois = read_mdl_var(fitin.pth_depvpre_bin);
+    depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvpre).'; %columns of indv and depv should be number samples, could change above or just transpose here
     if standardize_depv
-        depv_all = fitin.revstandvar_depv(depv_all);
-        fitdata.depvp = fitin.revstandvar_depv(fitdata.depvp);
+        depv_allrois = fitin.standmdlvar_indv(depv_allrois, 'reverse');
+        fitdata.depvp = fitin.standmdlvar_indv(fitdata.depvp, 'reverse');
     end
     do_read_depv = 0;
 end
@@ -61,7 +61,7 @@ pad_timeseries_discontinuities
 contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuous segments per row
 
 
-indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_d, maxis_d);
+indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_depv, maxis_depv);
 
 numroi_plot = size(depvnan_cont{epi}, 1);
 depvprow = cell(numroi_plot, numrows_ts);
@@ -145,7 +145,7 @@ for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualiz
             x1 = tmp(shadextmp(bei-1)+1);
             x2 = tmp(shadextmp(bei));
             shadex{nsi}(:, count) = [x1; x2; x2; x1] - min(tinds_row) + 1; %subtract indices to shift on x axis for each row, since time is modified in this plot
-            shadey{nsi}(:, count) = [minis_a; minis_a; maxis_a; maxis_a];
+            shadey{nsi}(:, count) = [minis_all; minis_all; maxis_all; maxis_all];
             shadec{nsi}(count, 1, :) = reshape(cmap_patch(epochinds{epi}(epi2), :), [1 1 3]); %put color triplet in 3rd dim for patch arg c
         end
     end
@@ -183,8 +183,8 @@ end
 
 minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  depvprow,  'UniformOutput',  false))); %min pred depv across all epochs
 maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  depvprow,  'UniformOutput',  false))); %max pred depv across all epochs
-% minis_a = min(minis_a, minis_pa);
-% maxis_a = max(maxis_a, maxis_pa);
+% minis_all = min(minis_all, minis_pa);
+% maxis_all = max(maxis_all, maxis_pa);
 
 
 %% output struct

@@ -10,7 +10,7 @@ if fitcount>1 %the set of all indv/depv combos is determined on the first fit (f
 
 else
     
-    fieldspec_parent_fields = {'indv_pre_str', 'depv_pre_str'};
+    fieldspec_parent_fields = {'indvpre_str', 'depvpre_str'};
 
     count = zeros(length(fieldspec_parent_fields), 1);
     for ofi = 1:length(opt)
@@ -116,14 +116,14 @@ for fi = 1:length(fn)
     fitin.(outfn) = [];
     for vsi2 = 1:length(fitin.fieldspecstr.(fn{fi}))
         tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
-        if size(tmp, 2)~=length(md.ti)
+        if size(tmp, 2)~=length(md.t_ts_i)
             tmp = tmp.';
         end
-        if size(tmp, 2)~=length(md.ti)
-            error("timeseries is does not match number imaging volumes (length md.ti)")
+        if size(tmp, 2)~=length(md.t_ts_i)
+            error("timeseries is does not match number imaging volumes (length md.t_ts_i)")
         end
         fitin.(outfn) = cat(1, fitin.(outfn), tmp);
-        if strcmp(fn{fi}, 'depv_pre_str')
+        if strcmp(fn{fi}, 'depvpre_str')
             fitin.regionex = fieldspec_all(fitcount).(fn{fi}){vsi2,2}{1};
             fitin.parsex = fieldspec_all(fitcount).(fn{fi}){vsi2,3}{1};
             fitin.parsnorm = fieldspec_all(fitcount).(fn{fi}){vsi2,4}{1};

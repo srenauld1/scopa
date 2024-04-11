@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
-    setup_model_ann_oneposition(annspec, num_samp_model, dt, num_dim_indv_pre, padlen_sec)
+    setup_model_ann_oneposition(annspec, num_samp_mdl, dt, num_dim_indvpre, padlen_sec)
 
 % in annspec, strlin for linear functions, stract for activation (nonlinear) functions
 % strlin 's' and 'd' and 'f' make linear filters (s is monophasic; d is biphasic, formed from derivative of s; f is freeform, can take any shape)
@@ -13,7 +13,7 @@ function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
 
 %% define time domain for linear filters
 
-tmax = dt*(num_samp_model-1);
+tmax = dt*(num_samp_mdl-1);
 t = 0:dt:tmax; %zero-indexed time for filter
 
 fullfac = 1;
@@ -90,9 +90,9 @@ for ni = 1:num_neuron
         ubnd_lin = [tau1(2), filtshift(2), tau2(2), tc(2)];
         x0_lin = [tau1(3), filtshift(3), tau2(3), tc(3)];
     elseif strcmp(annspec.strlin{ni}, 'f') %freeform filter, can take any shape
-        lbnd_lin = -inf(1, num_samp_model);
-        ubnd_lin = inf(1, num_samp_model);
-        x0_lin = rand(1, num_samp_model);
+        lbnd_lin = -inf(1, num_samp_mdl);
+        ubnd_lin = inf(1, num_samp_mdl);
+        x0_lin = rand(1, num_samp_mdl);
         x0_lin = x0_lin / norm(vec(x0_lin(:)),1); %L1 norm=1
     end
 
@@ -107,7 +107,7 @@ for ni = 1:num_neuron
         ubnd_nonlin = [sigmoid_slope(2), sigmoid_asympleft(2), sigmoid_asympright(2), sigmoid_inflection(2), sigmoid_xshift(2)];
         x0_nonlin = [sigmoid_slope(3), sigmoid_asympleft(3), sigmoid_asympright(3), sigmoid_inflection(3), sigmoid_xshift(3)];
     elseif startsWith(annspec.stract{ni}, 'h')
-        ann = setup_model_onehot(ann, annspec, ni, num_dim_indv_pre, num_samp_model, num_neuron);
+        ann = setup_model_onehot(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron);
         lbnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(1);
         ubnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(2);
         x0_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(3);

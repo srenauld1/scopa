@@ -4,7 +4,7 @@ plt = fitin.plt;
 supp = fitin.supp;
 
 modfun = fitin.opop.optimp.modfun;
-num_dim_depv_pre = fitin.num_dim_depv_pre;
+num_dim_depvpre = fitin.num_dim_depvpre;
 
 standardize_depv = opts.standardize_depv;
 epochinds = opts.epochinds;
@@ -223,7 +223,7 @@ for epi = 1:length(epochinds)
 
     %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
     tinds_cont = [];
-    seg_endpoints = [0 find(diff(keepinds_depv{epi})~=1) length(keepinds_depv{epi})];
+    seg_endpoints = [0 find(diff(sampinds_depvpre{epi})~=1) length(sampinds_depvpre{epi})];
     for bei = 2:length(seg_endpoints)
         tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
     end

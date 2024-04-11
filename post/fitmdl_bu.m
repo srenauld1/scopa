@@ -54,7 +54,7 @@ parsnorm = fitin.parsnorm;
 fitcount = fitin.fitcount;
 pixinds_roi = roiinfo.pixinds_roi;
 mapind2ind = roiinfo.mapind2ind;
-trialepochinds_i = md.trialepochinds_i;
+epochinds_ts_i = md.epochinds_ts_i;
 dtmni = md.dtmni;
 
 %% check/correct inputs
@@ -94,7 +94,7 @@ for epi = 1:length(fitopt.epochinds)
     epochinds_str{epi} = epochinds_str{epi}(1:end-1);
 end
 
-pth_fitdata_prefix = [fitin.fn_save_prefix  '_' fitopt.modeltype '_' num2str(fitopt.model_length_sec) '_' num2str(fitopt.model_lag_sec) pixfitflagstr];
+pth_fitdata_prefix = [fitin.fn_save_prefix  '_' fitopt.modeltype '_' num2str(fitopt.mdl_length_sec) '_' num2str(fitopt.mdl_lag_sec) pixfitflagstr];
 pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 %% create pixelwise fit for background if requested by recursively calling fitmdl with pixfitflag==1
@@ -121,10 +121,10 @@ end
 
 %% check indv/depv size
 
-[ num_dim_indv_pre, num_samp_indv_pre ] = size( indvin );
-[ numdepvs, num_samp_depv_pre ] = size(depvin);
+[ num_dim_indvpre, num_samp_indvpre ] = size( indvin );
+[ numdepvs, num_samp_depvpre ] = size(depvin);
 
-if num_samp_indv_pre~=num_samp_depv_pre | ndims(depvin)~=2 | ndims(indvin)~=2
+if num_samp_indvpre~=num_samp_depvpre | ndims(depvin)~=2 | ndims(indvin)~=2
     error("fix inputs")
 else
     time_dimension = 2;
@@ -154,7 +154,7 @@ end
 %% standardize indv and depv (optional)
 
 if fitopt.standardize_indv
-    for ri = 1:num_dim_indv_pre
+    for ri = 1:num_dim_indvpre
         indvin(ri,:) = (indvin(ri,:) - nanmean(indvin(ri,:))) / nanstd(indvin(ri,:));
     end
 end
@@ -173,19 +173,19 @@ end
 %% create version of indv that can be passed to optimization code (dimensions x sample)
 
 
-num_samp_model = round(fitopt.model_length_sec/dtmni);
-if num_samp_model==0
-    num_samp_model = 1; %a convenience, so user can pass fitopt.model_length_sec=0 if they don't know volume rate
+num_samp_mdl = round(fitopt.mdl_length_sec/dtmni);
+if num_samp_mdl==0
+    num_samp_mdl = 1; %a convenience, so user can pass fitopt.mdl_length_sec=0 if they don't know volume rate
 end
 
-num_dim_indvaug = num_dim_indv_pre*num_samp_model;
-num_samp_indvaug_full = num_samp_indv_pre-(num_samp_model-1)-fitopt.num_samp_lag;
+num_dim_indv = num_dim_indvpre*num_samp_mdl;
+num_samp_indvpreaug = num_samp_indvpre-(num_samp_mdl-1)-fitopt.num_samp_lag;
 
-indvaug = zeros( num_dim_indvaug, num_samp_indvaug_full );
-trialepochindsaug = zeros( num_samp_model, num_samp_indvaug_full );
-for ii = 1 : num_samp_indvaug_full
-    indvaug(:,ii) = reshape( flip(indvin(:,ii:ii+num_samp_model-1), time_dimension), [], 1 ); %indvaug makes time samples into past just another indv dim, for model with 2 dims a and b and 4 time samples into past, with lag zero, indvaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
-    trialepochindsaug(:,ii) = flip(trialepochinds_i(ii:ii+num_samp_model-1), time_dimension); %do the same for epoch inds, to make sure model doesn't include any samples from wrong epoch
+indvpreaug = zeros( num_dim_indv, num_samp_indvpreaug );
+epochinds_ts_i_m = zeros( num_samp_mdl, num_samp_indvpreaug );
+for ii = 1 : num_samp_indvpreaug
+    indvpreaug(:,ii) = reshape( flip(indvin(:,ii:ii+num_samp_mdl-1), time_dimension), [], 1 ); %indvpreaug makes time samples into past just another indv dim, for model with 2 dims a and b and 4 time samples into past, with lag zero, indvpreaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
+    epochinds_ts_i_m(:,ii) = flip(epochinds_ts_i(ii:ii+num_samp_mdl-1), time_dimension); %do the same for epoch inds, to make sure model doesn't include any samples from wrong epoch
 end
 
 
@@ -195,8 +195,8 @@ end
 [fitin, gethue, getsat, getval, gethr_native, gethr_relative, ...
     getsr_native, getsr_relative, getvr_native, getvr_relative, ...
     fitopt.hrange_out_manual, hue_is_periodic] = ...
-    setup_model(fitopt, indvaug, num_samp_model, ...
-    num_dim_indvaug, num_dim_indv_pre, depvin, dtmni);
+    setup_model(fitopt, indvpreaug, num_samp_mdl, ...
+    num_dim_indv, num_dim_indvpre, depvin, dtmni);
 
 
 %% write depv to bin (to allow parfor loop without broadcasting)
@@ -210,7 +210,7 @@ clear depvin
 
 %% loop over epochs
 
-keepinds_depv = cell(1, length(fitopt.epochinds));
+sampinds_depvpre = cell(1, length(fitopt.epochinds));
 indv_plot = cell(1, length(fitopt.epochinds));
 depv_plot = cell(1, length(fitopt.epochinds));
 depvp_plot = cell(1, length(fitopt.epochinds));
@@ -224,9 +224,9 @@ depvinmeans_plot = cell(1, length(fitopt.epochinds));
 
 for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
 
-    pureepochtmp = zeros(1, size(trialepochindsaug, 2));
+    pureepochtmp = zeros(1, size(epochinds_ts_i_m, 2));
     for eii = 1:length(fitopt.epochinds{epi})
-        pureepochtmp = pureepochtmp + fitopt.epochinds{epi}(eii) * all(ismember(trialepochindsaug, fitopt.epochinds{epi}(eii)), 1); %epoch indices where the epoch is constant across all model timepoints
+        pureepochtmp = pureepochtmp + fitopt.epochinds{epi}(eii) * all(ismember(epochinds_ts_i_m, fitopt.epochinds{epi}(eii)), 1); %epoch indices where the epoch is constant across all model timepoints
     end
     if any(pureepochtmp(:)>max(fitopt.epochinds{epi}(:)))
         error("should not have overlapping pure epoch samples")
@@ -234,7 +234,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
     keep_transition_zones = 0;
     if keep_transition_zones %includes epoch transition zones if transitioning between epochs listed in epochinds
-        keepinds_indvaug = find(all(ismember_single(trialepochindsaug, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
+        keepinds_indvaug = find(all(ismember_single(epochinds_ts_i_m, fitopt.epochinds{epi}), 1)); %only keep samples with one epoch in all timepoints (model may have multiple timepoints), specify dimension (1) in case indvepochaug is singleton
     else %does not include epoch transition zones, even if between epochs listed in epochinds
         keepinds_indvaug = find(pureepochtmp);
     end
@@ -261,26 +261,26 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             valinds_indvaug = [];
         else
             boutvalinds = [1:numepochval]+numepochval*(vfi-1);
-            valinds_rawinds = cell2mat(tinds_cont(boutvalinds));
-            valinds_indvaug = keepinds_indvaug(valinds_rawinds);
+            sampinds_indv_val = cell2mat(tinds_cont(boutvalinds));
+            valinds_indvaug = keepinds_indvaug(sampinds_indv_val);
         end
 
         bouttraininds = setxor(boutvalinds, [1:length(tinds_cont)]);
-        traininds_rawinds = cell2mat(tinds_cont(bouttraininds));
-        traininds_indvaug = keepinds_indvaug(traininds_rawinds);
+        sampinds_indv_train = cell2mat(tinds_cont(bouttraininds));
+        traininds_indvaug = keepinds_indvaug(sampinds_indv_train);
 
-        traininds_depv = traininds_indvaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
-        valinds_depv = valinds_indvaug + (num_samp_model-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
+        sampinds_depvpre_train = traininds_indvaug + (num_samp_mdl-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
+        sampinds_depvpre_val = valinds_indvaug + (num_samp_mdl-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
 
-        indvauge = indvaug(:, traininds_indvaug);
+        indvauge = indvpreaug(:, traininds_indvaug);
         indvauge = indvauge.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
         % num_samp_data_train{epi} = length(traininds_indvaug); %number samples of indv/depv given to optimization code
 
         fid = fopen(pth_depvin_bin, 'r');
-        depvintmp = fread(fid, [ numdepvs, num_samp_depv_pre ], [depvin_class '=>' depvin_class]); %read depv then crop, to prevent broadcasting in parfor loop below
+        depvintmp = fread(fid, [ numdepvs, num_samp_depvpre ], [depvin_class '=>' depvin_class]); %read depv then crop, to prevent broadcasting in parfor loop below
         fclose(fid);
-        depvintmp2 = depvintmp(:, traininds_depv).'; %crop to account for fit samples (if >1), depvin trails indvin, do this outside parfor
+        depvintmp2 = depvintmp(:, sampinds_depvpre_train).'; %crop to account for fit samples (if >1), depvin trails indvin, do this outside parfor
 
 
         if fitopt.validation_fold==0
@@ -302,7 +302,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
         if dofit
 
-            fttmp = zeros(numdepvs, fitin.supp.num_par_total); % was num_dim_indv_pre*num_samp_model, then num_dim_indv_pre*fitin.supp.num_par_total
+            fttmp = zeros(numdepvs, fitin.supp.num_par_total); % was num_dim_indvpre*num_samp_mdl, then num_dim_indvpre*fitin.supp.num_par_total
             goftmp = zeros(numdepvs, 1);
             depvp = zeros(size(depvintmp2), depvin_class);
             hdata = zeros(numdepvs, 1);
@@ -353,7 +353,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
 
         %validation
-        keepinds_depv_tmp = vec(union(traininds_depv, valinds_depv))';
+        keepinds_depv_tmp = vec(union(sampinds_depvpre_train, sampinds_depvpre_val))';
         if fitopt.validation_fold~=0
             depvp_new = zeros(length(keepinds_depv_tmp), numel(depv_good_inds));
             depv_new = zeros(length(keepinds_depv_tmp), numel(depv_good_inds));
@@ -361,15 +361,15 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             gof_val = zeros(1,numel(depv_good_inds));
             for ri = 1:numel(depv_good_inds)
                 if depv_good_inds(ri)
-                    depvp_new(valinds_rawinds, ri) = fitin.objfcn(fttmp(ri,:), indvaug(:, valinds_indvaug), fitin.supp)';
-                    gof_val(ri) = mse(double(depvintmp(ri, valinds_depv).'), depvp_new(valinds_rawinds, ri));
-                    depvp_new(traininds_rawinds, ri) = depvp(:,ri);
+                    depvp_new(sampinds_indv_val, ri) = fitin.objfcn(fttmp(ri,:), indvpreaug(:, valinds_indvaug), fitin.supp)';
+                    gof_val(ri) = mse(double(depvintmp(ri, sampinds_depvpre_val).'), depvp_new(sampinds_indv_val, ri));
+                    depvp_new(sampinds_indv_train, ri) = depvp(:,ri);
                 end
             end
-            depv_new(valinds_rawinds, :) = depvintmp(:, valinds_depv).';
-            depv_new(traininds_rawinds, :) = depvintmp2;
-            indv_new(valinds_rawinds, :) = indvaug(:, valinds_indvaug).';
-            indv_new(traininds_rawinds, :) = indvaug(:, traininds_indvaug).';
+            depv_new(sampinds_indv_val, :) = depvintmp(:, sampinds_depvpre_val).';
+            depv_new(sampinds_indv_train, :) = depvintmp2;
+            indv_new(sampinds_indv_val, :) = indvpreaug(:, valinds_indvaug).';
+            indv_new(sampinds_indv_train, :) = indvpreaug(:, traininds_indvaug).';
             gof_val = mean(gof_val);
             if gof_val<gof_val_prev
                 gof_val_prev = gof_val;
@@ -378,9 +378,9 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
                 depvintmp_use = depv_new;
                 indvauge_use = indv_new;
                 keepinds_depv_use = keepinds_depv_tmp;
-                valinds_raw_use = valinds_rawinds;
+                valinds_raw_use = sampinds_indv_val;
                 valinds_indv_use = valinds_indvaug;
-                valinds_depv_use = valinds_depv;
+                valinds_depv_use = sampinds_depvpre_val;
             end
         else
             vfi_use = vfi;
@@ -388,9 +388,9 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             depvintmp_use = depvintmp2;
             indvauge_use = indvauge;
             keepinds_depv_use = keepinds_depv_tmp;
-            valinds_raw_use = valinds_rawinds;
+            valinds_raw_use = sampinds_indv_val;
             valinds_indv_use = valinds_indvaug;
-            valinds_depv_use = valinds_depv;
+            valinds_depv_use = sampinds_depvpre_val;
         end
 
     end
@@ -446,8 +446,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     gof{epi} = goftmp;
     indvpref{epi} = indvpreftmp;
 
-    keepinds_depv{epi} = keepinds_depv_use;
-    pureepoch{epi} = pureepochtmp(keepinds_depv{epi});
+    sampinds_depvpre{epi} = keepinds_depv_use;
+    pureepoch{epi} = pureepochtmp(sampinds_depvpre{epi});
 
 
 end
@@ -465,7 +465,7 @@ if fitopt.doplots
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
         fitopt.depvplot_norm, fitopt.plot_class, ...
-        keepinds_depv, epochinds_str, pureepoch, ...
+        sampinds_depvpre, epochinds_str, pureepoch, ...
         pth_fitdata_prefix, fitopt.gif_visibility, fitin.objfcn, ft, fitin.supp, doplots, ...
         fitopt.validation_fold, vfi_use, fitopt.standardize_depv, depvinstds_plot, depvinmeans_plot, ...
         valinds_depv_use, valinds_indv_use, valinds_raw_use)

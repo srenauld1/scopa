@@ -2,7 +2,7 @@ function outp =downsample_variable(md, inp, iscircular)
 
 breakout = 0;
 
-dsfac = length(md.ti) / length(md.tb);
+dsfac = length(md.t_ts_i) / length(md.t_ts_b);
 [dsnr, dsdr] = rat(dsfac);
 
 if iscircular
@@ -11,13 +11,13 @@ if iscircular
     stimy = sin(inp);
 
     stimx_try = resample(stimx, dsnr, dsdr);
-    if length(stimx_try)==length(md.ti)
+    if length(stimx_try)==length(md.t_ts_i)
         stimx = stimx_try;
     else
         for upfac = 2:4
             for tryadd = -3 : 3
                 stimx_try = resample(stimx, upfac*dsnr, upfac*dsdr+tryadd);
-                if length(stimx_try)==length(md.ti)
+                if length(stimx_try)==length(md.t_ts_i)
                     stimx = stimx_try;
                     dsnr = upfac*dsnr;
                     dsdr = upfac*dsdr+tryadd;
@@ -32,20 +32,20 @@ if iscircular
     end
     stimy = resample(stimy, dsnr, dsdr);
     outp = atan2(stimy, stimx);
-    if length(outp)~=length(md.ti)
+    if length(outp)~=length(md.t_ts_i)
         error
     end
 
 else
 
     inp_try = resample(inp, dsnr, dsdr);
-    if length(inp_try)==length(md.ti)
+    if length(inp_try)==length(md.t_ts_i)
         outp = inp_try;
     else
         for upfac = 2:4
             for tryadd = -3 : 3
                 inp_try = resample(inp, upfac*dsnr, upfac*dsdr+tryadd);
-                if length(inp_try)==length(md.ti)
+                if length(inp_try)==length(md.t_ts_i)
                     outp = inp_try;
                     breakout = 1;
                     break
@@ -56,7 +56,7 @@ else
             end
         end
     end
-    if length(outp)~=length(md.ti)
+    if length(outp)~=length(md.t_ts_i)
         error
     end
 

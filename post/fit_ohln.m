@@ -45,7 +45,7 @@ if exist('optin', 'var') && ~isempty(optin)
         supp.fontsmall = 10;
         fontmedium = 20;
         numrows_plot = supp.max_num_fun_per_neuron;
-        numcolumns_plot = supp.num_dim_indv_pre*supp.num_neuron;
+        numcolumns_plot = supp.num_dim_indvpre*supp.num_neuron;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -70,9 +70,9 @@ depvp = zeros(size(indv, 1), 1);
 doplots_filt = 0;
 LN_unit_count = 0;
 
-for jj = 1:supp.num_dim_indv_pre %loop over indv dims
+for jj = 1:supp.num_dim_indvpre %loop over indv dims
 
-    ivinds = [1:supp.num_samp_model]*supp.num_dim_indv_pre-(supp.num_dim_indv_pre-jj); %since indv is organized this way, dims alternate in vec
+    ivinds = [1:supp.num_samp_mdl]*supp.num_dim_indvpre-(supp.num_dim_indvpre-jj); %since indv is organized this way, dims alternate in vec
     indvtmp = indv(:,ivinds);
 
     for ii = 1:supp.num_neuron %loop over LN units
@@ -95,7 +95,7 @@ for jj = 1:supp.num_dim_indv_pre %loop over indv dims
         elseif strcmp(supp.annspec{ii,'linfilt_types_per_indv_dim'}, 'differentiating')
             flagdiff = 1;
             filt = supp.linfun(flagdiff, doplots_filt, tmp{:});
-            % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+            % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_mdl, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
         end
         depvptmp = sum(indvtmp.*filt, 2); %apply linear filter
         depvptmp = depvptmp + filtbias;
@@ -113,8 +113,8 @@ for jj = 1:supp.num_dim_indv_pre %loop over indv dims
 
         if make_figure
 
-            sfi_i = 1;
-            sfi = sfi_i+supp.max_num_fun_per_neuron*(LN_unit_count-1);
+            sfi_tmp = 1;
+            sfi = sfi_tmp+supp.max_num_fun_per_neuron*(LN_unit_count-1);
             sfi = sfi+supp.starting_hax;
 
             if supp.framecount==1
@@ -122,7 +122,7 @@ for jj = 1:supp.num_dim_indv_pre %loop over indv dims
 
                 xlm = hax{sfi}.XLim;
                 extrax = supp.extra_xlim_fac*range(xlm(:));
-                hax{sfi}.XAxis.TickValues = linspace(0, supp.num_samp_model, 3);
+                hax{sfi}.XAxis.TickValues = linspace(0, supp.num_samp_mdl, 3);
                 hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.dt, 2);
                 hax{sfi}.XAxis.TickLabelFormat = '%.1f';
                 hax{sfi}.XAxis.FontSize = supp.fontsmall;
@@ -146,8 +146,8 @@ for jj = 1:supp.num_dim_indv_pre %loop over indv dims
 
             if ~isempty(pars_str_N)
 
-                sfi_i = 2;
-                sfi = sfi_i+supp.max_num_fun_per_neuron*(LN_unit_count-1);
+                sfi_tmp = 2;
+                sfi = sfi_tmp+supp.max_num_fun_per_neuron*(LN_unit_count-1);
                 sfi = sfi+supp.starting_hax;
 
                 [depvplin, idx] = sort(depvplin);

@@ -3,11 +3,11 @@ function organize_epochs(md, data, sampling, tlim_epoch, nanpadlen_min, sorting_
 error("unfinished function")
 
 if strcmp(sampling, 'imaging')
-    tfull = md.ti;
-    tsamp_ei = md.trialepochinds_i;
+    tfull = md.t_ts_i;
+    tsamp_ei = md.epochinds_ts_i;
 elseif strcmp(sampling, 'behavior')
-    tfull = md.tb;
-    tsamp_ei = md.trialepochinds_b;
+    tfull = md.t_ts_b;
+    tsamp_ei = md.epochinds_ts_b;
 end
 
 if ~exist('tlim_epoch', 'var') | isempty(tlim_epoch)
@@ -34,7 +34,7 @@ if ~exist('uniform_numbouts', 'var') | isempty(uniform_numbouts)
 end
 
 if ~exist('epochinds', 'var') | isempty(epochinds)
-    epochinds = num2cell(unique(md.trialepochinds_i));
+    epochinds = num2cell(unique(md.epochinds_ts_i));
 end
 
 %determine time axis for each epoch and bout

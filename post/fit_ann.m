@@ -94,11 +94,11 @@ for li = 1:num_lay
     end
 
 
-    for ci = 1:num_chan %1:supp.num_dim_indv_pre %loop over input channels (indv dims in layer 1)
+    for ci = 1:num_chan %1:supp.num_dim_indvpre %loop over input channels (indv dims in layer 1)
 
         anntmp = supp.ann.(fnl{li}).(fnc{ci});
 
-        ivinds = [1:supp.num_samp_model]*supp.num_dim_indv_pre-(supp.num_dim_indv_pre-ci); %since indv is organized this way, dims alternate in vec
+        ivinds = [1:supp.num_samp_mdl]*supp.num_dim_indvpre-(supp.num_dim_indvpre-ci); %since indv is organized this way, dims alternate in vec
         indvtmp = indv(:,ivinds);
 
         for ni = 1:anntmp.num_neuron %supp.num_neuron %loop over artificial neurons
@@ -126,7 +126,7 @@ for li = 1:num_lay
                 elseif strcmp(anntmp.annspec.strlin{ni}, 'd')
                     flagdiff = 1;
                     filt = anntmp.linfun(flagdiff, doplots_filt, tmp{:});
-                    % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_model, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
+                    % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_mdl, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
                 end
                 depvptmp = sum(indvtmp.*filt, 2); %apply linear filter
                 depvptmp = depvptmp + filtbias;
@@ -157,8 +157,8 @@ for li = 1:num_lay
 
             if make_figure
 
-                sfi_i = 1;
-                sfi = sfi_i+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
+                sfi_tmp = 1;
+                sfi = sfi_tmp+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
                 sfi = sfi+supp.starting_hax;
 
                 if framecount==1
@@ -171,7 +171,7 @@ for li = 1:num_lay
 
                     xlm = hax{sfi}.XLim;
                     extrax = supp.extra_xlim_fac*range(xlm(:));
-                    hax{sfi}.XAxis.TickValues = linspace(0, supp.num_samp_model, 3);
+                    hax{sfi}.XAxis.TickValues = linspace(0, supp.num_samp_mdl, 3);
                     hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.dt, 2);
                     hax{sfi}.XAxis.TickLabelFormat = '%.1f';
                     hax{sfi}.XAxis.FontSize = supp.fontsmall;
@@ -195,8 +195,8 @@ for li = 1:num_lay
 
                 if ~isempty(pars_str_N)
 
-                    sfi_i = 2;
-                    sfi = sfi_i+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
+                    sfi_tmp = 2;
+                    sfi = sfi_tmp+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
                     sfi = sfi+supp.starting_hax;
 
                     [depvplin, idx] = sort(depvplin);

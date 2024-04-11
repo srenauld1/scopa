@@ -4,7 +4,7 @@ function model_plots(hsvmap, indv, depv, depvp, stack, stackmean, ...
     max_tinds, timeseries_numsegments, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
-    keepinds_depv, epochinds_str, pureepoch_keepinds, ...
+    sampinds_depvpre, epochinds_str, pureepoch_keepinds, ...
     pth_prefix, gif_visibility, modfun, ft, supp, doplots, valfold, vfi, ...
     standardize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
 
@@ -250,7 +250,7 @@ for epi = 1:length(epochinds)
 
     %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
     tinds_cont = [];
-    seg_endpoints = [0 find(diff(keepinds_depv{epi})~=1) length(keepinds_depv{epi})];
+    seg_endpoints = [0 find(diff(sampinds_depvpre{epi})~=1) length(sampinds_depvpre{epi})];
     for bei = 2:length(seg_endpoints)
         tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
     end
@@ -713,18 +713,18 @@ if doplots(3)
     htx.String = strrep(tittmp{end}, '_', ' ');
 
     %mins and maxes constant scale across gif
-    minis_i =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
-    maxis_i =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
-    minis_d =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
-    maxis_d =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
-    minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  depvp,  'UniformOutput',  false))); %min pred depv across all epochs
-    maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  depvp,  'UniformOutput',  false))); %max pred depv across all epochs
-    minis_a = min(minis_d, minis_p);
-    maxis_a = max(maxis_d, maxis_p);
+    minis_indv =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
+    maxis_indv =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
+    minis_depv =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
+    maxis_depv =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
+    minis_depvp =  min(cell2mat(cellfun(@(x) min(x(:)),  depvp,  'UniformOutput',  false))); %min pred depv across all epochs
+    maxis_depvp =  max(cell2mat(cellfun(@(x) max(x(:)),  depvp,  'UniformOutput',  false))); %max pred depv across all epochs
+    minis_all = min(minis_depv, minis_depvp);
+    maxis_all = max(maxis_depv, maxis_depvp);
 
     %colormaps
 
-    num_indv_to_plot = supp.num_dim_indv_pre;
+    num_indv_to_plot = supp.num_dim_indvpre;
     if num_indv_to_plot>max_num_indv_to_plot
         num_indv_to_plot = max_num_indv_to_plot;
     end
@@ -748,7 +748,7 @@ if doplots(3)
     framecount = 0;
     for epi = 1:length(epochinds)
 
-        indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_d, maxis_d);
+        indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_depv, maxis_depv);
 
         numroi_plot = size(depvnan_cont{epi}, 1);
         depvprow = cell(numroi_plot, numrows_ts);
@@ -841,7 +841,7 @@ if doplots(3)
                     x1 = tmp(shadextmp(bei-1)+1);
                     x2 = tmp(shadextmp(bei));
                     shadex{nsi}(:, count) = [x1; x2; x2; x1] - min(tinds_row) + 1; %subtract indices to shift on x axis for each row, since time is modified in this plot
-                    shadey{nsi}(:, count) = [minis_a; minis_a; maxis_a; maxis_a];
+                    shadey{nsi}(:, count) = [minis_all; minis_all; maxis_all; maxis_all];
                     shadec{nsi}(count, 1, :) = reshape(cmap_patch(epochinds{epi}(epi2), :), [1 1 3]); %put color triplet in 3rd dim for patch arg c
                 end
             end
@@ -879,8 +879,8 @@ if doplots(3)
 
         minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  depvprow,  'UniformOutput',  false))); %min pred depv across all epochs
         maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  depvprow,  'UniformOutput',  false))); %max pred depv across all epochs
-        % minis_a = min(minis_a, minis_pa);
-        % maxis_a = max(maxis_a, maxis_pa);
+        % minis_all = min(minis_all, minis_pa);
+        % maxis_all = max(maxis_all, maxis_pa);
 
 
         %plotting loop
@@ -957,21 +957,21 @@ if doplots(3)
 
 
                     if fhi==size(depvprow{ri,1}, 1) % when showing final model, ylim is min/max all
-                        hax{nsi}.YAxis(1).Limits = [minis_a maxis_a];
+                        hax{nsi}.YAxis(1).Limits = [minis_all maxis_all];
                     elseif fhi>size(depvprow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
-                        hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                        hax{nsi}.YAxis(1).Limits = [minis_depv maxis_depv];
                     elseif fhi<size(depvprow{ri,1}, 1) %if showing prediction fit history
                         if ylim_track_pred %ylim is min/max fit 
                             hax{nsi}.YAxis(1).Limits = [min(depvprow{ri,nsi}(fhi, :)) max(depvprow{ri,nsi}(fhi, :))];
                         else %ylim is min/max depv
-                            hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                            hax{nsi}.YAxis(1).Limits = [minis_depv maxis_depv];
                         end
                     end
                     ylm = hax{nsi}.YAxis(1).Limits;
                     hax{nsi}.YAxis(1).TickValues = linspace(ylm(1), ylm(2), 3);
                     hax{nsi}.YAxis(1).Color = [0 0 0];
                     % if plot_indv
-                    %     hax{nsi}.YAxis(2).Limits = [minis_i maxis_i];
+                    %     hax{nsi}.YAxis(2).Limits = [minis_indv maxis_indv];
                     %     ylm = hax{nsi}.YAxis(2).Limits;
                     %     hax{nsi}.YAxis(2).TickValues = linspace(ylm(1), ylm(2), 3);
                     %     hax{nsi}.YAxis(2).Color = [0 0 1];

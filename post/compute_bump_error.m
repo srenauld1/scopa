@@ -9,4 +9,4 @@ error("function needs to be updated")
 % err_cum = err_cum(:,end);
 err_cum = nan;
 
-err_std = std(offset, 0, 2, 'omitnan');
+err_std = std(offset, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1

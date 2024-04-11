@@ -75,18 +75,18 @@ tittmp = strsplit(filename_save(1:end-4), '/');
 htx.String = strrep(tittmp{end}, '_', ' ');
 
 %mins and maxes constant scale across gif
-minis_i =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
-maxis_i =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
-minis_d =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
-maxis_d =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
-minis_p =  min(cell2mat(cellfun(@(x) min(x(:)),  depvp,  'UniformOutput',  false))); %min pred depv across all epochs
-maxis_p =  max(cell2mat(cellfun(@(x) max(x(:)),  depvp,  'UniformOutput',  false))); %max pred depv across all epochs
-minis_a = min(minis_d, minis_p);
-maxis_a = max(maxis_d, maxis_p);
+minis_indv =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
+maxis_indv =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
+minis_depv =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
+maxis_depv =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
+minis_depvp =  min(cell2mat(cellfun(@(x) min(x(:)),  depvp,  'UniformOutput',  false))); %min pred depv across all epochs
+maxis_depvp =  max(cell2mat(cellfun(@(x) max(x(:)),  depvp,  'UniformOutput',  false))); %max pred depv across all epochs
+minis_all = min(minis_depv, minis_depvp);
+maxis_all = max(maxis_depv, maxis_depvp);
 
 %colormaps
 
-num_indv_to_plot = supp.num_dim_indv_pre;
+num_indv_to_plot = supp.num_dim_indvpre;
 if num_indv_to_plot>max_num_indv_to_plot
     num_indv_to_plot = max_num_indv_to_plot;
 end
@@ -181,21 +181,21 @@ for ri = 1:numroi_plot %for each neuron
 
 
             if fhi==size(depvprow{ri,1}, 1) % when showing final model, ylim is min/max all
-                hax{nsi}.YAxis(1).Limits = [minis_a maxis_a];
+                hax{nsi}.YAxis(1).Limits = [minis_all maxis_all];
             elseif fhi>size(depvprow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
-                hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                hax{nsi}.YAxis(1).Limits = [minis_depv maxis_depv];
             elseif fhi<size(depvprow{ri,1}, 1) %if showing prediction fit history
                 if ylim_track_pred %ylim is min/max fit
                     hax{nsi}.YAxis(1).Limits = [min(depvprow{ri,nsi}(fhi, :)) max(depvprow{ri,nsi}(fhi, :))];
                 else %ylim is min/max depv
-                    hax{nsi}.YAxis(1).Limits = [minis_d maxis_d];
+                    hax{nsi}.YAxis(1).Limits = [minis_depv maxis_depv];
                 end
             end
             ylm = hax{nsi}.YAxis(1).Limits;
             hax{nsi}.YAxis(1).TickValues = linspace(ylm(1), ylm(2), 3);
             hax{nsi}.YAxis(1).Color = [0 0 0];
             % if plot_indv
-            %     hax{nsi}.YAxis(2).Limits = [minis_i maxis_i];
+            %     hax{nsi}.YAxis(2).Limits = [minis_indv maxis_indv];
             %     ylm = hax{nsi}.YAxis(2).Limits;
             %     hax{nsi}.YAxis(2).TickValues = linspace(ylm(1), ylm(2), 3);
             %     hax{nsi}.YAxis(2).Color = [0 0 1];
