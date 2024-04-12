@@ -2,8 +2,6 @@ function fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix)
 
 epochinds = opts.epochinds{epi};
 
-num_dim_depvpre = fitin.num_dim_depvpre;
-
 epochinds_str = sprintf('%.0f_', epochinds);
 epochinds_str = ['e_' epochinds_str(1:end-1)];
 
@@ -15,7 +13,7 @@ fitin.fits.(epochinds_str) = fitmdl_define_indices(fitin, opts, epochinds, opts.
 
 valnames = fieldnames(fitin.fits.(epochinds_str));
 
-gof_val_prev = 1e10;
+gof_val_mean_allrois_prev = 1e10;
 for vfi = 1:numel(valnames)
 
     inds = fitin.fits.(epochinds_str).(valnames{vfi});
@@ -37,89 +35,41 @@ for vfi = 1:numel(valnames)
     %% create synthetic data to test optimization (optional)
 
     if opts.num_synthetic_depv %if not 0, replace depv_allrois with synthetic data
-        dofit = 1;
-        doplots_syn = 0;
-        [depv_allrois, num_dim_depvpre, ftsyn] = synthesize_depv(fitin, depv_allrois(:,opts.num_synthetic_depv), indv, doplots_syn, opts.num_synthetic_depv, fitin.supp.num_par_total, fitin.opop.optimp);
+        dofit = 1; %always do fit if synthesizing data anew 
+        doplots_syn = 0; %plot synthetic vs real data
+        plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
+        [depv_allrois, fitin.num_dim_depvpre, ftsyn] = fitmdl_synthesize_depv(fitin.supp.pthspre, fitin.supp, fitin.opop.mdl, depv_allrois, indv, doplots_syn, opts.num_synthetic_depv, fitin.opop.optimp);
+    else
+        ftsyn = [];
     end
 
     %% fit model
 
     if dofit
 
-        ft = zeros(num_dim_depvpre, fitin.supp.num_par_total); % was num_dim_indvpre*num_samp_mdl, then num_dim_indvpre*fitin.supp.num_par_total
-        gof = zeros(num_dim_depvpre, 1);
+        ft = zeros(fitin.num_dim_depvpre, fitin.supp.num_par_total); % was num_dim_indvpre*num_samp_mdl, then num_dim_indvpre*fitin.supp.num_par_total
+        gof = zeros(fitin.num_dim_depvpre, 1);
         depvp = zeros(size(depv_allrois), depv_allrois_class);
 
         tic
+        num_rois = size(depv_allrois, 2);
         depv_good_inds = ~any(isnan(depv_allrois));
-        parfor ri = 1:numel(depv_good_inds)
+        for ri = 1:num_rois
             if depv_good_inds(ri)
-
                 depv = double(depv_allrois(:, ri));
-
-                if startsWith(opts.modeltype, 'svd')
-                    [ ft(ri,:), gof(ri), depvp(:,ri) ] = run_svd( fitin, indv, depv);
-                else
-                    [ ft(ri,:), gof(ri), depvp(:,ri) ] = run_gs(fitin, indv, depv, ri, opts.optim_hist_save_iter_spacing);
-                end
-
+                [ ft(ri,:), gof(ri), depvp(:,ri) ] = fitmdl_fit(fitin, indv, depv, ri, opts.optim_hist_save_iter_spacing, opts.modeltype);
             end
 
-            %tinds = 1:300; hfg = figure; subplot(2,1,1); plot(double(depvp(tinds, ri))); hold on; plot(depv_allrois(tinds,ri)); subplot(2,1,2); plot(fttmp(ri,:)); hold on; plot(ftsyn(ri,:)); fig2gif(hfg, 1, [fitin.supp.pthspre '_' datestr(now, 30) '_testpred.gif'])
-            %tinds = 1:1100; hfg = figure; subplot(2,1,1); plot(double(depvp(tinds, ri))); hold on; plot(depv_allrois(tinds,ri)); subplot(2,1,2); plot(fttmp(ri,:)); fig2gif(hfg, 1, [fitin.supp.pthspre '_' datestr(now, 30) '_testpred.gif'])
+            fitmdl_plot_single_mdl(fitin.opop.mdl, fitin.supp, indv, depv, depvp(:, ri), ft(ri,:), ftsyn)
 
         end
         toc
-        %fitin.mdlfcn(ftsyn(ri,:), indv, fitin.supp, [fitin.supp.pthspre '_' datestr(now, 30)])
-        %fitin.mdlfcn(fttmp(ri,:), indv, fitin.supp, [fitin.supp.pthspre '_' datestr(now, 30)])
 
         save(fitin.pth_fitdata_epoch, 'ft', 'depvp', 'gof', 'depv_good_inds', '-v7.3', '-mat')
 
     end
 
-    fitmdl_validation(inds, depv_good_inds)
-
-    %validation
-    sampinds_depv_tmp = vec(union(sampinds_depvpre_train, sampinds_depvpre_val))';
-    if opts.validation_fold~=0
-        depvp_new = zeros(numel(sampinds_depv_tmp), numel(depv_good_inds));
-        depv_new = zeros(numel(sampinds_depv_tmp), numel(depv_good_inds));
-        indv_new = zeros(numel(sampinds_depv_tmp), size(indv, 2));
-        gof_val = zeros(1,numel(depv_good_inds));
-        for ri = 1:numel(depv_good_inds)
-            if depv_good_inds(ri)
-                depvp_new(sampinds_indv_val, ri) = fitin.opop.optimp.mdlfcn(ft(ri,:), indv_val, fitin.supp)';
-                gof_val(ri) = mse(double(depv_allrois_val(:,ri)), depvp_new(sampinds_indv_val, ri));
-                depvp_new(sampinds_indv_train, ri) = depvp(:,ri);
-            end
-        end
-        depv_new(sampinds_indv_val, :) = depv_allrois_val;
-        depv_new(sampinds_indv_train, :) = depv_allrois;
-        indv_new(sampinds_indv_val, :) = indv_val;
-        indv_new(sampinds_indv_train, :) = indv;
-        gof_val = mean(gof_val);
-        if gof_val<gof_val_prev
-            gof_val_prev = gof_val;
-            vfi_use = vfi;
-            depvp_use = depvp_new;
-            depvintmp_use = depv_new;
-            indvauge_use = indv_new;
-            keepinds_depv_use = sampinds_depv_tmp;
-            valinds_raw_use = sampinds_indv_val;
-            valinds_indv_use = sampinds_indvpreaug_val;
-            valinds_depv_use = sampinds_depvpre_val;
-        end
-    else
-        vfi_use = vfi;
-        depvp_use = depvp;
-        depvintmp_use = depv_allrois;
-        indvauge_use = indvauge;
-        keepinds_depv_use = sampinds_depv_tmp;
-        valinds_raw_use = sampinds_indv_val;
-        valinds_indv_use = sampinds_indvpreaug_val;
-        valinds_depv_use = sampinds_depvpre_val;
-    end
-
+    fitmdl_validation(num_rois, vfi, opts.validation_fold, ft, gof_val_mean_allrois_prev, indv, indv_val, depvp, inds, depv_allrois_val, depv_allrois, depv_good_inds, fitin.opop.mdl, fitin.supp)
 
 
     %% compute some fit metrics to be used later
@@ -132,19 +82,17 @@ for vfi = 1:numel(valnames)
     end
     indvpref(~depv_good_inds) = nan;
 
+    %% output struct (indexed by epochinds and valind)
+
+    fitin.fits.(epochinds_str).(valnames{vfi}).ft = ft;
+    fitin.fits.(epochinds_str).(valnames{vfi}).depvp = depvp;
+    fitin.fits.(epochinds_str).(valnames{vfi}).gof = gof;
+    fitin.fits.(epochinds_str).(valnames{vfi}).depv_good_inds = depv_good_inds;
+    fitin.fits.(epochinds_str).(valnames{vfi}).indvpref = indvpref;
+    fitin.fits.(epochinds_str).(valnames{vfi}).depvstd = depvstd;
+
 end
 
-%% output substruct (specific to the epochinds)
 
-fitin.fits.(epochinds_str).ft = ft;
-fitin.fits.(epochinds_str).depvp = depvp;
-fitin.fits.(epochinds_str).gof = gof;
-fitin.fits.(epochinds_str).depv_good_inds = depv_good_inds;
-fitin.fits.(epochinds_str).indvpref = indvpref;
-fitin.fits.(epochinds_str).depvstd = depvstd;
-fitin.fits.(epochinds_str).sampinds_depvpre = sampinds_depvpre;
-fitin.fits.(epochinds_str).sampinds_indvpreaug = sampinds_indvpreaug;
-fitin.fits.(epochinds_str).num_samp_data_train = num_samp_data_train;
-fitin.fits.(epochinds_str).num_samp_data_val = num_samp_data_val;
-fitin.fits.(epochinds_str).epochinds_pure_ts_m = epochinds_pure_ts_m;
+
 

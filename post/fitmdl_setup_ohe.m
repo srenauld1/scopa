@@ -1,4 +1,4 @@
-function ann = setup_model_onehot(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron)
+function ann = fitmdl_setup_ohe(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron)
 
 hotpower = 1;
 if any(contains(annspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
@@ -21,13 +21,13 @@ if strcmp(annspec.independently_discretized_hot_dims{ni}, 'x') %artificial neuro
 end
 
 
-ann.actfun{ni} = @one_hot_nonlinearity;
+ann.actfun{ni} = @ohe_nonlinearity;
 
 
 %% nested nonlinearity functions
 
 
-    function [depvp, binmns] = one_hot_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
+    function [depvp, binmns] = ohe_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
 
 
         if doplots

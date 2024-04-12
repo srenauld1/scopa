@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
-    setup_model_ann_oneposition(annspec, num_samp_mdl, dt, num_dim_indvpre, padlen_sec)
+    fitmdl_setup_ann_oneposition(annspec, num_samp_mdl, dt, num_dim_indvpre, padlen_sec)
 
 % in annspec, strlin for linear functions, stract for activation (nonlinear) functions
 % strlin 's' and 'd' and 'f' make linear filters (s is monophasic; d is biphasic, formed from derivative of s; f is freeform, can take any shape)
@@ -107,7 +107,7 @@ for ni = 1:num_neuron
         ubnd_nonlin = [sigmoid_slope(2), sigmoid_asympleft(2), sigmoid_asympright(2), sigmoid_inflection(2), sigmoid_xshift(2)];
         x0_nonlin = [sigmoid_slope(3), sigmoid_asympleft(3), sigmoid_asympright(3), sigmoid_inflection(3), sigmoid_xshift(3)];
     elseif startsWith(annspec.stract{ni}, 'h')
-        ann = setup_model_onehot(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron);
+        ann = fitmdl_setup_ohe(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron);
         lbnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(1);
         ubnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(2);
         x0_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(3);

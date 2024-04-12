@@ -6,7 +6,7 @@
 %        if not 1.0, pvar eliminates smaller singular values from pseudoinverse;
 % ft - (m,lnth) array for the coefficients of the linear fit, ;
 % invp - (m*lnth,n-lnth+1) array for the pseudoinverse of the fitting problem;
-function ft = fit_svd( indv, depv, pvar)
+function ft = objective_svd( indv, depv, pvar)
 
 [ u, s, v ] = svd( indv, 'econ' );
 i = find(s);

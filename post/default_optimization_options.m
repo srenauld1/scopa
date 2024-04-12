@@ -21,7 +21,7 @@ else
     max_iter_global = optin.max_iter_global;
 end
 
-mdlfcn = []; %this is the model function 
+mdl = []; %this is the model function 
 
 
 %% global solver options
@@ -81,7 +81,7 @@ optiml.OutputFcn = []; %[];
 
 optimp = createOptimProblem(slvrl);
 
-optimp.objective = []; %this can be same as mdlfcn, or may be loss given output of mdlfcn
+optimp.objective = []; %this can be same as mdl, or may be loss given output of mdl
 optimp.x0 = [];
 optimp.Aineq = [];
 optimp.bineq = [];

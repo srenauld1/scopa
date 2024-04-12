@@ -19,7 +19,7 @@ mdl_length_sec = 2; %seconds, 0 is one sample
 keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
 
 validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-validation_split_style = 'samples'; %'samples' or 'bouts' %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
 slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';

@@ -1,5 +1,5 @@
 
-function model_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
+function fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as figsidelength does not exceed
@@ -49,7 +49,7 @@ enm = fieldnames(fitin.fits);
 for ei = 1:numel(enm)
     vnm = fieldnames(fitin.fits.(enm{ei}));
     for vi = 1:numel(vnm)
-        [plotvars, do_read_indv, do_read_depv] = model_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(enm{ei}).(vnm{vi}), opts.modeltype, opts.standardize_indv, opts.standardize_depv, do_read_indv, do_read_depv);
+        [plotvars, do_read_indv, do_read_depv] = fitmdl_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(enm{ei}).(vnm{vi}), opts.modeltype, opts.standardize_indv, opts.standardize_depv, do_read_indv, do_read_depv);
     end
 end
 
@@ -67,9 +67,9 @@ fn = fieldnames(frm);
 for fi = 1:numel(frm)
     switch frm.(fn{fi}).type
         case 'timeseries'
-            model_plots_timeseries
+            fitmdl_plots_timeseries
         case 'fov'
-            model_plots_fov
+            fitmdl_plots_fov
         case 'model'
             mdlfcn
     end
@@ -78,15 +78,15 @@ end
 %% various plots
 
 if fitin.plt.doplots(1)
-    model_plots_summary(fitin, opts, roiinfo, stackmean)
+    fitmdl_plots_summary(fitin, opts, roiinfo, stackmean)
 end
 
 if doplots(1)
-    model_plots_fov
+    fitmdl_plots_fov
 end
 
 if doplots(1)
-    model_plots_timeseries
+    fitmdl_plots_timeseries
 end
 
 if doplots(4)

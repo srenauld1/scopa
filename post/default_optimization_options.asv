@@ -77,8 +77,8 @@ optiml.OutputFcn = []; %[];
 
 optimp = createOptimProblem(optout.slvrl);
 
-optimp.mdlfcn = []; %this is the model function 
-optimp.objective = []; %this can be same as mdlfcn, or may be loss given output of mdlfcn
+optimp.mdl = []; %this is the model function 
+optimp.objective = []; %this can be same as mdl, or may be loss given output of mdl
 optimp.x0 = [];
 optimp.Aineq = [];
 optimp.bineq = [];

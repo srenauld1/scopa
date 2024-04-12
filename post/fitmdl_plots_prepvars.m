@@ -1,7 +1,12 @@
 function [plotvars, do_read_indv, do_read_depv] = ...
-    model_plots_prepvars(fitin, plt, roiinfo, fitdata, modeltype, standardize_indv, standardize_depv, do_read_indv, do_read_depv)
+    fitmdl_plots_prepvars(fitin, plt, roiinfo, fitdata, modeltype, standardize_indv, standardize_depv, do_read_indv, do_read_depv)
 
 %% organize and normalize model data into hsv map
+
+
+%% plotting vars
+
+fitin.plt = fitmdl_setup_hsvplot(modeltype, opts.plt);
 
 fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, modeltype, fitin.stats);
 
@@ -113,7 +118,7 @@ if max_numfits_to_plot_ts>0
 
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
-                depvp_hist{ri}(hxi,:) = mdlfcn(histxsave{ri}(hxi,:), indv{epi}, supp);
+                depvp_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv{epi}, supp);
                 % if standardize_depv
                 %     depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end

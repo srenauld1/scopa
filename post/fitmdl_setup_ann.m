@@ -1,4 +1,4 @@
-function [opop, supp] = setup_model_ann(modeltype, chopt, num_samp_mdl, dt, num_dim_indvpre)
+function [opop, supp] = fitmdl_setup_ann(modeltype, chopt, num_samp_mdl, dt, num_dim_indvpre)
 
 supp.modeltype = modeltype;
 supp.NumTrialPoints = 1000;
@@ -28,7 +28,7 @@ for li = 1:length(fnl)
     for ci = 1:length(fnc)
 
         [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, anntmp, freeformflag] = ...
-            setup_model_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), num_samp_mdl, dt, num_dim_indvpre, padlen_sec);
+            fitmdl_setup_ann_oneposition(annspec.(fnl{li}).(fnc{ci}), num_samp_mdl, dt, num_dim_indvpre, padlen_sec);
 
         lbnd = [lbnd lbnd_tmp];
         ubnd = [ubnd ubnd_tmp];
@@ -63,7 +63,7 @@ if all(linineq_A(:)==0) %if all zeros, then linineq_A_tmp above remained zero be
     linineq_b = [];
 end
 
-opop.objective = @fit_ann;
+opop.objective = @mdl_ann;
 opop.lb = double(lbnd);
 opop.ub = double(ubnd);
 opop.x0 = double(x0);

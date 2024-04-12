@@ -1,5 +1,5 @@
 
-function [depvp, hax, binmns] = fit_ann(pars, indv, supp, optin)
+function [depvp, hax, binmns] = mdl_ann(pars, indv, supp, optin)
 
 %could change how indv is organized before this function for speed (since
 %it's organized for pure linear fits right now)

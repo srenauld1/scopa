@@ -1,4 +1,4 @@
-function plt = setup_model_plotting(modeltype, plt)
+function plt = fitmdl_setup_hsvplot(modeltype, plt)
 
 %would be nice to make this more general, but currently switches by modeltype
 %some of these anonymous functions are just lookups, but kept this way for possible future expansion   

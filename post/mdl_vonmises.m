@@ -1,4 +1,4 @@
-function [depvp, hax, binmns] = objfcn_vonmises(pars, indv, supp, optin)
+function [depvp, hax, binmns] = mdl_vonmises(pars, indv, supp, optin)
 
 
 hax = [];

@@ -3,7 +3,7 @@ function model_plots_summary(fitin, opts, roiinfo, stackmean)
 plt = fitin.plt;
 supp = fitin.supp;
 
-mdlfcn = fitin.opop.optimp.mdlfcn;
+mdl = fitin.opop.optimp.mdl;
 num_dim_depvpre = fitin.num_dim_depvpre;
 
 standardize_depv = opts.standardize_depv;

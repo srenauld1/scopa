@@ -1,28 +1,38 @@
-function [ft, gof, depvp] = run_gs(fitin, indv, depv, ri, save_optim_hist)
+function [ft, gof, depvp] = fitmdl_fit(fitin, indv, depv, ri, optim_hist_save_iter_spacing, modeltype)
 
 
 % rng default
 
-if save_optim_hist
-    histfit = init_optim_hist(fitin.opop.optiml.MaxIterations, fitsupp.num_par_total);
+if optim_hist_save_iter_spacing
+    histfit = init_optim_hist(fitin.opop.optiml.MaxIterations, fitin.opop.max_iter_global, optim_hist_save_iter_spacing, fitin.supp.num_par_total);
     fitin.opop.optimg.OutputFcn = @outfcn_global;
     fitin.opop.optiml.OutputFcn = @outfcn_local;
 end
 
-if strcmp(fitin.opop.optimp.solver, 'fmincon')
-    fitin.opop.optimp.objective = @(b) sum(( depv - fitin.opop.optimp.mdlfcn(b, indv, fitin.supp) ).^2); %fmincon requires objective objective to define loss explicitly
+if startsWith(modeltype, 'svd')
+    fitin.opop.optimp.objective = @objective_svd;
 else
-    fitin.opop.optimp.objective = fitin.opop.optimp.mdlfcn; %fmincon requires objective objective to define loss explicitly
+    if strcmp(fitin.opop.optimp.solver, 'fmincon')
+        fitin.opop.optimp.objective = @(b) sum(( depv - fitin.opop.mdl(b, indv, fitin.supp) ).^2); %fmincon requires objective objective to define loss explicitly
+    else
+        fitin.opop.optimp.objective = fitin.opop.mdl; %fmincon requires objective objective to define loss explicitly
+    end
 end
 
-%% fit model
+%% fit model, predict response
 
-[ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(fitin.opop.optimg, fitin.opop.optimp); %ft are fit params
-%[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optimp.objective, x0, [], [], [], [], lbnd, ubnd, [], optimp.options); %example single run of local solver
+if startsWith(modeltype, 'svd')
+    ft = fitin.opop.optimp.objective( indv, depv, fitin.supp.pvar);
+    %mdl_toy %synthetic data toy
+else
+    [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(fitin.opop.optimg, fitin.opop.optimp); %ft are fit params
+    %[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optimp.objective, x0, [], [], [], [], lbnd, ubnd, [], optimp.options); %example single run of local solver
+end
 
-%% predicted depv
 
-depvp = fitin.opop.optimp.mdlfcn(ft, indv, fitin.supp); %depvp is predicted depv
+%% predict response
+
+depvp = fitin.opop.mdl(ft, indv, fitin.supp); %depvp is predicted depv
 
 %% goodness-of-fit
 

@@ -2,8 +2,6 @@ function fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix)
 
 epochinds = opts.epochinds{epi};
 
-num_dim_depvpre = fitin.num_dim_depvpre;
-
 epochinds_str = sprintf('%.0f_', epochinds);
 epochinds_str = ['e_' epochinds_str(1:end-1)];
 
@@ -15,7 +13,6 @@ fitin.fits.(epochinds_str) = fitmdl_define_indices(fitin, opts, epochinds, opts.
 
 valnames = fieldnames(fitin.fits.(epochinds_str));
 
-gof_val_prev = 1e10;
 for vfi = 1:numel(valnames)
 
     inds = fitin.fits.(epochinds_str).(valnames{vfi});
@@ -36,108 +33,62 @@ for vfi = 1:numel(valnames)
 
     %% create synthetic data to test optimization (optional)
 
+    ftsyn = [];
     if opts.num_synthetic_depv %if not 0, replace depv_allrois with synthetic data
-        dofit = 1;
-        doplots_syn = 0;
-        [depv_allrois, num_dim_depvpre, ftsyn] = synthesize_depv(fitin, depv_allrois(:,opts.num_synthetic_depv), indv, doplots_syn, opts.num_synthetic_depv, fitin.supp.num_par_total, fitin.opop.optimp);
+        dofit = 1; %always do fit if synthesizing data anew
+        doplots_syn = 0; %plot synthetic vs real data
+        plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
+        [depv_allrois, fitin.num_dim_depvpre, ftsyn] = fitmdl_synthesize_depv(fitin.supp.pthspre, fitin.supp, fitin.opop.mdl, depv_allrois, indv, doplots_syn, opts.num_synthetic_depv, fitin.opop.optimp, plot_syn_against_single_depv);
     end
 
     %% fit model
 
     if dofit
 
-        ft = zeros(num_dim_depvpre, fitin.supp.num_par_total); % was num_dim_indvpre*num_samp_mdl, then num_dim_indvpre*fitin.supp.num_par_total
-        gof = zeros(num_dim_depvpre, 1);
+        ft = zeros(fitin.num_dim_depvpre, fitin.supp.num_par_total); % was num_dim_indvpre*num_samp_mdl, then num_dim_indvpre*fitin.supp.num_par_total
+        gof = zeros(fitin.num_dim_depvpre, 1);
         depvp = zeros(size(depv_allrois), depv_allrois_class);
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        for ri = 1:numel(depv_good_inds)
+        for ri = 1:fitin.num_dim_depvpre
             if depv_good_inds(ri)
-
                 depv = double(depv_allrois(:, ri));
-
-                if startsWith(opts.modeltype, 'svd')
-                    [ ft(ri,:), gof(ri), depvp(:,ri) ] = run_svd( fitin, indv, depv);
-                else
-                    [ ft(ri,:), gof(ri), depvp(:,ri) ] = run_gs(fitin, indv, depv, ri, opts.optim_hist_save_iter_spacing);
-                end
-
+                [ ft(ri,:), gof(ri), depvp(:,ri) ] = fitmdl_fit(fitin, indv, depv, ri, opts.optim_hist_save_iter_spacing, opts.modeltype);
+                %fitmdl_plot_single_mdl(ri, fitin.opop.mdl, fitin.supp, indv, depv, depvp(:, ri), ft(ri,:), ftsyn) %this only works within for not parfor
             end
-
-            %tinds = 1:300; hfg = figure; subplot(2,1,1); plot(double(depvp(tinds, ri))); hold on; plot(depv_allrois(tinds,ri)); subplot(2,1,2); plot(fttmp(ri,:)); hold on; plot(ftsyn(ri,:)); fig2gif(hfg, 1, [fitin.supp.pthspre '_' datestr(now, 30) '_testpred.gif'])
-            %tinds = 1:1100; hfg = figure; subplot(2,1,1); plot(double(depvp(tinds, ri))); hold on; plot(depv_allrois(tinds,ri)); subplot(2,1,2); plot(fttmp(ri,:)); fig2gif(hfg, 1, [fitin.supp.pthspre '_' datestr(now, 30) '_testpred.gif'])
-
         end
         toc
-        %fitin.mdlfcn(ftsyn(ri,:), indv, fitin.supp, [fitin.supp.pthspre '_' datestr(now, 30)])
-        %fitin.mdlfcn(fttmp(ri,:), indv, fitin.supp, [fitin.supp.pthspre '_' datestr(now, 30)])
 
         save(fitin.pth_fitdata_epoch, 'ft', 'depvp', 'gof', 'depv_good_inds', '-v7.3', '-mat')
 
     end
 
-    fitmdl_validation(inds, depv_good_inds)
-
-    %validation
-    sampinds_depv_tmp = inds.sampinds_depvpre;
-    sampinds_depv_tmp = vec(union(sampinds_depvpre_train, sampinds_depvpre_val))';
-    if opts.validation_fold~=0
-        depvp_new = zeros(numel(sampinds_depv_tmp), numel(depv_good_inds));
-        depv_new = zeros(numel(sampinds_depv_tmp), numel(depv_good_inds));
-        indv_new = zeros(numel(sampinds_depv_tmp), size(indv, 2));
-        gof_val = zeros(1,numel(depv_good_inds));
-        for ri = 1:numel(depv_good_inds)
-            if depv_good_inds(ri)
-                depvp_new(inds.sampinds_indv_val, ri) = fitin.opop.mdlfcn(ft(ri,:), indv_val, fitin.supp)';
-                gof_val(ri) = mse(double(depv_allrois_val(:,ri)), depvp_new(inds.sampinds_indv_val, ri));
-                depvp_new(sampinds_indv_train, ri) = depvp(:,ri);
-            end
-        end
-        depv_new(inds.sampinds_indv_val, :) = depv_allrois_val;
-        depv_new(sampinds_indv_train, :) = depv_allrois;
-        indv_new(inds.sampinds_indv_val, :) = indv_val;
-        indv_new(sampinds_indv_train, :) = indv;
-        gof_val = mean(gof_val);
-        if gof_val<gof_val_prev
-            gof_val_prev = gof_val;
-            vfi_use = vfi;
-            depvp_use = depvp_new;
-            depvintmp_use = depv_new;
-            indvauge_use = indv_new;
-            keepinds_depv_use = sampinds_depv_tmp;
-            valinds_raw_use = inds.sampinds_indv_val;
-            valinds_indv_use = sampinds_indvpreaug_val;
-            valinds_depv_use = sampinds_depvpre_val;
-        end
-    else
-        vfi_use = vfi;
-        depvp_use = depvp;
-        depvintmp_use = depv_allrois;
-        indvauge_use = indvauge;
-        keepinds_depv_use = sampinds_depv_tmp;
-        valinds_raw_use = inds.sampinds_indv_val;
-        valinds_indv_use = sampinds_indvpreaug_val;
-        valinds_depv_use = sampinds_depvpre_val;
+    gof_val = [];
+    if opts.validation_fold %if doing validation
+        [depvp, gof_val] = fitmdl_validation(fitin.num_dim_depvpre, ft, indv_val, depvp, inds, depv_allrois_val, depv_good_inds, fitin.opop.mdl, fitin.supp);
     end
-
-
 
     %% compute some fit metrics to be used later
 
     depvstd = std(depv_allrois,1); %2nd arg is 1 to normalize by n, not n-1
 
-    indvpref = zeros(size(depv_allrois, 2), 1);
+    indvpref = zeros(fitin.num_dim_depvpre, 1);
     for ri = 1:size(depvp, 2)
         indvpref(ri) = mean(indv(max(depvp(:,ri))==depvp(:,ri))); %mean indv at max predicted response (mean in case there are multiple, which depends on model type)
     end
     indvpref(~depv_good_inds) = nan;
+
+    gof_val_mean_allrois = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
+
 
     %% output struct (indexed by epochinds and valind)
 
     fitin.fits.(epochinds_str).(valnames{vfi}).ft = ft;
     fitin.fits.(epochinds_str).(valnames{vfi}).depvp = depvp;
     fitin.fits.(epochinds_str).(valnames{vfi}).gof = gof;
+    fitin.fits.(epochinds_str).(valnames{vfi}).gof_val = gof_val;
+    fitin.fits.(epochinds_str).(valnames{vfi}).gof_val_mean_allrois = gof_val_mean_allrois;
     fitin.fits.(epochinds_str).(valnames{vfi}).depv_good_inds = depv_good_inds;
     fitin.fits.(epochinds_str).(valnames{vfi}).indvpref = indvpref;
     fitin.fits.(epochinds_str).(valnames{vfi}).depvstd = depvstd;

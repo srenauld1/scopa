@@ -226,7 +226,7 @@ opt.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-va
 
 % notes about opt.fit.modeltypes
 
-% for modeltypes starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in fit_svd = p/100); for example 'svd22' accounts for 22% of variance, i.e. in fit_svd pvar=0.22
+% for modeltypes starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); for example 'svd22' accounts for 22% of variance, i.e. in objective_svd pvar=0.22
 
 % for modeltypes starting with prefix ann*, suffix denotes arhcitecture,
     % see struct 'chopt' in default_fit_params for current list of characters, for readability, docs below refer to those characters 

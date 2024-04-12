@@ -1,4 +1,4 @@
-function p = fit_plane(b, s, supp,pthspre)
+function p = mdl_plane(b, s, supp,pthspre)
 
 p = 0;
 for i = 1:size(s, 2)

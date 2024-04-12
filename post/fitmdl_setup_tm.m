@@ -5,7 +5,7 @@ used to do this outside fit looop, and then after fit loop, like this indv = ind
 x = x.';
 
 
-mdlfcn = @nonadaptive_tm;
+mdl = @nonadaptive_tm;
 lbnd = [0, 0, -inf(1,14)];
 ubnd = [45, 360, inf(1,14)];
 x0 = [10, 10, ones(1,14)];

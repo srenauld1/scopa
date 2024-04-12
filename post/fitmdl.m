@@ -49,7 +49,7 @@ fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix);
 
 %% set up model fitting and plotting options
 
-[fitin, opts] = setup_model(fitin, opts, md.dtmni, pth_fitdata_prefix);
+[fitin, opts] = fitmdl_setup(fitin, opts, md.dtmni, pth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 
@@ -57,5 +57,5 @@ for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv acco
     fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
 end
 
-model_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
+fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
 

@@ -253,7 +253,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         valfold_loop = fitopt.validation_fold;
     end
 
-    gof_val_prev = 1e10;
+    gof_val_mean_allrois_prev = 1e10;
     for vfi = 1:valfold_loop
 
         if fitopt.validation_fold==0
@@ -261,13 +261,13 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             valinds_indvaug = [];
         else
             boutvalinds = [1:numepochval]+numepochval*(vfi-1);
-            sampinds_indv_val = cell2mat(tinds_cont(boutvalinds));
-            valinds_indvaug = keepinds_indvaug(sampinds_indv_val);
+            sampinds_indvdepv_val = cell2mat(tinds_cont(boutvalinds));
+            valinds_indvaug = keepinds_indvaug(sampinds_indvdepv_val);
         end
 
         bouttraininds = setxor(boutvalinds, [1:length(tinds_cont)]);
-        sampinds_indv_train = cell2mat(tinds_cont(bouttraininds));
-        traininds_indvaug = keepinds_indvaug(sampinds_indv_train);
+        sampinds_indvdepv_train = cell2mat(tinds_cont(bouttraininds));
+        traininds_indvaug = keepinds_indvaug(sampinds_indvdepv_train);
 
         sampinds_depvpre_train = traininds_indvaug + (num_samp_mdl-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
         sampinds_depvpre_val = valinds_indvaug + (num_samp_mdl-1) + fitopt.num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
@@ -361,24 +361,24 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             gof_val = zeros(1,numel(depv_good_inds));
             for ri = 1:numel(depv_good_inds)
                 if depv_good_inds(ri)
-                    depvp_new(sampinds_indv_val, ri) = fitin.objfcn(fttmp(ri,:), indvpreaug(:, valinds_indvaug), fitin.supp)';
-                    gof_val(ri) = mse(double(depvintmp(ri, sampinds_depvpre_val).'), depvp_new(sampinds_indv_val, ri));
-                    depvp_new(sampinds_indv_train, ri) = depvp(:,ri);
+                    depvp_new(sampinds_indvdepv_val, ri) = fitin.objfcn(fttmp(ri,:), indvpreaug(:, valinds_indvaug), fitin.supp)';
+                    gof_val(ri) = mse(double(depvintmp(ri, sampinds_depvpre_val).'), depvp_new(sampinds_indvdepv_val, ri));
+                    depvp_new(sampinds_indvdepv_train, ri) = depvp(:,ri);
                 end
             end
-            depv_new(sampinds_indv_val, :) = depvintmp(:, sampinds_depvpre_val).';
-            depv_new(sampinds_indv_train, :) = depvintmp2;
-            indv_new(sampinds_indv_val, :) = indvpreaug(:, valinds_indvaug).';
-            indv_new(sampinds_indv_train, :) = indvpreaug(:, traininds_indvaug).';
+            depv_new(sampinds_indvdepv_val, :) = depvintmp(:, sampinds_depvpre_val).';
+            depv_new(sampinds_indvdepv_train, :) = depvintmp2;
+            indv_new(sampinds_indvdepv_val, :) = indvpreaug(:, valinds_indvaug).';
+            indv_new(sampinds_indvdepv_train, :) = indvpreaug(:, traininds_indvaug).';
             gof_val = mean(gof_val);
-            if gof_val<gof_val_prev
-                gof_val_prev = gof_val;
+            if gof_val<gof_val_mean_allrois_prev
+                gof_val_mean_allrois_prev = gof_val;
                 vfi_use = vfi;
                 depvp_use = depvp_new;
                 depvintmp_use = depv_new;
                 indvauge_use = indv_new;
                 keepinds_depv_use = keepinds_depv_tmp;
-                valinds_raw_use = sampinds_indv_val;
+                valinds_raw_use = sampinds_indvdepv_val;
                 valinds_indv_use = valinds_indvaug;
                 valinds_depv_use = sampinds_depvpre_val;
             end
@@ -388,7 +388,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             depvintmp_use = depvintmp2;
             indvauge_use = indvauge;
             keepinds_depv_use = keepinds_depv_tmp;
-            valinds_raw_use = sampinds_indv_val;
+            valinds_raw_use = sampinds_indvdepv_val;
             valinds_indv_use = valinds_indvaug;
             valinds_depv_use = sampinds_depvpre_val;
         end

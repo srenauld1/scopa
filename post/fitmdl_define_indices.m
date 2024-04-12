@@ -51,30 +51,30 @@ for vfi = 1:num_valfold_loop
 
     if opts.validation_fold==0
         valstr = 'v_0';
-        sampinds_indv_val = [];
+        sampinds_indvdepv_val = [];
         sampinds_indvpreaug_val = [];
     else
         valstr = ['v_' num2str(vfi)];
         for i = 1:num_epochs %train/test split eeach epoch individually, then combine, to get equal representation in the split (since each epoch can be distributed differently)
             boutinds_val = [];
-            sampinds_indv_val = [];
+            sampinds_indvdepv_val = [];
             sampinds_indvpreaug_val = [];
             if strcmp(validation_split_style, 'bouts') && num_bout_per_epoch(i)>1 %for now, set up to allow multi-bout epochs to be train/val split by bout epoch set, may move to making all epochs split by sample, as when an epoch has only one bout (see "else" below)
                 boutinds_val{i} = boutind_per_epoch{i}([1:num_bout_val(i)]+num_bout_val(i)*(vfi-1));
-                sampinds_indv_val{i} = cell2mat(bout_tinds(boutinds_val{i}));
-            else %if split style 'bouts' and epoch has only one bout, or if split style 'sample', just split by sample
+                sampinds_indvdepv_val{i} = cell2mat(bout_tinds(boutinds_val{i}));
+            elseif strcmp(validation_split_style, 'boutsamples')  %if split style 'bouts' and epoch has only one bout, or if split style 'sample', just split by sample
                 boutinds_val{i} = boutind_per_epoch{i};
                 num_samp_allbout = numel(cell2mat(bout_tinds(boutinds_val{i})));
                 num_samp_val_allbout = floor(num_samp_allbout / opts.validation_fold);
-                sampinds_indv_val{i} = [1:num_samp_val_allbout]+num_samp_val_allbout*(vfi-1);
+                sampinds_indvdepv_val{i} = [1:num_samp_val_allbout]+num_samp_val_allbout*(vfi-1);
             end
-            sampinds_indvpreaug_val{i} = sampinds_indvpreaug(sampinds_indv_val{i});
+            sampinds_indvpreaug_val{i} = sampinds_indvpreaug(sampinds_indvdepv_val{i});
         end
-        sampinds_indv_val = cell2mat(sampinds_indv_val);
+        sampinds_indvdepv_val = cell2mat(sampinds_indvdepv_val);
         sampinds_indvpreaug_val = cell2mat(sampinds_indvpreaug_val);
     end
-    sampinds_indv_train = setxor(sampinds_indv_val, cell2mat(bout_tinds)); %simpler than previous, which was for each epoch i, setxor(sampinds_indv_val{i}, cell2mat(bout_tinds(bout_ind_per_epoch{i})));
-    sampinds_indvpreaug_train = sampinds_indvpreaug(sampinds_indv_train);
+    sampinds_indvdepv_train = setxor(sampinds_indvdepv_val, cell2mat(bout_tinds)); %simpler than previous, which was for each epoch i, setxor(sampinds_indvdepv_val{i}, cell2mat(bout_tinds(bout_ind_per_epoch{i})));
+    sampinds_indvpreaug_train = sampinds_indvpreaug(sampinds_indvdepv_train);
 
     sampinds_depvpre_train = sampinds_indvpreaug_train + (num_samp_mdl-1) + num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
     sampinds_depvpre_val = sampinds_indvpreaug_val + (num_samp_mdl-1) + num_samp_lag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
@@ -84,15 +84,16 @@ for vfi = 1:num_valfold_loop
     num_samp_data_val = numel(sampinds_indvpreaug_val); %number samples of indv/depv given to optimization code
 
 
-    out.(valstr).sampinds_indvpreaug = sampinds_indvpreaug; %same as union(sampinds_indvpreaug_train, sampinds_indvpreaug_val);
-    out.(valstr).sampinds_indv_train = sampinds_indv_train;
-    out.(valstr).sampinds_indv_val = sampinds_indv_val;
-    out.(valstr).sampinds_indvpreaug_train = sampinds_indvpreaug_train;
-    out.(valstr).sampinds_indvpreaug_val = sampinds_indvpreaug_val;
+    out.(valstr).sampinds_indvpreaug_train = sampinds_indvpreaug_train; %train indices into indvpreaug 
+    out.(valstr).sampinds_indvpreaug_val = sampinds_indvpreaug_val; %val indices into indvpreaug 
+    out.(valstr).sampinds_indvpreaug = sampinds_indvpreaug; %should be same as union(sampinds_indvpreaug_train, sampinds_indvpreaug_val);
 
+    out.(valstr).sampinds_depvpre_train = sampinds_depvpre_train; %train indices into depvpre 
+    out.(valstr).sampinds_depvpre_val = sampinds_depvpre_val; %val indices into depvpre 
     out.(valstr).sampinds_depvpre = union(sampinds_depvpre_train, sampinds_depvpre_val);
-    out.(valstr).sampinds_depvpre_train = sampinds_depvpre_train;
-    out.(valstr).sampinds_depvpre_val = sampinds_depvpre_val;
+
+    out.(valstr).sampinds_indvdepv_train = sampinds_indvdepv_train; %train indices into indv and depv (same at that stage) 
+    out.(valstr).sampinds_indvdepv_val = sampinds_indvdepv_val; %val indices into indv and depv (same at that stage) 
 
     out.(valstr).num_samp_data_train = num_samp_data_train;
     out.(valstr).num_samp_data_val = num_samp_data_val;

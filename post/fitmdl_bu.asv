@@ -253,7 +253,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
         valfold_loop = fitopt.validation_fold;
     end
 
-    gof_val_prev = 1e10;
+    gof_val_mean_allrois_prev = 1e10;
     for vfi = 1:valfold_loop
 
         if fitopt.validation_fold==0
@@ -371,8 +371,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
             indv_new(valinds_rawinds, :) = indvaug(:, valinds_indvaug).';
             indv_new(traininds_rawinds, :) = indvaug(:, traininds_indvaug).';
             gof_val = mean(gof_val);
-            if gof_val<gof_val_prev
-                gof_val_prev = gof_val;
+            if gof_val<gof_val_mean_allrois_prev
+                gof_val_mean_allrois_prev = gof_val;
                 vfi_use = vfi;
                 depvp_use = depvp_new;
                 depvintmp_use = depv_new;
