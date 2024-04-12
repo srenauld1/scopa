@@ -1,42 +1,48 @@
-function [ft, gof, depvp] = fitmdl_fit(fitin, indv, depv, ri, optim_hist_save_iter_spacing, modeltype)
+function [ft, depvp, gof_train, gof_val] = fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, modeltype, ...
+    validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, pth_fitdata)
 
 
 % rng default
 
 if optim_hist_save_iter_spacing
-    histfit = init_optim_hist(fitin.opop.optiml.MaxIterations, fitin.opop.max_iter_global, optim_hist_save_iter_spacing, fitin.supp.num_par_total);
-    fitin.opop.optimg.OutputFcn = @outfcn_global;
-    fitin.opop.optiml.OutputFcn = @outfcn_local;
+    histfit = init_optim_hist(opop.optiml.MaxIterations, opop.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
+    opop.optimg.OutputFcn = @outfcn_global;
+    opop.optiml.OutputFcn = @outfcn_local;
 end
 
 if startsWith(modeltype, 'svd')
-    fitin.opop.optimp.objective = @objective_svd;
+    opop.optimp.objective = @objective_svd;
 else
-    if strcmp(fitin.opop.optimp.solver, 'fmincon')
-        fitin.opop.optimp.objective = @(b) sum(( depv - fitin.opop.mdl(b, indv, fitin.supp) ).^2); %fmincon requires objective objective to define loss explicitly
+    if strcmp(opop.optimp.solver, 'fmincon')
+        opop.optimp.objective = @(b) sum(( depv - opop.mdl(b, indv, supp) ).^2); %fmincon requires objective objective to define loss explicitly
     else
-        fitin.opop.optimp.objective = fitin.opop.mdl; %fmincon requires objective objective to define loss explicitly
+        opop.optimp.objective = opop.mdl; %fmincon requires objective objective to define loss explicitly
     end
 end
 
 %% fit model, predict response
 
 if startsWith(modeltype, 'svd')
-    ft = fitin.opop.optimp.objective( indv, depv, fitin.supp.pvar);
+    ft = opop.optimp.objective( indv, depv, supp.pvar);
     %mdl_toy %synthetic data toy
 else
-    [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(fitin.opop.optimg, fitin.opop.optimp); %ft are fit params
+    [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(opop.optimg, opop.optimp); %ft are fit params
     %[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optimp.objective, x0, [], [], [], [], lbnd, ubnd, [], optimp.options); %example single run of local solver
 end
 
 
-%% predict response
+%% predict train/val response, compute train/val gof (slot train/val depvp into same timeseries, later can be separated using indices)
 
-depvp = fitin.opop.mdl(ft, indv, fitin.supp); %depvp is predicted depv
+depvp = zeros(num_samp_total, 1, 'single');
 
-%% goodness-of-fit
+[depvp(sampinds_indvdepv_train), gof_train] = fitmdl_predict(ft, indv, depv, opop.mdl, supp);
 
-gof = mse(depv, depvp); %error
+if validation_fold %if doing validation
+    [depvp(sampinds_indvdepv_val), gof_val] = fitmdl_predict(ft, indv_val, depv_val, opop.mdl, supp);
+end
+
+
+%% information criteria for model evaluation
 
 % numsamp = length(depv);
 % mpdiff = depv-depvp;
@@ -47,7 +53,7 @@ gof = mse(depv, depvp); %error
 
 %% save optimization history
 
-savepath = [fitin.pth_fitdata_epoch(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
 parsave(savepath, histfit) %save histfit, must use separate function
 
 

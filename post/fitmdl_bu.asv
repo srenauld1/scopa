@@ -284,14 +284,14 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
 
 
         if fitopt.validation_fold==0
-            pth_fitdata_epoch_pattern = [pth_fitdata_prefix '_' epochinds_str{epi} '_0_*_fitdata_.mat'];
+            pth_fitdata_pattern = [pth_fitdata_prefix '_' epochinds_str{epi} '_0_*_fitdata_.mat'];
         else
-            pth_fitdata_epoch_pattern = [pth_fitdata_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_fitdata_.mat'];
+            pth_fitdata_pattern = [pth_fitdata_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_fitdata_.mat'];
         end
-        fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+        fitdata_saved_files = rdir(pth_fitdata_pattern);
         timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
-        fitin.pth_fitdata_epoch = strrep(pth_fitdata_epoch_pattern, '*', timestr);
+        fitin.pth_fitdata = strrep(pth_fitdata_pattern, '*', timestr);
 
         dofit = 1;
         if fitopt.use_saved_model && ~isempty(fitdata_saved_files)
@@ -346,7 +346,7 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
                 indvauge = indvauge.';
             end
 
-            save(fitin.pth_fitdata_epoch, 'fttmp', 'goftmp', 'depvp', 'hdata', 'sdata', 'vdata', 'indvpreftmp', 'depv_good_inds', '-v7.3', '-mat')
+            save(fitin.pth_fitdata, 'fttmp', 'goftmp', 'depvp', 'hdata', 'sdata', 'vdata', 'indvpreftmp', 'depv_good_inds', '-v7.3', '-mat')
 
         end
 

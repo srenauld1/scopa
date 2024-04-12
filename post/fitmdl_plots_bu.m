@@ -764,8 +764,8 @@ if doplots(3)
 
         if max_numfits_to_plot_ts>0
             for ri = 1:numroi_plot %for each neuron, concatenate hitfit (do before plotting loop )
-                pth_fitdata_epoch_pattern = [pth_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_' num2str(ri) '_HISTFIT_.mat'];
-                fitdata_saved_files = rdir(pth_fitdata_epoch_pattern);
+                pth_fitdata_pattern = [pth_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_' num2str(ri) '_HISTFIT_.mat'];
+                fitdata_saved_files = rdir(pth_fitdata_pattern);
                 if ~isempty(fitdata_saved_files)
                     fitdata_saved_files = natsortfiles(fitdata_saved_files);
                     load(fitdata_saved_files(end).name, 'histfit') %load most recent, based on timestamp in filename
