@@ -218,7 +218,7 @@ for ri = 1:numroi_plot %for each neuron
         end
         supp.framecount = framecount;
         if plot_depvp
-            [~, hax, binmns] = modfun(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
+            [~, hax, binmns] = mdlfcn(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
         end
 
         fig2gif(hfg, framecount, filename_save)

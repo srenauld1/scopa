@@ -26,7 +26,7 @@ depv = zeros(size(depv_orig_subset, 1), numsyndepv, 'single');
 for i = 1:numsyndepv
 
     ftsyn(i,:) = synthesize_params_random(x0, ub, lb); %make synthetic model params, within bounds
-    depv(:,i) = fitin.modfun(ftsyn(i,:), indv, fitin.supp); %replace depv with synthetic depv
+    depv(:,i) = fitin.mdlfcn(ftsyn(i,:), indv, fitin.supp); %replace depv with synthetic depv
     if doplots
         if i==1
             hp1{1}.YData = depv_orig_subset(:,i); hp1{2}.YData = depv_orig_subset(tinds,i);

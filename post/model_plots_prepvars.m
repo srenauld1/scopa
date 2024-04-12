@@ -113,7 +113,7 @@ if max_numfits_to_plot_ts>0
 
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
-                depvp_hist{ri}(hxi,:) = modfun(histxsave{ri}(hxi,:), indv{epi}, supp);
+                depvp_hist{ri}(hxi,:) = mdlfcn(histxsave{ri}(hxi,:), indv{epi}, supp);
                 % if standardize_depv
                 %     depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end

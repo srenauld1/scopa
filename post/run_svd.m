@@ -1,11 +1,11 @@
 function [ft, gof1, depvp] = run_svd(fitin)
 
-modfun = fitin.opop.optimp.objective;
+mdlfcn = fitin.opop.optimp.objective;
 pvar = fitin.pvar;
 indv = fitin.indv;
 depv = fitin.depv;
 
-ft = modfun( indv, depv, pvar);
+ft = mdlfcn( indv, depv, pvar);
 
 run_toy = 0;
 if run_toy

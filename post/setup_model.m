@@ -21,14 +21,14 @@ end
 
 if startsWith(modeltype, 'svd')
 
-    optimp.modfun = @fit_svd;
+    mdlfcn = @fit_svd;
 
     supp.num_model_functions = 1;
 
 
 elseif startsWith(modeltype, 'linear')
 
-    optimp.modfun = @(bv,x,supp,pthspre) bv(1) * x + bv(2);
+    mdlfcn = @(bv,x,supp,pthspre) bv(1) * x + bv(2);
     optimp.lb = [-inf,-3000]; %[0,0,0,-pi]; %a, c, k, u
     optimp.ub = [inf,3000]; %[inf,inf,inf,pi];
     optimp.x0 = [0,0];
@@ -39,7 +39,7 @@ elseif startsWith(modeltype, 'linear')
 
 elseif startsWith(modeltype, 'plane')
 
-    optimp.modfun = @fit_plane;
+    mdlfcn = @fit_plane;
     optimp.lb = [ones(1, num_dim_indv)*3000 -inf]; %[0,0,0,-pi]; %a, c, k, u
     optimp.ub = [ones(1, num_dim_indv)*3000 inf]; %[inf,inf,inf,pi];
     optimp.x0 = [ones(1, num_dim_indv)*2 0];
@@ -49,7 +49,7 @@ elseif startsWith(modeltype, 'plane')
 
 elseif startsWith(modeltype, 'genlog')
 
-    optimp.modfun = @(bv,x,supp,pthspre) bv(1) + ( (bv(2) - bv(1)) ./ ( bv(3) + bv(4) * exp( -bv(5) * (x-bv(6)) ) .^ 1/bv(7) ) );
+    mdlfcn = @(bv,x,supp,pthspre) bv(1) + ( (bv(2) - bv(1)) ./ ( bv(3) + bv(4) * exp( -bv(5) * (x-bv(6)) ) .^ 1/bv(7) ) );
     optimp.lb = -inf(1,7); %[0,0,0,-pi]; %a, c, k, u
     optimp.ub = inf(1,7); %[inf,inf,inf,pi];
     optimp.x0 = ones(1,7);
@@ -58,7 +58,7 @@ elseif startsWith(modeltype, 'genlog')
 
 elseif startsWith(modeltype, 'vonmises')
 
-    optimp.modfun = @objfcn_vonmises;
+    mdlfcn = @objfcn_vonmises;
     optimp.lb = [-inf,-inf,-inf,-inf];
     optimp.ub = [inf,inf,inf,inf];
     optimp.x0 = [0,0,0,0];
@@ -71,7 +71,7 @@ elseif startsWith(modeltype, 'vonmises')
 
 elseif startsWith(modeltype, 'gaussian')
 
-    optimp.modfun = @(bv,x,supp,pthspre) bv(1)*exp(-(((x-bv(2)).^2)/(2*bv(3).^2)))+bv(4);
+    mdlfcn = @(bv,x,supp,pthspre) bv(1)*exp(-(((x-bv(2)).^2)/(2*bv(3).^2)))+bv(4);
     optimp.lb = [0,-5,0,0];
     optimp.ub = [3000,5,10,3000];
     optimp.x0 = [1,1,1,0];
@@ -97,11 +97,12 @@ fitin.plt = setup_model_plotting(modeltype, opts.plt);
 
 %% optimization options 
 
-fitin.opop.optimp = optimp;
+fitin.opop.mdlfcn = mdlfcn;
 fitin.opop.max_iter_local = 1001;  %will be assigned to fitin.opop.optiml.MaxIterations
 fitin.opop.max_iter_global = 4; %this will not be assigned to globalsearch object; instead is used in output function for optimization problem, to stop optimization 
 fitin.opop.optimg.NumTrialPoints = 2000;
 fitin.opop.optimg.NumStageOnePoints = 1000; 
+fitin.opop.optimp = optimp;
 
 fitin.opop = default_optimization_options(fitin.opop);
 

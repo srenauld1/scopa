@@ -71,7 +71,7 @@ for fi = 1:numel(frm)
         case 'fov'
             model_plots_fov
         case 'model'
-            modfun
+            mdlfcn
     end
 end
 
@@ -90,10 +90,10 @@ if doplots(1)
 end
 
 if doplots(4)
-    if isequal(modfun, @fit_svd)
+    if isequal(mdlfcn, @fit_svd)
         % plot_svd(ft{epi})
     else
-        modfun(ft{epi}, indv{epi}, supp, pth_fitdata_prefix);
+        mdlfcn(ft{epi}, indv{epi}, supp, pth_fitdata_prefix);
     end
 end
 

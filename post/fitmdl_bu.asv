@@ -210,7 +210,7 @@ clear depvin
 
 %% loop over epochs
 
-sampinds_depvpre = cell(1, length(fitopt.epochinds));
+keepinds_depv = cell(1, length(fitopt.epochinds));
 indv_plot = cell(1, length(fitopt.epochinds));
 depv_plot = cell(1, length(fitopt.epochinds));
 depvp_plot = cell(1, length(fitopt.epochinds));
@@ -446,8 +446,8 @@ for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv ac
     gof{epi} = goftmp;
     indvpref{epi} = indvpreftmp;
 
-    sampinds_depvpre{epi} = keepinds_depv_use;
-    pureepoch{epi} = pureepochtmp(sampinds_depvpre{epi});
+    keepinds_depv{epi} = keepinds_depv_use;
+    pureepoch{epi} = pureepochtmp(keepinds_depv{epi});
 
 
 end
@@ -465,7 +465,7 @@ if fitopt.doplots
         fitopt.max_tinds, fitopt.timeseries_numsegments, ...
         fitopt.ignorehue, fitopt.ignoresat, fitopt.ignoreval, ...
         fitopt.depvplot_norm, fitopt.plot_class, ...
-        sampinds_depvpre, epochinds_str, pureepoch, ...
+        keepinds_depv, epochinds_str, pureepoch, ...
         pth_fitdata_prefix, fitopt.gif_visibility, fitin.objfcn, ft, fitin.supp, doplots, ...
         fitopt.validation_fold, vfi_use, fitopt.standardize_depv, depvinstds_plot, depvinmeans_plot, ...
         valinds_depv_use, valinds_indv_use, valinds_raw_use)

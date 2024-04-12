@@ -1,18 +1,18 @@
-function [ft, gof, depvp] = run_gs(fitin, indv, depv, ri, save_optim_hist)
+function [ft, gof, depvp] = run_gs(fitin, indv, depv, ri, optim_hist_save_iter_spacing)
 
 
 % rng default
 
-if save_optim_hist
-    histfit = init_optim_hist(fitin.opop.optiml.MaxIterations, fitin.opop.optimg.MaxIterations, fitin.supp.num_par_total);
+if optim_hist_save_iter_spacing
+    histfit = init_optim_hist(fitin.opop.optiml.MaxIterations, fitin.opop.max_iter_global, optim_hist_save_iter_spacing, fitin.supp.num_par_total);
     fitin.opop.optimg.OutputFcn = @outfcn_global;
     fitin.opop.optiml.OutputFcn = @outfcn_local;
 end
 
 if strcmp(fitin.opop.optimp.solver, 'fmincon')
-    fitin.opop.optimp.objective = @(b) sum(( depv - fitin.opop.optimp.modfun(b, indv, fitin.supp) ).^2); %fmincon requires objective objective to define loss explicitly
+    fitin.opop.optimp.objective = @(b) sum(( depv - fitin.opop.mdlfcn(b, indv, fitin.supp) ).^2); %fmincon requires objective objective to define loss explicitly
 else
-    fitin.opop.optimp.objective = fitin.opop.optimp.modfun; %fmincon requires objective objective to define loss explicitly
+    fitin.opop.optimp.objective = fitin.opop.mdlfcn; %fmincon requires objective objective to define loss explicitly
 end
 
 %% fit model
@@ -22,7 +22,7 @@ end
 
 %% predicted depv
 
-depvp = fitin.opop.optimp.modfun(ft, indv, fitin.supp); %depvp is predicted depv
+depvp = fitin.opop.mdlfcn(ft, indv, fitin.supp); %depvp is predicted depv
 
 %% goodness-of-fit
 
@@ -48,7 +48,7 @@ parsave(savepath, histfit) %save histfit, must use separate function
         switch state
             case 'init'
             case 'iter'
-                if mod(optimValues.iteration, histfit.save_iter_spacing)==0
+                if mod(optimValues.iteration, histfit.optim_hist_save_iter_spacing)==0
                     histfit.x_l(:,histfit.save_iter_count_local,histfit.save_iter_count_global) = x; %x must be a row vector.
                     % histfit.ic(histfit.save_iter_count_local,histfit.save_iter_count_global) = ic;
                     histfit.fval_l(histfit.save_iter_count_local,histfit.save_iter_count_global) = optimValues.fval;

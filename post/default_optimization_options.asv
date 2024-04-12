@@ -1,28 +1,24 @@
 function optout = default_optimization_options(optin)
 
+if ~exist('optin', 'var') || ~isfield(optin, 'slvrl')
+    optout.slvrl = 'fmincon';
+else
+    optout.slvrl = optin.slvrl;
+end
+if ~exist('optin', 'var') || ~isfield(optin, 'max_iter_local')
+    optout.max_iter_local = 1000;
+else
+    optout.max_iter_local = optin.max_iter_local;
+end
+if ~exist('optin', 'var') || ~isfield(optin, 'max_iter_global')
+    optout.max_iter_global = 3;
+else
+    optout.max_iter_global = optin.max_iter_global;
+end
+
 %currently only uses one global optimization solver, GlobalSearch
 
 % patternsearch satisfies linear constraints at intermediate iterations . . . does globalsearch?
-
-
-if ~exist('optin', 'var') || ~isfield(optin, 'slvrl')
-    slvrl = 'fmincon';
-else
-    slvrl = optin.slvrl;
-end
-if ~exist('optin', 'var') || ~isfield(optin, 'max_iter_local')
-    max_iter_local = 1000;
-else
-    max_iter_local = optin.max_iter_local;
-end
-if ~exist('optin', 'var') || ~isfield(optin, 'max_iter_global')
-    max_iter_global = 3;
-else
-    max_iter_global = optin.max_iter_global;
-end
-
-mdlfcn = []; %this is the model function 
-
 
 %% global solver options
 
@@ -47,7 +43,7 @@ optimg.XTolerance = 1e-6; %1.0000e-06
 
 %% local solver options
 
-optiml = optimoptions(slvrl);
+optiml = optimoptions(optout.slvrl);
 
 % optiml.Algorithm = 'interior-point'; %algorithm chosen automatically?? . . . was using 'Algorithm', 'interior-point'); % https://www.mathworks.com/help/optim/ug/choosing-the-algorithm.html
 % optiml.BarrierParamUpdate = 'monotone';
@@ -62,7 +58,7 @@ optiml.FiniteDifferenceType = 'central'; %'forward'
 % optiml.HessianMultiplyFcn = [];
 % optiml.HonorBounds = 1;
 optiml.MaxFunctionEvaluations = Inf; %3000 for interior-point, 100*numvariables for others
-optiml.MaxIterations = max_iter_local; %1000 for interior-point, 400 for others
+optiml.MaxIterations = optout.max_iter_local; %1000 for interior-point, 400 for others
 % optiml.ObjectiveLimit = -1.0000e+20;
 % optiml.OptimalityTolerance = 1.0000e-06;
 optiml.OutputFcn = []; %[];
@@ -79,8 +75,9 @@ optiml.OutputFcn = []; %[];
 
 %% optimization problem
 
-optimp = createOptimProblem(slvrl);
+optimp = createOptimProblem(optout.slvrl);
 
+optimp.mdlfcn = []; %this is the model function 
 optimp.objective = []; %this can be same as mdlfcn, or may be loss given output of mdlfcn
 optimp.x0 = [];
 optimp.Aineq = [];
@@ -90,7 +87,7 @@ optimp.beq = [];
 optimp.lb = [];
 optimp.ub = [];
 optimp.nonlcon = [];
-optimp.solver = slvrl;
+optimp.solver = optout.slvrl;
 optimp.options = optiml;
 
 

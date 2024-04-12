@@ -38,7 +38,7 @@ for ii = 1:size(tmp, 1)
     % gtr_syn = wt_syn*gtr_syn_1 + (1-wt_syn)*gtr_syn_2; %ground truth model is weighted sum of two
     depv_syn = wt_syn*depv_syn_1 + (1-wt_syn)*depv_syn_2; %ground truth model is weighted sum of two
 
-    ft_syn = modfun( indv, depv_syn, pvar_syn); %fit synthetic response
+    ft_syn = mdlfcn( indv, depv_syn, pvar_syn); %fit synthetic response
     ft_syn2 = transpose(depv_syn'*indv / size(depv_syn, 1)); %alternate objective function (average correlation)
     depvp_syn = indv*ft_syn; %synthetic response model prediction
     depvp_syn2 = indv*ft_syn2; %synthetic response model prediction

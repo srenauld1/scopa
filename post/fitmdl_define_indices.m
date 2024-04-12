@@ -56,6 +56,9 @@ for vfi = 1:num_valfold_loop
     else
         valstr = ['v_' num2str(vfi)];
         for i = 1:num_epochs %train/test split eeach epoch individually, then combine, to get equal representation in the split (since each epoch can be distributed differently)
+            boutinds_val = [];
+            sampinds_indv_val = [];
+            sampinds_indvpreaug_val = [];
             if strcmp(validation_split_style, 'bouts') && num_bout_per_epoch(i)>1 %for now, set up to allow multi-bout epochs to be train/val split by bout epoch set, may move to making all epochs split by sample, as when an epoch has only one bout (see "else" below)
                 boutinds_val{i} = boutind_per_epoch{i}([1:num_bout_val(i)]+num_bout_val(i)*(vfi-1));
                 sampinds_indv_val{i} = cell2mat(bout_tinds(boutinds_val{i}));
@@ -81,17 +84,13 @@ for vfi = 1:num_valfold_loop
     num_samp_data_val = numel(sampinds_indvpreaug_val); %number samples of indv/depv given to optimization code
 
 
-    out.(valstr).num_valfold_loop = num_valfold_loop;
-
-    fuk2 = union(sampinds_indvpreaug_train, sampinds_indvpreaug_val);
-    out.(valstr).sampinds_indvpreaug = sampinds_indvpreaug;
+    out.(valstr).sampinds_indvpreaug = sampinds_indvpreaug; %same as union(sampinds_indvpreaug_train, sampinds_indvpreaug_val);
     out.(valstr).sampinds_indv_train = sampinds_indv_train;
     out.(valstr).sampinds_indv_val = sampinds_indv_val;
     out.(valstr).sampinds_indvpreaug_train = sampinds_indvpreaug_train;
     out.(valstr).sampinds_indvpreaug_val = sampinds_indvpreaug_val;
 
-    fuk = union(sampinds_depvpre_train, sampinds_depvpre_val);
-    out.(valstr).sampinds_depvpre = sampinds_depvpre;
+    out.(valstr).sampinds_depvpre = union(sampinds_depvpre_train, sampinds_depvpre_val);
     out.(valstr).sampinds_depvpre_train = sampinds_depvpre_train;
     out.(valstr).sampinds_depvpre_val = sampinds_depvpre_val;
 

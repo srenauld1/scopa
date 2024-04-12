@@ -5,7 +5,7 @@ function model_plots(hsvmap, indv, depv, depvp, stack, stackmean, ...
     ignorehue, ignoresat, ignoreval, ...
     depvplot_norm, plot_class, ...
     sampinds_depvpre, epochinds_str, pureepoch_keepinds, ...
-    pth_prefix, gif_visibility, modfun, ft, supp, doplots, valfold, vfi, ...
+    pth_prefix, gif_visibility, mdlfcn, ft, supp, doplots, valfold, vfi, ...
     standardize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
 
 
@@ -800,7 +800,7 @@ if doplots(3)
         
                     for hxi = 1:numfits_to_plot
                         histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
-                        depvp_hist{ri}(hxi,:) = modfun(histxsave{ri}(hxi,:), indv{epi}, supp);
+                        depvp_hist{ri}(hxi,:) = mdlfcn(histxsave{ri}(hxi,:), indv{epi}, supp);
                         if standardize_depv
                             depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                         end
@@ -808,12 +808,12 @@ if doplots(3)
 
                     gof_val = [];
                     for hxi = 1:size(histxtmp, 2) 
-                        gof_val(hxi) = mse(depv{epi}(ri,valinds_raw_use), modfun(histxtmp(:,hxi)', indv{epi}(valinds_raw_use,:), supp)');
+                        gof_val(hxi) = mse(depv{epi}(ri,valinds_raw_use), mdlfcn(histxtmp(:,hxi)', indv{epi}(valinds_raw_use,:), supp)');
                     end
                     [~, bestind] = min(gof_val);
                     bestindall{ri} = bestind;
                     histxsave{ri}(end,:) = histxtmp(:,bestind)';
-                    depvp_hist{ri}(end,:) = modfun(histxsave{ri}(end,:), indv{epi}, supp);
+                    depvp_hist{ri}(end,:) = mdlfcn(histxsave{ri}(end,:), indv{epi}, supp);
                     if standardize_depv
                         depvp_hist{ri}(end,:) = depvp_hist{ri}(end,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                     end
@@ -994,7 +994,7 @@ if doplots(3)
                 end
                 supp.framecount = framecount;
                 if plot_depvp
-                    [~, hax] = modfun(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
+                    [~, hax] = mdlfcn(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
                 end
 
                 fig2gif(hfg, framecount, filename_save)
@@ -1011,10 +1011,10 @@ end
 if doplots(4)
 
 
-    if isequal(modfun, @fit_svd)
+    if isequal(mdlfcn, @fit_svd)
         % plot_svd(ft{epi})
     else
-        modfun(ft{epi}, indv{epi}, supp, pth_prefix);
+        mdlfcn(ft{epi}, indv{epi}, supp, pth_prefix);
     end
 
 

@@ -34,7 +34,7 @@ smoothindv = 0; %gaussian window std is one fifth total length
 
 use_saved_model = 1;
 omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
-save_optim_history = 1;
+optim_hist_save_iter_spacing = 2;
 
 plt.hsv_background = 'rois'; %'rois' or 'pixels' or 'raw';
 plt.huestr = 'loc'; %loc or amp for modeltype linear . . . loc, amp, or wid for modeltype vonmises or gaussian
