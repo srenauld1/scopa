@@ -43,7 +43,7 @@ if opts.standardize_depv
     fitin.depvpre = fitin.standmdlvar_depv(fitin.depvpre, 'forward'); %standardize depv
 end
 
-%% recorganize indv into [dimensions, samples]
+%% recorganize indv into size [dimensions, samples]
 
 
 num_samp_mdl = round(opts.mdl_length_sec/dtmni);
@@ -89,11 +89,16 @@ pth_depvpre_bin = write_mdl_var(fitin.depvpre, pth_fitdata_prefix, 'depvpre');
 
 %% compute basic stats from depv and indv for repeated use later 
 
-fitin.stats.indvpre_lim_alldim = [min(fitin.indvpre(:)) max(fitin.indvpre(:))];
+fitin.stats.indvpre_min_alldim = min(abs(fitin.indvpre(:)));
+fitin.stats.indvpre_max_alldim = max(abs(fitin.indvpre(:)));
+fitin.stats.indvpre_lim_alldim = [fitin.stats.indvpre_min_alldim fitin.stats.indvpre_max_alldim];
 fitin.stats.indvpre_extreme_alldim = max(abs(fitin.indvpre(:)));
 fitin.stats.indvpre_mean_alldim = mean(fitin.indvpre(:), "omitmissing");
 fitin.stats.indvpre_std_alldim = std(fitin.indvpre(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
-fitin.stats.depvpre_lim_alldim = [min(fitin.depvpre(:)) max(fitin.depvpre(:))];
+
+fitin.stats.depvpre_min_alldim = min(abs(fitin.depvpre(:)));
+fitin.stats.depvpre_max_alldim = max(abs(fitin.depvpre(:)));
+fitin.stats.depvpre_lim_alldim = [fitin.stats.depvpre_min_alldim fitin.stats.depvpre_max_alldim];
 fitin.stats.depvpre_extreme_alldim = max(abs(fitin.depvpre(:)));
 fitin.stats.depvpre_mean_alldim = mean(fitin.depvpre(:), "omitmissing");
 fitin.stats.depvpre_std_alldim = std(fitin.depvpre(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
@@ -114,5 +119,7 @@ fitin.epochinds_ts_i_m = epochinds_ts_i_m;
 fitin.num_dim_indv = num_dim_indv;
 fitin.pth_depvpre_bin = pth_depvpre_bin;
 fitin.pth_indvaug_bin = pth_indvaug_bin;
-fitin = orderfields(fitin);
+
+
+fitin = orderfields_recursive(fitin);
 

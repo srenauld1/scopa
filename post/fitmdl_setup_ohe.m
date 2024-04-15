@@ -1,27 +1,27 @@
-function ann = fitmdl_setup_ohe(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron)
+function fnet = fitmdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron)
 
 hotpower = 1;
-if any(contains(annspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
+if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
     hotpower = num_dim_indvpre;
 end
-if any(contains(annspec.independently_discretized_hot_dims{ni}, 't')) %time (model samples into the past)
+if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 't')) %time (model samples into the past)
     hotpower = hotpower*num_samp_mdl;
 end
-if any(contains(annspec.independently_discretized_hot_dims{ni}, 'n')) %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
+if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'n')) %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
     hotpower = hotpower*num_neuron; %is this right?
 end
-maxhotcombos = annspec.numbinhot{ni}^hotpower;
+maxhotcombos = fnetspec.numbinhot{ni}^hotpower;
 if maxhotcombos>1000
     error("more than 1000 combinations for hot encoding; you may have made a mistake")
 end
-levs_each_hot = repmat({[1:annspec.numbinhot{ni}]}, [hotpower 1]);
+levs_each_hot = repmat({[1:fnetspec.numbinhot{ni}]}, [hotpower 1]);
 hotcombos = cell2mat(table2cell(combinations(levs_each_hot{:})));
-if strcmp(annspec.independently_discretized_hot_dims{ni}, 'x') %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
+if strcmp(fnetspec.independently_discretized_hot_dims{ni}, 'x') %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
     hotcombos = repmat(hotcombos, [1 num_dim_indvpre]);
 end
 
 
-ann.actfun{ni} = @ohe_nonlinearity;
+fnet.actfun{ni} = @ohe_nonlinearity;
 
 
 %% nested nonlinearity functions

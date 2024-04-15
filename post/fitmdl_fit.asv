@@ -14,8 +14,8 @@ if startsWith(modeltype, 'svd')
     opop.optimp.objective = @objective_svd;
 else
     if strcmp(opop.optimp.solver, 'fmincon')
-        % opop.optimp.objective = @(pars) sum(( depv - opop.mdl(pars, indv, supp) ).^2); %sum of squared error; fmincon requires objective objective to define loss explicitly
-        opop.optimp.objective = @(pars) mse( depv, opop.mdl(pars, indv, supp)); %mse; fmincon requires objective objective to define loss explicitly
+        opop.optimp.objective = @(b) sum(( depv - opop.mdl(b, indv, supp) ).^2); %fmincon requires objective objective to define loss explicitly
+        opop.optimp.objective = @(b) mse( depv, opop.mdl(b, indv, supp)); %fmincon requires objective objective to define loss explicitly
     else
         opop.optimp.objective = opop.mdl; %fmincon requires objective objective to define loss explicitly
     end

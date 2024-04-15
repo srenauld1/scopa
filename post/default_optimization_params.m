@@ -1,27 +1,26 @@
-function optout = default_optimization_options(optin)
+function parsout = default_optimization_params(parsin)
 
 %currently only uses one global optimization solver, GlobalSearch
 
-% patternsearch satisfies linear constraints at intermediate iterations . . . does globalsearch?
+% patternsearch satisfies linear constraints at intermediate iterations, does globalsearch?
 
-
-if ~exist('optin', 'var') || ~isfield(optin, 'slvrl')
+if ~exist('parsin', 'var') || ~isfield(parsin, 'slvrl')
     slvrl = 'fmincon';
 else
-    slvrl = optin.slvrl;
+    slvrl = parsin.slvrl;
 end
-if ~exist('optin', 'var') || ~isfield(optin, 'max_iter_local')
+if ~exist('parsin', 'var') || ~isfield(parsin, 'max_iter_local')
     max_iter_local = 1000;
 else
-    max_iter_local = optin.max_iter_local;
+    max_iter_local = parsin.max_iter_local;
 end
-if ~exist('optin', 'var') || ~isfield(optin, 'max_iter_global')
+if ~exist('parsin', 'var') || ~isfield(parsin, 'max_iter_global')
     max_iter_global = 3;
 else
-    max_iter_global = optin.max_iter_global;
+    max_iter_global = parsin.max_iter_global;
 end
 
-mdl = []; %this is the model function 
+mdl = []; %this is the model function
 
 
 %% global solver options
@@ -93,46 +92,8 @@ optimp.nonlcon = [];
 optimp.solver = slvrl;
 optimp.options = optiml;
 
-
-
-
 %% assign to struct
 
-
-s = whos;
-par_defaults = cell2struct({s.name}.',{s.name});
-par_defaults = rmfield(par_defaults, 'optin');
-eval(structvars(par_defaults,0).');
-par_defaults = orderfields(par_defaults);
-
-for ofi = 1:length(optin) %for struct index in optin
-    optout(ofi) = param_struct_recurse(optin(ofi), par_defaults);
-    optout(ofi) = orderfields(optout(ofi));
-end
-
+update_param_struct; %call this script to overwrite any default params above with fields in parsin, and organize into parsout
 
 end
-
-function optout = param_struct_recurse(optin, optout)
-
-    fn = fieldnames(optout);
-    for fi = 1:length(fn)
-        if isfield(optin, fn{fi})
-            if isstruct(optin.(fn{fi}))
-                if ~isstruct(optout.(fn{fi})) && ~isobject(optout.(fn{fi})) %optim struct can refer to object not struct 
-                    error("input struct where there is no default struct")
-                else
-                    optout.(fn{fi}) = param_struct_recurse(optin.(fn{fi}), optout.(fn{fi}));
-                end
-            else
-                if ~isempty(optin.(fn{fi}))
-                    optout.(fn{fi}) = optin.(fn{fi}); %overwrite default with user-defined input
-                end
-            end
-        end
-    end
-
-end
-
-
-

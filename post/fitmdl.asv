@@ -1,4 +1,4 @@
-function [ft, gof, indvpref] = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
+function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
 
 % for docs, see file fitmdl_notes.m
 
@@ -49,7 +49,7 @@ fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix);
 
 %% set up model fitting and plotting options
 
-[fitin, opts] = fitmdl_setup(fitin, opts, md.dtmni, pth_fitdata_prefix);
+fitin.opop = fitmdl_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvpre, opts.modeltype, opts.chopt, md.dtmni, fitin.stapth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 
@@ -57,5 +57,5 @@ for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv acco
     fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
 end
 
-fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
+% fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
 

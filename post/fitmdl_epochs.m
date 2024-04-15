@@ -15,7 +15,7 @@ num_samp_mdl = fitin.num_samp_mdl;
 num_samp_lag = fitin.num_samp_lag;
 pth_indvaug_bin = fitin.pth_indvaug_bin;
 pth_depvpre_bin = fitin.pth_depvpre_bin;
-supp = fitin.supp;
+supp = fitin.opop.supp;
 opop = fitin.opop;
 
 epochinds_str = sprintf('%.0f_', epochinds);
@@ -28,8 +28,14 @@ fitin.fits.(epochinds_str) = fitmdl_define_indices(epochinds_ts_i_m, num_samp_md
 %% loop over train/validation sets, for k-fold cross-validation
 
 valnames = fieldnames(fitin.fits.(epochinds_str));
+disp(['validation fold is ' num2str(validation_fold) ' and should ideally be ' num2str(sqrt(supp.num_par_total)) ])
 
-for vfi = 1:numel(valnames)
+ft_mean_allval = [];
+gof_mean_allval = [];
+gof_val_mean_allval = [];
+indvpref_mean_allval = [];
+
+for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise it matches number validation sets
 
     inds = fitin.fits.(epochinds_str).(valnames{vfi});
 
@@ -45,7 +51,7 @@ for vfi = 1:numel(valnames)
 
     %% create save path, check if saved model already exists
 
-    [dofit, pth_fitdata, ft, depvp, gof, depv_good_inds] = load_fitdata(pth_fitdata_prefix, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
+    [dofit, pth_fitdata, ft, depvp, gof, gof_val, depv_good_inds] = load_fitdata(pth_fitdata_prefix, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
 
     %% create synthetic data to test optimization (optional)
 
@@ -72,7 +78,7 @@ for vfi = 1:numel(valnames)
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        parfor ri = 1:num_dim_depvpre
+        for ri = 1:num_dim_depvpre
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
@@ -98,6 +104,7 @@ for vfi = 1:numel(valnames)
     end
     indvpref(~depv_good_inds) = nan;
 
+    gof_mean_allrois = mean(gof); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
     gof_val_mean_allrois = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
 
 
@@ -107,13 +114,27 @@ for vfi = 1:numel(valnames)
     fitin.fits.(epochinds_str).(valnames{vfi}).depvp = depvp;
     fitin.fits.(epochinds_str).(valnames{vfi}).gof = gof;
     fitin.fits.(epochinds_str).(valnames{vfi}).gof_val = gof_val;
+    fitin.fits.(epochinds_str).(valnames{vfi}).gof_mean_allrois = gof_mean_allrois;
     fitin.fits.(epochinds_str).(valnames{vfi}).gof_val_mean_allrois = gof_val_mean_allrois;
     fitin.fits.(epochinds_str).(valnames{vfi}).depv_good_inds = depv_good_inds;
     fitin.fits.(epochinds_str).(valnames{vfi}).indvpref = indvpref;
     fitin.fits.(epochinds_str).(valnames{vfi}).depvstd = depvstd;
     fitin.fits.(epochinds_str).(valnames{vfi}).pth_fitdata = pth_fitdata;
 
+    ft_mean_allval = cat(ndims(ft)+1, ft_mean_allval, ft);
+    gof_mean_allval = cat(ndims(gof)+1, gof_mean_allval, gof);
+    gof_val_mean_allval = cat(ndims(gof_val)+1, gof_val_mean_allval, gof_val);
+    indvpref_mean_allval = cat(ndims(indvpref)+1, indvpref_mean_allval, indvpref);
+
 end
+
+fitin.fits.(epochinds_str).ft_mean_allval = mean(ft_mean_allval, ndims(ft_mean_allval), 'omitmissing');
+fitin.fits.(epochinds_str).gof_mean_allval = mean(gof_mean_allval, ndims(gof_mean_allval), 'omitmissing');
+fitin.fits.(epochinds_str).gof_val_mean_allval = mean(gof_val_mean_allval, ndims(gof_val_mean_allval), 'omitmissing');
+fitin.fits.(epochinds_str).indvpref_mean_allval = mean(indvpref_mean_allval, ndims(indvpref_mean_allval), 'omitmissing');
+
+
+fitin = orderfields_recursive(fitin);
 
 
 

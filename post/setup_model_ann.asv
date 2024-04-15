@@ -23,7 +23,7 @@ supp.num_total_model_functions = 0;
 supp.max_num_fun_per_neuron = 0;
 pindmax_prev = 0;
 
-%loop over ann positions (layers and channels), accumulating param starting point (x0) and optional constraints
+%loop over fnet positions (layers and channels), accumulating param starting point (x0) and optional constraints
 fnl = fieldnames(annspec);
 for li = 1:length(fnl)
     fnc = fieldnames(annspec.(fnl{li}));
@@ -51,7 +51,7 @@ for li = 1:length(fnl)
             pindmax_prev = max(vertcat(pindmax_prev, vec(cell2mat(tmpcl)))); %max param index for single position (layer+channel)
         end
 
-        supp.ann.(fnl{li}).(fnc{ci}) = anntmp;
+        supp.fnet.(fnl{li}).(fnc{ci}) = anntmp;
         supp.num_neuron_total = supp.num_neuron_total + size(anntmp.annspec, 1);
         supp.num_total_model_functions = supp.num_total_model_functions + anntmp.max_num_fun_per_neuron;
         supp.max_num_fun_per_neuron = max(supp.max_num_fun_per_neuron, anntmp.max_num_fun_per_neuron);
@@ -64,15 +64,15 @@ if any(freeformflag) %set up nonlinear constraint for freeform linear function
     
     nlcon = @nlcon_l1norm;
 
-    %simplify nested function nlcon by giving it a simpler param index array that what is saved in supp.ann.pind (but keep that for use in fit_ann)
+    %simplify nested function nlcon by giving it a simpler param index array that what is saved in supp.fnet.pind (but keep that for use in fit_ann)
     count = 0;
-    fnl = fieldnames(supp.ann);
+    fnl = fieldnames(supp.fnet);
     for li = 1:length(fnl)
-        fnc = fieldnames(supp.ann.(fnl{li}));
+        fnc = fieldnames(supp.fnet.(fnl{li}));
         for ci = 1:length(fnc)
-            for ni = 1:length(supp.ann.(fnl{li}).(fnc{ci}).pind)
+            for ni = 1:length(supp.fnet.(fnl{li}).(fnc{ci}).pind)
                 count = count+1;
-                pind_Lfree{count} = supp.ann.(fnl{li}).(fnc{ci}).pind(ni).L; %make L1 norm = 1 for linear filters with 'freeform' flag
+                pind_Lfree{count} = supp.fnet.(fnl{li}).(fnc{ci}).pind(ni).L; %make L1 norm = 1 for linear filters with 'freeform' flag
             end
         end
     end
@@ -107,7 +107,7 @@ linineq_b = double(linineq_b);
 
 end
 
-function [lbnd, ubnd, linineq_A, linineq_b, x0, ann, freeformflag] = ...
+function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
     setup_model_ann_oneposition(annspec, indv, depv, num_samp_mdl, dt, num_dim_indvpre, padlen_sec)
 
 % in annspec, strlin for linear functions, stract for activation (nonlinear) functions
@@ -204,7 +204,7 @@ for ni = 1:num_neuron
     end
 
 
-    ann.nl_hot{ni} = [];
+    fnet.nl_hot{ni} = [];
     if strcmp(annspec.stract{ni}, 'a') || strcmp(annspec.stract{ni}, 'y') %skip activation function
         lbnd_nonlin = [];
         ubnd_nonlin = [];
@@ -218,7 +218,7 @@ for ni = 1:num_neuron
         ubnd_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(2);
         x0_nonlin = ones(1, annspec.numbinhot{ni})*hotnonlin_weights(3);
 
-        ann = setup_model_onehot(ann, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron);
+        fnet = setup_model_onehot(fnet, annspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron);
 
     end
 
@@ -255,11 +255,11 @@ else
     freeformflag = 0;
 end
 
-ann.num_neuron = num_neuron;
-ann.annspec = annspec;
-ann.pind = pind;
-ann.max_num_fun_per_neuron = max_num_fun_per_neuron;
-ann.linfun = @linear_filter_1d;
+fnet.num_neuron = num_neuron;
+fnet.annspec = annspec;
+fnet.pind = pind;
+fnet.max_num_fun_per_neuron = max_num_fun_per_neuron;
+fnet.linfun = @linear_filter_1d;
 
 
 %% nested linear filter functions

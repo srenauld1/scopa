@@ -1,7 +1,7 @@
 function fitmdl_plots_summary(fitin, opts, roiinfo, stackmean)
 
 plt = fitin.plt;
-supp = fitin.supp;
+supp = fitin.opop.supp;
 
 mdl = fitin.opop.mdl;
 num_dim_depvpre = fitin.num_dim_depvpre;

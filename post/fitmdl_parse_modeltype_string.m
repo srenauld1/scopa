@@ -1,8 +1,8 @@
-function annspec = parse_model_string(modeltype, chopt, num_dim_indvpre)
+function fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre)
 
 %right now order of characters within an underscore doesn't matter, so the code doesn't treat order 
 
-% right now channel parsing "works" but the ann is not optimized for multiple layers, so how channel and layer specification works is not super intuitive 
+% right now channel parsing "works" but the fnet is not optimized for multiple layers, so how channel and layer specification works is not super intuitive 
 
 chopt.lay = cell2mat(chopt.lay);
 chopt.chan = cell2mat(chopt.chan);
@@ -23,7 +23,7 @@ numchan_total_currlay = num_dim_indvpre; %total for input layer, wll be updated 
 prevlayer = 1;
 allchan = [];
 spl = strsplit(modeltype, '_');
-if strcmp(spl{1}, 'ann')
+if strcmp(spl{1}, 'fnet')
 
     tmp = find(~cellfun(@isempty, regexp(spl, exprpos)));
 
@@ -118,12 +118,12 @@ if strcmp(spl{1}, 'ann')
 
         for ci = 1:length(channel)
             channelfield = ['C' num2str(channel(ci))];
-            annspec.(layerfield).(channelfield) = spec_oneposition;
+            fnetspec.(layerfield).(channelfield) = spec_oneposition;
             if ci<numchan_total_currlay %if hot type 'x', only use on last channel
                 removehotinds = ~cellfun(@isempty, regexp(spec_oneposition.stract, exprhotx));
-                annspec.(layerfield).(channelfield).stract(removehotinds) = {'y'};
-                annspec.(layerfield).(channelfield).numbinhot(removehotinds) = {[]};
-                annspec.(layerfield).(channelfield).independently_discretized_hot_dims(removehotinds) = {[]};
+                fnetspec.(layerfield).(channelfield).stract(removehotinds) = {'y'};
+                fnetspec.(layerfield).(channelfield).numbinhot(removehotinds) = {[]};
+                fnetspec.(layerfield).(channelfield).independently_discretized_hot_dims(removehotinds) = {[]};
             end
         end
 

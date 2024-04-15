@@ -1,5 +1,5 @@
 
-function [depvp, hax, binmns] = mdl_ann(pars, indv, supp, optin)
+function [depvp, hax, binmns] = mdl_fnet(pars, indv, supp, optin)
 
 %could change how indv is organized before this function for speed (since
 %it's organized for pure linear fits right now)
@@ -96,60 +96,43 @@ for li = 1:num_lay
 
     for ci = 1:num_chan %1:supp.num_dim_indvpre %loop over input channels (indv dims in layer 1)
 
-        anntmp = supp.fnet.(fnl{li}).(fnc{ci});
+        fnettmp = supp.fnet.(fnl{li}).(fnc{ci});
 
         ivinds = [1:supp.num_samp_mdl]*supp.num_dim_indvpre-(supp.num_dim_indvpre-ci); %since indv is organized this way, dims alternate in vec
         indvtmp = indv(:,ivinds);
 
-        for ni = 1:anntmp.num_neuron %supp.num_neuron %loop over artificial neurons
+        for ni = 1:fnettmp.num_neuron %supp.num_neuron %loop over artificial neurons
 
             binmns = [];
 
             neuron_count_single_layer = neuron_count_single_layer+1;
 
-            tmptmp = num2cell(pars(anntmp.pind(ni).L));
-            if length(tmptmp)==3
-                tmp = tmptmp(1:2);
-                filtbias = tmptmp{3};
-            else
-                tmp = tmptmp;
-                filtbias = 0;
-            end
-            if strcmp(anntmp.annspec.strlin{ni}, 'l')
+            tmp = num2cell(pars(fnettmp.pind(ni).L));
+            
+            if strcmp(fnettmp.fnetspec.strlin{ni}, 'l')
                 error("how to deal with this when ohe nonlin?")
-            else
-                if strcmp(anntmp.annspec.strlin{ni}, 'f')
-                    filt = cell2mat(tmp); %optimize filter weights directly
-                elseif strcmp(anntmp.annspec.strlin{ni}, 's')
-                    flagdiff = 0;
-                    filt = anntmp.linfun(flagdiff, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
-                elseif strcmp(anntmp.annspec.strlin{ni}, 'd')
-                    flagdiff = 1;
-                    filt = anntmp.linfun(flagdiff, doplots_filt, tmp{:});
-                    % 'differentiating_old' approach here (messier) ---> filt = linear_filter_1d_deprecated(supp.num_samp_mdl, filtnorm, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
-                end
-                depvptmp = sum(indvtmp.*filt, 2); %apply linear filter
-                depvptmp = depvptmp + filtbias;
+            elseif any(strcmp(fnettmp.fnetspec.strlin{ni}, {'f', 's', 'd'}))
+                [depvptmp, filt] = fnettmp.linfun(indvtmp, fnettmp.fnetspec.strlin{ni}, doplots_filt, tmp{:}); %make linear filter, tau1, tau2, shift, tc, norm, numsamp, doplots
             end
 
             if make_figure
                 depvplin = depvptmp; %save this for plotting after optimization, don't want to add variable if not plotting to keep optimization code light
             end
 
-            tmp = num2cell(pars(anntmp.pind(ni).N));
-            if ~isempty(tmp) || startsWith(anntmp.annspec.stract{ni}, 'h') || strcmp(anntmp.annspec.stract{ni}, 'y') 
-                if startsWith(anntmp.annspec.stract{ni}, 'h') || strcmp(anntmp.annspec.stract{ni}, 'y') 
-                    if isempty(anntmp.annspec.independently_discretized_hot_dims{ni}) || strcmp(anntmp.annspec.independently_discretized_hot_dims{ni}, 'x')
+            tmp = num2cell(pars(fnettmp.pind(ni).N));
+            if ~isempty(tmp) || startsWith(fnettmp.fnetspec.stract{ni}, 'h') || strcmp(fnettmp.fnetspec.stract{ni}, 'y') 
+                if startsWith(fnettmp.fnetspec.stract{ni}, 'h') || strcmp(fnettmp.fnetspec.stract{ni}, 'y') 
+                    if isempty(fnettmp.fnetspec.independently_discretized_hot_dims{ni}) || strcmp(fnettmp.fnetspec.independently_discretized_hot_dims{ni}, 'x')
                         depvptmp2(:,neuron_count_single_layer) = depvptmp;
                         depvptmp(:) = 0;
-                        if strcmp(anntmp.annspec.independently_discretized_hot_dims{ni}, 'x') %after all input channels and current neurons
-                            [depvptmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, depvptmp2, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                        if strcmp(fnettmp.fnetspec.independently_discretized_hot_dims{ni}, 'x') %after all input channels and current neurons
+                            [depvptmp, binmns] = fnettmp.actfun{ni}(doplots_hot, outflag, pthspre, depvptmp2, fnettmp.fnetspec.numbinhot{ni}, fnettmp.fnetspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
                         end
-                    elseif ismember(anntmp.annspec.independently_discretized_hot_dims{ni}, {'c', 't', 'n'})
-                        [depvptmp, binmns] = anntmp.actfun{ni}(doplots_hot, outflag, pthspre, depvptmp, anntmp.annspec.numbinhot{ni}, anntmp.annspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
+                    elseif ismember(fnettmp.fnetspec.independently_discretized_hot_dims{ni}, {'c', 't', 'n'})
+                        [depvptmp, binmns] = fnettmp.actfun{ni}(doplots_hot, outflag, pthspre, depvptmp, fnettmp.fnetspec.numbinhot{ni}, fnettmp.fnetspec.independently_discretized_hot_dims{ni}, cell2mat(tmp));
                     end
                 else
-                    depvptmp = anntmp.actfun{ni}(depvptmp, tmp{:}); %apply activation function
+                    depvptmp = fnettmp.actfun{ni}(depvptmp, tmp{:}); %apply activation function
                 end
             end
             depvp = depvp + depvptmp; %sum outputs across loop
@@ -158,11 +141,11 @@ for li = 1:num_lay
             if make_figure
 
                 sfi_tmp = 1;
-                sfi = sfi_tmp+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
+                sfi = sfi_tmp+fnettmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
                 sfi = sfi+supp.starting_hax;
 
                 if framecount==1
-                    if strcmp(anntmp.annspec.stract{ni}, 'y') || startsWith(anntmp.annspec.stract{ni}, 'h')
+                    if strcmp(fnettmp.fnetspec.stract{ni}, 'y') || startsWith(fnettmp.fnetspec.stract{ni}, 'h')
                         filtcol = plotcols(neuron_count_single_layer,:);
                     else
                         filtcol = plotcols(1,:);
@@ -181,11 +164,11 @@ for li = 1:num_lay
                     hax{sfi}.Children.YData = filt;
                 end
 
-                lpars_adj = pars(anntmp.pind(ni).L);
+                lpars_adj = pars(fnettmp.pind(ni).L);
                 lpars_adj(2) = lpars_adj(2) * supp.dtmni;
                 pars_str_L = sprintf('%.2f,  ', lpars_adj);
                 pars_str_L = pars_str_L(1:end-3);% strip final comma
-                pars_str_N = sprintf('%.2f,  ', pars(anntmp.pind(ni).N));
+                pars_str_N = sprintf('%.2f,  ', pars(fnettmp.pind(ni).N));
                 pars_str_N = pars_str_N(1:end-3);% strip final comma
                 if ~isempty(pars_str_N)
                     pars_str_N = ['::' pars_str_N];% strip final comma
@@ -196,7 +179,7 @@ for li = 1:num_lay
                 if ~isempty(pars_str_N)
 
                     sfi_tmp = 2;
-                    sfi = sfi_tmp+anntmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
+                    sfi = sfi_tmp+fnettmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
                     sfi = sfi+supp.starting_hax;
 
                     [depvplin, idx] = sort(depvplin);
@@ -204,9 +187,9 @@ for li = 1:num_lay
                     if framecount==1
                         if binmns
                             % scatter3(hax{sfi}, depvptmp2(:,1), depvptmp2(:,2), depvptmp, 'filled'); %sorting prevents an odd plotting error
-                            % scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(anntmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
+                            % scatter3(hax{sfi}, binmns(1,:), binmns(2,:), pars(fnettmp.pind(ni).N), 'filled'); %sorting prevents an odd plotting error
                             for bmi = 1:size(binmns, 1)
-                                scatter(hax{sfi}, binmns(bmi,:), pars(anntmp.pind(ni).N), 15, plotcols(bmi,:), 'filled'); hold on; %sorting prevents an odd plotting error
+                                scatter(hax{sfi}, binmns(bmi,:), pars(fnettmp.pind(ni).N), 15, plotcols(bmi,:), 'filled'); hold on; %sorting prevents an odd plotting error
                             end
                         else
                             plot(hax{sfi}, depvplin, depvptmp(idx)); %sorting prevents an odd plotting error
@@ -215,10 +198,10 @@ for li = 1:num_lay
                         if binmns
                             for bmi = 1:size(binmns, 1)
                                 hax{sfi}.Children(bmi).XData = binmns(bmi,:);
-                                hax{sfi}.Children(bmi).YData = pars(anntmp.pind(ni).N);
+                                hax{sfi}.Children(bmi).YData = pars(fnettmp.pind(ni).N);
                                 % hax{sfi}.Children(bmi).XData = binmns(bmi,:);
                                 % hax{sfi}.Children(bmi).YData = binmns(bmi,:);
-                                % hax{sfi}.Children(bmi).ZData = pars(anntmp.pind(ni).N);
+                                % hax{sfi}.Children(bmi).ZData = pars(fnettmp.pind(ni).N);
                             end
                         else
                             hax{sfi}.Children.XData = depvplin;

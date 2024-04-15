@@ -176,7 +176,7 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
                 --caiman functioal roi loading and selection, and optional clustering according to morphological rois 
                 --roi response normalization 
                 --bump computation: fitting roi preferred heading, resampling compass, then vector average, using any type of roi 
-                --input/output timeseries model fitting: various model architectures (including ann) using matlab global optimization toolbox; models can be fit to each roi, or each pixel, or both, with various plots for comparison
+                --input/output timeseries model fitting: various model architectures (including fnet) using matlab global optimization toolbox; models can be fit to each roi, or each pixel, or both, with various plots for comparison
                 --2d or 3d scatterplots for all available timeseries
                 --various diagnostic figures throughout these submodules aimed at building intuition for the data 
 

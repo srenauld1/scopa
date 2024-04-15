@@ -102,7 +102,7 @@ elseif startsWith(modeltype, 'gaussian')
             gethr_native = @(limi,limd) limd;
     end
 
-elseif startsWith(modeltype, 'ann')
+elseif startsWith(modeltype, 'fnet')
 
     switch huestr
         case 'loc'

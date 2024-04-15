@@ -4,9 +4,13 @@ function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
 
 resptmp = fitin.depvpre;
 
-[~, ~, prefang] = fitmdl(stack, fitin, roiinfo, md, fitopt);
+fitin = fitmdl(stack, fitin, roiinfo, md, fitopt);
 
-prefang = prefang{1}(:)';
+fn = fieldnames(fitin.fits);
+if numel(fn)>1
+    error("you've requested multiple fits to different epochinds, but map_rois_to_head_direction operates on a single fit; decide which epochinds set you want to use to compute bump")
+end
+prefang = fitin.fits.(fn{1}).indvpref_mean_allval(:)'; %row vector of preferred angle;
 
 
 %% resample functional domain

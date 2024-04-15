@@ -103,14 +103,14 @@ eval(structvars(par_defaults,0).');
 par_defaults = orderfields(par_defaults);
 
 for ofi = 1:length(optin) %for struct index in optin
-    optout(ofi) = param_struct_recurse(optin(ofi), par_defaults);
+    optout(ofi) = update_param_struct(optin(ofi), par_defaults);
     optout(ofi) = orderfields(optout(ofi));
 end
 
 
 end
 
-function optout = param_struct_recurse(optin, optout)
+function optout = update_param_struct(optin, optout)
 
     fn = fieldnames(optout);
     for fi = 1:length(fn)
@@ -119,7 +119,7 @@ function optout = param_struct_recurse(optin, optout)
                 if ~isstruct(optout.(fn{fi})) && ~isobject(optout.(fn{fi})) %optim struct can refer to object not struct 
                     error("input struct where there is no default struct")
                 else
-                    optout.(fn{fi}) = param_struct_recurse(optin.(fn{fi}), optout.(fn{fi}));
+                    optout.(fn{fi}) = update_param_struct(optin.(fn{fi}), optout.(fn{fi}));
                 end
             else
                 if ~isempty(optin.(fn{fi}))

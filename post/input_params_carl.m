@@ -2,7 +2,7 @@ function opt = input_params_carl()
 
 
 
-% struct 'opt' holds all input params 
+% struct 'opt' holds all input params
 % substructures within opt are mostly used within single functions called from a2p
 
 %some params below have suffix '_str'; these are string inputs (for user input convenience) that are mapped later to numeric variables
@@ -60,19 +60,19 @@ opt.mroi.doplots = 0; %doplots in make_morphological_rois
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
-% postcluster normalization is applied after clustering 
-% clustering means averaging data for all pixels or caiman rois within a morphological roi   
+% postcluster normalization is applied after clustering
+% clustering means averaging data for all pixels or caiman rois within a morphological roi
 % precluster and postcluster are each a list of strings specifying different
-% normalization methods, each must have at least one string (use 'f' for no normalization) 
+% normalization methods, each must have at least one string (use 'f' for no normalization)
 
 % below xxx, yyy, zzz, and www, are 3-character strings converted to integers, string range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
 % all normalizations are applied to individual pixel or roi timeseries
 % normalization strings are:
-    % 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if www is 000 then f0 is computed across the entire timeseries, not a sliding window 
-    % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
-    % 'z' % zscore
-    % 'nn' % nonnegative (subtract min)
-    % 'box'... %box-cox
+% 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if www is 000 then f0 is computed across the entire timeseries, not a sliding window
+% 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
+% 'z' % zscore
+% 'nn' % nonnegative (subtract min)
+% 'box'... %box-cox
 
 opt.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 opt.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
@@ -106,7 +106,7 @@ opt.froi.norm.doplots = 0;
 
 %params for stimulus/fictrac processing
 opt.ftrac.include_behavior = 1; %0 to skip behavior
-opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim 
+opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
 opt.ftrac.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
 opt.ftrac.dark_stim_end_duration = 60; %final seconds
 opt.ftrac.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
@@ -122,19 +122,19 @@ opt.ftrac.doplots = 0;
 % a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from opt.pf.bump.fit.depvpre_str) and all matches from opt.pf.bump.fit.indvpre_str
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
 % if opt.pf.bump.domain_methodis 'functional', these preferred headings are used as the angle, and opt.pf.bump.fit.depvpre_str as the magnitude, in computing pva
-% if the regionex in opt.pf.bump.fit.depvpre_str is in opt.pf.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude) 
-% if opt.pf.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range 
+% if the regionex in opt.pf.bump.fit.depvpre_str is in opt.pf.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if opt.pf.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 % opt.pf.bump.fit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
-    %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
-    %the selected timeseries will be assigned to depv
-    %selecting indv uses the same approach
-    %depv and indv are matched at the outer cell level
-    %at the inner cell level, there can be multiple field specifiers (fieldspec)
-    %each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'  
-    %depv and indv are composed of all timeseries matching fieldspecs
-    %if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries 
-    %if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
+%this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
+%the selected timeseries will be assigned to depv
+%selecting indv uses the same approach
+%depv and indv are matched at the outer cell level
+%at the inner cell level, there can be multiple field specifiers (fieldspec)
+%each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'
+%depv and indv are composed of all timeseries matching fieldspecs
+%if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries
+%if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
 % opt.pf.bump.fit(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
@@ -146,7 +146,7 @@ opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. t
 opt.pf.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.pf.bump.numcluster_for_bump_domain_resample_str = {'pb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fit.depvpre_str  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
-opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass 
+opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
 opt.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 opt.pf.bump.doplots = 0;
@@ -174,94 +174,99 @@ opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
 % modeling depv in fitmdl function
 % fitmdl fits model describing how indv is transformed into depv
 
-% opt.fit.indvpre_str.(regionex) specifies which input to use for fit, 
+% opt.fit.indvpre_str.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
 % for example opt.fit.indvpre_str.no_r = {{'ball', 'velrsd'}, {'bump',
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
 % two-dimensional input, the first dimension being ball.velrsd, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fit.regionpat_fit
-%since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl  
+%since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
 %since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
 %subfield not listed, uses all, like wildcard
 
 % to specify independent and dependent variables for model fitting, use opt.fit.indvpre_str and opt.fit.depvpre_str
-    % format opt.fit(i).depvpre_str{j} = {fieldspec1, fieldspec2, ... fieldspecN};
-    % format opt.fit(i).indvpre_str{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+% format opt.fit(i).depvpre_str{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+% format opt.fit(i).indvpre_str{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
-% where fieldspec is a string, with substrings separated by comma then space 
-% fieldspec specifies the data to use from struct 'ts', which stores various timeseries 
-% for example, for ts.resp, fieldspec requires 4 delimiters (', '), since there are 4 levels in the struct ts.resp, 
-% namely ts.resp.tsclass.regionex.parsex.normex, 
+% where fieldspec is a string, with substrings separated by comma then space
+% fieldspec specifies the data to use from struct 'ts', which stores various timeseries
+% for example, for ts.resp, fieldspec requires 4 delimiters (', '), since there are 4 levels in the struct ts.resp,
+% namely ts.resp.tsclass.regionex.parsex.normex,
 % so fieldspec would follow the pattern ['tsclass, regionex, parsex, normex']
-% where tsclass is a field in the first level of struct 'ts' 
-% regionex is region extraction string in opt.main.regionex_all above, 
-% parsex is extraction param string 
-% normex is normalization param string 
+% where tsclass is a field in the first level of struct 'ts'
+% regionex is region extraction string in opt.main.regionex_all above,
+% parsex is extraction param string
+% normex is normalization param string
 % for ts.ball and ts.vis, fieldspec only has two levels, since ball and vis are not derived from specific brain regions, or roi extraction runs
 % for ts.bump, fieldspec has 6 levels (the same four as bump.resp, with 2 more specifying bump domain, and bump parameter, following this pattern
 % ['tsclass, regionex, parsex, normex, bumpdomain, bumpparam']
 % for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used
 % you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
-% opt.fit.indvpre_str and opt.fit.depvpre_str are matched by index i in opt.fit(i) 
+% opt.fit.indvpre_str and opt.fit.depvpre_str are matched by index i in opt.fit(i)
 % within a single opt.fit(i).indvpre_str or opt.fit(i).depvpre_str, you can specify multiple cells with index j, in single opt.fit(i).indv{j} or opt.fit(i).depvpre_str{j}
-% indvpre_str and depvpre_str are matched by index j if opt.fit(i).depv_indv_combine is 'each', 
+% indvpre_str and depvpre_str are matched by index j if opt.fit(i).depv_indv_combine is 'each',
 % if opt.fit(1).depv_indv_combine is 'any', then all combinations of single opt.fit(i).indv and single opt.fit(i).depv are used
-% for example 
+% for example
 %    opt.fit(1).depvpre_str{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
 %    opt.fit(1).indvpre_str{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
-opt.fit.do_predict = 1; %0 to skip fit_mdl
-opt.fit(1).depvpre_str{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
-opt.fit(1).depvpre_str{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do_predict will be set to false
+opt.fit.do = 1; %0 to skip fit_mdl
+opt.fit(1).depvpre_str{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+opt.fit(1).depvpre_str{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 % opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
 opt.fit(1).indvpre_str{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
 opt.fit(1).indvpre_str{2} = {['ball, velrsd'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
 opt.fit(1).indvpre_str{3} = {['ball, velrsd']};
 
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
-opt.fit(1).epochinds = {[2 3 4]}; 
-opt.fit(2).epochinds = {[2]};
+opt.fit(1).epochinds = {[2 3 4]};
 opt.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
 % notes about opt.fit.modeltypes
 
 % for modeltypes starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); for example 'svd22' accounts for 22% of variance, i.e. in objective_svd pvar=0.22
 
-% for modeltypes starting with prefix ann*, suffix denotes arhcitecture,
-    % see struct 'chopt' in default_fit_params for current list of characters, for readability, docs below refer to those characters 
-    % the architecture string provides a compact representation of the model, useful for saving data and making figures, and also avoids having params here that are conditional, ie only used for a given modeltype)
-    % architecture string syntax is:
-    %   ann_[position]_[neuron]*_[position]_[neuron]*
-    % where each position string is: 
-    %   L followed by number denoting layer (required)
-    %   then optional C followed by number denoting input channel (optional, if omitted, will apply the same arhcitecture to all channels in the layer)
-    % where each 'neuron' string (which can appear an arbitrary number of times after the position string), is: 
-    %   set of characters denoting parallel artificial neurons applied at the position denoted by the last position string; additional distinct neurons are separated by underscores, 
-    %   if the neuron string begins with a number, q, that neuron is repeated q times at its position
-    %   the neuron string must contain at least two characters (besides the optional initial quantifier, q), denoting linear function and nonlinear function 
-    %   if the neuron string contains more than 2 characters, then all combinations of listed types for both functions are applied to the input channel  
-        % linear filter functions:
-            % l: to skip/omit 'linear' function
-            % s: is for 'sum', monophasic linear filter (summation/integration)
-            % d: is for 'difference', biphasic linear filter (differentiation)
-            % f: is for 'free', unconstrained
-        % activation functions:
-            % a: to skip/omit 'activation' function 
-            % e: is for 'excitation', sigmoid with positive slope 
-            % i: is for 'inhibition', sigmoid with negative slope
-            % h: is for 'hot-encoding', unconstrained nonlinearity 
-            %   for suffix h, additional (required) integer suffix denotes number of bins (must be power of 2, for now)   
-            %   for suffix h, additional (optional) suffix denotes which, is any, dimensions are independently one-hot-encoded; 
-            %           'x' for 'none', to not independently hot-encode any dimension (bins apply to joint probability distribution of all upstream input)
-            %           'c' for 'channel' (each independent variable input to fitmdl, not necessarily >1) 
-            %           't' for 'time' (lags, or samples preceding response, not necessarily >1)  
-            %           'n' for 'neuron' (each artificial neuron, not necessarily >1)
-    % 'la' (skipping linear and activation functions) is not a valid neuron, and will be automatically removed if it arises from combining all specifiers 
-    % currently cannot stack multiple linear functions or multiple activation functions in a single 'neuron' (but you can stack multiple neurons into 'layers')
-    % example: ann_L1Cx_sieh16x applies 4 neurons to all input channels in a single layer; 4 neurons are all combinations of linear functions 's' and 'i'  
+% for modeltypes starting with prefix fnet*, suffix denotes arhcitecture,
+% see struct 'chopt' in default_fit_params for current list of characters, for readability, docs below refer to those characters
+% the architecture string provides a compact representation of the model, useful for saving data and making figures, and also avoids having params here that are conditional, ie only used for a given modeltype)
+% architecture string syntax is:
+%   fnet_[ [position]_[unit]* ]*
+% 'position' is the incoming signal's full path through the network; therefore, 'position' defines the signal operated on by function(s) specified by 'unit'
+% for specification simplicity/interpretability, the entire path of the upstream signal must be specified (this keeps 'position' numbers smaller, and easier to locate intuitively)
+% each 'position' string is comprised of 'layer' and 'channel', for each 'position' the incoming signal passes through
+%   'layer' is a capital letter; layers are in alphabetic order (input layer is 'A', first model functions, and their outputs, belong to layer 'B')
+%       layer cannot be omitted
+%   'channel' is a single-digit number (this specification approach assumes networks are relatively simple); for layer 'A', channel denotes input dimension; for layer 'B'-'Z', channel denotes previous layer's 'unit' index (which also corresponds to output index)
+%       channel can be omitted; if omitted, all channels in the specified layer are assumed
+%       hyphen denotes a contiguous range of channels
+% 'unit' is a single function, or multiple functions operating in series 
+% 'unit' string can appear any number of times after the position string
+% 'unit' string format is:
+%   set of characters denoting parallel 'units' applied at the position denoted by the last position string; additional distinct 'units' are separated by underscores,
+%   if the unit string begins with the letter 'x', then all combinations of listed types for both functions are applied to the input channel
+%   if the unit string begins with a number (after optional 'x'), q, the unit specified is repeated q times at the specified position
+%   the unit string can be comprised of any sequence of unit characters below
+%   if the position string is omitted, and only the unit string appears, the model is a single position model (which can be a single unit character too)
+% unit characters are:
+    % linear functions (can be multiple timepoints):
+        % s: is for 'sum', positive monophasic linear filter (summation/integration) (2 free params)
+        % d: is for 'difference', biphasic linear filter with positive lobe first (positive differentiation) (2 free params)
+        % s-: is for 'negative sum', negative monophasic linear filter (summation/integration) (2 free params)
+        % d-: is for 'negative difference', biphasic linear filter with negative lobe first (negative differentiation) (2 free params)
+        % f: is for 'free', unconstrained linear filter (param number matches number of incoming signal dimensions)
+    % nonlinear functions (all are instantaneous):
+        % e: is for 'excitation', generalized logistic function (can be sigmoid) with positive slope (5 free params, 2 constants)
+        % i: is for 'inhibition', generalized logistic function (can be sigmoid) with negative slope (5 free params, 2 constants)
+        % l: is for 'logistic', generalized logistic function (can be sigmoid) with no slope constraint (5 free params, 2 constants)
+        % v: is for 'vonmises'
+        % g: is for 'gaussian'
+        % h: is for 'hot-encoding', a non-parametric nonlinearity
+        %   h requires an additional integer suffix denoting number of bins (must be power of 2, for now); binning applies to the joint distribution of all dimensions of incoming signal (including time)
 
-opt.fit(1).modeltypes = 'ann_L1_sh16x'; 
+% example: fnet_L1Cx_sieh16x applies 4 neurons to all input channels in a single layer; 4 neurons are all combinations of linear functions 's' and 'i'
+
+opt.fit(1).modeltypes = 'fnet_L1_sh16x';
 opt.fit(1).plt.doplots = 100;
 
 opt.fit = default_fit_params(opt.fit);
@@ -270,7 +275,7 @@ opt.fit = default_fit_params(opt.fit);
 %% SCATTERPLOTS
 
 % params for scatterplots
-%scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots 
+%scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
 opt.scatter.do_scatter = 1;
 opt.scatter.epochinds = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 
@@ -290,14 +295,14 @@ opt.hires.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.hires.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.hires.gif.plot_stack_gif = 1;
 opt.hires.do_reg_plots = 1;
-opt.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores 
-opt.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores 
+opt.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
+opt.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
 opt.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
 opt.hires.caiman_hr_str = '*'; %empty to skip
 
 %% METADATA (TO ADD TO EXISTING METADATA FROM *metadatanew.mat)
 
-%params to be added to metadata struct that was created in python preprocessing 
+%params to be added to metadata struct that was created in python preprocessing
 opt.md.croptimeinds = [0 0]; %this is only relevant for carl's old project
 
 %% CARL'S OLD PROJECT
@@ -313,10 +318,6 @@ if strcmp(opt.main.recdate(1:2), '22') %override some settings for old project
     opt.fit.mdl_length_sec = 1.25;
 end
 
-%% order fields 
+%% order fields
 
-fn = fieldnames(opt);
-for fni = 1:length(fn)
-    opt.(fn{fni}) = orderfields(opt.(fn{fni}));
-end
-
+opt = orderfields_recursive(opt);

@@ -1,6 +1,6 @@
-function optout = default_fit_params(optin)
+function parsout = default_fit_params(parsin)
 
-do_predict = 1;
+do = 1;
 
 depvpre_str = {...
     ['resp, *, *, *'], ...
@@ -23,7 +23,7 @@ validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %
 
 slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';
-modeltype = 'ann_L1_sh16x'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
+modeltype = 'fnet_L1_sh16x'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
 
 excludeopts = '';
 
@@ -70,47 +70,23 @@ plt.doplots = 1;
 %%
 
 %character options for different categories in different modeltypes chopt.modeltypePrefix.category (modeltypePrefix means modeltype string before any optional underscore suffixes)
-chopt.ann.lay = {'L'};
-chopt.ann.chan = {'C'};
-chopt.ann.lin = {'l','s','d','f'};
-chopt.ann.act = {'a','e','i'};
-chopt.ann.hot = {'h'};
-chopt.ann.hotsuf = {'x','c','t','n'};
+chopt.fnet.lay = {'L'};
+chopt.fnet.chan = {'C'};
+chopt.fnet.lin = {'l','s','d','f'};
+chopt.fnet.act = {'a','e','i'};
+chopt.fnet.hot = {'h'};
+chopt.fnet.hotsuf = {'x','c','t','n'};
+
 
 %% assign to struct
 
 
-s = whos;
-par_defaults = cell2struct({s.name}.',{s.name});
-par_defaults = rmfield(par_defaults, 'optin');
-eval(structvars(par_defaults,0).');
-par_defaults = orderfields(par_defaults);
-
-for ofi = 1:length(optin) %for struct index in optin
-    optout(ofi) = param_struct_recurse(optin(ofi), par_defaults);
-end
+update_param_struct; %call this script to overwrite any default params above with fields in parsin, and organize into parsout 
 
 
 end
 
-function optout = param_struct_recurse(optin, optout)
 
-fn = fieldnames(optout);
-for fi = 1:length(fn)
-    if isfield(optin, fn{fi})
-        if isstruct(optin.(fn{fi}))
-            if ~isstruct(optout.(fn{fi})) && ~isobject(optout.(fn{fi})) %optim struct can refer to object not struct
-                error("input struct where there is no default struct")
-            else
-                optout.(fn{fi}) = param_struct_recurse(optin.(fn{fi}), optout.(fn{fi}));
-            end
-        else
-            if ~isempty(optin.(fn{fi}))
-                optout.(fn{fi}) = optin.(fn{fi}); %overwrite default with user-defined input
-            end
-        end
-    end
-end
 
-end
+
 

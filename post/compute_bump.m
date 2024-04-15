@@ -1,21 +1,21 @@
-function bump = compute_bump(stack, fitin, roiinfo, bumpopts, md, regionex)
+function bump = compute_bump(stack, fitin, roiinfo, opts, md, regionex, si)
 
 
 %% params
 
-bump_method = bumpopts.bump_method; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
-domain_method = bumpopts.domain_method; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-bump_subdomain = bumpopts.bump_subdomain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
-slopeorder = bumpopts.slopeorder; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-slopelen = bumpopts.slopelen; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-smoothwindow_sec = bumpopts.smoothwindow_sec; %full width of gaussian smoothing window (5 times std)
-rescale_clusters = bumpopts.rescale_clusters; %just before computing bump, rescale each cluster's timeseries to range 0-1
-numcluster_for_bump_domain_resample = bumpopts.numcluster_for_bump_domain_resample.(regionex);
-resample_smoothfac = bumpopts.resample_smoothfac;
-omitnan_bump = bumpopts.omitnan;
-doplots = bumpopts.doplots;
+bump_method = opts.bump_method; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
+domain_method = opts.domain_method; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+bump_subdomain = opts.bump_subdomain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
+slopeorder = opts.slopeorder; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+slopelen = opts.slopelen; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+smoothwindow_sec = opts.smoothwindow_sec; %full width of gaussian smoothing window (5 times std)
+rescale_clusters = opts.rescale_clusters; %just before computing bump, rescale each cluster's timeseries to range 0-1
+numcluster_for_bump_domain_resample = opts.numcluster_for_bump_domain_resample.(regionex);
+resample_smoothfac = opts.resample_smoothfac;
+omitnan_bump = opts.omitnan;
+doplots = opts.doplots;
 
-fitopts = bumpopts.fit;
+fitopts = opts.fit(si);
 smoothwindow = smoothwindow_sec/md.dtmni;
 
 fn_save_prefix = fitin.fn_save_prefix;
