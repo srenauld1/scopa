@@ -36,7 +36,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         fontmedium = 20;
         numrows_plot = 1;%supp.num_model_functions;
-        numcolumns_plot = 1;%supp.num_dim_indvpre*supp.num_neuron;
+        numcolumns_plot = 1;%supp.num_dim_indvpre*supp.num_unit;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 

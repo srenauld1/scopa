@@ -101,7 +101,7 @@ for li = 1:num_lay
         ivinds = [1:supp.num_samp_mdl]*supp.num_dim_indvpre-(supp.num_dim_indvpre-ci); %since indv is organized this way, dims alternate in vec
         indvtmp = indv(:,ivinds);
 
-        for ni = 1:fnettmp.num_neuron %supp.num_neuron %loop over artificial neurons
+        for ni = 1:fnettmp.num_unit %supp.num_unit %loop over artificial neurons
 
             binmns = [];
 
@@ -219,7 +219,7 @@ for li = 1:num_lay
                     hax{sfi}.XLim = [xlm(1) - extrax xlm(2) + extrax];
                     % pars_str = sprintf('%.2f,  ', pars(supp.pind(ni).N));
                     % pars_str = pars_str(1:end-1);% strip final comma
-                    % % hax{sfi}.Title.String = {['neuron ' num2str(jj)]; pars_str};
+                    % % hax{sfi}.Title.String = {['unit ' num2str(jj)]; pars_str};
                     % hax{sfi}.Title.String = {pars_str};
                     % hax{sfi}.Title.FontSize = supp.fontsmall;
 

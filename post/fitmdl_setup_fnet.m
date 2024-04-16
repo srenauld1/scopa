@@ -2,7 +2,7 @@ function [mdl, optimp, supp] = fitmdl_setup_fnet(modeltype, chopt, num_samp_mdl,
 
 padlen_sec = 4;
 
-fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre);
+fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre, num_samp_mdl);
 
 lbnd = [];
 ubnd = [];
@@ -36,10 +36,10 @@ for li = 1:length(fnl)
         clprev = size(linineq_A, 2);
         linineq_b = [linineq_b linineq_b_tmp];
 
-        for ni2 = 1:fnettmp.num_neuron
+        for ni2 = 1:fnettmp.num_unit
             fnettmp.pind(ni2) = structfun(@(x) x+pindmax_prev, fnettmp.pind(ni2), 'UniformOutput', false); %max param index for single position (layer+channel)
         end
-        for ni2 = 1:fnettmp.num_neuron
+        for ni2 = 1:fnettmp.num_unit
             tmpcl = cellfun(@max, struct2cell(fnettmp.pind(ni2)), 'UniformOutput', false);
             tmpcl = tmpcl(~cellfun(@isempty, tmpcl));
             pindmax_prev = max(vertcat(pindmax_prev, vec(cell2mat(tmpcl)))); %max param index for single position (layer+channel)

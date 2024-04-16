@@ -1,7 +1,5 @@
 function fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre, num_samp_mdl)
 
-% need to check all channels are present better, and no dupes
-
 %right now order of characters within an underscore doesn't matter, so the code doesn't treat order
 
 % right now channel parsing "works" but the fnet is not optimized for multiple layers, so how channel and layer specification works is not super intuitive
@@ -34,27 +32,24 @@ if strcmp(spl{1}, 'fnet')
         end
     end
 
-    num_position_spec = numel(specinds);
-    for si = 1:num_position_spec
+    num_specified_positions = numel(specinds);
+    for si = 1:num_specified_positions
         strposition = spl{specinds{si}(1)};
-        num_unit_spec = length(specinds{si})-1;
-        if num_unit_spec==0
-            error("no unit specified for at least one position")
-        end
+        num_substrings = length(specinds{si})-1;
         [strlay, strlayind] = regexp(strposition, alphabet_caps(layer), 'match');
         strlay = cell2mat(strlay);
-        % exprlay_all = ['[' alphabet_caps(1:layer) ']' ];
-        % if numel(regexp(strposition, exprlay_all, 'match'))~=layer
-        %     error("not all previous layers appear in position string")
-        % end
-        % if ~strcmp(cell2mat(regexp(strposition, exprlay_all, 'match')), alphabet_caps(1:layer) )
-        %     error("all previous layers must appear in alphabetical order in position string")
-        % end
+        exprlay_all = ['[' alphabet_caps(1:layer) ']' ];
+        if numel(regexp(strposition, exprlay_all, 'match'))~=layer
+            error("not all previous layers appear in position string")
+        end
+        if ~strcmp(cell2mat(regexp(strposition, exprlay_all, 'match')), alphabet_caps(1:layer) )
+            error("all previous layers must appear in alphabetical order in position string")
+        end
 
         if strlayind+1>numel(strposition)
             channel = 1:numchan_total_currlay;
         else
-            strposition_currchanonly = strposition(strlayind+1:end); %this used to be for when full path of incoming signal was required for position spec, but now channel is just horizontal position (not need to remove this though)
+            strposition_currchanonly = strposition(strlayind+1:end);
             if isempty(regexp(strposition_currchanonly, '^\d*(\d-\d+)*$', 'match'))
                 error("invalid channel string")
             end
@@ -84,7 +79,7 @@ if strcmp(spl{1}, 'fnet')
         allchan = [allchan channel];
 
         spec_oneposition = [];
-        for ni = 1:num_unit_spec
+        for ni = 1:num_substrings
 
             strunit = spl{specinds{si}(ni+1)};
             if isempty(regexp(strunit, exprunit, 'match')) || strcmp(regexp(strunit, '^x*\d*\D', 'match'), 'x') %str is invalid if it doesn't match, exprunit, or it matches but only because it contains only x and a number (invalid case that nevertheless matches exprunit)
@@ -159,25 +154,21 @@ if strcmp(spl{1}, 'fnet')
 
         end
 
+        layerfield = ['L' num2str(layer)];
         for ci = 1:length(channel)
-            strchan = num2str(channel(ci));
-            position_field = [strlay strchan];
-            fnetspec.(position_field) = spec_oneposition;
+            channelfield = num2str(channel(ci));
+            fnetspec.(layerfield).(channelfield) = spec_oneposition;
         end
 
-        % if max(allchan)>numchan_total_currlay
-        %     error("exceeded max number channels for this layer")
-        % end
+        if max(allchan)>numchan_total_currlay
+            error("exceeded max number channels for this layer")
+        end
         if isequal(allchan, 1:numchan_total_currlay)
             layer = layer+1;
-            numchan_total_currlay = numel(allchan); %size(fnetspec.(allpositionsincurrlay), 1);
+            numchan_total_currlay = max(allchan);
             allchan = [];
         end
 
-    end
-
-    if ~isequal(allchan, 1:numchan_total_currlay)
-        error("not all channels specified")
     end
 
 end

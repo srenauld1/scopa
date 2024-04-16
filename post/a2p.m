@@ -31,6 +31,7 @@ disp("make hemisphere no hemisphere option")
 %% params
 
 opt = input_params_carl();
+fnetspec = fitmdl_parse_modeltype_string('fnet_A1_22sh16igh32v_2ev_A2_i_B1-26_xscdh16', opt.fit.chopt.fnet, 2, 0)
 
 %% loop over recordings
 

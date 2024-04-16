@@ -1,4 +1,4 @@
-function fnet = fitmdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron)
+function fnet = fitmdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_unit)
 
 hotpower = 1;
 if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
@@ -7,8 +7,8 @@ end
 if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 't')) %time (model samples into the past)
     hotpower = hotpower*num_samp_mdl;
 end
-if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'n')) %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
-    hotpower = hotpower*num_neuron; %is this right?
+if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'u')) %function unit output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
+    hotpower = hotpower*num_unit; %is this right?
 end
 maxhotcombos = fnetspec.numbinhot{ni}^hotpower;
 if maxhotcombos>1000
@@ -16,7 +16,7 @@ if maxhotcombos>1000
 end
 levs_each_hot = repmat({[1:fnetspec.numbinhot{ni}]}, [hotpower 1]);
 hotcombos = cell2mat(table2cell(combinations(levs_each_hot{:})));
-if strcmp(fnetspec.independently_discretized_hot_dims{ni}, 'x') %artificial neuron output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
+if strcmp(fnetspec.independently_discretized_hot_dims{ni}, 'x') %function unit output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
     hotcombos = repmat(hotcombos, [1 num_dim_indvpre]);
 end
 

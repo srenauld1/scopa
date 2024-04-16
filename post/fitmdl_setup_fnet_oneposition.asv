@@ -48,9 +48,9 @@ Q = 1; %hard coded param
 %% some useful variables for this function
 
 max_num_fun_per_neuron = max(sum(cellfun(@any, regexp([fnetspec.strlin(:) fnetspec.stract(:)], '[^l|a]')), 2));
-num_neuron = size(fnetspec, 1);
+num_unit = size(fnetspec, 1);
 
-%% define constraints for all possible params for each artificial neuron (some will not be used, depending on neuron type)
+%% define constraints for all possible params for each function unit (some will not be used, depending on unit type)
 
 % prefix con_* denotes 'constraint', 3-element vectors below are [lowerbound, upperbound, startpoint]
 
@@ -81,7 +81,7 @@ linineq_min_difference = 0; %zero allows equality, could try -2*options.Constrai
 neuron_ind_total = 0;
 num_par_running_total = 0;
 
-for ni = 1:num_neuron
+for ni = 1:num_unit
 
     neuron_ind_total = neuron_ind_total + 1;
 
@@ -119,7 +119,7 @@ for ni = 1:num_neuron
         ubnd_nonlin = [con_genlog_slope(2), con_genlog_asympleft(2), con_genlog_asympright(2), con_genlog_inflection(2), con_genlog_xshift(2)];
         x0_nonlin = [con_genlog_slope(3), con_genlog_asympleft(3), con_genlog_asympright(3), con_genlog_inflection(3), con_genlog_xshift(3)];
     elseif startsWith(fnetspec.stract{ni}, 'h')
-        fnet = fitmdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_neuron);
+        fnet = fitmdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_unit);
         lbnd_nonlin = ones(1, fnetspec.numbinhot{ni})*hotnonlin_weights(1);
         ubnd_nonlin = ones(1, fnetspec.numbinhot{ni})*hotnonlin_weights(2);
         x0_nonlin = ones(1, fnetspec.numbinhot{ni})*hotnonlin_weights(3);
@@ -158,7 +158,7 @@ else
     freeformflag = 0;
 end
 
-fnet.num_neuron = num_neuron;
+fnet.num_unit = num_unit;
 fnet.fnetspec = fnetspec;
 fnet.pind = pind;
 fnet.max_num_fun_per_neuron = max_num_fun_per_neuron;

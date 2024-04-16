@@ -110,7 +110,7 @@ end
 %plotting loop
 hax = cell(1, num_total_subplots);
 
-for ri = 1:numroi_plot %for each neuron
+for ri = 1:numroi_plot %for each unit
 
     for fhi = 1:size(depvprow{ri,1}, 1) + toggle_depvp_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
 

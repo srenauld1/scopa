@@ -763,7 +763,7 @@ if doplots(3)
 
 
         if max_numfits_to_plot_ts>0
-            for ri = 1:numroi_plot %for each neuron, concatenate hitfit (do before plotting loop )
+            for ri = 1:numroi_plot %for each unit, concatenate hitfit (do before plotting loop )
                 pth_fitdata_pattern = [pth_prefix '_' epochinds_str{epi} '_' num2str(vfi) '_*_' num2str(ri) '_HISTFIT_.mat'];
                 fitdata_saved_files = rdir(pth_fitdata_pattern);
                 if ~isempty(fitdata_saved_files)
@@ -886,7 +886,7 @@ if doplots(3)
         %plotting loop
         hax = cell(1, num_total_subplots);
 
-        for ri = 1:numroi_plot %for each neuron
+        for ri = 1:numroi_plot %for each unit
 
             for fhi = 1:size(depvprow{ri,1}, 1) + toggle_depvp_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
 
