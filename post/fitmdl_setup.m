@@ -38,7 +38,7 @@ elseif strcmp(mdlclass, 'v')
     opop.optimp.x0 = [0,0,0,0];
 
     supp.num_total_model_functions = 1;
-    supp.max_num_fun_per_neuron = 1;
+    supp.max_num_fun_per_unit = 1;
 
 elseif strcmp(mdlclass, 'g')
 

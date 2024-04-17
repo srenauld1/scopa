@@ -12,45 +12,41 @@ rwprev = 0;
 clprev = 0;
 linineq_b = [];
 
-supp.num_neuron_total = 0; %initialize with 0
+supp.num_unit_total = 0; %initialize with 0
 supp.num_total_model_functions = 0;%initialize with 0
-supp.max_num_fun_per_neuron = 0;%initialize with 0
+supp.max_num_fun_per_unit = 0;%initialize with 0
 pindmax_prev = 0;
 
-%loop over fnet positions (layers and channels), accumulating param starting point (x0) and optional constraints
-fnl = fieldnames(fnetspec);
-for li = 1:length(fnl)
-    fnc = fieldnames(fnetspec.(fnl{li}));
-    for ci = 1:length(fnc)
+%loop over fnet units, accumulating param starting point (x0) and optional constraints
+for ui = 1:size(fnetspec, 1)
 
-        [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflag] = ...
-            fitmdl_setup_fnet_oneposition(fnetspec.(fnl{li}).(fnc{ci}), num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats);
+    [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflag] = ...
+        fitmdl_setup_fnet_oneposition(fnetspec(ui,:), num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats);
 
-        lbnd = [lbnd lbnd_tmp];
-        ubnd = [ubnd ubnd_tmp];
-        x0 = [x0 x0_tmp];
-        rwindsnew = rwprev+1:rwprev+1+size(linineq_A_tmp, 1)-1;
-        clindsnew = clprev+1:clprev+1+size(linineq_A_tmp, 2)-1;
-        linineq_A(rwindsnew, clindsnew) = linineq_A_tmp;
-        rwprev = size(linineq_A, 1);
-        clprev = size(linineq_A, 2);
-        linineq_b = [linineq_b linineq_b_tmp];
+    lbnd = [lbnd lbnd_tmp];
+    ubnd = [ubnd ubnd_tmp];
+    x0 = [x0 x0_tmp];
+    rwindsnew = rwprev+1:rwprev+1+size(linineq_A_tmp, 1)-1;
+    clindsnew = clprev+1:clprev+1+size(linineq_A_tmp, 2)-1;
+    linineq_A(rwindsnew, clindsnew) = linineq_A_tmp;
+    rwprev = size(linineq_A, 1);
+    clprev = size(linineq_A, 2);
+    linineq_b = [linineq_b linineq_b_tmp];
 
-        for ni2 = 1:fnettmp.num_unit
-            fnettmp.pind(ni2) = structfun(@(x) x+pindmax_prev, fnettmp.pind(ni2), 'UniformOutput', false); %max param index for single position (layer+channel)
-        end
-        for ni2 = 1:fnettmp.num_unit
-            tmpcl = cellfun(@max, struct2cell(fnettmp.pind(ni2)), 'UniformOutput', false);
-            tmpcl = tmpcl(~cellfun(@isempty, tmpcl));
-            pindmax_prev = max(vertcat(pindmax_prev, vec(cell2mat(tmpcl)))); %max param index for single position (layer+channel)
-        end
-
-        supp.fnet.(fnl{li}).(fnc{ci}) = fnettmp;
-        supp.num_neuron_total = supp.num_neuron_total + size(fnettmp.fnetspec, 1);
-        supp.num_total_model_functions = supp.num_total_model_functions + fnettmp.max_num_fun_per_neuron;
-        supp.max_num_fun_per_neuron = max(supp.max_num_fun_per_neuron, fnettmp.max_num_fun_per_neuron);
-
+    for ni2 = 1:fnettmp.num_unit
+        fnettmp.pind(ni2) = structfun(@(x) x+pindmax_prev, fnettmp.pind(ni2), 'UniformOutput', false); %max param index for single position (layer+channel)
     end
+    for ni2 = 1:fnettmp.num_unit
+        tmpcl = cellfun(@max, struct2cell(fnettmp.pind(ni2)), 'UniformOutput', false);
+        tmpcl = tmpcl(~cellfun(@isempty, tmpcl));
+        pindmax_prev = max(vertcat(pindmax_prev, vec(cell2mat(tmpcl)))); %max param index for single position (layer+channel)
+    end
+
+    supp.fnet(ui,:) = fnettmp;
+    supp.num_unit_total = supp.num_unit_total + size(fnettmp.fnetspec, 1);
+    supp.num_total_model_functions = supp.num_total_model_functions + fnettmp.max_num_fun_per_unit;
+    supp.max_num_fun_per_unit = max(supp.max_num_fun_per_unit, fnettmp.max_num_fun_per_unit);
+
 end
 
 
@@ -81,12 +77,12 @@ else
     %simplify nested function nlcon by giving it a simpler param index array (pind_Lfree, created here) than what is saved in supp.fnet.pind (but keep that for use in mdl_fnet)
     count = 0;
     fnl = fieldnames(supp.fnet);
-    for li = 1:length(fnl)
-        fnc = fieldnames(supp.fnet.(fnl{li}));
+    for i = 1:length(fnl)
+        fnc = fieldnames(supp.fnet.(fnl{i}));
         for ci = 1:length(fnc)
-            for ni = 1:length(supp.fnet.(fnl{li}).(fnc{ci}).pind)
+            for ni = 1:length(supp.fnet.(fnl{i}).(fnc{ci}).pind)
                 count = count+1;
-                pind_Lfree{count} = supp.fnet.(fnl{li}).(fnc{ci}).pind(ni).L; %make L1 norm = 1 for linear filters with 'freeform' flag
+                pind_Lfree{count} = supp.fnet.(fnl{i}).(fnc{ci}).pind(ni).L; %make L1 norm = 1 for linear filters with 'freeform' flag
             end
         end
     end

@@ -2,14 +2,6 @@
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
     fitmdl_setup_fnet_oneposition(fnetspec, num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats)
 
-% in fnetspec, strlin for linear functions, stract for activation (nonlinear) functions
-% strlin 's' and 'd' and 'f' make linear filters (s is monophasic; d is biphasic, formed from derivative of s; f is freeform, can take any shape)
-% strlin 'l' skips linear filter stage
-% stract 'e' and 'i' make generalized logistic functions (includes sigmoids), with constraints on params controlling slope and horizontal asymptotes
-% forcing 'e' to be positive true slope (left horiz asymptote<right horiz asymptote with positive slope param)
-% and 'i' to be negative true slope  (left horiz asymptote>right horiz asymptote with positive slope param)
-% stract that starts with 'h' makes hot encoded nonlinear function (can take any shape)
-% stract 'a' skips activation function stage
 
 
 %% some useful stats on input variables 
@@ -47,8 +39,14 @@ Q = 1; %hard coded param
 
 %% some useful variables for this function
 
-max_num_fun_per_neuron = max(sum(cellfun(@any, regexp([fnetspec.strlin(:) fnetspec.stract(:)], '[^l|a]')), 2));
-num_unit = size(fnetspec, 1);
+% max_num_fun_per_unit = max(sum(cellfun(@any, regexp([fnetspec.strlin(:) fnetspec.stract(:)], '[^l|a]')), 2));
+fnet_fun = fnetspec(:,startsWith(fnetspec.Properties.VariableNames, 'fun'));
+% notemptyfunstring = ~cellfun(@isempty, regexp(table2cell(funcolumns), '[^l|n]'));
+notemptycolumn = ~cellfun(@isempty, table2cell(fnet_fun));
+% max_num_fun_per_unit = sum(notemptyfunstring .* notemptycolumn);
+max_num_fun_per_unit = sum(notemptycolumn);
+
+num_fun = size(fnet_fun, 2);
 
 %% define constraints for all possible params for each function unit (some will not be used, depending on unit type)
 
@@ -78,67 +76,67 @@ lbnd = [];
 ubnd = [];
 x0 = [];
 linineq_min_difference = 0; %zero allows equality, could try -2*options.ConstraintTolerance instead of zero (why -2, why not just -options.ConstraintTolerance?)
-neuron_ind_total = 0;
+unit_ind_total = 0;
 num_par_running_total = 0;
 
-for ni = 1:num_unit
+for fi = 1:num_fun
 
-    neuron_ind_total = neuron_ind_total + 1;
+    unit_ind_total = unit_ind_total + 1;
 
-    if strcmp(fnetspec.strlin{ni}, 'l') %skips linear filter
+    if strcmp(fnet_fun{:,fi}, 'zzzzzzzz') %skips linear filter
         lbnd_lin = [];
         ubnd_lin = [];
         x0_lin = [];
-    elseif strcmp(fnetspec.strlin{ni}, 's') %makes monophasic filter, 2 params
+    elseif strcmp(fnet_fun{:,fi}, 's') %makes monophasic filter, 2 params
         lbnd_lin = [con_filt_tau1(1), con_filt_tshift(1), con_filt_bias(1)];
         ubnd_lin = [con_filt_tau1(2), con_filt_tshift(2), con_filt_bias(2)];
         x0_lin = [con_filt_tau1(3), con_filt_tshift(3), con_filt_bias(3)];
-    elseif strcmp(fnetspec.strlin{ni}, 'd') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
+    elseif strcmp(fnet_fun{:,fi}, 'd') %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
         lbnd_lin = [con_filt_tau1(1), con_filt_tshift(1), con_filt_bias(1)];
         ubnd_lin = [con_filt_tau1(2), con_filt_tshift(2), con_filt_bias(2)];
         x0_lin = [con_filt_tau1(3), con_filt_tshift(3), con_filt_bias(3)];
-    elseif strcmp(fnetspec.strlin{ni}, 'd2') %old approach for d filter, 'd2' specifier currently not supported %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
+    elseif strcmp(fnet_fun{:,fi}, 'zzzzzz') %old approach for d filter, 'd2' specifier currently not supported %makes biphasic filter, 4 params, ie includes params for 2nd filter (constrained to be slower), subtracted from first
         lbnd_lin = [con_filt_tau1(1), con_filt_tshift(1), con_tau2(1), con_tc(1)];
         ubnd_lin = [con_filt_tau1(2), con_filt_tshift(2), con_tau2(2), con_tc(2)];
         x0_lin = [con_filt_tau1(3), con_filt_tshift(3), con_tau2(3), con_tc(3)];
-    elseif strcmp(fnetspec.strlin{ni}, 'f') %freeform filter, can take any shape
+    elseif strcmp(fnet_fun{:,fi}, 'f') %freeform filter, can take any shape
         lbnd_lin = -inf(1, num_samp_mdl);
         ubnd_lin = inf(1, num_samp_mdl);
         x0_lin = rand(1, num_samp_mdl);
         x0_lin = x0_lin / norm(vec(x0_lin(:)),1); %L1 norm=1
     end
 
-    fnet.actfun{ni} = [];
-    if strcmp(fnetspec.stract{ni}, 'a') || strcmp(fnetspec.stract{ni}, 'y') %skip activation function
+    fnet.actfun{fi} = [];
+    if strcmp(fnet_fun{:,fi}, 'zzzzzzz') || strcmp(fnet_fun{:,fi}, 'zzzzzzzz') %skip activation function
         lbnd_nonlin = [];
         ubnd_nonlin = [];
         x0_nonlin = [];
-    elseif any(strcmp(fnetspec.stract{ni}, {'e', 'i'}))
-        fnet.actfun{ni} = @static_genlog;
+    elseif strcmp(fnet_fun{:,fi}, 'e') || strcmp(fnet_fun{:,fi}, 'i') || strcmp(fnet_fun{:,fi}, 'l')
+        fnet.actfun{fi} = @static_genlog;
         lbnd_nonlin = [con_genlog_slope(1), con_genlog_asympleft(1), con_genlog_asympright(1), con_genlog_inflection(1), con_genlog_xshift(1)];
         ubnd_nonlin = [con_genlog_slope(2), con_genlog_asympleft(2), con_genlog_asympright(2), con_genlog_inflection(2), con_genlog_xshift(2)];
         x0_nonlin = [con_genlog_slope(3), con_genlog_asympleft(3), con_genlog_asympright(3), con_genlog_inflection(3), con_genlog_xshift(3)];
-    elseif startsWith(fnetspec.stract{ni}, 'h')
-        fnet = fitmdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_unit);
-        lbnd_nonlin = ones(1, fnetspec.numbinhot{ni})*hotnonlin_weights(1);
-        ubnd_nonlin = ones(1, fnetspec.numbinhot{ni})*hotnonlin_weights(2);
-        x0_nonlin = ones(1, fnetspec.numbinhot{ni})*hotnonlin_weights(3);
+    elseif strcmp(fnet_fun{:,fi}, 'h')
+        fnet = fitmdl_setup_ohe(fnet, fnetspec, fi, num_dim_indvpre, num_samp_mdl, num_unit);
+        lbnd_nonlin = ones(1, fnetspec.numbinhot{fi})*hotnonlin_weights(1);
+        ubnd_nonlin = ones(1, fnetspec.numbinhot{fi})*hotnonlin_weights(2);
+        x0_nonlin = ones(1, fnetspec.numbinhot{fi})*hotnonlin_weights(3);
     end
 
-    num_par_this_neuron = length(x0_lin)+length(x0_nonlin);
-    parind_this_neuron = [1:num_par_this_neuron] + num_par_running_total;
-    num_par_running_total = num_par_running_total + num_par_this_neuron;
-    pind(ni).L = parind_this_neuron(1:length(x0_lin));
-    pind(ni).N = parind_this_neuron(length(x0_lin)+1:end);
-    if strcmp(fnetspec.strlin{ni}, 'f')
-        pind(ni).Lfree = parind_this_neuron(1:length(x0_lin));
+    num_par_this_unit = length(x0_lin)+length(x0_nonlin);
+    parind_this_unit = [1:num_par_this_unit] + num_par_running_total;
+    num_par_running_total = num_par_running_total + num_par_this_unit;
+    pind(fi).L = parind_this_unit(1:length(x0_lin));
+    pind(fi).N = parind_this_unit(length(x0_lin)+1:end);
+    if strcmp(fnet_fun.strlin{fi}, 'f')
+        pind(fi).Lfree = parind_this_unit(1:length(x0_lin));
     end
 
-    linineq_A_tmp = zeros(1, num_par_this_neuron);
-    if strcmp(fnetspec.stract{ni}, 'e')  %left asymptote <= right asymptote will make positive slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
+    linineq_A_tmp = zeros(1, num_par_this_unit);
+    if strcmp(fnet_fun{:,fi}, 'e')  %left asymptote <= right asymptote will make positive slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
         linineq_A_tmp(length(x0_lin)+2) = 1;
         linineq_A_tmp(length(x0_lin)+3) = -1;
-    elseif strcmp(fnetspec.stract{ni}, 'i')  %right asymptote <= left asymptote will make negative slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
+    elseif strcmp(fnet_fun{:,fi}, 'i')  %right asymptote <= left asymptote will make negative slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
         linineq_A_tmp(length(x0_lin)+2) = -1;
         linineq_A_tmp(length(x0_lin)+3) = 1;
     end
@@ -146,8 +144,8 @@ for ni = 1:num_unit
     lbnd = [lbnd lbnd_lin lbnd_nonlin];
     ubnd = [ubnd ubnd_lin ubnd_nonlin];
     x0 = [x0 x0_lin x0_nonlin];
-    linineq_A(neuron_ind_total, parind_this_neuron) = linineq_A_tmp;
-    linineq_b(neuron_ind_total) = 0 + linineq_min_difference;
+    linineq_A(unit_ind_total, parind_this_unit) = linineq_A_tmp;
+    linineq_b(unit_ind_total) = 0 + linineq_min_difference;
 
 end
 
@@ -158,10 +156,10 @@ else
     freeformflag = 0;
 end
 
-fnet.num_unit = num_unit;
+fnet.num_fun = num_fun;
 fnet.fnetspec = fnetspec;
 fnet.pind = pind;
-fnet.max_num_fun_per_neuron = max_num_fun_per_neuron;
+fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 fnet.linfun = @linear_filter_1d;
 
 

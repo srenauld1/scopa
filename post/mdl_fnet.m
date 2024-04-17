@@ -48,8 +48,8 @@ if exist('optin', 'var') && ~isempty(optin)
 
         supp.fontsmall = 10;
         fontmedium = 20;
-        numrows_plot = supp.max_num_fun_per_neuron;
-        numcolumns_plot = supp.num_neuron_total;
+        numrows_plot = supp.max_num_fun_per_unit;
+        numcolumns_plot = supp.num_unit_total;
         margins_fig = 0.03;
         margins_subfig = 0.06;
 
@@ -82,7 +82,7 @@ doplots_hot = 0;
 fnl = fieldnames(supp.fnet);
 num_lay = length(fnl);
 
-plotcols = distinguishable_colors(supp.num_neuron_total);
+plotcols = distinguishable_colors(supp.num_unit_total);
 
 for li = 1:num_lay
 
@@ -141,7 +141,7 @@ for li = 1:num_lay
             if make_figure
 
                 sfi_tmp = 1;
-                sfi = sfi_tmp+fnettmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
+                sfi = sfi_tmp+fnettmp.max_num_fun_per_unit*(neuron_count_single_layer-1);
                 sfi = sfi+supp.starting_hax;
 
                 if framecount==1
@@ -179,7 +179,7 @@ for li = 1:num_lay
                 if ~isempty(pars_str_N)
 
                     sfi_tmp = 2;
-                    sfi = sfi_tmp+fnettmp.max_num_fun_per_neuron*(neuron_count_single_layer-1);
+                    sfi = sfi_tmp+fnettmp.max_num_fun_per_unit*(neuron_count_single_layer-1);
                     sfi = sfi+supp.starting_hax;
 
                     [depvplin, idx] = sort(depvplin);
@@ -226,7 +226,7 @@ for li = 1:num_lay
                 end
 
                 if ~optin_is_figure
-                    if neuron_count_single_layer==supp.num_neuron_total
+                    if neuron_count_single_layer==supp.num_unit_total
                         htx.String = fn_save;
                         framecount = 1;
                         fig2gif(hfg, framecount, pth_save)

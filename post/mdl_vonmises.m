@@ -97,7 +97,7 @@ if make_figure
     hax{sfi}.Title.FontSize = supp.fontsmall;
 
     if ~optin_is_figure
-        if LN_unit_count==supp.num_neuron_total
+        if LN_unit_count==supp.num_unit_total
             htx.String = fn_save;
             fig2gif(hfg, framecount, pth_save)
         end

@@ -689,8 +689,8 @@ if doplots(3)
     leftfrac = 0.6;
     axw = axw*leftfrac;
 
-    numrows_ts2 = supp.num_total_model_functions/supp.max_num_fun_per_neuron; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
-    numcolumns_ts2 = supp.max_num_fun_per_neuron;
+    numrows_ts2 = supp.num_total_model_functions/supp.max_num_fun_per_unit; %no functional significance, just how many rows you want to spread the timeseries out, i like 4
+    numcolumns_ts2 = supp.max_num_fun_per_unit;
     [axx2, axy2, axw2, axh2] = arrange_subplots(numrows_ts2, numcolumns_ts2, margins_fig, margins_subfig);
 
     axw2 = axw2*(1-leftfrac)-margins_subfig;
