@@ -32,8 +32,6 @@ disp("remove all old modeltype references ")
 %% params
 
 opt = input_params_carl();
-fnetspec = fitmdl_parse_modeltype_string('A01_22sh16igh32v_02ev_A02_i_B01-25_xscdh16', opt.fit.chopt.fnet, 2, 0);
-fnetspec = fitmdl_parse_modeltype_string('sv', opt.fit.chopt.fnet, 2, 0);
 
 %% loop over recordings
 
