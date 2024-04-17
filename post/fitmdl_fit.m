@@ -1,4 +1,4 @@
-function [ft, depvp, gof_train, gof_val] = fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, modeltype, ...
+function [ft, depvp, gof_train, gof_val] = fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
     validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, pth_fitdata)
 
 
@@ -10,7 +10,7 @@ if optim_hist_save_iter_spacing
     opop.optiml.OutputFcn = @outfcn_local;
 end
 
-if startsWith(modeltype, 'svd')
+if startsWith(mdlname, 'svd')
     opop.optimp.objective = @objective_svd;
 else
     if strcmp(opop.optimp.solver, 'fmincon')
@@ -23,7 +23,7 @@ end
 
 %% fit model, predict response
 
-if startsWith(modeltype, 'svd')
+if startsWith(mdlname, 'svd')
     ft = opop.optimp.objective( indv, depv, supp.pvar);
     %mdl_toy %synthetic data toy
 else

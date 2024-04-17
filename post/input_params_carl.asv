@@ -156,8 +156,8 @@ opt.pf.bump.fit(1).depvpre_str{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_
 opt.pf.bump.fit(1).indvpre_str{1} = {['vis, angsd']};
 opt.pf.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
-opt.pf.bump.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-opt.pf.bump.fit(1).modeltype = 'vonmises';
+opt.pf.bump.fit(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+opt.pf.bump.fit(1).mdlname = 'vonmises';
 opt.pf.bump.fit(1).epochinds = {[4]};
 opt.pf.bump.fit(1).mdl_length_sec = 0;
 opt.pf.bump.fit(1).hsv_background = 'rois';
@@ -221,20 +221,20 @@ opt.fit(1).indvpre_str{3} = {['ball, velrsd']};
 
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit(1).epochinds = {[2 3 4]};
-opt.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+opt.fit(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
-% notes about opt.fit.modeltypes
+% notes about opt.fit.mdlnames
 
-% modeltypes starting with 'svd' are for linear models fit to single-dimensional or multi-dimensional input (where dimensions can be features, or temporal offsets in a multi-timepoint model, or both)
-%   for modeltypes starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); 
+% mdlnames starting with 'svd' are for linear models fit to single-dimensional or multi-dimensional input (where dimensions can be features, or temporal offsets in a multi-timepoint model, or both)
+%   for mdlnames starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); 
 %   for example 'svd22' accounts for 22% of variance, i.e. in objective_svd pvar=0.22
-%   note modeltype 'svd' is currently the only model that is not defined by mdl_fnet.m
+%   note mdlname 'svd' is currently the only model that is not defined by mdl_fnet.m
 
-% besides 'svd', all modeltypes are defined by mdl_fnet (this simplifies the code)
+% besides 'svd', all mdlnames are defined by mdl_fnet (this simplifies the code)
 % mdl_fnet refers to a function network, similar to an ann, or cnn, but different in enough ways to deserve a different name 
 % mdl_fnet creates a network of functions (or a single function), and a set of optional constraints for all free parameters; those parameters are optimized with matlab built-in global solver GlobalSearch (which repeatedly calls local solver fmincon)
-% the modeltype string provides a compact representation of the model, useful for saving data and making figures, and also avoids having conditional params defined here (ie only used for a given modeltype)
-% modeltype string syntax is:
+% the mdlname string provides a compact representation of the model, useful for saving data and making figures, and also avoids having conditional params defined here (ie only used for a given mdlname)
+% mdlname string syntax is:
 %   [ [position]_[unit]* ]*
     % position string syntax is:
     %   [layer][channel]
@@ -280,10 +280,10 @@ opt.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-va
                 % h: is for 'one hot-encoding', a non-parametric nonlinearity
                 %   h requires an additional integer suffix denoting number of bins (must be power of 2, for now); binning applies to the joint distribution of all dimensions of incoming signal (including time)
                 % NOT YET AVAILABLE --> n: is for 'nonlinear omit', no nonlinear function; only useful when using 'combo syntax', and you want a missing nonlinear function to be an element in one of the possible combinations <-- NOT YET AVAILABLE
-% in the entire fnet modeltype string, all numbers must be 2-digit (leading zero for 1-9) 
-% see struct 'chopt' in default_fit_params for current list of characters and regex expressions for parsing the modeltype string;
+% in the entire fnet mdlname string, all numbers must be 2-digit (leading zero for 1-9) 
+% see struct 'chopt' in default_fit_params for current list of characters and regex expressions for parsing the mdlname string;
 % for simplicity, position substring can be omitted for single-unit, single-position models
-%   for example, modeltype = 'g' fits a gaussian (to the entire input signal)
+%   for example, mdlname = 'g' fits a gaussian (to the entire input signal)
 %   but even in this case, the same fnet code is used, it just means the "function network" is just a single layer, single function
 
 % NOT YET AVAILABLE --> suffixes on function characters will denote timespan of domain in seconds, possibly with 'p' for decimal <-- NOT YET AVAILABLE
@@ -297,7 +297,7 @@ opt.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-va
 %   B01-02_i_e means the following unit substrings 'i' and 'e' will be applied to channels 1 and 2 (output of units 1 and 2 in layer A); thus, two functions (inhibitory sigmoid, and excitatory sigmoid) are applied in parallel
 %   B03-08_v means unit substring 'svg' is applied to channels 3-8 (output of units 3,4,5,6,7,8 in layer A); thus, a single series of 3 functions is applied (positive monophasic linear filter, then von mises, then gaussian)
 
-opt.fit(1).modeltypes = 'fnet_A01_sh16';
+opt.fit(1).mdlnames = 'fnet_A01_sh16';
 opt.fit(1).plt.doplots = 100;
 
 opt.fit = default_fit_params(opt.fit);

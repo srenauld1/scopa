@@ -26,7 +26,7 @@ else
     end
 end
 
-pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.modeltype '_' num2str(opts.mdl_length_sec) '_' num2str(opts.mdl_lag_sec) pixfitflagstr];
+pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.mdlname '_' num2str(opts.mdl_length_sec) '_' num2str(opts.mdl_lag_sec) pixfitflagstr];
 pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 %% create pixelwise fit for background of hsv plot (if requested) by calling fitmdl here, with pixfitflag==1
@@ -49,7 +49,7 @@ fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix);
 
 %% set up model fitting and plotting options
 
-fitin.opop = fitmdl_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvpre, opts.modeltype, opts.chopt, md.dtmni, fitin.stapth_fitdata_prefix);
+fitin.opop = fitmdl_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvpre, opts.mdlname, opts.chopt, md.dtmni, fitin.stapth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 

@@ -1,8 +1,8 @@
-function [mdl, optimp, supp] = fitmdl_setup_fnet(modeltype, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats)
+function [mdl, optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats)
 
 padlen_sec = 4;
 
-fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre, num_samp_mdl);
+fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl);
 
 lbnd = [];
 ubnd = [];
@@ -59,7 +59,7 @@ if all(linineq_A(:)==0) %if all zeros, then linineq_A_tmp above remained zero be
     linineq_b = [];
 end
 
-supp.modeltype = modeltype;
+supp.mdlname = mdlname;
 
 mdl = @mdl_fnet;
 

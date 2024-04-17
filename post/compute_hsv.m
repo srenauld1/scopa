@@ -1,5 +1,5 @@
 
-function hsvmap = compute_hsv( ft, gof, indvpref, depvstd, plt, modeltype, stats)
+function hsvmap = compute_hsv( ft, gof, indvpref, depvstd, plt, mdlname, stats)
 
 numroi = size(ft,1);
 hdata = zeros(numroi, 1);
@@ -11,8 +11,8 @@ for ri = 1:numroi
     vdata(ri) = plt.getval(depvstd(ri));
 end
 
-if strcmp(plt.huenorm, 'native') && (strcmp(modeltype, 'linear') || strcmp(modeltype, 'plane') || startsWith(modeltype, 'svd'))
-    disp("WARNING, NO NATIVE plt.huenorm FOR MODELTYPES linear, plane, or svd, SWITCHING TO RELATIVE")
+if strcmp(plt.huenorm, 'native') && (strcmp(mdlname, 'linear') || strcmp(mdlname, 'plane') || startsWith(mdlname, 'svd'))
+    disp("WARNING, NO NATIVE plt.huenorm FOR MDLNAME svd, SWITCHING TO RELATIVE")
     plt.huenorm = 'relative'; %hue normalization method, see setup_model
 end
 

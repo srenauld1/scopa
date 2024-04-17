@@ -1,18 +1,22 @@
-% notes on modeltype 
+% notes on mdlname 
 
+% mdlname syntax is [mdlclass][_details]
+% where prefix mdlclass is general class of model, and suffix *_details are additional model details specific to the mdlclass 
 
-% modeltypes starting with 'svd' are for linear models fit to single-dimensional or multi-dimensional input (where dimensions can be features, or temporal offsets in a multi-timepoint model, or both)
-%   for modeltypes starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); 
-%   for example 'svd22' accounts for 22% of variance, i.e. in objective_svd pvar=0.22
-%   note modeltype 'svd' is currently the only model that is not defined by mdl_fnet.m
+% mdlclass 'svd' (mdlname has prefix 'svd') is for linear models fit to single-dimensional or multi-dimensional input (where dimensions can be features, or temporal offsets in a multi-timepoint model, or both)
+%   for mdlclass svd, mdlname syntax is:
+%       svd[_p], 
+%       where suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); 
+%       for example 'svd_22' accounts for 22% of variance, i.e. in objective_svd pvar=0.22
+%       note mdlname 'svd' is currently the only model that is not defined by mdl_fnet.m
 
-% besides 'svd', all modeltypes are defined by mdl_fnet (this simplifies the code)
-% see table variable 'fnet', output from 'fitmdl_parse_modeltype_string' for how the modeltype string is turned into a function network 
-% mdl_fnet refers to a function network, similar to an ann, or cnn, but different in enough ways to deserve a different name 
-% mdl_fnet creates a network of functions (or a single function), and a set of optional constraints for all free parameters; those parameters are optimized with matlab built-in global solver GlobalSearch (which repeatedly calls local solver fmincon)
-% the modeltype string provides a compact representation of the model, useful for saving data and making figures, and also avoids having conditional params defined here (ie only used for a given modeltype)
-% the modeltype string 'language' is designed to make model specification simple; the available characters were chosen so modeltype can appear in filenames on any platform without causing problems, or requiring escape
-% modeltype string syntax is:
+% other than models in mdlclass 'svd', all models (structure, functions, parameters, constants, constraints) are defined by mdl_fnet.m
+% see example section below for fnet table output after parsing mdlname   
+% mdl_fnet.m refers to a function network, similar to an ann, or cnn, but different in enough ways to deserve a different name 
+% mdl_fnet.m creates a network of functions (or a single function), and a set of optional constraints for all free parameters; those parameters are optimized with matlab built-in global solver GlobalSearch (which repeatedly calls local solver fmincon)
+% the mdlname string provides a compact representation of the model, useful for saving data and making figures, and also avoids having conditional params defined here (ie only used for a given mdlname)
+% the mdlname string 'language' is designed to make model specification simple; the available characters were chosen so mdlname can appear in filenames on any platform without causing problems, or requiring escape
+% mdlname string syntax is:
 %   [ [position]_[unit]* ]*
     % position string syntax is:
     %   [layer][channel]
@@ -22,7 +26,7 @@
 %   'position' string is comprised of substrings 'layer' and 'channel' (layer is vertical position, channel is horizontal position)
 %   if the position string is omitted, and only the unit string appears, the model is a single position model (which can be a single unit character too)
 %   'layer' is a capital letter; layers are in alphabetical order; input layer is 'A', first model functions (and their output signals), are in layer 'B', etc.
-%       layers must appear in order across the modeltype string (for now, see note below about allowing recursion soon, for example))
+%       layers must appear in order across the mdlname string (for now, see note below about allowing recursion soon, for example))
 %       position substring can only contain one layer (for now, see note below about allowing recursion soon, for example)
 %       layer substring cannot be omitted
 %   'channel' is a two-digit number (must use leading zero for 1-9); for layer 'A' (input layer), channel denotes input dimension; for layer 'B'-'Z', channel denotes previous layer's 'unit' index (corresponds to the index of that unit's output signal); e.g., number of units in layer B equals number of channels in layer C
@@ -61,24 +65,24 @@
                 % h: is for 'one hot-encoding', a non-parametric nonlinearity
                 %   h requires an additional integer suffix denoting number of bins (must be power of 2, for now); binning applies to the joint distribution of all dimensions of incoming signal (including time)
                 % NOT YET AVAILABLE --> n: is for 'nonlinear omit', no nonlinear function; only useful when using 'combo syntax', and you want a missing nonlinear function to be an element in one of the possible combinations <-- NOT YET AVAILABLE
-% in the entire fnet modeltype string, all numbers must be 2-digit (leading zero for 1-9) 
-% see struct 'chopt' in default_fit_params for current list of characters and regex expressions for parsing the modeltype string;
+% in the entire fnet mdlname string, all numbers must be 2-digit (leading zero for 1-9) 
+% see struct 'chopt' in default_fit_params for current list of characters and regex expressions for parsing the mdlname string;
 % for simplicity, position substring can be omitted for single-unit, single-position models
-%   for example, modeltype = 'g' fits a gaussian to the entire input signal
-%   for example, modeltype = 'si' fits a linear filter followed by static nonlinearity to the entire input signal (in this case, the linear filter is a positive monophasic filter, and the nonlinearity is "inhibitory", ie a generalized logistic function with negative slope)
+%   for example, mdlname = 'g' fits a gaussian to the entire input signal
+%   for example, mdlname = 'si' fits a linear filter followed by static nonlinearity to the entire input signal (in this case, the linear filter is a positive monophasic filter, and the nonlinearity is "inhibitory", ie a generalized logistic function with negative slope)
 %   but even in these single-position, single-unit cases, the model is still defined as a "function network" using mdl_fnet.m 
 
 % NOT YET AVAILABLE --> suffixes on function characters will denote timespan of domain in seconds, with 'p' denoting decimal <-- NOT YET AVAILABLE
-% NOT YET AVAILABLE --> in future, modeltype string will not require layers to appear in order, which will allow more complex networks (recursion, skipping layers, etc.) <-- NOT YET AVAILABLE
+% NOT YET AVAILABLE --> in future, mdlname string will not require layers to appear in order, which will allow more complex networks (recursion, skipping layers, etc.) <-- NOT YET AVAILABLE
 
 
+%%%%EXAMPLE%%%%%
 
-
-% you can run fitmdl_parse_modeltype_string (with arbitrary values below for num_dim_input and num_samples_model) 
+% you can run fitmdl_parse_mdlname_string (with arbitrary values below for num_dim_input and num_samples_model) 
 % and inspect output table 'fnet' to see how single string modetype is transformed into a table representing a function network 
 % chopt.fnet holds the charcters and expressions for parsing the string, and is copied from default_fit_params.m to run the example below  
 
-% the example modeltype below is: 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg' 
+% the example mdlname below is: 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg' 
 %   applies 1 unit substring ('x2sieh16g') to all channels of input (all channels since there is no channel substring for layer A); 
 %   'x2sieh16g' begins with 'x', so uses 'combo syntax', and also has a 'unit multiplier' of 2 
 %   since this unit substring uses combo syntax, 'sieh16g' is equivalent to : 'si_se_sh16_sg'; thus, it uses 4 units, each with 2 functions (one linear, one nonlinear), for all channels in layer A (input layer)
@@ -86,7 +90,9 @@
 %   B01-02_i_e means the following unit substrings 'i' and 'e' will be applied to channels 1 and 2 (output of units 1 and 2 in layer A); thus, two functions (inhibitory sigmoid, and excitatory sigmoid) are applied in parallel
 %   B03-08_v means unit substring 'svg' is applied to channels 3-8 (output of units 3,4,5,6,7,8 in layer A); thus, a single series of 3 functions is applied (positive monophasic linear filter, then von mises, then gaussian)
 
-modeltype = 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg';
+clear all; close all; clc;
+
+mdlname = 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg';
 num_dim_input = 2;
 num_samples_model = 0;
 
@@ -100,5 +106,5 @@ chopt.fnet.lin = {'s','r','d','c','f'}; %linear functions;
 chopt.fnet.non = {'e','i','l','g','v'}; %nonlinear functions; 
 chopt.fnet.hot = {'h\d+'}; %one-hot encoding function; h followed by one or more numeric characters
 
-fnet = fitmdl_parse_modeltype_string(modeltype, chopt.fnet, num_dim_input, num_samples_model);
+fnet = fitmdl_parse_mdlname_string(mdlname, chopt.fnet, num_dim_input, num_samples_model);
 

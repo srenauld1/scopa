@@ -65,12 +65,12 @@ for i = 1 : num_samp_indvpreaug
     epochinds_ts_i_m(:,i) = flip(epochinds_ts_i(i:i+num_samp_mdl-1), time_dimension); %do the same for epochinds, to make sure model doesn't include any samples from wrong epoch
 end
 
-%% if modeltype starts with 'ohe', one hot encode indv
+%% if mdlname starts with 'ohe', one hot encode indv
 
-if startsWith(opts.modeltype, 'ohe') %one hot encode indv, if modeltype is 'ohe*'
+if startsWith(opts.mdlname, 'ohe') %one hot encode indv, if mdlname is 'ohe*'
     doplots_hot = 0;
     [indvpreaug, num_dim_indv, num_samp_mdl, ~] = ...
-        one_hot_encode_input(opts.modeltype, indvpreaug, num_dim_indvpre, num_samp_mdl, pth_fitdata_prefix, doplots_hot);
+        one_hot_encode_input(opts.mdlname, indvpreaug, num_dim_indvpre, num_samp_mdl, pth_fitdata_prefix, doplots_hot);
 end
 
 

@@ -1,9 +1,9 @@
 function [indv, depv_allrois, roiinfo, fitdata] = ...
-    model_plots_prepvars(fitin, plt, roiinfo, fitdata, modeltype, standardize_indv, standardize_depv)
+    model_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, standardize_indv, standardize_depv)
 
 %% organize and normalize model data into hsv map
 
-fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, modeltype, fitin.stats);
+fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, mdlname, fitin.stats);
 
 
 %% select which rois get plotted and how they're sorted

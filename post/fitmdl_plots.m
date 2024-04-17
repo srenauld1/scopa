@@ -49,7 +49,7 @@ enm = fieldnames(fitin.fits);
 for ei = 1:numel(enm)
     vnm = fieldnames(fitin.fits.(enm{ei}));
     for vi = 1:numel(vnm)
-        [plotvars, do_read_indv, do_read_depv] = fitmdl_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(enm{ei}).(vnm{vi}), opts.modeltype, opts.standardize_indv, opts.standardize_depv, do_read_indv, do_read_depv);
+        [plotvars, do_read_indv, do_read_depv] = fitmdl_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(enm{ei}).(vnm{vi}), opts.mdlname, opts.standardize_indv, opts.standardize_depv, do_read_indv, do_read_depv);
     end
 end
 

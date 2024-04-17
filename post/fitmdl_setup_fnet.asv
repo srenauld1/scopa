@@ -1,12 +1,12 @@
-function opop = fitmdl_setup_fnet(modeltype, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats)
+function opop = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats)
 
-supp.modeltype = modeltype;
+supp.mdlname = mdlname;
 supp.NumTrialPoints = 1000;
 supp.NumStageOnePoints = 200;
 
 padlen_sec = 4;
 
-fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre);
+fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre);
 
 lbnd = [];
 ubnd = [];

@@ -1,14 +1,14 @@
 function [plotvars, do_read_indv, do_read_depv] = ...
-    fitmdl_plots_prepvars(fitin, plt, roiinfo, fitdata, modeltype, standardize_indv, standardize_depv, do_read_indv, do_read_depv)
+    fitmdl_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, standardize_indv, standardize_depv, do_read_indv, do_read_depv)
 
 %% organize and normalize model data into hsv map
 
 
 %% plotting vars
 
-fitin.plt = fitmdl_setup_hsvplot(modeltype, opts.plt);
+fitin.plt = fitmdl_plots_setup_hsv(mdlname, opts.plt);
 
-fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, modeltype, fitin.stats);
+fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, mdlname, fitin.stats);
 
 
 %% select which rois get plotted and how they're sorted

@@ -3,7 +3,7 @@ function fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix)
 epochinds = opts.epochinds{epi};
 validation_fold = opts.validation_fold;
 keep_transition_zones = opts.keep_transition_zones;
-modeltype = opts.modeltype;
+mdlname = opts.mdlname;
 optim_hist_save_iter_spacing = opts.optim_hist_save_iter_spacing;
 validation_split_style = opts.validation_split_style;
 omit_time_from_savemodel_datestr = opts.omit_time_from_savemodel_datestr;
@@ -78,7 +78,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
                 [ ft(ri,:), depvp(:,ri), gof(ri), gof_val(ri) ] = ...
-                    fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, modeltype, validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, pth_fitdata);
+                    fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, pth_fitdata);
                 %fitmdl_plot_single_mdl(ri, opop.mdl, supp, indv, depv, depvp(:, ri), ft(ri,:), ftsyn) %this only works within for not parfor
             end
         end

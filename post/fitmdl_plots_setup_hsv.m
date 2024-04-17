@@ -1,6 +1,6 @@
-function plt = fitmdl_plots_setup_hsv(modeltype, plt)
+function plt = fitmdl_plots_setup_hsv(mdlname, plt)
 
-%would be nice to make this more general, but currently switches by modeltype
+%would be nice to make this more general, but currently switches by mdlname
 %some of these anonymous functions are just lookups, but kept this way for possible future expansion   
 
 huestr = plt.huestr;
@@ -11,14 +11,14 @@ iif = @(varargin) varargin{2 * find([varargin{1:2:end}], 1, 'first')}(); %how to
 %% model-specific vars
 
 hue_is_periodic = 0;
-if strcmp(modeltype, 'vonmises') & strcmp(huestr, 'loc') %only if the param assigned to hue is periodic, make hrange the full circle
+if strcmp(mdlname, 'v') & strcmp(huestr, 'loc') %only if the param assigned to hue is periodic, make hrange the full circle
     "WARNING, CHANGING hrange_out_manual TO [0 1] BECAUSE HUE PARAM IS PERIODIC"
     hue_is_periodic = 1;
     hrange_out_manual = [0 1];
 end
 
 
-if startsWith(modeltype, 'svd')
+if startsWith(mdlname, 'svd')
 
     switch huestr
         case 'loc'
@@ -32,34 +32,7 @@ if startsWith(modeltype, 'svd')
     end
 
 
-elseif startsWith(modeltype, 'linear')
-
-    switch huestr
-        case 'loc'
-            gethue = @(ft, indvpref) ft(1);
-            gethr_native = @(limi,limd) error("NO NATIVE LOC NORMALIZATION FOR LINEAR MODEL, SINCE SLOPE IS UNBOUNDED"); %was [-1 1] which doesn't make sense;
-        case 'wid'
-            error("NO WID PARAM FOR LINEAR MODEL")
-        case 'amp'
-            gethue = @(ft, indvpref) ft(2);
-            gethr_native = @(limi,limd) limd;
-    end
-
-
-elseif startsWith(modeltype, 'plane')
-
-    switch huestr
-        case 'loc'
-            gethue = @(ft, indvpref) ft(2);
-            gethr_native = @(limi,limd) error("NO NATIVE LOC NORMALIZATION FOR LINEAR MODEL, SINCE SLOPE IS UNBOUNDED"); %was [-1 1] which doesn't make sense;
-        case 'wid'
-            error("NO WID PARAM FOR LINEAR MODEL")
-        case 'amp'
-            gethue = @(ft, indvpref) ft(2);
-            gethr_native = @(limi,limd) limd;
-    end
-
-elseif startsWith(modeltype, 'genlog')
+elseif strcmp(mdlname, 'l')
 
     switch huestr
         case 'loc'
@@ -73,7 +46,7 @@ elseif startsWith(modeltype, 'genlog')
     end
 
 
-elseif startsWith(modeltype, 'vonmises')
+elseif strcmp(mdlname, 'v')
 
     switch huestr
         case 'loc'
@@ -88,7 +61,7 @@ elseif startsWith(modeltype, 'vonmises')
     end
 
 
-elseif startsWith(modeltype, 'gaussian')
+elseif strcmp(mdlname, 'g')
 
     switch huestr
         case 'loc'
@@ -102,7 +75,7 @@ elseif startsWith(modeltype, 'gaussian')
             gethr_native = @(limi,limd) limd;
     end
 
-elseif startsWith(modeltype, 'fnet')
+elseif startsWith(mdlname, 'A')
 
     switch huestr
         case 'loc'
@@ -116,7 +89,7 @@ elseif startsWith(modeltype, 'fnet')
             gethr_native = @(limi,limd) limd;
     end
 
-elseif startsWith(modeltype, 'tm')
+elseif startsWith(mdlname, 'tm')
 
     switch huestr
         case 'loc'

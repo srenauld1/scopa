@@ -5,7 +5,8 @@ close all
 clc
 
 disp("make hemisphere no hemisphere option")
-disp("remove all old modeltype references ")
+disp("remove all old mdlname references ")
+disp("fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)")
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
@@ -124,7 +125,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
             [fitin, dofit] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
             stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-            opt.fit.modeltype = 'fnet_L1_sh16x'; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
+            opt.fit.mdlname = 'fnet_L1_sh16x'; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
             fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
 
         end

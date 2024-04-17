@@ -1,7 +1,7 @@
 function [indvpreaug, num_dim_indv, num_samp_mdl, levs_full_hot] = ...
-    one_hot_encode_input(modeltype, indvpreaug, num_dim_indvpre, num_samp_mdl, pth_fitdata_prefix, doplots)
+    one_hot_encode_input(mdlname, indvpreaug, num_dim_indvpre, num_samp_mdl, pth_fitdata_prefix, doplots)
 
-numbinhot = sscanf(modeltype, 'ohe%d');
+numbinhot = sscanf(mdlname, 'ohe%d');
 collapse_input_by_ineractions = 1; %default for now
 
 if doplots

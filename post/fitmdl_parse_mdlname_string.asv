@@ -1,4 +1,4 @@
-function spec = fitmdl_parse_modeltype_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl)
+function spec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl)
 
 
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
@@ -21,10 +21,7 @@ layerindex = 1;
 channel_onelay = [];
 
 spl = strsplit(mdlname, '_');
-
-mdlclass = spl{1};
-
-if ~strcmp(mdlclass, 'svd')
+if ~startsWith(spl{1}, 'svd')
 
     tmp = find(~cellfun(@isempty, regexp(spl, exprpos)));
 
@@ -98,7 +95,7 @@ if ~strcmp(mdlclass, 'svd')
             sprintf("note there is a duplicate channel_onesubstring specified across position substrings; this will not cause error, but did you intend to send the same chanel to different channel_onesubstring sets?")
         end
 
-        num_unit_prev_substring_samelayer = 0;
+        num_unit_prev_substring 
         for ni = 1:num_unit_substrings_at_currposition
 
             substring_count = substring_count+1;
@@ -183,8 +180,10 @@ if ~strcmp(mdlclass, 'svd')
             prefixtable.layer_in(:) = {strlay};
             prefixtable.channel_in(:) = {channel_onesubstring};
             prefixtable.layer_out(:) = {all_layers_ordered(layerindex+1)};
-            prefixtable.channel_out = num2cell([1:size(prefixtable, 1)]+num_unit_prev_substring_samelayer)';
+            prefixtable.channel_out = num2cell(1:size(prefixtable, 1)+num_unit_prev_substring_samelayer)';
             num_unit_prev_substring_samelayer = size(spec_onesubstring, 1);
+
+            cellfun(@num2str, num2cell(channel_onesubstring), 'UniformOutput', false)
             spec_onesubstring = [prefixtable spec_onesubstring];
 
             if substring_count==1 %on first substring 

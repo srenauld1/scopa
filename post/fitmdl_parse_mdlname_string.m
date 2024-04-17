@@ -1,4 +1,4 @@
-function spec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre, num_samp_mdl)
+function spec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl)
 
 
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
@@ -20,7 +20,7 @@ num_unit_previous_layer = num_dim_indvpre; %total for input layerindex, wll be u
 layerindex = 1;
 channel_onelay = [];
 
-spl = strsplit(modeltype, '_');
+spl = strsplit(mdlname, '_');
 if ~startsWith(spl{1}, 'svd')
 
     tmp = find(~cellfun(@isempty, regexp(spl, exprpos)));
@@ -95,7 +95,7 @@ if ~startsWith(spl{1}, 'svd')
             sprintf("note there is a duplicate channel_onesubstring specified across position substrings; this will not cause error, but did you intend to send the same chanel to different channel_onesubstring sets?")
         end
 
-        num_unit_prev_substring 
+        num_unit_prev_substring_samelayer = 0;
         for ni = 1:num_unit_substrings_at_currposition
 
             substring_count = substring_count+1;
@@ -161,13 +161,12 @@ if ~startsWith(spl{1}, 'svd')
                 clear newspec
             end
 
-            if numel(spec_onesubstring)==1
-                fun1 = table2cell(spec_onesubstring); %to make sure the table heading is fun1, rather than fun, when singleton
-                spec_onesubstring = cell2table(fun1);
-            else
-                fun = table2cell(spec_onesubstring);
-                spec_onesubstring = cell2table(fun);
-            end
+
+            spec_onesubstring = cell2table(table2cell(spec_onesubstring));
+            varstorename = spec_onesubstring.Properties.VariableNames(startsWith(spec_onesubstring.Properties.VariableNames, 'Var'));
+            newnames = strrep(varstorename, 'Var', 'fun');
+            spec_onesubstring = renamevars(spec_onesubstring, varstorename, newnames);
+
 
             spec_onesubstring = repmat(spec_onesubstring, [unit_multiplier 1]);
 
@@ -180,36 +179,24 @@ if ~startsWith(spl{1}, 'svd')
             prefixtable.layer_in(:) = {strlay};
             prefixtable.channel_in(:) = {channel_onesubstring};
             prefixtable.layer_out(:) = {all_layers_ordered(layerindex+1)};
-            prefixtable.channel_out = num2cell(1:size(prefixtable, 1)+num_unit_prev_substring_samelayer)';
+            prefixtable.channel_out = num2cell([1:size(prefixtable, 1)]+num_unit_prev_substring_samelayer)';
             num_unit_prev_substring_samelayer = size(spec_onesubstring, 1);
-
-            cellfun(@num2str, num2cell(channel_onesubstring), 'UniformOutput', false)
             spec_onesubstring = [prefixtable spec_onesubstring];
 
-            if substring_count==1 %on first substring 
-                
+            if substring_count==1 %on first substring
+
                 spec = spec_onesubstring;
 
             else %otherwise accumulate each substring's table into one fnet table, with padding whichever table is smaller (outerjoin only worked sometimes, so this ugliness instead)
 
                 addcols = abs(size(spec_onesubstring, 2)-size(spec, 2));
+                ignorecols = size(prefixtable, 2);
 
-                startcol = size(spec_onesubstring, 2) - size(prefixtable, 2) + 1;
-                endcol = startcol + addcols - 1;
                 if size(spec_onesubstring, 2)>size(spec, 2) %pad spec
-                    addtable = cell2table(cell(size(spec, 1), size(spec, 2) + addcols));
-                    spec = [spec addtable(:,startcol:endcol)]; %ugly indexing here so the heading names have correct suffix ordering
-                    varstorename = spec.Properties.VariableNames(startsWith(spec.Properties.VariableNames, 'Var'));
-                    newnames = strrep(varstorename, 'Var', 'fun');
-                    spec = renamevars(spec, varstorename, newnames);
+                    spec = padtable(spec, addcols, ignorecols);
                 elseif size(spec_onesubstring, 2)<size(spec, 2) %pad spec_onesubstring
-                    addtable = cell2table(cell(size(spec_onesubstring, 1), size(spec_onesubstring, 2) + addcols));
-                    spec_onesubstring = [spec_onesubstring addtable(:,startcol:endcol)]; %ugly indexing here so the heading names have correct suffix ordering
-                    varstorename = spec_onesubstring.Properties.VariableNames(startsWith(spec_onesubstring.Properties.VariableNames, 'Var'));
-                    newnames = strrep(varstorename, 'Var', 'fun');
-                    spec_onesubstring = renamevars(spec_onesubstring, varstorename, newnames);
+                    spec_onesubstring = padtable(spec_onesubstring, addcols, ignorecols);
                 end
-
 
                 spec = [spec; spec_onesubstring]; %accumulate output table
 
@@ -235,3 +222,19 @@ if ~startsWith(spl{1}, 'svd')
     end
 
 end
+
+
+end
+
+function tablevar = padtable(tablevar, addcols, ignorecols)
+
+startcol = size(tablevar, 2) - ignorecols + 1;
+endcol = startcol + addcols - 1;
+addtable = cell2table(cell(size(tablevar, 1), size(tablevar, 2) + addcols));
+tablevar = [tablevar addtable(:,startcol:endcol)]; %indexing here so the heading names have correct suffix ordering
+varstorename = tablevar.Properties.VariableNames(startsWith(tablevar.Properties.VariableNames, 'Var')); %then rename Var to fun, with each suffix index maintained
+newnames = strrep(varstorename, 'Var', 'fun'); %then rename Var to fun, with each suffix index maintained
+tablevar = renamevars(tablevar, varstorename, newnames);
+
+end
+

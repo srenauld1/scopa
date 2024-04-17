@@ -1,8 +1,8 @@
 
-function opop = fitmdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvpre, modeltype, chopt, dtmni, inputvar_stats, pth_fitdata_prefix)
+function opop = fitmdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvpre, mdlname, chopt, dtmni, inputvar_stats, pth_fitdata_prefix)
 
 
-spl = strsplit(modeltype, '_');
+spl = strsplit(mdlname, '_');
 try
     chopt = chopt.(spl{1});
 catch
@@ -14,21 +14,22 @@ end
 
 
 supp = [];
-if startsWith(modeltype, 'svd')
+
+if startsWith(mdlname, 'svd')
 
     opop.mdl = @objective_svd;
 
     supp.num_model_functions = 1;
-    supp.pvar = sscanf(modeltype, 'svd%d'); %numeric suffix is pvar
+    supp.pvar = sscanf(mdlname, 'svd%d'); %numeric suffix is pvar
 
-elseif startsWith(modeltype, 'genlog')
+elseif strcmp(mdlname, 'l')
 
     opop.mdl = @(bv,x,supp,pthspre) bv(1) + ( (bv(2) - bv(1)) ./ ( bv(3) + bv(4) * exp( -bv(5) * (x-bv(6)) ) .^ 1/bv(7) ) );
     opop.optimp.lb = -inf(1,7); %[0,0,0,-pi]; %a, c, k, u
     opop.optimp.ub = inf(1,7); %[inf,inf,inf,pi];
     opop.optimp.x0 = ones(1,7);
 
-elseif startsWith(modeltype, 'vonmises')
+elseif strcmp(mdlname, 'v')
 
     opop.mdl = @mdl_vonmises;
     opop.optimp.lb = [-inf,-inf,-inf,-inf];
@@ -39,32 +40,32 @@ elseif startsWith(modeltype, 'vonmises')
     supp.max_num_fun_per_neuron = 1;
 
 
-elseif startsWith(modeltype, 'gaussian')
+elseif strcmp(mdlname, 'g')
 
     opop.mdl = @(bv,x,supp,pthspre) bv(1)*exp(-(((x-bv(2)).^2)/(2*bv(3).^2)))+bv(4);
     opop.optimp.lb = [0,-5,0,0];
     opop.optimp.ub = [3000,5,10,3000];
     opop.optimp.x0 = [1,1,1,0];
 
-elseif startsWith(modeltype, 'fnet')
+elseif startsWith(mdlname, 'A')
 
-    [opop.mdl, opop.optimp, supp] = fitmdl_setup_fnet(modeltype, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats);
+    [opop.mdl, opop.optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats);
 
-elseif startsWith(modeltype, 'tm')
+elseif startsWith(mdlname, 'tm')
 
-    opop = fitmdl_setup_tm(modeltype);
+    opop = fitmdl_setup_tm(mdlname);
 
 end
 
 
 %% copy some variables from fitin (inputs above) to supp (need to fix this, it's ugly to copy)  
 
-supp.modeltype = modeltype;
+supp.mdlname = mdlname;
 supp.pthspre = pth_fitdata_prefix;
 supp.dtmni = dtmni;
 supp.num_dim_indvpre = num_dim_indvpre;
 supp.num_samp_mdl = num_samp_mdl;
-if strcmp(modeltype, 'svd') || strcmp(modeltype, 'ohe') || strcmp(modeltype, 'ohe_svd')
+if strcmp(mdlname, 'svd') || strcmp(mdlname, 'ohe') || strcmp(mdlname, 'ohe_svd')
     supp.num_par_total = num_dim_indv;
 else
     supp.num_par_total = numel(opop.optimp.x0);
