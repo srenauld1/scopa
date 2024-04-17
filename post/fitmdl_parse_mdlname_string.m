@@ -1,6 +1,8 @@
 function spec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl)
 
 
+% soon remove this to increment layer, since won't require exact channel matching isequal(channel_onelayer, 1:num_unit_previous_layer) 
+
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 
 exprlay = cell2mat(chopt.lay);
@@ -18,7 +20,8 @@ exprhot = cell2mat(chopt.hot); %h followed by a number
 
 num_unit_previous_layer = num_dim_indvpre; %total for input layerindex, wll be updated for each layerindex
 layerindex = 1;
-channel_onelay = [];
+channel_onelayer = [];
+num_unit_cumulative_onelayer = 0;
 
 spl = strsplit(mdlname, '_');
 if ~startsWith(spl{1}, 'svd')
@@ -41,7 +44,7 @@ if ~startsWith(spl{1}, 'svd')
 
     num_position = numel(specinds);
     channel_oneposition = [];
-    substring_count = 0;
+    unit_substring_count = 0;
     for si = 1:num_position
 
         strposition = spl{specinds{si}(1)};
@@ -50,13 +53,13 @@ if ~startsWith(spl{1}, 'svd')
         if num_unit_substrings_at_currposition==0
             error("no unit specified for at least one position")
         end
-        [strlay, strlayind] = regexp(strposition, all_layers_ordered(layerindex), 'match');
-        strlay = cell2mat(strlay);
+        [strlayer, strlayerind] = regexp(strposition, all_layers_ordered(layerindex), 'match');
+        strlayer = cell2mat(strlayer);
 
-        if strlayind+1>numel(strposition)
+        if strlayerind+1>numel(strposition)
             channel_onesubstring = 1:num_unit_previous_layer;
         else
-            strposition_currchanonly = strposition(strlayind+1:end); %this used to be for when full path of incoming signal was required for position spec, but now channel_onesubstring is just horizontal position (not need to remove this though)
+            strposition_currchanonly = strposition(strlayerind+1:end); %this used to be for when full path of incoming signal was required for position spec, but now channel_onesubstring is just horizontal position (not need to remove this though)
             if isempty(regexp(strposition_currchanonly, exprchan, 'match')) %check the whole channel_onesubstring substring for proper formatting
                 error("invalid channel_onesubstring string in current layerindex, or incorrect channel_onesubstring set in previous layerindex")
             end
@@ -90,15 +93,14 @@ if ~startsWith(spl{1}, 'svd')
         end
 
         channel_oneposition = [channel_oneposition channel_onesubstring];
-        channel_onelay = [channel_onelay channel_onesubstring];
-        if numel(unique(channel_onelay))~=numel(channel_onelay)
+        channel_onelayer = [channel_onelayer channel_onesubstring];
+        if numel(unique(channel_onelayer))~=numel(channel_onelayer)
             sprintf("note there is a duplicate channel_onesubstring specified across position substrings; this will not cause error, but did you intend to send the same chanel to different channel_onesubstring sets?")
         end
 
-        num_unit_prev_substring_samelayer = 0;
         for ni = 1:num_unit_substrings_at_currposition
 
-            substring_count = substring_count+1;
+            unit_substring_count = unit_substring_count+1;
 
             strunit = spl{specinds{si}(ni+1)};
             if isempty(regexp(strunit, exprunit, 'match')) || strcmp(regexp(strunit, exprunit_bad, 'match'), 'x') %str is invalid if it doesn't match, exprunit, or it matches but only because it contains only x and a number (invalid case that nevertheless matches exprunit)
@@ -176,18 +178,19 @@ if ~startsWith(spl{1}, 'svd')
             layer_out = cell(num_unit_one_substring, 1);
             channel_out = cell(num_unit_one_substring, 1);
             prefixtable = table(layer_in,channel_in,layer_out,channel_out);
-            prefixtable.layer_in(:) = {strlay};
+            prefixtable.layer_in(:) = {strlayer};
             prefixtable.channel_in(:) = {channel_onesubstring};
             prefixtable.layer_out(:) = {all_layers_ordered(layerindex+1)};
-            prefixtable.channel_out = num2cell([1:size(prefixtable, 1)]+num_unit_prev_substring_samelayer)';
-            num_unit_prev_substring_samelayer = size(spec_onesubstring, 1);
-            spec_onesubstring = [prefixtable spec_onesubstring];
+            prefixtable.channel_out = num2cell([1:size(spec_onesubstring, 1)]+num_unit_cumulative_onelayer)';
+            num_unit_cumulative_onelayer = num_unit_cumulative_onelayer + size(spec_onesubstring, 1);
+            
+            spec_onesubstring = horzcat(prefixtable, spec_onesubstring); %cat prefix columns
 
-            if substring_count==1 %on first substring
+            if unit_substring_count==1 %on first substring
 
                 spec = spec_onesubstring;
 
-            else %otherwise accumulate each substring's table into one fnet table, with padding whichever table is smaller (outerjoin only worked sometimes, so this ugliness instead)
+            else %otherwise accumulate each substring's table into one output table, padding whichever table is smaller (outerjoin only worked sometimes, so padding then vertcat instead )
 
                 addcols = abs(size(spec_onesubstring, 2)-size(spec, 2));
                 ignorecols = size(prefixtable, 2);
@@ -198,26 +201,24 @@ if ~startsWith(spl{1}, 'svd')
                     spec_onesubstring = padtable(spec_onesubstring, addcols, ignorecols);
                 end
 
-                spec = [spec; spec_onesubstring]; %accumulate output table
+                spec = vertcat(spec, spec_onesubstring); %accumulate output table
 
             end
 
         end
 
-        if max(channel_onelay)>num_unit_previous_layer
-            error("exceeded max number channels for this layerindex") %redundant with check below, but helps identify specific problem
-        end
-        if isequal(channel_onelay, 1:num_unit_previous_layer)
+        if isequal(channel_onelayer, 1:num_unit_previous_layer) %if all channels , move on to next layer
             layerindex = layerindex+1;
             if si<num_position
-                channel_onelay = []; %on final si, don't empty all chan, so check at bottom will work
+                channel_onelayer = []; %on final si, don't empty all chan, so check at bottom will work
+                num_unit_cumulative_onelayer = 0;
                 num_unit_previous_layer = size(spec(strcmp(spec.layer_in, all_layers_ordered(layerindex-1)),:), 1);
             end
         end
 
     end
 
-    if ~isequal(channel_onelay, 1:num_unit_previous_layer) %to make sure you didn't exit the above loop on final substring without specifying all channels
+    if ~isequal(channel_onelayer, 1:num_unit_previous_layer) %to make sure you didn't exit the above loop on final substring without specifying all channels
         error("not all channels specified")
     end
 
