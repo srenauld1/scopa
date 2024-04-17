@@ -14,10 +14,11 @@
 % see example section below for fnet table output after parsing mdlname   
 % mdl_fnet.m refers to a function network, similar to an ann, or cnn, but different in enough ways to deserve a different name 
 % mdl_fnet.m creates a network of functions (or a single function), and a set of optional constraints for all free parameters; those parameters are optimized with matlab built-in global solver GlobalSearch (which repeatedly calls local solver fmincon)
+% 
 % the mdlname string provides a compact representation of the model, useful for saving data and making figures, and also avoids having conditional params defined here (ie only used for a given mdlname)
-% the mdlname string 'language' is designed to make model specification simple; the available characters were chosen so mdlname can appear in filenames on any platform without causing problems, or requiring escape
+% the mdlname string syntax is designed to make model specification simple; the available characters were chosen so mdlname can appear in filenames on any platform without requiring escape characters
 % mdlname string syntax is:
-%   [ [position]_[unit]* ]*
+%   fnet_[ [position]_[unit]* ]*
     % position string syntax is:
     %   [layer][channel]
     % unit string syntax is:
@@ -68,8 +69,8 @@
 % in the entire fnet mdlname string, all numbers must be 2-digit (leading zero for 1-9) 
 % see struct 'chopt' in default_fit_params for current list of characters and regex expressions for parsing the mdlname string;
 % for simplicity, position substring can be omitted for single-unit, single-position models
-%   for example, mdlname = 'g' fits a gaussian to the entire input signal
-%   for example, mdlname = 'si' fits a linear filter followed by static nonlinearity to the entire input signal (in this case, the linear filter is a positive monophasic filter, and the nonlinearity is "inhibitory", ie a generalized logistic function with negative slope)
+%   for example, mdlname = 'fnet_g' fits a gaussian to the entire input signal
+%   for example, mdlname = 'fnet_si' fits a linear filter followed by static nonlinearity to the entire input signal (in this case, the linear filter is a positive monophasic filter, and the nonlinearity is "inhibitory", ie a generalized logistic function with negative slope)
 %   but even in these single-position, single-unit cases, the model is still defined as a "function network" using mdl_fnet.m 
 
 % NOT YET AVAILABLE --> suffixes on function characters will denote timespan of domain in seconds, with 'p' denoting decimal <-- NOT YET AVAILABLE
@@ -96,7 +97,7 @@ mdlname = 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg';
 num_dim_input = 2;
 num_samples_model = 0;
 
-%chopt holds the 
+%chopt holds the expressions for mdlname parsing with regexp  
 chopt.fnet.lay = {'[A-Z]{1}'}; %layer is any single capital letter 
 chopt.fnet.chan = {'^(0*\d{1,2})*(0*\d{1,2}-\d+)*$'}; %channel is zero or more two-digit numbers, with optional hyphens denoting ranges; no channel means all channels 
 chopt.fnet.comb = {'x'}; %a single x

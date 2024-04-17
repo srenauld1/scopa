@@ -3,8 +3,9 @@ function opop = fitmdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvpre, mdlnam
 
 
 spl = strsplit(mdlname, '_');
+mdlclass = spl{1};
 try
-    chopt = chopt.(spl{1});
+    chopt = chopt.(mdlclass);
 catch
     chopt = [];
 end
@@ -15,21 +16,21 @@ end
 
 supp = [];
 
-if startsWith(mdlname, 'svd')
+if strcmp(mdlclass, 'svd')
 
     opop.mdl = @objective_svd;
 
     supp.num_model_functions = 1;
-    supp.pvar = sscanf(mdlname, 'svd%d'); %numeric suffix is pvar
+    supp.pvar = sscanf(mdlname, 'svd_%d'); %numeric suffix is pvar
 
-elseif strcmp(mdlname, 'l')
+elseif strcmp(mdlclass, 'l')
 
     opop.mdl = @(bv,x,supp,pthspre) bv(1) + ( (bv(2) - bv(1)) ./ ( bv(3) + bv(4) * exp( -bv(5) * (x-bv(6)) ) .^ 1/bv(7) ) );
     opop.optimp.lb = -inf(1,7); %[0,0,0,-pi]; %a, c, k, u
     opop.optimp.ub = inf(1,7); %[inf,inf,inf,pi];
     opop.optimp.x0 = ones(1,7);
 
-elseif strcmp(mdlname, 'v')
+elseif strcmp(mdlclass, 'v')
 
     opop.mdl = @mdl_vonmises;
     opop.optimp.lb = [-inf,-inf,-inf,-inf];
@@ -39,19 +40,18 @@ elseif strcmp(mdlname, 'v')
     supp.num_total_model_functions = 1;
     supp.max_num_fun_per_neuron = 1;
 
-
-elseif strcmp(mdlname, 'g')
+elseif strcmp(mdlclass, 'g')
 
     opop.mdl = @(bv,x,supp,pthspre) bv(1)*exp(-(((x-bv(2)).^2)/(2*bv(3).^2)))+bv(4);
     opop.optimp.lb = [0,-5,0,0];
     opop.optimp.ub = [3000,5,10,3000];
     opop.optimp.x0 = [1,1,1,0];
 
-elseif startsWith(mdlname, 'A')
+elseif strcmp(mdlclass, 'fnet')
 
     [opop.mdl, opop.optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats);
 
-elseif startsWith(mdlname, 'tm')
+elseif strcmp(mdlclass, 'tm')
 
     opop = fitmdl_setup_tm(mdlname);
 
@@ -61,11 +61,12 @@ end
 %% copy some variables from fitin (inputs above) to supp (need to fix this, it's ugly to copy)  
 
 supp.mdlname = mdlname;
+supp.mdlclass = mdlclass;
 supp.pthspre = pth_fitdata_prefix;
 supp.dtmni = dtmni;
 supp.num_dim_indvpre = num_dim_indvpre;
 supp.num_samp_mdl = num_samp_mdl;
-if strcmp(mdlname, 'svd') || strcmp(mdlname, 'ohe') || strcmp(mdlname, 'ohe_svd')
+if strcmp(mdlclass, 'svd') || strcmp(mdlclass, 'ohe') || strcmp(mdlclass, 'ohe_svd')
     supp.num_par_total = num_dim_indv;
 else
     supp.num_par_total = numel(opop.optimp.x0);

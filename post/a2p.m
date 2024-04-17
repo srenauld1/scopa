@@ -5,7 +5,6 @@ close all
 clc
 
 disp("make hemisphere no hemisphere option")
-disp("remove all old mdlname references ")
 disp("fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)")
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline

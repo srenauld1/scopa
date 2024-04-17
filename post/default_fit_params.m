@@ -23,7 +23,7 @@ validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %
 
 slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';
-mdlname = 'A01_sh16'; %'svd' or fnet string (see notes_mdlname.m)
+mdlname = 'fnet_A01_sh16'; %'svd' or fnet string (see notes_mdlname.m)
 
 excludeopts = '';
 

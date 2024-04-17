@@ -24,14 +24,15 @@ channel_onelayer = [];
 num_unit_cumulative_onelayer = 0;
 
 spl = strsplit(mdlname, '_');
-if ~startsWith(spl{1}, 'svd')
+mdlclass = spl{1};
+if strcmp(mdlclass, 'fnet')
 
     tmp = find(~cellfun(@isempty, regexp(spl, exprpos)));
 
     if isempty(tmp) %if there's no position substring, create one, with no channel_onesubstring substring (denoting all channels)
-        specinds{1} = [1 2];
-        spl(2) = spl(1);
-        spl{1} = all_layers_ordered(1);
+        specinds{1} = [2 3];
+        spl(3) = spl(2);
+        spl{2} = all_layers_ordered(1);
     else
         for si = 1:length(tmp)
             if si==length(tmp)
@@ -221,6 +222,10 @@ if ~startsWith(spl{1}, 'svd')
     if ~isequal(channel_onelayer, 1:num_unit_previous_layer) %to make sure you didn't exit the above loop on final substring without specifying all channels
         error("not all channels specified")
     end
+
+else
+
+    error("mdlclass is not fnet; if this function is called, mdlclass must be fnet")
 
 end
 
