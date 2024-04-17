@@ -23,7 +23,7 @@ validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %
 
 slvrg = 'globalsearch';
 slvrl = 'fmincon'; %'lsqcurvefit';
-modeltype = 'fnet_L1_sh16x'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
+modeltype = 'A01_sh16'; %'svd'; %'gaussian', 'vonmises' 'log' 'linear' 'nonadaptive'
 
 excludeopts = '';
 
@@ -44,7 +44,7 @@ plt.valnorm = 'relative';%val normalization method, see setup_model
 plt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
 plt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
 plt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
-plt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model to [0 1] when plotting periodic param (e.g. von mises center, ie modeltype 'vonmises' huestr 'loc'), see compute_hsv
+plt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model to [0 1] when plotting periodic param (e.g. von mises center, ie modeltype 'v' huestr 'loc'), see compute_hsv
 plt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see compute_hsv
 plt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see compute_hsv
 plt.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see compute_hsv
@@ -72,13 +72,13 @@ plt.doplots = 1;
 %character options for different categories in different modeltypes chopt.modeltypePrefix.category (modeltypePrefix means modeltype string before any optional underscore suffixes)
 
 chopt.fnet.lay = {'[A-Z]{1}'}; %layer is any single capital letter 
-chopt.fnet.chan = {'^\d*(\d-\d+)*$'}; %channel (within layer) is 0 or more single digits, with optional hyphens denoting ranges
+chopt.fnet.chan = {'^(0*\d{1,2})*(0*\d{1,2}-\d+)*$'}; %channel is zero or more two-digit numbers, with optional hyphens denoting ranges; no channel means all channels 
 chopt.fnet.comb = {'x'}; %a single x
-chopt.fnet.prefix = {'^x*\d*(?=\D)'}; %optional x followed by optional number (can be multi-digit)
-chopt.fnet.unit = {'^x*\d*((\D)*(h\d+)*(\D)*)+$'}; %optional x, optional number (can be multiple digits), one or more non-digit character or one-hot encoding substring; %channel (within layer) is 0 or more single digits, with optional hyphens denoting ranges 
-chopt.fnet.lin = {'s','r','d','c','f'}; %linear functions; can be multi-sample; hyphen denotes corresponding negative version of function
-chopt.fnet.non = {'e','i','l','g','v'}; %nonlinear functions; currently only instantaneous (single-sample)
-chopt.fnet.hot = {'h\d+'}; %h followed by one or more numeric characters
+chopt.fnet.prefix = {'^x*0*\d*(?=\D)'}; %optional x followed by optional 2-digit number
+chopt.fnet.unit = {'^x*\d*((\D)*(h\d+)*(\D)*)+$'}; %optional x followed by optional 2-digit number, followed by one or more non-numeric character or one-hot encoding substring; 
+chopt.fnet.lin = {'s','r','d','c','f'}; %linear functions;
+chopt.fnet.non = {'e','i','l','g','v'}; %nonlinear functions; 
+chopt.fnet.hot = {'h\d+'}; %one-hot encoding function; h followed by one or more numeric characters
 
 
 %% assign to struct

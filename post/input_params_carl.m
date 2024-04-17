@@ -157,7 +157,7 @@ opt.pf.bump.fit(1).indvpre_str{1} = {['vis, angsd']};
 opt.pf.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
 opt.pf.bump.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-opt.pf.bump.fit(1).modeltype = 'vonmises';
+opt.pf.bump.fit(1).modeltype = 'v';
 opt.pf.bump.fit(1).epochinds = {[4]};
 opt.pf.bump.fit(1).mdl_length_sec = 0;
 opt.pf.bump.fit(1).hsv_background = 'rois';
@@ -223,54 +223,9 @@ opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv
 opt.fit(1).epochinds = {[2 3 4]};
 opt.fit(1).validation_fold = 6; %applied to all modeltypes; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
-% notes about opt.fit.modeltypes
+% see notes_modeltype for notes about opt.fit.modeltype syntax
 
-% for modeltypes starting with prefix svd*, suffix p denotes percentage of the data variance that linear fit should account for (pvar in objective_svd = p/100); for example 'svd22' accounts for 22% of variance, i.e. in objective_svd pvar=0.22
-
-% for modeltypes starting with prefix fnet*, suffix denotes arhcitecture,
-% see struct 'chopt' in default_fit_params for current list of characters, for readability, docs below refer to those characters
-% the architecture string provides a compact representation of the model, useful for saving data and making figures, and also avoids having params here that are conditional, ie only used for a given modeltype)
-% model string syntax is:
-%   fnet_[ [position]_[unit]* ]*
-    % position string syntax is:
-    %   [ [layer][channel]** ]*
-    % unit string syntax is:
-    %   [functionchar]*
-% 'position' is the incoming signal's full path through the network; therefore, 'position' defines the signal operated on by function(s) specified by 'unit'
-% for specification simplicity/interpretability, the entire path of the upstream signal must be specified (this keeps 'position' numbers smaller, and easier to locate intuitively)
-% each 'position' string is comprised of 'layer' and 'channel', for each 'position' the incoming signal passes through
-%   'layer' is a capital letter; layers are in alphabetic order (input layer is 'A', first model functions, and their outputs, belong to layer 'B')
-%       layer cannot be omitted
-%   'channel' is a single-digit number (this specification approach assumes networks are relatively simple); for layer 'A', channel denotes input dimension; for layer 'B'-'Z', channel denotes previous layer's 'unit' index (which also corresponds to output index)
-%       channel can be omitted; if omitted, all channels in the specified layer are assumed
-%       hyphen denotes a contiguous range of channels
-% 'unit' is a single function, or multiple functions operating in series 
-% 'unit' string can appear any number of times after the position string
-% 'unit' string format is:
-%   set of characters denoting parallel 'units' applied at the position denoted by the last position string; additional distinct 'units' are separated by underscores,
-%   if the unit string begins with the letter 'x', then all combinations of listed types for both functions are applied to the input channel
-%   if the unit string begins with a number (after optional 'x'), q, the unit/units specified is/are repeated q times at the specified position; q does not have to be single-digit
-%   the unit string can be comprised of any sequence of unit characters below
-%   if the position string is omitted, and only the unit string appears, the model is a single position model (which can be a single unit character too)
-% unit characters are:
-    % linear functions (can be multiple timepoints):
-        % s: is for 'sum', positive monophasic linear filter (summation/integration) (2 free params)
-        % r: is for 'negative sum' (r precedes s), negative monophasic linear filter (summation/integration) (2 free params) 
-        % d: is for 'difference', biphasic linear filter with positive lobe first (positive differentiation) (2 free params)
-        % c: is for 'negative difference' (c precedes d), biphasic linear filter with negative lobe first (negative differentiation) (2 free params) 
-        % f: is for 'free', unconstrained linear filter (param number matches number of incoming signal dimensions)
-    % nonlinear functions (all are instantaneous):
-        % e: is for 'excitation', generalized logistic function (can be sigmoid) with positive slope (5 free params, 2 constants)
-        % i: is for 'inhibition', generalized logistic function (can be sigmoid) with negative slope (5 free params, 2 constants)
-        % l: is for 'logistic', generalized logistic function (can be sigmoid) with no slope constraint (5 free params, 2 constants)
-        % v: is for 'vonmises'
-        % g: is for 'gaussian'
-        % h: is for 'hot-encoding', a non-parametric nonlinearity
-        %   h requires an additional integer suffix denoting number of bins (must be power of 2, for now); binning applies to the joint distribution of all dimensions of incoming signal (including time)
-% could try using hyphens in unit string to allow multi-char series combos (currently combos only work for single lin and single non) 
-% example: fnet_L1Cx_sieh16x applies 4 neurons to all input channels in a single layer; 4 neurons are all combinations of linear functions 's' and 'i'
-
-opt.fit(1).modeltypes = 'fnet_A1_sh16';
+opt.fit(1).modeltype = 'A01_sh16';
 opt.fit(1).plt.doplots = 100;
 
 opt.fit = default_fit_params(opt.fit);

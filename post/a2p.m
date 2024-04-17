@@ -5,6 +5,7 @@ close all
 clc
 
 disp("make hemisphere no hemisphere option")
+disp("remove all old modeltype references ")
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
@@ -31,7 +32,8 @@ disp("make hemisphere no hemisphere option")
 %% params
 
 opt = input_params_carl();
-fnetspec = fitmdl_parse_modeltype_string('fnet_A1_22sh16igh32v_2ev_A2_i_B1-26_xscdh16', opt.fit.chopt.fnet, 2, 0)
+fnetspec = fitmdl_parse_modeltype_string('A01_22sh16igh32v_02ev_A02_i_B01-25_xscdh16', opt.fit.chopt.fnet, 2, 0);
+fnetspec = fitmdl_parse_modeltype_string('sv', opt.fit.chopt.fnet, 2, 0);
 
 %% loop over recordings
 

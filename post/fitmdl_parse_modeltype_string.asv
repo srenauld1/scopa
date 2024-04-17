@@ -1,123 +1,142 @@
-function fnetspec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre, num_samp_mdl)
+function spec = fitmdl_parse_modeltype_string(modeltype, chopt, num_dim_indvpre, num_samp_mdl)
 
-%right now order of characters within an underscore doesn't matter, so the code doesn't treat order
 
-% right now channel parsing "works" but the fnet is not optimized for multiple layers, so how channel and layer specification works is not super intuitive
-
-alphabet_caps = char(('A':'Z').').'; %alphabet, capitals, to ensure layer order is corect 
+all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 
 exprlay = cell2mat(chopt.lay);
 exprchan = [cell2mat(chopt.chan)];
-exprpos = ['^(' exprlay exprchan(2:end-1) ')*$'];
+exprchanrange = '0*\d{1,2}-0*\d{1,2}';
+exprchanallchar = '0*\d{1,2}';
+exprpos = ['^(' exprlay exprchan(2:end-1) ')*$']; %grouping with () was previously used when full position path was required; doesn't matter keeping it though
 exprunit = cell2mat(chopt.unit); %optional x, optional number (can be multiple digits), one or more non-digit character
+exprunit_bad = '^x*\d*\D'; %we don't want result of this match to be a singular 'x' and nothing more
 exprprefix = cell2mat(chopt.prefix);
+exprprefixnumber = '\d*';
 exprlin = strjoin(chopt.lin, '|');
 exprnon = strjoin(chopt.non, '|');
-exprhot = cell2mat(chopt.hot); %h followed by a number followed by one or more optional chars that aren't any of chars in chl, cha, or chh
+exprhot = cell2mat(chopt.hot); %h followed by a number
 
-numchan_total_currlay = num_dim_indvpre; %total for input layer, wll be updated for each layer
-layer = 1;
-allchan = [];
+num_unit_previous_layer = num_dim_indvpre; %total for input layerindex, wll be updated for each layerindex
+layerindex = 1;
+channel_onelay = [];
 
 spl = strsplit(modeltype, '_');
-if strcmp(spl{1}, 'fnet')
+if ~startsWith(spl{1}, 'svd')
 
     tmp = find(~cellfun(@isempty, regexp(spl, exprpos)));
 
-    for si = 1:length(tmp)
-        if si==length(tmp)
-            specinds{si} = tmp(si):length(spl);
-        else
-            specinds{si} = tmp(si):tmp(si+1)-1;
+    if isempty(tmp) %if there's no position substring, create one, with no channel_onesubstring substring (denoting all channels)
+        specinds{1} = [1 2];
+        spl(2) = spl(1);
+        spl{1} = all_layers_ordered(1);
+    else
+        for si = 1:length(tmp)
+            if si==length(tmp)
+                specinds{si} = tmp(si):length(spl);
+            else
+                specinds{si} = tmp(si):tmp(si+1)-1;
+            end
         end
     end
 
-    num_specified_positions = numel(specinds);
-    for si = 1:num_specified_positions
+    num_position = numel(specinds);
+    channel_oneposition = [];
+    substring_count = 0;
+    for si = 1:num_position
+
         strposition = spl{specinds{si}(1)};
-        num_substrings = length(specinds{si})-1;
-        [strlay, strlayind] = regexp(strposition, alphabet_caps(layer), 'match');
+
+        num_unit_substrings_at_currposition = length(specinds{si})-1;
+        if num_unit_substrings_at_currposition==0
+            error("no unit specified for at least one position")
+        end
+        [strlay, strlayind] = regexp(strposition, all_layers_ordered(layerindex), 'match');
         strlay = cell2mat(strlay);
-        exprlay_all = ['[' alphabet_caps(1:layer) ']' ];
-        if numel(regexp(strposition, exprlay_all, 'match'))~=layer
-            error("not all previous layers appear in position string")
-        end
-        if ~strcmp(cell2mat(regexp(strposition, exprlay_all, 'match')), alphabet_caps(1:layer) )
-            error("all previous layers must appear in alphabetical order in position string")
-        end
 
         if strlayind+1>numel(strposition)
-            channel = 1:numchan_total_currlay;
+            channel_onesubstring = 1:num_unit_previous_layer;
         else
-            strposition_currchanonly = strposition(strlayind+1:end);
-            if isempty(regexp(strposition_currchanonly, '^\d*(\d-\d+)*$', 'match'))
-                error("invalid channel string")
+            strposition_currchanonly = strposition(strlayind+1:end); %this used to be for when full path of incoming signal was required for position spec, but now channel_onesubstring is just horizontal position (not need to remove this though)
+            if isempty(regexp(strposition_currchanonly, exprchan, 'match')) %check the whole channel_onesubstring substring for proper formatting
+                error("invalid channel_onesubstring string in current layerindex, or incorrect channel_onesubstring set in previous layerindex")
             end
-            str_chanrange = regexp(strposition_currchanonly, '(\d-\d)*', 'match');
+            str_chanrange = regexp(strposition_currchanonly, exprchanrange, 'match');
             chanrange = [];
-            chanrange_chars = {};
+            chanrange_chars = [];
             for cri = 1:numel(str_chanrange)
-                if numel(str_chanrange{cri})~=3
-                    error("incorrect channel range spec")
+                if numel(str_chanrange{cri})~=5
+                    error("incorrect channel_onesubstring range spec")
                 end
-                chanrange = [chanrange str2double(str_chanrange{cri}(1)):str2double(str_chanrange{cri}(3))];
-                chanrange_chars(end+1) = {str_chanrange{cri}(1)}; 
-                chanrange_chars(end+1) = {str_chanrange{cri}(3)}; 
+                chanrange_onerange = str2double(str_chanrange{cri}(1:2)):str2double(str_chanrange{cri}(4:5));
+                if isempty(chanrange_onerange)
+                    error("channel_onesubstring range must be increasing")
+                end
+                chanrange = [chanrange chanrange_onerange];
+                chanrange_chars = [chanrange_chars strsplit(str_chanrange{cri}, '-')];
             end
             if numel(unique(chanrange))~=numel(chanrange)
-                error("duplicate channels in range spec")
+                error("duplicate channels in range spec") %redundant with numel(unique(channel_onesubstring))~=numel(channel_onesubstring) below, but this helps identify the specific problem
             end
-            str_chan_allchars = regexp(strposition_currchanonly, '\d{1}', 'match');
-            if numel(unique(str_chan_allchars))~=numel(str_chan_allchars)
+            str_chan_allchars = regexp(strposition_currchanonly, exprchanallchar, 'match');
+            if numel(unique(str_chan_allchars))~=numel(str_chan_allchars) %redundant with numel(unique(channel_onesubstring))~=numel(channel_onesubstring) below, but this helps identify the specific problem
                 error("duplicate channels")
             end
             str_chan_notrange = setxor(str_chan_allchars, chanrange_chars);
             chan_notrange = str2double(str_chan_notrange);
-            channel = unique([chan_notrange, chanrange]);
+            channel_onesubstring = sort([chan_notrange, chanrange]);
+            if numel(unique(channel_onesubstring))~=numel(channel_onesubstring)
+                error("there is a duplicate channel_onesubstring specified in a single position substring")
+            end
         end
 
-        allchan = [allchan channel];
+        channel_oneposition = [channel_oneposition channel_onesubstring];
+        channel_onelay = [channel_onelay channel_onesubstring];
+        if numel(unique(channel_onelay))~=numel(channel_onelay)
+            sprintf("note there is a duplicate channel_onesubstring specified across position substrings; this will not cause error, but did you intend to send the same chanel to different channel_onesubstring sets?")
+        end
 
-        spec_oneposition = [];
-        for ni = 1:num_substrings
+        num_unit_prev_substring 
+        for ni = 1:num_unit_substrings_at_currposition
+
+            substring_count = substring_count+1;
 
             strunit = spl{specinds{si}(ni+1)};
-            if isempty(regexp(strunit, exprunit, 'match')) || strcmp(regexp(strunit, '^x*\d*\D', 'match'), 'x') %str is invalid if it doesn't match, exprunit, or it matches but only because it contains only x and a number (invalid case that nevertheless matches exprunit)
+            if isempty(regexp(strunit, exprunit, 'match')) || strcmp(regexp(strunit, exprunit_bad, 'match'), 'x') %str is invalid if it doesn't match, exprunit, or it matches but only because it contains only x and a number (invalid case that nevertheless matches exprunit)
                 error("unit string invalid syntax, must be: optional x, optional number (can be multiple digits), one or more non-digit character")
             end
 
             if strcmp(strunit(1), 'x')
-                combo_spec = 1;
+                combo_syntax = 1;
                 disp("making all combinations of linear and nonlinear function specifiers")
             else
-                combo_spec = 0;
+                combo_syntax = 0;
             end
 
             [strprefix, indsprefix] = regexp(strunit, exprprefix, 'match', 'once'); %first occurrence of optional x and or optional number
             strprefix = {strprefix};
 
-            num_units_for_this_substring = str2double(cell2mat(regexp(cell2mat(strprefix), '\d*', 'match'))); %any number in the prefix, can be multi-digit (checks above ensures only one number appears in unit string)
-            if isnan(num_units_for_this_substring)
-                num_units_for_this_substring = 1;
+            unit_multiplier = str2double(cell2mat(regexp(cell2mat(strprefix), exprprefixnumber, 'match'))); %any number in the prefix, can be multi-digit (checks above ensures only one number appears in unit string)
+            if isnan(unit_multiplier)
+                unit_multiplier = 1;
             end
 
             [strlin, indslin] = regexp(strunit, exprlin, 'match');
-            if combo_spec && numel(unique(strlin)) ~= numel(strlin)
-                error("there are duplicate linear function chars within a single unit string that is specified combo style (with x prefix)")
+            if combo_syntax && numel(unique(strlin)) ~= numel(strlin)
+                error("there are duplicate linear function chars within a single unit string that is specified with combo syntax (with x prefix)")
             end
             [strnon_nothot, indsnothot] = regexp(strunit, exprnon, 'match');
-            if combo_spec && numel(unique(strnon_nothot)) ~= numel(strnon_nothot)
-                error("there are duplicate (not hot) nonlinear function chars within a single unit string that is specified combo style (with x prefix)")
+            if combo_syntax && numel(unique(strnon_nothot)) ~= numel(strnon_nothot)
+                error("there are duplicate (not hot) nonlinear function chars within a single unit string that is specified with combo syntax (with x prefix)")
             end
             [strhot, indshot] = regexp(strunit, exprhot, 'match');
-            if combo_spec && numel(unique(strhot)) ~= numel(strhot)
-                error("there are duplicate one-hot encoding function chars within a single unit string that is specified combo style (with x prefix)")
+            if combo_syntax && numel(unique(strhot)) ~= numel(strhot)
+                error("there are duplicate one-hot encoding function chars within a single unit string that is specified with combo syntax (with x prefix)")
             end
-            if ~isempty(regexp('x3h1h16sh0', 'h\D', 'match')) %if there are any h followed by non-numeric char
-                error("one hot encoding string must be h followed by number")
+            if any(~cellfun(@isempty, regexp(strhot, 'h\D', 'match'))) %if there are any h followed by non-numeric char
+                error("one-hot encoding string must be h followed by number")
             end
-            if numel(strlin)>1 && ~combo_spec
-                error("only one linear function allowed (for now), unless specifying a combo (x prefix)")
+            if numel(strlin)>1 && ~combo_syntax
+                error("only one linear function allowed (for now), unless unit is specified with combo syntax (unit substring begins with x prefix)")
             end
             if num_samp_mdl>0 && isempty(strlin)
                 error("missing linear function specifier for multi-timepoint model; curently no available nonlinear functions accept multi-timepoint input")
@@ -125,7 +144,7 @@ if strcmp(spl{1}, 'fnet')
 
             total_num_function_strings = length(strlin) + length(strnon_nothot) + length(strhot); %hot strings have multiple chars, all others have one
 
-            if combo_spec
+            if combo_syntax
                 strnon = [strnon_nothot strhot];
                 spec_onesubstring = combinations(strlin, strnon);
             else
@@ -142,33 +161,77 @@ if strcmp(spl{1}, 'fnet')
                 clear newspec
             end
 
-            fun = table2cell(spec_onesubstring);
-            spec_onesubstring = cell2table(fun);
-
-            spec_onesubstring = repmat(spec_onesubstring, [num_units_for_this_substring 1]);
-            if ni==1
-                spec_oneposition = spec_onesubstring;
+            if numel(spec_onesubstring)==1
+                fun1 = table2cell(spec_onesubstring); %to make sure the table heading is fun1, rather than fun, when singleton
+                spec_onesubstring = cell2table(fun1);
             else
-                spec_oneposition = outerjoin(spec_oneposition, spec_onesubstring, 'MergeKeys', true); %cat spec from each parsed underscore-delimited substring
+                fun = table2cell(spec_onesubstring);
+                spec_onesubstring = cell2table(fun);
+            end
+
+            spec_onesubstring = repmat(spec_onesubstring, [unit_multiplier 1]);
+
+            num_unit_one_substring = size(spec_onesubstring, 1);
+            layer_in = cell(num_unit_one_substring, 1);
+            channel_in = cell(num_unit_one_substring, 1);
+            layer_out = cell(num_unit_one_substring, 1);
+            channel_out = cell(num_unit_one_substring, 1);
+            prefixtable = table(layer_in,channel_in,layer_out,channel_out);
+            prefixtable.layer_in(:) = {strlay};
+            prefixtable.channel_in(:) = {channel_onesubstring};
+            prefixtable.layer_out(:) = {all_layers_ordered(layerindex+1)};
+            prefixtable.channel_out = num2cell(1:size(prefixtable, 1)+num_unit_prev_substring_samelayer)';
+            num_unit_prev_substring_samelayer = size(spec_onesubstring, 1);
+
+            cellfun(@num2str, num2cell(channel_onesubstring), 'UniformOutput', false)
+            spec_onesubstring = [prefixtable spec_onesubstring];
+
+            if substring_count==1 %on first substring 
+                
+                spec = spec_onesubstring;
+
+            else %otherwise accumulate each substring's table into one fnet table, with padding whichever table is smaller (outerjoin only worked sometimes, so this ugliness instead)
+
+                addcols = abs(size(spec_onesubstring, 2)-size(spec, 2));
+
+                startcol = size(spec_onesubstring, 2) - size(prefixtable, 2) + 1;
+                endcol = startcol + addcols - 1;
+                if size(spec_onesubstring, 2)>size(spec, 2) %pad spec
+                    addtable = cell2table(cell(size(spec, 1), size(spec, 2) + addcols));
+                    spec = [spec addtable(:,startcol:endcol)]; %ugly indexing here so the heading names have correct suffix ordering
+                    varstorename = spec.Properties.VariableNames(startsWith(spec.Properties.VariableNames, 'Var'));
+                    newnames = strrep(varstorename, 'Var', 'fun');
+                    spec = renamevars(spec, varstorename, newnames);
+                elseif size(spec_onesubstring, 2)<size(spec, 2) %pad spec_onesubstring
+                    addtable = cell2table(cell(size(spec_onesubstring, 1), size(spec_onesubstring, 2) + addcols));
+                    spec_onesubstring = [spec_onesubstring addtable(:,startcol:endcol)]; %ugly indexing here so the heading names have correct suffix ordering
+                    varstorename = spec_onesubstring.Properties.VariableNames(startsWith(spec_onesubstring.Properties.VariableNames, 'Var'));
+                    newnames = strrep(varstorename, 'Var', 'fun');
+                    spec_onesubstring = renamevars(spec_onesubstring, varstorename, newnames);
+                end
+
+
+                spec = [spec; spec_onesubstring]; %accumulate output table
+
             end
 
         end
 
-        layerfield = ['L' num2str(layer)];
-        for ci = 1:length(channel)
-            channelfield = num2str(channel(ci));
-            fnetspec.(layerfield).(channelfield) = spec_oneposition;
+        if max(channel_onelay)>num_unit_previous_layer
+            error("exceeded max number channels for this layerindex") %redundant with check below, but helps identify specific problem
+        end
+        if isequal(channel_onelay, 1:num_unit_previous_layer)
+            layerindex = layerindex+1;
+            if si<num_position
+                channel_onelay = []; %on final si, don't empty all chan, so check at bottom will work
+                num_unit_previous_layer = size(spec(strcmp(spec.layer_in, all_layers_ordered(layerindex-1)),:), 1);
+            end
         end
 
-        if max(allchan)>numchan_total_currlay
-            error("exceeded max number channels for this layer")
-        end
-        if isequal(allchan, 1:numchan_total_currlay)
-            layer = layer+1;
-            numchan_total_currlay = max(allchan);
-            allchan = [];
-        end
+    end
 
+    if ~isequal(channel_onelay, 1:num_unit_previous_layer) %to make sure you didn't exit the above loop on final substring without specifying all channels
+        error("not all channels specified")
     end
 
 end
