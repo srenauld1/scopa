@@ -141,7 +141,7 @@ if strcmp(mdlclass, 'fnet')
             if numel(strlin)>1 && ~combo_syntax
                 error("only one linear function allowed (for now), unless unit is specified with combo syntax (unit substring begins with x prefix)")
             end
-            if num_samp_mdl>0 && isempty(strlin)
+            if num_samp_mdl>1 && isempty(strlin)
                 error("missing linear function specifier for multi-timepoint model; curently no available nonlinear functions accept multi-timepoint input")
             end
 
