@@ -6,7 +6,7 @@ clc
 
 disp("make hemisphere no hemisphere option")
 disp("fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)")
-
+disp("need to make fitmdl_parse_mdlname_string run with other inputs ignored during param setting to check the syntax (so you don't find out later, halfway through the pipeline")
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity 

@@ -85,7 +85,7 @@ opop = default_optimization_params(opop);
 opop.supp = supp; %assign this after default_optimization_params, since supp is for supplemental options that can vary (exist or not) 
 
 
-opop = orderfields_recursive(opop);
+% orderfields currently erroring when called here, not super important though opop = orderfields_recursive(opop);
 
 
 end

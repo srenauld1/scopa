@@ -11,7 +11,7 @@
 %       note mdlname 'svd' is currently the only model that is not defined by mdl_fnet.m
 
 % other than models in mdlclass 'svd', all models (structure, functions, parameters, constants, constraints) are defined by mdl_fnet.m
-% see example section below for table output ('fnetspec') after parsing mdlname   
+% see example section below for table output ('fnetspec') after parsing mdlname 
 % mdl_fnet.m refers to a function network, similar to an ann, or cnn, but different in enough ways to deserve a different name 
 % mdl_fnet.m creates a network of functions (or a single function), and a set of optional constraints for all free parameters; those parameters are optimized with matlab built-in global solver GlobalSearch (which repeatedly calls local solver fmincon)
 % 

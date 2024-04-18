@@ -150,6 +150,7 @@ for fi = 1:num_fun
     parind_this_fun = [1:num_par_this_fun] + num_par_this_unit_cum;
     num_par_this_unit_cum = num_par_this_unit_cum + num_par_this_fun;
     pind{fi} = parind_this_fun;
+    funstr{fi} = fnet_onefun;
 
     linineq_A_tmp = zeros(1, num_par_this_fun);
     if strcmp(fnet_onefun, 'e')  %left asymptote <= right asymptote will make positive slope (assuming slope param constrained positive) but we want strictly less than (right?), so modify linineq_b to not be zero?
@@ -172,19 +173,22 @@ end
 fnet.num_fun = num_fun;
 fnet.fnetspec = fnetspec;
 fnet.pind = pind;
+fnet.funstr = funstr;
 fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
 
 %% nested model functions
 
 
-    function [out, filt] = fun_linfilt_1d(in, filttype, doplots, varargin)
+    function [out, filt] = fun_linfilt_1d(in, filttype, doplots, outflag, varargin)
 
 
         %make linear filter
         if strcmp(filttype, 'f') %freeform, ie non-parametric, linear filter, directly optimize weights
            
             filt = cell2mat(varargin);
+            disp("need to parameterize bias in freeform filter")
+            filt_bias = 0;
         
         elseif any(strcmp(filttype, {'s', 'd'})) % otherwise, it's a parametric filter
             
@@ -232,7 +236,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
 
 
-    function out = fun_genlog(in, varargin)
+    function out = fun_genlog(in, typeflag, doplots, outflag, varargin)
 
         if nargin==6
             B = varargin{1};
@@ -249,17 +253,17 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     end
 
 
-    function out = fun_vonmises(in, pars)
+    function out = fun_vonmises(in, typeflag, doplots, outflag, pars)
         out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
     end
 
 
-    function out = fun_gaussian(in, pars)
+    function out = fun_gaussian(in, typeflag, doplots, outflag, pars)
         out = pars(1)*exp(-(((in-pars(2)).^2)/(2*pars(3).^2)))+pars(4);
     end
 
 
-    function [out, binmns] = fun_ohe(doplots, outflag, pthspre, in, pars)
+    function [out, binmns] = fun_ohe(in, typeflag, doplots, outflag, pars)
 
         if doplots
             hfg = figure; hax = axes('Parent', hfg); hp1 = plot(hax,1); yyaxis right; hp2 = plot(hax,1);
@@ -276,6 +280,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
         in = double(in);
 
         if doplots
+            pthspre = '';
             filename_save_hot_levels = [pthspre '_hotlevels_.png'];
             figure; imagesc(hotcombos)
             saveas(gcf, filename_save_hot_levels)

@@ -157,7 +157,7 @@ opt.pf.bump.fit(1).indvpre_str{1} = {['vis, angsd']};
 opt.pf.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
 opt.pf.bump.fit(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-opt.pf.bump.fit(1).mdlname = 'fnet_v';
+opt.pf.bump.fit(1).mdlname = 'fnet_A_x02fih16h32_B01-02_i_e_B03-06_svg'; %'fnet_v';
 opt.pf.bump.fit(1).epochinds = {[4]};
 opt.pf.bump.fit(1).mdl_length_sec = 0;
 opt.pf.bump.fit(1).hsv_background = 'rois';
