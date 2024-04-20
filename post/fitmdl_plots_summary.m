@@ -6,7 +6,7 @@ supp = fitin.opop.supp;
 mdl = fitin.opop.mdl;
 num_dim_depvpre = fitin.num_dim_depvpre;
 
-standardize_depv = opts.standardize_depv;
+normalize_depv = opts.normalize_depv;
 epochinds = opts.epochinds;
 
 pixinds_roi = roiinfo.pixinds_roi;

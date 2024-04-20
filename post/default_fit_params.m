@@ -27,8 +27,8 @@ mdlname = 'fnet_A01_sh16'; %'svd' or fnet string (see notes_mdlname.m)
 
 excludeopts = '';
 
-standardize_indv = 1;%1 makes each indv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
-standardize_depv = 1; %1 makes each depv mean=0 variance=1 for fitting model (but still uses original scale for plotting), this is useful for comparing gof (if gof is default of mse, at least) of models fit to depv whose amplitudes differ
+normalize_indv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale 
+normalize_depv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale 
 smoothdepv = 0; %gaussian window std is one fifth total length
 smoothindv = 0; %gaussian window std is one fifth total length
 

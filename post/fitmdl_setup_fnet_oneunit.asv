@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    fitmdl_setup_fnet_oneunit(fnetspec, num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    fitmdl_setup_fnet_oneunit(fnetspec, num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats)
 
 
 
@@ -76,14 +76,7 @@ hotnonlin_weights = [-depvpre_extreme_alldim*2, depvpre_extreme_alldim*2, depvpr
 
 
 if strcmp(fnetspec.layer_in{1}, 'A')
-    num_dim_in = numel(fnetspec.channel_in{1})*num_samp_mdl; %account for mdl samples on first layer, which currently only layer allowing multi mdl samples
-else
-    if multi_time_in_layer_one_only
-    num_dim_in = numel(fnetspec.channel_in{1});
-    else
-        error("check this")
-    end
-end
+numel(fnetspec.channel_in{1})*num_dim_indvpre; %account for mdl samples
 
 lbnd = [];
 ubnd = [];
@@ -116,9 +109,9 @@ for fi = 1:num_fun
         x0_tmp = [con_filt_tau1(3), con_filt_tshift(3), con_tau2(3), con_tc(3)];
     elseif strcmp(fnet_onefun, 'f') %freeform filter, non-parametric
         fnet.funh{fi} = @fun_linfilt_1d;
-        lbnd_tmp = [ones(1, num_dim_in)*con_filt_free_weights(1) con_filt_bias(1)];
-        ubnd_tmp = [ones(1, num_dim_in)*con_filt_free_weights(2) con_filt_bias(2)];
-        x0_wt = rand(1, num_dim_in);%*con_filt_free_weights(3);
+        lbnd_tmp = [ones(1, num_samp_mdl)*con_filt_free_weights(1) con_filt_bias(1)];
+        ubnd_tmp = [ones(1, num_samp_mdl)*con_filt_free_weights(2) con_filt_bias(2)];
+        x0_wt = rand(1, num_samp_mdl);%*con_filt_free_weights(3);
         x0_wt = x0_wt / norm(vec(x0_wt(:)),1); %L1 norm=1 for starting filter 
         x0_tmp = [x0_wt con_filt_bias(3)];
     elseif strcmp(fnet_onefun, 'zzzzzzz') || strcmp(fnet_onefun, 'zzzzzzzz') %skip activation function
@@ -144,7 +137,7 @@ for fi = 1:num_fun
     elseif startsWith(fnet_onefun, 'h')
         % previous approach ---> fnet = fitmdl_setup_ohe(fnet, fnetspec, fi, num_dim_indvpre, num_samp_mdl, num_unit);
         num_bin_hot = sscanf(fnet_onefun, 'h%d');
-        hotcombos = repmat(vec([1:num_bin_hot]), [1 num_dim_in]);
+        hotcombos = repmat(vec([1:num_bin_hot]), [1 num_dim_indvpre]);
         fnet.funh{fi} = @fun_ohe;
         lbnd_tmp = ones(1, num_bin_hot)*hotnonlin_weights(1);
         ubnd_tmp = ones(1, num_bin_hot)*hotnonlin_weights(2);
@@ -193,6 +186,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
         if strcmp(filttype, 'f') %freeform, ie non-parametric, linear filter, directly optimize weights
 
             filt = pars(1:end-1);
+            disp("need to parameterize bias in freeform filter")
             filt_bias = pars(end);
 
         elseif any(strcmp(filttype, {'s', 'r', 'd', 'c'})) % otherwise, it's a parametric filter
@@ -282,12 +276,16 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
     function [out, binmns] = fun_ohe(in, typeflag, doplots, outflag, pars)
 
+        if doplots
+            hfg = figure; hax = axes('Parent', hfg); hp1 = plot(hax,1); yyaxis right; hp2 = plot(hax,1);
+        end
+
         % indvin_hot(:) = 0;
         [indvin_hot, binmns] = probability_bin(in, num_bin_hot, outflag);
 
         [~, levs_full_hot] = ismember(indvin_hot, hotcombos, 'rows');
 
-        indshot = [1:num_bin_hot]; 
+        indshot = [1:num_bin_hot]; %this does all possible, which if any dims independently one-hot encoded, may not exist or potentially smaller, unique(indvin_hot(:));
         in = levs_full_hot==indshot;
 
         in = double(in);

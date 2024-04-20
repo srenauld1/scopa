@@ -40,6 +40,8 @@ depvp = zeros(num_samp_total, 1, 'single');
 
 if validation_fold %if doing validation
     [depvp(sampinds_indvdepv_val), gof_val] = fitmdl_predict(ft, indv_val, depv_val, opop.mdl, supp);
+else
+    gof_val = nan;
 end
 
 

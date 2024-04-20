@@ -1,5 +1,5 @@
 function [plotvars, do_read_indv, do_read_depv] = ...
-    fitmdl_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, standardize_indv, standardize_depv, do_read_indv, do_read_depv)
+    fitmdl_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, normalize_indv, normalize_depv, do_read_indv, do_read_depv)
 
 %% organize and normalize model data into hsv map
 
@@ -35,21 +35,21 @@ roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxn
 if do_read_indv
     indv = read_mdl_var(fitin.pth_indvaug_bin);
     indv = indv(:, fitdata.sampinds_indvpreaug).'; %columns of indv and depv should be number samples, could change above or just transpose here
-    if standardize_indv
-        indv = fitin.standmdlvar_indv(indv, 'reverse');
+    if normalize_indv
+        indv = fitin.normmdlvar_indv(indv, 'reverse');
     end
     do_read_indv = 0;
 end
 if do_read_depv
     depv_allrois = read_mdl_var(fitin.pth_depvpre_bin);
     depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvpre).'; %columns of indv and depv should be number samples, could change above or just transpose here
-    if standardize_depv
-        depv_allrois = fitin.standmdlvar_indv(depv_allrois, 'reverse');
-        fitdata.depvp = fitin.standmdlvar_indv(fitdata.depvp, 'reverse');
+    if normalize_depv
+        depv_allrois = fitin.normmdlvar_indv(depv_allrois, 'reverse');
+        fitdata.depvp = fitin.normmdlvar_indv(fitdata.depvp, 'reverse');
     end
     do_read_depv = 0;
 end
-if standardize_depv
+if normalize_depv
     plotvars.depvp = fitdata.depvp(:, roiinds_plot);
 end
 plotvars.pixinds_roi = roiinfo.pixinds_roi(roiinds_plot);
@@ -119,11 +119,11 @@ if max_numfits_to_plot_ts>0
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
                 depvp_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv{epi}, supp);
-                % if standardize_depv
+                % if normalize_depv
                 %     depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end
             end
-            if standardize_depv
+            if normalize_depv
                 depvp_hist{ri} = revstandvar_depv(depvp_hist{ri}.');
             end
 

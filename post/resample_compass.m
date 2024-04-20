@@ -36,7 +36,7 @@ for ai = 1:length(angnew)
     upsampfac = 2.25; %greater than 2 to more than double nyquist (for current minimum sampling size)
     ang_diffs = angdiff(ang); 
     diffs_nonzero = ang_diffs(ang_diffs~=0); %remove diffs that are zero, since this will make num_upsamples == inf
-    num_upsamples = angnew_range / (min(diffs_nonzero)/upsampfac); %new sampling of whole circle, based on the current minimum sample size 
+    num_upsamples = angnew_range / (min(abs(diffs_nonzero))/upsampfac); %new sampling of whole circle, based on the current minimum sample size 
     [alphasort, alphasortinds] = sort(ang);
     alphacat = [alphasort alphasort(1)+angnew_range]; %concatenate [first sample + angnew_range] to end to make a circle (add angnew_range to make sure interpolation goes in right direction
     xup = linspace(1, length(alphacat), num_upsamples+1);

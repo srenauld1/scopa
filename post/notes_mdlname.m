@@ -96,6 +96,7 @@ clear all; close all; clc;
 mdlname = 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg';
 num_dim_input = 2;
 num_samples_model = 0;
+multi_time_in_layer_one_only = 1;
 
 %chopt holds the expressions for mdlname parsing with regexp  
 chopt.fnet.lay = {'[A-Z]{1}'}; %layer is any single capital letter 
@@ -107,5 +108,5 @@ chopt.fnet.lin = {'s','r','d','c','f'}; %linear functions;
 chopt.fnet.non = {'e','i','l','g','v'}; %nonlinear functions; 
 chopt.fnet.hot = {'h\d+'}; %one-hot encoding function; h followed by one or more numeric characters
 
-fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt.fnet, num_dim_input, num_samples_model);
+fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt.fnet, num_dim_input, num_samples_model, multi_time_in_layer_one_only);
 

@@ -1,4 +1,4 @@
-function spec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl)
+function spec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only)
 
 
 % soon remove this to increment layer, since won't require exact channel matching isequal(channel_onelayer, 1:num_unit_previous_layer) 
@@ -93,7 +93,11 @@ if strcmp(mdlclass, 'fnet')
             end
         end
 
-        channel_oneposition = [channel_oneposition channel_onesubstring];
+        try
+            channel_oneposition = [channel_oneposition channel_onesubstring];
+        catch
+            fuk=2
+        end
         channel_onelayer = [channel_onelayer channel_onesubstring];
         if numel(unique(channel_onelayer))~=numel(channel_onelayer)
             sprintf("note there is a duplicate channel_onesubstring specified across position substrings; this will not cause error, but did you intend to send the same chanel to different channel_onesubstring sets?")
@@ -141,7 +145,7 @@ if strcmp(mdlclass, 'fnet')
             if numel(strlin)>1 && ~combo_syntax
                 error("only one linear function allowed (for now), unless unit is specified with combo syntax (unit substring begins with x prefix)")
             end
-            if num_samp_mdl>1 && isempty(strlin)
+            if num_samp_mdl>1 && isempty(strlin) && layerindex==1 && multi_time_in_layer_one_only
                 error("missing linear function specifier for multi-timepoint model; curently no available nonlinear functions accept multi-timepoint input")
             end
 

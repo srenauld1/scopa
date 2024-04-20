@@ -1,5 +1,5 @@
 function [indv, depv_allrois, roiinfo, fitdata] = ...
-    model_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, standardize_indv, standardize_depv)
+    model_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, normalize_indv, normalize_depv)
 
 %% organize and normalize model data into hsv map
 
@@ -38,11 +38,11 @@ plotvars.pixinds_roi = roiinfo.pixinds_roi(roiinds_plot);
 
 %% reverse standardization, if it occurred
 
-if standardize_indv
+if normalize_indv
     indv = fitin.revstandvar_indv(indv);
 end
 
-if standardize_depv
+if normalize_depv
     depv_allrois = fitin.revstandvar_depv(depv_allrois);
     fitdata.depvp = fitin.revstandvar_depv(fitdata.depvp);
 end
@@ -113,11 +113,11 @@ if max_numfits_to_plot_ts>0
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
                 depvp_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv{epi}, supp);
-                % if standardize_depv
+                % if normalize_depv
                 %     depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end
             end
-            if standardize_depv
+            if normalize_depv
                 depvp_hist{ri} = revstandvar_depv(depvp_hist{ri}.');
             end
 

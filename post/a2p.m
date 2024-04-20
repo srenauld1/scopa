@@ -28,7 +28,6 @@ disp("need to make fitmdl_parse_mdlname_string run with other inputs ignored dur
 %   suffix '*_i' denotes imaging sampling, suffix '*_b' denotes behavior sampling (suffix can be used for timeseries variable, or variable used exclusively with one or the other sampling regimes)
 %   suffix '*_m' denotes model sampling (e.g., in a linear model integrating 5 imaging samples into the past, num_samp
     
-
 %% params
 
 opt = input_params_carl();
@@ -124,7 +123,10 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
             [fitin, dofit] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
             stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-            opt.fit.mdlname = 'fnet_L1_sh16x'; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
+            opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f'; 
+            opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16'; 
+            opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B_f'; 
+            opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
             fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
 
         end
@@ -133,7 +135,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% scatterplots
 
-    if opt.scatter.do_scatter
+    if opt.scatter.do
         scatterplots(ts, opt.scatter, fn_save_prefix) %3d scatterplots (2d plus color) of all available timeseries
     end
 

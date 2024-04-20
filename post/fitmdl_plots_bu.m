@@ -6,7 +6,7 @@ function model_plots(hsvmap, indv, depv, depvp, stack, stackmean, ...
     depvplot_norm, plot_class, ...
     sampinds_depvpre, epochinds_str, pureepoch_keepinds, ...
     pth_prefix, gif_visibility, mdl, ft, supp, doplots, valfold, vfi, ...
-    standardize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
+    normalize_depv, depvinstds_plot, depvinmeans_plot, valinds_depv_use, valinds_indv_use, valinds_raw_use)
 
 
 
@@ -801,7 +801,7 @@ if doplots(3)
                     for hxi = 1:numfits_to_plot
                         histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
                         depvp_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv{epi}, supp);
-                        if standardize_depv
+                        if normalize_depv
                             depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                         end
                     end
@@ -814,7 +814,7 @@ if doplots(3)
                     bestindall{ri} = bestind;
                     histxsave{ri}(end,:) = histxtmp(:,bestind)';
                     depvp_hist{ri}(end,:) = mdl(histxsave{ri}(end,:), indv{epi}, supp);
-                    if standardize_depv
+                    if normalize_depv
                         depvp_hist{ri}(end,:) = depvp_hist{ri}(end,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                     end
 

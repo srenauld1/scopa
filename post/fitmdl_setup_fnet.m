@@ -2,7 +2,9 @@ function [mdl, optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, d
 
 padlen_sec = 4;
 
-fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl);
+multi_time_in_layer_one_only = 1;
+
+fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only);
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 
 lbnd = [];
@@ -15,16 +17,15 @@ linineq_b = [];
 
 supp.num_unit_total = size(fnetspec, 1);
 
-supp.num_total_model_functions = 0;%initialize with 0
-supp.max_num_fun_per_unit = 0;%initialize with 0
+supp.num_total_model_functions = 0; %initialize with 0
+supp.max_num_fun_per_unit = 0; %initialize with 0
 pindmax_prev = 0;
 freeformflag = 0;
 
-%loop over fnet units, accumulating param starting point (x0) and optional constraints
-for ui = 1:size(fnetspec, 1)
+for ui = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
 
     [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflagtmp] = ...
-        fitmdl_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats);
+        fitmdl_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
 
     lbnd = [lbnd lbnd_tmp];
     ubnd = [ubnd ubnd_tmp];
@@ -76,28 +77,30 @@ optimp.Aineq = double(linineq_A);
 optimp.bineq = double(linineq_b);
 
 
-if ~freeformflag %set up nonlinear constraint for freeform linear function
+optimp.nonlcon = [];
 
-    optimp.nonlcon = [];
-
-else
-
-    allpind = [supp.fnet.pind];
-    pind_Lfree = allpind(strcmp([supp.fnet.funstr], 'f'));
-    optimp.nonlcon = @nlcon_l1norm;
-
-
-end
-
-
-    function [c,ceq] = nlcon_l1norm(x)
-
-        for j = 1:length(pind_Lfree)
-            ceq(j) = norm(vec(x(pind_Lfree{j})),1) - 1; %make L1 norm = 1 for linear filters with 'freeform' flag
-        end
-        c = [];
-
-    end
+% if ~freeformflag %set up nonlinear constraint for freeform linear function
+%
+%     optimp.nonlcon = [];
+%
+% else
+%
+%     allpind = [supp.fnet.pind];
+%     pind_Lfree = allpind(strcmp([supp.fnet.funstr], 'f'));
+%     optimp.nonlcon = @nlcon_l1norm;
+%
+%
+% end
+%
+%
+%     function [c,ceq] = nlcon_l1norm(x)
+%
+%         for j = 1:length(pind_Lfree)
+%             ceq(j) = norm(vec(x(pind_Lfree{j})),1) - 1; %make L1norm = 1 for linear filters with 'freeform' flag
+%         end
+%         c = [];
+%
+%     end
 
 
 end

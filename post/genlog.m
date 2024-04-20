@@ -1,4 +1,4 @@
-function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(x, B,A,K,V,M,Q,C, doplots, filename_save)
+function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(x, B,A,K,V,M,Q,C, doplots, filename_save, xlimin, ylimin)
 
 if doplots
     fontmedium = 12;
@@ -38,8 +38,14 @@ for ci = 1:length(C) %changes right asymptote value, above 1 makes it exponentia
 
                                 [xs, idx] = sort(x);
                                 hpl = plot(hax, xs, out(idx)); %sorting prevents an odd plotting error
-                                %ylim([-3 3])
-                                % xlim([-20 20])
+                                if exist('xlimin', 'var')
+                                    xlim(xlimin)
+                                end
+                                if exist('ylimin', 'var')
+                                    ylim(ylimin)
+                                end
+                                axis square
+
                                 htx.String = [...
                                     ' B: ' num2str(round(B(bi), 2)), ...
                                     ' A: ' num2str(round(A(ai), 2)), ...
