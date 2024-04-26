@@ -23,7 +23,9 @@
 #set variables that control which jobs are done
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
+for word in $@; do echo "$word"; done
 
+echo hey
 do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
