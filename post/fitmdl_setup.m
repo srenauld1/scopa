@@ -51,7 +51,7 @@ end
 
 %% specify some nondefault optimization options (eventually, this will be moved above to be sometimes modetype dependent) 
 
-if strcmp(mdlname, 'fnet_v')
+if strcmp(mdlname, 'fnet_v') || strcmp(mdlname, 'fnet_s')
     opop.max_iter_local = 999;  %will be assigned to opop.optiml.MaxIterations
     opop.max_iter_global = 3; %this will not be assigned to globalsearch object optimg; instead is used in output function for optimization problem, to stop optimization
     opop.optimg.NumTrialPoints = 1000;

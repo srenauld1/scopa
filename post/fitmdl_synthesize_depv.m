@@ -18,9 +18,9 @@ if doplots
         depv = depv(:,1);
     else
         if numsyndepv>size(depv, 2) %this is just for plotting: if making more synthetic depv than there are real depv, repeat the final one for plotting against synthetic
-        depv = cat(2, depv, repmat(depv(:,end), [1 numsyndepv-size(depv, 2)]));
-    else %otherwise just take the first numsyndepv for plotting against syndepv
-        depv = depv(:,1:numsyndepv);
+            depv = cat(2, depv, repmat(depv(:,end), [1 numsyndepv-size(depv, 2)]));
+        else %otherwise just take the first numsyndepv for plotting against syndepv
+            depv = depv(:,1:numsyndepv);
         end
     end
 end

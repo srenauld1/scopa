@@ -85,97 +85,103 @@ end
 
 
 if normopts.doplots
-    
-    numroi = size(cluster_f,1);
-    indzy = 1:size(cluster_f,2);
-    figure;
+
+    fn = fieldnames(resp);
+    numnorm = length(fn);
+    numroi = size(resp.(fn{1}),1);
+    indzy = 1:size(resp.(fn{1}),2);
     colord = distinguishable_colors(numroi);
-
-    countz = 0;
-    for mi = 1 : 1 : size(cluster_f, 1)
-        countz = countz+1;
-        xinds = [1:length(indzy)]+length(indzy)*(countz-1);
-        sp1 = subplot(3,1,1);
-        hold(sp1, 'on')
-        plot(xinds, cluster_f(mi,indzy), 'color', colord(countz,:));
-        title("raw")
-        sp2 = subplot(3,1,2);
-        hold(sp2, 'on')
-        plot(xinds, cluster_dff(mi,indzy), 'color', colord(countz,:));
-        title("dff")
-        sp3 = subplot(3,1,3);
-        hold(sp3, 'on')
-        plot(xinds, cluster_955(mi,indzy), 'color', colord(countz,:));
-        title("percentile normalized")
-        %pause(0.5);
+    
+    figure;
+    for fni = 1:numnorm
+        countz = 0;
+        for mi = 1 : 1 : numroi
+            countz = countz+1;
+            xinds = [1:length(indzy)]+length(indzy)*(countz-1);
+            sp1 = subplot(numnorm,1,fni);
+            hold(sp1, 'on')
+            plot(xinds, resp.(fn{fni})(mi,indzy), 'color', colord(countz,:));
+            title(strrep(fn{fni}, '_', ' '))
+        end
     end
-
     saveas( gcf, [pth_save_prefix(1:end-4) '_normcompresp_.png'])
 
+    % 
+    % figure;
+    % for fni = 1:numnorm
+    %     for mi = 1 : 1 : 1
+    %         subplot(numnorm,1,fni);
+    %         hist(resp.(fn{fni})(mi,:));
+    %         title(strrep(fn{fni}, '_', ' '))
+    %         xlim([min(vec(resp.(fn{fni})(mi,:))), max(vec(resp.(fn{fni})(mi,:))) ])
+    %     end
+    % end
+    % saveas( gcf, [pth_save_prefix(1:end-4) '_normhistsresp_.png'])
+    % 
 
-    prctcheck = 99;
-    pfn = prctile(cluster_f, prctcheck, 2);
-    pdfn = prctile(cluster_dff, prctcheck, 2);
-    pzfn = prctile(cluster_955, prctcheck, 2);
-
-    figure;
-    subplot(3,1,1)
-    scatter(1:length(pfn), pfn)
-    title("raw")
-
-    subplot(3,1,2)
-    scatter(1:length(pdfn), pdfn)
-    title("dff")
-
-    subplot(3,1,3)
-    scatter(1:length(pzfn), pzfn)
-    title("percentile normalized")
-
-    saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprct_.png'])
-
-
-    if length(pfn)>1
-
-        pfn = rescale(pfn);
-        pdfn = rescale(pdfn);
-        pzfn = rescale(pzfn);
-
-        figure;
-        subplot(3,1,1)
-        plot(pfn)
-        title(std(pfn, 1)) %2nd arg is 1 to normalize by n, not n-1
-        subplot(3,1,2)
-        plot(pdfn)
-        title(std(pdfn, 1)) %2nd arg is 1 to normalize by n, not n-1
-        subplot(3,1,3)
-        plot(pzfn)
-        title(std(pzfn, 1)) %2nd arg is 1 to normalize by n, not n-1
-
-        saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprctnorm_.png'])
-
-    end
-
-
-    figure;
-    for ci = 1:size(roi_dff, 1)
-
-        subplot(3,1,1)
-        hist(vec(roi_box(ci,:)), 100);
-        xlim([0 0.5])
-
-        subplot(3,1,2)
-        hist(vec(roi_nn(ci,:)-1), 100);
-        xlim([0 0.5])
-
-        subplot(3,1,3)
-        indiest = 1:200;
-        yyaxis left
-        plot(roi_box(ci,indiest))
-        yyaxis right
-        plot(roi_nn(ci,indiest))
-        pause(.2)
-
-    end
+    % prctcheck = 99;
+    % pfn = prctile(cluster_f, prctcheck, 2);
+    % pdfn = prctile(cluster_dff, prctcheck, 2);
+    % pzfn = prctile(cluster_955, prctcheck, 2);
+    % 
+    % figure;
+    % subplot(3,1,1)
+    % scatter(1:length(pfn), pfn)
+    % title("raw")
+    % 
+    % subplot(3,1,2)
+    % scatter(1:length(pdfn), pdfn)
+    % title("dff")
+    % 
+    % subplot(3,1,3)
+    % scatter(1:length(pzfn), pzfn)
+    % title("percentile normalized")
+    % 
+    % saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprct_.png'])
+    % 
+    % 
+    % if length(pfn)>1
+    % 
+    %     pfn = rescale(pfn);
+    %     pdfn = rescale(pdfn);
+    %     pzfn = rescale(pzfn);
+    % 
+    %     figure;
+    %     subplot(3,1,1)
+    %     plot(pfn)
+    %     title(std(pfn, 1)) %2nd arg is 1 to normalize by n, not n-1
+    %     subplot(3,1,2)
+    %     plot(pdfn)
+    %     title(std(pdfn, 1)) %2nd arg is 1 to normalize by n, not n-1
+    %     subplot(3,1,3)
+    %     plot(pzfn)
+    %     title(std(pzfn, 1)) %2nd arg is 1 to normalize by n, not n-1
+    % 
+    %     saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprctnorm_.png'])
+    % 
+    % end
+    % 
+    % 
+    % figure;
+    % for ci = 1:size(roi_dff, 1)
+    % 
+    %     subplot(3,1,1)
+    %     hist(vec(roi_box(ci,:)), 100);
+    %     xlim([0 0.5])
+    % 
+    %     subplot(3,1,2)
+    %     hist(vec(roi_nn(ci,:)-1), 100);
+    %     xlim([0 0.5])
+    % 
+    %     subplot(3,1,3)
+    %     indiest = 1:200;
+    %     yyaxis left
+    %     plot(roi_box(ci,indiest))
+    %     yyaxis right
+    %     plot(roi_nn(ci,indiest))
+    %     pause(.2)
+    % 
+    % end
 
 end
 

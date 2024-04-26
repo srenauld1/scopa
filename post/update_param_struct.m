@@ -1,5 +1,5 @@
 
-%this is a script, not function, so all variables from calling file are passed in here
+%this is a script, not function, so all variables from calling file are easily accessible
 
 allvars = whos;
 par_defaults = cell2struct({allvars.name}.',{allvars.name});

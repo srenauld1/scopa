@@ -1,0 +1,58 @@
+function [] = f1(rootDir, recurse, overwrite, scanimageVersion, maxData, singleFrame_reg, inp)
+
+% Default settings
+arguments
+    rootDir char
+    recurse double = 0 % number of levels to recurse, looking for experimental folders
+    overwrite logical = false
+    scanimageVersion double = 2019.1
+    maxData logical = 0 % for z projection video
+    singleFrame_reg logical = true
+    inp struct = struct
+end
+
+[pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename);
+currdir = split(pthenv, filesep);
+currdir = currdir{end};
+if ~isempty(regexp( getenv('HOSTNAME'), 'compute-', 'once' ))
+    ono2 = 1;
+else
+    ono2 = 0;
+end
+
+
+
+if isempty(inp)
+
+    sprintf("running flyg1 locally")
+    flyg_preprocess(rootDir, recurse, overwrite, 1, 0, 0, 0, 0, 1, 0, scanimageVersion, maxData, true, singleFrame_reg)
+
+else
+
+    if ono2
+        error("to run flyg1-scopa from O2, run cxp.sh from O2 command line (non-interactive), or pipeline_init.py from VSCode (interactive)")
+    else
+        if contains(inp.dataroot, {'/n/files/Neurobio/wilsonlab/', '/n/scratch/users'})
+            sprintf("running flyg1-scopa (cxp.sh) on remote machine via ssh")
+
+            cmd = sprintf("ssh %s%s %s %s", inp.user, inp.remote, inp.shfile, 'inp');
+            % system(cmd);
+            fprintf(1, '### system: %s ###\n', cmd);
+        else
+            error(sprintf("to run flyg1-scopa on O2 from local machine, data must in one of the following directories: \n" + ...
+                "    '/n/files/Neurobio/wilsonlab/' \n" + ...
+                "    '/n/scratch/users', \n" + ...
+                "set inp.dataroot to contain one of the above directories as prefix \n"))
+        end
+    end
+end
+
+end
+% do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
+% do_denoise= #0 or 1, no space after =, deepcad denoise (python)
+% do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
+% do_extract=1 #0 or 1, no space after =, caiman source extraction (python)
+% do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
+% do_copyfiles_sequence=(0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+% jobarrayind=( 0-27 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+% fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX

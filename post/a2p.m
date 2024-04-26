@@ -4,9 +4,13 @@ clear all
 close all
 clc
 
-disp("make hemisphere no hemisphere option")
+disp("make hemisphere option (eg option to analyze left or right or both)")
 disp("fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)")
 disp("need to make fitmdl_parse_mdlname_string run with other inputs ignored during param setting to check the syntax (so you don't find out later, halfway through the pipeline")
+disp("allow recursive mdl")
+disp("constrain amplitude of all intermediate functions")
+disp("time in all functions")
+
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity 
@@ -125,7 +129,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
             opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f'; 
             opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16'; 
-            opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B_f'; 
+            opt.fit.mdlname = 'fnet_A_xsie'; 
             opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
             fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
 

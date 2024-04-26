@@ -80,7 +80,7 @@
 % the linear functions should not be final functions in a unit since theior scale is constrained
 % these functions do not have bias params because the nonlinear functions have x-shift params 
 % 'r' and 'c' add nothing more than 's' and 'd' when preceding 'e' or 'i' because the latter already constrain polarity, and scale; and since linear functions are scale-constrained, 'r' and 'c' are pretty poinless right now 
-% 'l' is useful if you don't want to constrain polarity in a linear-nonlinear pairing
+% preceding 'l' (genlog whose polarity is not constrained), you could use any of 's', 'r', 'd', and 'c' 
 % 'e' and 'i' include optimized scale, so following either (within a unit) with a function with optimized scale is redundant 
 
 

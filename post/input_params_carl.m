@@ -72,10 +72,10 @@ opt.mroi.doplots = 0; %doplots in make_morphological_rois
 % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
 % 'z' % zscore
 % 'nn' % nonnegative (subtract min)
-% 'box'... %box-cox
+% 'box'... % box-cox
 
 opt.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
-opt.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
+opt.mroi.norm.postcluster = {'f', 'rsc000100', 'z', 'dff000008' }; %must have at least one string, compsed of syllables above
 opt.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS

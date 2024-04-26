@@ -141,6 +141,11 @@ for fi = 1:num_fun
         lbnd_tmp = [-inf,-inf,-inf,-inf];
         ubnd_tmp = [inf,inf,inf,inf];
         x0_tmp = [0,0,0,0];
+    elseif strcmp(fnet_onefun, 'n')
+        fnet.funh{fi} = @fun_sin;
+        lbnd_tmp = [-inf,-inf,-inf,-inf];
+        ubnd_tmp = [inf,inf,inf,inf];
+        x0_tmp = [0,0,0,0];
     elseif startsWith(fnet_onefun, 'h')
         % previous approach ---> fnet = fitmdl_setup_ohe(fnet, fnetspec, fi, num_dim_indvpre, num_samp_mdl, num_unit);
         num_bin_hot = sscanf(fnet_onefun, 'h%d');
@@ -268,6 +273,13 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
         out2 = [];
         out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
+
+    end
+
+    function [out, out2] = fun_sin(in, typeflag, doplots, outflag, pars)
+
+        out2 = [];
+        out = pars(1).*(sin(2*pi*in./pars(2) + 2*pi/pars(3))) + pars(4);
 
     end
 
