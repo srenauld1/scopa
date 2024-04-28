@@ -48,6 +48,9 @@ if contains(rootDir, 'scopa')
             if statusout==1
                 error("system command failed")
             end
+            system('git add .');
+            system('git commit -m "scopasend"');
+            system('git push');
             cmd = sprintf("ssh %s%s %s %s", inp.user, inp.remote, inp.shfile, 'inp');
             % system(cmd);
             fprintf(1, '### system: %s ###\n', cmd);
