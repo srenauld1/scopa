@@ -3,7 +3,7 @@
 #cxp.sh runs the entire preprocessing pipeline by specifying params for pipeline_init.py
 # run as ./cxp.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
 #pipeline_init.py is called from various sbatch files (specified by sbatch_job_name_sequence), which are themselves called below, and each of which uses different resources and depends on the previous (with matching jobarrayind) to finish without error
-#cxp.sh is designed to only be called once 
+#cxp.sh is designed to only be called once  ##
 #the sbatch files called below can run multiple jobs in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
 #each sbatch file below is called in a 2-iteration for loop, the first iteration copies the required files from storage server to scratch on O2, the second operates on them, afterward files are automatically copied back to the storage server  
 #copying requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
