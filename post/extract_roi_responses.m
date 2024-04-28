@@ -52,7 +52,11 @@ for fnini = 1:length(fnin)
         end
 
         im2d = im2d(goodinds, :);
-        roiinds_new = mask_roi_vec(:, goodinds);
+        try
+            roiinds_new = mask_roi_vec(:, goodinds);
+        catch
+            fuk=2
+        end
 
         if ~isempty(im2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
             resp2.f = roiinds_new * im2d ./ sum(roiinds_new,2); %default no normalization, this is the summed fluorescence in each group, normalized by total intensity

@@ -4,11 +4,12 @@ clear all
 close all
 clc
 
-disp("make hemisphere no hemisphere option")
+disp("make hemisphere option (eg option to analyze left or right or both)")
 disp("fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)")
 disp("need to make fitmdl_parse_mdlname_string run with other inputs ignored during param setting to check the syntax (so you don't find out later, halfway through the pipeline")
 disp("allow recursive mdl")
 disp("constrain amplitude of all intermediate functions")
+disp("time in all functions")
 
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
@@ -51,7 +52,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% load metadata
 
-    md = load_metadata(pth.metadata, opt.md);
+    md = load_meta(pth.metadata, opt.md);
 
     %% load and process stimulus/fictrac data
 
@@ -87,10 +88,10 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         regionex = opt.main.regionex_all{rei};
 
         %%crop movie to regionex cuboid
-        [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop] = ...
+        [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
             crop_stacks(stack, croplim_all.(regionex), ids.recid, regionex, pth.fldr, ...
-            md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores);
-
+            md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
+strrep(pth.mroi.no_l, 'nocroplim', 'fuk')
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...

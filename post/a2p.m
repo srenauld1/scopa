@@ -52,7 +52,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% load metadata
 
-    md = load_metadata(pth.metadata, opt.md);
+    md = load_meta(pth.metadata, opt.md);
 
     %% load and process stimulus/fictrac data
 
@@ -88,14 +88,13 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         regionex = opt.main.regionex_all{rei};
 
         %%crop movie to regionex cuboid
-        [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop] = ...
+        [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
             crop_stacks(stack, croplim_all.(regionex), ids.recid, regionex, pth.fldr, ...
-            md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores);
-
+            md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex);
+            make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
 
         %%load/select functional (caiman) roi responses

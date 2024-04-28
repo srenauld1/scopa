@@ -1,5 +1,5 @@
 
-function [stack, croplim] = make_croplim(stack, sz_t, pth_fldr, recid, regionex)
+function [croplim, croplimstr] = make_croplim(stack, sz_t, pth_fldr, recid, regionex, regionex_nounderscore)
 
 
 clip_prctile = [0 100]; %[0 100] does not change contrast
@@ -12,12 +12,13 @@ stack_mnt = process_stack_for_roi_selection(stack, numdim_out, clip_prctile, sca
 
 %% first define z limits
 
-prompt = ['do you want to define a subset of z slices for region "' regionex '"? type 1 for yes, type 0 to use all z slices: '];
+prompt = ['you requested region "' regionex '", but there is no croplim file "' regionex_nounderscore '"; do you want to define a subset of z slices to be used for region "' regionex '" and all regions prefixed with "' regionex_nounderscore '"? type 1 for yes, type 0 to use all z slices: '];
+
 commandwindow();
 define_z_lim = input(sprintf(prompt));
 
 if define_z_lim
-    [zinds, stack_mnt] = croplim_z(stack_mnt, regionex);
+    [zinds, stack_mnt] = croplim_z(stack_mnt, regionex_nounderscore);
 else
     zinds = 1:size(stack_mnt, 3);
 end
@@ -26,19 +27,20 @@ stack_mntz = mean(stack_mnt, 3);
 
 %% then xy limits
 
-prompt = ['do you want to define a subset of xy pixels for region "' regionex '"? type 1 for yes, type 0 to use all xy pixels within selected z: '];
+prompt = ['do you want to define a subset of xy pixels for region "' regionex '" and all regions prefixed with "' regionex_nounderscore '"? type 1 for yes, type 0 to use all xy pixels within selected z: '];
+
 commandwindow();
 define_xy_lim = input(sprintf(prompt));
 
 if define_xy_lim
 
     %then define polygon in mean image across chosen z indices (xy limits is bounding box of polygon)
-    title_prefix = ['THIS IS THE MEAN OF SELECTED Z SLICES . . . NOW DRAW A SINGLE POLYGON AND ITS BOUNDING BOX WILL BE THE XY LIMITS FOR REGION "' regionex '"'];
+    title_prefix = ['THIS IS THE MEAN OF SELECTED Z SLICES . . . NOW DRAW A SINGLE POLYGON AND ITS BOUNDING BOX WILL BE THE XY LIMITS FOR REGIONS PREFIXED WITH "' regionex_nounderscore '"'];
 
     flag_croplim = 1;
     flag_one_image = 1;
     flag_limit_one_manual_roi = 1;
-    roi_cropxy = drawrois_oneimage(stack_mntz, regionex, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
+    roi_cropxy = drawrois_oneimage(stack_mntz, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end
@@ -56,10 +58,9 @@ end
 %% save
 
 tinds = 1:sz_t;
-stack = stack(yinds, xinds, zinds, tinds); %need to create this and make single for draw_morphological_rois function
 croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
-
-pth_croplim = [pth_fldr recid '_' regionex '_' num2str(croplim(7)) '_' num2str(croplim(8)) '_' num2str(croplim(3)) '_' num2str(croplim(4)) '_' num2str(croplim(1)) '_' num2str(croplim(2)) '_' num2str(croplim(5)) '_' num2str(croplim(6)) '_croplim_.mat'];
+croplimstr = [num2str(croplim(7)) '_' num2str(croplim(8)) '_' num2str(croplim(3)) '_' num2str(croplim(4)) '_' num2str(croplim(1)) '_' num2str(croplim(2)) '_' num2str(croplim(5)) '_' num2str(croplim(6))];
+pth_croplim = [pth_fldr recid '_' regionex_nounderscore '_' croplimstr '_croplim_.mat'];
 save(pth_croplim, 'yinds', 'xinds', 'zinds', 'tinds', '-v7.3', '-mat')
 
 

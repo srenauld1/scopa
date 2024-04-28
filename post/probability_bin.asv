@@ -75,14 +75,15 @@ for i = 1:numbin_in
     [~, mxi] = max(varin);
     tmp = in{i}(:,mxi);
     mvi = median(tmp);
+    spl = tmp<mvi;
     mvi_ties = find(tmp==mvi); %equal to median
     if numel(mvi_ties)<=1
         flag_ties = 0;
-        spl = tmp<mvi;
     else
         flag_ties = 1;
         sprintf("warning, multiple ties in probability bin")
-        spl = quantileranks(tmp,2)==1; %quantileranks breaks ties; there are only many ties when binning pixel indices; since in this case the goal is spatially equal-volume ROIs, alternating assigning ties to one or the other side within split (rather than between splits)
+        mvi_ties = mvi_ties(1:2:end); %there are only many ties when binning pixel indices; since in this case the goal is spatially equal-volume ROIs, alternating assigning ties to one or the other side within split (rather than between splits)
+        spl(mvi_ties) = 1;
     end
     outvals{splitcount*2-1} = in{i}(~spl,:);
     outvals{splitcount*2} = in{i}(spl,:);

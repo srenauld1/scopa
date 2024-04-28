@@ -1,16 +1,25 @@
-function [stackcrop, stack_mnt, map_hires_lores_crop, hiresmntcrop] = ...
+function [stackcrop, stack_mnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
     crop_stacks(stack, croplim, recid, regionex, pth_fldr, sz_crop, ...
-    use_hires, stack_hires_mnt, map_hires_lores )
-            
+    use_hires, stack_hires_mnt, map_hires_lores, pth_mroi )
+
+%output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
+
 if ~exist('use_hires', 'var')
     use_hires = 0;
 end
 
-if ~isempty(croplim)
-    stackcrop = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), :));
-else
-    [stackcrop, croplim] = make_croplim(single(stack), sz_crop(4), pth_fldr, recid, regionex);
+spl = strsplit(regionex, '_');
+regionex_nounderscore = spl{1};
+
+if isempty(croplim)
+    [croplim, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
+    if isempty(croplim)
+        [croplim, croplimstr] = make_croplim(stack, sz_crop(4), pth_fldr, recid, regionex, regionex_nounderscore);
+    end
+    pth_mroi = strrep(pth_mroi, 'nocroplim', croplimstr);
 end
+
+stackcrop = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), :)); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single
 
 stack_mnt = mean(stackcrop, 4);
 

@@ -5,6 +5,8 @@ if ndims(stack)~=4
     error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack TO BE 4D, EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
 end
 
+regionex_reformat = strrep(regionex, '_', ' ');
+
 %% make mean zt (2d), and mean t versions of input stack (3d)
 
 clip_prctile = [0 100]; %[0 100] does not change contrast
@@ -25,7 +27,7 @@ end
 hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked') ;
 imshow(stack_mnzt, 'InitialMagnification','fit')
 axis image
-title(['region "' regionex '", mean z, mean t']);
+title(['region "' regionex_reformat '", mean z, mean t']);
 figure(hfg)
 if flag_limit_one_manual_roi
     prompt = ['WARNING, because you requested more than one automated roi \n' ...
@@ -70,17 +72,17 @@ if draw_manual
         while szi <= size(stackroidraw, 3)
 
             if flag_limit_one_manual_roi
-                title_prefix = ['THIS IS REGION "' regionex '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ROI #1 (THE ONLY ALLOWED ROI) ON THIS IMAGE'];
+                title_prefix = ['THIS IS REGION "' regionex_reformat '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ROI #1 (THE ONLY ALLOWED ROI) ON THIS IMAGE'];
             else
                 if flag_one_image
-                    title_prefix = ['THIS IS REGION "' regionex '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ALL ROIS ON THIS IMAGE '];
+                    title_prefix = ['THIS IS REGION "' regionex_reformat '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ALL ROIS ON THIS IMAGE '];
                 else
-                    title_prefix = ['THIS IS REGION "' regionex '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ROI #' num2str(roicount) ' ON THIS IMAGE'];
+                    title_prefix = ['THIS IS REGION "' regionex_reformat '", MEAN T, ' titleaddendum(flag_one_image, draw_on_meanzt, szi), ' . . . NOW DRAW ALL OR PART OF ROI #' num2str(roicount) ' ON THIS IMAGE'];
                 end
             end
 
             [maskmanual_tmp, flag_quit_one_roi, flag_quit_all_rois] = ...
-                drawrois_oneimage(stackroidraw(:,:,szi), regionex, title_prefix, flag_one_image, flag_limit_one_manual_roi);
+                drawrois_oneimage(stackroidraw(:,:,szi), regionex_reformat, title_prefix, flag_one_image, flag_limit_one_manual_roi);
 
             if flag_one_image
                 maskmanual_tmp2 = maskmanual_tmp;
@@ -125,8 +127,8 @@ end
 
 %% remove empty rois and save
 
-keepinds = find(any(reshape(maskmanual_all_roi_all_z, [], size(maskmanual_all_roi_all_z, 4))));%this works for 2d, 3d, 4d
-maskmanual_all_roi_all_z = maskmanual_all_roi_all_z(:,:,:,keepinds); %this works for 2d, 3d, 4d
+keepinds = find(any(reshape(maskmanual_all_roi_all_z, [], size(maskmanual_all_roi_all_z, 4))));%find nonempty rois, this works for 2d, 3d, 4d
+maskmanual_all_roi_all_z = maskmanual_all_roi_all_z(:,:,:,keepinds); %remove empty "rois", this works for 2d, 3d, 4d
 
 if draw_on_meanzt
     maskmanual_all_roi_all_z = repmat(maskmanual_all_roi_all_z, [1 1 size(stack, 3) 1]); %this projects the 2d mask across all z

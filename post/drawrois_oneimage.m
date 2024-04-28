@@ -67,7 +67,7 @@ else
 end
 flag_do = 0;
 flag_undo = 0;
-flag_skip_this_figure = 0;
+flag_exit_this_figure = 0;
 flag_quit_one_roi = 0;
 flag_quit_all_rois = 0;
 flag_roi_drawn = 0;
@@ -101,19 +101,19 @@ while true
     if flag_do
         him.Parent.XLabel.String{1} = 'DRAW NOW . . . SINGLE CLICK TO PLACE VERTEX, DRAG VERTEX AFTER CLOSURE TO ADJUST, DOUBLE CLICK AFTER CLOSURE TO FINISH';
         if flag_croplim
-            him.Parent.XLabel.String{3} = ['THE BOUNDING BOX OF THE ONE POLYGON YOU DRAW WILL COMPRISE THE XY LIMITS FOR "' regionex ];
+            him.Parent.XLabel.String{3} = ['THE BOUNDING BOX OF THE ONE POLYGON YOU DRAW WILL COMPRISE THE XY LIMITS FOR REGION "' regionex '"'];
         else
             if flag_one_image
                 if flag_single_roi_per_stack
-                    him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex ];
+                    him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
                 else
-                    him.Parent.XLabel.String{3} = ['EACH POLYGON, AND EACH DISCONTIGUOUS UNION, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex ];
+                    him.Parent.XLabel.String{3} = ['EACH POLYGON, AND EACH DISCONTIGUOUS UNION, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex '"'];
                 end
             else
                 if flag_single_roi_per_stack
-                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex ];
+                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
                 else
-                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS CYCLE THROUGH THE STACK WILL COMPRISE A SINGLE ROI FOR REGION "' regionex " . . . REPEAT UNTIL YOU ARE DONE"];
+                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS CYCLE THROUGH THE STACK WILL COMPRISE A SINGLE ROI FOR REGION "' regionex '" . . . REPEAT UNTIL YOU ARE DONE'];
                 end
             end
         end
@@ -132,7 +132,7 @@ while true
         fclose(fid);
         flag_base_message = 0;
         if tmpflag==1 && ~flag_croplim %&& ~flag_one_image
-            flag_skip_this_figure = 1;
+            flag_exit_this_figure = 1;
             tmpone = 'PRESSED "s", SKIPPING THIS IMAGE';
             him.Parent.XLabel.String{1} = tmpone;
 
@@ -181,26 +181,29 @@ while true
     end
 
     pause(0.01);
-    if flag_roi_drawn & flag_single_roi_per_image
-        if strcmp(him.Parent.XLabel.String{1}, 'PRESS "enter" TO DRAW A POLYGON')
-            xtmp{1} = 'PRESS "enter" TO DRAW A POLYGON';
-            % him.Parent.XLabel.String{1} = 'YOU ARE LIMITED TO ONE POLYGON ON THIS IMAGE, PRESS "backspace" TO REDO IT, OR NAVIGATE WITH "q", "r" or "s"';
-            tmpone = 'YOU HAVE DRAWN THE ONLY ROI OR SUBROI ALLOWED ON THIS IMAGE';
-            him.Parent.XLabel.String{1} = tmpone;
+    if flag_roi_drawn
+        if flag_single_roi_per_image
+            if strcmp(him.Parent.XLabel.String{1}, 'PRESS "enter" TO DRAW A POLYGON')
+                xtmp{1} = 'PRESS "enter" TO DRAW A POLYGON';
+                % him.Parent.XLabel.String{1} = 'YOU ARE LIMITED TO ONE POLYGON ON THIS IMAGE, PRESS "backspace" TO REDO IT, OR NAVIGATE WITH "q", "r" or "s"';
+                tmpone = 'YOU HAVE DRAWN THE ONLY ROI OR SUBROI ALLOWED ON THIS IMAGE';
+                him.Parent.XLabel.String{1} = tmpone;
+            end
+            xtmp{2} = him.Parent.XLabel.String{2};
+            xtmp{3} = him.Parent.XLabel.String{2};
+            him.Parent.XLabel.String{2} = '';
+            him.Parent.XLabel.String{3} = '';
+            flag_do = 0;
+            % flag_prequit = 1;
+            % flag_quit_all_rois = 1;
+            flag_exit_this_figure = 1;
+        else 
+            him.Parent.XLabel.String{1} = 'PRESS "enter" TO DRAW A POLYGON';
         end
-        xtmp{2} = him.Parent.XLabel.String{2};
-        xtmp{3} = him.Parent.XLabel.String{2};
-        him.Parent.XLabel.String{2} = '';
-        him.Parent.XLabel.String{3} = '';
-        flag_do = 0;
-        % flag_prequit = 1;
-        flag_quit_all_rois = 1;
-    elseif flag_roi_drawn & ~flag_single_roi_per_image
-        him.Parent.XLabel.String{1} = 'PRESS "enter" TO DRAW A POLYGON';
     end
 
 
-    if flag_skip_this_figure || ...
+    if flag_exit_this_figure || ...
             flag_quit_one_roi || ...
             flag_quit_all_rois
         him.Parent.Title.String = "QUITTING IN 3 SEC";

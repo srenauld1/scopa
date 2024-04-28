@@ -1,4 +1,4 @@
-function md = load_metadata(pth_metadata, mdnew)
+function md = load_meta(pth_metadata, mdnew)
 
 
 md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline

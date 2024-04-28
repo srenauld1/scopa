@@ -16,6 +16,10 @@ function [mask_roi_vec, centroids_roi] = ...
 %% preprocess stack, make mean stack
 
 
+if ~do_3d
+    error("not sure this is optimized for 2d, need to check, but also not sure why you'd want to do 2d")
+end
+
 if ~isa(stack, 'single')
     stack = single(stack);
 end
