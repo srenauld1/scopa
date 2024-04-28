@@ -32,7 +32,12 @@ if contains(rootDir, 'scopa')
             error("rootDir not formatted correctly for running scopa, must be 'SCOPAPATH, SCOPABRANCH'")
         end
         scopabranch = rootDir{end};
-        if strcmp(scopabranch, 'main')
+        [~, scopabranch_original] = system('git symbolic-ref refs/remotes/origin/HEAD');
+        scopabranch_original = strsplit(scopabranch_original, '/');
+        scopabranch_original = strtrim(scopabranch_original{end});
+        if any(strcmp(scopabranch, {scopabranch_original, 'main', 'origin', 'origin/main', 'master', 'origin/master'})) %the original branch name, and other possibilities that are pointless but just in case
+            error('scopa branch should be your own, not ' scopabranch_original)
+        end
         scopapath = rootDir{1};
         pthpre = [scopapath filesep 'pre' filesep 'bash' filesep];
         pthfile = [pthpre 'cxp.sh'];

@@ -32,13 +32,22 @@ if contains(rootDir, 'scopa')
             error("rootDir not formatted correctly for running scopa, must be 'SCOPAPATH, SCOPABRANCH'")
         end
         scopabranch = rootDir{end};
+        [statusout, scopabranch_original] = system('git symbolic-ref refs/remotes/origin/HEAD');
+        scopabranch_original = strsplit(scopabranch_original, '/');
+        scopabranch_original = strtrim(scopabranch_original{end});
+        % if any(strcmp(scopabranch, {scopabranch_original, 'main', 'origin', 'origin/main', 'master', 'origin/master'})) %the original branch name, and other possibilities that are pointless but just in case
+        %     error(sprintf("scopa branch should be your own, not '" + scopabranch_original + "'"))
+        % end
         scopapath = rootDir{1};
         pthpre = [scopapath filesep 'pre' filesep 'bash' filesep];
         pthfile = [pthpre 'cxp.sh'];
         if contains(regexp(fileread(pthfile), 'PTH_STORAGE_PREFIX=(\S*)', 'match'), {'/n/files/Neurobio/wilsonlab/', '/n/scratch/users'})
             sprintf("running flyg1-scopa (cxp.sh) on O2 from local machine")
-            system(['cd ' scopapath filesep 'pre' filesep 'bash' filesep])
-            system(['git checkout ' scopabranch])
+            statusout = system(['cd ' scopapath filesep 'pre' filesep 'bash' filesep]);
+            statusout = system(['git checkout ' scopabranch]);
+            if statusout==1
+                error("system command failed")
+            end
             cmd = sprintf("ssh %s%s %s %s", inp.user, inp.remote, inp.shfile, 'inp');
             % system(cmd);
             fprintf(1, '### system: %s ###\n', cmd);
