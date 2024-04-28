@@ -82,7 +82,7 @@ for i = 1:numbin_in
     else
         flag_ties = 1;
         sprintf("warning, multiple ties in probability bin")
-        spl = quantileranks(tmp,2)==1; %quantileranks breaks ties; there are only many ties when binning pixel indices; since in this case the goal is spatially equal-volume ROIs, alternating assigning ties to one or the other side within split (rather than between splits)
+        spl = quantileranks(tmp,2)==1; %quantileranks breaks ties, unlike simple median split, but is slower so only use when necessary; there are only many ties when binning pixel indices; since in this case the goal is spatially equal-volume ROIs, 
     end
     outvals{splitcount*2-1} = in{i}(~spl,:);
     outvals{splitcount*2} = in{i}(spl,:);
