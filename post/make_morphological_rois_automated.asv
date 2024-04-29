@@ -16,10 +16,6 @@ function [mask_roi_vec, centroids_roi] = ...
 %% preprocess stack, make mean stack
 
 
-if ~do_3d
-    error("not sure this is optimized for 2d, need to check, but also not sure why you'd want to do 2d")
-end
-
 if ~isa(stack, 'single')
     stack = single(stack);
 end
@@ -160,7 +156,7 @@ else
 
     switch subsample_mask_method
 
-        case 'equidistant' % create multiple equal-volume roi along skeleton of mask
+        case 'skeleton' % create multiple equal-volume roi along skeleton of mask
 
             if do_3d
                 min_axis = min([range(maskx),range(masky),range(maskz)]); 
@@ -194,32 +190,31 @@ else
                 centmp = [interp1(midy,xq), interp1(midx,xq), interp1(midz,xq)]; %interpolate x and y coordinates, now that they are ordered, into evenly spaced centroids (this allows one to oversample if desired)
                 centmp = centmp(2:2:end-1,:); %take every other so that we dont start at the edges, and all are same size
 
-                centroids_roi = cell(1, size(centmp, 1));
-                for crmi = 1:size(centmp, 1)
-                    centroids_roi{crmi} = centmp(crmi, :); %convert to cell, since centroids_roi is cell elsewhere (to support rois with varying number of discontiguous parts, even though that doesn't occur when using subsample_mask_method 'equidistant')
-                end
-
             else
 
-                
-                outfu = probability_bin([maskx, masky, maskz], num_mroi_auto);
-
-                % error("region is roughly uniform blob, so skeleton approach fails, work in progress finding uniformly distributed centroids within arbitrary 2d or 3d blob")
-                % 
-                % mask_allroi_perim = bwperim(mask_allroi_approx);
-                % centroids_roi = maximin_cx(16, length(size(mask_allroi_approx)),  'mask', ones(size(mask_allroi_approx)));
-                % 
-                % figure; hold on;
-                % kbnd = boundary([maskx,masky,maskz]);
-                % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
-                % axis image
-                % plot3(centroids_roi(:, 1), centroids_roi(:, 2), centroids_roi(:, 3), 'o')
-                % view(3)
-
-
+                error(sprintf("region '" + regionex + "' is roughly uniform blob, so subsample_mask_method 'skeleton' fails; try subsample_mask_method 'uniform' for roughly equal-volume ROIs within 2d or 3d regionex"))
 
             end
 
+        case 'uniform' % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto groups
+            
+            [outfu, centmp] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance
+            centmp = centmp.';
+
+            % mask_allroi_perim = bwperim(mask_allroi_approx);
+            % centroids_roi = maximin_cx(16, length(size(mask_allroi_approx)),  'mask', ones(size(mask_allroi_approx)));
+            % figure; hold on;
+            % kbnd = boundary([maskx,masky,maskz]);
+            % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
+            % axis image
+            % plot3(centroids_roi(:, 1), centroids_roi(:, 2), centroids_roi(:, 3), 'o')
+            % view(3)
+
+    end
+
+    centroids_roi = cell(1, size(centmp, 1));
+    for crmi = 1:size(centmp, 1)
+        centroids_roi{crmi} = centmp(crmi, :); %convert to cell, since centroids_roi is cell elsewhere (to support rois with varying number of discontiguous parts, even though that doesn't occur when using subsample_mask_method 'equidistant')
     end
 
 end
@@ -247,17 +242,17 @@ if isempty(sliceinds_hires) %isempty(stack_hires)
 
 else % else downsample the 3 output variables from hires to lores 
 
-    %downsample mask_roi_vec
+    % downsample mask_roi_vec
     % map from hi-z-res to lo-z-res (and find multi-roi voxel weighting)
-    % for each voxel, after mapping, divide by number of rois contributing to that voxel
-    % later the roi signal will be sum across voxels with these weights,
-    % this assumes equal contribution from all rois sharing a voxel,
-    % which is wrong if there are multiple rois contributing unequally to a voxel
-    % but i prefer this to not accounting for any overlap
-    % this approach could be improved further
-    % automated rois created with skeleton centroids and pdist2 are not overlapping at first,
-    % but they do overlap if the mask is mapped to a smaller mask (hires to lores, eg)
-    % later the roi signal will be sum across voxels with these weights,
+    % automated rois created with skeleton/pdist are not overlapping at first,
+    % but some do overlap when the mask is mapped to a lower res mask
+    % for each voxel, after mapping to lores, divide by number of rois contributing to that voxel
+    % later the roi signal will be summed across voxels with these weights,
+    % extreme case is multiple hires rois entirely contained in a single lores voxel
+    % this method will average them (equivalent to just taking the original lores roi)
+    % this method assumes equal contribution from all rois sharing a voxel, which is not precise,
+    % but seems better than not accounting for any overlap
+
     maskznew = maskz;
     for ii = 1:length(sliceinds_hires) %for each hires z slice range
         if ii<length(sliceinds_hires)
@@ -267,7 +262,6 @@ else % else downsample the 3 output variables from hires to lores
         end
         maskznew(ismember_single(maskznew, zrange)) = ii;
     end
-
 
     for i = 1:num_mroi_auto
         mask_roi_vec(i, sub2ind(size(stackmean_masked), masky(idx_cenmorph==i), maskx(idx_cenmorph==i), maskznew(idx_cenmorph==i))) = 1; %indices of each roi
@@ -286,7 +280,7 @@ else % else downsample the 3 output variables from hires to lores
 
     %%downsample z component of each subroi of each mophological roi centroid
     for rci = 1:num_mroi_auto %loop over rois
-        for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois
+        for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois (discontiguous subregions of single roi) 
             centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmean, 3)], centroids_roi{rci}(rci2,3));
         end
     end
@@ -336,7 +330,7 @@ if do_plots
         hfg = figure; hold on
         %imagesc(mean(mean(stack,3),4)) %plot the image again with max intensity over time to show the whole pb
         for i = 1:num_mroi_auto %overlay each pixel in its indexed color onto the pb image
-            scatter3( maskx(idx_cenmorph == i), masky(idx_cenmorph == i), maskz(idx_cenmorph == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
+            scatter3( maskx(idx_cenmorph == i), masky(idx_cenmorph == i), maskz(idx_cenmorph == i), 1000, 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
         end
         %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline
         %scatter3(centroids_roi(:,2 ), centroids_roi(:,1), centroids_roi(:,3), 80, 'k', 'filled') %show the centroids in each of their colors

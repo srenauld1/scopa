@@ -131,7 +131,7 @@ also note the term "interactive mode" can be misleading, because you can still r
 
 ############################## INTERACTIVE ON O2 ######################################
 
-to use VS Code on O2 (to debug on O2, or to do_cropping_session), you'll be promted to fill out several fields
+to run interactively on O2, use VS Code on O2 (to debug on O2, or to do_cropping_session), you'll be promted to fill out several fields
 most of them are intuitive, except for two fields at the bottom
 here's the values i use for these two fields for caiman registration or extraction (or just do_cropping session)
 

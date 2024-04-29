@@ -59,9 +59,8 @@ if contains(rootDir, 'scopa')
             system('git commit -m "scopasend"');
             system('git push');
 
-            cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull;' pth_cxp_on_o2];
+            cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cat cxp.sh; cd /n/scratch/users/c/caw846/stacks'];
             statusout = system(sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd));
-
 
         else
             error(sprintf("to run flyg1-scopa on O2 from local machine, data must in one of the following directories: \n" + ...

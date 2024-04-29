@@ -24,8 +24,8 @@ in = {in};
 inds = {inds};
 
 minsamp = 20;
-
-[outvals, outinds, flag_ties] = median_split_input(in, inds, numbin_goal, minsamp);
+flag_ties = 0;
+[outvals, outinds, flag_ties] = median_split_input(in, inds, numbin_goal, minsamp, flag_ties);
 
 if outflag
     outsz = cellfun(@(x) size(x,2), outvals, 'UniformOutput', false);
@@ -63,7 +63,7 @@ end
 
 end
 
-function [outvals, outinds, flag_ties] = median_split_input(in, inds, numbin_goal, minsamp)
+function [outvals, outinds, flag_ties] = median_split_input(in, inds, numbin_goal, minsamp, flag_ties)
 
 numbin_in = length(in);
 numbin_out = numbin_in*2;
@@ -78,12 +78,13 @@ for i = 1:numbin_in
     mvi = median(tmp);
     mvi_ties = find(tmp==mvi); %equal to median
     if numel(mvi_ties)<=1
-        flag_ties = 0;
         spl = tmp<mvi;
     else
-        flag_ties = 1;
-        sprintf("warning, multiple ties in probability bin")
-        spl = quantileranks(tmp,2)==1; %quantileranks breaks ties, unlike simple median split, but is slower so only use when necessary; there are only many ties when binning pixel indices; since in this case the goal is spatially equal-volume ROIs, 
+        if ~flag_ties %catch first time ties happen, to record if ties happen at least once
+            flag_ties = 1;
+            sprintf("warning, multiple ties in probability bin")
+        end
+        spl = quantileranks(tmp,2)==1; %quantileranks breaks ties, unlike simple median split, but is slower so only use when necessary; there are only many ties when binning pixel indices; since in this case the goal is spatially equal-volume ROIs,
     end
     outvals{splitcount*2-1} = in{i}(~spl,:);
     outvals{splitcount*2} = in{i}(spl,:);
@@ -101,7 +102,7 @@ if nsamp_min<minsamp
 end
 
 if numbin_curr<numbin_goal
-    [outvals, outinds] = median_split_input(outvals, outinds, numbin_goal, minsamp);
+    [outvals, outinds] = median_split_input(outvals, outinds, numbin_goal, minsamp, flag_ties);
 elseif numbin_curr>numbin_goal %this check is pointless bc numbin_goal is forced to be power of 2, but not in future when that restriction gets lifted
     error("overshot number bins")
 end
