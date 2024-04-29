@@ -200,6 +200,7 @@ else
             
             [outfu, centmp] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance
             centmp = centmp.';
+            disp("currently outfu holds equal volume roi indices for each voxel, but using pdist with cntmp instead as quicker solution, which loses some uniformity, will fix this soon")
 
             % mask_allroi_perim = bwperim(mask_allroi_approx);
             % centroids_roi = maximin_cx(16, length(size(mask_allroi_approx)),  'mask', ones(size(mask_allroi_approx)));
