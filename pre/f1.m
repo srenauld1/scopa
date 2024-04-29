@@ -27,18 +27,22 @@ if contains(rootDir, 'scopa')
     if ono2
         error("to run flyg1-scopa from O2, run cxp.sh from O2 command line (non-interactive), or pipeline_init.py from VSCode (interactive)")
     else
+        pth_remote = '@o2.hms.harvard.edu';
+        pth_cxp_on_o2 = '~/cxp.sh'; %assume they put in their home folder
+
         rootDir = strsplit(rootDir, ', ');
-        if numel(rootDir)>2
+        if numel(rootDir)>3
             error("rootDir not formatted correctly for running scopa, must be 'SCOPAPATH, SCOPABRANCH'")
         end
-        scopabranch = rootDir{end};
+        scopapath = rootDir{1};
+        scopabranch = rootDir{2};
+        o2_user = rootDir{3};
         [statusout, scopabranch_original] = system('git symbolic-ref refs/remotes/origin/HEAD');
         scopabranch_original = strsplit(scopabranch_original, '/');
         scopabranch_original = strtrim(scopabranch_original{end});
         % if any(strcmp(scopabranch, {scopabranch_original, 'main', 'origin', 'origin/main', 'master', 'origin/master'})) %the original branch name, and other possibilities that are pointless but just in case
         %     error(sprintf("scopa branch should be your own, not '" + scopabranch_original + "'"))
         % end
-        scopapath = rootDir{1};
         pthpre = [scopapath filesep 'pre' filesep 'bash' filesep];
         pthfile = [pthpre 'cxp.sh'];
         if contains(regexp(fileread(pthfile), 'PTH_STORAGE_PREFIX=(\S*)', 'match'), {'/n/files/Neurobio/wilsonlab/', '/n/scratch/users'})
@@ -51,7 +55,16 @@ if contains(rootDir, 'scopa')
             system('git add .');
             system('git commit -m "scopasend"');
             system('git push');
-            cmd = sprintf("ssh %s%s %s %s", inp.user, inp.remote, inp.shfile, 'inp');
+
+            
+            cmdcd = ['cd ~/scopa/pre/bash'];
+            cmd = sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd)
+            cmdcd = ['git checkout ' scopabranch];
+            cmd = sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd)
+            cmdcd = ['git pull'];
+            cmd = sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd)
+            cmd = sprintf("ssh %s%s %s", o2_user, pth_remote, pth_cxp_on_o2)
+
             % system(cmd);
             fprintf(1, '### system: %s ###\n', cmd);
         else

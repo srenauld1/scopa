@@ -1,6 +1,6 @@
 function [out, outmeans] = probability_bin(in, numbin_goal, outflag)
 
-%
+%%
 if ~exist('outflag', 'var')
     outflag = 0;
 end
