@@ -8,10 +8,11 @@ if ~exist('use_hires', 'var')
     use_hires = 0;
 end
 
-spl = strsplit(regionex, '_');
-regionex_nounderscore = spl{1};
 
 if isempty(croplim)
+    spl = strsplit(regionex, '_');
+    regionex_nounderscore = spl{1};
+    
     [croplim, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     if isempty(croplim)
         [croplim, croplimstr] = make_croplim(stack, sz_crop(4), pth_fldr, recid, regionex, regionex_nounderscore);

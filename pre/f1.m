@@ -59,7 +59,7 @@ if contains(rootDir, 'scopa')
             system('git commit -m "scopasend"');
             system('git push');
 
-            cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cat cxp.sh; cd /n/scratch/users/c/caw846/stacks'];
+            cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];
             statusout = system(sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd));
 
         else
