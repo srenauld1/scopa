@@ -196,15 +196,15 @@ else
 
             end
 
-        case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto groups
+        case 'uniform' % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto groups
+            
+            [outfu, centmp] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance
+            centmp = centmp.';
+            disp("outfu holds equal volume roi indices for each voxel, but currently just using pdist with cntmp instead as quicker solution, which loses some uniformity, will fix this soon")
 
-            [idx_cenmorph, centmp] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance
-            if size(unique(idx_cenmorph.', 'rows'), 1)~=1
+            if size(unique(outfu.', 'rows'), 1)~=1
                 error("each row must have constant value")
             end
-            idx_cenmorph = idx_cenmorph(:,1);
-            centmp = centmp.';
-
             % mask_allroi_perim = bwperim(mask_allroi_approx);
             % centroids_roi = maximin_cx(16, length(size(mask_allroi_approx)),  'mask', ones(size(mask_allroi_approx)));
             % figure; hold on;
@@ -225,12 +225,12 @@ end
 
 %% assign each voxel in the 3d mask to a morphological roi centroid
 
-if ~strcmp(subsample_mask_method, 'uniform') %method 'uniform' has already computed idx_cenmorph, 'uniformp' recomputes using pdist2 and its output centroids 
-    cenmorphflat = cell2mat(centroids_roi(:));
-    flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(centroids_roi{idx},1),1), (1:size(centroids_roi{idx},1)).'], (1:numel(centroids_roi)).', 'uniform', 0));
-    [~, maptmp] = pdist2(cenmorphflat, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
-    idx_cenmorph = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
-end
+
+cenmorphflat = cell2mat(centroids_roi(:));
+flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(centroids_roi{idx},1),1), (1:size(centroids_roi{idx},1)).'], (1:numel(centroids_roi)).', 'uniform', 0));
+[~, maptmp] = pdist2(cenmorphflat, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
+idx_cenmorph = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
+
 
 %% find indices for each mophological roi
 
