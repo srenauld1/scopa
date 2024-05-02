@@ -10,8 +10,8 @@ function opt = input_params_alt()
 %% MAIN
 
 %params for main pipeline control in file a2p
-opt.main.parent_folder = 'stacks'; %folder containing all recording folders (on local or o2)
-opt.main.recdate = '20231119'; %can use wildcards
+opt.main.parent_folder_path = '~/stacks'; %folder containing all recording folders (on local or o2)
+opt.main.recdate = '*'; %can use wildcards
 opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline

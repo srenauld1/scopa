@@ -4,9 +4,10 @@ currdir = split(pwd, filesep);
 currdir = currdir{end};
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
-    pth_parent = ['/n/scratch/users/'  currdir(1) filesep currdir filesep opts.parent_folder filesep];
+    pth_parent = ['/n/scratch/users/'  currdir(1) filesep currdir filesep opts.parent_folder_path filesep];
 else
-    pth_parent = ['~' filesep opts.parent_folder filesep];
+    pth_parent = strsplit(opts.parent_folder_path, filesep); %in case trailing filesep, or not
+    pth_parent = [strjoin(pth_parent(1:2), filesep) filesep];
 end
 
 fn_pattern_tif = [pth_parent '**' filesep opts.recdate '_' opts.fly '_' opts.trial '_' opts.suffix_analysis '_.tif'];
