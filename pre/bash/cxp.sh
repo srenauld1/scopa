@@ -27,10 +27,10 @@
 do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
-do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
+do_extract=1 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
-do_copyfiles_sequence=(1) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0-16 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+jobarrayind=( 0 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
@@ -47,7 +47,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('202306*')
+RECDATE=('20240429')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -71,17 +71,17 @@ USE_DENOISED=(1)
 LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise 
 
 EXTRACT_IN_2D=(1)
-REGIONEX=('pb')
+REGIONEX=('fullfov')
 INDEX_EXTRACTION_PARAM_SET=('default')
 
 
 ############ SET PARAMS FOR RESOURCE REQUEST ############
 
-# gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
 # gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
 # gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
-# gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
-gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+#gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
+#gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
 #gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
 # gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
 # this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)

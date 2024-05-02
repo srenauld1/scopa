@@ -1,17 +1,11 @@
 %% Process Fictrac Data
-%folder = '/Users/abates/Desktop/20210719-3_fly_2/';
-%folder = '\\research.files.med.harvard.edu\Neurobio\Wilson Lab\asbates\2p_collect\75815_R60D05_GCaMP7f\20210810-1_fly_7\';
 
-function [ftData_dat] = imaging_fictrac_pipeline(folder, video, interactive, trigger)
+function [ftData_dat] = fittrac_im_pre(folder)
 
-%% Default settings
-arguments
-    folder char
-    video logical = 0
-    interactive logical = 0
-    trigger logical = 0
-end
-expID = get_expID(folder);
+fntmp = rdir([folder filesep '*.tif']);
+[~, fntmp, ~] = fileparts(fntmp(1).name);
+fntmp = strsplit(fntmp, '_'); %first file is fine, they'rew all the same date-fly
+expID = [fntmp{1} '-' fntmp{2}];
 
 %% PROCESS FicTrac DATA
 % Extracts the median luminance from each frame of the raw FicTrac videos and uses it to identify
@@ -22,7 +16,7 @@ expID = get_expID(folder);
 % directory (to await further processing)
 %---------------------------------------------------------------------------------------------------
 
-rawFt = fictrac_imaging_preprocess(folder, video, 0, trigger, interactive);
+rawFt = fictrac_imaging_preprocess(folder, 0, 0, 0, 0);
 ftData_dat = fictrac_asssemble_dat(folder, rawFt);
 ftData_DAQ = fictrac_asssemble_DAQ(folder);
 

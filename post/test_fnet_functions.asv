@@ -3,22 +3,21 @@ inmin = -1;
 inmax = 1;
 outmin = -5;
 outmax = 5;
-load(['~/indvhitf.mat'], 'indv');
+load(['~/indvhitf.mat'], 'indv')
 pth_save = '~/Documents/vonmistest3.gif';
 
 %     amp(i)       = f.a * ( exp(f.k) - exp(-f.k) );
-% try substituting for a, this: V(vi) / ( exp(M(mi)) - exp(-M(mi)) )
 %     width(i)     = 2 * abs( acos( 1/f.k * log( 1/2 *( exp(f.k) + exp(-f.k) ))));
-% tuning_width = acos( (log( 0.5 ) + log( exp( k1 ) + exp( -k1 ) )) / k1 ) / pi * 180; % full width at half maximum
+tuning_width = acos( (log( 0.5 ) + log( exp( k1 ) + exp( -k1 ) )) / k1 ) / pi * 180; % full width at half maximum
 
-V = linspace(0, 2, 1 ); % amp
-M = linspace(-10, 10, 20); % width
-Q = [2];%xshift (center)
-C = [-3]; %yshift (baseline)
+V = linspace(0, 1, 1 ); % amp
+M = linspace(0, 6, 6); % width
+Q = [0];%xshift (center)
+C = [0]; %yshift (baseline)
 x = indv;
 % genlog(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [outmin outmax])
 % genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [inmin inmax], [-2 2])
-genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [], []);
+genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [inmin inmax], [])
 
 %% 
 

@@ -107,7 +107,7 @@ opt.froi.norm.doplots = 0;
 %params for stimulus/fictrac processing
 opt.ftrac.include_behavior = 1; %0 to skip behavior
 opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
-opt.ftrac.num_panel_frames = 193; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 (darkness) is 194th unique frame 
+opt.ftrac.num_panel_frames = 192; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 is 194th unique frame denoting darkness
 opt.ftrac.dark_stim_end_duration = 60; %final seconds
 opt.ftrac.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.ftrac.slopeorder = 2; %order of polynomial used to fit local slope
@@ -157,11 +157,10 @@ opt.pf.bump.fit(1).depvpre_str{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_
 opt.pf.bump.fit(1).indvpre_str{1} = {['vis, angsd']};
 opt.pf.bump.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
-opt.pf.bump.fit(1).normalize_indv = 'none';
 opt.pf.bump.fit(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 opt.pf.bump.fit(1).mdlname = 'fnet_v'; %'fnet_v';
-if str2double(opt.main.recdate)<20231119
-    opt.pf.bump.fit(1).epochinds = {[4]}; %closed loop epochind for 1st dataset
+if opt.main.recdate<str2double('20231119')
+    opt.pf.bump.fit(1).epochinds = {[4]}; %closed loop epochind for  dataset
 else
     opt.pf.bump.fit(1).epochinds = {[5]}; %closed loop epochind for 2nd dataset
 end
@@ -170,7 +169,6 @@ opt.pf.bump.fit(1).hsv_background = 'rois';
 opt.pf.bump.fit(1).sort_method = 'unbiased';
 opt.pf.bump.fit(1).use_saved_model = 1;
 opt.pf.bump.fit(1).doplots = 1;
-
 
 opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
 

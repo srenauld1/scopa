@@ -79,49 +79,42 @@ optimp.bineq = double(linineq_b);
 
 optimp.nonlcon = [];
 
-allpind = [supp.fnet.pind];
-supp.pind_Lfree = allpind(strcmp([supp.fnet.funstr], 'f'));
+if ~freeformflag %set up nonlinear constraint for freeform linear function
 
-allpind = [supp.fnet.pind];
-supp.pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
+    optimp.nonlcon = [];
 
-%
-% if ~freeformflag %set up nonlinear constraint for freeform linear function
-% 
-%     optimp.nonlcon = [];
-% 
-% else
-% 
-%     allpind = [supp.fnet.pind];
-%     supp.pind_Lfree = allpind(strcmp([supp.fnet.funstr], 'f'));
-% 
-% this von mises constraint would only be called for freeformflag and that's wrong
-%     allpind = [supp.fnet.pind];
-%     supp.pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
-% 
-%     % optimp.nonlcon = @nlcon_fnet;
-% 
-% end
+else
 
-    % 
-    % function [c,ceq] = nlcon_fnet(x)
-    % 
-    %     countz = 0;
-    %     for j = 1:length(pind_Lfree)
-    %         countz = countz+1;
-    %         ceq(countz) = norm(vec(x(pind_Lfree{j})),1) - 1; %make L1norm = 1 for linear filters with 'freeform' flag
-    %     end
-    %     for j = 1:length(pind_vonmises)
-    %         countz = countz+1;
-    %         ceq(countz) = min(vec(x(pind_vonmises{j})),1) - inputvar_stats.depvpre_min_alldim; %max and min match data max and min (not controllable as params of von mises)
-    %     end
-    %     for j = 1:length(pind_vonmises)
-    %         countz = countz+1;
-    %         ceq(countz) = max(vec(x(pind_vonmises{j})),1) - inputvar_stats.depvpre_max_alldim; %max and min match data max and min (not controllable as params of von mises)
-    %     end
-    %     c = [];
-    % 
-    % end
+    allpind = [supp.fnet.pind];
+    pind_Lfree = allpind(strcmp([supp.fnet.funstr], 'f'));
+
+    allpind = [supp.fnet.pind];
+    pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
+
+    optimp.nonlcon = @nlcon_fnet;
+
+
+end
+
+
+    function [c,ceq] = nlcon_fnet(x)
+
+        countz = 0;
+        for j = 1:length(pind_Lfree)
+            countz = countz+1;
+            ceq(countz) = norm(vec(x(pind_Lfree{j})),1) - 1; %make L1norm = 1 for linear filters with 'freeform' flag
+        end
+        for j = 1:length(pind_vonmises)
+            countz = countz+1;
+            ceq(countz) = min(vec(x(pind_vonmises{j})),1) - inputvar_stats.depvpre_min_alldim; %max and min match data max and min (not controllable as params of von mises)
+        end
+        for j = 1:length(pind_vonmises)
+            countz = countz+1;
+            ceq(countz) = max(vec(x(pind_vonmises{j})),1) - inputvar_stats.depvpre_max_alldim; %max and min match data max and min (not controllable as params of von mises)
+        end
+        c = [];
+
+    end
 
 
 end

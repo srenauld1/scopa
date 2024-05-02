@@ -82,16 +82,14 @@ elseif strcmp(func, 'vonmises')
 
                     countz = countz + 1;
 
-                    % original von mises
-                    % out = V(vi)*exp(M(mi)*cos(x-Q(qi)))+C(ci);
-                    
-                    % version that allows amp control (expresses first param as amp and k)
+                    out = V(vi)*exp(M(mi)*cos(x-Q(qi)))+C(ci);
+                    % out = (V(vi) / ( exp(M(mi)) - exp(-M(mi)) ) ) * exp(M(mi)*cos(x-Q(qi)))+C(ci);
                     newamp = V(vi) / ( exp(M(mi)) - exp(-M(mi)) );
                     out = newamp * exp(M(mi)*cos(x-Q(qi)))+C(ci);
 
-                    % 
-                    % out_all{countz} = out;
-                    % nonlinear_transformation_all{countz} = [x; out];
+
+                    out_all{countz} = out;
+                    nonlinear_transformation_all{countz} = [x; out];
                     % nlparams_all(countz,:) = [A(ai); K(ki); C(ci); Q(qi); B(bi); M(mi); V(vi)];
 
                     if doplots
@@ -112,8 +110,6 @@ elseif strcmp(func, 'vonmises')
                         ' M: ' num2str(round(M(mi), 2)), ...
                         ' Q: ' num2str(round(Q(qi), 2)), ...
                         ' C: ' num2str(round(C(ci), 2)), ...
-                        ' min: ' num2str(min(out(:))), ...
-                        ' max: ' num2str(max(out(:))), ...
                         ];
 
 

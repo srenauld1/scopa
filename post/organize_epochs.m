@@ -1,6 +1,6 @@
 function organize_epochs(md, data, sampling, tlim_epoch, nanpadlen_min, sorting_target, uniform_numbouts, epochinds)
 
-error("unfinished function")
+error("unfinished function, will be used to parse saved epochinds, written by socket code during exp")
 
 if strcmp(sampling, 'imaging')
     tfull = md.t_ts_i;

@@ -126,6 +126,11 @@ fitin.stats.depvpre_std_eachdim = depvpre_std_eachdim;
 fitin.stats.depvpre_min_eachdim = depvpre_min_eachdim;
 fitin.stats.depvpre_max_eachdim = depvpre_max_eachdim;
 
+fn = fieldnames(fitin.stats);
+for fni = 1:numel(fn)
+    fitin.stats.(fn{fni}) = double(fitin.stats.(fn{fni}));
+end
+
 %% output struct
 
 fitin.num_dim_indv = num_dim_indv;

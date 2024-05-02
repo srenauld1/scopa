@@ -77,11 +77,19 @@ parsave(savepath, histfit) %save histfit, must use separate function
         end
         for j = 1:length(supp.pind_vonmises)
             countz = countz+1;
-            nlpars = x(supp.pind_vonmises{j});
+            nlpars = vec(x(supp.pind_vonmises{j}));
             obfunval = nlpars(1)*exp(nlpars(2)*cos(indv-nlpars(3)))+nlpars(4);
             ceq(countz) = min(obfunval) - depvmin; %max and min match data max and min (not controllable as params of von mises)
+        end
+        for j = 1:length(supp.pind_vonmises)
             countz = countz+1;
+            nlpars = vec(x(supp.pind_vonmises{j}));
+            obfunval = nlpars(1)*exp(nlpars(2)*cos(indv-nlpars(3)))+nlpars(4);
             ceq(countz) = max(obfunval) - depvmax; %max and min match data max and min (not controllable as params of von mises)
+        end
+        for j = 1:length(supp.pind_vonmises)
+            countz = countz+1;
+            ceq(countz) = max(vec(x(supp.pind_vonmises{j})),1) - depvmax; %max and min match data max and min (not controllable as params of von mises)
         end
         c = [];
 

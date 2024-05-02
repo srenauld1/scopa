@@ -1,32 +1,22 @@
-function fitmdl_plot_single_mdl(ri, mdl, supp, depv, depvp, ft, indv, ftsyn, normalize_depv, tinds)
+function fitmdl_plot_single_mdl(ri, mdl, supp, depv, depvp, ft, indv, ftsyn, normalize_depv)
 
 if exist('ftsyn', 'var') && ~isempty(ftsyn)
     ftsyn = ftsyn(ri,:);
 else
     ftsyn = [];
 end
-if ~exist('tinds', 'var') || isempty(tinds)
-    tinds = 1:floor(size(depv, 1)/8);
-end
-% if ~strcmp(normalize_depv, 'none')
-%     indv = rescale(indv, -1, 1);
-% end
+
 
 pthspre = supp.pthspre;
 
+tinds = 1:900;
 
 filename_save = [pthspre '_' num2str(ri) '_' datestr(now, 30) '_testpred.gif'];
 nrows = supp.num_total_model_functions + 3; ncols = 1;
 [axx, axy, axw, axh] = arrange_subplots(nrows, ncols);
 hfg = figure; sgtitle({'1st fig: predicted vs measured, all samples'; ['2nd fig: same, but first ' num2str(numel(tinds)) ' samples']; '3rd fig: params'; 'below: model comps'})
 for i = 1:numel(axx)
-    hax{i} = axes('Parent', hfg, 'Position', [axx(i), axy(i), axw(i), axh(i)]); 
-    yyaxis left; 
-    hp1{i} = plot(hax{i},1, 'k-'); hold(hax{i}, 'on'); hp2{i} = plot(hax{i},1, 'r-'); 
-    hax{i}.YAxis(1).Color = [0 0 0];
-    yyaxis right; 
-    hp3{i} = plot(hax{i},1, 'b-'); hold(hax{i}, 'on'); hp4{i} = plot(hax{i},1, 'c-');
-    hax{i}.YAxis(2).Color = [0 0 0];
+    hax{i} = axes('Parent', hfg, 'Position', [axx(i), axy(i), axw(i), axh(i)]); yyaxis left; hp1{i} = plot(hax{i},1); hold(hax{i}, 'on'); hp2{i} = plot(hax{i},1); yyaxis right; hp3{i} = plot(hax{i},1); hp4{i} = plot(hax{i},1);
 end
 
 
@@ -35,20 +25,20 @@ hp1{1}.YData = depv;
 hp2{1}.XData = 1:numel(depv);
 hp2{1}.YData = depvp;
 
-% if exist('indv', 'var') && ~isempty(indv)
-%     if size(indv, 2)>3
-%         disp("plotting no more than 2 indv dims")
-%     end
-%     for ii = 1:size(indv, 2)
-%         if ii==1
-%             hp3{1}.XData = 1:numel(indv(:,ii));
-%             hp3{1}.YData = indv(:,ii);
-%         elseif ii==2
-%             hp4{1}.XData = 1:numel(indv(:,ii));
-%             hp4{1}.YData = indv(:,ii);
-%         end
-%     end
-% end
+if exist('indv', 'var') && ~isempty(indv)
+    if size(indv, 2)>3
+        disp("plotting no more than 2 indv dims")
+    end
+    for ii = 1:size(indv, 2)
+        if ii==1
+            hp3{1}.XData = 1:numel(indv(:,ii));
+            hp3{1}.YData = indv(:,ii);
+        elseif ii==2
+            hp4{1}.XData = 1:numel(indv(:,ii));
+            hp4{1}.YData = indv(:,ii);
+        end
+    end
+end
 
 hp1{2}.XData = 1:numel(tinds);
 hp1{2}.YData = depv(tinds);

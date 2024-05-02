@@ -33,10 +33,13 @@ if exist('optin', 'var') && ~isempty(optin)
 
         make_figure = 2;
         hax = optin;
-        if supp.framecount>1
-            newaxes = 0;
+        newaxes = 1;
+        if isfield(supp, 'framecount')
+            if supp.framecount>1
+                newaxes = 0;
+            end
         end
-        
+
     end
 
 end
@@ -136,7 +139,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
                             scatter(hax{sfi}, out2(bmi,:), pars_curr_fun, 15, plotcolors(bmi,:), 'filled'); hold on; %sorting prevents an odd plotting error
                         end
                     else
-                        plot(hax{sfi}, outtmpplot_in, outtmp(idx)); %sorting prevents an odd plotting error
+                        plot(hax{sfi}, outtmpplot_in, outtmp(idx), 'r-'); %sorting prevents an odd plotting error
                     end
                 else
                     if startsWith(fnetunit.funstr{fi}, 'h')
@@ -154,6 +157,8 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
                 xlm = hax{sfi}.XLim;
                 hax{sfi}.XAxis.TickValues = linspace(xlm(1), xlm(2), 3);
                 hax{sfi}.XAxis.TickLabels = hax{sfi}.XAxis.TickValues;
+
+                pars_plot = pars_curr_fun;
 
             end
 
