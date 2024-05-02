@@ -12,7 +12,7 @@ function [md, ball, vis] = load_fictrac(ids, md, pth_fictrac, fictracopts)
 
 % beware occasional circular artifact during transitions from max to min (eg 192 to 0), or vice versa, 
 % sometimes these transitions take more than 2 samples 
-% presumably because the voltage has to make a large transition (from min to max voltage)
+% probably a 
 % the intermediate value can be unsystematically on either side of 0, 
 % which causes spikes in the unwrapped timeseries when the intermediate value is less than pi radians away from the previous value
 % so smooth those out with tiny window in the unwrapped stim, otherwise there are spikes
@@ -33,7 +33,7 @@ no_stim_epochs = fictracopts.no_stim_epochs;
 doplots = fictracopts.doplots;
 
 try
-    load('fuk')
+    load(pth_fictrac)
 catch
     [pth_ftfldr, ~, ~] = fileparts(pth_fictrac);
     [ftData_dat] = fittrac_im_pre(pth_ftfldr);

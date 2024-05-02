@@ -1,4 +1,4 @@
-function opt = input_params_carl()
+function opt = input_params_alt()
 
 
 
@@ -12,10 +12,10 @@ function opt = input_params_carl()
 %params for main pipeline control in file a2p
 opt.main.parent_folder = 'stacks'; %folder containing all recording folders (on local or o2)
 opt.main.recdate = '20231119'; %can use wildcards
-opt.main.fly = '1'; %can use wildcards
+opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
-opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
-opt.main.regionex_all = {'noo_r', 'noo_l'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+opt.main.suffix_analysis = 'cmrg'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+opt.main.regionex_all = {'ebfb_eb', 'ebfb_fb'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
 opt.main.old_project = 0; %for carl
@@ -25,7 +25,7 @@ opt.main.old_project = 0; %for carl
 
 %params for making gif of raw data movies in function load_stack
 opt.gif.suffixes_plot = {
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -45,18 +45,18 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 % for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-opt.mroi.use_drawn_rois_str =  {'noo_r', 'noo_l'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+opt.mroi.use_drawn_rois_str =  {'ebfb_eb', 'ebfb_fb'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.num_mroi_auto_str = {'noo_r-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+opt.mroi.num_mroi_auto_str = {'ebfb_eb-32', 'ebfb_fb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 opt.mroi.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-opt.mroi.create_mask_method = 'edge'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+opt.mroi.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.num_mroi_auto_str must be power of 2
 opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
 
-opt.mroi.doplots = 0; %doplots in make_morphological_rois
+opt.mroi.doplots = 1; %doplots in make_morphological_rois
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
@@ -105,7 +105,7 @@ opt.froi.norm.doplots = 0;
 %% FICTRAC/STIMULUS
 
 %params for stimulus/fictrac processing
-opt.ftrac.include_behavior = 1; %0 to skip behavior
+opt.ftrac.include_behavior = 0; %0 to skip behavior
 opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
 opt.ftrac.num_panel_frames = 193; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 (darkness) is 194th unique frame 
 opt.ftrac.dark_stim_end_duration = 60; %final seconds
@@ -138,7 +138,7 @@ opt.ftrac.doplots = 0;
 % opt.pf.bump.fit(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
-opt.pf.bump.do = 1; %0 to skip compute_bump
+opt.pf.bump.do = 0; %0 to skip compute_bump
 opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
 opt.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
@@ -218,7 +218,7 @@ opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
 %    opt.fit(1).indvpre_str{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
-opt.fit.do = 1; %0 to skip fit_mdl
+opt.fit.do = 0; %0 to skip fit_mdl
 opt.fit(1).depvpre_str{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 opt.fit(1).depvpre_str{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 % opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
@@ -243,7 +243,7 @@ opt.fit = default_fit_params(opt.fit);
 
 % params for scatterplots
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
-opt.scatter.do_scatter = 1;
+opt.scatter.do = 0;
 opt.scatter.epochinds = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 
 
