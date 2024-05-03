@@ -116,7 +116,7 @@ else
         make_morphological_rois_automated(stack, maskmanual, ...
         num_mroi_auto, do_3d, create_mask_method, subsample_mask_method, ...
         xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
-        edgethresh, edgesig, closing_element_size, doplots);
+        edgethresh, edgesig, closing_element_size, regionex, doplots);
 
 end
 
@@ -149,6 +149,7 @@ end
 
 
 resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi, normopts, dtmni);
+save(pth_mroi, 'resp', '-v7.3', '-mat')
 
 
 %% put in struct 'roiinfo'

@@ -12,7 +12,6 @@ function [mask_roi_vec, centroids_roi] = ...
 %maskmanual must match dimensionality of stack, or be lower dimensional
 %stack_hires is optional, must be 3d xyz, and match xyz size of stack
 
-
 %% preprocess stack, make mean stack
 
 

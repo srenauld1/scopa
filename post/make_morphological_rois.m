@@ -149,6 +149,7 @@ end
 
 
 resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi, normopts, dtmni);
+save(pth_mroi, 'resp', '-v7.3', '-mat')
 
 
 %% put in struct 'roiinfo'
