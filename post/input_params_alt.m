@@ -10,7 +10,7 @@ function opt = input_params_alt()
 %% MAIN
 
 %params for main pipeline control in file a2p
-opt.main.parent_folder_path = '~/stacks'; %folder containing all recording folders (on local or o2)
+opt.main.parent_folder_path = '~/stacks'; %full path to folder containing all recording folders (on local or o2)
 opt.main.recdate = '*'; %can use wildcards
 opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
