@@ -33,11 +33,11 @@ no_stim_epochs = fictracopts.no_stim_epochs;
 doplots = fictracopts.doplots;
 
 try
-    load(pth_fictrac)
+    load('fuk')
+    % ftData_DAQ = load(pth_fictrac, 'ftData_DAQ');
 catch
-    [pth_ftfldr, ~, ~] = fileparts(pth_fictrac);
-    [ftData_dat] = fittrac_im_pre(pth_ftfldr);
-    load(pth_fictrac)
+    [pth_ftdir, ~, ~] = fileparts(pth_fictrac);
+    ftData_DAQ = fittrac_im_pre(pth_ftdir);
 end
 
 if size(ftData_DAQ, 1)>1
@@ -118,7 +118,7 @@ else
     else
     %% 
     
-        ft_misoffset = 2.26;
+        ft_misoffset = 0%2.26;
         define_stim_epoch_indices_2 %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
         fu = vis.ang(epochinds_ts_b==5);
         figure; plot(fu)

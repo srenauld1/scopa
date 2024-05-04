@@ -36,7 +36,7 @@ try
     load('fuk')
 catch
     [pth_ftfldr, ~, ~] = fileparts(pth_fictrac);
-    [ftData_dat] = fittrac_im_pre(pth_ftfldr);
+    fittrac_im_pre(pth_ftfldr);
     load(pth_fictrac)
 end
 
@@ -118,7 +118,7 @@ else
     else
     %% 
     
-        ft_misoffset = 2.26;
+        ft_misoffset = 0%2.26;
         define_stim_epoch_indices_2 %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
         fu = vis.ang(epochinds_ts_b==5);
         figure; plot(fu)
