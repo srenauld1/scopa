@@ -33,7 +33,7 @@ no_stim_epochs = fictracopts.no_stim_epochs;
 doplots = fictracopts.doplots;
 
 try
-    ftData_DAQ = load(pth_fictrac, 'ftData_DAQ');
+    load(pth_fictrac, 'ftData_DAQ')
 catch
     [pth_ftdir, ~, ~] = fileparts(pth_fictrac);
     ftData_DAQ = fittrac_im_pre(pth_ftdir);
