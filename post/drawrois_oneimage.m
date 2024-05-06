@@ -90,8 +90,8 @@ while true
         fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'r');
         if fid>=3
             scaleshift = fread(fid, '*int8');
+            fclose('all');
             delete([pthenv 'tmp_scaleshift_.bin'])
-            fclose(fid);
             scalefac = scalefac + single(scaleshift)/10;
             if scalefac<0
                 scalefac = 0;
@@ -132,8 +132,8 @@ while true
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'r');
     if fid>=3
         tmpflag = fread(fid, '*uint8');
+        fclose('all');
         delete([pthenv 'tmp_roi_flag_.bin'])
-        fclose(fid);
         flag_base_message = 0;
         if tmpflag==1 && ~flag_croplim %&& ~flag_one_image
             flag_exit_this_figure = 1;
@@ -300,38 +300,38 @@ eventmod = event.Modifier;
 if strcmpi(eventkey, 's')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 1, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'r')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 2, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'q')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 3, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'return')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 4, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'backspace')
     % error("undo not implemented yet")
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 5, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'd')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 6, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'e')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 7, 'uint8');
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'downarrow')
     scaleshift = -1;
@@ -340,7 +340,7 @@ elseif strcmpi(eventkey, 'downarrow')
     end
     fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
-    fclose(fid);
+    fclose('all');
 
 elseif strcmpi(eventkey, 'uparrow')
     scaleshift = 1;
@@ -349,7 +349,7 @@ elseif strcmpi(eventkey, 'uparrow')
     end
     fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
-    fclose(fid);
+    fclose('all');
 
 end
 

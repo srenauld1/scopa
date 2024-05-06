@@ -68,8 +68,8 @@ while true
     fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'r');
     if fid>=3
         scaleshift = fread(fid, '*int8');
+        fclose('all');
         delete([pthenv 'tmp_scaleshift_.bin'])
-        fclose(fid);
         scalefac = scalefac + single(scaleshift)/10;
         if scalefac<0
             scalefac = 0;
@@ -83,8 +83,8 @@ while true
     fid = fopen([pthenv 'tmp_zchoose_.bin'], 'r');
     if fid>=3
         zchoosedigit = transpose(vec(char(fread(fid, '*uchar'))));
+        fclose('all');
         delete([pthenv 'tmp_zchoose_.bin'])
-        fclose(fid);
         zchoose = [zchoose zchoosedigit];
         him.Parent.XLabel.String{2} = ['ENTERED SINGLE DIGIT ' zchoosedigit ', z ' bndstr ' limit frame is now ' zchoose ', ENTER ANOTHER DIGIT OR PRESS ENTER TO ACCEPT'];
     end
@@ -93,8 +93,8 @@ while true
     fid = fopen([pthenv 'tmp_controlin_.bin'], 'r');
     if fid>=3
         controlin = fread(fid, '*uint8');
+        fclose('all');
         delete([pthenv 'tmp_controlin_.bin'])
-        fclose(fid);
         if controlin==1 %pressed enter
             if length(zinds)<2
                 zindstmp = str2double(zchoose);
@@ -208,6 +208,6 @@ elseif strcmpi(eventkey, 'q')
 
 end
 
-fclose(fid);
+fclose('all');
 
 end
