@@ -15,7 +15,7 @@ opt.main.recdate = '20231119'; %can use wildcards
 opt.main.fly = '2'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
-opt.main.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+opt.main.regionex_all = {'eb2', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
 opt.main.old_project = 0; %for carl
@@ -105,9 +105,8 @@ opt.froi.norm.doplots = 0;
 %% FICTRAC/STIMULUS
 
 %params for stimulus/fictrac processing
-opt.ftrac.include_behavior = 1; %0 to skip behavior
+opt.ftrac.include_behavior = 0; %0 to skip behavior
 opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
-opt.ftrac.num_panel_frames = 193; %don't include extra dark frame . . . panel frames are zero indexed so 192 is 193rd increment of circle, and 193 (darkness) is 194th unique frame 
 opt.ftrac.dark_stim_end_duration = 60; %final seconds
 opt.ftrac.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.ftrac.slopeorder = 2; %order of polynomial used to fit local slope

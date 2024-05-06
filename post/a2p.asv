@@ -61,7 +61,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         [md, ts.vis] = load_stim(md, ids, opt.ftrac);
     else
         if opt.ftrac.include_behavior
-            [md, ts.ball, ts.vis] = load_fictrac(ids, md, pth.fictrac, opt.ftrac);
+            [md, ts.ball, ts.vis] = load_fictrac(ids, md, pth.daq, opt.ftrac);
         end
     end
 

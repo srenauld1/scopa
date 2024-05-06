@@ -24,14 +24,15 @@ datenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});    % trialnum = str2double(spl(find(strcmp(spl, 'trial'))+1));
 
-recid_hyphen = [num2str(datenum) '-' num2str(flynum)];
+datefly_hyphen = [num2str(datenum) '-' num2str(flynum)];
 recid_underscore = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
 pth_stack_analysis = [pth_fldr recid_underscore '_' suffix_analysis '_.mat'];
 
 pth_metadata = [pth_fldr recid_underscore '_metadatanew_.mat'];
 
-pth_fictrac = [pth_fldr recid_hyphen '_ficTracData_DAQ.mat'];
+pth_daq = [pth_fldr datefly_hyphen '_ficTracData_DAQ.mat']; %keep hyphen for compatibility with flyg
+pth_epochinds = [pth_fldr recid_underscore '_epochinds_.mat'];
 
 
 %% variables for each regionex
@@ -225,6 +226,7 @@ ids.datenum = datenum;
 ids.flynum = flynum;
 ids.trialnum = trialnum;
 ids.recid = recid_underscore;
+ids.datefly_hyphen = datefly_hyphen; %for some flyg files
 
 pth.fldr = pth_fldr;
 pth.stack_analysis = pth_stack_analysis;
@@ -236,7 +238,8 @@ pth.metadata = pth_metadata;
 pth.mroi = pth_mroi;
 pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;
-pth.fictrac = pth_fictrac;
+pth.daq = pth_daq;
+pth.epochinds = pth_epochinds;
 pth.savedata_oneregion = pth_savedata_oneregion;
 
 

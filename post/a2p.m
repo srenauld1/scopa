@@ -52,7 +52,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% load metadata
 
-    md = load_meta(pth.metadata, opt.md);
+    md = load_scanimage_metadata(pth.metadata, opt.md);
 
     %% load and process stimulus/fictrac data
 
@@ -61,7 +61,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         [md, ts.vis] = load_stim(md, ids, opt.ftrac);
     else
         if opt.ftrac.include_behavior
-            [md, ts.ball, ts.vis] = load_fictrac(ids, md, pth.fictrac, opt.ftrac);
+            [md, ts.ball, ts.vis] = load_DAQ(ids, md, pth.daq, pth.fldr, opt.ftrac);
         end
     end
 
