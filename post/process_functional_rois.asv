@@ -212,7 +212,6 @@ for ci = 1:numrois
 
 
     overlay_tmp = rescale(stack_mnt_rs, 1, ncol_each);
-
     switch foreground_plot_style
 
         case 'overlay'

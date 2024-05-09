@@ -1,6 +1,6 @@
 
 function [mask_roi_vec, centroids_roi] = ...
-    make_morphological_rois_automated(stack_mnt, maskmanual, ...
+    make_morphological_rois_automated(stack, maskmanual, ...
     num_mroi_auto, do_3d, create_mask_method, subsample_mask_method, ...
     xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
     edgethresh, edgesig, closing_element_size, regionex, do_plots)
@@ -8,43 +8,43 @@ function [mask_roi_vec, centroids_roi] = ...
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
 %creating new subsample_mask_method and inserting in switch statement)
-%stack_mnt must be 3d (xyz), although 3rd dim (z) can be singleton
-%maskmanual must match dimensionality of stack_mnt, or be lower dimensional
-%stack_hires is optional, must be 3d xyz, and match xyz size of stack_mnt
+%stack must be 4d (xyzt), although 3rd dim (z) can be singleton
+%maskmanual must match dimensionality of stack, or be lower dimensional
+%stack_hires is optional, must be 3d xyz, and match xyz size of stack
 
-%% preprocess stack_mnt, make mean stack_mnt
+%% preprocess stack, make mean stack
 
 
-if ~isa(stack_mnt, 'single')
-    stack_mnt = single(stack_mnt);
+if ~isa(stack, 'single')
+    stack = single(stack);
 end
 
 if ~exist('maskmanual', 'var') || isempty(maskmanual)
     maskmanual = 1;
 end
 
-stack_mnt = rescale(stack_mnt); %if there's a 4th dim, it's time so collapse it  . . . instead of mean could try zscore, or max, prctile, etc converts to double, also don't change this variable because you need it below
-numel_stackmnt = numel(stack_mnt);
+stackmean = rescale(mean(stack, 4)); %if there's a 4th dim, it's time so collapse it  . . . instead of mean could try zscore, or max, prctile, etc converts to double, also don't change this variable because you need it below
+numel_stackmnt = numel(stackmean);
 
-if do_3d==1 && size(stack_mnt, 3)==1 %if z dim is singleton
-    fprintf('WARNING, cannot make requested 3d mask because stack_mnt is 2d, making 2d mask instead')
-    do_3d = 0; %override if stack_mnt is only 2d
+if do_3d==1 && size(stackmean, 3)==1 %if z dim is singleton
+    fprintf('WARNING, cannot make requested 3d mask because stack is 2d, making 2d mask instead')
+    do_3d = 0; %override if stack is only 2d
 end
 
-if do_3d==0 && size(stack_mnt, 3)>1
-    stack_mnt = rescale(mean(stack_mnt, 3));
+if do_3d==0 && size(stackmean, 3)>1
+    stackmean = rescale(mean(stackmean, 3));
 end
 
 
-%% mask mean stack_mnt with any available manual mask (if none was made, maskmanual is all ones, ie has no effect)
+%% mask mean stack with any available manual mask (if none was made, maskmanual is all ones, ie has no effect)
 
 maskmanual_allrois = logical(sum(maskmanual, 4)); %if there's a 4th dim, it's rois co collapse it
-stackmean_masked = stack_mnt.*maskmanual_allrois; %don't change this variable because you need it below
+stackmean_masked = stackmean.*maskmanual_allrois; %don't change this variable because you need it below
 
 %%
 
 if ~(num_mroi_auto > 1 && do_3d) %if not multiple auto rois, and not 3d, otherwise premask defined below
-    premask = stackmean_masked; %define stack_mnt used to define mask
+    premask = stackmean_masked; %define stack used to define mask
 end
 
 %% create special premask if num_mroi_auto > 1 and do_3d
@@ -53,7 +53,7 @@ sliceinds_hires = [];
 if num_mroi_auto > 1
     if do_3d
        
-        if ~isempty(stack_hires) %if using a hi-z-res stack_mnt to help make the 3d mask
+        if ~isempty(stack_hires) %if using a hi-z-res stack to help make the 3d mask
 
             F = griddedInterpolant(single(maskmanual_allrois), 'linear');
             upsampind = linspace(1, size(maskmanual_allrois,3), size(stack_hires, 3) + 1);
@@ -68,7 +68,7 @@ if num_mroi_auto > 1
             end
             sliceinds_hires = [0 find(diff(map_hires_lores))] + 1;
 
-        else  %else make a hi-z-res stack_mnt from the lo-z-res stack_mnt
+        else  %else make a hi-z-res stack from the lo-z-res stack
 
             upsamp = zwid / xwid; %upsample factor makes cube voxels z pixel width same as xy
             numslices_upsamp = round((size(stackmean_masked,3)) * upsamp);
@@ -79,7 +79,7 @@ if num_mroi_auto > 1
             premask = F({ 1:size(stackmean_masked,1), 1:size(stackmean_masked,2), upsampind });
             premask = rescale(premask);  %rescale after interpolation
 
-            sliceinds_hires = linspace(1, size(premask,3), size(stacknmt, 3)+1);
+            sliceinds_hires = linspace(1, size(premask,3), size(stack, 3)+1);
             sliceinds_hires = sliceinds_hires(1:end-1);
             sliceinds_hires = round(sliceinds_hires); %this z rounding is one source of imprecision in the mapping
 
@@ -203,7 +203,16 @@ else
             end
             idx_cenmorph = idx_cenmorph(:,1);
             centmp = centmp.';
-            
+
+            % mask_allroi_perim = bwperim(mask_allroi_approx);
+            % centroids_roi = maximin_cx(16, length(size(mask_allroi_approx)),  'mask', ones(size(mask_allroi_approx)));
+            % figure; hold on;
+            % kbnd = boundary([maskx,masky,maskz]);
+            % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
+            % axis image
+            % plot3(centroids_roi(:, 1), centroids_roi(:, 2), centroids_roi(:, 3), 'o')
+            % view(3)
+
     end
 
     centroids_roi = cell(1, size(centmp, 1));
@@ -275,7 +284,7 @@ else % else downsample the 3 output variables from hires to lores
     %%downsample z component of each subroi of each mophological roi centroid
     for rci = 1:num_mroi_auto %loop over rois
         for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois (discontiguous subregions of single roi) 
-            centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stack_mnt, 3)], centroids_roi{rci}(rci2,3));
+            centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmean, 3)], centroids_roi{rci}(rci2,3));
         end
     end
 
@@ -323,7 +332,7 @@ if do_plots
         title('3d mask interpolated to hi z res')
 
         hfg = figure; hold on
-        %imagesc(mean(mean(stack_mnt,3),4)) %plot the image again with max intensity over time to show the whole pb
+        %imagesc(mean(mean(stack,3),4)) %plot the image again with max intensity over time to show the whole pb
         for i = 1:num_mroi_auto %overlay each pixel in its indexed color onto the pb image
             scatter3( maskx(idx_cenmorph == i), masky(idx_cenmorph == i), maskz(idx_cenmorph == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
         end
@@ -365,7 +374,7 @@ if do_plots
         %
         %
         % % test varying clip thresholds for automated PB detection
-        % tmptmp = stack_mnt.*maskmanual;
+        % tmptmp = stack.*maskmanual;
         % outz = [];
         % count = 0;
         % clipprct = fliplr([100]);

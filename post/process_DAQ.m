@@ -1,4 +1,4 @@
-function daqdata = process_DAQ(pth_fldr, ids, rateim)
+function daqdata = process_DAQ(pth_fldr, ids, rateim, smoothwindow_sec, slopelen, slopeorder)
 
 
 
@@ -9,7 +9,7 @@ function daqdata = process_DAQ(pth_fldr, ids, rateim)
 maxvolt = 10; %need to find this in metadata
 minvolt = 0; %need to find this in metadata
 
-if ~trialMetadata.usingPanels 
+if ~trialMetadata.usingPanels
     error("no panels info")
 end
 
@@ -56,14 +56,14 @@ else
 end
 
 
-%% 
+%%
 
 
 fndaq = dir(fullfile(pth_fldr,['*',ids.datefly_hyphen,'_daqData_*_trial_'  sprintf( '%03d', ids.trialnum ) '.mat']));
 
 load(fullfile(pth_fldr,fndaq.name),'trialData')
 
-newRow = table({ids.datefly_hyphen}, ids.trialnum, 'VariableNames', {'expID', 'trialNum'});
+daqdata = table({ids.datefly_hyphen}, ids.trialnum, 'VariableNames', {'expID', 'trialNum'});
 
 ratefictrac = fictracMetadata.fictracRate;
 try
@@ -79,98 +79,27 @@ trialData = timetable2table(trialData);
 
 %% Elena: all Berg4 trials prior to 05/25/22 have the channels for IntSide & IntFor switched
 
-[ intYaw, velYaw ] = process_fictrac_signal(trialData.ficTracYaw, patternMetadata.x_num, rateim, ratedaq, ratefictrac, maxvolt, maxFlyVelocity);
+smoothwindow_i = smoothwindow_sec*rateim;
+
+if any(strcmp(trialData.Properties.VariableNames, 'VolumeClock'))
+    method_downsample = 'timestamps';
+else
+    method_downsample = 'resample';
+end
+iscircular = 1;
+[ intYaw, velYaw ] = process_fictrac_signal(method_downsample, iscircular, trialData.ficTracYaw, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
 [ velSide , intSide ] = ficTracSignalDecoding( trialData.ficTracIntForward , ratedaq , ratefictrac/2,ratefictrac, maxFlyVelocity);
 [ velForward , intForward ] = ficTracSignalDecoding( trialData.ficTracIntSide , ratedaq , ratefictrac/2, ratefictrac, maxFlyVelocity);
 
-newRow.trialTime = {seconds(resample_with_padding(seconds(trialData.Time),ratefictrac,ratedaq))'};        % seconds
-newRow.intFor = {(intForward * ball/2)'};      % mm
-newRow.intSide = {(intSide * ball/2)'};        % mm
-newRow.intHD = {(intYaw)'};                    % radians
-newRow.velFor = {(velForward * ball/2)'};      % mm/sec
-newRow.velSide = {(velSide * ball/2)'};        % mm/sec
-newRow.velYaw = {(velYaw)'};                   % radians/sec
+daqdata.trialTime = {seconds(resample_with_padding(seconds(trialData.Time),ratefictrac,ratedaq))'};        % seconds
+daqdata.intFor = {(intForward * ball/2)'};      % mm
+daqdata.intSide = {(intSide * ball/2)'};        % mm
+daqdata.intHD = {(intYaw)'};                    % radians
+daqdata.velFor = {(velForward * ball/2)'};      % mm/sec
+daqdata.velSide = {(velSide * ball/2)'};        % mm/sec
+daqdata.velYaw = {(velYaw)'};                   % radians/sec
 
-% Calculate visual cue position based on X & Y channel pos
-if ismember('g4panels',trialData.Properties.VariableNames) && ismember('PanelsYDimTelegraph',trialData.Properties.VariableNames)
-
-    xframes = patternMetadata.x_num;
-    yframes = patternMetadata.y_num;
-    pixelAngle = arenaExtent/xframes;
-
-    % calculates width of most salient visual cue, ignores fainter
-    % background patterns if present but currently requires main cue to be
-    % an individual shape of uniform width & either the brightest or darkest component of the pattern
-
-    pattern_2D = patternMetadata.Pats(:,:,1,1);
-
-    if luminance == 0
-        pattern_1D = pattern_2D(1,:) == min(pattern_2D(1,:));
-    else
-        pattern_1D = pattern_2D(1,:) == max(pattern_2D(1,:));
-    end
-
-    cueWidth = sum(pattern_1D);
-
-    XvoltsPerStep = (maxvolt-minvolt)./(xframes);
-    YvoltsPerStep = (maxvolt-minvolt)./(yframes);
-
-    % Set limits on voltage
-    rawPanelsData = [resample_with_padding(trialData.PanelsXDimTelegraph, ratefictrac, ratedaq); resample_with_padding(trialData.PanelsYDimTelegraph, ratefictrac, ratedaq)]';
-    rawPanelsData(rawPanelsData < minvolt) = minvolt;
-    rawPanelsData(rawPanelsData > maxvolt) = maxvolt;
-
-    % Calculate the frame number (round to nearest integer), & calculate the
-    % pixel angle of the bar given the frame number.
-
-    frX = round((rawPanelsData(:,1) - minvolt)./XvoltsPerStep);
-    frY = round((rawPanelsData(:,2) - minvolt)./YvoltsPerStep);
-    yframeStep = xframes/yframes;
-
-    % takes into account a change in cue pos due to a yframe
-    % step
-    % may need to change sign depending on the relationship b/w
-    % your x & y frame pos values
-    disp('Temporary message for Elena: if processing experiments acquired before 12/16/21 flip yframeStepsign to -');
-    if yDimxDim == 0
-        cuePos = mod(frX - yframeStep*(frY-1),xframes);
-    else
-        cuePos = mod(frX + yframeStep*(frY-1),xframes);
-    end
-    cuePos(cuePos==0) = xframes;
-
-    % takes into account cue width & starting pos angle
-    % relative to fly
-    % may need to change sign depending on the relationship b/w
-    % cus pos and and cue angle rel to the fly
-
-    if cuePosAngleRel == 0
-        cueAngle = (initialAngle - ((cuePos - 2) + cueWidth/2).*pixelAngle);
-    else
-        cueAngle = (initialAngle + ((cuePos - 2) + cueWidth/2).*pixelAngle);
-    end
-
-    cueAngle = wrapTo180(cueAngle);
-
-    % clean up/filter (artifacts often present at 180 to -180 transitions)
-    cueAngle = smoothdata(cueAngle,'movmedian',5); % can play around with this step
-    cueAngle(cueAngle > 180) = 180;
-    cueAngle(cueAngle < -180) = -180;
-
-    % debug plot
-    % figure();plot(cueAngle)
-
-    % Berg4 default: cue pos counterclockwise to the fly = - angles
-    %                cue pos clockwise to the fly = + angles
-    % may vary by arena depending on how it/fictrac was setup
-    % IMPORTANT: check your arena's coordinate frame
-
-    newRow.PanelsX = {frX};
-    newRow.PanelsY = {frY};
-    newRow.cuePos = {cuePos};
-    newRow.cueAngle = {cueAngle};
-
-elseif ismember('g4panels',trialData.Properties.VariableNames)
+if ismember('g4panels',trialData.Properties.VariableNames)% Calculate visual cue position based on X channel pos
 
     xframes = patternMetadata.x_num;
     pixelAngle = arenaExtent/xframes;
@@ -221,12 +150,10 @@ elseif ismember('g4panels',trialData.Properties.VariableNames)
     % may vary by arena depending on how it/fictrac was setup
     % IMPORTANT: check your arena's coordinate frame
 
-    newRow.PanelsX = frX;
-    newRow.cuePos = cuePos;
-    newRow.cueAngle = cueAngle;
+    daqdata.PanelsX = frX;
+    daqdata.cuePos = cuePos;
+    daqdata.cueAngle = cueAngle;
 end
 
-% Append to main table
-ftData = [ftData; newRow];
 
 end

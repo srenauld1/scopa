@@ -34,6 +34,7 @@ disp("is 2nd dataset fly2 im/ft alignment off by 1 second? dark epoch has visual
     
 %% params
 
+
 opt = input_params_carl();
 
 %% loop over recordings
@@ -94,7 +95,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            make_morphological_rois(stackcrop, opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
+            make_morphological_rois(stackcrop, stack_mnt.(regionex), opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
 
         %%load/select functional (caiman) roi responses

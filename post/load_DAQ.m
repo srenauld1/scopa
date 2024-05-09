@@ -34,7 +34,7 @@ doplots = fictracopts.doplots;
 try
     load(pth_daq, 'daqdata')
 catch
-    daqdata = process_DAQ(pth_fldr, ids, md.volrate);
+    daqdata = process_DAQ(pth_fldr, ids, md.volrate, smoothwindow_sec, slopelen, slopeorder);
     if size(daqdata, 1)>1
         daqdata = daqdata(trialnum, :);
     end
@@ -49,7 +49,7 @@ md.t_ts_b = md.dtmnb * [1:numel(daqdata.intHD{1})]';
 md.total_t = max(md.t_ts_b);
 md.t_ts_i = linspace(0, md.total_t, md.numvol_o+1)';
 md.t_ts_i = md.t_ts_i(2:end); %2:end rather than 1:end-1 since each timestamp marks the end of the sample
-md.dtmni = mean(diff(md.t_ts_i)); %close to 1/md.volrate;
+% md.dtmni = mean(diff(md.t_ts_i)); %close to 1/md.volrate;
 
 if datenum<20231119
     dark_epoch_time_start = max(md.trialtime(:))-seconds(dark_stim_end_duration);

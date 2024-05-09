@@ -1,4 +1,4 @@
-function [roiinfo, resp] = make_morphological_rois(stack, opts_mroi, ...
+function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ...
     md, pth, stack_hires, map_hires_lores, regionex, parstr_mroi)
 
 
@@ -50,6 +50,9 @@ subsample_mask_method = opts_mroi.subsample_mask_method;
 edgethresh = opts_mroi.edgethresh;
 edgesig = opts_mroi.edgesig;
 closing_element_size = opts_mroi.closing_element_size;
+foreground_plot_style = opts_mroi.foreground_plot_style; 
+numrois_for_gif = opts_mroi.numrois_for_gif; 
+ncol_each = opts_mroi.ncol_each; 
 
 pth_mroi = pth.mroi.(regionex);
 
@@ -113,7 +116,7 @@ else
     do_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
     pth_save_figs_prefix = pth_mroi(1:end-4);
     [mask_roi_vec, centroids_roi] = ...
-        make_morphological_rois_automated(stack, maskmanual, ...
+        make_morphological_rois_automated(stack_mnt, maskmanual, ...
         num_mroi_auto, do_3d, create_mask_method, subsample_mask_method, ...
         xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
         edgethresh, edgesig, closing_element_size, regionex, doplots);
@@ -152,6 +155,22 @@ resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi, normopts, dtmni);
 save(pth_mroi, 'resp', '-v7.3', '-mat')
 
 
+%% create roi overlay stack
+
+    %create colormap for roi+mean image overlay (roi is red by default)
+    startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
+    endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
+    startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
+    endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
+    cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
+
+    cmap_im = colormap_custom(cmap_method, ncol_each, ...
+        startcol1, endcol1, saturation_factor_background, ...
+        startcol2, endcol2, saturation_factor_rois);
+
+
+
+
 %% put in struct 'roiinfo'
 
 roiinfo.numroi = num_mroi;
@@ -173,6 +192,17 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 %% plots
 
 if doplots
+
+
+    if num_mroi>numrois_for_gif
+        roi_plot_inds_good = round(linspace(1, num_mroi, numrois_for_gif));
+    else
+        roi_plot_inds_good = 1:num_mroi;
+    end
+
+    filename_gif = [pth_mroi(1:end-4) '_hueplanes_' num2str(numrois_for_gif) 'rois_.gif'];
+    plot_gif(roi_overlay.(:,:,:, roi_plot_inds_good), filename_gif, cmap_im)
+
 
     [masky,maskx,maskz] = ind2sub(size(mask_allroi),find(mask_allroi)); %find the cartesian coordinates of points in the mask
     kbnd = boundary([maskx,masky,maskz]);
