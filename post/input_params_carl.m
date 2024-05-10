@@ -58,10 +58,25 @@ opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, help
 
 opt.mroi.doplots = 0; %doplots in make_morphological_rois
 opt.mroi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.mroi.numrois_for_gif = 1000; %how many roi to put in gif, big number to plot all, 0 to skip gif
 opt.mroi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
-opt.mroi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
-opt.mroi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
+opt.mroi.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
+opt.mroi.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
+
+opt.mroi.plt.hsv_background = 'rois';
+opt.mroi.plt.huestr = 'loc'; %leave as is, docs need to be changed for this variable
+opt.mroi.plt.huenorm = 'native'; %hue normalization method, see setup_model
+opt.mroi.plt.satnorm = 'relative'; %sat normalization method, see setup_model
+opt.mroi.plt.valnorm = 'relative';%val normalization method, see setup_model
+opt.mroi.plt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+opt.mroi.plt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+opt.mroi.plt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+opt.mroi.plt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model to [0 1] when plotting periodic param (e.g. von mises center, ie mdlname 'v' huestr 'loc'), see compute_hsv
+opt.mroi.plt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see compute_hsv
+opt.mroi.plt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see compute_hsv
+opt.mroi.plt.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see compute_hsv
+opt.mroi.plt.ignorehue = 0; %1 ignores it, makes constant 1
+opt.mroi.plt.ignoresat = 1; %1 ignores it, makes constant 1
+opt.mroi.plt.ignoreval = 1; %1 ignores it, makes constant 1
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)

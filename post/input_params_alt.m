@@ -57,6 +57,10 @@ opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, define
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
 
 opt.mroi.doplots = 1; %doplots in make_morphological_rois
+opt.mroi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
+opt.mroi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
+opt.mroi.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
+opt.mroi.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)

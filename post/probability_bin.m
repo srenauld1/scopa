@@ -1,4 +1,4 @@
-function [out, outmeans] = probability_bin(in, numbin_goal, outflag)
+function [out, outmeans, bin_prctiles] = probability_bin(in, numbin_goal, outflag)
 
 %%
 if ~exist('outflag', 'var')
@@ -16,8 +16,6 @@ end
 
 
 out = zeros(size(in), 'uint16');
-
-% in = in - mean(in);
 
 inds = reshape(1:numel(in), size(in));
 in = {in};
@@ -37,6 +35,7 @@ if outflag
     for omi = 1:outsz
         outmeans(omi,:) = cell2mat(cellfun(@(x) x(omi), outmeanstmp, 'UniformOutput', false));
     end
+
 else
     outmeans = [];
 end
@@ -60,6 +59,9 @@ if any(diff(out, [], 2))
     error("dims must have equal rank")
 end
 
+
+bin_prctiles = tabulate(out(:,1));
+bin_prctiles = bin_prctiles(:,3);
 
 end
 

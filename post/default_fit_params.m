@@ -37,7 +37,7 @@ omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting 
 optim_hist_save_iter_spacing = 2;
 
 plt.hsv_background = 'rois'; %'rois' or 'pixels' or 'raw';
-plt.huestr = 'loc'; %loc or amp for mdlname linear . . . loc, amp, or wid for mdlname v (vonmises) or g (gaussian)
+plt.huestr = 'loc'; %leave as is, docs need to be changed for this variable
 plt.huenorm = 'native'; %hue normalization method, see setup_model
 plt.satnorm = 'relative'; %sat normalization method, see setup_model
 plt.valnorm = 'relative';%val normalization method, see setup_model

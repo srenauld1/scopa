@@ -1,4 +1,4 @@
-function outp = downsample_circular_variable(inp, dslen)
+a2afunction outp = downsample_circular_variable(inp, dslen)
 
 breakout = 0;
 

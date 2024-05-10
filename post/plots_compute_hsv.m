@@ -1,19 +1,40 @@
 
-function hsvmap = compute_hsv( ft, gof, indvpref, depvstd, plt, mdlname, stats)
+function hsvmap = plots_compute_hsv( plt, hueft, satft, valft, hueft2, huelimnat, huelimnat2, mdlname)
 
-numroi = size(ft,1);
-hdata = zeros(numroi, 1);
-sdata = zeros(numroi, 1);
-vdata = zeros(numroi, 1);
-for ri = 1:numroi
-    hdata(ri) = plt.gethue(ft(ri,:), indvpref(ri));
-    sdata(ri) = plt.getsat(gof(ri));
-    vdata(ri) = plt.getval(depvstd(ri));
+arguments
+    plt struct %structure holding plotting options
+    hueft double %feature assigned to hue (required input)
+    satft double = 1 %feature assigned to saturation
+    valft double = 1 %feature assigned to value
+    hueft2 double = hueft %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname 
+    huelimnat double = [min(hueft(:)) max(hueft(:))] %native full range from which hue feature is drawn, used to normalize hue, (e.g. if hue is an "x" param from fit model, huelimnat would be independent variable min and max)
+    huelimnat2 double = [min(hueft(:)) max(hueft(:))] %an alternative to huelimnat, used for some mdlname defaults (e.g. if hue is a "y" param from fit model, huelimnat would be dependent variable min and max)
+    mdlname char = '' %can be used to switch among different plotting defaults
 end
+
+if strcmp(plt.huenorm, 'native')
+    disp("WARNING, requested huenorm 'native', but no huelimnat argument passed, switching to huenorm 'relative'")
+    plt.huenorm = 'relative'; %hue normalization method, see setup_model
+end
+
 
 if strcmp(plt.huenorm, 'native') && (strcmp(mdlname, 'linear') || strcmp(mdlname, 'plane') || startsWith(mdlname, 'svd'))
     disp("WARNING, NO NATIVE plt.huenorm FOR MDLNAME svd, SWITCHING TO RELATIVE")
     plt.huenorm = 'relative'; %hue normalization method, see setup_model
+end
+
+
+hdata = zeros(size(hueft,1), 1);
+for ii = 1:size(hueft,1)
+    hdata(ii) = plt.gethue(hueft(ii,:), hueft2(ii));
+end
+sdata = zeros(size(satft,1), 1);
+for ii = 1:size(satft,1)
+    sdata(ii) = plt.getsat(satft(ii));
+end
+vdata = zeros(size(valft,1), 1);
+for ii = 1:size(valft,1)
+    vdata(ii) = plt.getval(valft(ii));
 end
 
 %use plt.hrange_out_manual to restrict hue range after normalization (e.g. when domain is not
@@ -21,7 +42,7 @@ end
 
 switch plt.huenorm
     case 'native'
-        hrange_in = plt.gethr_native(stats.indvpre_lim_alldim, stats.depvpre_lim_alldim);
+        hrange_in = plt.gethr_native(huelimnat, huelimnat2);
     case 'relative'
         hrange_in = plt.gethr_relative(hdata);
     case 'manual'

@@ -6,10 +6,9 @@ function [plotvars, do_read_indv, do_read_depv] = ...
 
 %% plotting vars
 
-fitin.plt = fitmdl_plots_setup_hsv(mdlname, opts.plt);
+fitin.plt = plots_setup_hsv(opts.plt, mdlname);
 
-fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, mdlname, fitin.stats);
-
+fitdata.hsvmap = plots_compute_hsv( plt, fitdata.ft, fitdata.gof, fitdata.depvstd, fitdata.indvpref, fitin.stats.indvpre_lim_alldim, fitin.stats.depvpre_lim_alldim, mdlname);
 
 %% select which rois get plotted and how they're sorted
 

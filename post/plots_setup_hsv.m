@@ -1,16 +1,23 @@
-function plt = fitmdl_plots_setup_hsv(mdlname, plt)
+function plt = plots_setup_hsv(plt, mdlname)
 
 %would be nice to make this more general, but currently switches by mdlname
 %some of these anonymous functions are just lookups, but kept this way for possible future expansion   
 
 huestr = plt.huestr;
 hrange_out_manual = plt.hrange_out_manual;
+if isfield(plt, 'hue_is_periodic')
+    hue_is_periodic = plt.hue_is_periodic;
+else
+    hue_is_periodic = 0;
+end
+if ~exist('mdlname', 'var') || isempty(mdlname)
+    mdlname = '';
+end
 
 iif = @(varargin) varargin{2 * find([varargin{1:2:end}], 1, 'first')}(); %how to do "inline if" (iif)
 
 %% model-specific vars
 
-hue_is_periodic = 0;
 if strcmp(mdlname, 'v') & strcmp(huestr, 'loc') %only if the param assigned to hue is periodic, make hrange the full circle
     "WARNING, CHANGING hrange_out_manual TO [0 1] BECAUSE HUE PARAM IS PERIODIC"
     hue_is_periodic = 1;
@@ -18,7 +25,12 @@ if strcmp(mdlname, 'v') & strcmp(huestr, 'loc') %only if the param assigned to h
 end
 
 
-if startsWith(mdlname, 'svd')
+if isempty(mdlname)
+
+    gethue = @(ft, indvpref) ft; 
+    gethr_native = @(limi,limd) limd;
+    
+elseif startsWith(mdlname, 'svd')
 
     switch huestr
         case 'loc'
@@ -112,20 +124,20 @@ getsat = @(gof) 1/gof;
 getval = @(depvstd) depvstd;
 
 gethr_relative = @(ft) iif( ...
-    length(ft)>1,   @() [min(ft(:)) max(ft(:))], ...
-    length(ft)==1,  @() [0 ft] ... %hack to deal with normalizing length 1 vector, will arbitrarily make hue the max hue
+    numel(ft)>1,   @() [min(ft(:)) max(ft(:))], ...
+    numel(ft)==1,  @() [0 ft] ... %hack to deal with normalizing numel 1 vector, will arbitrarily make hue the max hue
     );
 
 getsr_native = @(sdata) [0 100]; %need to input values depnding on gof metric
 getsr_relative = @(sdata) iif( ...
-    length(sdata)>1,   @() [min(sdata(:)) max(sdata(:))], ...
-    length(sdata)==1,  @() [0 sdata] ... %hack to deal with normalizing length 1 vector, will arbitrarily make sat the max sat
+    numel(sdata)>1,   @() [min(sdata(:)) max(sdata(:))], ...
+    numel(sdata)==1,  @() [0 sdata] ... %hack to deal with normalizing numel 1 vector, will arbitrarily make sat the max sat
     );
 
 getvr_native = @(vdata) [0 3]; %need to input values depending on indicator
 getvr_relative = @(vdata) iif( ...
-    length(vdata)>1,   @() [min(vdata(:)) max(vdata(:))], ...
-    length(vdata)==1,  @() [0 vdata] ... %hack to deal with normalizing length 1 vector, will arbitrarily make val the max val
+    numel(vdata)>1,   @() [min(vdata(:)) max(vdata(:))], ...
+    numel(vdata)==1,  @() [0 vdata] ... %hack to deal with normalizing numel 1 vector, will arbitrarily make val the max val
     );
 
 
