@@ -54,7 +54,7 @@ foreground_plot_style = opts_mroi.foreground_plot_style;
 ncol_each = opts_mroi.ncol_each;
 saturation_factor_background = opts_mroi.saturation_factor_background; %above this fraction of data is sent to max
 saturation_factor_rois = opts_mroi.saturation_factor_rois; %above this fraction of data is sent to max
-plt = opts_mroi.plt;
+hsvplt = opts_mroi.hsv;
 
 pth_mroi = pth.mroi.(regionex);
 
@@ -178,13 +178,13 @@ roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, ncol_each, ...
 % plot_gif(roi_overlay.im(:,:,:,1:3), filename_gif, roi_overlay.cmap)
 
 
-plt = plots_setup_hsv(plt);
+hsvplt = plots_setup_hsv(hsvplt);
 
 hue_feature = [1:num_mroi]';
-hsvmap = plots_compute_hsv(plt, hue_feature);
+hsvmap = plots_compute_hsv(hsvplt, hue_feature);
 
 do_hsv_plot = 1;
-[img] = plots_hsvfov(plt, stack_mnt, hsvmap, pixinds_roi, do_hsv_plot, pth_mroi_save_prefix);
+[img] = plots_hsvfov(hsvplt, stack_mnt, hsvmap, pixinds_roi, do_hsv_plot, pth_mroi_save_prefix);
 
 
 
