@@ -62,6 +62,24 @@ opt.mroi.ncol_each = 128; %number colors in each part of the overlay plot (2 par
 opt.mroi.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
 opt.mroi.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
 
+
+opt.mroi.hsv.foreground = 'allrois'; %eachroi, allrois
+opt.mroi.hsv.huestr = 'loc'; %leave as is, docs need to be changed for this variable
+opt.mroi.hsv.huenorm = 'native'; %hue normalization method, see setup_model
+opt.mroi.hsv.satnorm = 'relative'; %sat normalization method, see setup_model
+opt.mroi.hsv.valnorm = 'relative';%val normalization method, see setup_model
+opt.mroi.hsv.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+opt.mroi.hsv.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+opt.mroi.hsv.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
+opt.mroi.hsv.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model to [0 1] when plotting periodic param (e.g. von mises center, ie mdlname 'v' huestr 'loc'), see compute_hsv
+opt.mroi.hsv.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see compute_hsv
+opt.mroi.hsv.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see compute_hsv
+opt.mroi.hsv.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see compute_hsv
+opt.mroi.hsv.ignorehue = 0; %1 ignores it, makes constant 1
+opt.mroi.hsv.ignoresat = 1; %1 ignores it, makes constant 1
+opt.mroi.hsv.ignoreval = 1; %1 ignores it, makes constant 1
+
+
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
 % postcluster normalization is applied after clustering

@@ -1,0 +1,98 @@
+function [img] = plots_hsvfov(plt, stackmean, hsvmap, pixinds_roi, pth_fitdata_prefix, doplots)
+
+num_grayscales_bg = 256; %arbitrary
+
+cmapgray = colormap(gray(num_grayscales_bg));
+
+stackmean = rescale(stackmean, 0, num_grayscales_bg-1);
+stackmean = uint16(stackmean); %this will round to nearest int, we use ints because ind2rgb will map 0 to first value in cmap (which is zero/black)
+
+size_imgnew = [size(stackmean, 1)  size(stackmean, 2)  size(stackmean, 3) 3];  %specify size(stackmean, 3) in case it's 1, to keep ndims(size_imgnew)==4
+imgtmp = zeros(size_imgnew, 'single');
+for si = 1:size(stackmean, 3)
+    imgtmp(:,:,si,:) = ind2rgb(stackmean(:,:,si), cmapgray); %create the background FOV intensity grayscale (may not get used though)
+end
+imgtmp = reshape(imgtmp, [], size(imgtmp, 4)); %collapse spatial dimensions to make pixel by time
+
+
+if plt.ignorehue
+    hsvmap(:,1) = 1;
+end
+if plt.ignoresat
+    hsvmap(:,2) = 1;
+end
+if plt.ignoreval
+    hsvmap(:,3) = 1;
+end
+
+switch plt.foreground
+
+    case 'pixels'
+
+        imgtmptmp = imgtmp;
+        imgtmptmp(cell2mat(pixinds_roi), :) = hsv2rgb( hsvmap );
+        img = reshape(imgtmptmp, size_imgnew);
+        imgtmptmp = [];
+
+
+    case {'eachroi', 'allrois'}
+
+        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(pixinds_roi)]);
+        imgtmp = permute(imgtmp, [1 3 2]);
+        rgbmap = cell(1, numel(pixinds_roi));
+        for ri = 1:numel(pixinds_roi)
+            rgbmap{ri} = repmat(hsvmap(ri, :), [numel(pixinds_roi{ri}) 1]);
+            imgtmp(pixinds_roi{ri}, ri, :) = rgbmap{ri};
+        end
+        if strcmp(plt.foreground, 'allrois')
+            
+            imgtmp(cell2mat(pixinds_roi), :, :) = mean(imgtmp(cell2mat(pixinds_roi), :, :), 2);
+        end
+        imgtmp = hsv2rgb(imgtmp);
+        imgtmp = permute(imgtmp, [1 3 2]);
+        img = reshape(imgtmp, [size_imgnew, size(imgtmp, 3)]);
+
+
+    case 'raw'
+
+end
+
+
+
+if doplots
+
+    title_add_each = 'FOV';
+    figext = '.gif';
+    filename_save = [pth_fitdata_prefix '_' title_add_each '_' figext];
+    tittmp = strsplit(filename_save(1:end-4), '/');
+    figure_title = {strrep(tittmp{end}, '_', ' ')};
+
+
+    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
+
+    framecount = 0;
+    for ri = 1:size(img, 5)
+        for zi = 1:size(img, 3)
+            framecount = framecount+1;
+
+            if zi<size(img, 3)+1
+                hat{zi} = axes( 'Parent', hfg, 'Position', [0 0 1 1] );
+                hold(hat{zi}, 'on');
+                switch plt.foreground
+                    case 'pixels'
+                        hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:)));
+                    case {'eachroi', 'allrois'}
+                        hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:,ri)));
+                end
+                axis image % should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
+                axis off
+                axis ij
+            end
+
+            fig2gif(hfg, framecount, filename_save)
+
+        end
+    end
+end
+
+
