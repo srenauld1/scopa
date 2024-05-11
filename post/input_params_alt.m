@@ -62,7 +62,7 @@ opt.mroi.ncol_each = 128; %number colors in each part of the overlay plot (2 par
 opt.mroi.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
 opt.mroi.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
 
-
+opt.mroi.hsv.doplot = 1;
 opt.mroi.hsv.foreground = 'allrois'; %eachroi, allrois
 opt.mroi.hsv.huestr = 'loc'; %leave as is, docs need to be changed for this variable
 opt.mroi.hsv.huenorm = 'native'; %hue normalization method, see setup_model

@@ -185,8 +185,7 @@ hsvplt = plots_setup_hsv(hsvplt);
 hue_feature = [1:num_mroi]';
 hsvmap = plots_compute_hsv(hsvplt, hue_feature);
 
-do_hsv_plot = 1;
-[img] = plots_hsvfov(hsvplt, stack_mnt, hsvmap, pixinds_roi, pth_mroi_save_prefix, do_hsv_plot);
+[img] = plots_hsvfov(hsvplt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, pth_mroi_save_prefix);
 
 
 
