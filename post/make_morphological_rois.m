@@ -177,6 +177,8 @@ roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, ncol_each, ...
 % filename_gif = [pth_mroi(1:end-4) '_' num2str(num_mroi) 'rois_indexhue_.gif'];
 % plot_gif(roi_overlay.im(:,:,:,1:3), filename_gif, roi_overlay.cmap)
 
+%% create hsv map of rois
+
 
 hsvplt = plots_setup_hsv(hsvplt);
 
@@ -184,7 +186,7 @@ hue_feature = [1:num_mroi]';
 hsvmap = plots_compute_hsv(hsvplt, hue_feature);
 
 do_hsv_plot = 1;
-[img] = plots_hsvfov(hsvplt, stack_mnt, hsvmap, pixinds_roi, do_hsv_plot, pth_mroi_save_prefix);
+[img] = plots_hsvfov(hsvplt, stack_mnt, hsvmap, pixinds_roi, pth_mroi_save_prefix, do_hsv_plot);
 
 
 
