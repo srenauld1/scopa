@@ -79,7 +79,7 @@ if num_mroi_auto > 1
             premask = F({ 1:size(stackmean_masked,1), 1:size(stackmean_masked,2), upsampind });
             premask = rescale(premask);  %rescale after interpolation
 
-            sliceinds_hires = linspace(1, size(premask,3), size(stacknmt, 3)+1);
+            sliceinds_hires = linspace(1, size(premask,3), size(stack_mnt, 3)+1);
             sliceinds_hires = sliceinds_hires(1:end-1);
             sliceinds_hires = round(sliceinds_hires); %this z rounding is one source of imprecision in the mapping
 
