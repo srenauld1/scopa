@@ -1,7 +1,7 @@
 function plt = plots_setup_hsv(plt, mdlname)
 
 %would be nice to make this more general, but currently switches by mdlname
-%some of these anonymous functions are just lookups, but kept this way for possible future expansion   
+%some of these anonymous functions are just lookups, but kept this way for possible future expansion
 
 huestr = plt.huestr;
 hrange_out_manual = plt.hrange_out_manual;
@@ -153,5 +153,6 @@ plt.getvr_relative = getvr_relative;
 plt.hrange_out_manual = hrange_out_manual;
 plt.hue_is_periodic = hue_is_periodic;
 plt.huestr = huestr;
+
 plt = orderfields(plt);
 

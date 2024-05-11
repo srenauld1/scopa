@@ -42,7 +42,7 @@ function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, 
 
 use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
 num_mroi_auto = opts_mroi.num_mroi_auto.(regionex);
-doplots = opts_mroi.doplots;
+do_other_plots = opts_mroi.do_other_plots;
 normopts = opts_mroi.norm;
 
 create_mask_method = opts_mroi.create_mask_method;
@@ -50,11 +50,9 @@ subsample_mask_method = opts_mroi.subsample_mask_method;
 edgethresh = opts_mroi.edgethresh;
 edgesig = opts_mroi.edgesig;
 closing_element_size = opts_mroi.closing_element_size;
-foreground_plot_style = opts_mroi.foreground_plot_style;
-ncol_each = opts_mroi.ncol_each;
-saturation_factor_background = opts_mroi.saturation_factor_background; %above this fraction of data is sent to max
-saturation_factor_rois = opts_mroi.saturation_factor_rois; %above this fraction of data is sent to max
-hsvplt = opts_mroi.hsv;
+
+hsvopt = opts_mroi.hsvopt;
+olayopt = opts_mroi.olayopt;
 
 pth_mroi = pth.mroi.(regionex);
 
@@ -94,11 +92,11 @@ num_mroi_manual = size(maskmanual, 4);
 pth_morphroidata = [pth_mroi_save_prefix 'morphroidata_.mat'];
 
 try
-   
+
     load(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi');
 
 catch
-    
+
     if num_mroi_manual>1 || num_mroi_auto==0
 
         num_mroi = num_mroi_manual;
@@ -130,7 +128,7 @@ catch
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
             num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
             xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
-            edgethresh, edgesig, closing_element_size, regionex, doplots);
+            edgethresh, edgesig, closing_element_size, regionex, do_other_plots);
 
     end
 
@@ -170,23 +168,25 @@ pth_morphroiresp = [pth_mroi_save_prefix 'morphroiresp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 
-%% create roi overlay stack
+%% create roi overlay 
 
-roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, ncol_each, ...
-    foreground_plot_style, saturation_factor_background, saturation_factor_rois);
-% filename_gif = [pth_mroi(1:end-4) '_' num2str(num_mroi) 'rois_indexhue_.gif'];
-% plot_gif(roi_overlay.im(:,:,:,1:3), filename_gif, roi_overlay.cmap)
+if olayopt.do
+    roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
+        olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, pth_mroi);
+end
 
-%% create hsv map of rois
+%% create roi hsv
 
+if hsvopt.do
 
-hsvplt = plots_setup_hsv(hsvplt);
+    hsvopt = plots_setup_hsv(hsvopt);
 
-hue_feature = [1:num_mroi]';
-hsvmap = plots_compute_hsv(hsvplt, hue_feature);
+    hue_feature = [1:num_mroi]';
+    hsvmap = plots_compute_hsv(hsvopt, hue_feature);
 
-[img] = plots_hsvfov(hsvplt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, pth_mroi_save_prefix);
+    hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, pth_mroi_save_prefix);
 
+end
 
 
 %% put in struct 'roiinfo'
@@ -209,10 +209,7 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 
 %% plots
 
-if doplots
-
-    filename_gif = [pth_mroi(1:end-4) '_' num2str(numrois_for_gif) 'rois_indexhue_.gif'];
-    plot_gif(roi_overlay.im, filename_gif, roi_overlay.cmap)
+if do_other_plots
 
     [masky,maskx,maskz] = ind2sub(size(mask_allroi),find(mask_allroi)); %find the cartesian coordinates of points in the mask
     kbnd = boundary([maskx,masky,maskz]);
@@ -222,7 +219,6 @@ if doplots
 
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
     plot_gif( overlayarray, [pth_mroi(1:end-4) '3d_mask_manual_' regionex '_.gif'])
-
 
     plot_gif(maskmanual, [pth_mroi(1:end-4) '3d_mask_manual_' regionex '_.gif'])
     plot_gif(mask_allroi, [pth_mroi(1:end-4) '3d_mask_simple_' regionex '_.gif'])

@@ -2,13 +2,13 @@
 function hsvmap = plots_compute_hsv( plt, hueft, satft, valft, hueft2, huelimnat, huelimnat2, mdlname)
 
 arguments
-    plt struct %structure holding plotting options
+    plt struct %struct holding plotting options (required input)
     hueft double %feature assigned to hue (required input)
     satft double = 1 %feature assigned to saturation
     valft double = 1 %feature assigned to value
     hueft2 double = hueft %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname 
     huelimnat double = [min(hueft(:)) max(hueft(:))] %native full range from which hue feature is drawn, used to normalize hue, (e.g. if hue is an "x" param from fit model, huelimnat would be independent variable min and max)
-    huelimnat2 double = [min(hueft(:)) max(hueft(:))] %an alternative to huelimnat, used for some mdlname defaults (e.g. if hue is a "y" param from fit model, huelimnat would be dependent variable min and max)
+    huelimnat2 double = [min(hueft(:)) max(hueft(:))] %an alternative to huelimnat, used for some mdlname defaults, assigned in plots_setup_hsv (e.g. if hue is a "y" param from fit model, huelimnat would be dependent variable min and max)
     mdlname char = '' %can be used to switch among different plotting defaults
 end
 
@@ -17,6 +17,10 @@ if strcmp(plt.huenorm, 'native')
     plt.huenorm = 'relative'; %hue normalization method, see setup_model
 end
 
+if strcmp(plt.huenorm, 'native') && isempty(plt.hrange_in_manual)
+    disp("WARNING, requested huenorm 'native', but no plt.hrange_in_manual is empty, switching to huenorm 'relative'")
+    plt.huenorm = 'relative'; %hue normalization method, see setup_model
+end
 
 if strcmp(plt.huenorm, 'native') && (strcmp(mdlname, 'linear') || strcmp(mdlname, 'plane') || startsWith(mdlname, 'svd'))
     disp("WARNING, NO NATIVE plt.huenorm FOR MDLNAME svd, SWITCHING TO RELATIVE")

@@ -1,5 +1,5 @@
 function roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, numrois, ncol_each, ...
-    foreground_plot_style, saturation_factor_background, saturation_factor_rois)
+    foreground_plot_style, saturation_factor_background, saturation_factor_rois, pth_mroi)
 
 stack_mnt_rs = rescale(stack_mnt, 1, ncol_each);
 
@@ -41,4 +41,8 @@ roi_overlay.cmap = colormap_custom(cmap_method, ncol_each, ...
     startcol1, endcol1, saturation_factor_background, ...
     startcol2, endcol2, saturation_factor_rois);
 
+
+
+filename_gif = [pth_mroi(1:end-4) '_' num2str(numrois) 'rois_indexhue_.gif'];
+plot_gif(roi_overlay.im(:,:,:,1:3), filename_gif, roi_overlay.cmap)
 

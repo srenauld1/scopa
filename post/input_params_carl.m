@@ -56,28 +56,33 @@ opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges;
 opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
 
-opt.mroi.doplots = 0; %doplots in make_morphological_rois
-opt.mroi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.mroi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
-opt.mroi.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
-opt.mroi.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
+opt.mroi.do_other_plots = 1; %do plots besides overlay and hsvopt in make_morphological_rois
 
-opt.mroi.hsv.doplot = 1;
-opt.mroi.hsv.foreground = 'allrois'; %eachroi, allrois
-opt.mroi.hsv.huestr = 'loc'; %leave as is, docs need to be changed for this variable
-opt.mroi.hsv.huenorm = 'native'; %hue normalization method, see setup_model
-opt.mroi.hsv.satnorm = 'relative'; %sat normalization method, see setup_model
-opt.mroi.hsv.valnorm = 'relative';%val normalization method, see setup_model
-opt.mroi.hsv.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
-opt.mroi.hsv.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
-opt.mroi.hsv.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see compute_hsv
-opt.mroi.hsv.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in setup_model to [0 1] when plotting periodic param (e.g. von mises center, ie mdlname 'v' huestr 'loc'), see compute_hsv
-opt.mroi.hsv.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see compute_hsv
-opt.mroi.hsv.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see compute_hsv
-opt.mroi.hsv.hueshift = 0; % 0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see compute_hsv
-opt.mroi.hsv.ignorehue = 0; %1 ignores it, makes constant 1
-opt.mroi.hsv.ignoresat = 1; %1 ignores it, makes constant 1
-opt.mroi.hsv.ignoreval = 1; %1 ignores it, makes constant 1
+%params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
+opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
+opt.mroi.olayopt.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
+opt.mroi.olayopt.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
+opt.mroi.olayopt.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
+
+%params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
+opt.mroi.hsvopt.do = 1; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
+opt.mroi.hsvopt.foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
+opt.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 
+opt.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty 
+opt.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in opt.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set opt.mroi.hsvopt.hrange_in_manual it will switch to 'relative'      
+opt.mroi.hsvopt.satnorm = 'relative'; %sat normalization method, same logic as huenorm
+opt.mroi.hsvopt.valnorm = 'relative';%val normalization method, same logic as huenorm
+opt.mroi.hsvopt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
+opt.mroi.hsvopt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
+opt.mroi.hsvopt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
+opt.mroi.hsvopt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see plots_compute_hsv
+opt.mroi.hsvopt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see plots_compute_hsv
+opt.mroi.hsvopt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see plots_compute_hsv
+opt.mroi.hsvopt.hueshift = 0; %0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see plots_compute_hsv, this works for periodic or non-periodic features assigned to hue
+opt.mroi.hsvopt.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+opt.mroi.hsvopt.ignoresat = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+opt.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 
 % params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
