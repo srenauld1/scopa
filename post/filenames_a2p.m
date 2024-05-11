@@ -70,7 +70,7 @@ for i = 1:length(regionex_all)
     paramstr = ['moex_' flag_hires '_' flag_use_drawn_rois '_' flag_num_mroi_auto];
     parstr.mroi.(regionex) = paramstr;
 
-    pth_mroi.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_.mat'];
+    pth_mroi.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_morph_.mat'];
     pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
 
     pth_froi_all_tmp = [];

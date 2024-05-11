@@ -10,7 +10,7 @@ normalize_depv = opts.normalize_depv;
 epochinds = opts.epochinds;
 
 pixinds_roi = roiinfo.pixinds_roi;
-mapind2ind = roiinfo.mapind2ind;
+idx_vox2roi = roiinfo.idx_vox2roi;
 
 gif_visibility = plt.gif_visibility;
 doplots = plt.doplots;

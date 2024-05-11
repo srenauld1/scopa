@@ -56,7 +56,7 @@ opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges;
 opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
 
-opt.mroi.do_other_plots = 1; %do plots besides overlay and hsvopt in make_morphological_rois
+opt.mroi.do_other_plots = 1; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
 opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red

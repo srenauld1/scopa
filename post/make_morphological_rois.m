@@ -54,20 +54,21 @@ closing_element_size = opts_mroi.closing_element_size;
 hsvopt = opts_mroi.hsvopt;
 olayopt = opts_mroi.olayopt;
 
-pth_mroi = pth.mroi.(regionex);
+pth_mroi_prefix = pth.mroi.(regionex)(1:end-4);
 
 xwid = md.xwid;
 zwid = md.zwid;
 dtmni = md.dtmni;
 
-pth_mroi_save_prefix = erase(pth_mroi(1:end-4), ['_' parstr_mroi]);
 
 %% draw rois (polygons/polyhedra)
 
 
 if use_drawn_rois
 
-    pth_maskmanual = [pth_mroi_save_prefix 'maskmanual_.mat'];
+    pth_mroi_manual_prefix = erase(pth_mroi_prefix, ['_' parstr_mroi]); %different prefix since the parstr_mroi are irrelevant for manually drawn rois, allowing manually drawn to be used for different parstr_mroi
+    pth_mroi_manual_prefix = erase(pth_mroi_manual_prefix, ['_morph']); %string 'morph' is redundant here, since this has suffix manual
+    pth_maskmanual = [pth_mroi_manual_prefix 'maskmanual_.mat'];
 
     try
         load(pth_maskmanual, 'maskmanual');
@@ -89,7 +90,7 @@ num_mroi_manual = size(maskmanual, 4);
 
 %% make mask_3d (from manual mask plus automated mask, or just manual mask, or just automated mask)
 
-pth_morphroidata = [pth_mroi_save_prefix 'morphroidata_.mat'];
+pth_morphroidata = [pth_mroi_prefix 'morphroidata_.mat'];
 
 try
 
@@ -111,8 +112,8 @@ catch
         mask_roi_vec = zeros(num_mroi, numel(sum(maskmanual, 4)), 'logical');  %initialize a logical matrix that is of dimensions Centroids  x AllPixels
         for mi = 1:num_mroi
             tmp = maskmanual(:,:,:,mi);
-            [masky, maskx, maskz] = ind2sub(size(tmp), find(tmp));
-            mask_roi_vec(mi, sub2ind(size(tmp), masky, maskx, maskz)) = true; %indices of each roi
+            [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
+            mask_roi_vec(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
         end
 
         centroids_roi = find_roi_centroids(maskmanual);
@@ -123,18 +124,19 @@ catch
 
         num_mroi = num_mroi_auto;
         extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
-        pth_save_figs_prefix = pth_mroi(1:end-4);
         [mask_roi_vec, centroids_roi] = ...
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
             num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
-            xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
-            edgethresh, edgesig, closing_element_size, regionex, do_other_plots);
+            xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
+            edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_other_plots);
 
     end
 
 end
 
 save(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi', '-mat', '-v7.3');
+
+%% compute some morphological roi data 
 
 pixinds_roi = cell(num_mroi, 1);
 for ii = 1:length(pixinds_roi)
@@ -145,15 +147,18 @@ pixinds_allroi_tmp = unique(vertcat(pixinds_roi{:})); %this is not always the sa
 mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');
 mask_allroi(pixinds_allroi_tmp) = 1;
 
+[masky,maskx,maskz] = ind2sub(size(mask_allroi),find(mask_allroi)); %find the cartesian coordinates of points in the mask
+
 centroids_roi_flat = cell2mat(centroids_roi(:));
 flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(centroids_roi{idx},1),1), (1:size(centroids_roi{idx},1)).'], (1:numel(centroids_roi)).', 'uniform', 0));
 
 pixinds_allroi = cell(length(pixinds_allroi_tmp), 1);
-mapind2ind = zeros(length(pixinds_allroi_tmp), 1, 'uint16');
-for ii = 1:length(pixinds_allroi) %one pixel at a time
+idx_vox2roi = zeros(length(pixinds_allroi_tmp), 1, 'uint16');
+for ii = 1:numel(pixinds_allroi) %one pixel at a time
     [tmpy, tmpx, tmpz] = ind2sub(size(mask_allroi), pixinds_allroi_tmp(ii));
+
     [~, maptmp] = pdist2(centroids_roi_flat, [tmpy, tmpx, tmpz], 'euclidean', 'smallest', 1); %map roi centroids to to morphological centroids . . . change euclidian to chebychev??
-    mapind2ind(ii) = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
+    idx_vox2roi(ii) = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
 
     pixinds_allroi{ii} = pixinds_allroi_tmp(ii); %put in cell array to match what happens with functional rois
 end
@@ -162,20 +167,19 @@ end
 
 %% compute morphological roi responses
 
-
-resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi, normopts, dtmni);
-pth_morphroiresp = [pth_mroi_save_prefix 'morphroiresp_.mat'];
+resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
+pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 
-%% create roi overlay 
+%% create/plot roi overlay 
 
 if olayopt.do
     roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
-        olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, pth_mroi);
+        olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, pth_mroi_prefix);
 end
 
-%% create roi hsv
+%% create/plot roi hsv
 
 if hsvopt.do
 
@@ -184,7 +188,8 @@ if hsvopt.do
     hue_feature = [1:num_mroi]';
     hsvmap = plots_compute_hsv(hsvopt, hue_feature);
 
-    hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, pth_mroi_save_prefix);
+    hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
+    hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
 
 end
 
@@ -196,7 +201,7 @@ roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
 roiinfo.centroids_roi = centroids_roi;
 roiinfo.mask_allroi = mask_allroi; %boolean mask of all rois
-roiinfo.mapind2ind = mapind2ind; %for each pixel in a roi, which roi it belongs to
+roiinfo.idx_vox2roi = idx_vox2roi; %for each pixel in a roi, which roi it belongs to
 roiinfo.roi_overlay = roi_overlay;
 roiinfo.cmrval = [];
 roiinfo.cmsnr = [];
@@ -209,19 +214,57 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 
 %% plots
 
-if do_other_plots
+if do_other_plots %all these are at imaging resolution
 
-    [masky,maskx,maskz] = ind2sub(size(mask_allroi),find(mask_allroi)); %find the cartesian coordinates of points in the mask
-    kbnd = boundary([maskx,masky,maskz]);
-    figure;
-    trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
-    axis image
+    %colormap for each roi
+    cmap = distinguishable_colors(size(mask_roi_vec,1));
+    double_colormap = 0;
+    if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
+        num_region_periods = 2; %for example, two halves of pb
+    else
+        num_region_periods = 1;
+    end
+    cmap = repmat(cmap,num_region_periods,1); %if region is periodic with multiple periods
 
+
+    %3d scatter, each roi a different hue
+    hfg = figure; hold on
+    for i = 1:num_mroi %overlay each pixel in its indexed color onto the pb image
+        scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
+    end
+    %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
+    %scatter3(centroids_roi(:,2 ), centroids_roi(:,1), centroids_roi(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
+    colormap(bone);
+    axis image; axis off
+    set(gca,'Visible','off')
+    set(gca,'CameraViewAngle',8)
+    rotinc = 30;
+    views = -180:rotinc:180;
+    fngif = [pth_mroi_prefix 'huerois_3dspin_.gif'];
+    for framecount = 1:length(views) - 1
+        view(views(framecount)+2, 20)
+        fig2gif(hfg, framecount, fngif)
+    end
+
+
+
+    %mask overlay
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    plot_gif( overlayarray, [pth_mroi(1:end-4) '3d_mask_manual_' regionex '_.gif'])
+    plot_gif( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_.gif'])
 
-    plot_gif(maskmanual, [pth_mroi(1:end-4) '3d_mask_manual_' regionex '_.gif'])
-    plot_gif(mask_allroi, [pth_mroi(1:end-4) '3d_mask_simple_' regionex '_.gif'])
+    %manual roi mask 
+    plot_gif(maskmanual, [pth_mroi_prefix 'maskmanual_.gif'])
+
+    %mask all rois (without stack background)
+    plot_gif(mask_allroi, [pth_mroi_prefix 'maskallroi_.gif'])
+
+    % %3d surface plot
+    % kbnd = boundary([maskx,masky,maskz]);
+    % figure;
+    % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
+    % axis image
+    % saveas( gcf, [pth_mroi_prefix 'maskallroi_surface_.png'])
+    
 
 end
 

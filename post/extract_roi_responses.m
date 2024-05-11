@@ -108,7 +108,7 @@ if normopts.doplots
             title(strrep(fn{fni}, '_', ' '))
         end
     end
-    saveas( gcf, [pth_save_prefix(1:end-4) '_normcompresp_.png'])
+    saveas( gcf, [pth_save_prefix 'normcompresp_.png'])
 
     % 
     % figure;
@@ -120,7 +120,7 @@ if normopts.doplots
     %         xlim([min(vec(resp.(fn{fni})(mi,:))), max(vec(resp.(fn{fni})(mi,:))) ])
     %     end
     % end
-    % saveas( gcf, [pth_save_prefix(1:end-4) '_normhistsresp_.png'])
+    % saveas( gcf, [pth_save_prefix 'normhistsresp_.png'])
     % 
 
     % prctcheck = 99;
@@ -141,7 +141,7 @@ if normopts.doplots
     % scatter(1:length(pzfn), pzfn)
     % title("percentile normalized")
     % 
-    % saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprct_.png'])
+    % saveas( gcf, [pth_save_prefix 'normcompprct_.png'])
     % 
     % 
     % if length(pfn)>1
@@ -161,7 +161,7 @@ if normopts.doplots
     %     plot(pzfn)
     %     title(std(pzfn, 1)) %2nd arg is 1 to normalize by n, not n-1
     % 
-    %     saveas( gcf, [pth_save_prefix(1:end-4) '_normcompprctnorm_.png'])
+    %     saveas( gcf, [pth_save_prefix 'normcompprctnorm_.png'])
     % 
     % end
     % 

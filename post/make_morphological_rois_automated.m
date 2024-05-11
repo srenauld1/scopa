@@ -2,15 +2,15 @@
 function [mask_roi_vec, centroids_roi] = ...
     make_morphological_rois_automated(stack_mnt, maskmanual, ...
     num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
-    xwid, zwid, stack_hires, map_hires_lores, pth_save_figs_prefix, ...
-    edgethresh, edgesig, closing_element_size, regionex, do_plots)
+    xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
+    edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_plots)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
 %creating new subsample_mask_method and inserting in switch statement)
 %stack_mnt must be 3d (xyz), although 3rd dim (z) can be singleton
 %maskmanual must match dimensionality of stack_mnt, or be lower dimensional
-%stack_hires is optional, must be 3d xyz, and match xyz size of stack_mnt
+%stack_hires is optional, must be 3d xyz, and match xy size of stack_mnt
 
 %% preprocess stack_mnt, make mean stack_mnt
 
@@ -66,7 +66,7 @@ if num_mroi_auto > 1
                 idxnz = premask~=0; %find nonzero indices
                 premask(idxnz) = rescale(premask(idxnz));
             end
-            sliceinds_hires = [0 find(diff(map_hires_lores))] + 1;
+            sliceinds_hires = [0 find(diff(map_hires_lores))] + 1; %map_hires_lores may not be uniform hi-z-res sampling of lo-z-res, causing some imprecision (design acquisition zfov and zwid to avoid this)
 
         else  %else make a hi-z-res stack_mnt from the lo-z-res stack_mnt
 
@@ -197,11 +197,11 @@ else
 
         case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto groups
 
-            [idx_cenmorph, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
-            if size(unique(idx_cenmorph.', 'rows'), 1)~=1
+            [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+            if size(unique(tmp.', 'rows'), 1)~=1
                 error("each row must have constant value")
             end
-            idx_cenmorph = idx_cenmorph(:,1);
+            idx_vox2roi = tmp(:,1);
             centmp = centmp.';
 
     end
@@ -215,11 +215,11 @@ end
 
 %% assign each voxel in the 3d mask to a morphological roi centroid
 
-if ~strcmp(subsample_mask_method, 'uniform') %method 'uniform' has already computed idx_cenmorph, 'uniformp' recomputes using pdist2 and its output centroids
+if ~strcmp(subsample_mask_method, 'uniform') %method 'uniform' has already computed idx_vox2roi (with different algorithm), 'uniformp' recomputes it using pdist2 and its output centroids
     cenmorphflat = cell2mat(centroids_roi(:));
     flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(centroids_roi{idx},1),1), (1:size(centroids_roi{idx},1)).'], (1:numel(centroids_roi)).', 'uniform', 0));
     [~, maptmp] = pdist2(cenmorphflat, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
-    idx_cenmorph = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
+    idx_vox2roi = uint16(flatten_key(maptmp, 1)); %this records which cell the nearest morph centroid is from
 end
 
 %% find indices for each mophological roi
@@ -229,7 +229,7 @@ mask_roi_vec = zeros(num_mroi_auto, numel_stackmnt, 'single'); %size [rois, voxe
 if isempty(sliceinds_hires) %isempty(stack_hires)
 
     for i = 1:num_mroi_auto
-        mask_roi_vec(i, sub2ind(size(mask_allroi_approx), masky(idx_cenmorph==i), maskx(idx_cenmorph==i), maskz(idx_cenmorph==i))) = 1; %indices of each roi
+        mask_roi_vec(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
     end
 
 else % else downsample the 3 output variables from hires to lores
@@ -244,7 +244,7 @@ else % else downsample the 3 output variables from hires to lores
     % also, equal-volume rois created above will no longer have same number of voxels when mapped down to lores, as a sampling artifact
     % but response extraction (because it is weighted) does represent equal volume roi responses (a linearly interpolated estimate of them, at least)
 
-    mask_allroi_approx_hires = mask_allroi_approx; %rename to distinguish for plotting below
+    mask_allroi_approx_upsamp = mask_allroi_approx; %rename to distinguish for plotting below
 
     maskznew = maskz;
     for ii = 1:length(sliceinds_hires) %for each hires z slice range
@@ -257,7 +257,7 @@ else % else downsample the 3 output variables from hires to lores
     end
 
     for i = 1:num_mroi_auto
-        coords_this_roi = [masky(idx_cenmorph==i), maskx(idx_cenmorph==i), maskznew(idx_cenmorph==i)];
+        coords_this_roi = [masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskznew(idx_vox2roi==i)];
         [~, ~, voxinds_lores_this_roi] = unique(coords_this_roi, 'rows', 'stable');
         for voxind = 1:numel(voxinds_lores_this_roi)
             inds_this_vox = voxinds_lores_this_roi==voxinds_lores_this_roi(voxind);
@@ -299,55 +299,88 @@ end
 
 if do_plots
 
-    cmap = distinguishable_colors(size(mask_roi_vec,1));
-    double_colormap = 0;
-    if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
-        num_region_periods = 2; %for example, two halves of pb
-    else
-        num_region_periods = 1;
-    end
-    cmap = repmat(cmap,num_region_periods,1); %if region is periodic with multiple periods
+    if ~isempty(sliceinds_hires) %if interp to hi z res to help segmentation, plot those hi z res versions here, imaging sampling version of these (which are the used variables) are plotted in make_morphological_rois
 
-    
-    plot_gif(maskmanual, [pth_save_figs_prefix(1:end-4) '_maskmanual_.gif'])
-    plot_gif(mask_allroi_approx, [pth_save_figs_prefix(1:end-4) '_mask_.gif'])
+        %mask overlay 
+        overlayarray = rescale(0.2*rescale(mask_allroi_approx_upsamp) + rescale(premask, 0, 1));
+        plot_gif( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
 
-    overlayarray = rescale(0.2*rescale(mask_allroi_approx) + rescale(stackmean_masked, 0, 1)); 
-    plot_gif( overlayarray, [pth_save_figs_prefix(1:end-4) '_mask_premask_overlay_lores.gif'])
-    if ~isempty(sliceinds_hires)
-        overlayarray = rescale(0.2*rescale(mask_allroi_approx_hires) + rescale(premask, 0, 1));
-        plot_gif( overlayarray, [pth_save_figs_prefix(1:end-4) '_mask_premask_overlay_hires.gif'])
+
+        %colormap for each roi
+        cmap = distinguishable_colors(size(mask_roi_vec,1));
+        double_colormap = 0;
+        if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
+            num_region_periods = 2; %for example, two halves of pb
+        else
+            num_region_periods = 1;
+        end
+        cmap = repmat(cmap,num_region_periods,1); %if region is periodic with multiple periods
+
+
+        %3d scatter, each roi a different hue
+        hfg = figure; hold on
+        for i = 1:num_mroi_auto %overlay each pixel in its indexed color onto the pb image
+            scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
+        end
+        %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
+        %scatter3(centroids_roi(:,2 ), centroids_roi(:,1), centroids_roi(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
+        colormap(bone);
+        axis image; axis off
+        set(gca,'Visible','off')
+        set(gca,'CameraViewAngle',8)
+        rotinc = 30;
+        views = -180:rotinc:180;
+        fngif = [pth_mroi_prefix 'huerois_3dspin_upsamp.gif'];
+        for framecount = 1:length(views) - 1
+            view(views(framecount)+2, 20)
+            fig2gif(hfg, framecount, fngif)
+        end
+
+
+        %hsv gif, each slice, each roi a different hue 
+        hsvopt = plots_setup_hsv(hsvopt);
+        hue_feature = [1:num_mroi_auto]';
+        hsvmap = plots_compute_hsv(hsvopt, hue_feature);
+        mask_roi_vec_upsamp = zeros(num_mroi_auto, numel(mask_allroi_approx_upsamp), 'single');
+        for i = 1:num_mroi_auto
+            mask_roi_vec_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
+        end
+        pixinds_roi_upsamp = cell(num_mroi_auto, 1);
+        for ii = 1:numel(pixinds_roi_upsamp)
+            pixinds_roi_upsamp{ii} = find(vec(mask_roi_vec_upsamp(ii,:)));
+        end
+        filename_hsv = [pth_mroi_prefix 'hsvfov_upsamp_.gif'];
+        hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, pixinds_roi_upsamp, mask_roi_vec_upsamp, filename_hsv);
+
+
+        %3d scatter plot 
+        figure; hold on;
+        plot3(maskx, masky, maskz, '.m', 'MarkerSize', 0.1);
+        if exist('midx', 'var')
+            plot3(midx,midy,midz, '*k', 'MarkerSize', 2.2);
+        end
+        axis image;
+        view(3);
+        title('3d mask (interpolated to hires if extract_morph_rois_in_3d is true)')
+        saveas( gcf, [pth_mroi_prefix 'maskallroi_scatter_upsamp_.png'])
+
+
+        % %3d surface plot
+        % kbnd = boundary([maskx,masky,maskz]);
+        % figure;
+        % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
+        % axis image
+        % saveas( gcf, [pth_mroi_prefix 'maskallroi_surface_upsamp_.png'])
+
+        % 3d volume plot
+        % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
+        % volshow(mask_allroi_approx,Parent=viewerRegistered,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...
+        %     Colormap=[0 1 0],Alphamap=0.1);
+
+
     end
 
-    plot_gif(premask, [pth_save_figs_prefix(1:end-4) '_premask_.gif'])
-
-    figure; hold on;
-    plot3(maskx, masky, maskz, '.m', 'MarkerSize', 0.1);
-    if exist('midx', 'var')
-        plot3(midx,midy,midz, '*k', 'MarkerSize', 2.2);
-    end
-    axis image;
-    view(3);
-    title('3d mask interpolated to hi z res')
-
-    hfg = figure; hold on
-    for i = 1:num_mroi_auto %overlay each pixel in its indexed color onto the pb image
-        scatter3( maskx(idx_cenmorph == i), masky(idx_cenmorph == i), maskz(idx_cenmorph == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
-    end
-    %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
-    %scatter3(centroids_roi(:,2 ), centroids_roi(:,1), centroids_roi(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
-    colormap(bone);
-    axis image
-    axis off
-    set(gca,'Visible','off')
-    set(gca,'CameraViewAngle',8)
-    rotinc = 30;
-    views = -180:rotinc:180;
-    fngif = [pth_save_figs_prefix(1:end-4) '_morphrois3dlores_.gif'];
-    for framecount = 1:length(views) - 1
-        view(views(framecount)+2, 20)
-        fig2gif(hfg, framecount, fngif)
-    end
+    plot_gif(premask, [pth_mroi_prefix 'autopremask_.gif'])
 
     if strcmp(create_mask_method, 'triangle')
         duk = sort(tmpup_nz);
@@ -360,45 +393,10 @@ if do_plots
         subplot(2,1,2);
         plot(sort(tmpup_nz)); hold on; plot(duk)
         title('knee threshold (alternative, not used by default)')
+        saveas( gcf, [pth_mroi_prefix 'trianglethresh_.png'])
     end
 
-    % kbnd = boundary([maskx,masky,maskz]);
-    % figure;
-    % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
-    % axis image
-
-    % % 3d volume plot
-    % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
-    % volshow(mask_allroi_approx,Parent=viewerRegistered,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...
-    %     Colormap=[0 1 0],Alphamap=0.1);
-    %
-    %
-    % % test varying clip thresholds for automated PB detection
-    % tmptmp = stack_mnt.*maskmanual;
-    % outz = [];
-    % count = 0;
-    % clipprct = fliplr([100]);
-    % for iiii = clipprct
-    %     count = count+1;
-    %     tmp3 = mean(tmptmp, 4);
-    %     tmp3(tmp3~=0) = rescale(tmp3(tmp3~=0));
-    %     %tmp3 = process_stack_for_roi_selection(tmptmp, iiii);
-    %     tmpall(:,:,:,count) = tmp3;
-    %     idxnz = find(tmp3~=0); %find nonzero indices
-    %     idxout = find(isoutlier(tmp3(idxnz))); %find outliers among nonzeros
-    %     if isempty(idxout)
-    %         break
-    %     else
-    %         [f1,f2,f3] = ind2sub(size(tmp3), idxnz(idxout));
-    %         outz = cat(1, outz, [f1,f2,f3,repmat(count, [length(f1) 1])]);
-    %     end
-    % end
-    % flipdim = 1;
-    % plot_gif(tmpall, [filename_im_full(1:end-4) '_fukall_.gif'], flipdim, outz)
-    % plot_gif(tmpall, [filename_im_full(1:end-4) '_fukall_.gif'], flipdim)
-
-
-
 end
+
 
 

@@ -17,7 +17,7 @@ switch plt.sort_method
         sortinds = fliplr(1:fitin.num_dim_depvpre);
         sortinds = 1:fitin.num_dim_depvpre;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
-        [~, sortinds] = sort(roiinfo.mapind2ind,  'descend');
+        [~, sortinds] = sort(roiinfo.idx_vox2roi,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
         [~, sortinds] = sort(fitdata.gof, 'descend');
     case 'custom' %ad hoc sort method, checking for an error

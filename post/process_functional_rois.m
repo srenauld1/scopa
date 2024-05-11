@@ -239,20 +239,20 @@ end
 
 if length(cnt_mroi)==1
 
-    mapind2ind = ones(1, length(centroids_froi));
+    idx_vox2roi = ones(length(centroids_froi), 1, 'uint16');
 
 else
 
-    mapind2ind = zeros(1, numrois);
+    idx_vox2roi = zeros(numrois, 1, 'uint16');
     for ci = 1:numrois %find which morph roi is closest to each functional roi's "primary" subroi (by the way most functional rois don't have multiple subrois)
         [~, maptmp] = pdist2(cenmorphflat, centroids_froi{ci}(subroi_primary(ci),:), 'euclidean', 'smallest', 1); % %map roi centroids to to morphological centroids . . . change euclidian to chebychev??
-        mapind2ind(ci) = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
+        idx_vox2roi(ci) = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
     end
 
 end
 
-mask_roi_vec = zeros(num_mroi, length(mapind2ind));
-mask_roi_vec(sub2ind(size(mask_roi_vec), mapind2ind, 1:length(mapind2ind))) = 1;
+mask_roi_vec = zeros(num_mroi, length(idx_vox2roi));
+mask_roi_vec(sub2ind(size(mask_roi_vec), idx_vox2roi, 1:length(idx_vox2roi))) = 1;
 
 %mask_roi_vec_wt weights by fraction of number of pixels relative to the whole morphological 3d roi (usually includes multiple functional rois)
 numpix_roi_per_centroid = mask_roi_vec.*repmat(roinumpix, [num_mroi 1]);
@@ -264,7 +264,7 @@ mask_roi_vec_wt(isnan(mask_roi_vec_wt)) = 0;
 
 switch sort_roi_method
     case 'majoraxis'
-        [~, roisortinds] = sort(mapind2ind);
+        [~, roisortinds] = sort(idx_vox2roi);
     case 'snr'
         [~, roisortinds] = sort(cmsnr);
     case 'none'
@@ -320,7 +320,7 @@ if any(good_roi_indices) %if there are any rois remaining (don't actually need t
 else
     mask_allroi = mean(cma(:,:,:,good_roi_indices), 4); %boolean mask of all rois
 end
-mapind2ind = mapind2ind(good_roi_indices); %for each pixel in a roi, which roi it belongs to
+idx_vox2roi = idx_vox2roi(good_roi_indices); %for each pixel in a roi, which roi it belongs to
 
 cmrval = cmrval(good_roi_indices);
 cmsnr = cmsnr(good_roi_indices);
@@ -573,7 +573,7 @@ roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
 roiinfo.mask_roi_vec_wt = mask_roi_vec_wt; %same as mask_roi_vec but weighted pixel indices
 roiinfo.centroids_roi = centroids_froi;
 roiinfo.mask_allroi = mask_allroi; %boolean mask of all rois
-roiinfo.mapind2ind = mapind2ind; %for each pixel in a roi, which roi it belongs to
+roiinfo.idx_vox2roi = idx_vox2roi; %for each pixel in a roi, which roi it belongs to
 roiinfo.cmrval = cmrval;
 roiinfo.cmsnr = cmsnr;
 roiinfo.roinumpix = roinumpix;
