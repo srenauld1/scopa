@@ -128,7 +128,7 @@ catch
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
             num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
             xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
-            edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_other_plots);
+            edgethresh, edgesig, closing_element_size, regionex, hsvopt, olayopt, do_other_plots);
 
     end
 
@@ -175,8 +175,9 @@ save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 %% create/plot roi overlay 
 
 if olayopt.do
+    filename_olay = [pth_mroi_prefix 'eachroired_.gif'];
     roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
-        olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, pth_mroi_prefix);
+        olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay);
 end
 
 %% create/plot roi hsv
