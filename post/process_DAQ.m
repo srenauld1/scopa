@@ -82,12 +82,14 @@ trialData = timetable2table(trialData);
 smoothwindow_i = smoothwindow_sec*rateim;
 
 if any(strcmp(trialData.Properties.VariableNames, 'VolumeClock'))
-    method_downsample = 'timestamps';
+    method_resample = 'timestamps';
+    inds = trialData.VolumeClock;
 else
-    method_downsample = 'resample';
+    method_resample = 'resample';
+    inds = [];
 end
 iscircular = 1;
-[ intYaw, velYaw ] = process_fictrac_signal(method_downsample, iscircular, trialData.ficTracYaw, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
+[ intYaw, velYaw ] = process_fictrac_signal(method_resample, iscircular, trialData.ficTracYaw, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
 [ velSide , intSide ] = ficTracSignalDecoding( trialData.ficTracIntForward , ratedaq , ratefictrac/2,ratefictrac, maxFlyVelocity);
 [ velForward , intForward ] = ficTracSignalDecoding( trialData.ficTracIntSide , ratedaq , ratefictrac/2, ratefictrac, maxFlyVelocity);
 

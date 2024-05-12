@@ -1,4 +1,4 @@
-function [posint_out, vel] = process_fictrac_signal(method_downsample, iscircular, posint_in, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow, slopelen, slopeorder, maxFlyVelocity)
+function [posint_out, vel] = process_fictrac_signal(method_resample, iscircular, posint_in, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow, slopelen, slopeorder, maxFlyVelocity)
 
 posint_out = posint_in/maxvolt*2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
 
@@ -45,18 +45,14 @@ ax2.Box = 'off';
 ax2.XLim = ax1.XLim / (numel(y1) / numel(y2));
 ax2.YLim = ax1.YLim;
 
-%% 
+%%
 
-if strcmp(method_downsample, 'timestamps')
-
-elseif strcmp(method_downsample, 'resample')
-    if iscircular
-        posint_out = smooth_circular_variable(posint_out, smoothwindow);
-        vel = differentiate_circular_variable(posint_out, md.dtmnb, slopelen, slopeorder);
-    else
-        posint_out = smoothdata(posint_out, 'gaussian', smoothwindow, 'omitnan');
-        vel = movingslope(posint_out, slopelen, slopeorder, dt);
-    end
-    posint_out = downsample_variable(md, posint_out, iscircular); %downsample into imaging rate
-    vel = downsample_variable(md, vel, iscircular); %downsample into imaging rate
+if iscircular
+    posint_out = smooth_circular_variable(posint_out, smoothwindow);
+    vel = differentiate_circular_variable(posint_out, md.dtmnb, slopelen, slopeorder);
+else
+    posint_out = smoothdata(posint_out, 'gaussian', smoothwindow, 'omitnan');
+    vel = movingslope(posint_out, slopelen, slopeorder, dt);
 end
+posint_out = resample_timeseries(md, posint_out, method_resample, iscircular, inds); %downsample into imaging rate
+vel = resample_timeseries(md, vel, method_resample, iscircular, inds); %downsample into imaging rate

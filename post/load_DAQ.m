@@ -93,12 +93,12 @@ if smoothwindow_b
 end
 
 iscircular = 1;
-vis.angsd = downsample_variable(md, vis.angs, iscircular); %downsample into imaging rate
-ball.angsd = downsample_variable(md, ball.angs, iscircular); %downsample into imaging rate
+vis.angsd = resample_timeseries(md, vis.angs, iscircular); %downsample into imaging rate
+ball.angsd = resample_timeseries(md, ball.angs, iscircular); %downsample into imaging rate
 iscircular = 0;
-vis.velrsd = downsample_variable(md, vis.velrs, iscircular); %downsample into imaging rate
-ball.velrsd = downsample_variable(md, ball.velrs, iscircular); %downsample into imaging rate
-ball.velfsd = downsample_variable(md, ball.velfs, iscircular); %downsample into imaging rate
+vis.velrsd = resample_timeseries(md, vis.velrs, iscircular); %downsample into imaging rate
+ball.velrsd = resample_timeseries(md, ball.velrs, iscircular); %downsample into imaging rate
+ball.velfsd = resample_timeseries(md, ball.velfs, iscircular); %downsample into imaging rate
 
 vis.angs(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
 vis.velrs(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)

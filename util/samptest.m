@@ -64,18 +64,18 @@ end
 figure; plot(inds(end-round(numel(inds)/1000):end))
 
 %% downsample with frame average
-
-Au = unique(inds,'stable'); %index of each frame 
-Ad1 = arrayfun(@(i)mean(A(inds==Au(i))),1:numel(Au)); %average of A for each sample of B 
-
-%% downsample with circular frame average
-
-Acos = cos(A);
-Asin = sin(A);
-Au = unique(inds,'stable'); %index of each frame 
-Adx = arrayfun(@(i)mean(Acos(inds==Au(i))),1:numel(Au)); %average of A for each frame of B 
-Ady = arrayfun(@(i)mean(Asin(inds==Au(i))),1:numel(Au)); %average of A for each frame of B 
-Ad2 = atan2(Ady, Adx);
+% 
+% Au = unique(inds,'stable'); %index of each frame 
+% Ad1 = arrayfun(@(i)mean(A(inds==Au(i))),1:numel(Au)); %average of A for each sample of B 
+% 
+% %% downsample with circular frame average
+% 
+% Acos = cos(A);
+% Asin = sin(A);
+% Au = unique(inds,'stable'); %index of each frame 
+% Adx = arrayfun(@(i)mean(Acos(inds==Au(i))),1:numel(Au)); %average of A for each frame of B 
+% Ady = arrayfun(@(i)mean(Asin(inds==Au(i))),1:numel(Au)); %average of A for each frame of B 
+% Ad2 = atan2(Ady, Adx);
 
 %% downsample with resample
 
@@ -85,7 +85,7 @@ Ad3 = resample(A, p, q);
 
 %% 
 
-Ad4 = downsample_circular_variable(A, numel(Ad1));
+Ad4 = resample_timeseries(A, numel(Ad1));
 
 %% plot frame average
 
