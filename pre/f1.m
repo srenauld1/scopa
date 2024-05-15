@@ -56,6 +56,7 @@ if contains(rootDir, 'scopa')
             if statusout==1
                 error("system command failed")
             end
+            system('!git remote set-url origin git@github.com:wienecke/scopa.git')
             system("git add .");
             system('git commit -a');
             system('git push');
