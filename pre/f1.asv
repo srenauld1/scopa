@@ -57,15 +57,11 @@ if contains(rootDir, 'scopa')
                 'git commit -m "scopasend"; ' ...
                 'git push; ' ...
                 ];
-            [statusout, fooli] = system(str)
+            [statusout, strout] = system(str)
 
 
-            cmdcd = ['; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];
-            cmdcd = ['; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; ls'];
-            cmdcd = ['; cd /home/' o2_user '/scopa; ls'];
-            str = ['ssh ' o2_user pth_remote];
-            [statusout, fooli] = system(str);
-            fuk=2;
+            str = ['ssh ' o2_user pth_remote '; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];
+            [statusout, strout] = system(str)
 
         else
             error(sprintf("to run flyg1-scopa on O2 from local machine, data must in one of the following directories: \n" + ...
