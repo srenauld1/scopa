@@ -56,8 +56,8 @@ if contains(rootDir, 'scopa')
             if statusout==1
                 error("system command failed")
             end
-            system('git add .');
-            system('git commit -m "scopasend"');
+            system("git add .");
+            system('git commit -a');
             system('git push');
 
             cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];

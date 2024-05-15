@@ -4,7 +4,7 @@ function daqdata = process_DAQ(pth_fldr, ids, rateim, numsamp_im, smoothwindow_s
 
 [expMetadata,trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_fldr);
 
-%% Get variables %
+%% Get variables %%
 
 maxvolt = 10; %need to find this in metadata
 minvolt = 0; %need to find this in metadata
