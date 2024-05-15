@@ -38,15 +38,16 @@ if contains(rootDir, 'scopa')
         [statusout, scopabranch_original] = system('git symbolic-ref refs/remotes/origin/HEAD');
         scopabranch_original = strsplit(scopabranch_original, '/');
         scopabranch_original = strtrim(scopabranch_original{end});
-        % if any(strcmp(scopabranch, {scopabranch_original, 'main', 'origin', 'origin/main', 'master', 'origin/master'})) %the original branch name, and other possibilities that are pointless but just in case
-        %     error(sprintf("scopa branch should be your own, not '" + scopabranch_original + "'"))
-        % end
+        if ~strcmp(o2_user, 'caw846') && any(strcmp(scopabranch, {scopabranch_original, 'main', 'origin', 'origin/main', 'master', 'origin/master'})) %the original branch name, and other possibilities that are pointless but just in case
+            error(sprintf("scopa branch should be your own, not '" + scopabranch_original + "'"))
+        end
         pthpre = [scopapath filesep 'pre' filesep 'bash' filesep];
         pthfile = [pthpre 'cxp.sh'];
         if contains(regexp(fileread(pthfile), 'PTH_STORAGE_PREFIX=(\S*)', 'match'), {'/n/files/Neurobio/wilsonlab/', '/n/scratch/users'})
-            sprintf("running flyg1-scopa (cxp.sh) on O2 from local machine \n " + ...
-                "MAKE SURE YOU HAVE SET UP SSH KEY AS DESCRIBED HERE: \n" + ...
-                "https://harvardmed.atlassian.net/wiki/spaces/O2/pages/2051211265/VSCode+and+Code+Server+on+O2#SSH-Keys")
+            sprintf("running flyg1-scopa (cxp.sh) on O2 by sending command from this matlab script running on your local machine \n" + ...
+                "MAKE SURE YOU HAVE YOUR OWN BRANCH OF SCOPA ON YOUR LOCAL MACHINE : \n" + ...
+                "MAKE SURE YOU HAVE CLONED SCOPA INTO YOUR O2 HOME DIRECTORY (NAVIGATE THERE FROM O2 COMMAND LINE WITH 'cd ~') : \n" + ...
+                "MAKE SURE YOU HAVE SET UP SSH KEY AS DESCRIBED HERE: https://harvardmed.atlassian.net/wiki/spaces/O2/pages/2051211265/VSCode+and+Code+Server+on+O2#SSH-Keys")
             prompt = 'do you want to add/commit/push all local scopa changes to remote, then pull to O2, then run cxp.sh on O2? type 1 for yes, type 0 for no: ';
             commandwindow();
             proceed_o2 = input(sprintf(prompt));
