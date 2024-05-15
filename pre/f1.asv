@@ -50,19 +50,21 @@ if contains(rootDir, 'scopa')
             pth_remote = '@o2.hms.harvard.edu';
             pth_cxp_on_o2 = ['/home/' o2_user '/scopa/pre/bash/cxp.sh']; %assume they put in their home folder
 
-            statusout = system(['cd ' scopapath filesep 'pre' filesep 'bash' filesep]);
-            statusout = system(['ls']);
-            statusout = system(['git checkout ' scopabranch]);
-            if statusout==1
-                error("system command failed")
-            end
-            system('git add .');
-            system('git commit -m "scopasend"');
-            system('git push');
+            str = ['cd ' scopapath filesep 'pre' filesep 'bash' filesep '; '...
+                'ls; ' ...
+                'git checkout ' scopabranch '; ' ...
+                'git add cxp.sh; ' ...
+                'git commit -m "scopasend"; ' ...
+                'git push; ' ...
+                ];
+            [statusout, fooli] = system(str)
 
-            cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];
-            cmdcd = ['cd /home/' o2_user '/scopa; ls'];
-            statusout = system(sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd));
+
+            cmdcd = ['; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];
+            cmdcd = ['; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; ls'];
+            cmdcd = ['; cd /home/' o2_user '/scopa; ls'];
+            str = ['ssh ' o2_user pth_remote];
+            [statusout, fooli] = system(str);
             fuk=2;
 
         else
