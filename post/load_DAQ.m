@@ -34,7 +34,7 @@ doplots = fictracopts.doplots;
 try
     load(pth_daq, 'daqdata')
 catch
-    daqdata = process_DAQ(pth_fldr, ids, md.volrate, smoothwindow_sec, slopelen, slopeorder);
+    daqdata = process_DAQ(pth_fldr, ids, md.volrate, md.numvol_o, smoothwindow_sec, slopelen, slopeorder);
     if size(daqdata, 1)>1
         daqdata = daqdata(trialnum, :);
     end

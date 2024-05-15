@@ -1,7 +1,7 @@
 
 function plots_imdata(inp, mask, sindz, tindz, tindz_sub, szo, filename_prefix)
 
-error("this function is very old and needs to be updated")
+disp("this function is very old and needs to be updated")
 
 filename_prefix = filename_prefix(1:end-4);
 

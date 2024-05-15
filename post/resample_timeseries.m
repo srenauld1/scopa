@@ -1,8 +1,8 @@
-function outp = resample_timeseries(inp, dslen, method_resample, iscircular, inds)
+function outp = resample_timeseries(inp, rslen, method_resample, iscircular, inds)
 
 arguments 
     inp double
-    dslen double
+    rslen double
     method_resample string = 'resample'
     iscircular logical = 0
     inds double = []
@@ -14,7 +14,7 @@ switch method_resample
 
         breakout = 0;
 
-        dsfac = dslen / numel(inp);
+        dsfac = rslen / numel(inp);
         [dsnr, dsdr] = rat(dsfac);
 
         if iscircular
@@ -23,13 +23,13 @@ switch method_resample
             inpy = sin(inp);
 
             inpx_try = resample(inpx, dsnr, dsdr);
-            if length(inpx_try)==dslen
+            if length(inpx_try)==rslen
                 inpx = inpx_try;
             else
                 for upfac = 2:4
                     for tryadd = -3 : 3
                         inpx_try = resample(inpx, upfac*dsnr, upfac*dsdr+tryadd);
-                        if length(inpx_try)==dslen
+                        if length(inpx_try)==rslen
                             inpx = inpx_try;
                             dsnr = upfac*dsnr;
                             dsdr = upfac*dsdr+tryadd;
@@ -44,20 +44,20 @@ switch method_resample
             end
             inpy = resample(inpy, dsnr, dsdr);
             outp = atan2(inpy, inpx);
-            if length(outp)~=dslen
+            if length(outp)~=rslen
                 error
             end
 
         else
 
             inp_try = resample(inp, dsnr, dsdr);
-            if length(inp_try)==dslen
+            if length(inp_try)==rslen
                 outp = inp_try;
             else
                 for upfac = 2:4
                     for tryadd = -3 : 3
                         inp_try = resample(inp, upfac*dsnr, upfac*dsdr+tryadd);
-                        if length(inp_try)==dslen
+                        if length(inp_try)==rslen
                             outp = inp_try;
                             breakout = 1;
                             break
@@ -68,7 +68,7 @@ switch method_resample
                     end
                 end
             end
-            if length(outp)~=dslen
+            if length(outp)~=rslen
                 error
             end
 
@@ -77,7 +77,7 @@ switch method_resample
 
     case 'timestamps' 
 
-        if dslen > numel(inp)
+        if rslen > numel(inp)
             error("'timestamps' method for downsampling, not upsampling (to upsample use analogous approach but interp not mean")
         end
         if iscircular

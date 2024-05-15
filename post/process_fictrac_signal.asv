@@ -1,7 +1,6 @@
-function [posint_out, vel] = process_fictrac_signal(method_resample, iscircular, posint_in, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow, slopelen, slopeorder, maxFlyVelocity)
+function [posint_out, vel] = process_fictrac_signal(posint_in, resamplevar, iscircular, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow, slopelen, slopeorder, maxFlyVelocity)
 
 posint_out = posint_in/maxvolt*2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
-
 
 %% 
 
@@ -54,5 +53,5 @@ else
     posint_out = smoothdata(posint_out, 'gaussian', smoothwindow, 'omitnan');
     vel = movingslope(posint_out, slopelen, slopeorder, dt);
 end
-posint_out = resample_timeseries(md, posint_out, method_resample, iscircular, inds); %downsample into imaging rate
-vel = resample_timeseries(md, vel, method_resample, iscircular, inds); %downsample into imaging rate
+posint_out = resample_timeseries(posint_out, inds, iscircular); %downsample into imaging rate
+vel = resample_timeseries(vel, inds, iscircular); %downsample into imaging rate

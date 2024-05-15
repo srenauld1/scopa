@@ -1,10 +1,10 @@
-function daqdata = process_DAQ(pth_fldr, ids, rateim, smoothwindow_sec, slopelen, slopeorder)
+function daqdata = process_DAQ(pth_fldr, ids, rateim, numsamp_im, smoothwindow_sec, slopelen, slopeorder)
 
 
 
 [expMetadata,trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_fldr);
 
-%% Get variables
+%% Get variables %
 
 maxvolt = 10; %need to find this in metadata
 minvolt = 0; %need to find this in metadata
@@ -89,9 +89,10 @@ else
     inds = [];
 end
 iscircular = 1;
-[ intYaw, velYaw ] = process_fictrac_signal(method_resample, iscircular, trialData.ficTracYaw, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
-[ velSide , intSide ] = ficTracSignalDecoding( trialData.ficTracIntForward , ratedaq , ratefictrac/2,ratefictrac, maxFlyVelocity);
-[ velForward , intForward ] = ficTracSignalDecoding( trialData.ficTracIntSide , ratedaq , ratefictrac/2, ratefictrac, maxFlyVelocity);
+[ intYaw, velYaw ] = process_fictrac_signal(trialData.ficTracYaw, method_resample, iscircular, numsamp_im, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
+[ intSide, velSide ] = process_fictrac_signal(trialData.ficTracIntForward, method_resample, iscircular, numsamp_im, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
+[ intForward, velForward ] = process_fictrac_signal(trialData.ficTracIntSide, method_resample, iscircular, numsamp_im, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, maxFlyVelocity);
+
 
 daqdata.trialTime = {seconds(resample_with_padding(seconds(trialData.Time),ratefictrac,ratedaq))'};        % seconds
 daqdata.intFor = {(intForward * ball/2)'};      % mm

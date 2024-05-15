@@ -45,22 +45,25 @@ if contains(rootDir, 'scopa')
         pthfile = [pthpre 'cxp.sh'];
         if contains(regexp(fileread(pthfile), 'PTH_STORAGE_PREFIX=(\S*)', 'match'), {'/n/files/Neurobio/wilsonlab/', '/n/scratch/users'})
             sprintf("running flyg1-scopa (cxp.sh) on O2 from local machine \n MAKE SURE YOU ARE LOGGED IN IF OFF CAMPUS")
-            pause(3) %to make sure sees above message
+            pause(1) %to make sure sees above message
 
             pth_remote = '@o2.hms.harvard.edu';
             pth_cxp_on_o2 = ['/home/' o2_user '/scopa/pre/bash/cxp.sh']; %assume they put in their home folder
 
             statusout = system(['cd ' scopapath filesep 'pre' filesep 'bash' filesep]);
+            statusout = system(['ls']);
             statusout = system(['git checkout ' scopabranch]);
             if statusout==1
                 error("system command failed")
             end
-            system('git add . ');
+            system('git add .');
             system('git commit -m "scopasend"');
             system('git push');
 
             cmdcd = ['cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd /home/caw846/scopa/pre/bash; cxp.sh'];
+            cmdcd = ['cd /home/' o2_user '/scopa; ls'];
             statusout = system(sprintf("ssh %s%s %s", o2_user, pth_remote, cmdcd));
+            fuk=2;
 
         else
             error(sprintf("to run flyg1-scopa on O2 from local machine, data must in one of the following directories: \n" + ...

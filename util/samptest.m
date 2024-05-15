@@ -91,6 +91,7 @@ Ad4 = resample_timeseries(A, numel(Ad1));
 
 
 Alim = numel(A) ./ [57.277272727272724  48.465384615384615]; %[2.2e5 2.6e5] in A . . . restrict x axis to small region (which includes abrupt transition)
+Alim = numel(A) ./ [57.277272727272724  39.465384615384615]; %[2.2e5 2.6e5] in A . . . restrict x axis to small region (which includes abrupt transition)
 hfg = figure;
 ax1 = axes(hfg);
 plot(ax1,1:numel(A),A,'-k')

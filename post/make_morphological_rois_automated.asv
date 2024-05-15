@@ -32,7 +32,10 @@ if extract_morph_rois_in_3d==1 && size(stack_mnt, 3)==1 %if z dim is singleton
 end
 
 if extract_morph_rois_in_3d==0 && size(stack_mnt, 3)>1
-    stack_mnt = rescale(mean(stack_mnt, 3));
+    if strcmp(subsample_mask_method, 'skeleton')
+        error("use 3d for skeleton")
+        %previously took z average here for 2d skeleton, stack_mnt = rescale(mean(stack_mnt, 3));
+    end
 end
 
 
@@ -43,7 +46,11 @@ stackmean_masked = stack_mnt.*maskmanual_allrois; %don't change this variable be
 
 %%
 
-if ~(num_mroi_auto > 1 && extract_morph_rois_in_3d) %if not multiple auto rois, and not 3d, otherwise premask defined below
+% if ~(num_mroi_auto > 1 && extract_morph_rois_in_3d) %if not multiple auto rois, and not 3d, otherwise premask defined below
+%     premask = stackmean_masked; %define stack_mnt used to define mask
+% end
+
+if ~extract_morph_rois_in_3d %if not multiple auto rois, and not 3d, otherwise premask defined below
     premask = stackmean_masked; %define stack_mnt used to define mask
 end
 
@@ -79,7 +86,7 @@ if num_mroi_auto > 1
             premask = F({ 1:size(stackmean_masked,1), 1:size(stackmean_masked,2), upsampind });
             premask = rescale(premask);  %rescale after interpolation
 
-            sliceinds_hires = linspace(1, size(premask,3), size(stacknmt, 3)+1);
+            sliceinds_hires = linspace(1, size(premask,3), size(stack_mnt, 3)+1);
             sliceinds_hires = sliceinds_hires(1:end-1);
             sliceinds_hires = round(sliceinds_hires); %this z rounding is one source of imprecision in the mapping
 
@@ -197,7 +204,28 @@ else
 
         case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto groups
 
-            [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+            if extract_morph_rois_in_3d
+                [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+            else
+                uz = unique(maskz);
+                for uzi = 1:numel(uz)
+                    zinds_each{uzi} = find(maskz==uz(uzi));
+                    num_vox_each_slice(uzi) = numel(zinds_each{uzi});
+                    frac_vox_each_slice(uzi) = num_vox_each_slice(uzi) / numel(maskz);
+                    frac_mroi_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * num_mroi_auto;
+                end
+                rnds = pow2(round(log2(frac_mroi_auto_each_slice))); %rnds = round(frac_mroi_auto_each_slice);
+
+                tmp = zeros([numel(masky) 2], 'uint16');
+                centmp = [];
+                bin_prctiles = [];
+                for i = 1:numel(rnds)
+                    [tmp_xy, centmp_xy, bin_prctiles_xy] = probability_bin([masky, maskx], rnds(i), 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+                    tmp(zinds_each{uzi},:) = tmp_xy;
+                    centmp = [centmp centmp_xy];
+                    bin_prctiles = [bin_prctiles bin_prctiles_xy];
+                end
+            end
             if size(unique(tmp.', 'rows'), 1)~=1
                 error("each row must have constant value")
             end
@@ -348,9 +376,9 @@ if do_plots
         end
 
         %roi overlay in upsampled res
-        filename_olay_prefix = [pth_mroi_prefix 'upsamp_.gif'];
+        filename_olay = [pth_mroi_prefix 'eachroired_upsamp_.gif'];
         roi_overlay = make_roi_overlay(premask, pixinds_roi_upsamp, num_mroi_auto, olayopt.ncol_each, ...
-            olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, pth_mroi_prefix);
+            olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay);
 
         %hsv gif, each slice, each roi a different hue
         hsvopt = plots_setup_hsv(hsvopt);
