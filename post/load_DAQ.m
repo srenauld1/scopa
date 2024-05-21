@@ -1,4 +1,3 @@
-
 function [md, ball, vis] = load_DAQ(ids, md, pth_daq, pth_fldr, fictracopts)
 
 %note extracting velocity for what should be constant velocity cue can have
@@ -73,8 +72,8 @@ ball.ang = wrapToPi(ball.angint);
 
 if smoothwindow_b
     ball.velfs = smoothdata(ball.velf, 'gaussian', smoothwindow_b, 'omitnan');
-    ball.angs = smooth_circular_variable(ball.ang, smoothwindow_b);
-    ball.velrs = differentiate_circular_variable(ball.angs, md.dtmnb, slopelen, slopeorder);
+    ball.angs = smooth_timeseries('circular', ball.ang, smoothwindow_b);
+    ball.velrs = differentiate_timeseries('circular', ball.angs, md.dtmnb, slopelen, slopeorder);
 end
 
 vis.raw = daqdata.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
@@ -85,11 +84,11 @@ vis.ang = vis.ang  / num_panel_frames * 2*pi - pi; %put in range -pi to pi, G4 f
 
 vis.ang_fictrac = daqdata.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it
 
-vis.velr = differentiate_circular_variable(vis.ang, md.dtmnb, slopelen, slopeorder);
+vis.velr = differentiate_timeseries('circular', vis.ang, md.dtmnb, slopelen, slopeorder);
 
 if smoothwindow_b
-    vis.angs = smooth_circular_variable(vis.ang, smoothwindow_b);
-    vis.velrs = differentiate_circular_variable(vis.angs, md.dtmnb, slopelen, slopeorder);
+    vis.angs = smooth_timeseries('circular', vis.ang, smoothwindow_b);
+    vis.velrs = differentiate_timeseries('circular', vis.angs, md.dtmnb, slopelen, slopeorder);
 end
 
 iscircular = 1;

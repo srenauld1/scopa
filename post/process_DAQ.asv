@@ -92,9 +92,9 @@ else
 end
 
 ftvars = trialData.Properties.VariableNames;
-for ii = 1:numel(ftvars)
-    fnnew = erase(ftvars{ii}, 'ficTrac');
-    [ daqdata.(fnnew), daqdata.([fnnew '_diff']) ] = process_fictrac_signal(ftvars{ii}, trialData.(ftvars{ii}), method_resample, numsamp_im, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, ball, padlensec);
+for fi = 1:numel(ftvars)
+    fnnew = erase(ftvars{fi}, 'ficTrac');
+    [ daqdata.(fnnew), daqdata.([ftvars{fi}]) ] = process_fictrac_signal(ftvars{fi}, trialData, method_resample, numsamp_im, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, ball, padlensec);
 end
 
 % old way of calculating cue info

@@ -1,4 +1,4 @@
-function out = smooth_circular_variable(inp, smoothwindow)
+function out = smooth_circular_timeseries(inp, smoothwindow)
 
 tmpx = cos(inp);
 tmpy = sin(inp);

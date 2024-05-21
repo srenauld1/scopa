@@ -112,11 +112,11 @@ for fi = 1:length(bump_subdomain)
     rho = rho';
 
     if smoothwindow
-        mu = smooth_circular_variable(mu, smoothwindow);
-        rho = smoothdata(rho, 'gaussian', smoothwindow);
+        mu = smooth_circular_timeseries(mu, smoothwindow);
+        rho = smoothdata(rho, 'gaussian', smoothwindow, 'omitnan');
     end
 
-    bumpvel = differentiate_circular_variable(mu, md.dtmni, slopelen, slopeorder);
+    bumpvel = differentiate_timeseries('circular', mu, md.dtmni, slopelen, slopeorder);
     offset = circ_dist_nan(fitin.indvpre.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point

@@ -1,12 +1,13 @@
-function outp = resample_timeseries(iscircular, inp, rslen, method_resample, inds, padlensec)
+function outp = resample_timeseries_nopad(domaintype, inp, rslen, fs_old, padlensec, method_resample, inds)
 
-arguments
-    iscircular logical
+arguments 
+    domaintype char
     inp double
     rslen double
+    fs_old double
+    padlensec double = 5 
     method_resample char = 'resample'
     inds double = []
-    padlensec double = 5 %arbitrary
 end
 
 if size(inp,1) < size(inp, 2)
@@ -22,19 +23,19 @@ switch method_resample
         dsfac = rslen / numel(inp);
         [dsnr, dsdr] = rat(dsfac);
 
-        if iscircular
+        if strcmp(domaintype, 'circular')
 
             inpx = cos(inp);
             inpy = sin(inp);
 
-            inpx_try = resample_padded_timeseries(inpx, dsnr, dsdr, padlensec);
+            inpx_try = resample(inpx, dsnr, dsdr);
             if length(inpx_try)==rslen
                 inpx = inpx_try;
             else
                 for upfac = 2:4
                     for tryadd = -3 : 3
-
-                        inpx_try = resample_padded_timeseries(inpx, upfac*dsnr, upfac*dsdr+tryadd, padlensec);
+                        
+                        inpx_try = resample(inpx, upfac*dsnr, upfac*dsdr+tryadd);
 
                         if length(inpx_try)==rslen
                             inpx = inpx_try;
@@ -50,23 +51,23 @@ switch method_resample
                 end
             end
 
-            inpy = resample_padded_timeseries(inpy, dsnr, dsdr, padlensec);
+            inpy = resample(inpy, dsnr, dsdr);
 
             outp = atan2(inpy, inpx);
             if length(outp)~=rslen
                 error("failed resample")
             end
 
-        else
+        elseif strcmp(domaintype, 'notcircular')
 
-            inp_try = resample_padded_timeseries(inp, dsnr, dsdr, padlensec);
+            inp_try = resample(inp, dsnr, dsdr);
             if length(inp_try)==rslen
                 outp = inp_try;
             else
                 for upfac = 2:4
                     for tryadd = -3 : 3
 
-                        inp_try = resample_padded_timeseries(inp, upfac*dsnr, upfac*dsdr+tryadd, padlensec);
+                        inp_try = resample(inp, upfac*dsnr, upfac*dsdr+tryadd);
 
                         if length(inp_try)==rslen
                             outp = inp_try;
@@ -86,19 +87,19 @@ switch method_resample
         end
 
 
-    case 'timestamps'
+    case 'timestamps' 
 
         if rslen > numel(inp)
             error("'timestamps' method for downsampling, not upsampling (to upsample use analogous approach but interp not mean")
         end
-        if iscircular
+        if strcmp(domaintype, 'circular')
             Au = unique(inds,'stable'); %index of each frame
             inpcos = cos(inp);
             inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inp for each frame of B
             inpsin = sin(inp);
             inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inp for each frame of B
             outp = atan2(inpy, inpx);
-        else
+        elseif strcmp(domaintype, 'notcircular')
             Au = unique(inds,'stable'); %index of each frame
             outp = arrayfun(@(i)mean(inp(inds==Au(i))),1:numel(Au)); %average of inp for each sample of B
         end
