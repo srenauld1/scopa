@@ -29,6 +29,8 @@ denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', a
 denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all' (all z slices) or selected integer strings . . . which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model after each epoch 
 
+do_stitch = 0
+
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data, if 1,  
 epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)

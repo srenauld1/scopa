@@ -33,7 +33,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
-                      do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
@@ -118,6 +118,12 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         nargs=1, 
         type=int,
         default=[do_denoise],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--do_stitch",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=int,
+        default=[do_stitch],  # default if nothing is provided
     )
     CLI.add_argument(
         "--denoise_volume",  # name on the CLI - drop the `--` for positional/required parameters
@@ -309,6 +315,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     len_window_bgsub = int(args.len_window_bgsub[0])
     len_window_smooth_t_mcp = int(args.len_window_smooth_t_mcp[0])
     do_denoise = int(args.do_denoise[0])
+    do_stitch = int(args.do_stitch[0])
     denoise_volume = int(args.denoise_volume[0])
 
     if isinstance(args.denoise_slice_index[0], list):
@@ -354,7 +361,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
-                      do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 

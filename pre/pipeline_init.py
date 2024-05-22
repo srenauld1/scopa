@@ -34,7 +34,7 @@ if len(sys.argv)>1:
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       do_register, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, 
-                      do_denoise, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
@@ -43,7 +43,7 @@ if len(sys.argv)>1:
                       do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pth_parsfile = pth_parsfile, scopatmpdir = scopatmpdir, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, recording_index = recording_index, file_matching_style = file_matching_style,
                       do_register = do_register, register_in_2d = register_in_2d, len_window_bgsub = len_window_bgsub, len_window_smooth_t_mcp = len_window_smooth_t_mcp,  
-                      do_denoise = do_denoise, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
+                      do_denoise = do_denoise, do_stitch = do_stitch, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
                       use_background_subtracted = use_background_subtracted, use_denoised = use_denoised, epoch_choose_denoise = epoch_choose_denoise, 
                       do_remove = do_remove, len_window_smooth_t_rsc = len_window_smooth_t_rsc, 
                       do_crop = do_crop, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, index_extraction_param_set = index_extraction_param_set, 
@@ -53,8 +53,8 @@ if len(sys.argv)>1:
 [pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
-if do_register + do_denoise + do_remove + do_extract + do_crop + do_analysis > 1:
-  raise Exception ("only one of these variables can be true: do_register, do_denoise, do_remove, do_extract, do_crop, do_analysis")
+if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop + do_analysis > 1:
+  raise Exception ("only one of these variables can be true: do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop, do_analysis")
 else:
   if recording_index !=['all'] and len(recording_index)>1:
      raise Exception ("currently can only have one recording_index per parallel run")
@@ -110,7 +110,7 @@ if not do_copyfiles:
 
 [pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all] = \
   choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_register, do_denoise, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
+                 do_register, do_denoise, do_stitch, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 
 
@@ -132,10 +132,11 @@ for ri, _ in enumerate(pth_tif_read_all):
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_tif_read_all[ri], epoch_choose_denoise)
     
-      if carls_old_project_all[ri]: 
-          stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
-      else:
-          stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+      if do_stitch:
+        if carls_old_project_all[ri]: 
+            stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+        else:
+            stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
       if do_remove:
         eng = matlab.engine.start_matlab()
