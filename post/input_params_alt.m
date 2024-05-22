@@ -21,6 +21,19 @@ opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmm
 opt.main.old_project = 0; %for carl
 
 
+
+%% DAQ (i.e. FICTRAC/STIMULUS)
+
+%params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
+opt.daq.ignore_daq = 0; %1 to skip daq
+opt.daq.method_resample = 'frames'; %'frames' to create a different timeseries for each z slice, taking mean of daq timeseries during each frame; 'volume' to take mean of daq timeseries during each volume (one timeseries per daq timeseries); 'uniform' to uniformly resample daq timeseries to match imaging stack length in time (number of volumes); if frameclock is not available on daq, will try volumeclock, and if that's not available, will try   
+opt.daq.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
+opt.daq.dark_stim_end_duration = 60; %final seconds
+opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
+opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
+opt.daq.slopelen = 5; %window length used to fit slope
+opt.daq.doplots = 0;
+
 %% STACK VISUALIZATION (GIF)
 
 %params for making gif of raw data movies in function load_stack
@@ -128,17 +141,6 @@ opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is s
 opt.froi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 opt.froi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
 opt.froi.norm.doplots = 0;
-
-%% FICTRAC/STIMULUS
-
-%params for stimulus/fictrac processing
-opt.ftrac.include_behavior = 0; %0 to skip behavior
-opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
-opt.ftrac.dark_stim_end_duration = 60; %final seconds
-opt.ftrac.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.ftrac.slopeorder = 2; %order of polynomial used to fit local slope
-opt.ftrac.slopelen = 5; %window length used to fit slope
-opt.ftrac.doplots = 0;
 
 %% BUMP
 

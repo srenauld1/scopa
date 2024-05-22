@@ -24,7 +24,8 @@ else:
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
-from helpers import copy_files_scopa
+from helpers import copy_files_scopa, stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+
 
 
 if len(sys.argv)>1:
@@ -130,6 +131,11 @@ for ri, _ in enumerate(pth_tif_read_all):
 
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_tif_read_all[ri], epoch_choose_denoise)
+    
+      if carls_old_project_all[ri]: 
+          stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+      else:
+          stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
       if do_remove:
         eng = matlab.engine.start_matlab()

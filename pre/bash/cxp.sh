@@ -41,6 +41,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 
 
+
 #THESE BASH LISTS MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
 
 
@@ -218,7 +219,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=$gpu_time
                 ntasks_str=1
                 cpus_per_task_str=6
-                mem_per_cpu_str=2G
+                mem_per_cpu_str=4G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 

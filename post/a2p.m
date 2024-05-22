@@ -59,10 +59,10 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
 
     if opt.main.old_project
-        [md, ts.vis] = load_stim(md, ids, opt.ftrac);
+        [md, ts.vis] = load_stim(md, ids, opt.daq);
     else
-        if opt.ftrac.include_behavior
-            [md, ts.ball, ts.vis] = load_DAQ(ids, md, pth.daq, pth.fldr, opt.ftrac);
+        if ~opt.daq.ignore_daq
+            [md, ts.ball, ts.vis] = load_DAQ(ids, md, pth.daq, pth.fldr, opt.daq);
         end
     end
 

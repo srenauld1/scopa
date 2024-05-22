@@ -1,4 +1,4 @@
-function epochinds_ts_i = define_stim_epoch_indices(md, dark_stim_end_duration)
+function epochinds_ts_i = define_stim_epoch_indices(md, dark_epoch_time_start)
 
 dark_epoch_time_start = md.t_ts_i(end)-dark_stim_end_duration;
 

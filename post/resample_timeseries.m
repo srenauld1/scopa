@@ -15,7 +15,7 @@ end
 
 switch method_resample
 
-    case 'resample'
+    case 'uniform'
 
         breakout = 0;
 
@@ -86,21 +86,34 @@ switch method_resample
         end
 
 
-    case 'timestamps'
+    case 'volumes'
 
-        if rslen > numel(inp)
-            error("'timestamps' method for downsampling, not upsampling (to upsample use analogous approach but interp not mean")
+        if iscircular
+            Au = unique(inds,'stable'); %index of each volume
+            inpcos = cos(inp);
+            inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inpcos for each volume 
+            inpsin = sin(inp);
+            inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each volume
+            outp = atan2(inpy, inpx);
+        else
+            Au = unique(inds,'stable'); %index of each volume
+            outp = arrayfun(@(i)mean(inp(inds==Au(i))),1:numel(Au)); %average of inp for each volume
         end
+
+
+    case 'frames'
+
+        error("work in progress")
         if iscircular
             Au = unique(inds,'stable'); %index of each frame
             inpcos = cos(inp);
-            inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inp for each frame of B
+            inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inpcos for each frame
             inpsin = sin(inp);
-            inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inp for each frame of B
+            inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
             outp = atan2(inpy, inpx);
         else
             Au = unique(inds,'stable'); %index of each frame
-            outp = arrayfun(@(i)mean(inp(inds==Au(i))),1:numel(Au)); %average of inp for each sample of B
+            outp = arrayfun(@(i)mean(inp(inds==Au(i))),1:numel(Au)); %average of inp for each frame
         end
 
 

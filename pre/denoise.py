@@ -385,8 +385,8 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
             tc = testing_class(test_dict)
             tc.run()
 
-    if carls_old_project: 
-        stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
-    else:
-        stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
+    # if carls_old_project: 
+    #     stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
+    # else:
+    #     stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
 

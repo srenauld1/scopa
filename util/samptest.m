@@ -61,7 +61,8 @@ for i = 1:numel(indies)
 end
 % inds = cumsum(inds);
 % max(inds)
-figure; plot(inds(end-round(numel(inds)/1000):end))
+% figure; plot(inds(end-round(numel(inds)/1000):end))
+% figure; plot(inds(1:round(numel(inds)/5000)))
 
 %% downsample with frame average
 % 
