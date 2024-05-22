@@ -24,8 +24,9 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
+do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
+do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
+do_stitch=1
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
@@ -168,6 +169,9 @@ fi
 if [ "$do_denoise" == 1 ]; then
     sbatch_job_name_sequence+=(dnp.sbatch)
 fi
+if [ "$do_stitch" == 1 ]; then
+    sbatch_job_name_sequence+=(stc.sbatch)
+fi
 if [ "$do_remove" == 1 ]; then
     sbatch_job_name_sequence+=(rsc.sbatch)
 fi
@@ -224,6 +228,12 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 
                 fi 
+            elif [ "$sbatch_job_name" == stc.sbatch ]; then
+                partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=00:45:00
+                ntasks_str=1
+                cpus_per_task_str=4
+                mem_per_cpu_str=10G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=11:40:00
