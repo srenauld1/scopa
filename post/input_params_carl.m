@@ -11,8 +11,8 @@ function opt = input_params_carl()
 
 %params for main pipeline control in file a2p
 opt.main.parent_folder_path = '~/stacks'; %full path to folder containing all recording folders (on local or o2)
-opt.main.recdate = '20240429'; %can use wildcardsxw
-opt.main.fly = '*'; %can use wildcards
+opt.main.recdate = '20231119'; %can use wildcardsxw
+opt.main.fly = '2'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 opt.main.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -27,7 +27,7 @@ opt.main.old_project = 0; %for carl
 opt.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.gif.plotinds_t = [50.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -131,7 +131,7 @@ opt.froi.norm.doplots = 0;
 %% FICTRAC/STIMULUS
 
 %params for stimulus/fictrac processing
-opt.ftrac.include_behavior = 0; %0 to skip behavior
+opt.ftrac.include_behavior = 1; %0 to skip behavior
 opt.ftrac.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
 opt.ftrac.dark_stim_end_duration = 60; %final seconds
 opt.ftrac.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)

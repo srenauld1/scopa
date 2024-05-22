@@ -16,6 +16,7 @@ function [md, ball, vis] = load_DAQ(ids, md, pth_daq, pth_fldr, fictracopts)
 % which causes spikes in the unwrapped timeseries when the intermediate value is less than pi radians away from the previous value
 % so smooth those out with tiny window in the unwrapped stim, otherwise there are spikes
 
+%Elena: all Berg4 trials prior to 05/25/22 have the channels for IntSide & IntFor switched
 
 %RIGHT NOW NOW CROPTIMEINDS FOR FICTRAC DATA THE WAY I DID FOR CLANDININ STIM DATA
 
@@ -30,174 +31,108 @@ slopeorder = fictracopts.slopeorder;
 no_stim_epochs = fictracopts.no_stim_epochs;
 doplots = fictracopts.doplots;
 
+maxvolt = 10; %need to find this in metadata
+minvolt = 0; %need to find this in metadata
+padlensec = 5; %arbitrary
+rateim = md.volrate;
+numsamp_im = md.numvol_o;
+smoothwindow_i = smoothwindow_sec*rateim;
+
 try
+    
     load(pth_daq, 'daqdata')
+
 catch
-    daqdata = process_DAQ(pth_fldr, ids, md.volrate, md.numvol_o, smoothwindow_sec, slopelen, slopeorder);
-    if size(daqdata, 1)>1
-        daqdata = daqdata(trialnum, :);
+
+
+    [expMetadata,trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_fldr);
+
+    if ~trialMetadata.usingPanels
+        error("no panels info")
     end
-end
 
-
-md.trialtime = daqdata.trialTime{:};
-md.dts_b = [nan; seconds(diff(md.trialtime))];
-md.dtmnb = mean(seconds(diff(md.trialtime)));
-
-md.t_ts_b = md.dtmnb * [1:numel(daqdata.intHD{1})]';
-md.total_t = max(md.t_ts_b);
-md.t_ts_i = linspace(0, md.total_t, md.numvol_o+1)';
-md.t_ts_i = md.t_ts_i(2:end); %2:end rather than 1:end-1 since each timestamp marks the end of the sample
-% md.dtmni = mean(diff(md.t_ts_i)); %close to 1/md.volrate;
-
-if datenum<20231119
-    dark_epoch_time_start = max(md.trialtime(:))-seconds(dark_stim_end_duration);
-else
-    dark_epoch_time_start = 1e9;
-    dark_stim_end_duration = 0;
-end
-
-smoothwindow_b = smoothwindow_sec/md.dtmnb;
-smoothwindow_i = smoothwindow_sec/md.dtmni;
-
-naninds_i = md.t_ts_i>seconds(dark_epoch_time_start); %dark gets nans
-naninds_b = md.t_ts_b>seconds(dark_epoch_time_start); %dark gets nas
-
-ball.velf = daqdata.velFor{:};
-ball.spdf = abs(ball.velf);
-ball.velr = daqdata.velYaw{:};
-ball.spdr = abs(ball.velr);
-ball.angint = daqdata.intHD{:};
-ball.ang = wrapToPi(ball.angint);
-
-if smoothwindow_b
-    ball.velfs = smoothdata(ball.velf, 'gaussian', smoothwindow_b, 'omitnan');
-    ball.angs = smooth_timeseries('circular', ball.ang, smoothwindow_b);
-    ball.velrs = differentiate_timeseries('circular', ball.angs, md.dtmnb, slopelen, slopeorder);
-end
-
-vis.raw = daqdata.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
-
-vis.ang = vis.raw;
-vis.ang(vis.ang == 193) = 192; %don't just replace all 193s with nan bc sometimes intended 192 is 193
-vis.ang = vis.ang  / num_panel_frames * 2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
-
-vis.ang_fictrac = daqdata.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it
-
-vis.velr = differentiate_timeseries('circular', vis.ang, md.dtmnb, slopelen, slopeorder);
-
-if smoothwindow_b
-    vis.angs = smooth_timeseries('circular', vis.ang, smoothwindow_b);
-    vis.velrs = differentiate_timeseries('circular', vis.angs, md.dtmnb, slopelen, slopeorder);
-end
-
-iscircular = 1;
-vis.angsd = resample_timeseries(md, vis.angs, iscircular); %downsample into imaging rate
-ball.angsd = resample_timeseries(md, ball.angs, iscircular); %downsample into imaging rate
-iscircular = 0;
-vis.velrsd = resample_timeseries(md, vis.velrs, iscircular); %downsample into imaging rate
-ball.velrsd = resample_timeseries(md, ball.velrs, iscircular); %downsample into imaging rate
-ball.velfsd = resample_timeseries(md, ball.velfs, iscircular); %downsample into imaging rate
-
-vis.angs(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.velrs(naninds_b) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.angsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.velrsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-
-if no_stim_epochs
-    epochinds_ts_i = ones(length(md.t_ts_i), 1);
-    epochinds_ts_b = ones(length(md.t_ts_b), 1);
-else
-
-    if datenum<20231119
-        define_stim_epoch_indices %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%
+    if isfield(patternMetadata,'arenaExtent')
+        arenaExtent = patternMetadata.arenaExtent;
     else
-        %%
-
-        ft_misoffset = 0%2.26;
-        define_stim_epoch_indices_2 %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-        fu = vis.ang(epochinds_ts_b==5);
-        figure; plot(fu)
-        title(numel(find(fu~=fu(1))))
-        %%
-
+        arenaExtent = 360;
+        warning('experiment.arenaExtent missing in experiment CSV, using arenaExtent: 360 degrees')
     end
 
-end
-md.epochinds_ts_i = epochinds_ts_i;
-md.epochinds_ts_b = epochinds_ts_b;
+    if isfield(patternMetadata,'initialAngle')
+        initialAngle = patternMetadata.initialAngle;
+    else
+        initialAngle = -9.375;
+        warning('experiment.initialAngle missing in experiment CSV, using initialAngle: 90 degrees')
+    end
 
-%organize_epochs(md, vis, 'imaging', [0 35]) %unfinished
+    if isfield(patternMetadata,'ball')
+        ball = patternMetadata.ball;
+    else
+        ball = 9;
+        warning('fictrac.ball.diameter missing in experiment CSV, using ball diameter: 9 mm')
+    end
 
-save(pth_daq, 'daqdata');
+    if isfield(patternMetadata,'patternLuminance')
+        luminance = patternMetadata.patternLuminance;
+    else
+        luminance = 1;
+        warning('experiment.patternLuminance missing in experiment CSV, using G3 pattern luminance: 1')
+    end
 
+    if isfield(patternMetadata,'yDimxDimRelationship')
+        yDimxDim = patternMetadata.yDimxDimRelationship;
+    else
+        yDimxDim = 1;
+        warning('experiment.yDimxDimRelationship missing in experiment CSV, using G3 yDimxDimRelationship: 1')
+    end
 
-if doplots
-
-    numsamp_i_subset = 500;
-    numsec_subset = numsamp_i_subset*md.dtmni;
-    startsec_i_subset = round(md.t_ts_i(end) / 2); %arbitrarily in the middle
-    plot_t_inds_sec = startsec_i_subset:startsec_i_subset+numsec_subset;
-
-    t_ind_b = md.t_ts_b>plot_t_inds_sec(1) & md.t_ts_b<plot_t_inds_sec(end);
-    t_ind_i = md.t_ts_i>plot_t_inds_sec(1) & md.t_ts_i<plot_t_inds_sec(end);
-
-    ballang_unwrap = unwrap(ball.ang);
-    ballang_unwrap = ballang_unwrap - ballang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
-    ballangsu = unwrap(ball.angs);
-    ballangsu = ballangsu - ballangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
-
-    titopt = 'raw vs smoothed ball angle';
-    figure; plot(ball.ang(t_ind_b)); hold on; plot(ball.angs(t_ind_b)); title(titopt)
-    figure; plot(ballang_unwrap(t_ind_b)); hold on; plot(ballangsu(t_ind_b)); title(titopt)
-    figure; plot(ballang_unwrap); hold on; plot(ballangsu); title(titopt)
-    titopt = 'smoothed ball angle vs smoothed ball rot vel';
-    figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
-    titopt = 'smoothed ball angle vs smoothed ball rot vel';
-    figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
-    titopt = 'ball rot vel vs smoothed ball rot vel';
-    figure; plot(ball.velr(t_ind_b)); hold on; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ball.velr); hold on; plot(ball.velrs); yline(0); title(titopt)
+    if isfield(patternMetadata,'cuePosAngleRelationship')
+        cuePosAngleRel = patternMetadata.cuePosAngleRelationship;
+    else
+        cuePosAngleRel = 1;
+        warning('experiment.cuePosAngleRel missing in experiment CSV, using G3 cuePosAngleRel: 1')
+    end
 
 
-    cueang_unwrap = unwrap(vis.ang);
-    cueang_unwrap = cueang_unwrap - cueang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
-    cueangsu = unwrap(vis.angs);
-    cueangsu = cueangsu - cueangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
+    %%
 
-    titopt = 'raw vs smoothed cue rot vel, behavior sampling';
-    figure; plot(md.t_ts_b(t_ind_b), vis.velr(t_ind_b)); hold on; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); title(titopt)
 
-    titopt = 'raw vs smoothed cue angle';
-    figure; plot(vis.ang(t_ind_b)); hold on; plot(vis.angs(t_ind_b)); title(titopt)
-    figure; plot(cueang_unwrap(t_ind_b)); hold on; plot(cueangsu(t_ind_b)); title(titopt)
-    figure; plot(cueang_unwrap); hold on; plot(cueangsu); title(titopt)
-    titopt = 'smoothed cue angle vs smoothed cue rot vel';
-    figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(vis.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(cueangsu); yyaxis right; plot(vis.velrs); yline(0); title(titopt)
-    % titopt = 'smoothed cue angle vs smoothed cue rot vel med filtered';
-    % visvelrs_med = movmedian(vis.velrs, [8 8], 'omitnan');
-    % figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(visvelrs_med(t_ind_b)); yline(0); title(titopt)
-    % figure; plot(cueangsu); yyaxis right; plot(visvelrs_med); yline(0); title(titopt)
+    fndaq = dir(fullfile(pth_fldr,['*',ids.datefly_hyphen,'_daqData_*_trial_'  sprintf( '%03d', ids.trialnum ) '.mat']));
 
-    titopt = 'behavior vs imaging sampling of ball angle';
-    figure; plot(md.t_ts_b(t_ind_b), ball.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.angsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, ball.angs); hold on; plot(md.t_ts_i, ball.angsd); title(titopt)
-    titopt = 'behavior vs imaging sampling of cue angle';
-    figure; plot(md.t_ts_b(t_ind_b), vis.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.angsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, vis.angs); hold on; plot(md.t_ts_i, vis.angsd); title(titopt)
-    titopt = 'behavior vs imaging sampling of ball velocity';
-    figure; plot(md.t_ts_b(t_ind_b), ball.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.velrsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, ball.velrs); hold on; plot(md.t_ts_i, ball.velrsd); title(titopt)
-    titopt = 'behavior vs imaging sampling of cue velocity';
-    figure; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.velrsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, vis.velrs); hold on; plot(md.t_ts_i, vis.velrsd); title(titopt)
+    load(fullfile(pth_fldr,fndaq.name), 'trialData')
 
-    figure; plot(md.t_ts_i, epochinds_ts_i); ylim([0 max(epochinds_ts_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
-    hold on; plot(md.t_ts_b, epochinds_ts_b); ylim([0 max(epochinds_ts_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
+    ratefictrac = fictracMetadata.fictracRate;
+    try
+        ratedaq = trialMetadata.daqSampRate;
+    catch
+        ratedaq = expMetadata.daqSampRate;
+    end
 
+    % Copy important variables, converting units as needed
+    trialData = timetable2table(trialData);
+
+    %% make daqdata table
+
+    daqdata = table();
+    daqdata.expID = {ids.datefly_hyphen};
+    daqdata.trialNum = ids.trialnum;
+
+    if any(strcmp(trialData.Properties.VariableNames, 'VolumeClock'))
+        method_resample = 'timestamps';
+        inds = trialData.VolumeClock;
+    else
+        method_resample = 'resample';
+        inds = [];
+    end
+
+    ftvars = trialData.Properties.VariableNames;
+    for ii = 1:numel(ftvars)
+        fnnew = erase(ftvars{ii}, 'ficTrac');
+        [ daqdata.(fnnew), daqdata.([fnnew '_diff']) ] = process_DAQ(ftvars{ii}, trialData.(ftvars{ii}), method_resample, numsamp_im, inds, rateim, maxvolt, slopelen, slopeorder, ball, padlensec);
+    end
+
+
+     save(pth_daq, 'daqdata', '-v7.3', '-mat')
 
 end
 

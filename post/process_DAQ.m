@@ -1,139 +1,53 @@
-function daqdata = process_DAQ(pth_fldr, ids, rateim, numsamp_im, smoothwindow_sec, slopelen, slopeorder)
+function [posint_out, vel] = ...
+    process_DAQ(ftvar, posint_in, method_resample, ...
+    rslen, inds, rateim, maxvolt, ...
+    slopelen, slopeorder, ball, padlensec)
 
-%Elena: all Berg4 trials prior to 05/25/22 have the channels for IntSide & IntFor switched
+% method_resample 'timestamps' should be most accurate
+% method_resample 'resample' will have some onset offset transient artifacts, but minor
+% note:
+% smoothing posint_out before differentiation should not be necessary since it has been downsampled so much,
+% and differentiate_timeseries allows variable slope window anyway
+% but if you still wanted to smooth first, try passing output of smooth_timeseries to differentiate_timeseries, like this
+% vel = differentiate_timeseries(iscircular, smooth_timeseries(iscircular, posint_out, smoothwindow), rateim, slopelen, slopeorder);
+% noteL: after accounting for ball, y stretching will occur in plot for side and for, not yaw
 
+doplots = 0;
+xlim_prct = [0.48 0.52];
 
-maxvolt = 10; %need to find this in metadata
-minvolt = 0; %need to find this in metadata
-padlensec = 5; %arbitrary
-smoothwindow_i = smoothwindow_sec*rateim;
-
-
-[expMetadata,trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_fldr);
-
-%% Get variables %%
-
-if ~trialMetadata.usingPanels
-    error("no panels info")
-end
-
-if isfield(patternMetadata,'arenaExtent')
-    arenaExtent = patternMetadata.arenaExtent;
+if any(strcmp(ftvar, {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'}))
+    iscircular = 1;
 else
-    arenaExtent = 360;
-    warning('experiment.arenaExtent missing in experiment CSV, using arenaExtent: 360 degrees')
+    iscircular = 0;
 end
 
-if isfield(patternMetadata,'initialAngle')
-    initialAngle = patternMetadata.initialAngle;
-else
-    initialAngle = -9.375;
-    warning('experiment.initialAngle missing in experiment CSV, using initialAngle: 90 degrees')
+if isduration(posint_in)
+    posint_in = seconds(posint_in); %convert to seconds, whatever the units
 end
 
-if isfield(patternMetadata,'ball')
-    ball = patternMetadata.ball;
-else
-    ball = 9;
-    warning('fictrac.ball.diameter missing in experiment CSV, using ball diameter: 9 mm')
+if iscircular
+    posint_in = posint_in / maxvolt*2*pi - pi; %put in range -pi to pi,  0 V assigned to -pi
 end
 
-if isfield(patternMetadata,'patternLuminance')
-    luminance = patternMetadata.patternLuminance;
-else
-    luminance = 1;
-    warning('experiment.patternLuminance missing in experiment CSV, using G3 pattern luminance: 1')
+posint_out = resample_timeseries(iscircular, posint_in, rslen, method_resample, inds, padlensec); %downsample into imaging rate
+vel = differentiate_timeseries(iscircular, posint_out, rateim, slopelen, slopeorder);
+
+if doplots %here, before scaling by ball, y values should "match"
+    plot_multi_timeseries(posint_in, posint_out, xlim_prct)
+    plot_multi_timeseries(posint_in, vel, xlim_prct)
 end
 
-if isfield(patternMetadata,'yDimxDimRelationship')
-    yDimxDim = patternMetadata.yDimxDimRelationship;
-else
-    yDimxDim = 1;
-    warning('experiment.yDimxDimRelationship missing in experiment CSV, using G3 yDimxDimRelationship: 1')
+if strcmp(ftvar, 'ficTracIntSide') || strcmp(ftvar, 'ficTracIntForward') 
+    posint_out = {(posint_out * ball/2)};
+    vel = {(vel * ball/2)};
+else %else ignore ball, units are rad and rad/sec, otherwise they are mm and mm/sec
+    posint_out = {posint_out};
+    vel = {vel};
 end
 
-if isfield(patternMetadata,'cuePosAngleRelationship')
-    cuePosAngleRel = patternMetadata.cuePosAngleRelationship;
-else
-    cuePosAngleRel = 1;
-    warning('experiment.cuePosAngleRel missing in experiment CSV, using G3 cuePosAngleRel: 1')
+if doplots %here they will be stretching for side and for
+    plot_multi_timeseries(posint_in, posint_out{1}, xlim_prct)
+    plot_multi_timeseries(posint_in, vel{1}, xlim_prct)
 end
 
 
-%%
-
-
-fndaq = dir(fullfile(pth_fldr,['*',ids.datefly_hyphen,'_daqData_*_trial_'  sprintf( '%03d', ids.trialnum ) '.mat']));
-
-load(fullfile(pth_fldr,fndaq.name), 'trialData')
-
-ratefictrac = fictracMetadata.fictracRate;
-try
-    ratedaq = trialMetadata.daqSampRate;
-catch
-    ratedaq = expMetadata.daqSampRate;
-end
-
-% Copy important variables, converting units as needed
-trialData = timetable2table(trialData);
-
-%% make daqdata table
-
-daqdata = table();
-daqdata.expID = {ids.datefly_hyphen};
-daqdata.trialNum = ids.trialnum;
-
-if any(strcmp(trialData.Properties.VariableNames, 'VolumeClock'))
-    method_resample = 'timestamps';
-    inds = trialData.VolumeClock;
-else
-    method_resample = 'resample';
-    inds = [];
-end
-
-ftvars = trialData.Properties.VariableNames;
-for ii = 1:numel(ftvars)
-    fnnew = erase(ftvars{ii}, 'ficTrac');
-    [ daqdata.(fnnew), daqdata.([fnnew '_diff']) ] = process_fictrac_signal(ftvars{ii}, trialData.(ftvars{ii}), method_resample, numsamp_im, inds, rateim, ratedaq, ratefictrac, maxvolt, smoothwindow_i, slopelen, slopeorder, ball, padlensec);
-end
-
-% old way of calculating cue info
-% if ismember('g4panels', trialData.Properties.VariableNames)% Calculate visual cue position based on X channel pos
-% 
-%     % calculates width of most salient visual cue, ignores fainter
-%     % background patterns if present but currently requires main cue to be
-%     % an individual shape of uniform width & brightest component of the pattern
-% 
-%     % Berg4 default: cue pos counterclockwise to the fly = - angles
-%     %                cue pos clockwise to the fly = + angles
-%     % may vary by arena depending on how it/fictrac was setup
-%     % IMPORTANT: check your arena's coordinate frame
-%     xframes = patternMetadata.x_num;
-%     pixelAngle = arenaExtent/xframes;
-%     pattern_2D = patternMetadata.Pats(:,:,1,1);
-%     pattern_1D = pattern_2D(1,:) == max(pattern_2D(1,:));
-%     cueWidth = sum(pattern_1D);
-%     XvoltsPerStep = (maxvolt-minvolt)./(xframes);
-%     rawPanelsData = [resample_with_padding(trialData.g4panels, ratefictrac, ratedaq)];
-%     rawPanelsData(rawPanelsData < minvolt) = minvolt;
-%     rawPanelsData(rawPanelsData > maxvolt) = maxvolt;
-%     % Calculate the frame number (round to nearest integer), & calculate pixel angle of bar given frame number.
-%     frX = round((rawPanelsData - minvolt)./XvoltsPerStep);
-%     cuePos = frX;
-%     if cuePosAngleRel == 0 %account for cue width & starting pos angle relative to fly
-%         cueAngle = (initialAngle - ((cuePos - 2) + cueWidth/2).*pixelAngle);
-%     else
-%         cueAngle = (initialAngle + ((cuePos - 2) + cueWidth/2).*pixelAngle);
-%     end
-%     cueAngle = wrapToPi(deg2rad(cueAngle-180));
-%     % clean up/filter (artifacts often present at 180 to -180 transitions)
-%     cueAngle = smoothdata(cueAngle,'movmedian',5); % can play around with this step
-%     cueAngle(cueAngle > 180) = 180;
-%     cueAngle(cueAngle < -180) = -180;
-%     daqdata.PanelsX = frX;
-%     daqdata.cuePos = cuePos;
-%     daqdata.cueAngle = cueAngle;
-% 
-% end
-
-end

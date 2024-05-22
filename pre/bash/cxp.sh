@@ -47,7 +47,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20240515', '20240507')
+RECDATE=('20240507' '20240515')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('R37G12') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -92,7 +92,7 @@ if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then
     gpu_time=12:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
     gpu_partition=gpu_requeue
-    gpu_time=6:00:00 #tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    gpu_time=8:00:00 #tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
     gpu_partition=gpu_quad 
     gpu_time=6:00:00
