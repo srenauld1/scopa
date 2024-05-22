@@ -351,7 +351,7 @@ def mat2tif_carls_old_project(pth_datafile):
     return mat_file_shape
             
 
-def copy_files_scopa(do_copyfiles, do_denoise, do_extract, pth_prefix, pth_tif_read, 
+def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix, pth_tif_read, 
                      pth_md, pth_fldr_copydest_prefix, pth_fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
@@ -395,26 +395,29 @@ def copy_files_scopa(do_copyfiles, do_denoise, do_extract, pth_prefix, pth_tif_r
 
     elif do_copyfiles==2: #copy from O2 to storage server 
         
-        print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
+        if do_denoise:
+            print("\n\n\nnot copying anything out because do_denoise is true, and they use files in denoising folder")
+        else:
+            print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
 
-        fldr_name = os.path.basename(os.path.abspath(pth_fldr))
-        for pth_src_tmp in Path(pth_fldr).glob('**/*'):  #this will copy hidden files too
-            pth_src = str(pth_src_tmp)
-            if os.path.isfile(pth_src): #only files, no directories (will create parent dirs if necessary below)
-                pp = Path(pth_src).parts #split path
-                split_index = pp.index(fldr_name) + 1 #find index to split source and destination (in case it's within a subdir)
-                pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
-                pth_dest = pth_fldr_copydest + '/' + pth_dest_suffix #append suffix to source path
-                os.makedirs(os.path.dirname(pth_dest), exist_ok=True) #in case it's within a subdir, create any missing parent dir, if they don't exist  
-                if (not os.path.exists(pth_dest)) or (os.path.exists(pth_dest) and abs(os.stat(pth_src).st_mtime - os.stat(pth_dest).st_mtime) > 1) :
-                    try:
-                        shutil.copy2(pth_src, pth_dest)
-                    except shutil.SameFileError:
-                        print("same file error error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
-                    except PermissionError:
-                        print("permission error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
-                    except:
-                        print("Unknown error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
+            fldr_name = os.path.basename(os.path.abspath(pth_fldr))
+            for pth_src_tmp in Path(pth_fldr).glob('**/*'):  #this will copy hidden files too
+                pth_src = str(pth_src_tmp)
+                if os.path.isfile(pth_src): #only files, no directories (will create parent dirs if necessary below)
+                    pp = Path(pth_src).parts #split path
+                    split_index = pp.index(fldr_name) + 1 #find index to split source and destination (in case it's within a subdir)
+                    pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
+                    pth_dest = pth_fldr_copydest + '/' + pth_dest_suffix #append suffix to source path
+                    os.makedirs(os.path.dirname(pth_dest), exist_ok=True) #in case it's within a subdir, create any missing parent dir, if they don't exist  
+                    if (not os.path.exists(pth_dest)) or (os.path.exists(pth_dest) and abs(os.stat(pth_src).st_mtime - os.stat(pth_dest).st_mtime) > 1) :
+                        try:
+                            shutil.copy2(pth_src, pth_dest)
+                        except shutil.SameFileError:
+                            print("same file error error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
+                        except PermissionError:
+                            print("permission error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
+                        except:
+                            print("Unknown error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
 
 
 

@@ -118,7 +118,7 @@ for ri, _ in enumerate(pth_tif_read_all):
     
     if do_copyfiles!=0: #copy files from storage server to O2, or vice versa
        
-       copy_files_scopa(do_copyfiles, do_denoise, do_extract, pth_prefix_all[ri], pth_tif_read_all[ri], pth_md_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+       copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix_all[ri], pth_tif_read_all[ri], pth_md_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
         
     elif do_copyfiles==0: #compute against the data 
       

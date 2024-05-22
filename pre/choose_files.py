@@ -45,11 +45,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern
-        if do_denoise or do_extract or do_crop or do_remove:
+        if do_denoise or do_stitch or do_extract or do_crop or do_remove:
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
                 fn_suffix_scopa = fn_suffix_scopa + '_bksb'
-            if use_denoised and (do_extract or do_stitch or do_crop or do_remove):
+            if use_denoised and (do_extract or do_crop or do_remove):
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
         fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa
