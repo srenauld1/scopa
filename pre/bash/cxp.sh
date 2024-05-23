@@ -26,7 +26,7 @@
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
-do_stitch=1
+do_stitch=1 #0 or 1, no space after =, stitch together denoised z slices into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
@@ -223,7 +223,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=$gpu_time
                 ntasks_str=1
                 cpus_per_task_str=6
-                mem_per_cpu_str=4G
+                mem_per_cpu_str=2G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 

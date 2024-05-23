@@ -1,8 +1,11 @@
-function epochinds_ts_i = define_stim_epoch_indices(md, dark_epoch_time_start)
+function epochinds_ts_i = define_stim_epoch_indices_dep(ft_misoffset_sec, md)
+
+dark_stim_end_duration = 60; %final seconds
+closedinds_initial_light = 0:59;
+ft_misoffset_sec
 
 dark_epoch_time_start = md.t_ts_i(end)-dark_stim_end_duration;
 
-closedinds_initial_light = 0:59;
 closedinds_final_dark = floor(seconds(dark_epoch_time_start)):floor(md.total_t);
 
 cueinc = 20;

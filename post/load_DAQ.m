@@ -177,7 +177,7 @@ else
             ft_misoffset_sec = md.dtmni*ft_misoffset_frames;
             testepochind = 5;
             if datenum<20231119
-                epochinds_ts_i = define_stim_epoch_indices(md, dark_stim_end_duration); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%
+                epochinds_ts_i = define_stim_epoch_indices_1(ft_misoffset_sec, md); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%
             else
                 epochinds_ts_i = define_stim_epoch_indices_2(ft_misoffset_sec, md); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
             end

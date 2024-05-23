@@ -11,7 +11,7 @@ function opt = input_params_carl()
 
 %params for main pipeline control in file a2p
 opt.main.parent_folder_path = '~/stacks'; %full path to folder containing all recording folders (on local or o2)
-opt.main.recdate = '20231119'; %can use wildcardsxw
+opt.main.recdate = '20230627'; %can use wildcardsxw
 opt.main.fly = '2'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
@@ -27,7 +27,6 @@ opt.main.old_project = 0; %for carl
 opt.daq.ignore_daq = 0; %1 to skip daq
 opt.daq.method_resample = 'frames'; %'frames' to create a different timeseries for each z slice, taking mean of daq timeseries during each frame; 'volume' to take mean of daq timeseries during each volume (one timeseries per daq timeseries); 'uniform' to uniformly resample daq timeseries to match imaging stack length in time (number of volumes); if frameclock is not available on daq, will try volumeclock, and if that's not available, will try   
 opt.daq.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
-opt.daq.dark_stim_end_duration = 60; %final seconds
 opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen = 5; %window length used to fit slope
@@ -39,8 +38,8 @@ opt.daq.doplots = 0;
 %params for making gif of raw data movies in function load_stack
 opt.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.gif.plotinds_t = [20.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available

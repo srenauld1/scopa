@@ -29,6 +29,7 @@ epochinds.openfast = 3;
 epochinds.closed = 4;
 epochinds.dark = 5;
 
+% closedinds_initial_light = 0:ft_misoffset_sec;
 boutendpoints_sec_closedinds_initial_light = [0 closed_initial_light_duration - ft_misoffset_sec];
 
 % boutstarttimes = boutendpoints_sec_closedinds_initial_light(end)+1:bout_duration_sec:round(md.t_ts_i(end));
@@ -56,15 +57,15 @@ end
 %fill in extra frames at end, caused by clock alignment problem (at least)
 [~, finalbout_epochind] = max(cell2mat(struct2cell(structfun(@(x) max(vec(x)), boutendpoints_sec_epoch, 'UniformOutput', false))));
 boutendpoints_sec_epoch_cell = struct2cell(boutendpoints_sec_epoch);
-if boutendpoints_sec_epoch_cell{finalbout_epochind}(end)~=md.t_ts_i(end) %closedinds(end)~=floor(md.t_ts_i(end))
+if struct2cell(boutendpoints_sec_epoch_cell{finalbout_epochind}(end))~=md.t_ts_i(end) %closedinds(end)~=floor(md.t_ts_i(end))
     boutendpoints_sec_epoch_cell{finalbout_epochind}(end)=md.t_ts_i(end);
 end
-boutendpoints_sec_epoch = cell2struct(boutendpoints_sec_epoch_cell, fieldnames(boutendpoints_sec_epoch));
+boutendpoints_sec_epoch = cell2struct(boutendpoints_sec_epoch_cell);
 
-fn = fieldnames(boutendpoints_sec_epoch);
-for fni = 1:numel(fn)
-    epochinds_ts_i = zeros(1, numel(md.t_ts_i));
-    mtchtmp = md.t_ts_i'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & md.t_ts_i'<boutendpoints_sec_epoch.(fn{fni})(:,2);
+
+epochinds_ts_i = zeros(1, numel(md.t_ts_i));
+for eii = 1:numel(boutendpoints_sec_epoch)
+    mtchtmp = md.t_ts_i'>=boutendpoints_sec_epoch{eii}(:,1) & md.t_ts_i'<boutendpoints_sec_epoch{eii}(:,2);
     mtchtmp = sum(mtchtmp, 1);
     if any(mtchtmp>1)
         error("epochinds misaligned")
@@ -72,6 +73,18 @@ for fni = 1:numel(fn)
     if any(ismember(find(epochinds_ts_i), find(mtchtmp)))
         error("epochinds misaligned")
     end
-    epochinds_ts_i = epochinds_ts_i + mtchtmp*fni;
+    epochinds_ts_i = epochinds_ts_i + mtchtmp*eii;
 end
 
+% epochinds_ts_b = zeros(1, numel(md.t_ts_b));
+% for eii = 1:numel(boutendpoints_sec_epoch)
+%     mtchtmp = md.t_ts_b'>=boutendpoints_sec_epoch{eii}(:,1) & md.t_ts_b'<boutendpoints_sec_epoch{eii}(:,2);
+%     mtchtmp = sum(mtchtmp, 1);
+%     if any(mtchtmp>1)
+%         error("epochinds misaligned")
+%     end
+%     if any(ismember(find(epochinds_ts_b), find(mtchtmp)))
+%         error("epochinds misaligned")
+%     end
+%     epochinds_ts_b = epochinds_ts_b + mtchtmp*eii;
+% end

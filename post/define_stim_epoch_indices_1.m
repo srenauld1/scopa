@@ -1,35 +1,31 @@
-function epochinds_ts_i = define_stim_epoch_indices_2(ft_misoffset_sec, md)
-
-%hacking the timing problem on berg1, will be fixed in next dataset
-
-% if ~exist('ft_misoffset_sec', 'var')
-%     if datenum==20231119 & flynum==1
-%         ft_misoffset_sec = 7;
-%     elseif datenum==20231119 & flynum==2
-%         ft_misoffset_sec = 3;
-%     elseif datenum==20231119 & flynum==3
-%         ft_misoffset_sec = 2;
-%     end
-% end
+function epochinds_ts_i = define_stim_epoch_indices_1(ft_misoffset_sec, md)
 
 num_total_epochs = 10;  %not counting initial closed/light epoch
 num_bouts_per_epoch = 6;
 bout_duration_sec = 20;
 closed_initial_light_duration = 60;
 
+dark_stim_end_duration = 60; %final seconds
+
 %closed initial light does not count toward boutinds_onecycle below, but is counted as bout 1 and epochind 1
 boutinds_onecycle.openslow = [1 5];
 boutinds_onecycle.openfast = [3 7];
-boutinds_onecycle.closed = [2 4 6 8 10];
-boutinds_onecycle.dark = [9];
+boutinds_onecycle.closed = [2 4 6 8];
+boutinds_onecycle.finaldark = [9];
 
 epochinds.initialclosed = 1;
 epochinds.openslow = 2;
 epochinds.openfast = 3;
 epochinds.closed = 4;
-epochinds.dark = 5;
+epochinds.finaldark = 5;
 
 boutendpoints_sec_closedinds_initial_light = [0 closed_initial_light_duration - ft_misoffset_sec];
+
+
+dark_epoch_time_start = md.t_ts_i(end)-dark_stim_end_duration;
+
+boutendpoints_sec_closedinds_final_dark = floor(seconds(dark_epoch_time_start)):floor(md.total_t);
+
 
 % boutstarttimes = boutendpoints_sec_closedinds_initial_light(end)+1:bout_duration_sec:round(md.t_ts_i(end));
 boutstarttimes(1) = boutendpoints_sec_closedinds_initial_light(end);
