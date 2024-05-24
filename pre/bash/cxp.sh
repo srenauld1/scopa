@@ -7,7 +7,7 @@
 #the sbatch files called below can run multiple jobs in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
 #each sbatch file below is called in a 2-iteration for loop, the first iteration copies the required files from storage server to scratch on O2, the second operates on them, afterward files are automatically copied back to the storage server  
 #copying requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
-#
+##
 #the cxp.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
 #see pipeline_init.py and README.md for more details 
 
