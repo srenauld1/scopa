@@ -10,8 +10,9 @@ function opt = input_params_carl()
 %% MAIN
 
 %params for main pipeline control in file a2p
-opt.main.parent_folder_path = '~/stacks'; %full path to folder containing all recording folders (on local or o2)
-opt.main.recdate = '20230627'; %can use wildcardsxw
+opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
+opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
+opt.main.recdate = '2023*'; %can use wildcards
 opt.main.fly = '2'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
@@ -38,8 +39,8 @@ opt.daq.doplots = 0;
 %params for making gif of raw data movies in function load_stack
 opt.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 opt.gif.plotinds_t = [20.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -302,7 +303,7 @@ opt.md.croptimeinds = [0 0]; %this is only relevant for carl's old project
 
 
 %overwrite some params for carl's old project
-if strcmp(opt.main.recdate(1:2), '22') %override some settings for old project
+if ~strcmp(opt.main.recdate, '*') && strcmp(opt.main.recdate(1:2), '22') %override some settings for old project
     opt.main.old_project = 1;
     opt.main.no_stim_epochs = 1;
     opt.md.croptimeinds = [4 2]; %same as cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)

@@ -20,6 +20,9 @@ function [md, ball, vis] = load_DAQ(ids, md, pth_daq, pth_fldr, opts)
 
 %RIGHT NOW NOW CROPTIMEINDS FOR FICTRAC DATA THE WAY I DID FOR CLANDININ STIM DATA
 
+ball = [];
+vis = [];
+
 datenum = ids.datenum;
 flynum = ids.flynum;
 trialnum = ids.trialnum;
@@ -40,6 +43,7 @@ method_resample = opts.method_resample;
 
 try
 
+    fool = mool
     load(pth_daq, 'daqdata_resamp')
 
 catch
@@ -147,136 +151,168 @@ catch
 
     % save(pth_daq, 'daqdata_resamp', '-v7.3', '-mat')
 
-end
 
-%% epochinds
+    %% epochinds
 
-md.t_ts_i = daqdata_resamp.Time{:}; %linspace(0, md.total_t, md.numvol_o+1)';md.t_ts_i(2:end);
-md.total_t = max(md.t_ts_i);
-sprintf("dti and volrate, respectively (should be the same or nearly the same): " + num2str(mean(diff(md.t_ts_i))) + ", " + num2str(1/md.volrate))
+    md.t_ts_i = daqdata_resamp.Time{:}; %linspace(0, md.total_t, md.numvol_o+1)';md.t_ts_i(2:end);
+    md.total_t = max(md.t_ts_i);
+    sprintf("dti and volrate, respectively (should be the same or nearly the same): " + num2str(mean(diff(md.t_ts_i))) + ", " + num2str(1/md.volrate))
 
-if no_stim_epochs
-    epochinds_ts_i = ones(numel(md.t_ts_i), 1);
-    epochinds_ts_b = ones(numel(md.t_ts_b), 1);
-else
-    if ~any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochinds'))
-        sprintf("warning, epochinds not saved to daq, using hard coded epochinds aligned by minimizing error")
-        ft_misoffset_frames_all = -30:60; %linspace(-2, 5, 60);
-        hfg = figure;
-        hax = axes('Parent', hfg);
-        for fmsai = 1:numel(ft_misoffset_frames_all)+1
-            if fmsai==numel(ft_misoffset_frames_all)+1
-                if ~(min(diff(criter))<0 && max(diff(criter))>0)
-                    error("error is monotonic, expand search range")
-                end
-                [~, bestshiftind] = min(criter);
-                ft_misoffset_frames = ft_misoffset_frames_all(bestshiftind);
-            else
-                ft_misoffset_frames = ft_misoffset_frames_all(fmsai);
-            end
-            ft_misoffset_sec = md.dtmni*ft_misoffset_frames;
-            testepochind = 5;
+    if no_stim_epochs
+        epochinds_ts_i = ones(numel(md.t_ts_i), 1);
+        epochinds_ts_b = ones(numel(md.t_ts_b), 1);
+    else
+        if ~any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochinds'))
+
+            sprintf("warning, epochinds not saved to daq, using hard coded epochinds aligned by minimizing error")
+            maxshiftsec = 5;
+            maxshiftframes = maxshiftsec/md.dtmni;
+            inc = 0.45;
+            ft_misoffset_frames_all = -maxshiftframes:inc:maxshiftframes;
+            hfg = figure;
+            hax = axes('Parent', hfg);
             if datenum<20231119
-                epochinds_ts_i = define_stim_epoch_indices_1(ft_misoffset_sec, md); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%
+                testepochind_all = [2 3];
             else
-                epochinds_ts_i = define_stim_epoch_indices_2(ft_misoffset_sec, md); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+                testepochind_all = [2 3 5];
             end
-            fu = daqdata_resamp.g4panels{1}(epochinds_ts_i==testepochind);
-            if testepochind==2 || testepochind==3 || testepochind==4
-                fu = unwrap(fu);
+            bestshiftind_allepochs = [];
+            figframes = 0;
+            for tei = 1:numel(testepochind_all)
+                testepochind = testepochind_all(tei);
+                criter = nan(numel(ft_misoffset_frames_all), 1);
+                for fmsai = 1:numel(ft_misoffset_frames_all)
+                    figframes = figframes+1;
+                    
+                    ft_misoffset_frames = ft_misoffset_frames_all(fmsai);
+                    ft_misoffset_sec = md.dtmni*ft_misoffset_frames;
+                    epochinds_ts_i = define_stim_epoch_indices(ft_misoffset_frames, md, datenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+                    fu = daqdata_resamp.g4panels{1}(epochinds_ts_i==testepochind);
+                    if testepochind==2 || testepochind==3
+                        % fu = unwrap(fu); %makes it easier to see
+                    end
+                    % fu = cos(fu);
+                    %fu = diff(diff(fu));
+                    plot(hax,fu)
+                    ylim(hax, [min(daqdata_resamp.g4panels{1}(:)) - abs(min(daqdata_resamp.g4panels{1}(:)))*0.3, max(daqdata_resamp.g4panels{1}(:)) + abs(max(daqdata_resamp.g4panels{1}(:)))*0.3])
+                    if testepochind==2 || testepochind==3
+                        fud2 = diff(diff(fu));
+                        criter(fmsai) = numel(find(isoutlier(fud2))); %minimize num unique variables in diff, since open look should have only a couple (constant vel)
+                    elseif testepochind==5
+                        criter(fmsai) = var(cos(fu)); %minimize variance of x (or y) component of circular variable, this is offset with least error
+                    end
+                    title([criter(fmsai) ft_misoffset_frames ft_misoffset_sec])
+                    fig2gif(hfg, figframes, [pth_fldr 'misoffset_.gif'])
+                    
+                    if fmsai==numel(ft_misoffset_frames_all)
+                        if ~(min(diff(criter))<0 && max(diff(criter))>0)
+                            error("error is monotonic, expand search range")
+                        end
+                        [~, bestshiftind_oneepoch] = min(criter);
+                        bestshiftind_allepochs = [bestshiftind_allepochs bestshiftind_oneepoch];
+                    end
+                end
             end
-            % fu = cos(fu);
-            plot(hax,fu)
-            ylim(hax, [min(daqdata_resamp.g4panels{1}(:)) - abs(min(daqdata_resamp.g4panels{1}(:)))*0.3, max(daqdata_resamp.g4panels{1}(:)) + abs(max(daqdata_resamp.g4panels{1}(:)))*0.3])
-            criter(fmsai) = var(cos(fu)); %minimize variance of x (or y) component of circular variable, this is offset with least error
-            title([criter(fmsai) ft_misoffset_frames ft_misoffset_sec])
-            fig2gif(hfg, fmsai, '~/misoffset.gif')
+
+            ft_misoffset_frames = mean(ft_misoffset_frames_all(bestshiftind_allepochs));
+            [epochinds_ts_i, epochinds] = define_stim_epoch_indices(ft_misoffset_frames, md, datenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+            for tei = 1:numel(testepochind_all)
+                figframes = figframes+1;
+                plot(hax, daqdata_resamp.g4panels{1}(epochinds_ts_i==testepochind_all(tei)))
+                title([ft_misoffset_frames ft_misoffset_sec])
+                fig2gif(hfg, figframes, [pth_fldr 'misoffset_.gif'])
+            end
+
         end
     end
+
+    md.epochinds_ts_i = epochinds_ts_i;
+
+    naninds_i = epochinds_ts_i==epochinds.dark | epochinds_ts_i==epochinds.closedfinaldark; %dark gets nans
+
+    % vis.raw = daqdata_resamp.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
+    % vis.ang = vis.raw;
+    % vis.ang(vis.ang == 193) = 192; %don't just replace all 193s with nan bc sometimes intended 192 is 193
+    % vis.ang = vis.ang  / num_panel_frames * 2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
+    % vis.ang_fictrac = daqdata_resamp.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it
+    % vis.angsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+    % vis.velrsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+
+    %% save and plot
+
+    save(pth_daq, 'daqdata_resamp');
+
+
+    if doplots
+
+        numsamp_i_subset = 500;
+        numsec_subset = numsamp_i_subset*md.dtmni;
+        startsec_i_subset = round(md.t_ts_i(end) / 2); %arbitrarily in the middle
+        plot_t_inds_sec = startsec_i_subset:startsec_i_subset+numsec_subset;
+
+        t_ind_b = md.t_ts_b>plot_t_inds_sec(1) & md.t_ts_b<plot_t_inds_sec(end);
+        t_ind_i = md.t_ts_i>plot_t_inds_sec(1) & md.t_ts_i<plot_t_inds_sec(end);
+
+        ballang_unwrap = unwrap(ball.ang);
+        ballang_unwrap = ballang_unwrap - ballang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
+        ballangsu = unwrap(ball.angs);
+        ballangsu = ballangsu - ballangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
+
+        titopt = 'raw vs smoothed ball angle';
+        figure; plot(ball.ang(t_ind_b)); hold on; plot(ball.angs(t_ind_b)); title(titopt)
+        figure; plot(ballang_unwrap(t_ind_b)); hold on; plot(ballangsu(t_ind_b)); title(titopt)
+        figure; plot(ballang_unwrap); hold on; plot(ballangsu); title(titopt)
+        titopt = 'smoothed ball angle vs smoothed ball rot vel';
+        figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
+        figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
+        titopt = 'smoothed ball angle vs smoothed ball rot vel';
+        figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
+        figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
+        titopt = 'ball rot vel vs smoothed ball rot vel';
+        figure; plot(ball.velr(t_ind_b)); hold on; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
+        figure; plot(ball.velr); hold on; plot(ball.velrs); yline(0); title(titopt)
+
+
+        cueang_unwrap = unwrap(vis.ang);
+        cueang_unwrap = cueang_unwrap - cueang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
+        cueangsu = unwrap(vis.angs);
+        cueangsu = cueangsu - cueangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
+
+        titopt = 'raw vs smoothed cue rot vel, behavior sampling';
+        figure; plot(md.t_ts_b(t_ind_b), vis.velr(t_ind_b)); hold on; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); title(titopt)
+
+        titopt = 'raw vs smoothed cue angle';
+        figure; plot(vis.ang(t_ind_b)); hold on; plot(vis.angs(t_ind_b)); title(titopt)
+        figure; plot(cueang_unwrap(t_ind_b)); hold on; plot(cueangsu(t_ind_b)); title(titopt)
+        figure; plot(cueang_unwrap); hold on; plot(cueangsu); title(titopt)
+        titopt = 'smoothed cue angle vs smoothed cue rot vel';
+        figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(vis.velrs(t_ind_b)); yline(0); title(titopt)
+        figure; plot(cueangsu); yyaxis right; plot(vis.velrs); yline(0); title(titopt)
+        % titopt = 'smoothed cue angle vs smoothed cue rot vel med filtered';
+        % visvelrs_med = movmedian(vis.velrs, [8 8], 'omitnan');
+        % figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(visvelrs_med(t_ind_b)); yline(0); title(titopt)
+        % figure; plot(cueangsu); yyaxis right; plot(visvelrs_med); yline(0); title(titopt)
+
+        titopt = 'behavior vs imaging sampling of ball angle';
+        figure; plot(md.t_ts_b(t_ind_b), ball.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.angsd(t_ind_i)); title(titopt)
+        figure; plot(md.t_ts_b, ball.angs); hold on; plot(md.t_ts_i, ball.angsd); title(titopt)
+        titopt = 'behavior vs imaging sampling of cue angle';
+        figure; plot(md.t_ts_b(t_ind_b), vis.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.angsd(t_ind_i)); title(titopt)
+        figure; plot(md.t_ts_b, vis.angs); hold on; plot(md.t_ts_i, vis.angsd); title(titopt)
+        titopt = 'behavior vs imaging sampling of ball velocity';
+        figure; plot(md.t_ts_b(t_ind_b), ball.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.velrsd(t_ind_i)); title(titopt)
+        figure; plot(md.t_ts_b, ball.velrs); hold on; plot(md.t_ts_i, ball.velrsd); title(titopt)
+        titopt = 'behavior vs imaging sampling of cue velocity';
+        figure; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.velrsd(t_ind_i)); title(titopt)
+        figure; plot(md.t_ts_b, vis.velrs); hold on; plot(md.t_ts_i, vis.velrsd); title(titopt)
+
+        figure; plot(md.t_ts_i, epochinds_ts_i); ylim([0 max(epochinds_ts_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
+        hold on; plot(md.t_ts_b, epochinds_ts_b); ylim([0 max(epochinds_ts_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
+
+
+    end
+
 end
 
-md.epochinds_ts_i = epochinds_ts_i;
-
-naninds_i = md.t_ts_i>dark_epoch_time_start; %dark gets nans
-
-% vis.raw = daqdata_resamp.cuePos{:}'; %cuePos is index into G4 frames (usually 192, but i've added one more for a dark frame)
-% vis.ang = vis.raw;
-% vis.ang(vis.ang == 193) = 192; %don't just replace all 193s with nan bc sometimes intended 192 is 193
-% vis.ang = vis.ang  / num_panel_frames * 2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
-% vis.ang_fictrac = daqdata_resamp.cueAngle{:}'; %saving fictrac's angle as convenience to make sure my vis.ang matches it
-% vis.angsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-% vis.velrsd(naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-
-%% save and plot
-
-save(pth_daq, 'daqdata_resamp');
-
-
-if doplots
-
-    numsamp_i_subset = 500;
-    numsec_subset = numsamp_i_subset*md.dtmni;
-    startsec_i_subset = round(md.t_ts_i(end) / 2); %arbitrarily in the middle
-    plot_t_inds_sec = startsec_i_subset:startsec_i_subset+numsec_subset;
-
-    t_ind_b = md.t_ts_b>plot_t_inds_sec(1) & md.t_ts_b<plot_t_inds_sec(end);
-    t_ind_i = md.t_ts_i>plot_t_inds_sec(1) & md.t_ts_i<plot_t_inds_sec(end);
-
-    ballang_unwrap = unwrap(ball.ang);
-    ballang_unwrap = ballang_unwrap - ballang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
-    ballangsu = unwrap(ball.angs);
-    ballangsu = ballangsu - ballangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
-
-    titopt = 'raw vs smoothed ball angle';
-    figure; plot(ball.ang(t_ind_b)); hold on; plot(ball.angs(t_ind_b)); title(titopt)
-    figure; plot(ballang_unwrap(t_ind_b)); hold on; plot(ballangsu(t_ind_b)); title(titopt)
-    figure; plot(ballang_unwrap); hold on; plot(ballangsu); title(titopt)
-    titopt = 'smoothed ball angle vs smoothed ball rot vel';
-    figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
-    titopt = 'smoothed ball angle vs smoothed ball rot vel';
-    figure; plot(ballangsu(t_ind_b)); yyaxis right; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ballangsu); yyaxis right; plot(ball.velrs); yline(0); title(titopt)
-    titopt = 'ball rot vel vs smoothed ball rot vel';
-    figure; plot(ball.velr(t_ind_b)); hold on; plot(ball.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(ball.velr); hold on; plot(ball.velrs); yline(0); title(titopt)
-
-
-    cueang_unwrap = unwrap(vis.ang);
-    cueang_unwrap = cueang_unwrap - cueang_unwrap(1);  %zero for plotting bc unwrapping can shift very similar values by 2pi
-    cueangsu = unwrap(vis.angs);
-    cueangsu = cueangsu - cueangsu(1); %zero for plotting bc unwrapping can shift very similar values by 2pi
-
-    titopt = 'raw vs smoothed cue rot vel, behavior sampling';
-    figure; plot(md.t_ts_b(t_ind_b), vis.velr(t_ind_b)); hold on; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); title(titopt)
-
-    titopt = 'raw vs smoothed cue angle';
-    figure; plot(vis.ang(t_ind_b)); hold on; plot(vis.angs(t_ind_b)); title(titopt)
-    figure; plot(cueang_unwrap(t_ind_b)); hold on; plot(cueangsu(t_ind_b)); title(titopt)
-    figure; plot(cueang_unwrap); hold on; plot(cueangsu); title(titopt)
-    titopt = 'smoothed cue angle vs smoothed cue rot vel';
-    figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(vis.velrs(t_ind_b)); yline(0); title(titopt)
-    figure; plot(cueangsu); yyaxis right; plot(vis.velrs); yline(0); title(titopt)
-    % titopt = 'smoothed cue angle vs smoothed cue rot vel med filtered';
-    % visvelrs_med = movmedian(vis.velrs, [8 8], 'omitnan');
-    % figure; plot(cueangsu(t_ind_b)); yyaxis right; plot(visvelrs_med(t_ind_b)); yline(0); title(titopt)
-    % figure; plot(cueangsu); yyaxis right; plot(visvelrs_med); yline(0); title(titopt)
-
-    titopt = 'behavior vs imaging sampling of ball angle';
-    figure; plot(md.t_ts_b(t_ind_b), ball.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.angsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, ball.angs); hold on; plot(md.t_ts_i, ball.angsd); title(titopt)
-    titopt = 'behavior vs imaging sampling of cue angle';
-    figure; plot(md.t_ts_b(t_ind_b), vis.angs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.angsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, vis.angs); hold on; plot(md.t_ts_i, vis.angsd); title(titopt)
-    titopt = 'behavior vs imaging sampling of ball velocity';
-    figure; plot(md.t_ts_b(t_ind_b), ball.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), ball.velrsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, ball.velrs); hold on; plot(md.t_ts_i, ball.velrsd); title(titopt)
-    titopt = 'behavior vs imaging sampling of cue velocity';
-    figure; plot(md.t_ts_b(t_ind_b), vis.velrs(t_ind_b)); hold on; plot(md.t_ts_i(t_ind_i), vis.velrsd(t_ind_i)); title(titopt)
-    figure; plot(md.t_ts_b, vis.velrs); hold on; plot(md.t_ts_i, vis.velrsd); title(titopt)
-
-    figure; plot(md.t_ts_i, epochinds_ts_i); ylim([0 max(epochinds_ts_i)+1]); xlim([0 floor(md.total_t)]); title('stim epochs')
-    hold on; plot(md.t_ts_b, epochinds_ts_b); ylim([0 max(epochinds_ts_b)+1]); xlim([0 floor(md.total_t)]); title('stim epochs (b)')
-
-
-end

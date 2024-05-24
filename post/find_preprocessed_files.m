@@ -1,12 +1,29 @@
 function pth_all = find_preprocessed_files(opts)
 
-currdir = split(pwd, filesep);
-currdir = currdir{end};
+
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
-    pth_parent = ['/n/scratch/users/'  currdir(1) filesep currdir filesep opts.parent_folder_path filesep];
+    if isempty(opts.parent_folder_path_o2)
+        sprintf("O2 parent path not specified, using default path based on parent folder name")
+        fldr_parent = strsplit(opts.parent_folder_path_local, filesep);
+        fldr_parent = fldr_parent{end};
+        [pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename);
+        spl = strsplit(pthenv, filesep);
+        username = cell2mat(spl(find(contains(spl, 'home'))+1));
+        if isempty(username)
+            error("scopa may not be in your O2 home folder, make sure to git clone scopa into your O2 home folder")
+        end
+        pth_parent = ['/n/scratch/users/'  username(1) filesep username filesep fldr_parent filesep];
+    else
+        pth_parent = strsplit(opts.parent_folder_path_o2, filesep); %in case trailing filesep, or not
+        if isempty(pth_parent{end})
+            pth_parent = [strjoin(pth_parent(1:end-1), filesep) filesep];
+        else
+            pth_parent = [strjoin(pth_parent, filesep) filesep];
+        end
+    end
 else
-    pth_parent = strsplit(opts.parent_folder_path, filesep); %in case trailing filesep, or not
+    pth_parent = strsplit(opts.parent_folder_path_local, filesep); %in case trailing filesep, or not
     if isempty(pth_parent{end})
         pth_parent = [strjoin(pth_parent(1:end-1), filesep) filesep];
     else
