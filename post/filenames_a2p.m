@@ -31,7 +31,7 @@ pth_stack_analysis = [pth_fldr recid_underscore '_' suffix_analysis '_.mat'];
 
 pth_metadata = [pth_fldr recid_underscore '_metadatanew_.mat'];
 
-pth_daq = [pth_fldr datefly_hyphen '_ficTracData_DAQ.mat']; %keep hyphen for compatibility with flyg
+pth_daq = [pth_fldr recid_underscore '_ficTracData_DAQ.mat']; %keep hyphen for compatibility with flyg
 pth_epochinds = [pth_fldr recid_underscore '_epochinds_.mat'];
 
 

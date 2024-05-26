@@ -1,12 +1,12 @@
 
-function vel = differentiate_timeseries(iscircular, inp, dt, slopelen, slopeorder)
+function vel = differentiate_timeseries(iscircular, inp, slopelen, slopeorder, dt)
 
 arguments
     iscircular logical
     inp double
-    dt double
     slopelen double
     slopeorder double
+    dt double
 end
 
 if iscircular

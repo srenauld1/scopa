@@ -10,8 +10,8 @@ function opt = input_params_alt()
 %% MAIN
 
 %params for main pipeline control in file a2p
-opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
+opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.recdate = '*'; %can use wildcards
 opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
@@ -212,9 +212,9 @@ opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
 
 % opt.fit.indvpre_str.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fit.indvpre_str.no_r = {{'ball', 'velrsd'}, {'bump',
+% for example opt.fit.indvpre_str.no_r = {{'ball', 'angvel'}, {'bump',
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
-% two-dimensional input, the first dimension being ball.velrsd, the second being bump.mu
+% two-dimensional input, the first dimension being ball.angvel, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fit.regionpat_fit
 %since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
 %since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
@@ -244,17 +244,17 @@ opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
 % if opt.fit(1).depv_indv_combine is 'any', then all combinations of single opt.fit(i).indv and single opt.fit(i).depv are used
 % for example
 %    opt.fit(1).depvpre_str{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
-%    opt.fit(1).indvpre_str{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
+%    opt.fit(1).indvpre_str{1} = {['ball, angvel'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
 opt.fit.do = 0; %0 to skip fit_mdl
 opt.fit(1).depvpre_str{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 opt.fit(1).depvpre_str{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-% opt.fit(1).indv{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, mu']};
-% opt.fit(1).indvpre_str{1} = {['ball, velrsd'], ['bump, pb, mo*, *, all, vel']};
-opt.fit(1).indvpre_str{1} = {['ball, velrsd'], ['bump, eb, mo*, *, all, vel']};
-opt.fit(1).indvpre_str{2} = {['ball, velrsd'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
-opt.fit(1).indvpre_str{3} = {['ball, velrsd']};
+% opt.fit(1).indv{1} = {['ball, angvel'], ['bump, pb, mo*, *, all, mu']};
+% opt.fit(1).indvpre_str{1} = {['ball, angvel'], ['bump, pb, mo*, *, all, vel']};
+opt.fit(1).indvpre_str{1} = {['ball, angvel'], ['bump, eb, mo*, *, all, vel']};
+opt.fit(1).indvpre_str{2} = {['ball, angvel'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
+opt.fit(1).indvpre_str{3} = {['ball, angvel']};
 
 opt.fit(1).depv_indv_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fit(1).epochinds = {[2 3 4]};

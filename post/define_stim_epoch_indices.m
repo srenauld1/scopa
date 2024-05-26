@@ -1,4 +1,4 @@
-function [epochinds_ts_i, epochinds] = define_stim_epoch_indices(ft_misoffset_frames, md, datenum)
+function [epochinds_ts_i, epochinds] = define_stim_epoch_indices(ft_misoffset_sec, t_ts_i, datenum)
 
 
 bout_duration_sec = 20;
@@ -41,8 +41,6 @@ epochinds.closed = 4;
 epochinds.dark = 5;
 epochinds.closedfinaldark = 6;
 
-ft_misoffset_sec = md.dtmni*ft_misoffset_frames;
-
 boutendpoints_sec_epoch.closedinitiallight = [0 closed_initial_light_duration - ft_misoffset_sec];
 
 boutstarttimes(1) =  boutendpoints_sec_epoch.closedinitiallight(end);
@@ -70,22 +68,22 @@ end
 [~, finalbout_epochind] = max(cell2mat(struct2cell(structfun(@(x) max(vec(x)), boutendpoints_sec_epoch, 'UniformOutput', false))));
 boutendpoints_sec_epoch_cell = struct2cell(boutendpoints_sec_epoch);
 if closed_final_dark_duration==0
-    if boutendpoints_sec_epoch_cell{finalbout_epochind}(end)~=md.t_ts_i(end) %closedinds(end)~=floor(md.t_ts_i(end))
-        boutendpoints_sec_epoch_cell{finalbout_epochind}(end)=md.t_ts_i(end);
+    if boutendpoints_sec_epoch_cell{finalbout_epochind}(end)~=t_ts_i(end) %closedinds(end)~=floor(t_ts_i(end))
+        boutendpoints_sec_epoch_cell{finalbout_epochind}(end)=t_ts_i(end);
     end
 else
     tmpendpoint = boutendpoints_sec_epoch_cell{finalbout_epochind}(end);
 end
 boutendpoints_sec_epoch = cell2struct(boutendpoints_sec_epoch_cell, fieldnames(boutendpoints_sec_epoch));
 if closed_final_dark_duration>0
-    boutendpoints_sec_epoch.closedfinaldark = [tmpendpoint md.t_ts_i(end)];
+    boutendpoints_sec_epoch.closedfinaldark = [tmpendpoint t_ts_i(end)];
 end
 
 fn = fieldnames(boutendpoints_sec_epoch);
-epochinds_ts_i = zeros(1, numel(md.t_ts_i));
+epochinds_ts_i = zeros(1, numel(t_ts_i));
 for fni = 1:numel(fn)
     if size(boutendpoints_sec_epoch.(fn{fni}), 2)==2
-        mtchtmp = md.t_ts_i'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & md.t_ts_i'<boutendpoints_sec_epoch.(fn{fni})(:,2);
+        mtchtmp = t_ts_i'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & t_ts_i'<boutendpoints_sec_epoch.(fn{fni})(:,2);
         mtchtmp = sum(mtchtmp, 1);
         if any(mtchtmp>1)
             error("epochinds misaligned")

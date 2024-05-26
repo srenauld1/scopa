@@ -10,7 +10,6 @@ disp("need to make fitmdl_parse_mdlname_string run with other inputs ignored dur
 disp("allow recursive mdl")
 disp("constrain amplitude of all intermediate functions")
 disp("time in all functions")
-disp("is 2nd dataset fly2 im/ft alignment off by 1 second? dark epoch has visual angle spikes at end of each bout) ")
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity 
