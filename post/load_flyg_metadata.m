@@ -1,7 +1,7 @@
 function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_fldr, md)
 
-% optionally output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata 
-% also add scopa md to consolidate metadata fields relevant to scopa pipeline 
+% optionally output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata
+% also add scopa md to consolidate metadata fields relevant to scopa pipeline
 
 %% pattern metadata
 
@@ -62,7 +62,11 @@ end
 fictracMetadata = mD.fictrac;
 
 
-%% defaults 
+%% defaults
+
+if ~exist('patternMetadata', 'var')
+    patternMetadata = struct;
+end
 
 if isfield(patternMetadata,'arenaExtent')
     patternMetadata.arenaExtent = patternMetadata.arenaExtent;

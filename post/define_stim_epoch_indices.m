@@ -41,7 +41,7 @@ epochinds.closed = 4;
 epochinds.dark = 5;
 epochinds.closedfinaldark = 6;
 
-boutendpoints_sec_epoch.closedinitiallight = [0 closed_initial_light_duration - ft_misoffset_sec];
+boutendpoints_sec_epoch.closedinitiallight = [0 closed_initial_light_duration + ft_misoffset_sec];
 
 boutstarttimes(1) =  boutendpoints_sec_epoch.closedinitiallight(end);
 for bi = [1:num_bouts_per_cycle*num_cycles]+1

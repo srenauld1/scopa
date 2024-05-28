@@ -53,26 +53,6 @@ switch plt.foreground
         img = reshape(img, [size_imgnew, size(img, 3)]);
 
 
-    case {'eachroi', 'allrois'}
-
-        img = permute(imgtmp, [1 3 2]);
-        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(pixinds_roi)]);
-        imgtmp = permute(imgtmp, [1 3 2]);
-        rgbmap = cell(1, numel(pixinds_roi));
-        for ri = 1:numel(pixinds_roi)
-            rgbmap{ri} = repmat(hsvmap(ri, :), [numel(pixinds_roi{ri}) 1]);
-            imgtmp(pixinds_roi{ri}, ri, :) = rgbmap{ri};
-        end
-        if strcmp(plt.foreground, 'allrois')
-            img(cell2mat(pixinds_roi), :, :) = mean(imgtmp(cell2mat(pixinds_roi), :, :), 2);
-        elseif strcmp(plt.foreground, 'eachroi')
-            img = imgtmp;
-        end
-        img = hsv2rgb(img);
-        img = permute(img, [1 3 2]);
-        img = reshape(img, [size_imgnew, size(img, 3)]);
-
-
     case 'raw'
 
 end

@@ -272,7 +272,15 @@ else % else downsample the 3 output variables from hires to lores
     end
 
     if any(sum(mask_roi_vec)>1)
-        error("sum of each voxel's contribution to all rois within should be range 0-1")
+        totals_with_rounding_error = sum(mask_roi_vec);
+        totals_with_rounding_error = totals_with_rounding_error(totals_with_rounding_error>1);
+        nearly_equal_tol = 1e-6;
+        for trei = 1:numel(totals_with_rounding_error)
+            is_equal_to_one = isequaltol(double(totals_with_rounding_error(trei)), 1, nearly_equal_tol);
+            if ~is_equal_to_one
+                error("sum of each voxel's contribution to all rois within should be range 0-1; first check that totals_with_rounding_error are not nearly equal to 1, if so maybe just adjust nearly_equal_tol")
+            end
+        end
     end
     if any(isnan(mask_roi_vec(:)))
         error("mask_roi_vec should not have any nans") %mask_roi_vec(isnan(mask_roi_vec)) = 0;

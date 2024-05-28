@@ -49,6 +49,7 @@ end
 
 try
 
+    fool = mool
     load(pth_daq, 'daqdata_resamp', 'epochinds_ts_i', 'epochinds')
 
 catch
@@ -65,7 +66,7 @@ catch
 
     if strcmp(method_resample, 'frames')
         if any(strcmp(trialData.Properties.VariableNames, 'frameClock'))
-            inds = cumsum(trialData.FrameClock); %this assumes there is always at least one zero between frames (flyback)
+            inds = cumsum(trialData.frameClock); %this assumes there is always at least one zero between frames (flyback)
         else
             method_resample = 'volumes';
             sprintf("frame clock not on daq, trying method_resample 'volumes'")
@@ -73,7 +74,7 @@ catch
     end
     if strcmp(method_resample, 'volumes')
         if any(strcmp(trialData.Properties.VariableNames, 'volumeClock'))
-            inds = cumsum(trialData.VolumeClock); %this assumes there is always at least one zero between frames (flyback)
+            inds = cumsum(trialData.volumeClock); %this assumes there is always at least one zero between frames (flyback)
         else
             method_resample = 'uniform';
             sprintf("volume clock not on daq, trying method_resample 'uniform'")
@@ -108,9 +109,9 @@ catch
         if ~any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochinds'))
 
             sprintf("warning, epochinds not saved to daq, using hard coded epochinds aligned by minimizing error")
-            minshiftsec = 0;
-            maxshiftsec = 8;
-            ft_misoffset_sec_all = 0 : md.dtmni*0.45 : 7;
+            minshiftsec = -8;
+            maxshiftsec = 3;
+            ft_misoffset_sec_all = minshiftsec : md.dtmni*0.45 : maxshiftsec;
             hfg = figure;
             hax = axes('Parent', hfg);
             bestshiftind_allepochs = [];
@@ -145,7 +146,7 @@ catch
                     if fmsai==numel(ft_misoffset_sec_all)
                         critd = movingslope(criter, 20, 2, md.dtmni);
                         if ~(min(critd)<0 && max(critd)>0)
-                            sptinf("error is monotonic, expand search range")
+                            error("error is monotonic, expand search range")
                         end
                         [~, bestshiftind_oneepoch] = min(criter);
                         bestshiftind_allepochs = [bestshiftind_allepochs bestshiftind_oneepoch];
