@@ -1,4 +1,4 @@
-function [img] = plots_hsvfov(plt, stackmean, hsvmap, pixinds_roi, pth_fitdata_prefix, doplots)
+function [img] = plots_hsvfov(plt, stackmean, hsvmap, pixinds_roi, mask_roi_vec, filename_save)
 
 num_grayscales_bg = 256; %arbitrary
 
@@ -34,21 +34,30 @@ switch plt.foreground
         img = reshape(imgtmptmp, size_imgnew);
         imgtmptmp = [];
 
-    case {'eachroi', 'allrois'}
+    case 'eachroi'
 
-        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(pixinds_roi)]);
+        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) length(pixinds_roi)]);
+        rgbmap = cell(1, length(pixinds_roi));
+        for ri = 1:length(pixinds_roi)
+            rgbmap{ri} = hsv2rgb( hsvmap(ri, :));
+            rgbmap{ri} = repmat(rgbmap{ri}, [numel(pixinds_roi{ri}) 1]);
+            imgtmp(pixinds_roi{ri}, :, ri) = rgbmap{ri};
+        end
+        img = reshape(imgtmp, [size_imgnew, size(imgtmp, 3)]);
+
+    case 'allrois'
+
+        mask_roi_vec_and_background = mask_roi_vec;
+        mask_roi_vec_and_background(end+1,:) = 1 - sum(mask_roi_vec); %last row is background (non-roi) contribution to each voxel's signal
+        % fuk=mask_roi_vec(:,21571)'*hsvmap;
+        % fuk=mask_roi_vec'*hsvmap;
+        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(pixinds_roi)+1]); %extra one for bg
         imgtmp = permute(imgtmp, [1 3 2]);
-        rgbmap = cell(1, numel(pixinds_roi));
         for ri = 1:numel(pixinds_roi)
-            rgbmap{ri} = repmat(hsvmap(ri, :), [numel(pixinds_roi{ri}) 1]);
-            imgtmp(pixinds_roi{ri}, ri, :) = rgbmap{ri};
+            imgtmp(pixinds_roi{ri}, ri, :) = repmat(hsvmap(ri, :), [numel(pixinds_roi{ri}) 1]);
         end
-        if strcmp(plt.foreground, 'allrois')
-            img(cell2mat(pixinds_roi), :, :) = mean(imgtmp(cell2mat(pixinds_roi), :, :), 2);
-        elseif strcmp(plt.foreground, 'eachroi')
-            img = imgtmp;
-        end
-        img = hsv2rgb(img);
+        imgtmp = hsv2rgb(imgtmp);
+        img = sum(mask_roi_vec_and_background.'.*imgtmp, 2); %weighted mean
         img = permute(img, [1 3 2]);
         img = reshape(img, [size_imgnew, size(img, 3)]);
 
@@ -58,40 +67,33 @@ switch plt.foreground
 end
 
 
-
-if doplots
-
-    title_add_each = 'FOV';
-    figext = '.gif';
-    filename_save = [pth_fitdata_prefix '_' title_add_each '_' figext];
-    tittmp = strsplit(filename_save(1:end-4), '/');
-    figure_title = {strrep(tittmp{end}, '_', ' ')};
+tittmp = strsplit(filename_save(1:end-4), '/');
+figure_title = {strrep(tittmp{end}, '_', ' ')};
 
 
-    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
+hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
 
-    framecount = 0;
-    for ri = 1:size(img, 5)
-        for zi = 1:size(img, 3)
-            framecount = framecount+1;
+framecount = 0;
+for ri = 1:size(img, 5)
+    for zi = 1:size(img, 3)
+        framecount = framecount+1;
 
-            if zi<size(img, 3)+1
-                hat{zi} = axes( 'Parent', hfg, 'Position', [0 0 1 1] );
-                hold(hat{zi}, 'on');
-                switch plt.foreground
-                    case 'pixels'
-                        hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:)));
-                    case {'eachroi', 'allrois'}
-                        hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:,ri)));
-                end
-                axis image % should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
-                axis off
-                axis ij
+        if zi<size(img, 3)+1
+            hat{zi} = axes( 'Parent', hfg, 'Position', [0 0 1 1] );
+            hold(hat{zi}, 'on');
+            switch plt.foreground
+                case 'pixels'
+                    hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:)));
+                case {'eachroi', 'allrois'}
+                    hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:,ri)));
             end
-
-            fig2gif(hfg, framecount, filename_save)
-
+            axis image % should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
+            axis off
+            axis ij
         end
+
+        fig2gif(hfg, framecount, filename_save)
+
     end
 end
 

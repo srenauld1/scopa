@@ -106,7 +106,6 @@ catch
     if no_stim_epochs
         epochinds_ts_i = ones(numel(daqdata_resamp.Time{:}), 1);
         epochinds.closed = 4;
-        testepochind_all = 4;
     else
         if ~any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochinds'))
 
@@ -180,11 +179,7 @@ for tei = 1:numel(testepochind_all)
 end
 
 md.epochinds_ts_i = epochinds_ts_i;
-if isfield(epochinds, 'dark') || isfield(epochinds, 'closedfinaldark')
-    naninds_i = epochinds_ts_i==epochinds.dark | epochinds_ts_i==epochinds.closedfinaldark; %dark gets nans
-else
-    naninds_i = [];
-end
+naninds_i = epochinds_ts_i==epochinds.dark | epochinds_ts_i==epochinds.closedfinaldark; %dark gets nans
 
 ball.ang = daqdata_resamp.Yaw{1};
 ball.angvel = daqdata_resamp.Yaw_diff{1};
