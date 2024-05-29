@@ -49,8 +49,6 @@ switch plt.foreground
 
         mask_roi_vec_and_background = mask_roi_vec;
         mask_roi_vec_and_background(end+1,:) = 1 - sum(mask_roi_vec); %last row is background (non-roi) contribution to each voxel's signal
-        % fuk=mask_roi_vec(:,21571)'*hsvmap;
-        % fuk=mask_roi_vec'*hsvmap;
         imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(pixinds_roi)+1]); %extra one for bg
         imgtmp = permute(imgtmp, [1 3 2]);
         for ri = 1:numel(pixinds_roi)
