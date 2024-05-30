@@ -23,33 +23,22 @@ function [md, ball, vis] = load_DAQ(ids, md, pth_daq, pth_fldr, opts)
 ball = [];
 vis = [];
 
-datenum = ids.datenum;
-flynum = ids.flynum;
-trialnum = ids.trialnum;
-
-smoothwindow_sec = opts.smoothwindow_sec;
-slopelen = opts.slopelen;
-slopeorder = opts.slopeorder;
-no_stim_epochs = opts.no_stim_epochs;
-doplots = opts.doplots;
-method_resample = opts.method_resample;
-
 maxvolt = 10; %need to find this in metadata
 minvolt = 0; %need to find this in metadata
 padlensec = 5; %arbitrary
-rateim = md.volrate;
-numsamp_im = md.numvol_o;
-smoothwindow_i = smoothwindow_sec*rateim;
+smoothwindow_i = opts.smoothwindow_sec*md.volrate;
 
-if datenum<20231119
-    testepochind_all = [2 3];
-elseif datenum>=20231119 && datenum<20231231
-    testepochind_all = [2 3 5];
+if opts.use_carls_epochs
+    if ids.datenum<20231119
+        testepochind_all = [2 3];
+    elseif ids.datenum>=20231119 && ids.datenum<20231231
+        testepochind_all = [2 3 5];
+    end
 end
 
 try
 
-    fool = mool
+    fool=moo
     load(pth_daq, 'daqdata_resamp', 'epochinds_ts_i', 'epochinds')
 
 catch
@@ -57,110 +46,69 @@ catch
 
     %% load flyg_metadata and daqdata
 
-    md = load_flyg_metadata(ids, pth_fldr, md);
+    % md = load_flyg_metadata(ids, pth_fldr, md);
 
     fndaq = dir(fullfile(pth_fldr,['*', ids.datefly_hyphen,'_daqData_*_trial_' sprintf( '%03d', ids.trialnum ) '.mat']));
     load(fullfile(pth_fldr,fndaq.name), 'trialData')
 
-    trialData = timetable2table(trialData);   % Copy important variables, converting units as needed
+    trialData = timetable2table(trialData); % Copy important variables, converting units as needed
 
-    if strcmp(method_resample, 'frames')
-        if any(strcmp(trialData.Properties.VariableNames, 'frameClock'))
-            inds = cumsum(trialData.frameClock); %this assumes there is always at least one zero between frames (flyback)
-        else
-            method_resample = 'volumes';
-            sprintf("frame clock not on daq, trying method_resample 'volumes'")
+    if any(strcmp(trialData.Properties.VariableNames, 'frameClock'))
+        sliceinds = binary2count(trialData.frameClock);
+        if opts.discard_flyback_frames
+            flyback_frames = md.numslice+1:md.numslice_withflyback;
+            numvol_from_frames = max(sliceinds)/md.numslice_withflyback;
+            if numvol_from_frames~=md.numvol_o
+                error("number of volumes computed from daq frames does not match number of stack volumes")
+            end
+            sliceinds(sliceinds==0) = nan; %make zeros nan before mod
+            sliceinds = mod(sliceinds-1, md.numslice_withflyback)+1; %get one-indexed slice indices
+            sliceinds(ismember_each_element(sliceinds, flyback_frames)) = 0; %make flyback frames zero
+            sliceinds(isnan(sliceinds)) = 0; %return nan to zero
         end
+    else
+        sprintf("frame clock not on daq, downsampling daq data with 'resample' function, rather averaging during frames")
+        sliceinds = [];
     end
-    if strcmp(method_resample, 'volumes')
-        if any(strcmp(trialData.Properties.VariableNames, 'volumeClock'))
-            inds = cumsum(trialData.volumeClock); %this assumes there is always at least one zero between frames (flyback)
-        else
-            method_resample = 'uniform';
-            sprintf("volume clock not on daq, trying method_resample 'uniform'")
-        end
-    end
-    if strcmp(method_resample, 'uniform')
-        method_resample = 'uniform';
-        inds = [];
-    end
+
 
     %% make/save daqdata_resamp table
 
+    md.ball_diameter = 9;
+    uniquesliceinds = unique(sliceinds(sliceinds~=0));
+    num_unique_sliceinds = numel(uniquesliceinds);
     daqdata_resamp = table();
-    daqdata_resamp.expID = {ids.datefly_hyphen};
-    daqdata_resamp.trialNum = ids.trialnum;
-
-    ftvars = trialData.Properties.VariableNames;
-    for ii = 1:numel(ftvars)
-        fnnew = erase(ftvars{ii}, 'ficTrac');
-        if ~contains(ftvars{ii}, 'Clock')
-            [ daqdata_resamp.(fnnew), daqdata_resamp.([fnnew '_diff']) ] = process_DAQ_signal(ftvars{ii}, trialData.(ftvars{ii}), method_resample, numsamp_im, inds, rateim, maxvolt, slopelen, slopeorder, md.ball_diameter, padlensec);
+    for si = 1:num_unique_sliceinds+1
+        
+        newrow = table();
+        newrow.expID = {ids.datefly_hyphen};
+        newrow.trialNum = ids.trialnum;
+        if isempty(sliceinds)
+            resample_inds = [];
+        else
+            if si<num_unique_sliceinds+1
+                resample_inds = binary2count(sliceinds==uniquesliceinds(si)); %each slice
+                newrow.sliceindex = uniquesliceinds(si);
+            else
+                resample_inds = ceil(binary2count(logical(sliceinds))/num_unique_sliceinds); %all slices (the whole volume)
+                newrow.sliceindex = 'volume';
+            end
         end
-    end
 
+        ftvars = trialData.Properties.VariableNames;
+        for ii = 1:numel(ftvars)
+            fnnew = erase(ftvars{ii}, 'ficTrac');
+            if ~contains(ftvars{ii}, 'Clock')
+                [ newrow.(fnnew), newrow.([fnnew '_diff']) ] = process_DAQ_signal(ftvars{ii}, trialData.(ftvars{ii}), md.numvol_o, resample_inds, md.dtmni, maxvolt, opts.slopelen, opts.slopeorder, md.ball_diameter, padlensec);
+            end
+        end
+        daqdata_resamp = [daqdata_resamp; newrow];
+    end
 
     %% epochinds
 
 
-    if no_stim_epochs
-        epochinds_ts_i = ones(numel(daqdata_resamp.Time{:}), 1);
-        epochinds.closed = 4;
-        testepochind_all = 4;
-    else
-        if ~any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochinds'))
-
-            sprintf("warning, epochinds not saved to daq, using hard coded epochinds aligned by minimizing error")
-            minshiftsec = -8;
-            maxshiftsec = 3;
-            ft_misoffset_sec_all = minshiftsec : md.dtmni*0.45 : maxshiftsec;
-            hfg = figure;
-            hax = axes('Parent', hfg);
-            bestshiftind_allepochs = [];
-            figframes = 0;
-            for tei = 1:numel(testepochind_all)
-                testepochind = testepochind_all(tei);
-                criter = nan(numel(ft_misoffset_sec_all), 1);
-                for fmsai = 1:numel(ft_misoffset_sec_all)
-                    figframes = figframes+1;
-
-                    ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
-                    epochinds_ts_i = define_stim_epoch_indices(ft_misoffset_sec, daqdata_resamp.Time{:}, datenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-
-                    fu = daqdata_resamp.g4panels{1}(epochinds_ts_i==testepochind);
-                    if testepochind==2 || testepochind==3
-                        fu = unwrap(fu); %makes it easier to see
-                    end
-                    % fu = cos(fu);
-                    %fu = diff(diff(fu));
-                    plot(hax,fu)
-                    %ylim(hax, [min(daqdata_resamp.g4panels{1}(:)) - abs(min(daqdata_resamp.g4panels{1}(:)))*0.3, max(daqdata_resamp.g4panels{1}(:)) + abs(max(daqdata_resamp.g4panels{1}(:)))*0.3])
-                    % ylim([-20 20])
-                    if testepochind==2 || testepochind==3
-                        fud2 = diff(diff(fu));
-                        criter(fmsai) = numel(find(isoutlier(fud2))); %minimize num unique variables in diff, since open look should have only a couple (constant vel)
-                    elseif testepochind==5
-                        criter(fmsai) = var(cos(fu)); %minimize variance of x (or y) component of circular variable, this is offset with least error
-                    end
-                    title([criter(fmsai) ft_misoffset_sec ft_misoffset_sec])
-                    fig2gif(hfg, figframes, [pth_fldr 'misoffset_.gif'])
-
-                    if fmsai==numel(ft_misoffset_sec_all)
-                        critd = movingslope(criter, 20, 2, md.dtmni);
-                        if ~(min(critd)<0 && max(critd)>0)
-                            error("error is monotonic, expand search range")
-                        end
-                        [~, bestshiftind_oneepoch] = min(criter);
-                        bestshiftind_allepochs = [bestshiftind_allepochs bestshiftind_oneepoch];
-                    end
-                end
-            end
-
-            ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
-            [epochinds_ts_i, epochinds] = define_stim_epoch_indices(ft_misoffset_sec, daqdata_resamp.Time{:}, datenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-
-        end
-    end
+    [epochinds_ts_i, epochinds] = process_epochinds(opts.no_stim_epochs, trialtime, pth_fldr, ids, daqdata_resamp, testepochind_all);
 
 
     %% save and plot
@@ -186,8 +134,8 @@ else
     naninds_i = [];
 end
 
-ball.ang = daqdata_resamp.Yaw{1};
-ball.angvel = daqdata_resamp.Yaw_diff{1};
+ball.yaw = daqdata_resamp.Yaw{1};
+ball.yawvel = daqdata_resamp.Yaw_diff{1};
 ball.intfor = daqdata_resamp.IntForward{1};
 ball.forvel = daqdata_resamp.IntForward_diff{1};
 ball.intside = daqdata_resamp.IntSide{1};

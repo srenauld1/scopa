@@ -175,6 +175,7 @@ save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 %% create/plot roi overlay 
 
+roi_overlay = [];
 if olayopt.do
     filename_olay = [pth_mroi_prefix 'eachroired_.gif'];
     roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
@@ -192,7 +193,6 @@ if hsvopt.do
 
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
     hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
-
 end
 
 

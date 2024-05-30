@@ -18,8 +18,8 @@ from scipy import signal
 
 class bgremover:
 
-    def __init__(self, img, pth_save_prefix, patchlen=24, dimorder='tyx'):
-        self.half_wid = patchlen/2
+    def __init__(self, img, pth_save_prefix, patchhalfwidth=24, dimorder='tyx'):
+        self.half_wid = int(patchhalfwidth)
         self.pth_save_prefix = pth_save_prefix
         if dimorder=='tyx':
             self.img = img
@@ -28,7 +28,7 @@ class bgremover:
 
     def draw_patches(self):
         half_wid = self.half_wid
-        wid = 2*half_wid
+        wid = int(2*half_wid)
         kernel = np.ones(wid)/wid
         self.meanframe = np.mean(self.img, axis=0)
         bg_ind = []

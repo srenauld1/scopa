@@ -7,7 +7,6 @@ md = md{1};
 ff = @(x,y) cell2struct([struct2cell(md);struct2cell(mdnew)],[fieldnames(md);fieldnames(mdnew)]);
 md = ff(md, mdnew);
 md.numvol_o = md.numvol;
-md = rmfield(md, 'numvol');
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
 md.numvol_crop = md.numvol_o - sum(md.croptimeinds);
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
@@ -26,6 +25,8 @@ md.xwid = md.xfov / md.xpix; %do this after conversion to double
 % md.zwid = md.zfov / md.numslice; %do this after conversion to double
 
 md.dtmni = 1/md.volrate;
+
+md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.croptimeinds'";
 
 md = orderfields(md);
 

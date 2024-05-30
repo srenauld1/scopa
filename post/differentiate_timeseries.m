@@ -1,15 +1,15 @@
 
-function vel = differentiate_timeseries(iscircular, inp, slopelen, slopeorder, dt)
+function vel = differentiate_timeseries(datatype, inp, slopelen, slopeorder, dt)
 
 arguments
-    iscircular logical
+    datatype char
     inp double
     slopelen double
     slopeorder double
     dt double
 end
 
-if iscircular
+if strcmp(datatype, 'circular')
 
     % differentiate circular variable without using unwrap (unwrap can cause rare spikes)
 
@@ -24,9 +24,17 @@ if iscircular
     denom = inpx.^2 + inpy.^2;
     vel = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
 
-else
+elseif strcmp(datatype, 'standard')
 
-    vel = movingslope(inp, slopelen, slopeorder, dt);
+    try
+        vel = movingslope(inp, slopelen, slopeorder, dt);
+    catch
+        vel=[];
+    end
 
+elseif strcmp(datatype, 'categorical')
+
+    sprintf("not differentiating categorical timeseries")
+    vel = [];
 
 end

@@ -50,7 +50,7 @@ else
 end
 
 epochs_where_cuevel_varies = [1 4]; %2 and 3 are constant cuevel, and 5 is no vis (dark)
-if any(ismember_single(epochs_where_cuevel_varies, epochinds))
+if any(ismember_each_element(epochs_where_cuevel_varies, epochinds))
     skip_cuevel = 0;
 else
     skip_cuevel = 1; %skip cuevel when cuevel doens't vary

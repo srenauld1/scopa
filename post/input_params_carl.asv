@@ -12,13 +12,13 @@ function opt = input_params_carl()
 %params for main pipeline control in file a2p
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-opt.main.recdate = '20240527'; %can use wildcards
+opt.main.recdate = '*'; %can use wildcards
 opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
-opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+opt.main.suffix_analysis = 'bcmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 opt.main.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
+opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
 opt.main.old_project = 0; %for carl
 
@@ -27,6 +27,7 @@ opt.main.old_project = 0; %for carl
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
+opt.daq.method_resample = 'frames'; %'frames' to create a different timeseries for each z slice, taking mean of daq timeseries during each frame; 'volume' to take mean of daq timeseries during each volume (one timeseries per daq timeseries); 'uniform' to uniformly resample daq timeseries to match imaging stack length in time (number of volumes); if frameclock is not available on daq, will try volumeclock, and if that's not available, will try   
 opt.daq.discard_flyback_frames = 1; %when downsampling daq signal to align all variables, whether to include data during flyback frames
 opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.no_stim_epochs = 1; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim

@@ -1,18 +1,18 @@
 function outp = resample_timeseries(datatype, inp, inds, rslen, padlensec)
 
 arguments
-    datatype char
+    datatype logical
     inp double
     inds double = []
     rslen double = []
-    padlensec double = 5 %somewhat arbitrary pad length, only relevant if inds is empty, used to remove start/stop transients
+    padlensec double = 5 %somewhat arbitrary pad length, only relevant if inds is empty, used to remove start/stop transients 
 end
 
 if size(inp,1) < size(inp, 2)
     inp = inp';
 end
 
-if ~isempty(inds) %if inds are nonempty, average inp during each index
+if ~isempty(inds) %if inds are nonempty, average inp during each index 
 
     Au = unique(inds(inds~=0),'stable'); %index of each frame
     if strcmp(datatype, 'circular')
@@ -21,8 +21,8 @@ if ~isempty(inds) %if inds are nonempty, average inp during each index
         inpsin = sin(inp);
         inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
         outp = atan2(inpy, inpx);
-    elseif strcmp(datatype, 'categorical')
-        outp = arrayfun(@(i)mode(inp(inds==Au(i))),1:numel(Au)); %mode of inp for each frame
+    elseif strcmp(datatype, 'integer')
+        outp = arrayfun(@(i)mode(inp(inds==Au(i))),1:numel(Au)); %average of inp for each frame
     elseif strcmp(datatype, 'standard')
         outp = arrayfun(@(i)mean(inp(inds==Au(i))),1:numel(Au)); %average of inp for each frame
     end
@@ -68,7 +68,7 @@ else %else use 'resample', looping strategy to match rslen
             error("failed resample")
         end
 
-    elseif strcmp(datatype, 'standard')
+    else
 
         inp_try = resample_padded_timeseries(inp, dsnr, dsdr, padlensec);
         if length(inp_try)==rslen
@@ -94,11 +94,8 @@ else %else use 'resample', looping strategy to match rslen
             error("failed resample")
         end
 
-
-    elseif strcmp(datatype, 'categorical')
-        
-
     end
+
 
 
 

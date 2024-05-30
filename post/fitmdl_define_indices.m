@@ -12,7 +12,7 @@ if any(epochinds_pure_ts_indvpreaug(:)>max(epochinds(:)))
 end
 
 if keep_transition_zones %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochinds, discards samples with any epochs not listed
-    sampinds_indvpreaug = find(all(ismember_single(epochinds_ts_i_m, epochinds), 1)); % specify dimension (1) in case epochinds_ts_i_m is singleton
+    sampinds_indvpreaug = find(all(ismember_each_element(epochinds_ts_i_m, epochinds), 1)); % specify dimension (1) in case epochinds_ts_i_m is singleton
 else %do not include samples with multiple epochs, even if those epochs listed in epochinds
     sampinds_indvpreaug = find(epochinds_pure_ts_indvpreaug);
 end

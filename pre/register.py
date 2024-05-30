@@ -12,7 +12,7 @@ from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 
-def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
     ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
 
@@ -25,7 +25,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
-    if len_window_bgsub:
+    if halfwidth_window_bgsub:
         pth_tif_write = pth_prefix + '_cmrg_bksb_.tif'
     else:
         pth_tif_write = pth_prefix + '_cmrg_.tif'
@@ -65,7 +65,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
     Y = Y.astype('uint16')
 
 
-    if len_window_bgsub:
+    if halfwidth_window_bgsub:
 
         print("DOING LINE-BY-LINE BACKGROUND SUBTRACTION")
       
@@ -73,7 +73,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, len_window_bgsub, len
 
             dimorder = 'txy' 
             pth_bgplots_save = pth_prefix + '_' + str(zind)
-            br = bgremover(Y[:,:,:,zind], pth_bgplots_save, patchlen=len_window_bgsub, dimorder=dimorder)
+            br = bgremover(Y[:,:,:,zind], pth_bgplots_save, patchhalfwidth=halfwidth_window_bgsub, dimorder=dimorder)
             br.draw_patches()
             br.remove_bg()
             br.make_plots()

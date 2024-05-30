@@ -27,8 +27,9 @@ opt.main.old_project = 0; %for carl
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
-opt.daq.method_resample = 'frames'; %'frames' to create a different timeseries for each z slice, taking mean of daq timeseries during each frame; 'volume' to take mean of daq timeseries during each volume (one timeseries per daq timeseries); 'uniform' to uniformly resample daq timeseries to match imaging stack length in time (number of volumes); if frameclock is not available on daq, will try volumeclock, and if that's not available, will try   
+opt.daq.discard_flyback_frames = 1; %when downsampling daq signal to align all variables, whether to include data during flyback frames
 opt.daq.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
+opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.dark_stim_end_duration = 60; %final seconds
 opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope

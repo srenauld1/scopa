@@ -27,7 +27,7 @@ stack_mnt = mean(stackcrop, 4);
 if use_hires
     if ~isempty(croplim)
         zinds_lores = croplim(5):croplim(6);
-        zinds_hires = ismember_single(map_hires_lores, zinds_lores);
+        zinds_hires = ismember_each_element(map_hires_lores, zinds_lores);
         map_hires_lores_crop = map_hires_lores(zinds_hires) - (min(croplim(5):croplim(6))-1);
         hiresmntcrop = single(stack_hires_mnt(croplim(1):croplim(2), croplim(3):croplim(4), zinds_hires));
     else

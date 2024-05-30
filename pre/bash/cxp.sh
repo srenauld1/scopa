@@ -59,7 +59,7 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 ############ SET PARAMS FOR ANALYSIS ############
 
 REGISTER_IN_2D=(1) #register each z slice independently
-LEN_WINDOW_BGSUB=(0) #make zero to skip, otherwise window full width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
+HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window full width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior to registration, helps register noisy movies)
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
@@ -139,7 +139,7 @@ pars["TRIAL"]="${TRIAL[@]}"
 pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
-pars["LEN_WINDOW_BGSUB"]="${LEN_WINDOW_BGSUB[@]}"
+pars["HALFWIDTH_WINDOW_BGSUB"]="${HALFWIDTH_WINDOW_BGSUB[@]}"
 pars["LEN_WINDOW_SMOOTH_T_MCP"]="${LEN_WINDOW_SMOOTH_T_MCP[@]}"
 pars["DENOISE_VOLUME"]="${DENOISE_VOLUME[@]}"
 pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"

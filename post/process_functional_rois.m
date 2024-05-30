@@ -252,7 +252,7 @@ else
 end
 
 mask_roi_vec = zeros(num_mroi, length(idx_vox2roi));
-mask_roi_vec(sub2ind(size(mask_roi_vec), idx_vox2roi, 1:length(idx_vox2roi))) = 1;
+mask_roi_vec(sub2ind(size(mask_roi_vec), idx_vox2roi, vec(1:numel(idx_vox2roi)))) = 1;
 
 %mask_roi_vec_wt weights by fraction of number of pixels relative to the whole morphological 3d roi (usually includes multiple functional rois)
 numpix_roi_per_centroid = mask_roi_vec.*repmat(roinumpix, [num_mroi 1]);

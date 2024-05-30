@@ -253,7 +253,7 @@ else % else downsample the 3 output variables from hires to lores
         else
             zrange{ii} = sliceinds_hires(ii):size(premask, 3);
         end
-        maskznew(ismember_single(maskznew, zrange{ii})) = ii; %map to lores z
+        maskznew(ismember_each_element(maskznew, zrange{ii})) = ii; %map to lores z
     end
 
     for i = 1:num_mroi_auto

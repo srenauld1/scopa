@@ -40,7 +40,7 @@ for rind = 1:length(epochindstmp)
     epochinds = epochindstmp{rind};
     epochstring = sprintf('%.0f,' , epochinds);
     epochstring = epochstring(1:end-1);
-    indz1 = find(ismember_single(tsamp_ei, epochinds));
+    indz1 = find(ismember_each_element(tsamp_ei, epochinds));
     indz1(indz1>length(cueveltmp)) = []; %there may be some beyond modeling indices since we cropped for full convolution
     tnew = tsamp(indz1);
 

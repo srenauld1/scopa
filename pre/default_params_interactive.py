@@ -17,9 +17,9 @@ folder_substring = ['*'] #list of strings, '*' for any, match recordings only in
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
-len_window_bgsub = 0 #full width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
+halfwidth_window_bgsub = 10 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
 len_window_smooth_t_mcp = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp = 0 skips smoothing)
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
@@ -27,7 +27,7 @@ denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', a
 denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all' (all z slices) or selected integer strings . . . which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model after each epoch 
 
-do_stitch = 1 
+do_stitch = 0 
 
 use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data, if 1,  
