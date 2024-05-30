@@ -59,7 +59,7 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 ############ SET PARAMS FOR ANALYSIS ############
 
 REGISTER_IN_2D=(1) #register each z slice independently
-HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window full width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
+HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior to registration, helps register noisy movies)
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
