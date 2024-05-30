@@ -1,4 +1,4 @@
-function [md, stim] = load_stim(md, ids, no_stim_epochs, doplots)
+function [md, stim] = load_stim(md, ids, doplots)
 
 datenum = ids.datenum;
 flynum = ids.flynum;

@@ -53,6 +53,10 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     %% load metadata
 
     md = load_scanimage_metadata(pth.metadata, opt.md);
+    %md = load_flyg_metadata(ids, pth.fldr, md);
+    md.ball_diameter = 9; %is this all i need from flyg metadata?
+
+
 
     %% load and process stimulus/fictrac data
 

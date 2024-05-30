@@ -79,8 +79,8 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
             br.make_plots()
             Y[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
                 
-        mnmv = np.min(Y).astype('float32')
-        Y -= mnmv #make movie nonnegative (not sure this is necessary)
+        # mnmv = np.min(Y).astype('float32')
+        # Y -= mnmv #make movie nonnegative (not sure this is necessary)
         Y = Y.astype('uint16')
         print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         

@@ -96,11 +96,10 @@ else %else use 'resample', looping strategy to match rslen
 
 
     elseif strcmp(datatype, 'categorical')
-        
+
+        error("when there is no frame clock, and variable is categorical, need to use nearest interp, will insert that soon")
 
     end
-
-
 
 
 end

@@ -36,11 +36,6 @@ end
 posint_out = resample_timeseries(datatype, posint_in, inds, rslen, padlensec); %downsample into imaging rate
 vel = differentiate_timeseries(datatype, posint_out, slopelen, slopeorder, dt);
 
-if doplots %here, before scaling by ball, y values should "match"
-    plot_multi_timeseries(posint_in, posint_out, xlim_prct)
-    plot_multi_timeseries(posint_in, vel, xlim_prct)
-end
-
 if strcmp(ftvar, 'ficTracIntSide') || strcmp(ftvar, 'ficTracIntForward')
     posint_out = {(posint_out * ball_diameter/2)};
     vel = {(vel * ball_diameter/2)};
@@ -50,6 +45,8 @@ else %else ignore ball, units are rad and rad/sec, otherwise they are mm and mm/
 end
 
 if doplots %here they will be stretching for side and for
+    plot_multi_timeseries(posint_in, posint_out{1} / ball_diameter/2, xlim_prct)
+    plot_multi_timeseries(posint_in, vel{1} / ball_diameter/2, xlim_prct)
     plot_multi_timeseries(posint_in, posint_out{1}, xlim_prct)
     plot_multi_timeseries(posint_in, vel{1}, xlim_prct)
 end

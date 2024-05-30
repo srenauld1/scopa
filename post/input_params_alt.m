@@ -28,7 +28,6 @@ opt.main.old_project = 0; %for carl
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
 opt.daq.discard_flyback_frames = 1; %when downsampling daq signal to align all variables, whether to include data during flyback frames
-opt.daq.no_stim_epochs = 0; %set to 1 if you have multiple epochs within a trial, epochs defined in load_fictrac or load_stim
 opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.dark_stim_end_duration = 60; %final seconds
 opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
@@ -308,7 +307,6 @@ opt.md.croptimeinds = [0 0]; %this is only relevant for carl's old project
 %overwrite some params for carl's old project
 if ~strcmp(opt.main.recdate, '*') && strcmp(opt.main.recdate(1:2), '22') %override some settings for old project
     opt.main.old_project = 1;
-    opt.main.no_stim_epochs = 1;
     opt.md.croptimeinds = [4 2]; %same as cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
     opt.fit.epochinds = {[1]};
     opt.fit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
