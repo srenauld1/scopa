@@ -1,6 +1,6 @@
 function [md, ball, vis] = load_DAQ(ids, md, pth_daq, pth_fldr, opts)
 
-% using movingslope to extract velocity (can increase slopelen to reduce noise)
+% using movingslope to extract velocity (can increase slopelen_sec to reduce noise)
 % with this there is no need for smoothing first 
 % for circular variables, operating on x and y components
 
@@ -17,6 +17,7 @@ smoothwindow_i = opts.smoothwindow_sec*md.volrate;
 
 try
 
+    fool=dd
     load(pth_daq, 'daqdata_resamp', 'epochinds')
 
 catch
@@ -75,7 +76,7 @@ catch
         ftvars = trialData.Properties.VariableNames;
         for ii = 1:numel(ftvars)
             if ~contains(ftvars{ii}, 'Clock')
-                [ newrow.(ftvars{ii}), newrow.([ftvars{ii} '_diff']) ] = process_DAQ_signal(ftvars{ii}, trialData.(ftvars{ii}), md.numvol_o, resample_inds, md.dtmni, maxvolt, opts.slopelen, opts.slopeorder, md.ball_diameter, padlensec);
+                [ newrow.(ftvars{ii}), newrow.([ftvars{ii} '_diff']) ] = process_DAQ_signal(ftvars{ii}, trialData.(ftvars{ii}), md.numvol_o, resample_inds, md.dtmni, maxvolt, opts.slopelen_sec, opts.slopeorder, md.ball_diameter, padlensec);
             end
         end
         daqdata_resamp = [daqdata_resamp; newrow];
@@ -84,7 +85,7 @@ catch
     %% epochinds
 
 
-    epochinds = process_epochinds(daqdata_resamp.Time{strcmp(daqdata_resamp.sliceindex, 'volume')}, pth_fldr, ids, md.dtmni, daqdata_resamp, opts.use_carls_epochs);
+    epochinds = process_epochs(daqdata_resamp.Time{strcmp(daqdata_resamp.sliceindex, 'volume')}, pth_fldr, ids, md.dtmni, daqdata_resamp, opts.use_carls_epochs);
 
 
 

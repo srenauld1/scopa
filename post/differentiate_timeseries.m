@@ -1,13 +1,15 @@
 
-function vel = differentiate_timeseries(datatype, inp, slopelen, slopeorder, dt)
+function vel = differentiate_timeseries(datatype, inp, slopelen_sec, slopeorder, dt)
 
 arguments
     datatype char
     inp double
-    slopelen double
+    slopelen_sec double
     slopeorder double
     dt double
 end
+
+slopelen = round(slopelen_sec / dt);
 
 if strcmp(datatype, 'circular')
 
@@ -26,11 +28,7 @@ if strcmp(datatype, 'circular')
 
 elseif strcmp(datatype, 'standard')
 
-    try
-        vel = movingslope(inp, slopelen, slopeorder, dt);
-    catch
-        vel=[];
-    end
+    vel = movingslope(inp, slopelen, slopeorder, dt);
 
 elseif strcmp(datatype, 'categorical')
 

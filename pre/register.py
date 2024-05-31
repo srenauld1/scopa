@@ -26,7 +26,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         dview = None #set this in case you don't (or can't) setup cluster
         
     if halfwidth_window_bgsub:
-        pth_tif_write = pth_prefix + '_cmrg_bksb_.tif'
+        pth_tif_write = pth_prefix + '_bksb_cmrg_.tif'
     else:
         pth_tif_write = pth_prefix + '_cmrg_.tif'
 
@@ -68,7 +68,8 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
     if halfwidth_window_bgsub:
 
         print("DOING LINE-BY-LINE BACKGROUND SUBTRACTION")
-      
+        Y = Y.astype('float32') #needs to be float because subtraction can cause negatives       
+
         for zind in zindall: #for every z slice 
 
             dimorder = 'txy' 
@@ -76,11 +77,12 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
             br = bgremover(Y[:,:,:,zind], pth_bgplots_save, patchhalfwidth=halfwidth_window_bgsub, dimorder=dimorder)
             br.draw_patches()
             br.remove_bg()
-            br.make_plots()
+            if 1: #makeplots:
+                br.make_plots()
             Y[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
                 
-        # mnmv = np.min(Y).astype('float32')
-        # Y -= mnmv #make movie nonnegative (not sure this is necessary)
+        mnmv = np.min(Y).astype('float32')
+        Y -= mnmv #make movie nonnegative (not sure this is necessary)
         Y = Y.astype('uint16')
         print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         

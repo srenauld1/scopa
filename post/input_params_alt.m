@@ -32,7 +32,7 @@ opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.dark_stim_end_duration = 60; %final seconds
 opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
-opt.daq.slopelen = 5; %window length used to fit slope
+opt.daq.slopelen_sec = 0.8; %window length used to fit slope
 opt.daq.doplots = 0;
 
 %% STACK VISUALIZATION (GIF)
@@ -172,7 +172,7 @@ opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
 opt.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
 opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-opt.pf.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+opt.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fit.depvpre_str  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass

@@ -7,7 +7,7 @@ bump_method = opts.bump_method; %'pva' for vector average, 'vonmises' for fittin
 domain_method = opts.domain_method; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 bump_subdomain = opts.bump_subdomain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
 slopeorder = opts.slopeorder; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-slopelen = opts.slopelen; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+slopelen_sec = opts.slopelen_sec; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 smoothwindow_sec = opts.smoothwindow_sec; %full width of gaussian smoothing window (5 times std)
 rescale_clusters = opts.rescale_clusters; %just before computing bump, rescale each cluster's timeseries to range 0-1
 numcluster_for_bump_domain_resample = opts.numcluster_for_bump_domain_resample.(regionex);
@@ -116,7 +116,7 @@ for fi = 1:length(bump_subdomain)
         rho = smoothdata(rho, 'gaussian', smoothwindow, 'omitnan');
     end
 
-    bumpvel = differentiate_timeseries('circular', mu, slopelen, slopeorder, md.dtmni);
+    bumpvel = differentiate_timeseries('circular', mu, slopelen_sec, slopeorder, md.dtmni);
     offset = circ_dist_nan(fitin.indvpre.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point

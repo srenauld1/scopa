@@ -12,8 +12,8 @@ function opt = input_params_carl()
 %params for main pipeline control in file a2p
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-opt.main.recdate = '20231119'; %can use wildcards
-opt.main.fly = '1'; %can use wildcards
+opt.main.recdate = '20240527'; %can use wildcards
+opt.main.fly = '*'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 opt.main.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -31,7 +31,7 @@ opt.daq.discard_flyback_frames = 1; %when downsampling daq signal to align all v
 opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
-opt.daq.slopelen = 5; %window length used to fit slope
+opt.daq.slopelen_sec = 0.8; %window length used to fit slope
 opt.daq.doplots = 0;
 
 
@@ -172,7 +172,7 @@ opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
 opt.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
 opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-opt.pf.bump.slopelen = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+opt.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fit.depvpre_str  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass

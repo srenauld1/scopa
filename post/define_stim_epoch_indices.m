@@ -1,4 +1,4 @@
-function [epochinds_ts_i, epochinds] = define_stim_epoch_indices(ft_misoffset_sec, t_ts_i, datenum)
+function epochs = define_stim_epoch_indices(ft_misoffset_sec, t_ts_i, datenum)
 
 
 bout_duration_sec = 20;
@@ -6,7 +6,6 @@ closed_initial_light_duration = 60;
 
 if datenum<20231119
 
-    num_bouts_per_cycle = 8;  %not counting initial closed/light epoch
     num_cycles = 3;
     closed_final_dark_duration = 60; %final seconds
 
@@ -20,7 +19,6 @@ if datenum<20231119
 
 else
 
-    num_bouts_per_cycle = 10;  %not counting initial closed/light epoch
     num_cycles = 6;
     closed_final_dark_duration = 0; %final seconds
 
@@ -34,12 +32,22 @@ else
 
 end
 
-epochinds.closedinitiallight = 1;
-epochinds.openslow = 2;
-epochinds.openfast = 3;
-epochinds.closed = 4;
-epochinds.dark = 5;
-epochinds.closedfinaldark = 6;
+
+epochs.closedinitiallight = 1;
+epochs.openslow = 2;
+epochs.openfast = 3;
+epochs.closed = 4;
+epochs.dark = 5;
+epochs.closedfinaldark = 6;
+
+boutinds_onecycle_cell = struct2cell(boutinds_onecycle);
+boutinds_onecycle_cell = boutinds_onecycle_cell(~cellfun(@isempty, boutinds_onecycle_cell));
+boutinds_onecycle_vec = cat(2, boutinds_onecycle_cell{:});
+
+if min(boutinds_onecycle_vec)~=1 || ~isequal(unique(cat(2, boutinds_onecycle_vec)), sort(cat(2, boutinds_onecycle_vec)), min(boutinds_onecycle_vec):max(boutinds_onecycle_vec))
+    error("epoch indices that are part of a 'cycle', when sorted, must be a contiguous list of non-repeating integers, with minimum of 1")
+end
+num_bouts_per_cycle = max(boutinds_onecycle_vec); %cycle doesn't including non-repeating bouts, like initial and final 
 
 boutendpoints_sec_epoch.closedinitiallight = [0 closed_initial_light_duration + ft_misoffset_sec];
 
@@ -86,12 +94,13 @@ for fni = 1:numel(fn)
         mtchtmp = t_ts_i'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & t_ts_i'<boutendpoints_sec_epoch.(fn{fni})(:,2);
         mtchtmp = sum(mtchtmp, 1);
         if any(mtchtmp>1)
-            error("epochinds misaligned")
+            error("epochs misaligned")
         end
         if any(ismember(find(epochinds_ts_i), find(mtchtmp)))
-            error("epochinds misaligned")
+            error("epochs misaligned")
         end
         epochinds_ts_i = epochinds_ts_i + mtchtmp*fni;
     end
 end
 
+epochs.epochinds_ts_i = epochinds_ts_i;
