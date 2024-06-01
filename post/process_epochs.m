@@ -1,5 +1,8 @@
-function epochs = process_epochs(trialtime, pth_fldr, ids, dtmni, daqdata_resamp, use_carls_epochs)
+function epochs = process_epochinds(trialtime, pth_fldr, ids, dtmni, daqdata_resamp, use_carls_epochs)
 
+if size(trialtime, 1)<size(trialtime, 2)
+    trialtime = trialtime';
+end
 
 if any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochs'))
 
@@ -12,13 +15,20 @@ else
     if use_carls_epochs
         if ids.datenum<20231119
             testepochind_all = [2 3];
+            minshiftsec = -8;
+            maxshiftsec = 3;
         elseif ids.datenum>=20231119 && ids.datenum<20231231
             testepochind_all = [2 3 5];
+            minshiftsec = -8;
+            maxshiftsec = 3;
+        else
+            testepochind_all = [];
+            minshiftsec = 0;
+            maxshiftsec = 0;
         end
     end
 
-    minshiftsec = -8;
-    maxshiftsec = 3;
+
     ft_misoffset_sec_all = minshiftsec : dtmni*0.45 : maxshiftsec;
 
     hfg = figure;
@@ -39,17 +49,16 @@ else
             if testepochind==2 || testepochind==3
                 fu = unwrap(fu); %makes it easier to see
             end
-            % fu = cos(fu);
-            %fu = diff(diff(fu));
-            plot(hax,fu)
-            %ylim(hax, [min(daqdata_resamp.g4panels{1}(:)) - abs(min(daqdata_resamp.g4panels{1}(:)))*0.3, max(daqdata_resamp.g4panels{1}(:)) + abs(max(daqdata_resamp.g4panels{1}(:)))*0.3])
-            % ylim([-20 20])
+
             if testepochind==2 || testepochind==3
                 criter(fmsai) = numel(find(isoutlier(diff(diff(fu))))); %minimize num unique variables in diff, since open look should have only a couple (constant vel)
             elseif testepochind==5
                 criter(fmsai) = var(cos(fu)); %minimize variance of x (or y) component of circular variable, this is offset with least error
             end
-            
+
+            plot(hax,fu)
+            %ylim(hax, [min(daqdata_resamp.g4panels{1}(:)) - abs(min(daqdata_resamp.g4panels{1}(:)))*0.3, max(daqdata_resamp.g4panels{1}(:)) + abs(max(daqdata_resamp.g4panels{1}(:)))*0.3])
+
             title([criter(fmsai) ft_misoffset_sec ft_misoffset_sec])
             fig2gif(hfg, figframes, [pth_fldr 'misoffset_.gif'])
 
@@ -64,7 +73,11 @@ else
         end
     end
 
-    ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
+    if ft_misoffset_sec_all==0
+        ft_misoffset_sec = 0;
+    else
+        ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
+    end
     epochs = define_stim_epoch_indices(ft_misoffset_sec, trialtime, ids.datenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
 
@@ -81,8 +94,11 @@ else
 end
 
 
-if isfield(epochs, 'dark') || isfield(epochs, 'closedfinaldark')
-    epochs.naninds_i = epochinds_ts_i==epochs.dark | epochinds_ts_i==epochs.closedfinaldark; %dark gets nans
+if any(epochs.epochinds_ts_i==epochs.dark) || any(epochs.epochinds_ts_i==epochs.closedfinaldark)
+    epochs.naninds_i = epochs.epochinds_ts_i==epochs.dark | epochs.epochinds_ts_i==epochs.closedfinaldark; %dark gets nans
 else
     epochs.naninds_i = [];
 end
+
+close all
+

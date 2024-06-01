@@ -12,14 +12,20 @@ else
     if use_carls_epochs
         if ids.datenum<20231119
             testepochind_all = [2 3];
+            minshiftsec = -8;
+            maxshiftsec = 3;
         elseif ids.datenum>=20231119 && ids.datenum<20231231
             testepochind_all = [2 3 5];
-            
+            minshiftsec = -8;
+            maxshiftsec = 3;
+        else
+            testepochind_all = [];
+            minshiftsec = 0;
+            maxshiftsec = 0;
         end
     end
 
-    minshiftsec = -8;
-    maxshiftsec = 3;
+
     ft_misoffset_sec_all = minshiftsec : dtmni*0.45 : maxshiftsec;
 
     hfg = figure;

@@ -17,7 +17,6 @@ smoothwindow_i = opts.smoothwindow_sec*md.volrate;
 
 try
 
-    fool=dd
     load(pth_daq, 'daqdata_resamp', 'epochinds')
 
 catch

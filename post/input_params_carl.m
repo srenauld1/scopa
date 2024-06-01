@@ -59,22 +59,23 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 % for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-opt.mroi.use_drawn_rois_str =  {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-opt.mroi.use_drawn_rois_str =  {'fullfov' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+opt.mroi.use_drawn_rois_str =  {'eb' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.num_mroi_auto_str = {'fullfov-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+opt.mroi.num_mroi_auto_str = {'eb-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 opt.mroi.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-opt.mroi.create_mask_method = 'edge'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+opt.mroi.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.num_mroi_auto_str must be power of 2
 opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
+opt.mroi.extract_morph_rois_in_3d = 0; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
 opt.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
-opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+opt.mroi.olayopt.do = 1; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+
 opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
 opt.mroi.olayopt.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 opt.mroi.olayopt.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max

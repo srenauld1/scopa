@@ -69,11 +69,12 @@ opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures
 opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
+opt.mroi.extract_morph_rois_in_3d = 0; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
 opt.mroi.do_other_plots = 1; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
-opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+opt.mroi.olayopt.do = 1; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
 opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
 opt.mroi.olayopt.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 opt.mroi.olayopt.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max

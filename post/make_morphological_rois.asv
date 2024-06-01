@@ -50,6 +50,7 @@ subsample_mask_method = opts_mroi.subsample_mask_method;
 edgethresh = opts_mroi.edgethresh;
 edgesig = opts_mroi.edgesig;
 closing_element_size = opts_mroi.closing_element_size;
+extract_morph_rois_in_3d = opts_mroi.extract_morph_rois_in_3d; 
 
 hsvopt = opts_mroi.hsvopt;
 olayopt = opts_mroi.olayopt;
@@ -124,8 +125,7 @@ catch
     else
 
         num_mroi = num_mroi_auto;
-        extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
-        [mask_roi_vec, centroids_roi] = ...
+        [mask_roi_vec, centroids_roi, num_mroi_auto] = ...
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
             num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
             xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
@@ -175,6 +175,7 @@ save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 %% create/plot roi overlay 
 
+roi_overlay = [];
 if olayopt.do
     filename_olay = [pth_mroi_prefix 'eachroired_.gif'];
     roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
@@ -192,6 +193,7 @@ if hsvopt.do
 
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
     hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
+
 end
 
 
