@@ -7,7 +7,7 @@ arguments
     trialnum double
     numvol double
     numslice_withflyback double
-    dtmni double %imaging frame period
+    dtmni double %imaging frame period (1/volrate)
     ball_diameter double
     pth_daq char
     pth_daq_resamp char
