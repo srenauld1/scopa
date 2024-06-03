@@ -1,5 +1,6 @@
-function daqdata_resamp = load_DAQ(ids, numvol, numslice_withflyback, ...
+function daqdata_resamp = load_DAQ(datenum, flynum, trialnum, numvol, numslice_withflyback, ...
     dtmni, ball_diameter, pth_daq, pth_daq_resamp, slopelen_sec, slopeorder, fast_version, doplots)
+
 
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
 % includes volume and frame flyback samples (reason below)
@@ -28,6 +29,7 @@ function daqdata_resamp = load_DAQ(ids, numvol, numslice_withflyback, ...
 % but this appears to be a little more accurate, and handles sharp transitions well
 % fast_version will use the resample approach (which takles 5-10 seconds),
 % the slow version will take about 10 minutes the first time you run it (but subsequent runs on the same daqdata will just take seconds)
+
 
 
 %% set daq variables to read, according to variable type
@@ -90,9 +92,9 @@ daqdata_resamp = table();
 for si = 1:num_resamples
 
     newrow = table();
-    newrow.datenum = {ids.datenum};
-    newrow.flynum = {ids.flynum};
-    newrow.trialnum = {ids.trialnum};
+    newrow.datenum = {datenum};
+    newrow.flynum = {flynum};
+    newrow.trialnum = {trialnum};
     if isempty(sliceinds)
         resample_inds = [];
         newrow.sliceindex = {'volume'};

@@ -12,8 +12,8 @@ disp("constrain amplitude of all intermediate functions")
 disp("time in all functions")
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
-% variables are organized into structs to reduce complexity 
-% variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing 
+% variables are organized into structs to reduce complexity
+% variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing
 
 % struct 'opt' holds input params in various sub-structs, which are each used predominantly in a function below
 % struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.ti (imaging frame timestamps)
@@ -30,7 +30,7 @@ disp("time in all functions")
 %   prefix, infix, or suffix 'ts' denotes 'timeseries'
 %   suffix '*_i' denotes imaging sampling, suffix '*_b' denotes behavior sampling (suffix can be used for timeseries variable, or variable used exclusively with one or the other sampling regimes)
 %   suffix '*_m' denotes model sampling (e.g., in a linear model integrating 5 imaging samples into the past, num_samp
-    
+
 %% params
 
 
@@ -64,9 +64,13 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         [md, ts.vis] = load_stim(md, ids, opt.daq);
     else
         if ~opt.daq.ignore_daq
-            daqdata_resamp = load_DAQ(ids, md.numvol_o, md.numslice_withflyback, ...
-                md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
-                opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.slopeorder, opt.daq.doplots);
+            try
+                load(pth.daq_resamp, 'daqdata_resamp')
+            catch
+                daqdata_resamp = load_DAQ(idsdatenum, md.numvol_o, md.numslice_withflyback, ...
+                    md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
+                    opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.fast_version, opt.daq.doplots);
+            end
             epochs = load_stim_epochs(trialtime, pth.epochinds_a2p, pth.fldr, ids, md.dtmni, daqdata_resamp, opt.daq.use_carls_epochs);
         end
     end
@@ -142,9 +146,9 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
             [fitin, dofit] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
             stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-            opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f'; 
-            opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16'; 
-            opt.fit.mdlname = 'fnet_A_xsie'; 
+            opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
+            opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
+            opt.fit.mdlname = 'fnet_A_xsie';
             opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
             fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
 
