@@ -1,5 +1,5 @@
 function daqdata_resamp = load_DAQ(ids, numvol, numslice_withflyback, ...
-    dtmni, ball_diameter, pth_daq, pth_daq_resamp, slopelen_sec, slopeorder, doplots)
+    dtmni, ball_diameter, pth_daq, pth_daq_resamp, slopelen_sec, slopeorder, fast_version, doplots)
 
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
 % includes volume and frame flyback samples (reason below)
@@ -26,7 +26,8 @@ function daqdata_resamp = load_DAQ(ids, numvol, numslice_withflyback, ...
 % if frameClock is not on daq, uses matlab function 'resample' (again, with adjustments for circular variables)
 % default frameClock approach is much slower than using 'resample', so there are checkpoints where variables are saved and loaded on subsequent runs, 
 % but this appears to be a little more accurate, and handles sharp transitions well 
-
+% fast_version will use the resample approach (which takles 5-10 seconds), 
+% the slow version will take about 10 minutes the first time you run it (but subsequent runs on the same daqdata will just take seconds)
 
 
 %% set daq variables to be read, according to variable type
@@ -55,7 +56,7 @@ catch
 
     %% define inds for downsampling
 
-    if any(strcmp(trialData.Properties.VariableNames, 'frameClock'))
+    if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) && ~fast_version
         
         try
             load([pth_daq_resamp(1:end-4) 'sliceinds.mat'], 'sliceinds');

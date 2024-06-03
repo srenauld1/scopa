@@ -66,7 +66,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         if ~opt.daq.ignore_daq
             daqdata_resamp = load_DAQ(ids, md.numvol_o, md.numslice_withflyback, ...
                 md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
-                opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.doplots);
+                opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.fast_version, opt.daq.doplots);
             epochs = load_stim_epochs(trialtime, pth.epochinds_a2p, pth.fldr, ids, md.dtmni, daqdata_resamp, opt.daq.use_carls_epochs);
         end
     end
