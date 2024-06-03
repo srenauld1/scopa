@@ -70,6 +70,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
                 daqdata_resamp = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, ...
                     md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
                     opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.fast_version, opt.daq.doplots);
+                [ts, md.ti] = assign_a2p_timeseries(daqdata_resamp);
             end
             epochs = load_stim_epochs(trialtime, pth.epochinfo, pth.fldr, ids, md.dtmni, daqdata_resamp, opt.daq.use_carls_epochs);
         end
