@@ -1,6 +1,21 @@
 function daqdata_resamp = load_DAQ(datenum, flynum, trialnum, numvol, numslice_withflyback, ...
     dtmni, ball_diameter, pth_daq, pth_daq_resamp, slopelen_sec, slopeorder, fast_version, doplots)
 
+arguments
+    datenum double
+    flynum double
+    trialnum double
+    numvol double
+    numslice_withflyback double
+    dtmni double %imaging frame period
+    ball_diameter double
+    pth_daq char
+    pth_daq_resamp char
+    slopelen_sec double
+    slopeorder double
+    fast_version logical %fast_version takes seconds, but less accurate, slow version takes minutes on first run (subsequent runs takes seconds)
+    doplots logical
+end
 
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
 % includes volume and frame flyback samples (reason below)
