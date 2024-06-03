@@ -30,7 +30,7 @@ function daqdata_resamp = load_DAQ(ids, numvol, numslice_withflyback, ...
 % the slow version will take about 10 minutes the first time you run it (but subsequent runs on the same daqdata will just take seconds)
 
 
-%% set daq variables to be read, according to variable type
+%% set daq variables to read, according to variable type
 
 daqvars.normal = {'Time', 'heat', 'virmenIteration'}; %virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
 daqvars.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'};
