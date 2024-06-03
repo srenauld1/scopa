@@ -31,8 +31,16 @@ pth_stack_analysis = [pth_fldr recid_underscore '_' suffix_analysis '_.mat'];
 
 pth_metadata = [pth_fldr recid_underscore '_metadatanew_.mat'];
 
-pth_daq = [pth_fldr recid_underscore '_ficTracData_DAQ.mat']; %keep hyphen for compatibility with flyg
-pth_epochinds = [pth_fldr recid_underscore '_epochinds_.mat'];
+fndaq = rdir(fullfile(pth_fldr,['*', datefly_hyphen,'_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat']));
+if isempty(fndaq)
+    pth_daq = [];
+else
+    pth_daq = fndaq.name;
+end
+pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphen for compatibility with flyg
+
+pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
+pth_epochinfo = [pth_fldr recid_underscore '_epochinfo_.mat'];
 
 
 %% variables for each regionex
@@ -239,7 +247,9 @@ pth.mroi = pth_mroi;
 pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;
 pth.daq = pth_daq;
+pth.daq_resamp = pth_daq_resamp;
 pth.epochinds = pth_epochinds;
+pth.epochinfo = pth_epochinfo;
 pth.savedata_oneregion = pth_savedata_oneregion;
 
 

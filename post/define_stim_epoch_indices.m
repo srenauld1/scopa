@@ -1,4 +1,4 @@
-function epochs = define_stim_epoch_indices(ft_misoffset_sec, t_ts_i, datenum)
+function epochs = define_stim_epoch_indices(ft_misoffset_sec, ti, datenum)
 
 
 
@@ -96,22 +96,22 @@ end
 [~, finalbout_epochind] = max(cell2mat(struct2cell(structfun(@(x) max(vec(x)), boutendpoints_sec_epoch, 'UniformOutput', false))));
 boutendpoints_sec_epoch_cell = struct2cell(boutendpoints_sec_epoch);
 if closed_final_dark_duration==0
-    if boutendpoints_sec_epoch_cell{finalbout_epochind}(end)~=t_ts_i(end) %closedinds(end)~=floor(t_ts_i(end))
-        boutendpoints_sec_epoch_cell{finalbout_epochind}(end)=t_ts_i(end);
+    if boutendpoints_sec_epoch_cell{finalbout_epochind}(end)~=ti(end) %closedinds(end)~=floor(ti(end))
+        boutendpoints_sec_epoch_cell{finalbout_epochind}(end)=ti(end);
     end
 else
     tmpendpoint = boutendpoints_sec_epoch_cell{finalbout_epochind}(end);
 end
 boutendpoints_sec_epoch = cell2struct(boutendpoints_sec_epoch_cell, fieldnames(boutendpoints_sec_epoch));
 if closed_final_dark_duration>0
-    boutendpoints_sec_epoch.closedfinaldark = [tmpendpoint t_ts_i(end)];
+    boutendpoints_sec_epoch.closedfinaldark = [tmpendpoint ti(end)];
 end
 
 fn = fieldnames(boutendpoints_sec_epoch);
-epochinds_ts_i = zeros(1, numel(t_ts_i));
+epochinds_ts_i = zeros(1, numel(ti));
 for fni = 1:numel(fn)
     if size(boutendpoints_sec_epoch.(fn{fni}), 2)==2
-        mtchtmp = t_ts_i'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & t_ts_i'<boutendpoints_sec_epoch.(fn{fni})(:,2);
+        mtchtmp = ti'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & ti'<boutendpoints_sec_epoch.(fn{fni})(:,2);
         mtchtmp = sum(mtchtmp, 1);
         if any(mtchtmp>1)
             error("epochs misaligned")

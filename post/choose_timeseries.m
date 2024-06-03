@@ -116,11 +116,11 @@ for fi = 1:length(fn)
     fitin.(outfn) = [];
     for vsi2 = 1:length(fitin.fieldspecstr.(fn{fi}))
         tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
-        if size(tmp, 2)~=length(md.t_ts_i)
+        if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end
-        if size(tmp, 2)~=length(md.t_ts_i)
-            error("timeseries is does not match number imaging volumes (length md.t_ts_i)")
+        if size(tmp, 2)~=length(md.ti)
+            error("timeseries is does not match number imaging volumes (length md.ti)")
         end
         fitin.(outfn) = cat(1, fitin.(outfn), tmp);
         if strcmp(fn{fi}, 'depvpre_str')

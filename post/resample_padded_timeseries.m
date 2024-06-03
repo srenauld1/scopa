@@ -1,11 +1,19 @@
-function y = resample_padded_timeseries(x, fs_new, fs_old, padlensec)
+function y = resample_padded_timeseries(x, fs_new, fs_old)
 
 if size(x,1) < size(x, 2)
     x = x';
 end
 
-xpad = cat(1, repmat(x(1), fs_old*padlensec, 1), x, repmat(x(end), fs_old*padlensec, 1)); % extend by 2s on each side
+default_antialiasing_filter_order_scalefac = 10; %this is matlab default
+default_antialiasing_filter_order = 2*default_antialiasing_filter_order_scalefac*max(fs_old,fs_new);
+default_antialiasing_filter_length = default_antialiasing_filter_order+1;
+padlength = default_antialiasing_filter_length+1;
+
+padfront = repmat(x(1), padlength, 1);
+padback = repmat(x(end), padlength, 1);
+xpad = cat(1, padfront, x, padback); % extend by 2s on each side
 ypad = resample(xpad, fs_new, fs_old);
-% tpad = [0:(length(ypad)-1)]*(1/fs_new) - padlensec;  % new time vector, shifted by 2s
-% t = tpad(fs_new*padlensec+1: length(tpad)-fs_new*padlensec);
-y = ypad(fs_new*padlensec+1: length(ypad)-fs_new*padlensec);
+padfrontnew = floor(padlength/fs_old*fs_new+1);
+padbacknew = floor(padlength/fs_old*fs_new);
+y = ypad(padfrontnew : length(ypad)-padbacknew);
+

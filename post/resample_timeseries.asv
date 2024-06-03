@@ -1,7 +1,7 @@
-function outp = resample_timeseries(vartype, inp, inds, rslen)
+function outp = resample_timeseries(datatype, inp, inds, rslen)
 
 arguments
-    vartype char
+    datatype char
     inp double
     inds double = []
     rslen double = []
@@ -14,15 +14,15 @@ end
 if ~isempty(inds) %if inds are nonempty, average inp during each index
 
     Au = unique(inds(inds~=0),'stable'); %index of each frame
-    if strcmp(vartype, 'circular')
+    if strcmp(datatype, 'circular')
         inpcos = cos(inp);
         inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inpcos for each frame
         inpsin = sin(inp);
         inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
         outp = atan2(inpy, inpx);
-    elseif strcmp(vartype, 'categorical')
+    elseif strcmp(datatype, 'categorical')
         outp = arrayfun(@(i)mode(inp(inds==Au(i))),1:numel(Au)); %mode of inp for each frame
-    elseif strcmp(vartype, 'normal')
+    elseif strcmp(datatype, 'standard')
         outp = arrayfun(@(i)mean(inp(inds==Au(i))),1:numel(Au)); %average of inp for each frame
     end
 
@@ -32,7 +32,7 @@ else %else use 'resample', looping strategy to match rslen
     [dsnr, dsdr] = rat(dsfac);
     breakout = 0;
 
-    if strcmp(vartype, 'circular')
+    if strcmp(datatype, 'circular')
 
         inpx = cos(inp);
         inpy = sin(inp);
@@ -67,7 +67,7 @@ else %else use 'resample', looping strategy to match rslen
             error("failed resample")
         end
 
-    elseif strcmp(vartype, 'normal')
+    elseif strcmp(datatype, 'standard')
 
         inp_try = resample_padded_timeseries(inp, dsnr, dsdr);
         if length(inp_try)==rslen
@@ -94,7 +94,7 @@ else %else use 'resample', looping strategy to match rslen
         end
 
 
-    elseif strcmp(vartype, 'categorical')
+    elseif strcmp(datatype, 'categorical')
 
         error("when there is no frame clock, and variable is categorical, need to use nearest interp, will insert that soon")
 

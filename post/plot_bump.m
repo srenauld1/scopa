@@ -210,7 +210,7 @@ for rind = 1:numr/2
         nanpadlen_min = nanpadlen_min_input;
 
         indz_tmp = indz1;
-        xx = md.t_ts_i(indz_tmp);
+        xx = md.ti(indz_tmp);
         % [~,idd1] = min(abs(xf-startsec));
         % [~,idd2] = min(abs(xf-stopsec));
         % indz_tmp = idd1:idd2;
@@ -219,9 +219,9 @@ for rind = 1:numr/2
         %now shorten according to numfram
         indz_tmp = indz_tmp(1:numfram);
         xxall{rind} = xx(1:numfram);
-        if any(~ismember(unique(diff(xx)), unique(diff(md.t_ts_i))))
+        if any(~ismember(unique(diff(xx)), unique(diff(md.ti))))
             %"NONCONTIGUOUS X, X AXIS IS ARTIFICIAL"
-            xxall{rind} = md.t_ts_i(1:numfram);
+            xxall{rind} = md.ti(1:numfram);
         end
 
     else
@@ -236,7 +236,7 @@ for rind = 1:numr/2
                 [~, indz_tmp] = sort(bumprho(indz1,pltindz(bump_method_index)));
         end
         indz_tmp = indz1(indz_tmp);
-        xx = md.t_ts_i(1:length(indz_tmp));
+        xx = md.ti(1:length(indz_tmp));
 
         %now shorten according to numfram
         indz_tmp = indz_tmp(round(linspace(1, length(indz_tmp), numfram)));

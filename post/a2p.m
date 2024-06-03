@@ -16,7 +16,7 @@ disp("time in all functions")
 % variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing 
 
 % struct 'opt' holds input params in various sub-structs, which are each used predominantly in a function below
-% struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.t_ts_i (imaging frame timestamps)
+% struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.ti (imaging frame timestamps)
 % struct 'roiinfo' holds roi info for morphological and functional rois
 % struct 'md' holds metadata
 % struct 'paths' holds paths
@@ -65,7 +65,10 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         [md, ts.vis] = load_stim(md, ids, opt.daq);
     else
         if ~opt.daq.ignore_daq
-            [md, ts.ball, ts.vis] = load_DAQ(ids, md, pth.daq, pth.fldr, opt.daq);
+            [daqdata_resamp, md.ti, ts.ball, ts.vis] = load_DAQ(ids, md.numslice, md.numvol_o, ...
+                md.numslice_withflyback, md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
+                opt.daq.discard_flyback_frames, opt.daq.slopelen_sec, opt.daq.slopeorder);
+            epochs = load_stim_epochs(trialtime, pth.epochinds_a2p, pth.fldr, ids, md.dtmni, daqdata_resamp, opt.daq.use_carls_epochs);
         end
     end
 

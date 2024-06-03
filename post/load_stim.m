@@ -63,12 +63,12 @@ ball = [];
 md.t_ts_b = [];
 
 md.dtmni = 1/md.volrate;
-md.t_ts_i = md.dtmni * [1:size(vis.raw, 2)];
-md.total_t = max(md.t_ts_i);
-md.smoothwindow_i = md.smoothwindow_sec/mean(diff(md.t_ts_i));
+md.ti = md.dtmni * [1:size(vis.raw, 2)];
+md.tfin = max(md.ti);
+md.smoothwindow_i = md.smoothwindow_sec/mean(diff(md.ti));
 
 if no_stim_epochs
-    md.epochinds_ts_i = ones(length(md.t_ts_i), 1);
+    md.epochinds_ts_i = ones(length(md.ti), 1);
     md.epochinds_ts_b = [];
 end
 
