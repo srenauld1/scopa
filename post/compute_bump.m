@@ -16,7 +16,6 @@ omitnan_bump = opts.omitnan;
 doplots = opts.doplots;
 
 fitopts = opts.fit(si);
-smoothwindow = smoothwindow_sec/md.dtmni;
 
 fn_save_prefix = fitin.fn_save_prefix;
 
@@ -111,9 +110,9 @@ for fi = 1:length(bump_subdomain)
     mu = mu';
     rho = rho';
 
-    if smoothwindow
-        mu = smooth_circular_timeseries(mu, smoothwindow);
-        rho = smoothdata(rho, 'gaussian', smoothwindow, 'omitnan');
+    if smoothwindow_sec
+        mu = smooth_timeseries('circular', mu, smoothwindow_sec, md.dtmni);
+        rho = smooth_timeseries('normal', rho, smoothwindow_sec, md.dtmni);
     end
 
     bumpvel = differentiate_timeseries('circular', mu, slopelen_sec, slopeorder, md.dtmni);

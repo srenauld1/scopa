@@ -1,8 +1,8 @@
 
-function vel = differentiate_timeseries(vartype, inp, slopelen_sec, slopeorder, dt)
+function differ = differentiate_timeseries(vartypein, inp, slopelen_sec, slopeorder, dt)
 
 arguments
-    vartype char
+    vartypein char
     inp double
     slopelen_sec double
     slopeorder double
@@ -11,7 +11,7 @@ end
 
 slopelen = round(slopelen_sec / dt);
 
-if strcmp(vartype, 'circular')
+if strcmp(vartypein, 'circular')
 
     % differentiate circular variable without using unwrap (unwrap can cause rare spikes)
 
@@ -24,15 +24,15 @@ if strcmp(vartype, 'circular')
     %inpdy = movmedian(inpdy, [smoothwindow smoothwindow], 'omitnan');
 
     denom = inpx.^2 + inpy.^2;
-    vel = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
+    differ = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
 
-elseif strcmp(vartype, 'normal')
+elseif strcmp(vartypein, 'normal')
 
-    vel = movingslope(inp, slopelen, slopeorder, dt);
+    differ = movingslope(inp, slopelen, slopeorder, dt);
 
-elseif strcmp(vartype, 'categorical')
+elseif strcmp(vartypein, 'categorical')
 
     sprintf("not differentiating categorical timeseries")
-    vel = [];
+    differ = [];
 
 end

@@ -14,9 +14,11 @@ time_dimension = find(size(fitin.indvpre)==num_samp_indvpre);
 %% smooth in time (optional)
 
 if opts.smoothdepv
+    error("insert switch for circular")
     fitin.depvpre = smoothdata(fitin.depvpre, time_dimension, 'gaussian', opts.smoothdepv);
 end
 if opts.smoothdepv
+    error("insert switch for circular")
     for i = 1:num_dim_indvpre
         fitin.indvpre(i,:) = smoothdata(fitin.indvpre(i,:), time_dimension, 'gaussian', opts.smoothindv);
     end

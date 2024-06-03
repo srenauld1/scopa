@@ -39,7 +39,6 @@ for fi = 1:size(xlim_segments, 1)
         ax1.Box = 'off';
 
 
-
         plot(ax2,1:numel(ts2),ts2,'-r');
         ax2.XAxisLocation = 'top';
         ax2.YAxisLocation = 'right';
@@ -47,7 +46,7 @@ for fi = 1:size(xlim_segments, 1)
         ax2.XColor = 'r';
         ax2.YColor = 'r';
         ax2.Box = 'off';
-        ax2.Title.String = strrep(titlein, '_', ' ');
+
 
     end
 
@@ -71,6 +70,8 @@ for fi = 1:size(xlim_segments, 1)
     ax2.YLim(1) = ylm2(1) - range(ylm2)*ylim_padfac;
     ax2.YLim(2) = ylm2(2) + range(ylm2)*ylim_padfac;
 
+    ax1.Title.String = titlein;
+    ax1.Title.Position(2) = 0.05;
 
     fig2gif(hfg, fi, pth_gif)
 

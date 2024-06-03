@@ -53,8 +53,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     %% load metadata
 
     md = load_scanimage_metadata(pth.metadata, opt.md);
-    %md = load_flyg_metadata(ids, pth.fldr, md);
-    md.ball_diameter = 9; %is this all i need from flyg metadata?
+    md = load_flyg_metadata(ids, pth.fldr, md);
 
 
 
@@ -65,13 +64,24 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         [md, ts.vis] = load_stim(md, ids, opt.daq);
     else
         if ~opt.daq.ignore_daq
-            [daqdata_resamp, md.ti, ts.ball, ts.vis] = load_DAQ(ids, md.numslice, md.numvol_o, ...
-                md.numslice_withflyback, md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
-                opt.daq.discard_flyback_frames, opt.daq.slopelen_sec, opt.daq.slopeorder);
+            daqdata_resamp = load_DAQ(ids, md.numvol_o, md.numslice_withflyback, ...
+                md.dtmni, md.ball_diameter, pth.daq, pth.daq_resamp, ...
+                opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.doplots);
             epochs = load_stim_epochs(trialtime, pth.epochinds_a2p, pth.fldr, ids, md.dtmni, daqdata_resamp, opt.daq.use_carls_epochs);
         end
     end
 
+    %% assign timeseries
+
+    ts.ball.yaw = daqdata_resamp.ficTracYaw{1};
+    ts.ball.yawvel = daqdata_resamp.ficTracYaw_diff{1};
+    ts.ball.intfor = daqdata_resamp.ficTracIntForward{1};
+    ts.ball.forvel = daqdata_resamp.ficTracIntForward_diff{1};
+    ts.ball.intside = daqdata_resamp.ficTracIntSide{1};
+    ts.ball.sidevel = daqdata_resamp.ficTracIntSide_diff{1};
+    ts.vis.ang = daqdata_resamp.g4panels{1};
+    ts.vis.angvel = daqdata_resamp.g4panels_diff{1};
+    md.ti = daqdata_resamp.Time{:};
 
     %% load/visualize movies (stacks)
 

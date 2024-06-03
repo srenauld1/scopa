@@ -1,25 +1,47 @@
-function [daqdata_resamp, ti, ball, vis] = load_DAQ(ids, numslice, numvol, ...
-    numslice_withflyback, dtmni, ball_diameter, pth_daq, pth_daq_resamp, ...
-    discard_flyback_frames, slopelen_sec, slopeorder)
+function daqdata_resamp = load_DAQ(ids, numvol, numslice_withflyback, ...
+    dtmni, ball_diameter, pth_daq, pth_daq_resamp, slopelen_sec, slopeorder, doplots)
 
-% using movingslope to extract velocity (can increase slopelen_sec to reduce noise)
+% uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
+% includes volume and frame flyback samples (reason below)
+% then uses mod to convert to sliceinds 
+% then, operates on daq variables according to coincident slice index, creating a different timeseries for each slice index 
+% this occurs differently according to daq variable type (see default daqvars struct below)
+% for 'normal' daq variables, averages daq variables during each frame, 
+% for 'circular' daq variables, does the same but operates on x and y components
+% for 'categorical' daq variables, finds same but mode instead of mean
+% only variables listed in daqvars will be processed, anything listed in daqvars but not found on daq is skipped
+% averaging by frame allows comparisons between imaging and behavior to have greater resolution in lag 
+% volume and frame flyback samples are included for two reasons: 
+%    1 - we don't know the optimal lag, 
+%    2 - our imaging rates and indicators are pretty slow
+% this function downsamples daq variables to match imaging, rather than upsampling imaging to match daq variables
+% imaging rates and indicators are already smoothing neural activity, and visual system at least has very little power at 60 hz anyway (although not sure about other input modalities to our neurons) 
+% the behavior downsampling in this function regularizes subsequent model fitting (and also speeds computation)
+% but this function does retain the available lag information by averaging during each slice index  
+% also creates a timeseries for the entire volume (again, includes all flyback) 
+% this function also differentiates all requested daq variables
+% using movingslope to reduce noise (increase slopelen_sec to reduce noise)
 % with this there is no need for smoothing first
-% for circular variables, operating on x and y components
+% for circular variables, derivative operates on x and y components
+% for categorical variables, derivative is skipped 
+% all this is much slower than using 'resample', so there are checkpoints where variables are saved and loaded on subsequent runs, but this should be a little more accurate
+% if frameClock is not on daq, uses matlab function 'resample' (again, with adjustments for circular variables)
 
-daqvars.normal = {'Time', 'heat'};
+
+
+%% set daq variables to be read, according to variable type
+
+daqvars.normal = {'Time', 'heat', 'virmenIteration'}; %virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way   
 daqvars.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'};
-daqvars.categorical = {'virmenFrameClock'};
-daqvars.scale_by_ball_diameter = {'ficTracIntSide', 'ficTracIntForward'};
+daqvars.categorical = {''};
 
-ball = [];
-vis = [];
+daqvars_to_scale_by_ball_diameter = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be rescaled 
 
-minvolt = 0; %need to find this in metadata
-maxvolt = 10; %need to find this in metadata
+minvolt = 0; %daq voltage min; need to find this in metadata
+maxvolt = 10; %daq voltage max, need to find this in metadata
 
 try
 
-    fool=mool
     load(pth_daq_resamp, 'daqdata_resamp')
 
 catch
@@ -33,19 +55,31 @@ catch
 
     %% define inds for downsampling
 
-    if any(strcmp(trialData.Properties.VariableNames, 'ffframeClock'))
-        sliceinds = binary2count(trialData.frameClock);
-        flyback_frames = numslice+1:numslice_withflyback;
-        numvol_from_frames = max(sliceinds)/numslice_withflyback;
-        if numvol_from_frames~=numvol
-            error("number of volumes computed from daq frames does not match number of stack volumes")
+    if any(strcmp(trialData.Properties.VariableNames, 'frameClock'))
+        
+        try
+            load([pth_daq_resamp(1:end-4) 'sliceinds.mat'], 'sliceinds');
+        catch
+            trialData.frameClock
+            if trialData.frameClock(1) == 1
+                sprintf("warning, first daq sample is during an imaging frame")
+            end
+            frameinds = binary2count(trialData.frameClock);
+            numvol_from_frames = max(frameinds)/numslice_withflyback;
+            if numvol_from_frames~=numvol
+                error("number of volumes computed from daq frames does not match number of stack volumes")
+            end
+            usi = unique(frameinds(frameinds~=0),'stable'); %index of each frame
+            sliceinds = nan(size(frameinds));
+            for ii = 1:numel(usi) %loop is much faster than using arrayfun
+                volume_centroid = mean(trialData.Time(frameinds==usi(ii))); %find time centroid for each volume
+                [~, volume_centroid_ind] = min(abs(trialData.Time - volume_centroid)); %find nearest daq sample to volume centroid
+                sliceinds(volume_centroid_ind) = frameinds(volume_centroid_ind); %put volume index at nearest daq sample to volume centroid
+            end
+            sliceinds = fillmissing(sliceinds, 'nearest');
+            sliceinds = mod(sliceinds-1, numslice_withflyback)+1; %get one-indexed slice indices
         end
-        sliceinds(sliceinds==0) = nan; %make zeros nan before mod
-        sliceinds = mod(sliceinds-1, numslice_withflyback)+1; %get one-indexed slice indices
-        if discard_flyback_frames
-            sliceinds(ismember_each_element(sliceinds, flyback_frames)) = 0; %make flyback frames zero
-            sliceinds(isnan(sliceinds)) = 0; %return nan to zero
-        end
+    
     else
         sprintf("frame clock not on daq, downsampling daq data with 'resample' function, rather averaging during frames")
         sliceinds = [];
@@ -81,11 +115,13 @@ catch
         for fni = 1:numel(fn)
             daqvartypes = fn{fni};
             for ii = 1:numel(daqvars.(daqvartypes))
-                scale_by_ball_diameter = any(strcmp(daqvars.scale_by_ball_diameter, daqvars.(daqvartypes){ii}));
-                daqts = trialData.(daqvars.(daqvartypes){ii});
-                if ~strcmp(trialData.Properties.VariableNames, daqvars.(daqvartypes){ii})
-                    sprintf("warning, daq does not have variable named " + daqvars.(daqvartypes){ii} + ", skipping it")
-                [ newrow.(daqvars.(daqvartypes){ii}), newrow.([daqvars.(daqvartypes){ii} '_diff']) ] = process_DAQ_signal(daqvartypes, daqts, numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, ball_diameter, scale_by_ball_diameter);
+                scale_by_ball_diameter = any(strcmp(daqvars.(daqvartypes){ii}, daqvars_to_scale_by_ball_diameter));
+                daqvarname = daqvars.(daqvartypes){ii};
+                if ~strcmp(trialData.Properties.VariableNames, daqvarname)
+                    sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
+                else
+                    [ newrow.(daqvarname), newrow.([daqvarname '_diff']) ] = process_DAQ_signal(daqvartypes, daqvarname, trialData.(daqvarname), numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, ball_diameter, scale_by_ball_diameter, pth_daq_resamp, doplots);
+                end
             end
         end
         daqdata_resamp = [daqdata_resamp; newrow];
@@ -96,16 +132,5 @@ catch
 end
 
 
-ball.yaw = daqdata_resamp.ficTracYaw{1};
-ball.yawvel = daqdata_resamp.ficTracYaw_diff{1};
-ball.intfor = daqdata_resamp.ficTracIntForward{1};
-ball.forvel = daqdata_resamp.ficTracIntForward_diff{1};
-ball.intside = daqdata_resamp.ficTracIntSide{1};
-ball.sidevel = daqdata_resamp.ficTracIntSide_diff{1};
-
-vis.ang = daqdata_resamp.g4panels{1};
-vis.angvel = daqdata_resamp.g4panels_diff{1};
-
-ti = daqdata_resamp.Time{:};
 
 
