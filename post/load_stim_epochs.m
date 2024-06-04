@@ -1,14 +1,10 @@
-function epochs = load_stim_epochs(trialtime, pth_epochinfo, pth_fldr, ids, dtmni, daqdata_resamp, use_carls_epochs)
-
-
-epochs = [];
+function [epochs, vis] = load_stim_epochs(trialtime, pth_epochinfo, vis, pth_fldr, ids, dtmni, daqdata_resamp, use_carls_epochs)
 
 try
 
     load(pth_epochinfo, 'epochs')
 
 catch
-
 
     if size(trialtime, 1)<size(trialtime, 2)
         trialtime = trialtime';
@@ -36,8 +32,11 @@ catch
                 minshiftsec = 0;
                 maxshiftsec = 0;
             end
+        else
+            testepochind_all = [];
+            minshiftsec = 0;
+            maxshiftsec = 0;
         end
-
 
         ft_misoffset_sec_all = minshiftsec : dtmni*0.45 : maxshiftsec;
 
@@ -121,6 +120,4 @@ end
 vis.ang(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 vis.angvel(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 
-md.epochinds_ts_i = epochs.epochinds_ts_i;
-md.naninds_i = epochs.naninds_i;
 

@@ -199,9 +199,9 @@ ballang_zero = mod(ballangasclust + (halfcent_new - bumpangasclust_for_zeroing),
 for rind = 1:numr/2
 
     if epochinds
-        indz1 = find(md.epochinds_ts_i==epochinds(rind));
+        indz1 = find(md.epochs.epochinds_ts_i==epochinds(rind));
     else
-        indz1 = 1:length(md.epochinds_ts_i);
+        indz1 = 1:length(md.epochs.epochinds_ts_i);
     end
 
 

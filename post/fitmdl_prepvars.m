@@ -6,7 +6,7 @@ num_dim_indvpre = fitin.num_dim_indvpre;
 num_samp_indvpre = fitin.num_samp_indvpre;
 num_dim_depvpre = fitin.num_dim_depvpre;
 num_samp_depvpre = fitin.num_samp_depvpre;
-epochinds_ts_i = md.epochinds_ts_i;
+epochinds_ts_i = md.epochs.epochinds_ts_i;
 dtmni = md.dtmni;
 
 time_dimension = find(size(fitin.indvpre)==num_samp_indvpre);

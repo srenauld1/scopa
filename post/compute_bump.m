@@ -158,7 +158,7 @@ if doplots
 
 
     filename_gif = [fn_save_prefix '_ampsortedclust_' fn{fni} '.gif'];
-    epochinds = {num2cell(unique(md.epochinds_ts_i))};
+    epochinds = {num2cell(unique(md.epochs.epochinds_ts_i))};
     numclusterplot = 8;
     dvecc = round(linspace(1, numcluster, numclusterplot));
     countz = 0;
@@ -169,7 +169,7 @@ if doplots
         hfg = figure;
 
         if epochinds{epi}
-            indz = find(md.epochinds_ts_i==epochinds{epi});
+            indz = find(md.epochs.epochinds_ts_i==epochinds{epi});
         else
             indz = 1:length(trialepochinds);
         end

@@ -68,7 +68,7 @@ md.tfin = max(md.ti);
 md.smoothwindow_i = md.smoothwindow_sec/mean(diff(md.ti));
 
 if no_stim_epochs
-    md.epochinds_ts_i = ones(length(md.ti), 1);
+    md.epochs.epochinds_ts_i = ones(length(md.ti), 1);
     md.epochinds_ts_b = [];
 end
 
