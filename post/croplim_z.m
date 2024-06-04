@@ -198,7 +198,7 @@ elseif isstrprop(eventkey, 'digit')
     fid = fopen([pthenv 'tmp_zchoose_.bin'], 'w');
     fwrite(fid, eventkey, 'uchar')
 
-elseif strcmpi(eventkey, 'return') || 
+elseif strcmpi(eventkey, 'return') || strcmpi(eventkey, '0')
     fid = fopen([pthenv 'tmp_controlin_.bin'], 'w');
     fwrite(fid, 1, 'uint8')
 
