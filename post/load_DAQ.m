@@ -93,7 +93,7 @@ if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) && ~fast_versio
     end
 
 else
-    sprintf("frame clock not on daq, downsampling daq data with 'resample' function, rather averaging during frames")
+    sprintf("frame clock not on daq, or user requested 'fast_version', downsampling daq data with 'resample' function, rather averaging during frames")
     sliceinds = [];
 end
 
