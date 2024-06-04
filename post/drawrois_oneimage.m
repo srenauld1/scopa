@@ -1,12 +1,8 @@
 function [maskroi, flag_quit_one_roi, flag_quit_all_rois] = ...
-    drawrois_oneimage(stack, regionex, title_prefix, ...
+    drawrois_oneimage(stack, pth_tmpfiles, regionex, title_prefix, ...
     flag_one_image, flag_single_roi_per_stack, flag_croplim)
 
 fontsize = 15;
-
-
-[pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename);
-pthenv = [pthenv filesep];
 
 if ~exist('flag_one_image', 'var')
     flag_one_image = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
@@ -31,7 +27,7 @@ else
     hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
 end
 
-set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pthenv));
+set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pth_tmpfiles));
 
 him = imshow(stack, 'InitialMagnification', 'fit');
 axis image
@@ -68,8 +64,8 @@ maskroi_tmp = zeros( numrows, numcols, numrois_est);
 
 cmap = distinguishable_colors(numrois_est);
 
-delete([pthenv 'tmp_roi_flag_.bin']) %try delete first in case you errored in the middle of drawing last time
-delete([pthenv 'tmp_scaleshift_.bin']) %try delete first in case you errored in the middle of drawing last time
+delete([pth_tmpfiles 'tmp_roi_flag_.bin']) %try delete first in case you errored in the middle of drawing last time
+delete([pth_tmpfiles 'tmp_scaleshift_.bin']) %try delete first in case you errored in the middle of drawing last time
 
 if flag_one_image && ~flag_single_roi_per_stack
     flag_single_roi_per_image = 0;
@@ -94,11 +90,11 @@ while true
 
     if flag_allow_rescale
         pause(0.01);
-        fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'r');
+        fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'r');
         if fid>=3
             scaleshift = fread(fid, '*int8');
             fclose('all');
-            delete([pthenv 'tmp_scaleshift_.bin'])
+            delete([pth_tmpfiles 'tmp_scaleshift_.bin'])
             scalefac = scalefac + single(scaleshift)/10;
             if scalefac<0
                 scalefac = 0;
@@ -136,11 +132,11 @@ while true
     end
 
     pause(0.01);
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'r');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'r');
     if fid>=3
         tmpflag = fread(fid, '*uint8');
         fclose('all');
-        delete([pthenv 'tmp_roi_flag_.bin'])
+        delete([pth_tmpfiles 'tmp_roi_flag_.bin'])
         flag_base_message = 0;
         if tmpflag==1 && ~flag_croplim %&& ~flag_one_image
             flag_exit_this_figure = 1;
@@ -299,44 +295,44 @@ end
 
 function roi_key_press_fcn(hfg, event, varargin)
 
-pthenv = varargin{1};
+pth_tmpfiles = varargin{1};
 
 eventkey = event.Key;
 eventmod = event.Modifier;
 
 if strcmpi(eventkey, 's')
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 1, 'uint8');
     fclose('all');
 
 elseif strcmpi(eventkey, 'r')
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 2, 'uint8');
     fclose('all');
 
 elseif strcmpi(eventkey, 'q')
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 3, 'uint8');
     fclose('all');
 
 elseif strcmpi(eventkey, 'return') || strcmpi(eventkey, '0')
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 4, 'uint8');
     fclose('all');
 
 elseif strcmpi(eventkey, 'backspace')
     % error("undo not implemented yet")
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 5, 'uint8');
     fclose('all');
 
 elseif strcmpi(eventkey, 'd')
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 6, 'uint8');
     fclose('all');
 
 elseif strcmpi(eventkey, 'e')
-    fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 7, 'uint8');
     fclose('all');
 
@@ -345,7 +341,7 @@ elseif strcmpi(eventkey, 'downarrow')
     if strcmpi(eventmod, 'shift')
         scaleshift = -5;
     end
-    fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
     fclose('all');
 
@@ -354,7 +350,7 @@ elseif strcmpi(eventkey, 'uparrow')
     if strcmpi(eventmod, 'shift')
         scaleshift = 5;
     end
-    fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
     fclose('all');
 

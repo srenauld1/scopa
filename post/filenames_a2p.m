@@ -1,9 +1,10 @@
-function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix)
+function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix, pth_grandparent)
 
 %% params
 
 suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
+tmp_folder_name = opt.main.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
 suffixes_plot = opt.gif.suffixes_plot;
 use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname use_hires
@@ -42,6 +43,7 @@ pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphe
 pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
 pth_epochinfo = [pth_fldr recid_underscore '_epochinfo_.mat'];
 
+pth_tmpfiles = [pth_grandparent tmp_folder_name filesep];
 
 %% variables for each regionex
 
@@ -251,7 +253,7 @@ pth.daq_resamp = pth_daq_resamp;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.savedata_oneregion = pth_savedata_oneregion;
-
+pth.tmpfiles = pth_tmpfiles;
 
 opt.pf.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field, change from user input formatting
 

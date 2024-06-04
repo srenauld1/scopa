@@ -1,5 +1,5 @@
 
-function [croplim, croplimstr] = make_croplim(stack, sz_t, pth_fldr, recid, regionex, regionex_nounderscore)
+function [croplim, croplimstr] = make_croplim(stack, sz_t, pth_fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore)
 
 
 clip_prctile = [0 100]; %[0 100] does not change contrast
@@ -18,7 +18,7 @@ commandwindow();
 define_z_lim = input(sprintf(prompt));
 
 if define_z_lim
-    [zinds, stack_mnt] = croplim_z(stack_mnt, regionex_nounderscore);
+    [zinds, stack_mnt] = croplim_z(stack_mnt, pth_tmpfiles, regionex_nounderscore);
 else
     zinds = 1:size(stack_mnt, 3);
 end
@@ -40,7 +40,7 @@ if define_xy_lim
     flag_croplim = 1;
     flag_one_image = 1;
     flag_limit_one_manual_roi = 1;
-    roi_cropxy = drawrois_oneimage(stack_mntz, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
+    roi_cropxy = drawrois_oneimage(stack_mntz, pth_tmpfiles, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end

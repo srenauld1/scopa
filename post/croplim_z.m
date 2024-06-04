@@ -1,10 +1,7 @@
-function [zinds, stack3d] = croplim_z(stack3d, regionex_nounderscore)
+function [zinds, stack3d] = croplim_z(stack3d, pth_tmpfiles, regionex_nounderscore)
 
 fontsize_title = 20;
 fontsize_xlabel = 25;
-
-[pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename);
-pthenv = [pthenv filesep];
 
 num_z_slice_original = size(stack3d, 3);
 
@@ -37,7 +34,7 @@ else
     hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
 end
 
-set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pthenv));
+set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pth_tmpfiles));
 
 him = imshow(stack_mnt_flat, 'InitialMagnification', 'fit');
 axis image
@@ -53,9 +50,9 @@ title({
     'FontSize', fontsize_title)
 
 
-delete([pthenv 'tmp_scaleshift_.bin']) %try delete first in case you errored in the middle of drawing last time
-delete([pthenv 'tmp_zchoose_.bin']) %try delete first in case you errored in the middle of drawing last time
-delete([pthenv 'tmp_controlin_.bin']) %try delete first in case you errored in the middle of drawing last time
+delete([pth_tmpfiles 'tmp_scaleshift_.bin']) %try delete first in case you errored in the middle of drawing last time
+delete([pth_tmpfiles 'tmp_zchoose_.bin']) %try delete first in case you errored in the middle of drawing last time
+delete([pth_tmpfiles 'tmp_controlin_.bin']) %try delete first in case you errored in the middle of drawing last time
 
 zchoose = [];
 zinds = [];
@@ -70,11 +67,11 @@ while true
     end
 
     pause(0.01);
-    fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'r');
+    fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'r');
     if fid>=3
         scaleshift = fread(fid, '*int8');
         fclose('all');
-        delete([pthenv 'tmp_scaleshift_.bin'])
+        delete([pth_tmpfiles 'tmp_scaleshift_.bin'])
         scalefac = scalefac + single(scaleshift)/10;
         if scalefac<0
             scalefac = 0;
@@ -85,21 +82,21 @@ while true
     end
 
     pause(0.01);
-    fid = fopen([pthenv 'tmp_zchoose_.bin'], 'r');
+    fid = fopen([pth_tmpfiles 'tmp_zchoose_.bin'], 'r');
     if fid>=3
         zchoosedigit = transpose(vec(char(fread(fid, '*uchar'))));
         fclose('all');
-        delete([pthenv 'tmp_zchoose_.bin'])
+        delete([pth_tmpfiles 'tmp_zchoose_.bin'])
         zchoose = [zchoose zchoosedigit];
         him.Parent.XLabel.String{2} = ['ENTERED SINGLE DIGIT ' zchoosedigit ', z ' bndstr ' limit frame is now ' zchoose ', ENTER ANOTHER DIGIT OR PRESS ENTER TO ACCEPT'];
     end
 
     pause(0.01);
-    fid = fopen([pthenv 'tmp_controlin_.bin'], 'r');
+    fid = fopen([pth_tmpfiles 'tmp_controlin_.bin'], 'r');
     if fid>=3
         controlin = fread(fid, '*uint8');
         fclose('all');
-        delete([pthenv 'tmp_controlin_.bin'])
+        delete([pth_tmpfiles 'tmp_controlin_.bin'])
         if controlin==1 %pressed enter
             if length(zinds)<2
                 zindstmp = str2double(zchoose);
@@ -174,7 +171,7 @@ end
 
 function roi_key_press_fcn(hfg, event, varargin)
 
-pthenv = varargin{1};
+pth_tmpfiles = varargin{1};
 eventkey = event.Key;
 eventmod = event.Modifier;
 
@@ -183,7 +180,7 @@ if strcmpi(eventkey, 'downarrow')
     if strcmpi(eventmod, 'shift')
         scaleshift = -5;
     end
-    fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
 
 elseif strcmpi(eventkey, 'uparrow')
@@ -191,23 +188,23 @@ elseif strcmpi(eventkey, 'uparrow')
     if strcmpi(eventmod, 'shift')
         scaleshift = 5;
     end
-    fid = fopen([pthenv 'tmp_scaleshift_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
 
 elseif isstrprop(eventkey, 'digit')
-    fid = fopen([pthenv 'tmp_zchoose_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_zchoose_.bin'], 'w');
     fwrite(fid, eventkey, 'uchar')
 
 elseif strcmpi(eventkey, 'return') || strcmpi(eventkey, '0')
-    fid = fopen([pthenv 'tmp_controlin_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_controlin_.bin'], 'w');
     fwrite(fid, 1, 'uint8')
 
 elseif strcmpi(eventkey, 'backspace')
-    fid = fopen([pthenv 'tmp_controlin_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_controlin_.bin'], 'w');
     fwrite(fid, 2, 'uint8')
 
 elseif strcmpi(eventkey, 'q')
-    fid = fopen([pthenv 'tmp_controlin_.bin'], 'w');
+    fid = fopen([pth_tmpfiles 'tmp_controlin_.bin'], 'w');
     fwrite(fid, 3, 'uint8')
 
 

@@ -38,7 +38,7 @@ opt = input_params_carl();
 
 %% loop over recordings
 
-pth_usefile_prefix_all = find_preprocessed_files(opt.main);
+[pth_usefile_prefix_all, pth_grandparent] = find_preprocessed_files(opt.main);
 
 for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
@@ -47,7 +47,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% assign filenames
 
-    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix_all{pai});
+    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix_all{pai}, pth_grandparent);
 
 
     %% load metadata
@@ -56,9 +56,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     md = load_flyg_metadata(ids, pth.fldr, md);
 
 
-
-    %% load and process stimulus/fictrac data
-
+    %% load and process daq 
 
     if opt.main.old_project
         [md, ts.vis] = load_stim(md, ids, opt.daq);
@@ -100,7 +98,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
         %%crop movie to regionex cuboid
         [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
-            crop_stacks(stack, croplim_all.(regionex), ids.recid, regionex, pth.fldr, ...
+            crop_stacks(stack, croplim_all.(regionex), ids.recid, regionex, pth.fldr, pth.tmpfiles, ...
             md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses

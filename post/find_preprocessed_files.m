@@ -1,4 +1,4 @@
-function pth_all = find_preprocessed_files(opts)
+function [pth_all, pth_grandparent] = find_preprocessed_files(opts)
 
 
 envname = getenv('HOSTNAME');
@@ -37,3 +37,6 @@ fn_pattern_mat = [fn_pattern_tif(1:end-4) '.mat'];
 pth_all_mat = rdir(fn_pattern_mat);
 pth_all = cat(1, pthz_all_tif, pth_all_mat);
 pth_all = unique(cellfun(@(x) x(1:end-3), {pth_all(:).name}, 'UniformOutput', false)); %unique files, whether tif or mat
+
+pth_grandparent = strsplit(pth_parent, filesep); %in case trailing filesep, or not
+pth_grandparent = [strjoin(pth_grandparent(1:end-2), filesep) filesep];

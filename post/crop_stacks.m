@@ -1,5 +1,5 @@
 function [stackcrop, stack_mnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
-    crop_stacks(stack, croplim, recid, regionex, pth_fldr, sz_crop, ...
+    crop_stacks(stack, croplim, recid, regionex, pth_fldr, pth_tmpfiles, sz_crop, ...
     use_hires, stack_hires_mnt, map_hires_lores, pth_mroi )
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
@@ -8,14 +8,13 @@ if ~exist('use_hires', 'var')
     use_hires = 0;
 end
 
-
 if isempty(croplim)
     spl = strsplit(regionex, '_');
     regionex_nounderscore = spl{1};
     
     [croplim, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     if isempty(croplim)
-        [croplim, croplimstr] = make_croplim(stack, sz_crop(4), pth_fldr, recid, regionex, regionex_nounderscore);
+        [croplim, croplimstr] = make_croplim(stack, sz_crop(4), pth_fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore);
     end
     pth_mroi = strrep(pth_mroi, 'nocroplim', croplimstr);
 end

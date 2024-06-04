@@ -1,4 +1,4 @@
-function maskmanual_all_roi_all_z = drawrois(stack, regionex, pth_maskmanual, flag_limit_one_manual_roi)
+function maskmanual_all_roi_all_z = drawrois(stack, regionex, pth_maskmanual, pth_tmpfiles, flag_limit_one_manual_roi)
 
 
 if ndims(stack)~=4
@@ -89,7 +89,7 @@ if draw_manual
             end
 
             [maskmanual_tmp, flag_quit_one_roi, flag_quit_all_rois] = ...
-                drawrois_oneimage(stackroidraw(:,:,szi), regionex_reformat, title_prefix, flag_one_image, flag_limit_one_manual_roi);
+                drawrois_oneimage(stackroidraw(:,:,szi), pth_tmpfiles, regionex_reformat, title_prefix, flag_one_image, flag_limit_one_manual_roi);
 
             if flag_one_image
                 maskmanual_tmp2 = maskmanual_tmp;

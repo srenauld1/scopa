@@ -56,6 +56,7 @@ hsvopt = opts_mroi.hsvopt;
 olayopt = opts_mroi.olayopt;
 
 pth_mroi_prefix = pth.mroi.(regionex)(1:end-4);
+pth_tmpfiles = pth.tmpfiles;
 
 xwid = md.xwid;
 zwid = md.zwid;
@@ -81,7 +82,7 @@ if use_drawn_rois
         if num_mroi_auto>1
             flag_limit_one_manual_roi = 1;
         end
-        maskmanual = drawrois(stack, regionex, pth_maskmanual, flag_limit_one_manual_roi);
+        maskmanual = drawrois(stack, regionex, pth_maskmanual, pth_tmpfiles, flag_limit_one_manual_roi);
     end
 else
     maskmanual = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %otherwise just ones
