@@ -30,8 +30,13 @@ end
 stack_mnt_flat_rsc = stack_mnt_flat;
 indnz = stack_mnt_flat~=0;
 
+envname = getenv('HOSTNAME');
+if ~isempty(regexp( envname, 'compute-', 'once' ))
+    hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked');
+else
+    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
+end
 
-hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
 set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pthenv));
 
 him = imshow(stack_mnt_flat, 'InitialMagnification', 'fit');
@@ -193,7 +198,7 @@ elseif isstrprop(eventkey, 'digit')
     fid = fopen([pthenv 'tmp_zchoose_.bin'], 'w');
     fwrite(fid, eventkey, 'uchar')
 
-elseif strcmpi(eventkey, 'return')
+elseif strcmpi(eventkey, 'return') || 
     fid = fopen([pthenv 'tmp_controlin_.bin'], 'w');
     fwrite(fid, 1, 'uint8')
 

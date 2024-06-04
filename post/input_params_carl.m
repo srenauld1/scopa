@@ -28,7 +28,7 @@ opt.main.old_project = 0; %for carl
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
 opt.daq.use_carls_epochs = 1; %0 for everybody else
-opt.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
+opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
 opt.daq.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen_sec = 0.8; %window length used to fit slope
@@ -132,7 +132,7 @@ opt.froi.within_mask_threshold = 0.5; %discard roi if more than within_mask_thre
 opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
 opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.froi.numrois_for_gif = 100; %how many roi to put in gif, big number to plot all, 0 to skip gif
+opt.froi.numrois_for_gif = 20; %how many roi to put in gif, big number to plot all, 0 to skip gif
 opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 opt.froi.do_other_plots = 0; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max

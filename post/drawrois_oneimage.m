@@ -4,6 +4,7 @@ function [maskroi, flag_quit_one_roi, flag_quit_all_rois] = ...
 
 fontsize = 15;
 
+
 [pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename);
 pthenv = [pthenv filesep];
 
@@ -23,7 +24,13 @@ end
 stack_rsc = stack;
 indnz = stack~=0;
 
-hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
+envname = getenv('HOSTNAME');
+if ~isempty(regexp( envname, 'compute-', 'once' ))
+    hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked');
+else
+    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
+end
+
 set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pthenv));
 
 him = imshow(stack, 'InitialMagnification', 'fit');
@@ -312,7 +319,7 @@ elseif strcmpi(eventkey, 'q')
     fwrite(fid, 3, 'uint8');
     fclose('all');
 
-elseif strcmpi(eventkey, 'return')
+elseif strcmpi(eventkey, 'return') || strcmpi(eventkey, '0')
     fid = fopen([pthenv 'tmp_roi_flag_.bin'], 'w');
     fwrite(fid, 4, 'uint8');
     fclose('all');

@@ -24,7 +24,14 @@ end
 
 %% show mean zt and decide if you still want to draw rois
 
-hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked') ;
+envname = getenv('HOSTNAME');
+if ~isempty(regexp( envname, 'compute-', 'once' ))
+    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');  %fullscreen makes it docked on O2
+else
+    hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked');
+end
+
+
 imshow(stack_mnzt, 'InitialMagnification','fit')
 axis image
 title(['region "' regionex_reformat '", mean z, mean t']);

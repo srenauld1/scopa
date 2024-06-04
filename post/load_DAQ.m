@@ -34,7 +34,7 @@ end
 % imaging rates and indicators are already smoothing neural activity, and visual system at least has very little power at 60 hz anyway (although not sure about other input modalities to our neurons)
 % downsampling behavior regularizes subsequent model fitting (and also speeds computation)
 % but this function does retain all available lag information by averaging during each slice index
-% also creates a timeseries for the entire volume too, as the final entry (this volume timeseries includes all flyback samples too)
+% also creates a timeseries for the entire volume too, as the final entry of the resampled matrix, for each daqvariable, (this volume timeseries includes all flyback samples too)
 % this function also differentiates all requested daq variables, using movingslope to reduce noise (increase slopelen_sec to reduce noise)
 % with movingslope there is no need for smoothing first, since slope window is built in
 % for circular variables, derivative operates on x and y components
