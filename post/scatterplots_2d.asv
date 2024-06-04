@@ -1,39 +1,24 @@
-function scatterplots(stack, fitin, roiinfo, md, opts) %3d scatterplots (2d plus color) of any available timeseries
 
-
-% will need a switch to crop to model timeseries length
-
-epochinds_ts_i = md.epochs.epochinds_ts_i;
-gif_visibility = 'on';
-fn_prefix = fitin.fn_save_prefix;
-epochinds_all = opts.epochinds;
-
-for rind = 1:length(epochinds_all)
-
-    epochinds = epochinds_all{rind};
-    epochstring = sprintf('%.0f,' , epochinds);
-    epochstring = epochstring(1:end-1);
-    tinds = find(ismember_each_element(md.epochs.epochinds_ts_i, epochinds));
-    tinew = ti(md.ti);
-
-
-    threshold_data = 0;
-    do3d = 0;
-    scatterplots_2d(xvars, yvars, colvars, do3d, threshold_data, ...
+function scatterplots_2d(xvars, yvars, colvars, do3d, threshold_data, ...
         epochinds, epochstring, fn_prefix, gif_visibility)
 
-    close all
-
+rescale_velocities = 1;
+if rescale_velocities
+    for kvi = 1:length(keepvars) %check ranges, rescale velocities
+        eval(['minmax_allvars_in(kvi,:) = [min(' keepvars{kvi} '), max(' keepvars{kvi} ') ];']) %get the values
+        % if endsWith(keepvars{kvi}, 'vel')
+        %     vel_rescale_mag = 1;
+        %     tmp = eval(keepvars{kvi});
+        %     cuevel_rscl = eval(keepvars{kvi});
+        %     cuevel_rscl(tmp<=0) = rescale(cuevel_rscl(tmp<=0), -vel_rescale_mag, 0); %rescale velocity independently for each direction
+        %     cuevel_rscl(tmp>=0) = rescale(cuevel_rscl(tmp>=0), 0, vel_rescale_mag); %rescale velocity independently for each direction
+        %     eval([keepvars{kvi} ' = cuevel_rscl;'])
+        % end
+        eval(['minmax_allvars_out(kvi,:) = [min(' keepvars{kvi} '), max(' keepvars{kvi} ') ];']) %get the values
+    end
 end
-
-
-
-
-function scatterplots_2d(xvars, yvars, colvars, epochinds, epochstring, fn_prefix)
-
-gif_visibility = 'on';
-threshold_data = 0;
-do3d = 0;
+numvars_to_plot_simultaneously = 2; %2 for 2d scatter
+varscombos = nchoosek(1:length(keepvars), numvars_to_plot_simultaneously); %inds for all possible combos of vars
 
 maxlagxy = 10;
 lagsxy = -maxlagxy:maxlagxy;
@@ -387,9 +372,3 @@ for cvi = 1:length(colorvars)
 
     end
 end
-
-
-
-
-
-

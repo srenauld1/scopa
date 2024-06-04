@@ -1,39 +1,33 @@
-function scatterplots(stack, fitin, roiinfo, md, opts) %3d scatterplots (2d plus color) of any available timeseries
 
+function scatterplots_2d_deprecated(cueang, cuevel, ballang, ballvel, ...
+    bumpang, bumprho, bumpvel, ampmean, amppeak, ampmu, ...
+    respgar, respgal, respnor, respnol, respgalrmean, respnolrmean, ...
+    do3d, colorvars, manualvars, threshold_data, ...
+    epochinds, epochstring, fn_prefix, gif_visibility)
 
-% will need a switch to crop to model timeseries length
+allvars = who; %all workspace vars
+excludevars = {'do3d', 'colorvars', 'manualvars', 'md', 'epochinds', 'epochstring', 'gif_visibility', 'fn_prefix', 'ampmean', 'ampmu'}; %variables to not plot
+keepvars = allvars(~matches(allvars, excludevars)); %variables to plot
+%keepvars = keepvars(matches(keepvars, cat(2, manualvars, colorvars))); %variables to plot
+keepvars = keepvars(matches(keepvars, manualvars)); %variables to plot
 
-epochinds_ts_i = md.epochs.epochinds_ts_i;
-gif_visibility = 'on';
-fn_prefix = fitin.fn_save_prefix;
-epochinds_all = opts.epochinds;
-
-for rind = 1:length(epochinds_all)
-
-    epochinds = epochinds_all{rind};
-    epochstring = sprintf('%.0f,' , epochinds);
-    epochstring = epochstring(1:end-1);
-    tinds = find(ismember_each_element(md.epochs.epochinds_ts_i, epochinds));
-    tinew = ti(md.ti);
-
-
-    threshold_data = 0;
-    do3d = 0;
-    scatterplots_2d(xvars, yvars, colvars, do3d, threshold_data, ...
-        epochinds, epochstring, fn_prefix, gif_visibility)
-
-    close all
-
+rescale_velocities = 1;
+if rescale_velocities
+    for kvi = 1:length(keepvars) %check ranges, rescale velocities
+        eval(['minmax_allvars_in(kvi,:) = [min(' keepvars{kvi} '), max(' keepvars{kvi} ') ];']) %get the values
+        % if endsWith(keepvars{kvi}, 'vel')
+        %     vel_rescale_mag = 1;
+        %     tmp = eval(keepvars{kvi});
+        %     cuevel_rscl = eval(keepvars{kvi});
+        %     cuevel_rscl(tmp<=0) = rescale(cuevel_rscl(tmp<=0), -vel_rescale_mag, 0); %rescale velocity independently for each direction
+        %     cuevel_rscl(tmp>=0) = rescale(cuevel_rscl(tmp>=0), 0, vel_rescale_mag); %rescale velocity independently for each direction
+        %     eval([keepvars{kvi} ' = cuevel_rscl;'])
+        % end
+        eval(['minmax_allvars_out(kvi,:) = [min(' keepvars{kvi} '), max(' keepvars{kvi} ') ];']) %get the values
+    end
 end
-
-
-
-
-function scatterplots_2d(xvars, yvars, colvars, epochinds, epochstring, fn_prefix)
-
-gif_visibility = 'on';
-threshold_data = 0;
-do3d = 0;
+numvars_to_plot_simultaneously = 2; %2 for 2d scatter
+varscombos = nchoosek(1:length(keepvars), numvars_to_plot_simultaneously); %inds for all possible combos of vars
 
 maxlagxy = 10;
 lagsxy = -maxlagxy:maxlagxy;
@@ -53,6 +47,14 @@ if do3d
     dimstring = '3d';
 else
     dimstring = '2dcol';
+end
+
+epochs_where_cuevel_varies = [1 4]; %2 and 3 are constant cuevel, and 5 is no vis (dark)
+if any(ismember_each_element(epochs_where_cuevel_varies, epochinds))
+    skip_cuevel = 0;
+else
+    skip_cuevel = 1; %skip cuevel when cuevel doens't vary
+    skip_cuevel = 0; %skip cuevel when cuevel doens't vary
 end
 
 ncol = 256; %num colors
@@ -110,6 +112,15 @@ for cvi = 1:length(colorvars)
         eval(['dattmp2 = ' keepvars{varscombos(vci,2)} ';']) %get the values
         eval('labtmp1 =  keepvars{varscombos(vci,1)} ;') %get the name
         eval('labtmp2 =  keepvars{varscombos(vci,2)} ;') %get the name
+
+        if endsWith(labtmp1, 'vel') & endsWith(labtmp2, 'lrmean') %convert vel to speed if it'll be plotted against a 'lrmean' var
+            dattmp1 = abs(dattmp1);
+            labtmp1 = [labtmp1(1:end-3) 'speed'];
+        elseif endsWith(labtmp2, 'vel') & endsWith(labtmp1, 'lrmean') %convert vel to speed if it'll be plotted against a 'lrmean' var
+            dattmp2 = abs(dattmp2);
+            labtmp2 = [labtmp2(1:end-3) 'speed'];
+        end
+
 
         skipplot = 0; %some combos will not be plotted (criteria below)
         allvars = who; %all workspace vars
@@ -387,9 +398,3 @@ for cvi = 1:length(colorvars)
 
     end
 end
-
-
-
-
-
-

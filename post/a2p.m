@@ -116,39 +116,48 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     end
 
     %% compute population features (e.g. bump), add them to ts
+    % 
+    % pffn = fieldnames(opt.pf);
+    % for pfi = 1:numel(pffn)
+    %     ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, opt.pf.(pffn{pfi}), md, pth);
+    % end
+    % 
+    % %% model/predict
+    % 
+    % 
+    % for si = 1:numel(opt.fit)
+    %     dochoose = 1;
+    %     choosecount = 0;
+    %     while dochoose && opt.fit(si).do
+    % 
+    %         choosecount = choosecount + 1;
+    %         [fitin, dochoose] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
+    %         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
+    % 
+    %         opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
+    %         opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
+    %         opt.fit.mdlname = 'fnet_A_xsie';
+    %         opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
+    %         fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
+    % 
+    %     end
+    % end
+     
+     
+    for si = 1:numel(opt.scatter)
+        dochoose = 1;
+        choosecount = 0;
+        while dochoose && opt.scatter(si).do
 
-    pffn = fieldnames(opt.pf);
-    for pfi = 1:numel(pffn)
-        ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, opt.pf.(pffn{pfi}), md, pth);
-    end
-
-    %% model/predict
-
-
-    for si = 1:numel(opt.fit)
-        dofit = 1;
-        fitcount = 0;
-        while dofit && opt.fit(si).do
-
-            fitcount = fitcount + 1;
-            [fitin, dofit] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, fitcount, dofit); %select indv/depv for fit using input params
+            choosecount = choosecount + 1;
+            [fitin, dochoose] = choose_timeseries(opt.scatter(si), ts, md, pth.tsuse.scatter, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
             stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
-
-            opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
-            opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
-            opt.fit.mdlname = 'fnet_A_xsie';
-            opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
-            fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
+        
+            scatterplots(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.scatter(si)) %3d scatterplots (2d plus color) of any available timeseries
 
         end
     end
 
-
-    %% scatterplots
-
-    if opt.scatter.do
-        scatterplots(ts, opt.scatter, fn_save_prefix) %3d scatterplots (2d plus color) of all available timeseries
-    end
 
     %% summary plot
 

@@ -17,12 +17,12 @@ else
 
         combinecell = {};
         for vpfi = 1:length(fieldspec_parent_fields)
-            combinecell{vpfi} = opt(ofi).vars.(fieldspec_parent_fields{vpfi});
+            combinecell{vpfi} = opt(ofi).(fieldspec_parent_fields{vpfi});
         end
         if strcmp(opt(ofi).vars_combine, 'any')
             combinecell = table2cell(combinations(combinecell{:})); %make all combos of indv/depv outer cells
             for vpfi = 1:length(fieldspec_parent_fields)
-                opt(ofi).vars.(fieldspec_parent_fields{vpfi}) = combinecell(:, vpfi);
+                opt(ofi).(fieldspec_parent_fields{vpfi}) = combinecell(:, vpfi);
             end
         elseif strcmp(opt(ofi).vars_combine, 'each')
             fuke=2;
@@ -31,7 +31,7 @@ else
 
 
         for vpfi = 1:length(fieldspec_parent_fields)
-            outercell = opt(ofi).vars.(fieldspec_parent_fields{vpfi});
+            outercell = opt(ofi).(fieldspec_parent_fields{vpfi});
             for oci = 1:length(outercell) %for each outer cell (results are kept separate)
                 count(vpfi) = count(vpfi)+1;
                 innercell = outercell{oci};

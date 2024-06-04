@@ -3,6 +3,7 @@ function scatterplots(stack, fitin, roiinfo, md, opts) %3d scatterplots (2d plus
 
 % will need a switch to crop to model timeseries length
 
+ti = md.ti;
 epochinds_ts_i = md.epochs.epochinds_ts_i;
 gif_visibility = 'on';
 fn_prefix = fitin.fn_save_prefix;
@@ -13,8 +14,7 @@ for rind = 1:length(epochinds_all)
     epochinds = epochinds_all{rind};
     epochstring = sprintf('%.0f,' , epochinds);
     epochstring = epochstring(1:end-1);
-    tinds = find(ismember_each_element(md.epochs.epochinds_ts_i, epochinds));
-    tinew = ti(md.ti);
+    tinds = find(ismember_each_element(epochinds_ts_i, epochinds));
 
 
     threshold_data = 0;

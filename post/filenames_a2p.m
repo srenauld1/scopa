@@ -44,6 +44,9 @@ pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
 pth_epochinfo = [pth_fldr recid_underscore '_epochinfo_.mat'];
 
 pth_tmpfiles = [pth_grandparent tmp_folder_name filesep];
+if ~isdir(pth_tmpfiles)
+    mkdir(pth_tmpfiles)
+end
 
 %% variables for each regionex
 
@@ -152,12 +155,12 @@ end
 
 pffn = fieldnames(opt.pf);
 for pfi = 1:numel(pffn)
-    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fit.depvpre_str]))
+    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fit.vars.depvpre_str]))
         opt.pf.(pffn{pfi}).do = 0;
     end
 end
 
-if all(cellfun(@isempty, [opt.fit.depvpre_str]))
+if all(cellfun(@isempty, [opt.fit.vars.depvpre_str]))
     opt.fit.do_predict = 0;
 end
 
@@ -229,6 +232,7 @@ for pfi = 1:numel(pffn)
 end
 
 pth.tsuse.fit = [pth_fldr 'tsuse_finfits_.mat'];
+pth.tsuse.scatter = [pth_fldr 'tsuse_finscatter_.mat'];
 
 %% assign to struct
 

@@ -4,6 +4,7 @@ function scatterplots_4d(cueang, cuevel, ballang, ballvel, ...
     respgar, respgal, respnor, respnol, meang, meann, ...
     md, epochinds, fn_prefix)
 
+error("function needs to be updated, scatterplots_2d is better")
 
 % [outputArray, cmap, colorScaled] = dogmodel_colormap(inputArray, minwghts, nColors);
 
