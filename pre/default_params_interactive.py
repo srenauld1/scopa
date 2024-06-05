@@ -10,16 +10,16 @@ fnind_fn_prefix = '' #string, the job id (before any underscore if arrayed) for 
 pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 scopatmpdir = '' #string, keep empty
 
-recdate = ['20240529'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+recdate = ['20231119'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['1'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
-halfwidth_window_bgsub = 5 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
+halfwidth_window_bgsub = 0 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
 len_window_smooth_t_mcp = 0 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp = 0 skips smoothing)
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
@@ -29,7 +29,7 @@ num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model 
 
 do_stitch = 0 
 
-use_background_subtracted = 1 #use the registered data that had background subtracted before registration  
+use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
 use_denoised = 0 #use the deepcad denoised data, or just the caiman registered data, if 1,  
 epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)
 
@@ -38,7 +38,7 @@ len_window_smooth_t_rsc = 30 #gaussian window length in matlab smoothdata for sm
 
 do_crop = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
-do_extract = 1 #caiman source extraction 
+do_extract = 0 #caiman source extraction 
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 regionex = ['eb1', 'eb2'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 

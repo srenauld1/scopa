@@ -1,6 +1,9 @@
-function [out, outmeans, bin_prctiles] = probability_bin(in, numbin_goal, outflag)
+function [out, outmeans, bin_prctiles] = probability_bin(in, numbin_goal, outflag, minsamp)
 
 %%
+if ~exist('minsamp', 'var')
+    minsamp = 20;
+end
 if ~exist('outflag', 'var')
     outflag = 0;
 end
@@ -21,7 +24,6 @@ inds = reshape(1:numel(in), size(in));
 in = {in};
 inds = {inds};
 
-minsamp = 20;
 flag_ties = 0;
 [outvals, outinds, flag_ties] = median_split_input(in, inds, numbin_goal, minsamp, flag_ties);
 
@@ -100,7 +102,7 @@ nsamp_mean = mean(numsamp);
 numbin_curr = length(outvals);
 
 if nsamp_min<minsamp
-    error("too few samples per bin, adjust requested number bins")
+    error("fewer than " + num2str(minsamp) + " samples per bin, adjust requested number bins or change minimum samples allowed (minsamp)")
 end
 
 if numbin_curr<numbin_goal

@@ -4,7 +4,7 @@ function [fitin, dochoose] = ...
 % for convenience, saves substrings used to match variable within 'ts' 
 % as table ('fieldspec_all') and as string ('fieldspecstr_all')
 
-if fitcount>1 %the set of all indv/depv combos is determined on the first fit (fitcount==1), so subsequent calls to choose_timeseries just  
+if fitcount>1 %the set of all 'vars' fields combos is determined on the first fit (fitcount==1), so subsequent calls to choose_timeseries just  
 
     load(pth_tsuse_save)
 
@@ -20,7 +20,7 @@ else
             combinecell{vpfi} = opt(ofi).vars.(fieldspec_parent_fields{vpfi});
         end
         if strcmp(opt(ofi).vars_combine, 'any')
-            combinecell = table2cell(combinations(combinecell{:})); %make all combos of indv/depv outer cells
+            combinecell = table2cell(combinations(combinecell{:})); %make all combos of vars fields outer cells
             for vpfi = 1:length(fieldspec_parent_fields)
                 opt(ofi).vars.(fieldspec_parent_fields{vpfi}) = combinecell(:, vpfi);
             end

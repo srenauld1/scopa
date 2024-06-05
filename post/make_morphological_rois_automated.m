@@ -30,9 +30,9 @@ if extract_morph_rois_in_3d==1 && size(stack_mnt, 3)==1 %if z dim is singleton
     extract_morph_rois_in_3d = 0; %override if stack_mnt is only 2d
 end
 
-if extract_morph_rois_in_3d==0 && size(stack_mnt, 3)>1
-    stack_mnt = rescale(mean(stack_mnt, 3));
-end
+% if extract_morph_rois_in_3d==0 && size(stack_mnt, 3)>1
+%     stack_mnt = rescale(mean(stack_mnt, 3));
+% end
 
 
 %% mask mean stack_mnt with any available manual mask (if none was made, maskmanual is all ones, ie has no effect)
@@ -197,32 +197,36 @@ else
         case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto groups
 
             if extract_morph_rois_in_3d
-                [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+                [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto, 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
             else
                 uz = unique(maskz);
                 for uzi = 1:numel(uz)
                     zinds_each{uzi} = find(maskz==uz(uzi));
                     num_vox_each_slice(uzi) = numel(zinds_each{uzi});
                     frac_vox_each_slice(uzi) = num_vox_each_slice(uzi) / numel(maskz);
-                    frac_mroi_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * num_mroi_auto;
+                    ideal_mroi_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * num_mroi_auto;
                 end
-                rnds = pow2(round(log2(frac_mroi_auto_each_slice))); %rnds = round(frac_mroi_auto_each_slice);
-                
+                rnds = pow2(round(log2(ideal_mroi_auto_each_slice))); %rnds = round(frac_mroi_auto_each_slice);
+
                 num_mroi_change = sum(rnds);
-                num_mroi_auto = num_mroi_change;
+                if num_mroi_auto~=num_mroi_change
+                    sprintf("warning, changing num_mroi_auto from " + num2str(num_mroi_auto) + " to " + num2str(num_mroi_change))
+                    pause(2)
+                    num_mroi_auto = num_mroi_change;
+                end
 
                 tmp = zeros([numel(masky) 2], 'uint16');
                 centmp = [];
                 bin_prctiles = [];
                 rndsprev = 0;
                 for uzi = 1:numel(rnds)
-                    [tmp_xy, centmp_xy, bin_prctiles_xy] = probability_bin([masky(zinds_each{uzi}), maskx(zinds_each{uzi})], rnds(uzi), 1); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+                    [tmp_xy, centmp_xy, bin_prctiles_xy] = probability_bin([masky(zinds_each{uzi}), maskx(zinds_each{uzi})], rnds(uzi), 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
                     currslice = uz(uzi);
                     tmp(zinds_each{uzi},:) = tmp_xy+rndsprev;
                     rndsprev = max(vec(tmp));
                     centmp_xyz = [centmp_xy; ones(1, size(centmp_xy, 2))*currslice];
                     centmp = [centmp centmp_xyz];
-                    bin_prctiles = [bin_prctiles bin_prctiles_xy];
+                    bin_prctiles = [bin_prctiles; bin_prctiles_xy];
                 end
             end
             if size(unique(tmp.', 'rows'), 1)~=1

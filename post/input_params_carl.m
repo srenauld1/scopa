@@ -276,7 +276,8 @@ opt.scatter.do = 1;
 
 opt.scatter(1).vars.x_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.scatter(1).vars.y_str{1} = {['ball, *'], ['vis, *']};
-% opt.scatter(1).vars.z_str{1} = {['']};
+opt.scatter(1).vars.z_str{1} = {[['vis, *']]};
+opt.scatter(1).vars.z_str{2} = {['resp, fullfov, cm*, *']};
 
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scatter(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
