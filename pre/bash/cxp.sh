@@ -25,13 +25,13 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
-do_stitch=1 #0 or 1, no space after =, stitch together denoised z slices into one tif
+do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
+do_stitch=0 #0 or 1, no space after =, stitch together denoised z slices into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
-do_extract=1 #0 or 1, no space after =, caiman source extraction (python)
+do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
-do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0-8 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+do_copyfiles_sequence=(0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+jobarrayind=( 0-2 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
@@ -219,7 +219,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:30:00
                 ntasks_str=1
-                if "$HALFWIDTH_WINDOW_BGSUB"==0; then #use less memory if no bg subtraction
+                if "${HALFWIDTH_WINDOW_BGSUB[@]}"==0; then #use less memory if no bg subtraction
                     cpus_per_task_str=5
                     mem_per_cpu_str=3G
                 else #use more memory if using bg subtraction
