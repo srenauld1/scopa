@@ -19,7 +19,6 @@ folder_substring = ['*'] #list of strings, '*' for any, match recordings only in
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_make_registration_template = 0 #make template for regitrsation of multiple trials
 registration_template_group_id = [''] #empty string to skip; list of strings, each formatted recdate_fly with optional wildcards . . . if do_register=1, for each individual string in the list, all trials matching string are used to create a registration template (with rolling median) in job mrt.sbatch, then registration occurs (in job mcp.sbatch) for trials matching recdate, fly, trial, folder_substring above; any matching recordings that also match any string in REGISTRATION_TEMPLATE_GROUP_ID use template created in mrt.sbatch; list allows this to occur in parallel, for each string; if mcp matches do not match with mrt matches, no problem, they just won't use the template created in
 
 do_register = 0 #caiman normCorre registration 

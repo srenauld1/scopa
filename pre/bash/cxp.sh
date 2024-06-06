@@ -58,7 +58,7 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 ############ SET PARAMS FOR ANALYSIS ############
 
-REGISTRATION_TEMPLATE_GROUP_ID=('20240601_1' '20240602_2') #empty string to skip; list of strings, each formatted recdate_fly with optional wildcards . . . if do_register=1, for each individual string in the list, all trials matching string are used to create a registration template (with rolling median) in job mrt.sbatch, then registration occurs (in job mcp.sbatch) for trials matching recdate, fly, trial, folder_substring above; any matching recordings that also match any string in REGISTRATION_TEMPLATE_GROUP_ID use template created in mrt.sbatch; list allows this to occur in parallel, for each string; if mcp matches do not match with mrt matches, no problem, they just won't use the template created in 
+REGISTRATION_TEMPLATE_GROUP_ID=('202406[01]_[1]_[1]_[60312]') #empty string to skip; a single string, formatted recdate_fly_trial_folderSubstring; use brackets to designate which single trial is used as template, while all trials matching string outside brackets are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template)
 
 REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
@@ -166,9 +166,6 @@ done >"$PTH_PARSFILE" #write common input args to txt file
 
 sbatch_job_name_sequence=() #list of sbatch jobs run by cxp.sh (space delimited, enclosed by parentheses, no quotes required)
 
-if [ "$do_register" == 1 ] && [ -n "${REGISTRATION_TEMPLATE_GROUP_ID}" ]; then
-    sbatch_job_name_sequence+=(mrt.sbatch)
-fi
 if [ "$do_register" == 1 ]; then
     sbatch_job_name_sequence+=(mcp.sbatch)
 fi
@@ -218,13 +215,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             mem_per_cpu_str=5G
         else
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
-            if [ "$sbatch_job_name" == mrt.sbatch ]; then
-                partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=00:30:00
-                ntasks_str=1
-                cpus_per_task_str=5
-                mem_per_cpu_str=3G
-            elif [ "$sbatch_job_name" == mcp.sbatch ]; then
+            if [ "$sbatch_job_name" == mcp.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:30:00
                 ntasks_str=1

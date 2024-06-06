@@ -32,7 +32,7 @@ class parse_pars_file():
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      do_make_registration_template, registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, 
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, 
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 
@@ -94,12 +94,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         nargs=1, 
         type=int,
         default=[halfwidth_window_bgsub],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_make_registration_template",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_make_registration_template],  # default if nothing is provided
     )
     CLI.add_argument(
         "--registration_template_group_id",  # name on the CLI - drop the `--` for positional/required parameters
@@ -323,7 +317,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
     file_matching_style = args.file_matching_style[0] 
 
-    do_make_registration_template = int(args.do_make_registration_template[0])
     if isinstance(args.registration_template_group_id[0], list):
         registration_template_group_id = args.registration_template_group_id[0] #keep as list
     else:
@@ -379,7 +372,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      do_make_registration_template, registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, 
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, 
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc, 

@@ -12,9 +12,10 @@ from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 
-def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
-    ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
+
+    ########################## LOAD STACK, PREPARE VARIABLES ##########################
 
     print("\n\n\nENTERING REGISTRATION SCRIPT")
 
@@ -65,6 +66,9 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
     Y = Y.astype('uint16')
 
 
+
+    ########################## BACKGROUND SUBTRACTION (OPTIONAL) ##########################
+
     if halfwidth_window_bgsub:
 
         print("DOING LINE-BY-LINE BACKGROUND SUBTRACTION")
@@ -87,6 +91,9 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         
    
+
+    ########################## TEMPORAL SMOOTHING (OPTIONAL) ##########################
+
     if len_window_smooth_t_mcp: #if you smooth before registering (very noisy data), create another file for smoothed movie
 
         if register_in_2d: #for planar extraction write one presmoothed z at a time
@@ -112,7 +119,15 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         # Y = Y.astype('uint16')
         print("MIN AFTER SMOOTHING " + str(np.min(Y)))
 
+
+    ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
+
+
+    FK = 2
     
+
+    ########################## MOTION CORRECTION (CAIMAN NORMCORRE) ##########################
+
     min_mov = np.min(Y).astype('float32')
 
     if register_in_2d: 
@@ -142,7 +157,6 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         opts_dict, indices_ex, fnadd = configs(register_in_2d = register_in_2d, index_extraction_param_set = 'default', fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
-        fnmatch.filter(pth_tif_write_tmp, '*cmrg*')
         #sys.setprofile(tracefunc)
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True)
@@ -159,7 +173,6 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         pth_mmap_reg = cm.save_memmap(input_for_save_memmap, base_name=basename_memap, order='C', border_to_0=border_to_0, dview=dview) # save in order C (motion_correct above has to save in order F)
         Ynew, dims_spatial_rg, dim_time_rg = cm.load_memmap(pth_mmap_reg) 
         Ynew = np.reshape(Ynew.T, [dim_time_rg] + list(dims_spatial_rg), order='F') 
-
 
         os.remove(mc.mmap_file[0]) #remove the mmap file in F order 
         os.remove(pth_mmap_reg) #remove the mmap file in C order 
@@ -187,6 +200,9 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         plot_gif(Ynew, filename_gif, indsz = slice(3, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
 
 
+
+    ########################## WRITE REGISTERED STACK ##########################
+
     mnmv = np.min(Ynew).astype('float32')
     Ynew -= mnmv #make nonnegative before converting to uint16
     if np.max(Ynew) > 65535:
@@ -201,6 +217,9 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         Ynew = np.transpose(Ynew, (0, 3, 2, 1)).reshape(Ynew_shape[0] * Ynew_shape[3], Ynew_shape[2], Ynew_shape[1])
     imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
+
+
+    ########################## SEPARATE Z SLICES TO PREPARE FOR OPTIONAL DENOISING ##########################
 
     if carls_old_project: 
         separate_z_slices_for_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
