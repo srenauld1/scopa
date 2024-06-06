@@ -12,12 +12,26 @@ import ast
 
 
 def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_register, do_denoise, do_stitch, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
+                 do_make_registration_template, registration_template_group_id, do_register, do_denoise, do_stitch, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
     
     pth_fnind = pth_fldr_fnind + fnind_fn_prefix + '_' + str(recording_index[0]) + '_.txt'
 
+    if do_make_registration_template: #only if do_make_registration_template, overwrite recdate, fly, trial, folder_substring with substrings from registration_template_group_id
+        print("\n\n\nYOU REQUESTED do_register WITH NONEMPTY registration_template_group_id, \nSEARCHING FOR FILES MATCHING registration_template_group_id TO MAKE REGISTRATION TEMPLATE, \nAND CHANGING file_matching_style TO 'each'")
+        file_matching_style = 'each'
+        recdate = []
+        fly = []
+        trial = []
+        folder_substring = []
+        for rtgid in registration_template_group_id:
+            recdate.append(rtgid.split('_')[0])
+            fly.append(rtgid.split('_')[1])
+            trial.append(rtgid.split('_')[2])
+            folder_substring.append(rtgid.split('_')[3])
+
+    
     if not first_job:
         with open(pth_fnind) as f1:
             print("\n\n\nSINCE THIS IS A JOB INITIATED BY CXP.SH, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
@@ -56,7 +70,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
         pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine, since both patterns are valid as input
 
-        if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
+        if do_make_registration_template or do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
             
             if filepatspec[2]=='*':
                 fn_suffix_flyg = '_*_trial_*_*.tif'
@@ -84,7 +98,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     pth_allfiles = pth_allfiles_singles_full + pth_allfiles_tif_with_mat + pth_allfiles_duplicates #combine 
     pth_allfiles = natsorted(pth_allfiles) #DON'T FORGET TO SORT NATURALLY (NATURALLY)
 
-    if do_register:
+    if do_make_registration_template or do_register:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]
     else:
         fn_suffixes_all = [fn_suffix_scopa]

@@ -128,7 +128,7 @@ catch
         num_mroi = num_mroi_auto;
         [mask_roi_vec, centroids_roi, num_mroi] = ...
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
-            num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
+            num_mroi_auto, extract_morph_rois_in_3d, 'edge', 'skeleton', ...
             xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
             edgethresh, edgesig, closing_element_size, regionex, hsvopt, olayopt, do_other_plots);
 
@@ -169,7 +169,7 @@ end
 
 %% compute morphological roi responses
 
-resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
+resp = extract_roi_responses(stack(:,:,1,:), mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
 pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 

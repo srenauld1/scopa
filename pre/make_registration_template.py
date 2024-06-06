@@ -12,11 +12,8 @@ from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 
-def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def make_registration_template(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
-    ##########################   BACKGROUND SUBTRACTION, TEMPORAL SMOOTHING, AND CAIMAN NORMCORRE MOTION CORRECTION   ##########################
-
-    print("\n\n\nENTERING REGISTRATION SCRIPT")
 
     if use_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -25,10 +22,7 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
-    if halfwidth_window_bgsub:
-        pth_tif_write = pth_prefix + '_bksb_cmrg_.tif'
-    else:
-        pth_tif_write = pth_prefix + '_cmrg_.tif'
+    pth_tif_write = pth_prefix + '_rgtemplate_.tif'
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
 
@@ -86,32 +80,6 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         Y = Y.astype('uint16')
         print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
                         
-   
-    if len_window_smooth_t_mcp: #if you smooth before registering (very noisy data), create another file for smoothed movie
-
-        if register_in_2d: #for planar extraction write one presmoothed z at a time
-            pth_tif_presmooth = ['']*len(zindall)
-            for zind in zindall: #for every z slice 
-                print("WRITING PRESMOOTHED SLICE " + str(zind))
-                pth_tif_presmooth[zind] = pth_tif_write_tmp[:-4] + str(zind) + '_presmooth_.tif'
-                imwrite(pth_tif_presmooth[zind], Y[:,:,:,zind].squeeze(), bigtiff=True, photometric='minisblack') 
-        else: # 
-            print("WRITING ALL PRESMOOTHED SLICES" )
-            pth_tif_presmooth = [pth_tif_write_tmp[:-4] + 'all_presmooth_.tif']
-            imwrite(pth_tif_presmooth[0], Y.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
-    
-        print("TEMPORALLY SMOOTHING MOVIE BEFORE REGISTRATION")
-
-        dimtmp_presmooth = Y.shape
-        numsigma_smooth_prereg = 5.0
-        sigma_smooth_prereg = (len_window_smooth_t_mcp - 1) / numsigma_smooth_prereg / 2
-        Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
-        Y = Y.reshape(dimtmp_presmooth)
-        # mnmv = np.min(Y).astype('float32')
-        # Y -= mnmv #make movie nonnegative (not sure this is necessary)
-        # Y = Y.astype('uint16')
-        print("MIN AFTER SMOOTHING " + str(np.min(Y)))
-
     
     min_mov = np.min(Y).astype('float32')
 
@@ -142,15 +110,10 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
         opts_dict, indices_ex, fnadd = configs(register_in_2d = register_in_2d, index_extraction_param_set = 'default', fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
-        fnmatch.filter(pth_tif_write_tmp, '*cmrg*')
         #sys.setprofile(tracefunc)
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True)
         input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
-        if len_window_smooth_t_mcp: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
-            input_for_save_memmap = mc.apply_shifts_movie(pth_tif_presmooth[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
-            input_for_save_memmap = [input_for_save_memmap] #so must pass nd array to save_memmap below
-            os.remove(pth_tif_presmooth[countz])
 
         os.remove(pth_tif_write_tmp)
 
@@ -180,31 +143,46 @@ def register(pth_tif_read, pth_prefix, md, register_in_2d, halfwidth_window_bgsu
 
     Y = None
 
-    if makeplots:
-        mxmv = np.max(Ynew)
-        #im_montage(Ynew[10,:,:,:], vmin=mnmv, vmax=mxmv) #view montage to check registration
-        filename_gif = pth_tif_write[:-4] + '.gif'
-        plot_gif(Ynew, filename_gif, indsz = slice(3, 4, 1), indst = slice(0, 20, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+#     dims, T = cm.base.movies.get_file_size(fname, var_name_hdf5=var_name_hdf5)
+#     Ts = np.arange(T)[subidx].shape[0]
+    
+#     use_different_number_frames_in_2d_and_3d_templates = 0 #WILSONLAB, CFRW, 240218, 0 TO MAKE 2D AND 3D HAVE SAME TEMPLATE NUM FRAMES (SET TO 1 FOR ORIGINAL)
+#     if use_different_number_frames_in_2d_and_3d_templates:
+#         step = Ts // 10 if is3D else Ts // 50 #this was the original line
+#     else:
+#         goal_frames_in_template = 50
+#         step = Ts // goal_frames_in_template 
+    
+#     corrected_slicer = slice(subidx.start, subidx.stop, step + 1)
+#     m = cm.load(fname, var_name_hdf5=var_name_hdf5, subindices=corrected_slicer)
 
+#     if len(m.shape) < 3:
+#         m = cm.load(fname, var_name_hdf5=var_name_hdf5)
+#         m = m[corrected_slicer]
+#         logging.warning("Your original file was saved as a single page " +
+#                         "file. Consider saving it in multiple smaller files" +
+#                         "with size smaller than 4GB (if it is a .tif file)")
 
-    mnmv = np.min(Ynew).astype('float32')
-    Ynew -= mnmv #make nonnegative before converting to uint16
-    if np.max(Ynew) > 65535:
-        raise Exception("clipping will occur when converting to uint16")
-    print("MIN AFTER REGISTRATION " + str(mnmv))
-    Ynew = Ynew.astype('uint16')
-    Ynew_shape = Ynew.shape
-    print(Ynew_shape)
-    if len(Ynew.shape)==3:# or Y.shape[3]==1: #transpose into tzyx, collapse t and z (if z exists) 
-        Ynew = np.transpose(Ynew, (0, 2, 1)).reshape(Ynew_shape[0], Ynew_shape[2], Ynew_shape[1])
-    else:
-        Ynew = np.transpose(Ynew, (0, 3, 2, 1)).reshape(Ynew_shape[0] * Ynew_shape[3], Ynew_shape[2], Ynew_shape[1])
-    imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+#     if is3D:
+#         m = m[:, indices[0], indices[1], indices[2]]
+#     else:
+#         m = m[:, indices[0], indices[1]]
 
-
-    if carls_old_project: 
-        separate_z_slices_for_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
-    else:
-        separate_z_slices_for_denoising(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
-
-
+#     if template is None:
+#         if gSig_filt is not None:
+#             m = cm.movie(
+#                 np.array([high_pass_filter_space(m_, gSig_filt) for m_ in m]))
+#         if is3D:     
+#             # TODO - motion_correct_3d needs to be implemented in movies.py
+#             template = caiman.motion_correction.bin_median_3d(m) # motion_correct_3d has not been implemented yet - instead initialize to just median image
+# #            template = caiman.motion_correction.bin_median_3d(
+# #                    m.motion_correct_3d(max_shifts[2], max_shifts[1], max_shifts[0], template=None)[0])
+#         else:
+#             if not m.flags['WRITEABLE']:
+#                 m = m.copy()
+#             register_template = 0 #WILSONLAB, CFRW, 240218, SWITCH OFF TEMPLATE REGISTER, IT CAN MAKE A BAD TEMPLATE FOR A NOISY MOVIE 
+#             if register_template:
+#                 template = caiman.motion_correction.bin_median(
+#                         m.motion_correct(max_shifts[1], max_shifts[0], template=None)[0])
+#             else:
+#                 template = caiman.motion_correction.bin_median(m)

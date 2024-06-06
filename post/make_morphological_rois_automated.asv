@@ -1,5 +1,5 @@
 
-function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
+function [mask_roi_vec, centroids_roi, num_mroi_auto_initial] = ...
     make_morphological_rois_automated(stack_mnt, maskmanual, ...
     num_mroi_auto_initial, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
     xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
@@ -147,8 +147,6 @@ mask_allroi_approx = logical(mask_allroi_approx);
 
 %% find 3d mask centroids
 
-num_mroi_final = num_mroi_initial; %as of 240605 these will match for all cases except 'uniform' or 'uniformp' where extract_morph_rois_in_3d~=0
-
 if num_mroi_auto_initial == 1 %for finding a single centroid
 
     centroids_roi = find_roi_centroids(mask_allroi_approx);
@@ -200,11 +198,8 @@ else
         case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto_initial groups
 
             if extract_morph_rois_in_3d
-                
                 [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto_initial, 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
-            
-            else %else split into roughly equal area rois on each slice in mask, rounding number rois for each slice to nearest power of 2 proportional to number of voxels relative to total (typically lots of inaccuracy there)
-               
+            else
                 uz = unique(maskz);
                 for uzi = 1:numel(uz)
                     zinds_each{uzi} = find(maskz==uz(uzi));
@@ -216,7 +211,7 @@ else
 
                 num_mroi_final = sum(rnds);
                 if num_mroi_auto_initial~=num_mroi_final
-                    sprintf("warning, changing num_mroi_auto_initial is " + num2str(num_mroi_auto_initial) + " while num_mroi_final is " + num2str(num_mroi_final))
+                    sprintf("warning, changing num_mroi_auto_initial from " + num2str(num_mroi_auto_initial) + " to " + num2str(num_mroi_final))
                     pause(2)
                 end
 
@@ -365,7 +360,7 @@ if do_plots
 
         %3d scatter, each roi a different hue
         hfg = figure; hold on
-        for i = 1:num_mroi_auto_final %overlay each pixel in its indexed color onto the pb image
+        for i = 1:num_mroi_auto_initial %overlay each pixel in its indexed color onto the pb image
             scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
         end
         %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
@@ -384,23 +379,23 @@ if do_plots
 
 
         %data for upsamp overlay and hsv
-        mask_roi_vec_upsamp = zeros(num_mroi_auto_final, numel(mask_allroi_approx_upsamp), 'single');
-        for i = 1:num_mroi_auto_final
+        mask_roi_vec_upsamp = zeros(num_mroi_auto_initial, numel(mask_allroi_approx_upsamp), 'single');
+        for i = 1:num_mroi_auto_initial
             mask_roi_vec_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
         end
-        pixinds_roi_upsamp = cell(num_mroi_auto_final, 1);
+        pixinds_roi_upsamp = cell(num_mroi_auto_initial, 1);
         for ii = 1:numel(pixinds_roi_upsamp)
             pixinds_roi_upsamp{ii} = find(vec(mask_roi_vec_upsamp(ii,:)));
         end
 
         %roi overlay in upsampled res
         filename_olay = [pth_mroi_prefix 'eachroired_upsamp_.gif'];
-        roi_overlay = make_roi_overlay(premask, pixinds_roi_upsamp, num_mroi_auto_final, olayopt.ncol_each, ...
+        roi_overlay = make_roi_overlay(premask, pixinds_roi_upsamp, num_mroi_auto_initial, olayopt.ncol_each, ...
             olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay);
 
         %hsv gif, each slice, each roi a different hue
         hsvopt = plots_setup_hsv(hsvopt);
-        hue_feature = [1:num_mroi_auto_final]';
+        hue_feature = [1:num_mroi_auto_initial]';
         hsvmap = plots_compute_hsv(hsvopt, hue_feature);
         filename_hsv = [pth_mroi_prefix 'hsvfov_upsamp_.gif'];
         hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, pixinds_roi_upsamp, mask_roi_vec_upsamp, filename_hsv);

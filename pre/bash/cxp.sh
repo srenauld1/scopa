@@ -58,6 +58,8 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 ############ SET PARAMS FOR ANALYSIS ############
 
+REGISTRATION_TEMPLATE_GROUP_ID=('20240601_1' '20240602_2') #empty string to skip; list of strings, each formatted recdate_fly with optional wildcards . . . if do_register=1, for each individual string in the list, all trials matching string are used to create a registration template (with rolling median) in job mrt.sbatch, then registration occurs (in job mcp.sbatch) for trials matching recdate, fly, trial, folder_substring above; any matching recordings that also match any string in REGISTRATION_TEMPLATE_GROUP_ID use template created in mrt.sbatch; list allows this to occur in parallel, for each string; if mcp matches do not match with mrt matches, no problem, they just won't use the template created in 
+
 REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior to registration, helps register noisy movies)
@@ -138,6 +140,7 @@ pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"
 pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
+pars["REGISTRATION_TEMPLATE_GROUP_ID"]="${REGISTRATION_TEMPLATE_GROUP_ID[@]}"
 pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
 pars["HALFWIDTH_WINDOW_BGSUB"]="${HALFWIDTH_WINDOW_BGSUB[@]}"
 pars["LEN_WINDOW_SMOOTH_T_MCP"]="${LEN_WINDOW_SMOOTH_T_MCP[@]}"
@@ -163,6 +166,9 @@ done >"$PTH_PARSFILE" #write common input args to txt file
 
 sbatch_job_name_sequence=() #list of sbatch jobs run by cxp.sh (space delimited, enclosed by parentheses, no quotes required)
 
+if [ "$do_register" == 1 ] && [ -n "${REGISTRATION_TEMPLATE_GROUP_ID}" ]; then
+    sbatch_job_name_sequence+=(mrt.sbatch)
+fi
 if [ "$do_register" == 1 ]; then
     sbatch_job_name_sequence+=(mcp.sbatch)
 fi
@@ -212,12 +218,23 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             mem_per_cpu_str=5G
         else
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
-            if [ "$sbatch_job_name" == mcp.sbatch ]; then
+            if [ "$sbatch_job_name" == mrt.sbatch ]; then
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:30:00
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=3G
+            elif [ "$sbatch_job_name" == mcp.sbatch ]; then
+                partition_str=short #use transfer partition if do_copyfiles==1
+                time_str=00:30:00
+                ntasks_str=1
+                if "$HALFWIDTH_WINDOW_BGSUB"==0; then #use less memory if no bg subtraction
+                    cpus_per_task_str=5
+                    mem_per_cpu_str=3G
+                else #use more memory if using bg subtraction
+                    cpus_per_task_str=5
+                    mem_per_cpu_str=7G
+                fi
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
                 partition_str=$gpu_partition #use transfer partition if do_copyfiles==1
                 time_str=$gpu_time
