@@ -42,6 +42,8 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
     for registration_template_group_id in registration_template_group_id_all:
         pat_usetemplate_tmp = re.sub("[\[].*?[\]]", "*", registration_template_group_id)
         pat_usetemplate_tmp = '*' + pat_usetemplate_tmp.split('_')[-1] + '*/' + '_'.join(pat_usetemplate_tmp.split('_')[:-1])
+        print("tmp is")
+        print(pat_usetemplate_tmp)
         if fnmatch.fnmatch(pth_prefix, pat_usetemplate_tmp):
             pat_usetemplate = pat_usetemplate_tmp
             pat_maketemplate = re.sub("[\[\]]", "", registration_template_group_id)
@@ -51,6 +53,8 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
             pat_maketemplate_for_glob = '**/*' + pat_maketemplate_fldrsubstr + '*/**/' + pat_maketemplate_fn
             fnsuffix_regtemplate = "_regtemplate_.tif"
     
+    print("tmp is")
+    print(pat_usetemplate_tmp)
     if fnmatch.fnmatch(pth_prefix, pat_usetemplate): #if this recording is meant to be registered to template 
         if fnmatch.fnmatch(pth_prefix, pat_maketemplate): #make template if this recording is meant to be the template and it hasn't already been made 
             pth_regtemplate = pth_prefix + fnsuffix_regtemplate
