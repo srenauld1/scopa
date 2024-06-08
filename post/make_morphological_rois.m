@@ -192,7 +192,7 @@ if hsvopt.do
     hsvmap = plots_compute_hsv(hsvopt, hue_feature);
 
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg = plots_hsvfov(hsvopt, stack_mnt(:,:,3), hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
+    hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
 
 end
 

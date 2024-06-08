@@ -163,7 +163,6 @@ else
                 min_axis = min([range(maskx),range(masky),range(maskz)]);
                 max_axis = max([range(maskx),range(masky),range(maskz)]);
             else
-                error("skeleton in 2d has not been optimized, use 3d")
                 min_axis = min([range(maskx),range(masky)]);
                 max_axis = max([range(maskx),range(masky)]);
             end
@@ -175,8 +174,11 @@ else
 
             if length(midy)>1
 
-                [midx,midy,midz] = graph_sort3(midx,midy,midz); %align the points of the midline starting at the first point and going around in a circle. this requires that the midline be continuous!
-
+                midz_check = midz;
+                [midx,midy,midz] = graph_sort3(midx,midy,midz); %here set up to work for 2d and 3d align the points of the midline starting at the first point and going around in a circle. this requires that the midline be continuous!
+                if numel(midz)~=numel(midz_check)
+                    error("you are attempting to use subsample_mask_method skeleton for 2d extraction from a 3d stack with a manual mask that is discontiguous in z; subsample_mask_method skeleton cannot yet accommodate that, but uniform and uniformp can")
+                end
                 xq = [-min_axis:(length(midx)+min_axis)]; %extend the midline so that it reaches the border of the mask. extrapolate as many points as the minimum axis length
 
                 midx = round(interp1(midx,xq,'linear','extrap'));
