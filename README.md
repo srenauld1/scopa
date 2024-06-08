@@ -136,15 +136,24 @@ most of them are intuitive, except for two fields at the bottom
 here's the values i use for these two fields for caiman registration or extraction (or just do_cropping session)
 
 Additional modules to be preloaded:
-        python/3.10.11 miniconda3/4.10.3
+        python/3.10.11
 
 Custom Environment (drag text area to enlarge):
-        source /n/app/miniconda3/4.10.3/etc/profile.d/conda.sh
+        eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
         conda activate caiman
+
 
 I leave slurm custom arguments blank 
 
 i have been unable to open the vs code app on o2 when loading the deepcad environment
+
+Additional modules to be preloaded:
+        gcc/9.2.0 python/3.9.14 cuda/11.7
+
+Custom Environment (drag text area to enlarge):
+        eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+        conda activate deepcad
+
 
 ############################## BATCH ON O2 ######################################
 
