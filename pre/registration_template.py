@@ -42,8 +42,6 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
     for registration_template_group_id in registration_template_group_id_all:
         pat_usetemplate_tmp = re.sub("[\[].*?[\]]", "*", registration_template_group_id)
         pat_usetemplate_tmp = '*' + pat_usetemplate_tmp.split('_')[-1] + '*/' + '_'.join(pat_usetemplate_tmp.split('_')[:-1])
-        print("tmp is")
-        print(pat_usetemplate_tmp)
         if fnmatch.fnmatch(pth_prefix, pat_usetemplate_tmp):
             pat_usetemplate = pat_usetemplate_tmp
             pat_maketemplate = re.sub("[\[\]]", "", registration_template_group_id)
@@ -53,8 +51,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
             pat_maketemplate_for_glob = '**/*' + pat_maketemplate_fldrsubstr + '*/**/' + pat_maketemplate_fn
             fnsuffix_regtemplate = "_regtemplate_.tif"
     
-    print("tmp is")
-    print(pat_usetemplate_tmp)
+
     if fnmatch.fnmatch(pth_prefix, pat_usetemplate): #if this recording is meant to be registered to template 
         if fnmatch.fnmatch(pth_prefix, pat_maketemplate): #make template if this recording is meant to be the template and it hasn't already been made 
             pth_regtemplate = pth_prefix + fnsuffix_regtemplate
@@ -131,8 +128,12 @@ def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shi
     # takes subset of frames across entire stack, take mean over small windows of that subset, then take median
     # by default in 4d if stack is 4d, in 3d if stack is 3d
     # later template is used by slice if registration is in 2d, or by volume if not  
+    # note caiman template is 'movie' while this is 'array' . . . doesn't seem to matter
+    
+    #two hard-coded params for now
+    register_regtemplate = 0 #WILSONLAB, CFRW, 240218, SWITCH OFF regtemplate REGISTER, IT CAN MAKE A BAD regtemplate FOR A NOISY MOVIE 
+    use_different_number_frames_in_2d_and_3d_regtemplates = 0 #WILSONLAB, CFRW, 240218, 0 TO MAKE 2D AND 3D HAVE SAME regtemplate NUM FRAMES (SET TO 1 FOR ORIGINAL)
 
-    #note caiman template is 'movie' while this is 'array'
     if Y.ndim==4:
         movie_is_4d = 1
     elif Y.ndim==3:
@@ -141,12 +142,12 @@ def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shi
     Ts = Y.shape[0]
     # Ts = np.arange(T)[subidx].shape[0]
     
-    use_different_number_frames_in_2d_and_3d_regtemplates = 0 #WILSONLAB, CFRW, 240218, 0 TO MAKE 2D AND 3D HAVE SAME regtemplate NUM FRAMES (SET TO 1 FOR ORIGINAL)
-    if use_different_number_frames_in_2d_and_3d_regtemplates:
-        step = Ts // 10 if is3D else Ts // 50 
-    else:
+    if use_different_number_frames_in_2d_and_3d_regtemplates and movie_is_4d:
+        goal_frames_in_regtemplate = 10
+    else: 
         goal_frames_in_regtemplate = 50
-        step = Ts // goal_frames_in_regtemplate 
+
+    step = Ts // goal_frames_in_regtemplate 
     
     time_slicer = slice(subidx.start, subidx.stop, step + 1)
 
@@ -168,7 +169,6 @@ def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shi
     if movie_is_4d: #previously was if is3D:     
         regtemplate = cm.motion_correction.bin_median_3d(Y) # motion_correct_3d has not been implemented in 'movies' yet - instead initialize to just median image
     else:
-        register_regtemplate = 0 #WILSONLAB, CFRW, 240218, SWITCH OFF regtemplate REGISTER, IT CAN MAKE A BAD regtemplate FOR A NOISY MOVIE 
         if register_regtemplate:
             regtemplate = cm.motion_correction.bin_median(Y.motion_correct(max_shifts[1], max_shifts[0], regtemplate=None)[0])
         else:
