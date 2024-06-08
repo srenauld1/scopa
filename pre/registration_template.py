@@ -21,7 +21,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
 
     # make sure there are no overlaps in matches to registration_template_group_id
     if not registration_template_group_id_all:
-        registration_template_group_id_all = 'dummystringwillnotmatchanythingunlessyouareamaster'
+        registration_template_group_id_all = ['dummystringwillnotmatchanythingunlessyouareamaster']
     pat_usetemplate_all = []
     for registration_template_group_id in registration_template_group_id_all:
         pat_usetemplate_tmp = re.sub("[\[].*?[\]]", "*", registration_template_group_id)
@@ -38,7 +38,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
 
 
     # determine whether this is a make-and-use-template or use-but-don't-make-template or don't-use-template registration job
-    pat_usetemplate = 'dummystringwillnotmatchanythingunlessyouareamaster'
+    pat_usetemplate = 'anotherdummystringwillnotmatchanythingunlessyouareamaster'
     for registration_template_group_id in registration_template_group_id_all:
         pat_usetemplate_tmp = re.sub("[\[].*?[\]]", "*", registration_template_group_id)
         pat_usetemplate_tmp = '*' + pat_usetemplate_tmp.split('_')[-1] + '*/' + '_'.join(pat_usetemplate_tmp.split('_')[:-1])
@@ -103,6 +103,8 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
 
         regtemplate = np.transpose(regtemplate, (2, 1, 0)) #whether just made or read, it needs to be transposed from zyx to xyz
     
+        print("using registration regtemplate, file is: " + pth_regtemplate)
+
         if makeplots:
             mnmv = np.min(regtemplate)
             mxmv = np.max(regtemplate)
@@ -113,6 +115,8 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
     
     else:
         regtemplate = None
+        print("not using registration regtemplate")
+
 
     return regtemplate
 

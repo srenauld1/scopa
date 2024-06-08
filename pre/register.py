@@ -144,13 +144,16 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         if register_in_2d and movie_is_4d: #for planar extraction take on z slice at a time
             print("DOING PLANAR registration FOR SLICE " + str(si))
             images_sliced = Y[:,:,:,si]
-            if regtemplate is not None:
-                regtemplate_oneloop = regtemplate[:,:,si]
         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
             print("DOING PLANAR REGISTRATION FOR ONLY SLICE, OR 3D FOR ALL SLICES")
             images_sliced = Y #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
+
+        if register_in_2d and movie_is_4d and regtemplate is not None:
+            regtemplate_oneloop = regtemplate[:,:,si]
+        else:
             regtemplate_oneloop = regtemplate
 
+            
         imwrite(pth_tif_write_tmp, images_sliced.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
         # each_min_mov = 0 # don't think we want to make min mov the min for each z slice 
