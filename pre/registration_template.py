@@ -72,14 +72,14 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
                 time.sleep(10)
                 seccount = seccount + 10 
                 if seccount>300:
-                    raise Exception ("ERROR, TEMPLATE PARENT FOLDER SHOULD HAVE APPEARED BY NOW, THERE MAY BE AN ERROR IN THE JOB CREATING IT")
+                    raise Exception ("\n\n\nERROR, TEMPLATE PARENT FOLDER SHOULD HAVE APPEARED BY NOW, THERE MAY BE AN ERROR IN THE JOB CREATING IT")
 
 
             pp = []
             for each_found_tif in pth_regtemplate_parent_tifs:
                 pp.append(Path(each_found_tif).parts[:-1]) #split path
             if not all(x == pp[0] for x in pp): #make sure if multiple results they all point different tifs in the same dir 
-                raise Exception ("ERROR, MULTIPLE POSSIBLE LOCATIONS FOR REGISTRATION TEMPLATE, REGISTRATION_TEMPLATE_GROUP_ID IS NOT SPECIFIC ENOUGH")
+                raise Exception ("\n\n\nERROR, MULTIPLE POSSIBLE LOCATIONS FOR REGISTRATION TEMPLATE, REGISTRATION_TEMPLATE_GROUP_ID IS NOT SPECIFIC ENOUGH")
             pth_regtemplate_parent = '/'.join(pp[0]) + '/' #path to folder that contains or soon will contain template (index 0 to ensure it exists)
             if pp[0][0]=='/':
                 pth_regtemplate_parent = pth_regtemplate_parent[1:]
@@ -92,7 +92,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
                 time.sleep(10) 
                 seccount = seccount + 10 
                 if seccount>300:
-                    raise Exception ("ERROR, TEMPLATE SHOULD HAVE APPEARED BY NOW, THERE MAY BE AN ERROR IN THE JOB CREATING IT")
+                    raise Exception ("\n\n\nERROR, TEMPLATE SHOULD HAVE APPEARED BY NOW, THERE MAY BE AN ERROR IN THE JOB CREATING IT")
             if os.path.isfile(pth_regtemplate): #just to be sure it's a real file 
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
@@ -101,7 +101,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
 
         regtemplate = np.transpose(regtemplate, (2, 1, 0)) #whether just made or read, it needs to be transposed from zyx to xyz
     
-        print("using registration regtemplate, file is: " + pth_regtemplate)
+        print("\n\n\nusing registration regtemplate, file is: \n" + pth_regtemplate)
 
         if makeplots:
             mnmv = np.min(regtemplate)
@@ -113,7 +113,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
     
     else:
         regtemplate = None
-        print("not using registration regtemplate")
+        print("\n\n\nnot using registration regtemplate")
 
 
     return regtemplate
