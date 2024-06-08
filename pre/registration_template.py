@@ -44,14 +44,12 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
         pat_usetemplate_tmp = '*' + pat_usetemplate_tmp.split('_')[-1] + '*/' + '_'.join(pat_usetemplate_tmp.split('_')[:-1])
         if fnmatch.fnmatch(pth_prefix, pat_usetemplate_tmp):
             pat_usetemplate = pat_usetemplate_tmp
-
-    
-    pat_maketemplate = re.sub("[\[\]]", "", registration_template_group_id)
-    pat_maketemplate_fldrsubstr = pat_maketemplate.split('_')[-1]
-    pat_maketemplate_fn = '_'.join(pat_maketemplate.split('_')[:-1])
-    pat_maketemplate = '*' + pat_maketemplate_fldrsubstr + '*/' + pat_maketemplate_fn
-    pat_maketemplate_for_glob = '**/*' + pat_maketemplate_fldrsubstr + '*/**/' + pat_maketemplate_fn
-    fnsuffix_regtemplate = "_regtemplate_.tif"
+            pat_maketemplate = re.sub("[\[\]]", "", registration_template_group_id)
+            pat_maketemplate_fldrsubstr = pat_maketemplate.split('_')[-1]
+            pat_maketemplate_fn = '_'.join(pat_maketemplate.split('_')[:-1])
+            pat_maketemplate = '*' + pat_maketemplate_fldrsubstr + '*/' + pat_maketemplate_fn
+            pat_maketemplate_for_glob = '**/*' + pat_maketemplate_fldrsubstr + '*/**/' + pat_maketemplate_fn
+            fnsuffix_regtemplate = "_regtemplate_.tif"
     
     if fnmatch.fnmatch(pth_prefix, pat_usetemplate): #if this recording is meant to be registered to template 
         if fnmatch.fnmatch(pth_prefix, pat_maketemplate): #make template if this recording is meant to be the template and it hasn't already been made 
