@@ -15,9 +15,12 @@ from configs import configs
 from vis import im_montage, plot_gif
 
 
-def find_registration_template(Y, md, registration_template_group_id_all, pth_prefix, register_in_2d, pth_allrec, makeplots):
+def find_registration_template(Y, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, movie_is_4d, makeplots):
 
-    # make or load registration template; if necessary, sleep until it's available; error if not available after 5 min
+    # make or load registration template; sleep until it's available, if necessary (error after waiting 5 min)
+
+    print("all is :")
+    print(registration_template_group_id_all)
 
     # make sure there are no overlaps in matches to registration_template_group_id
     if not registration_template_group_id_all:
@@ -42,6 +45,8 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
     for registration_template_group_id in registration_template_group_id_all:
         pat_usetemplate_tmp = re.sub("[\[].*?[\]]", "*", registration_template_group_id)
         pat_usetemplate_tmp = '*' + pat_usetemplate_tmp.split('_')[-1] + '*/' + '_'.join(pat_usetemplate_tmp.split('_')[:-1])
+        print("tmp is :")
+        print(pat_usetemplate_tmp)
         if fnmatch.fnmatch(pth_prefix, pat_usetemplate_tmp):
             pat_usetemplate = pat_usetemplate_tmp
             pat_maketemplate = re.sub("[\[\]]", "", registration_template_group_id)
@@ -52,8 +57,13 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
             fnsuffix_regtemplate = "_regtemplate_.tif"
     
 
+    print("use is :")
+    print(pat_usetemplate)
+    
     if fnmatch.fnmatch(pth_prefix, pat_usetemplate): #if this recording is meant to be registered to template 
+        
         if fnmatch.fnmatch(pth_prefix, pat_maketemplate): #make template if this recording is meant to be the template and it hasn't already been made 
+            
             pth_regtemplate = pth_prefix + fnsuffix_regtemplate
             if os.path.isfile(pth_regtemplate):
                 regtemplate = imread(pth_regtemplate).astype('float32')
@@ -99,17 +109,24 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_pr
             else:
                 raise ValueError("%s isn't a file!" % pth_regtemplate)
         
-
-        regtemplate = np.transpose(regtemplate, (2, 1, 0)) #whether just made or read, it needs to be transposed from zyx to xyz
-    
-        print("\n\n\nusing registration regtemplate, file is: \n" + pth_regtemplate)
-
         if makeplots:
             mnmv = np.min(regtemplate)
             mxmv = np.max(regtemplate)
             im_montage(regtemplate, vmin=mnmv, vmax=mxmv)
             filename_gif = pth_prefix + '_regtemplate_couldBeFromOtherRecording.gif'
-            plot_gif(np.transpose(regtemplate, (2, 1, 0)), filename_gif) 
+            plot_gif(regtemplate, filename_gif) 
+
+
+        if movie_is_4d:     
+            if not np.array_equal(regtemplate.shape, md['dims'][1:]):
+                raise Exception ("\n\n\nERROR, REGTEMPLATE SIZE DOES NOT MATCH SIZE OF RECORDING IT IS BEING USED FOR ")
+            regtemplate = np.transpose(regtemplate, (2, 1, 0))
+        else:
+            if not np.array_equal(regtemplate.shape, md['dims'][2:]):
+                raise Exception ("\n\n\nERROR, REGTEMPLATE SIZE DOES NOT MATCH SIZE OF RECORDING IT IS BEING USED FOR ")
+            regtemplate = np.transpose(regtemplate, (1, 0))
+    
+        print("\n\n\nusing registration regtemplate, file is: \n" + pth_regtemplate)
 
     
     else:
@@ -168,14 +185,16 @@ def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shi
     
     if movie_is_4d: #previously was if is3D:     
         regtemplate = cm.motion_correction.bin_median_3d(Y) # motion_correct_3d has not been implemented in 'movies' yet - instead initialize to just median image
+        regtemplate = np.transpose(regtemplate, (2, 1, 0))
     else:
         if register_regtemplate:
             regtemplate = cm.motion_correction.bin_median(Y.motion_correct(max_shifts[1], max_shifts[0], regtemplate=None)[0])
         else:
             regtemplate = cm.motion_correction.bin_median(Y)
+        regtemplate = np.transpose(regtemplate, (1, 0))
+
 
     print("created registration regtemplate, writing to: " + pth_regtemplate)
-    regtemplate = np.transpose(regtemplate, (2, 1, 0))
     imwrite(pth_regtemplate, regtemplate, bigtiff=True, photometric='minisblack') #write as tif
 
     return regtemplate

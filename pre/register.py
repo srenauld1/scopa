@@ -124,7 +124,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 
 
-    regtemplate = find_registration_template(Y, md, registration_template_group_id, pth_prefix, register_in_2d, pth_allrec, makeplots)
+    regtemplate = find_registration_template(Y, md, registration_template_group_id, pth_allrec, pth_prefix, register_in_2d, movie_is_4d, makeplots)
         
 
     ########################## REGISTRATION (CAIMAN NORMCORRE) ##########################
