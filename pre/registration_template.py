@@ -19,9 +19,6 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
 
     # make or load registration template; sleep until it's available, if necessary (error after waiting 5 min)
 
-    print("all is :")
-    print(registration_template_group_id_all)
-
     # make sure there are no overlaps in matches to registration_template_group_id
     if not registration_template_group_id_all:
         registration_template_group_id_all = ['dummystringwillnotmatchanythingunlessyouareamaster']
@@ -45,8 +42,6 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
     for registration_template_group_id in registration_template_group_id_all:
         pat_usetemplate_tmp = re.sub("[\[].*?[\]]", "*", registration_template_group_id)
         pat_usetemplate_tmp = '*' + pat_usetemplate_tmp.split('_')[-1] + '*/' + '_'.join(pat_usetemplate_tmp.split('_')[:-1])
-        print("tmp is :")
-        print(pat_usetemplate_tmp)
         if fnmatch.fnmatch(pth_prefix, pat_usetemplate_tmp):
             pat_usetemplate = pat_usetemplate_tmp
             pat_maketemplate = re.sub("[\[\]]", "", registration_template_group_id)
@@ -56,9 +51,6 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
             pat_maketemplate_for_glob = '**/*' + pat_maketemplate_fldrsubstr + '*/**/' + pat_maketemplate_fn
             fnsuffix_regtemplate = "_regtemplate_.tif"
     
-
-    print("use is :")
-    print(pat_usetemplate)
 
     if fnmatch.fnmatch(pth_prefix, pat_usetemplate): #if this recording is meant to be registered to template 
         
@@ -116,6 +108,8 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
             filename_gif = pth_prefix + '_regtemplate_couldBeFromOtherRecording.gif'
             plot_gif(regtemplate, filename_gif) 
 
+        print("\n\n\nUSING REGISTRATION TEMPLATE, TEMPLATE FILE IS: \n" + pth_regtemplate + "\n\n\n")
+
 
         if movie_is_4d:     
             if not np.array_equal(regtemplate.shape, md['dims'][1:]):
@@ -126,9 +120,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
                 raise Exception ("\n\n\nERROR, REGTEMPLATE SIZE DOES NOT MATCH SIZE OF RECORDING IT IS BEING USED FOR ")
             regtemplate = np.transpose(regtemplate, (1, 0))
     
-        print("\n\n\nUSING REGISTRATION TEMPLATE, TEMPLATE FILE IS: \n" + pth_regtemplate + "\n\n\n")
 
-    
     else:
         regtemplate = None
         print("\n\n\nNOT USING REGISTRATION REGTEMPLATE\n\n\n")
