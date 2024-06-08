@@ -1,7 +1,7 @@
 
 
+##THESE PARAMS SHOULD NOT BE CHANGED, THEY ARE JUST SET HERE TO MAKE CXP.SH WORK PROPERLY
 ##default params for batch mode (e.g. when pipeline_init.py is called from cxp.sh)
-##these params should not be changed, they are just set here to make cxp.sh work properly
 ##cxp.sh sets these params itself, but depending on which stage in cxp, the params may differ from these defaults below 
 
 
@@ -19,7 +19,7 @@ folder_substring = ['*'] #list of strings, '*' for any, match recordings only in
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string outside brackets are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside)
+registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack  
 
 do_register = 0 #caiman normCorre registration 
 register_in_2d = 1 #one z slice at a time, for 4d data,  ignored if 3d data  

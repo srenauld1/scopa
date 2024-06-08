@@ -59,7 +59,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
 
     print("use is :")
     print(pat_usetemplate)
-    
+
     if fnmatch.fnmatch(pth_prefix, pat_usetemplate): #if this recording is meant to be registered to template 
         
         if fnmatch.fnmatch(pth_prefix, pat_maketemplate): #make template if this recording is meant to be the template and it hasn't already been made 
@@ -126,12 +126,12 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
                 raise Exception ("\n\n\nERROR, REGTEMPLATE SIZE DOES NOT MATCH SIZE OF RECORDING IT IS BEING USED FOR ")
             regtemplate = np.transpose(regtemplate, (1, 0))
     
-        print("\n\n\nusing registration regtemplate, file is: \n" + pth_regtemplate)
+        print("\n\n\nUSING REGISTRATION TEMPLATE, TEMPLATE FILE IS: \n" + pth_regtemplate + "\n\n\n")
 
     
     else:
         regtemplate = None
-        print("\n\n\nnot using registration regtemplate")
+        print("\n\n\nNOT USING REGISTRATION REGTEMPLATE\n\n\n")
 
 
     return regtemplate
