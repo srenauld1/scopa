@@ -163,7 +163,7 @@ else
                 min_axis = min([range(maskx),range(masky),range(maskz)]);
                 max_axis = max([range(maskx),range(masky),range(maskz)]);
             else
-                error("skeleton in 2d has not been optimized, use 3d")
+                error("skeleton in 2d has not been optimized")
                 min_axis = min([range(maskx),range(masky)]);
                 max_axis = max([range(maskx),range(masky)]);
             end
