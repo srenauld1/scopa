@@ -147,7 +147,7 @@ mask_allroi_approx = logical(mask_allroi_approx);
 
 %% find 3d mask centroids
 
-num_mroi_final = num_mroi_initial; %as of 240605 these will match for all cases except 'uniform' or 'uniformp' where extract_morph_rois_in_3d~=0
+num_mroi_final = num_mroi_auto_initial; %as of 240605 these will match for all cases except 'uniform' or 'uniformp' where extract_morph_rois_in_3d~=0
 
 if num_mroi_auto_initial == 1 %for finding a single centroid
 
