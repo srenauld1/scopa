@@ -14,7 +14,7 @@ opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 opt.main.recdate = '20240602'; %can use wildcards
-opt.main.fly = '4'; %can use wildcards
+opt.main.fly = '3'; %can use wildcards
 opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 opt.main.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -44,12 +44,12 @@ opt.gif.suffixes_plot = {
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
     'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.gif.plotinds_t = [200:300]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.gif.plotinds_t = [200:400]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-opt.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.gif.rescale_each_subplot = 0.8; %rescale each subplot to same range 0-1 before combining
+opt.gif.rescalefac_wholeplot = [0 0.8]; %combined ploto rescale arguments, [lower, upper]
 opt.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 

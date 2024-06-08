@@ -7,12 +7,13 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, tracefunc 
+from registration_template import find_registration_template
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 
-def register(pth_tif_read, pth_prefix, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
 
     ########################## LOAD STACK, PREPARE VARIABLES ##########################
@@ -123,10 +124,10 @@ def register(pth_tif_read, pth_prefix, md, registration_template_group_id, regis
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 
 
-    FK = 2
-    
+    regtemplate = find_registration_template(Y, md, registration_template_group_id, pth_prefix, register_in_2d, pth_allrec, makeplots)
+        
 
-    ########################## MOTION CORRECTION (CAIMAN NORMCORRE) ##########################
+    ########################## REGISTRATION (CAIMAN NORMCORRE) ##########################
 
     min_mov = np.min(Y).astype('float32')
 
@@ -143,9 +144,12 @@ def register(pth_tif_read, pth_prefix, md, registration_template_group_id, regis
         if register_in_2d and movie_is_4d: #for planar extraction take on z slice at a time
             print("DOING PLANAR registration FOR SLICE " + str(si))
             images_sliced = Y[:,:,:,si]
+            if regtemplate is not None:
+                regtemplate_oneloop = regtemplate[:,:,si]
         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
             print("DOING PLANAR REGISTRATION FOR ONLY SLICE, OR 3D FOR ALL SLICES")
             images_sliced = Y #can't .copy() for some reason (but that's fine as long as you don't modify images_sliced)
+            regtemplate_oneloop = regtemplate
 
         imwrite(pth_tif_write_tmp, images_sliced.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
@@ -154,12 +158,12 @@ def register(pth_tif_read, pth_prefix, md, registration_template_group_id, regis
         #     min_mov = np.min(images_sliced).astype('float32')
         
         # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
-        opts_dict, indices_ex, fnadd = configs(register_in_2d = register_in_2d, index_extraction_param_set = 'default', fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+        opts_dict, _, _ = configs(register_in_2d = register_in_2d, fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         #sys.setprofile(tracefunc)
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
-        mc.motion_correct(save_movie=True)
+        mc.motion_correct(save_movie=True, template = regtemplate_oneloop)
         input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
         if len_window_smooth_t_mcp: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
             input_for_save_memmap = mc.apply_shifts_movie(pth_tif_presmooth[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
@@ -219,7 +223,7 @@ def register(pth_tif_read, pth_prefix, md, registration_template_group_id, regis
 
 
 
-    ########################## SEPARATE Z SLICES TO PREPARE FOR OPTIONAL DENOISING ##########################
+    ########################## WRITE SEPARATE Z SLICES TO PREPARE FOR OPTIONAL DENOISING ##########################
 
     if carls_old_project: 
         separate_z_slices_for_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 

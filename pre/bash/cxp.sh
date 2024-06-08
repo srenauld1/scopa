@@ -49,7 +49,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('202406*')
+RECDATE=('20240601')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -58,7 +58,7 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 ############ SET PARAMS FOR ANALYSIS ############
 
-REGISTRATION_TEMPLATE_GROUP_ID=('202406[01]_[1]_[1]_[60312]') #empty string to skip; a single string, formatted recdate_fly_trial_folderSubstring; use brackets to designate which single trial is used as template, while all trials matching string outside brackets are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template)
+REGISTRATION_TEMPLATE_GROUP_ID=('20240601_[1]_[1]_[012]', '20240602_[1]_[1]_[012]') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string outside brackets are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside)
 
 REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)

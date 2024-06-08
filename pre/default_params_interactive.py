@@ -11,13 +11,13 @@ pth_parsfile = '' #string, single element not in list, skip if empty, name of in
 scopatmpdir = '' #string, keep empty
 
 recdate = ['20231119'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['1'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+fly = ['2'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-registration_template_group_id=('202406[01]_[1]_[1]_[60312]') #empty string to skip; a single string, formatted recdate_fly_trial_folderSubstring; use brackets to designate which single trial is used as template, while all trials matching string outside brackets are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template)
+registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string outside brackets are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (which are also matched to above recdate, fly, trial, folder_substring) to a template created from 20240601_1_1_60312; recordings requested above that do not match REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside)
 
 do_register = 1 #caiman normCorre registration 
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
