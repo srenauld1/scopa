@@ -136,6 +136,7 @@ most of them are intuitive, except for two fields at the bottom
 here's the values i use for these two fields for caiman or deepcad
 
 also be sure to set justmycode to false in launch.json, this will allow you to step into 3rd party libraries during debugging
+launch.json can be found in the vscode file explorer, in scopa/vscode; it is a hidden file 
 
 Additional modules to be preloaded:
         python/3.10.11
