@@ -223,8 +223,9 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 ############################## DENOISING ######################################
 
 --denoise.py, called from pipeline init when do_denoise==1
---see extensive documentation in dneoise.py
 --the denoising requires motion corrected input tif (suffix cmrg_.tif)
+--denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
+--see additional documentation in denoise.py
 https://github.com/cabooster/DeepCAD-RT
 
 
@@ -322,8 +323,6 @@ entrypoint is a2p.m
  and it uses fewer loops and is less automated 
  BUT, i've been unable to get the denoising working in the ipynb version of the pipeline on O2 (it does work on google colab though)
 
-
-denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
 
 ############################## EXTRA NOTES ######################################
 
