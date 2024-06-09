@@ -133,22 +133,24 @@ also note the term "interactive mode" can be misleading, because you can still r
 
 to run interactively on O2, use VS Code on O2 (to debug on O2, or to do_cropping_session), you'll be promted to fill out several fields
 most of them are intuitive, except for two fields at the bottom
-here's the values i use for these two fields for caiman registration or extraction (or just do_cropping session)
+here's the values i use for these two fields for caiman or deepcad
+
+also be sure to set justmycode to false in launch.json, this will allow you to step into 3rd party libraries during debugging
 
 Additional modules to be preloaded:
         python/3.10.11
+
+leave Slurm Custom Arguments blank
 
 Custom Environment (drag text area to enlarge):
         eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
         conda activate caiman
 
 
-I leave slurm custom arguments blank 
-
-i have been unable to open the vs code app on o2 when loading the deepcad environment
-
 Additional modules to be preloaded:
         gcc/9.2.0 python/3.9.14 cuda/11.7
+
+leave Slurm Custom Arguments blank
 
 Custom Environment (drag text area to enlarge):
         eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"

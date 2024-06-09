@@ -173,7 +173,7 @@ pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 
-%% create/plot roi overlay 
+%% create/plot roi overlay (can plot n specific rois with their index into pixinds_roi and change num_mroi to n)
 
 roi_overlay = [];
 if olayopt.do

@@ -127,7 +127,7 @@ catch
 
         [mask_roi_vec, centroids_roi, num_mroi] = ...
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
-            num_mroi_auto, 0, 'edge', 'skeleton', ...
+            num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
             xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
             edgethresh, edgesig, closing_element_size, regionex, hsvopt, olayopt, do_other_plots);
 
@@ -173,7 +173,7 @@ pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 
-%% create/plot roi overlay 
+%% create/plot roi overlay (can plot n specific rois with index into pixinds_roi
 
 roi_overlay = [];
 if olayopt.do
@@ -192,7 +192,7 @@ if hsvopt.do
     hsvmap = plots_compute_hsv(hsvopt, hue_feature);
 
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg = plots_hsvfov(hsvopt, stack_mnt(:,:,3), hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
+    hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
 
 end
 
