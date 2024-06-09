@@ -138,24 +138,28 @@ here's the values i use for these two fields for caiman or deepcad
 also be sure to set justmycode to false in launch.json, this will allow you to step into 3rd party libraries during debugging
 launch.json can be found in the vscode file explorer, in scopa/vscode; it is a hidden file 
 
-Additional modules to be preloaded:
-        python/3.10.11
+for caiman registration or source extraction:
+        
+        Additional modules to be preloaded:
+                python/3.10.11
 
-leave Slurm Custom Arguments blank
+        leave Slurm Custom Arguments blank
 
-Custom Environment (drag text area to enlarge):
-        eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
-        conda activate caiman
+        Custom Environment (drag text area to enlarge):
+                eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+                conda activate caiman
 
 
-Additional modules to be preloaded:
-        gcc/9.2.0 python/3.9.14 cuda/11.7
+for deepcad dneoising:
 
-leave Slurm Custom Arguments blank
+        Additional modules to be preloaded:
+                gcc/9.2.0 python/3.9.14 cuda/11.7
 
-Custom Environment (drag text area to enlarge):
-        eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
-        conda activate deepcad
+        leave Slurm Custom Arguments blank
+
+        Custom Environment (drag text area to enlarge):
+                eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+                conda activate deepcad
 
 
 ############################## BATCH ON O2 ######################################
