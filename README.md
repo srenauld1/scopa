@@ -35,6 +35,7 @@ the pipeline has various features for parameter exploration
 
 automated file transfer is intended to make batch mode on O2 (running cxp.sh) more convenient, although it can be used on O2 or local, and in interactive or batch mode
 
+
 if do_copyfiles==1 no computation occurs, but the pipeline will automatically copy whatever files you need from a storage location to a compute location, if do_copyfiles==0 computation occurs, but no copy occurs, if do_copyfiles==2 no computation occurs, but any new files are copied back into storage location . . . the relevant files are determined by the pipeline module you're running
 
 to use do_copyfiles=1 or do_copyfiles=2 on O2, you must have access to the transfer job partition (write rchelp@hms.harvard.edu to request access to the transfer job partition)
@@ -485,3 +486,6 @@ alias hhst='cd /home/caw846/scopatmp'
 alias in1='srun --pty -p interactive -t 0-1:00 --mem=1G bash'
 alias in5='srun --pty -p interactive -t 0-1:00 --mem=5G bash'
 alias chook='eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"'
+
+
+
