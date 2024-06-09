@@ -129,7 +129,7 @@ for ri, _ in enumerate(pth_tif_read_all):
           register(pth_tif_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix_all[ri], pth_denoising, denoise_volume, carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
-          denoise(pth_denoising, fn_prefix_all[ri], md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_tif_read_all[ri], epoch_choose_denoise)
+          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_tif_read_all[ri], epoch_choose_denoise)
     
       if do_stitch:
         if carls_old_project_all[ri]: 

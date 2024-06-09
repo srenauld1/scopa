@@ -22,25 +22,23 @@ clc
 %do_volume = 1 trains on entire volume at once,
 % do_volume = 0 trains on some subset of z slices (which for this script, assumes just one slice at a time, but my code can operate on multiple)
 
-%data params
+do_volume = 1;
+
+patch_t_sec = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
+default_patch_xy = 120; %will be reduced to whole fov if fov is smaller than this
 stack_size_x = 128;
 stack_size_y = 60;
 stack_size_t = 3000;
 stack_size_z = 1; %set to 1 if not volumetric
 volume_rate = 23.165; %hz
 
-%deepcad paramsc (adjust if you don't like default)
-do_volume = 1; %probably should not adjust 
-patch_t_sec = 20; %adjust this first; 20 sec is a fairly arbitrary guess 
-default_patch_xy = 120; %will be reduced to whole fov if fov is smaller than this
-train_datasets_size = 6000; %probably don't need to adjust
-overlap_factor = 0.8; %probably don't need to adjust; smaller means more temporal overlap, less spatial (balance point depends on other params)
-padinc = 5; %pointless i think; could probably be zero 
+train_datasets_size = 6000;
+overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
 
-%memory params (recommend to not adjust)
 bytes_per_element = 2;  %2 for uint16, which is what i use, but deepcad can operate on float32 and float64 too
 num_slurm_tasks_on_one_gpu = 1; %assuming using 1 GPU with max 80 GB (like the a100), and assuming 15 total stacks running as many in parallel as possible
-single_GPU_VRAM = 80; %assumes using a100
+padinc = 5; %pointless i think
+single_GPU_VRAM = 80; %using a100
 
 
 if do_volume %to train on whole volume (not bothering calculating this for numstacks_trained_simultaneously =1)
@@ -69,8 +67,8 @@ xnum = floor((stack_size_x - patch_x) / gap_x) + 1;
 ynum = floor((stack_size_y - patch_y) / gap_y) + 1;
 
 train_datasets_size_adjust = train_datasets_size+1;
-gap_t = 0;
-while gap_t==0
+num_true_patch_total = Inf;
+while isinf(num_true_patch_total)
 
     train_datasets_size_adjust = train_datasets_size_adjust - 1;
 

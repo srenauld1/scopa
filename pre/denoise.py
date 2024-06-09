@@ -64,77 +64,7 @@
 # overlap in each dim xyt should be at least 90 to avoid stitching artifacts 
 # overlap_t = patch_t - gap_t
 
-#here's a matlab script to show how input params interact in the deepcad code 
-'''
-%purpose of this matlab script is to adjust these params:
-%       num_slurm_tasks_on_one_gpu
-%       train_datasets_size
-%       patch_x
-%       patch_y
-%       patch_t,
-% to meet these requirements/recommendations:
-%       overlap_x, y, and t at least 90 (comment in deepcad code says patch overlap should be at least 90 pixels in xyt)
-%while also monitoring size of set of 3d patches (for submitting slurm job that won't fail)
-% for running a single slurm job for denoising
-
-
-%do_volume = 1 trains on entire volume at once, do_volume = 0 trains on individual z slices 
-do_volume = 1;
-
-stack_size_x = 256;
-stack_size_y = 140;
-stack_size_t = 3047;
-stack_size_z = 15;
-volume_rate = 5.08; %hz
-
-
-bytes_per_element = 2;  %2 for uint16, which is what i use, but deepcad can operate on float32 and float64 too
-
-if do_volume
-    num_slurm_tasks_on_one_gpu = 1;
-    numstacks_trained_simultaneously = stack_size_z;
-else
-    num_slurm_tasks_on_one_gpu = 10;  %adjust this
-    numstacks_trained_simultaneously = 1;
-end
-
-if do_volume
-
-    train_datasets_size = 25000;
-    patch_t_sec = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
-    patch_x = 120;
-    patch_y = 120;
-    patch_t = ceil(patch_t_sec*volume_rate);
-    overlap_factor = 0.8; %smaller means more temporal overlap, less spatial (balance point depends on other params)
-
-else
-
-    train_datasets_size = 6000;
-    patch_x = 110;
-    patch_y = 110;
-    patch_t_sec = 20; %my personal fairly uneducated guess is that this should be at least 20 sec
-    patch_t = ceil(patch_t_sec*volume_rate);
-    overlap_factor = 0.85; %smaller means more temporal overlap, less spatial (balance point depends on other params)
-
-end
-
-gap_x = floor(patch_x * (1 - overlap_factor)) ;
-gap_y = floor(patch_y * (1 - overlap_factor)) ;
-xnum = floor((stack_size_x - patch_x) / gap_x) + 1;
-ynum = floor((stack_size_y - patch_y) / gap_y) + 1;
-tnum = ceil(train_datasets_size / xnum / ynum / numstacks_trained_simultaneously);
-gap_t = floor((stack_size_t - patch_t * 2) / (tnum - 1));
-overlap_x = patch_x*overlap_factor; %should be at least 90
-overlap_y = patch_y*overlap_factor; %should be at least 90
-overlap_t = patch_t - gap_t; %should be at least 90
-
-train_data_size = patch_x * patch_y * patch_t * bytes_per_element * train_datasets_size * num_slurm_tasks_on_one_gpu / 1e9 ;% should be under 80 for using one a100 in slurm job
-
-[overlap_x overlap_y overlap_t]
-
-train_data_size
-
-'''
+#see matlab script scopa/util/find_denoising_params.m for how input params interact in the deepcad code 
 
 ##########################################################################################################################################
 
@@ -153,7 +83,7 @@ if torch.cuda.is_available():
     print('PyTorch version: ', torch.__version__)
 else:
     print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')
-    print(' 1. Navigate to Edit → Notebook Settings')
+    print(' 1. Navigate to Edit Ã¢ÂÂ Notebook Settings')
     print(' 2. Select GPU from the Hardware Accelerator drop-down')
 
 import os
@@ -168,16 +98,25 @@ from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 
 
-def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project, pth_tif_read, epoch_choose_denoise):
+def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project, pth_tif_read, epoch_choose_denoise):
 
 
     ##########################   DEEPCAD DENOISING   ##########################
-
-    dims = md['dims']
-    volrate = md['volrate']
     
     print("\n\n\nENTERING DENOISE FUNCTION")
-    
+
+    patch_t_sec = 20 #20 seconds is my total guess for what seems reasonable 
+    padinc = 5 #this is probably pointless and can probably be zero 
+
+    stack_size_t = dims[0]
+    stack_size_z = dims[1]
+    stack_size_y = dims[2]
+    stack_size_x = dims[3]
+    default_patch_xy = 120
+    train_datasets_size = 6000 #how many 3d xyt patches to train on, which can be different from what actually gets used because of how gap/stride in t is computed
+    overlap_factor = 0.8 # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
+
+
     if carls_old_project: #if it's not my old grad school project 
         if denoise_volume:
             pretend_trial = '1' # pretend they all come from same trial
@@ -186,40 +125,64 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
         else: #if not denoise_volume, all is just one stack 
             numstacks_all_refers_to = 1
     else:
-        numstacks_all_refers_to = dims[1] # then 'all' is number of z slices (dims[1])
+        numstacks_all_refers_to = stack_size_z # then 'all' is number of z slices 
 
-    print(" 'all' means this many stacks: ")
-    print(numstacks_all_refers_to)
 
-    print(pth_denoising)
-    print(fn_prefix)
-    print(dims)
-    print(denoise_slice_index)
-    print(denoise_volume)
+    if denoise_slice_index == ['all'] or denoise_slice_index=='all': 
+        zind_all_dn = np.arange(numstacks_all_refers_to)
+        print("user chose denoise_slice_index 'all', which means " + str(numstacks_all_refers_to) + " slices (which are each called 'stacks' in deepcad)")
+    else:
+        print("user set denoise_slice_index to: " + str(denoise_slice_index))
+        zind_all_dn = denoise_slice_index
+    
+    if denoise_volume: 
+        numstacks_trained_simultaneously = len(zind_all_dn)
+    else: 
+        numstacks_trained_simultaneously = 1
+
+    print("denoising these slices: \n" + str(zind_all_dn))
+    print("will save denoising intermediate results to: \n" + pth_denoising)
+    print("filename prefix is: " + fn_prefix)
+    print("input dimensions are: " + str(dims))
+    print("denoise_volume is set to: " + str(denoise_volume))
 
     n_epochs = num_epochs_denoise  # number of training epochs (loss is continuous across patches and epochs - epochs and patches are not independent)
     epochs_choose = list(range(1,n_epochs+1)) #list, one-indexed like n_epochs, which training epochs (which states of the model) to use for testing (denoising), default here is to test (denoise) with model state after all epochs 
 
-    patch_t_sec = 20 #20 seconds is my total guess for what seems reasonable 
-    padinc = 5 #this is probably pointless and can probably be zero 
-
-    patch_x = 120 if dims[3]>120 + padinc else int(dims[3] - padinc) # 110 #int(np.ceil(Lx/4)) #extent of patch in x
-    patch_y = 120 if dims[2]>120 + padinc else int(dims[2] - padinc) #120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
+    patch_x = default_patch_xy if stack_size_x>default_patch_xy + padinc else int(stack_size_x - padinc) # 110 #int(np.ceil(Lx/4)) #extent of patch in x
+    patch_y = default_patch_xy if stack_size_y>default_patch_xy + padinc else int(stack_size_y - padinc) #120 #110 #int(np.ceil(Ly/4)) #extent of patch in y
     patch_t = int(np.ceil(patch_t_sec*volrate)) #102 # 300 #extent of patch in t
-    overlap_factor = 0.8 # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
 
-    # TO DO: need to make train_datasets_size assignment automated . . . maybe to always use the same gap_t (patch stride in time)
-    if denoise_volume:
-        if carls_old_project:
-            train_datasets_size = 13000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
-        else:
-            train_datasets_size = 10000 #26000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
-    else:
-        train_datasets_size = 6000 #how many 3d xyt patches to train on, which is slightly different from what actually gets used
+    patch_t2 = patch_t*2 #use patch_t2 since alternating frames are sent to either end of the Unet, so you actually need double patch size in t)
+
+    gap_x = np.floor(patch_x * (1 - overlap_factor)) 
+    gap_y = np.floor(patch_y * (1 - overlap_factor)) 
+    xnum = np.floor((stack_size_x - patch_x) / gap_x) + 1
+    ynum = np.floor((stack_size_y - patch_y) / gap_y) + 1
+
+    train_datasets_size_adjust = train_datasets_size+1
+    gap_t = 0
+    while gap_t==0:
+
+        train_datasets_size_adjust = train_datasets_size_adjust - 1
+
+        tnum = np.ceil(train_datasets_size_adjust / xnum / ynum / numstacks_trained_simultaneously)
+        gap_t = np.floor((stack_size_t - patch_t * 2) / (tnum - 1)) #patch_t times 2 since input and target are interleaved and both patch_t length in t; THE FLOOR IN THIS LINE CAUSES THE NUMBER OF TRAINING PATCHES TO DIFFER FROM THE NUMBER REQUESTED IN TRAIN_DATASET_SIZE (ie integer shifts attempting to equal TRAIN_DATASET_SIZE, given patch number in x and y)
+
+        numpatch_y = np.floor((stack_size_y - patch_y + gap_y) / gap_y)
+        numpatch_x = np.floor((stack_size_x - patch_x + gap_x) / gap_x)
+        if gap_t!=0:
+            numpatch_t = np.floor((stack_size_t - patch_t2 + gap_t) / gap_t)
+            num_true_patch_total = numpatch_y*numpatch_x*numpatch_t
+    
+    train_datasets_size = train_datasets_size_adjust
+
+    print("\nusing train_datasets_size: " + str(train_datasets_size) + "\nwhich actually means " + str(int(num_true_patch_total)) + " patches in each of the " + str(numstacks_trained_simultaneously) + " z slices")
+
 
     select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)
     intensity_scale_factor = 1 # the factor for image intensity scaling
-    num_frames_of_each_tif_to_denoise_for_visualization_during_training = 400 #for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
+    num_frames_of_each_tif_to_denoise_for_visualization_during_training = patch_t + 10 #NEEDS TO BE AT LEAST PATCH_T TO PREVENT ERROR; for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     num_workers = 0             # if you use Windows system, set this to 0.
     save_test_images_per_epoch = True  # whether to save result images after each epoch
@@ -228,14 +191,7 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
     denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16
 
 
-    if denoise_slice_index == ['all'] or denoise_slice_index=='all': 
-        zind_all_dn = np.arange(numstacks_all_refers_to)
-    else:
-        zind_all_dn = denoise_slice_index
-
-    print(zind_all_dn)
-
-    if denoise_volume: #if training on all slices , put them all in one folder
+    if denoise_volume: #if training on all slices, put them all in one folder
         pth_trainset_all = ['']
         pth_testset_all = ['']
     else: #if training on subset of slices, put each subset in separate folder (but right now subset must be single slice, which can be looped over if slice index is 'all')
@@ -278,7 +234,7 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
         print(denoise_input_dtype)
         if denoise_input_dtype!=denoise_dtype:
             raise Exception("dtype doens't match intended")
-        if denoise_input_shape != (dims[0], dims[2], dims[3]):
+        if denoise_input_shape != (stack_size_t, stack_size_y, stack_size_x):
             raise Exception("dims changed")
 
 
@@ -385,6 +341,7 @@ def denoise(pth_denoising, fn_prefix, md, denoise_slice_index, denoise_volume, n
             tc = testing_class(test_dict)
             tc.run()
 
+    # moved stitch to its own job because it can require more memory than the denoising, but only takes a minute
     # if carls_old_project: 
     #     stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
     # else:
