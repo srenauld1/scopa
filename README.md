@@ -467,3 +467,21 @@ a100:1,vram:80G is most powerful, only takes about 1:45 to train 5 epochs 10K pa
 #gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
 #gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
 
+############################## SHORTCUTS ON O2 ######################################
+
+to save time you can put shortcuts in ~/.bashrc 
+open .bashrc and insert shortcuts at bottom of file
+for example
+
+# User specific aliases and functions
+alias dwc='cd /n/data1/hms/neurobio/wilson/caiman'
+alias dwe='cd /n/data1/hms/neurobio/wilson/miniforge3/envs'
+alias ss='cd /n/scratch/users/c/caw846/stacks'
+alias sd='cd /n/scratch/users/c/caw846/denoising'
+alias fw='cd /n/files/Neurobio/wilsonlab/wienecke'
+alias hh='cd /home/caw846'
+alias hhs='cd /home/caw846/scopa'
+alias hhst='cd /home/caw846/scopatmp'
+alias in1='srun --pty -p interactive -t 0-1:00 --mem=1G bash'
+alias in5='srun --pty -p interactive -t 0-1:00 --mem=5G bash'
+alias chook='eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"'
