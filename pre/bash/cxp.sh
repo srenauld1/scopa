@@ -24,14 +24,14 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
+do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
+do_denoise=1 #0 or 1, no space after =, deepcad denoise (python)
 do_stitch=0 #0 or 1, no space after =, stitch together denoised z slices into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0-8 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+jobarrayind=( 0 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
@@ -49,7 +49,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20240601' '20240602')
+RECDATE=('20240601')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -58,7 +58,7 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 ############ SET PARAMS FOR ANALYSIS ############
 
-REGISTRATION_TEMPLATE_GROUP_ID=('20240601_[1]_[1]_[312]' '20240602_[1]_[1]_[312]') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
+REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
 REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
@@ -67,12 +67,12 @@ LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
 NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
-EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, thisn is faster than rerunning denoising, but still stupid, fix it soon) 
+EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, this is faster than rerunning denoising, but still stupid, fix it soon) 
 
-USE_BACKGROUND_SUBTRACTED=(0) #note: value assigned here used in do_extract 
-USE_DENOISED=(1)
+USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack for roi extraction (suffix *bksb_cmrg_.tif), 0 to use the registered stack (without background subtraction) for roi extraction (suffix *cmrg_.tif) 
+USE_DENOISED=(1) #1 to use the registered, denoised stack for roi extraction (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for roi extraction (suffix *cmrg_.tif) 
 
-LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise 
+LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise (only used if do_remove=1)
 
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
