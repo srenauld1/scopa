@@ -38,7 +38,7 @@
 
 
 
-# # note train_datasets_size is number of 3d xyt patches to train the model on (so can exceed number of frames), and also is slightly different from what actually gets used 
+# # note train_datasets_size is APPROXIMATE number of 3d xyt patches to train the model on (so can exceed number of frames), is a little different from actual number patches because of how stride/gap in time is computed automatically
 # # while test_datasize during training is number of frames to denoise during optional visualization/saving after each epoch (so I assign it variable name num_frames_of_each_tif_to_denoise_for_visualization_during_training)
 # # while test_datasize during testing is number of frames to denoise using the model (so I assign it variable name num_frames_of_each_tif_to_denoise)
 # # and select_img_num is number of frames in each tif file to include in training, counted from the beginning of each stack (tif) (this param is not used in testing, but test_datasize is analogous)
@@ -113,7 +113,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     stack_size_y = dims[2]
     stack_size_x = dims[3]
     default_patch_xy = 120
-    train_datasets_size = 6000 #how many 3d xyt patches to train on, which can be different from what actually gets used because of how gap/stride in t is computed
+    train_datasets_size = 6000 #approximately how many 3d xyt patches to train on, which can be different from what actually gets used because of how gap/stride in t is computed; in case this number is set too high (will cause deepcad error), scopa code below lowers it to the highest acceptable value 
     overlap_factor = 0.8 # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
 
 
@@ -130,7 +130,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
 
     if denoise_slice_index == ['all'] or denoise_slice_index=='all': 
         zind_all_dn = np.arange(numstacks_all_refers_to)
-        print("user chose denoise_slice_index 'all', which means " + str(numstacks_all_refers_to) + " slices (which are each called 'stacks' in deepcad)")
+        print("user chose denoise_slice_index 'all', which means " + str(numstacks_all_refers_to) + " slices (which are called 'stacks' in deepcad)")
     else:
         print("user set denoise_slice_index to: " + str(denoise_slice_index))
         zind_all_dn = denoise_slice_index
@@ -173,11 +173,11 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
         numpatch_x = np.floor((stack_size_x - patch_x + gap_x) / gap_x)
         if gap_t!=0:
             numpatch_t = np.floor((stack_size_t - patch_t2 + gap_t) / gap_t)
-            num_true_patch_total = numpatch_y*numpatch_x*numpatch_t
+            num_true_patch_total = int(numpatch_y*numpatch_x*numpatch_t)
     
     train_datasets_size = train_datasets_size_adjust
 
-    print("\nusing train_datasets_size: " + str(train_datasets_size) + "\nwhich actually means " + str(int(num_true_patch_total)) + " patches in each of the " + str(numstacks_trained_simultaneously) + " z slices")
+    print("\nusing train_datasets_size: " + str(train_datasets_size) + "\nwhich actually means " + str(num_true_patch_total) + " patches in each of the " + str(numstacks_trained_simultaneously) + " z slices, for a total of " + str(num_true_patch_total*numstacks_trained_simultaneously) + " patches for the entire training set")
 
 
     select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)

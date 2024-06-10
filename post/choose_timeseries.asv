@@ -113,7 +113,11 @@ for fi = 1:length(fn)
     outfn = erase(fn{fi}, '_str');
     fitin.(outfn) = [];
     for vsi2 = 1:length(fitin.fieldspecstr.(fn{fi}))
-        tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
+        try
+            tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
+        catch
+            fuuuu=2
+        end
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end

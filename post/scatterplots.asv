@@ -1,12 +1,18 @@
-function scatterplots(xvars, yvars, zvars, epochinds_all, stack, roiinfo, ti, epochinds_ts_i, plot_z_as_color, gif_visibility, fn_prefix)
+function scatterplots(xvars, yvars, zvars, epochinds_all, fn_prefix, ...
+    stack, roiinfo, ti, epochinds_ts_i, plot_z_as_color) 
 
+epochinds_ts_i = md.epochs.epochinds_ts_i;
+gif_visibility = 'on';
+fn_prefix = fitin.fn_save_prefix;
+epochinds_all = opts.epochinds;
 
 
 % will need a switch to crop to model timeseries length
 threshold_data = 0;
-maxlagxy = 10;
-maxlagcol = 0;
-roomfac_x = 0.1;
+    gif_visibility = 'on';
+    maxlagxy = 10;
+    maxlagcol = 0;
+    roomfac_x = 0.1;
 
 for rind = 1:length(epochinds_all)
 
@@ -355,7 +361,7 @@ for rind = 1:length(epochinds_all)
 
                         fig2gif(hfg, lagcount, fngif)
 
-                        if ~plot_z_as_color
+                        if plot_z_as_color
                             saveas( gcf, [fngif(1:end-4) num2str(lagsxy(lxyi)) '_.fig'])
                         end
 
