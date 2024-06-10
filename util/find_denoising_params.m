@@ -25,17 +25,17 @@ clc
 %data params
 stack_size_x = 128;
 stack_size_y = 60;
-stack_size_t = 3000;
-stack_size_z = 1; %set to 1 if not volumetric
+stack_size_t = 8000;
+stack_size_z = 2; %set to 1 if not volumetric
 volume_rate = 23.165; %hz
 
 %deepcad paramsc (adjust if you don't like default)
-do_volume = 1; %probably should not adjust 
-patch_t_sec = 20; %adjust this first; 20 sec is a fairly arbitrary guess 
+do_volume = 1; %probably should not adjust
+patch_t_sec = 20; %adjust this first; 20 sec is a fairly arbitrary guess
 default_patch_xy = 120; %will be reduced to whole fov if fov is smaller than this
 train_datasets_size = 6000; %probably don't need to adjust
 overlap_factor = 0.8; %probably don't need to adjust; smaller means more temporal overlap, less spatial (balance point depends on other params)
-padinc = 5; %pointless i think; could probably be zero 
+padinc = 5; %pointless i think; could probably be zero
 
 %memory params (recommend to not adjust)
 bytes_per_element = 2;  %2 for uint16, which is what i use, but deepcad can operate on float32 and float64 too
@@ -75,12 +75,13 @@ while gap_t==0
     train_datasets_size_adjust = train_datasets_size_adjust - 1;
 
     tnum = ceil(train_datasets_size_adjust / xnum / ynum / numstacks_trained_simultaneously);
-    gap_t = floor((stack_size_t - patch_t * 2) / (tnum - 1)); %patch_t times 2 since input and target are interleaved and both patch_t length in t; THE FLOOR IN THIS LINE CAUSES THE NUMBER OF TRAINING PATCHES TO DIFFER FROM THE NUMBER REQUESTED IN TRAIN_DATASET_SIZE (ie integer shifts attempting to equal TRAIN_DATASET_SIZE, given patch number in x and y)
+    gap_t = floor((stack_size_t - patch_t2) / (tnum - 1)); %patch_t times 2 since input and target are interleaved and both patch_t length in t; THE FLOOR IN THIS LINE CAUSES THE NUMBER OF TRAINING PATCHES TO DIFFER FROM THE NUMBER REQUESTED IN TRAIN_DATASET_SIZE (ie integer shifts attempting to equal TRAIN_DATASET_SIZE, given patch number in x and y)
 
     numpatch_y = floor((stack_size_y - patch_y + gap_y) / gap_y);
     numpatch_x = floor((stack_size_x - patch_x + gap_x) / gap_x);
     numpatch_t = floor((stack_size_t - patch_t2 + gap_t) / gap_t);
     num_true_patch_total = numpatch_y*numpatch_x*numpatch_t;
+    
 end
 
 % these are the patch edges in xyzt (use patch_t2 since alternating frames are sent to either end of the Unet)
@@ -122,4 +123,5 @@ else
     sprintf("train_datasets_size did not have to be adjusted, it remains " + num2str(train_datasets_size_adjust))
 end
 
+sprintf("actual number patches will be: " + num2str(num_true_patch_total) + " for each of " + num2str(numstacks_trained_simultaneously) + " z slices")
 %%

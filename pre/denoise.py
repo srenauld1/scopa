@@ -105,7 +105,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     
     print("\n\n\nENTERING DENOISE FUNCTION")
 
-    patch_t_sec = 20 #20 seconds is my total guess for what seems reasonable 
+    patch_t_sec = 20 #20 seconds is just a guess 
     padinc = 5 #this is probably pointless and can probably be zero 
 
     stack_size_t = dims[0]
@@ -167,7 +167,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
         train_datasets_size_adjust = train_datasets_size_adjust - 1
 
         tnum = np.ceil(train_datasets_size_adjust / xnum / ynum / numstacks_trained_simultaneously)
-        gap_t = np.floor((stack_size_t - patch_t * 2) / (tnum - 1)) #patch_t times 2 since input and target are interleaved and both patch_t length in t; THE FLOOR IN THIS LINE CAUSES THE NUMBER OF TRAINING PATCHES TO DIFFER FROM THE NUMBER REQUESTED IN TRAIN_DATASET_SIZE (ie integer shifts attempting to equal TRAIN_DATASET_SIZE, given patch number in x and y)
+        gap_t = np.floor((stack_size_t - patch_t2) / (tnum - 1)) #patch_t times 2 since input and target are interleaved and both patch_t length in t; THE FLOOR IN THIS LINE CAUSES THE NUMBER OF TRAINING PATCHES TO DIFFER FROM THE NUMBER REQUESTED IN TRAIN_DATASET_SIZE (ie integer shifts attempting to equal TRAIN_DATASET_SIZE, given patch number in x and y)
 
         numpatch_y = np.floor((stack_size_y - patch_y + gap_y) / gap_y)
         numpatch_x = np.floor((stack_size_x - patch_x + gap_x) / gap_x)
@@ -183,6 +183,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)
     intensity_scale_factor = 1 # the factor for image intensity scaling
     num_frames_of_each_tif_to_denoise_for_visualization_during_training = patch_t + 10 #NEEDS TO BE AT LEAST PATCH_T TO PREVENT ERROR; for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
+    # num_frames_of_each_tif_to_denoise_for_visualization_during_training = 1000 if stack_size_t>1010 else int(stack_size_t) #NEEDS TO BE AT LEAST PATCH_T TO PREVENT ERROR; for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     num_workers = 0             # if you use Windows system, set this to 0.
     save_test_images_per_epoch = True  # whether to save result images after each epoch
