@@ -1,38 +1,32 @@
-function scatterplots(xvars, yvars, zvars, epochinds_all, fn_prefix, ...
-    stack, roiinfo, ti, epochinds_ts_i, plot_z_as_color) 
-
-epochinds_ts_i = md.epochs.epochinds_ts_i;
-gif_visibility = 'on';
-fn_prefix = fitin.fn_save_prefix;
-epochinds_all = opts.epochinds;
+function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, epochinds_all, stack, roiinfo, ti, epochinds_ts_i, plot_z_as_color, gif_visibility, fn_prefix)
 
 
-% will need a switch to crop to model timeseries length
+%plots xy and optional z with optional lags in xy and xy-z; 
+% z can be assigned color instead of spatial dimension 
+
+% will need a switch to crop to model timeseries numel
 threshold_data = 0;
-    gif_visibility = 'on';
-    maxlagxy = 10;
-    maxlagcol = 0;
-    roomfac_x = 0.1;
+maxlagxy = 10;
+maxlagcol = 0;
+roomfac_x = 0.1;
 
-for rind = 1:length(epochinds_all)
+rdummy1_lbnd = 0.1;
+rdummy1_ubnd = 0.45;
+rdummy2_lbnd = 0.5;
+rdummy2_ubnd = 0.85;
+
+pval_siglev = 0.05;
+
+theta_ticks = [0 90 180 270];
+theta_tick_labels = {'0', '', '180', ''};
+
+for rind = 1:numel(epochinds_all)
 
     epochinds = epochinds_all{rind};
     epochstring = sprintf('%.0f,' , epochinds);
     epochstring = epochstring(1:end-1);
-    tinds = find(ismember_each_element(md.epochs.epochinds_ts_i, epochinds));
+    tinds = find(ismember_each_element(epochinds_ts_i, epochinds));
     tinew = ti(tinds);
-
-
-    lagsxy = -maxlagxy:maxlagxy;
-    lagscol = -maxlagcol:maxlagcol;
-    count = 0;
-    for lci = lagscol
-        for lxyi = lagsxy
-            count = count + 1;
-            lagsall(count) = lxyi;
-        end
-    end
-    numlags = length(lagsxy) * length(lagscol);
 
     if plot_z_as_color
         dimstring = '2dcol';
@@ -40,342 +34,339 @@ for rind = 1:length(epochinds_all)
         dimstring = '3d';
     end
 
-    ncol = 256; %num colors
     mkrsz = 4; %scatter marker size
     xlim_makeroomfac = 0.1;
-    extrax1 = 2*maxlagxy*xlim_makeroomfac;
-    numr = 2;
-    numc = 2; %keep room for 2nd polar scatterplot
-    numtot = numr*numc;
-
+    extrax = 2*maxlagxy*xlim_makeroomfac;
     font1 = 10;
 
-    room_for_sgtitle = 0.03;
-    room_for_labels = 0.03;
-    subplot_size_fill = 1; %make 1 bc redundant with room_for* above
+    numrows = 2;
+    numcolumns = 2; %keep room for 2nd polar scatterplot
+    margins_fig = 0.03;
+    margins_subfig = 0.03;
+    [axx, axy, axw, axh] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig);
 
-    %positions/size of subplots including labels
-    xlab = linspace( 0+room_for_labels, 1-room_for_sgtitle, numr+1 ) ; %we want this to be same as y so scatterplots are axis square (was originally  linspace( 0+room_for_labels, 1, numc+1 )
-    xlab = xlab(1:end-1);
 
-    if numc==1
-        wlab = 1 -room_for_sgtitle - room_for_labels; %we want this to be same as y so scatterplots are axis square (was originally equal to 1 if numc==1
-    else
-        wlab = subplot_size_fill * diff( xlab(1:2) ) ;
-    end
-
-    ylab = linspace( 0+room_for_labels, 1-room_for_sgtitle, numr+1 ) ;
-    ylab = ylab(1:end-1);
-
-    if numr==1
-        hlab = 1 -room_for_sgtitle - room_for_labels;
-    else
-        hlab = subplot_size_fill * diff( ylab(1:2) ) ;
-    end
-
-    %positions/size of subplots excluding labels
-    xp = xlab + room_for_labels;
-    wp = wlab - room_for_labels; % can do *2 to make room for yyaxis right
-    yp = ylab + room_for_labels;
-    hp = hlab - room_for_labels;
-
-    for cvi = 1:length(zvars)
-
-        if isempty(zvars{cvi})
-            datcolor = [];
-            labcolor = '';
-        else
-            datcolor = eval(zvars{cvi});
-            labcolor = zvars{cvi};
+    lagsxy = -maxlagxy:maxlagxy;
+    lagsz = -maxlagcol:maxlagcol;
+    count = 0;
+    for lzi = lagsz
+        for lxyi = lagsxy
+            count = count + 1;
+            lagsall(count) = lxyi;
         end
+    end
+    numlags = numel(lagsxy) * numel(lagsz);
 
-        for vci = 1:size(varscombos, 1)
+    if isempty(varsz)
+        varsz = ones(size(varsx(1,:)));
+        labsz = {''};
+    end
 
-            eval(['dattmp1 = ' keepvars{varscombos(vci,1)} ';']) %get the values
-            eval(['dattmp2 = ' keepvars{varscombos(vci,2)} ';']) %get the values
-            eval('labtmp1 =  keepvars{varscombos(vci,1)} ;') %get the name
-            eval('labtmp2 =  keepvars{varscombos(vci,2)} ;') %get the name
+    for zi = 1:size(varsz, 1)
+        for yi = 1:size(varsy, 1)
+            for xi = 1:size(varsx, 1)
 
-            skipplot = 0; %some combos will not be plotted (criteria below)
-            allvars = who; %all workspace vars
-            labvarsall = allvars(startsWith(allvars, 'labtmp'));
-            for kvi = 1:length(labvarsall)
-                labvarsvals{kvi} = eval(labvarsall{kvi}); %get the labels (var names) to apply exclusion criteria
-            end
+                varx = varsx(xi, :);
+                vary = varsy(yi,:);
+                varz = varsz(zi,:);
 
-            % if ~any(endsWith(labvarsvals, 'vel')) & ~any(endsWith(labvarsvals, 'speed'))
-            %     skipplot = 1;
-            % end
-            %
-            % if numel(unique(labvarsvals(:)))~=numel(labvarsvals(:)) %must not have duplicate vars
-            %     skipplot = 1;
-            % end
-            % if any(strcmp(labvarsvals, 'cuevel')) & skip_cuevel %must not have cuevel if skip_cuevel
-            %     skipplot = 1;
-            % end
-            % if ((any(strcmp(labvarsvals, 'respgal')) | any(strcmp(labvarsvals, 'respgar'))) & any(strcmp(labvarsvals, 'respgalrmean'))) | ... %must not have no and ga from "same side" (not connected)
-            %         ((any(strcmp(labvarsvals, 'respnol')) | any(strcmp(labvarsvals, 'respnor'))) & any(strcmp(labvarsvals, 'respnolrmean')))
-            %     skipplot = 1;
-            % end
-            % if (any(endsWith(labvarsvals, 'gar')) & any(endsWith(labvarsvals, 'no_r'))) | ... %must not have no and ga from "same side" (not connected)
-            %         (any(endsWith(labvarsvals, 'gal')) & any(endsWith(labvarsvals, 'no_l')))
-            %     skipplot = 1;
-            % end
-            %
+                labx = labsx{xi};
+                laby = labsy{yi};
+                labz = labsz{zi};
 
+                laball = {labx, laby, labz};
 
-            indpolar = find(endsWith(labvarsvals, 'ang')); %indices of polar variables
+                skipplot = 0;
+                % skipplot = skip_plot_criteria(laball);
 
-            if ~skipplot
-
-                if isequal(indpolar, 2)
-                    tittmp = [labtmp2 '_xth_' labtmp1 '_yr_' labcolor '_colz_epoch_' epochstring '_' dimstring ]; %switch order
-                else
-                    tittmp = [labtmp1 '_xth_' labtmp2 '_yr_' labcolor '_colz_epoch_' epochstring '_' dimstring ]; %keep order
+                indpolar = [];
+                if contains(labx, 'yaw') || contains(labx, 'angle')
+                    indpolar = [indpolar 1];
                 end
-                fngif = [fn_prefix '_' tittmp '_.gif' ];
-                figure_title = strrep(tittmp, '_', ' ');
+                if contains(laby, 'yaw') || contains(laby, 'angle')
+                    indpolar = [indpolar 2];
+                end
+                if contains(labz, 'yaw') || contains(labz, 'angle')
+                    indpolar = [indpolar 3];
+                end
 
-                hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], ...
-                    'Color', 'white', 'visible', gif_visibility) ;
-                bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', ...
-                    'XLim', [0, 1], 'YLim', [0, 1] ) ;
-                text( 0.5, 0.99, figure_title, 'FontSize', font1, ...
-                    'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
+                if numel(indpolar)>1 || any(indpolar==3)
+                    error("can't use multiple polar variables yet, or z polar")
+                end
 
+                if ~skipplot
 
-                dattmp1lag = cell(1, length(lagsxy));
-                dattmp2lag = cell(1, length(lagsxy));
-                coltmplag = cell(1, length(lagsxy));
-                r_dummy1 = cell(1, length(lagsxy));
-                r_dummy2 = cell(1, length(lagsxy));
-                cmp = cell(1, length(lagsxy));
-                ccr = zeros(1, length(lagsxy));
-                ccpv = zeros(1, length(lagsxy));
-
-                lagcount = 0;
-                for lxyi = 1:length(lagsxy) %finding ccr in seperate initial loop because of plot hold problem in plot loop below
-
-                    for lci = 1:length(lagscol) %finding ccr in seperate initial loop because of plot hold problem in plot loop below
-
-                        lagcount = lagcount+1;
-
-
-                        %first apply xy lag
-                        if lagsxy(lxyi)<=0 %negative lag, first variable follows second (first var shifted left) (but should be opposite prob)
-                            dtmptmp1 = vec(dattmp1(1+abs(lagsxy(lxyi)):end));
-                            dtmptmp2 = vec(dattmp2(1:end-abs(lagsxy(lxyi))));
-                        else %positive lag first variable precedes second (first var shifted right) (but should be opposite prob)
-                            dtmptmp1 = vec(dattmp1(1:end-abs(lagsxy(lxyi))));
-                            dtmptmp2 = vec(dattmp2(1+abs(lagsxy(lxyi)):end));
-                        end
-
-                        %now apply 3rd variable lag (color lag, lagscol)
-                        if lagscol(lci)<=0 %negative lag, first variable follows second (first var shifted left) (but should be opposite prob)
-                            dtmp1 = vec(dtmptmp1(1+abs(lagscol(lci)):end));
-                            dtmp2 = vec(dtmptmp2(1+abs(lagscol(lci)):end));
-                            ctmp = vec(datcolor(1:end - (abs(lagsxy(lxyi))+abs(lagscol(lci))) )); %also include lagxy for 3rd var
-                        else %positive lag first variable precedes second (first var shifted right) (but should be opposite prob)
-                            dtmp1 = vec(dtmptmp1(1:end-abs(lagscol(lci))));
-                            dtmp2 = vec(dtmptmp2(1:end-abs(lagscol(lci))));
-                            ctmp = vec(datcolor( (1+abs(lagsxy(lxyi))+abs(lagscol(lci)) ) :end));
-                        end
-
-
-                        keepind = ~(isnan(dtmp1) | isnan(dtmp2));
-                        ctmpisnan = isnan(ctmp);
-                        if ~isempty(ctmpisnan)
-                            keepind = keepind | ctmpisnan;
-                            coltmplag{lagcount} = ctmp(keepind);
-                        end
-                        dattmp1lag{lagcount} = dtmp1(keepind);
-                        dattmp2lag{lagcount} = dtmp2(keepind);
-                        if isempty(ctmpisnan)
-                            coltmplag{lagcount} = ones(length(dattmp1lag{lagcount}), 1);
-                        end
-
-
-
-                        if threshold_data
-                            if strcmp('ballvel', labvarsvals{1})
-                                [histdt, histx] = hist(abs(dattmp1lag{lagcount}(:)), 500);
-                                thrbin = triangle_threshold(histdt, 'R', 0);
-                                thrvel = histx(thrbin);
-                                excludeinds = abs(dattmp1lag{lagcount})<thrvel;
-                            elseif strcmp('ballvel', labvarsvals{2})
-                                [histdt, histx] = hist(abs(dattmp2lag{lagcount}(:)), 500);
-                                thrbin = triangle_threshold(histdt, 'R', 0);
-                                thrvel = histx(thrbin);
-                                excludeinds = abs(dattmp2lag{lagcount})<thrvel;
-                            end
-                            dattmp1lag{lagcount}(excludeinds) = [];
-                            dattmp2lag{lagcount}(excludeinds) = [];
-                            coltmplag{lagcount}(excludeinds) = [];
-                        end
-
-
-                        if isempty(datcolor) | (~isempty(datcolor) & ~plot_z_as_color)
-                            cmp{lagcount} = [0 0 1];
-                        elseif ~isempty(datcolor) & plot_z_as_color
-                            [~, idx4] = sort(coltmplag{lagcount});
-                            dattmp1lag{lagcount} = dattmp1lag{lagcount}(idx4);
-                            dattmp2lag{lagcount} = dattmp2lag{lagcount}(idx4);
-                            cmp{lagcount} = jet(length(idx4));
-                        end
-
-                        lbnd1 = 0.1;
-                        ubnd2 = 0.45;
-                        r_dummy1{lagcount} = lbnd1 + (ubnd2-lbnd1)*rand(size(dattmp1lag{lagcount}));
-                        lbnd2 = 0.5;
-                        ubnd2 = 0.85;
-                        r_dummy2{lagcount} = lbnd2 + (ubnd2-lbnd2)*rand(size(dattmp2lag{lagcount}));
-
-                        switch num2str(indpolar)
-                            case ''
-                                [ccr(lagcount) ccpv(lagcount)] = corr(dattmp1lag{lagcount}, dattmp2lag{lagcount}); %linear-linear
-                                % [ccr(lagcount) ccpv(lagcount)] = corr(coltmplag{lagcount}, dattmp2lag{lagcount}); %linear-linear
-                            case '1'
-                                [ccr(lagcount) ccpv(lagcount)] = circ_corrcl(dattmp1lag{lagcount}, dattmp2lag{lagcount}); %circ-linear
-                            case '2'
-                                [ccr(lagcount) ccpv(lagcount)] = circ_corrcl(dattmp2lag{lagcount}, dattmp1lag{lagcount}); %circ-linear (and switch input order)
-                            case '1  2'
-                                [ccr(lagcount) ccpv(lagcount)] = circ_corrcc(dattmp1lag{lagcount}, dattmp2lag{lagcount}); %circ-circ
-                        end
+                    if isequal(indpolar, 2)
+                        tittmp = [laby '_xth_' labx '_yr_' labz '_colz_epoch_' epochstring '_' dimstring ]; %switch order
+                    else
+                        tittmp = [labx '_xth_' laby '_yr_' labz '_colz_epoch_' epochstring '_' dimstring ]; %keep order
                     end
-                end
+                    fngif = [fn_prefix '_' tittmp '_.gif' ];
+                    figure_title = strrep(tittmp, '_', ' ');
 
-                lagcount = 0;
-                for lxyi = 1:length(lagsxy) %finding ccr in seperate initial loop because of plot hold problem in plot loop below
+                    hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], 'Color', 'white', 'visible', gif_visibility) ;
+                    bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+                    text( 0.5, 0.99, figure_title, 'FontSize', font1, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
 
-                    for lci = 1:length(lagscol) %finding ccr in seperate initial loop because of plot hold problem in plot loop below
 
-                        lagcount = lagcount+1;
-                        if lagcount==1
+                    plotx = cell(1, numel(lagsxy));
+                    ploty = cell(1, numel(lagsxy));
+                    plotz = cell(1, numel(lagsxy));
+                    r_dummy1 = cell(1, numel(lagsxy));
+                    r_dummy2 = cell(1, numel(lagsxy));
+                    cmp = cell(1, numel(lagsxy));
+                    ccr = zeros(1, numel(lagsxy));
+                    ccpv = zeros(1, numel(lagsxy));
 
-                            cind = 1;
-                            rind = 1;
-                            hax1 = axes( 'Parent', hfg, 'Position', [xp(cind), yp(rind), wp, hp] );
-                            hax1.PlotBoxAspectRatio = [1 1 1];
+                    %hack: first find ccr in seperate initial loop because of plot hold problem in plot loop below
+                    lagcount = 0;
+                    for lxyi = 1:numel(lagsxy) 
+                        for lzi = 1:numel(lagsz) 
+                            lagcount = lagcount+1;
 
-                            hbr = gobjects(numlags);
-                            %cla()
-                            hold on
-                            siglev = 0.05;
+                            %first apply xy lag
+                            if lagsxy(lxyi)<=0 %negative lag, first variable follows second (first var shifted left) (but should be opposite prob)
+                                varx_lagxy = vec(varx(1+abs(lagsxy(lxyi)):end));
+                                vary_lagxy = vec(vary(1:end-abs(lagsxy(lxyi))));
+                            else %positive lag first variable precedes second (first var shifted right) (but should be opposite prob)
+                                varx_lagxy = vec(varx(1:end-abs(lagsxy(lxyi))));
+                                vary_lagxy = vec(vary(1+abs(lagsxy(lxyi)):end));
+                            end
 
-                            for i = 1:numlags
-                                hbr(i)=bar(lagsall(i),ccr(i));
-                                pval_norm = siglev-ccpv(i);
-                                if pval_norm<0
-                                    pval_norm = 0;
+                            %now apply 3rd variable lag (color lag, lagsz)
+                            if lagsz(lzi)<=0 %negative lag, first variable follows second (first var shifted left) (but should be opposite prob)
+                                varx_lagxyz = vec(varx_lagxy(1+abs(lagsz(lzi)):end));
+                                vary_lagxyz = vec(vary_lagxy(1+abs(lagsz(lzi)):end));
+                                varz_lagxyz = vec(varz(1:end - (abs(lagsxy(lxyi))+abs(lagsz(lzi))) )); %also include lagxy for 3rd var
+                            else %positive lag first variable precedes second (first var shifted right) (but should be opposite prob)
+                                varx_lagxyz = vec(varx_lagxy(1:end-abs(lagsz(lzi))));
+                                vary_lagxyz = vec(vary_lagxy(1:end-abs(lagsz(lzi))));
+                                varz_lagxyz = vec(varz( (1+abs(lagsxy(lxyi))+abs(lagsz(lzi)) ) :end));
+                            end
+
+
+                            %remove nans
+                            keepind = ~(isnan(varx_lagxyz) | isnan(vary_lagxyz));
+                            varz_lagxyz_isnan = isnan(varz_lagxyz);
+                            if ~isempty(varz_lagxyz_isnan)
+                                keepind = keepind | varz_lagxyz_isnan;
+                                plotz{lagcount} = varz_lagxyz(keepind);
+                            end
+                            plotx{lagcount} = varx_lagxyz(keepind);
+                            ploty{lagcount} = vary_lagxyz(keepind);
+                            if isempty(varz_lagxyz_isnan)
+                                plotz{lagcount} = ones(numel(plotx{lagcount}), 1);
+                            end
+
+
+
+                            %threshold if requested 
+                            if threshold_data
+                                if strcmp('ballvel', laball{1})
+                                    [histdt, histx] = hist(abs(plotx{lagcount}(:)), 500);
+                                    thrbin = triangle_threshold(histdt, 'R', 0);
+                                    thrvel = histx(thrbin);
+                                    excludeinds = abs(plotx{lagcount})<thrvel;
+                                elseif strcmp('ballvel', laball{2})
+                                    [histdt, histx] = hist(abs(ploty{lagcount}(:)), 500);
+                                    thrbin = triangle_threshold(histdt, 'R', 0);
+                                    thrvel = histx(thrbin);
+                                    excludeinds = abs(ploty{lagcount})<thrvel;
                                 end
-                                set(hbr(i), 'FaceColor', 'b', 'FaceAlpha', pval_norm);
+                                plotx{lagcount}(excludeinds) = [];
+                                ploty{lagcount}(excludeinds) = [];
+                                plotz{lagcount}(excludeinds) = [];
                             end
 
-                            %hbr = bar(hax1, laginds, ccr);
 
-                            %hax1.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
-                            hax1.YLim = [-1 1];
-                            hlin = xline(hax1, lagsall(lagcount), 'k');
-
-                            cind = 1;
-                            rind = 2;
-                            hax2 = axes( 'Parent', hfg, 'Position', [xp(cind), yp(rind), wp, hp] );
-
-                            switch num2str(indpolar)
-                                case ''
-                                    if plot_z_as_color
-                                        hsc1 = scatter(hax2, dattmp1lag{lagcount}, dattmp2lag{lagcount}, mkrsz, cmp{lagcount}, 'filled');
-                                    else
-                                        hsc1 = scatter3(hax2, dattmp1lag{lagcount}, dattmp2lag{lagcount}, coltmplag{lagcount}, mkrsz, cmp{lagcount}, 'filled');
-                                    end
-                                otherwise
-                                    hpax1 = polaraxes('Units', hax2.Units, 'Position', hax2.Position);
-                                    if isequal(indpolar, 1)
-                                        hsc1 = polarscatter(hpax1, dattmp1lag{lagcount}, dattmp2lag{lagcount}, mkrsz, cmp{lagcount}, 'filled'); %switch input order
-                                        hold(hpax1, 'on')
-                                    elseif isequal(indpolar, 2)
-                                        hsc1 = polarscatter(hpax1, dattmp2lag{lagcount}, dattmp1lag{lagcount}, mkrsz, cmp{lagcount}, 'filled');
-                                        hold(hpax1, 'on')
-                                    elseif isequal(indpolar, [1, 2])
-                                        hsc1 = polarscatter(hpax1, dattmp1lag{lagcount}, r_dummy1{lagcount}, mkrsz, 'filled');
-                                        hold(hpax1, 'on')
-                                        hsc2 = polarscatter(hpax1, dattmp2lag{lagcount}, r_dummy2{lagcount}, mkrsz, 'filled');
-                                    end
-                                    hax2.YAxis.Visible = 'off';
-                                    hax2.XAxis.Visible = 'off';
-                                    %hpax1.RTickLabel = [];
-                                    %hsc3 = polarplot(hpax1, [-pi/12 -pi/12], [min(hsc1.RData) max(hsc1.RData)], 'r');
-
-                                    hpax1.RLim = [min(hsc1.RData) - range(hsc1.RData)*roomfac_x max(hsc1.RData) + range(hsc1.RData)*roomfac_x];
-                                    hsc3 = polarplot(hpax1, [-pi/12 -pi/12], hpax1.RLim, 'r');
-
-                                    hpax1.ThetaTick = [0 90 180 270];
-                                    hpax1.ThetaTickLabel = {'0', '', '180', ''};
-
-
-                                    hold(hpax1, 'on')
-
+                            %sort for color plot (if plot_z_as_color)
+                            if isempty(varz) | (~isempty(varz) & ~plot_z_as_color)
+                                cmp{lagcount} = [0 0 1];
+                            elseif ~isempty(varz) & plot_z_as_color
+                                [~, idx4] = sort(plotz{lagcount});
+                                plotx{lagcount} = plotx{lagcount}(idx4);
+                                ploty{lagcount} = ploty{lagcount}(idx4);
+                                cmp{lagcount} = jet(numel(idx4));
                             end
-                            set(hax1,'box','off')
-                            set(hax2,'box','off')
-                            hax2.PlotBoxAspectRatio = [1 1 1];
 
-                            hax1.XLabel.String = 'lag';
-                            hax1.YLabel.String = 'corr coeff';
-                            hax2.XLabel.String = labtmp1;
-                            hax2.YLabel.String = labtmp2;
-                            hax2.ZLabel.String = labcolor;
+                 
+                            %dummy variables for possible polar plots
+                            r_dummy1{lagcount} = rdummy1_lbnd + (rdummy1_ubnd-rdummy1_lbnd)*rand(size(plotx{lagcount}));
+                            r_dummy2{lagcount} = rdummy2_lbnd + (rdummy2_ubnd-rdummy2_lbnd)*rand(size(ploty{lagcount}));
 
-                        else
-
-                            hlin.Value = lagsall(lagcount);
-
+                            %find corr coeffs
                             switch num2str(indpolar)
                                 case ''
-                                    hsc1.XData = dattmp1lag{lagcount};
-                                    hsc1.YData = dattmp2lag{lagcount};
-                                    hsc1.CData = cmp{lagcount};
-                                    if ~plot_z_as_color
-                                        hsc1.ZData = coltmplag{lagcount};
-                                    end
+                                    [ccr(lagcount) ccpv(lagcount)] = corr(plotx{lagcount}, ploty{lagcount}); %linear-linear
+                                    % [ccr(lagcount) ccpv(lagcount)] = corr(plotz{lagcount}, ploty{lagcount}); %linear-linear
                                 case '1'
-                                    %hpax1.RTickLabel = [];
-                                    hsc1.ThetaData = dattmp1lag{lagcount};
-                                    hsc1.RData = dattmp2lag{lagcount};
-                                    hsc1.CData = cmp{lagcount};
+                                    [ccr(lagcount) ccpv(lagcount)] = circ_corrcl(plotx{lagcount}, ploty{lagcount}); %circ-linear
                                 case '2'
-                                    hpax1.RTickLabel = [];
-                                    hsc1.ThetaData = dattmp2lag{lagcount};
-                                    hsc1.RData = dattmp1lag{lagcount};
-                                    hsc1.CData = cmp{lagcount};
+                                    [ccr(lagcount) ccpv(lagcount)] = circ_corrcl(ploty{lagcount}, plotx{lagcount}); %circ-linear (and switch input order)
                                 case '1  2'
-                                    hpax1.RTickLabel = [];
-                                    hsc1.ThetaData = dattmp1lag{lagcount};
-                                    hsc1.RData = r_dummy1{lagcount};
-                                    hsc2.ThetaData = dattmp2lag{lagcount};
-                                    hsc2.RData = r_dummy2{lagcount};
+                                    [ccr(lagcount) ccpv(lagcount)] = circ_corrcc(plotx{lagcount}, ploty{lagcount}); %circ-circ
+                            end
+                        end
+                    end
+
+                    %now the plotting loop
+                    lagcount = 0;
+                    for lxyi = 1:numel(lagsxy) 
+                        for lzi = 1:numel(lagsz) 
+                            lagcount = lagcount+1;
+                            if lagcount==1
+
+
+                                spind = 1;
+                                hax1 = axes( 'Parent', hfg, 'Position', [axx(spind), axy(spind), axw(spind), axh(spind)] );
+                                hax1.PlotBoxAspectRatio = [1 1 1];
+
+                                hbr = gobjects(numlags);
+                                %cla()
+                                hold on
+
+                                for i = 1:numlags
+                                    hbr(i)=bar(lagsall(i),ccr(i));
+                                    pval_norm = pval_siglev-ccpv(i);
+                                    if pval_norm<0
+                                        pval_norm = 0;
+                                    end
+                                    set(hbr(i), 'FaceColor', 'b', 'FaceAlpha', pval_norm);
+                                end
+
+                                %hbr = bar(hax1, laginds, ccr);
+
+                                %hax1.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
+                                hax1.YLim = [-1 1];
+                                hlin = xline(hax1, lagsall(lagcount), 'k');
+
+
+                                spind = 2;
+                                hax2 = axes( 'Parent', hfg, 'Position', [axx(spind), axy(spind), axw(spind), axh(spind)] );
+
+                                switch num2str(indpolar)
+                                    case ''
+                                        if plot_z_as_color
+                                            hsc1 = scatter(hax2, plotx{lagcount}, ploty{lagcount}, mkrsz, cmp{lagcount}, 'filled');
+                                        else
+                                            hsc1 = scatter3(hax2, plotx{lagcount}, ploty{lagcount}, plotz{lagcount}, mkrsz, cmp{lagcount}, 'filled');
+                                        end
+                                    otherwise
+                                        hpax1 = polaraxes('Units', hax2.Units, 'Position', hax2.Position);
+                                        if isequal(indpolar, 1)
+                                            hsc1 = polarscatter(hpax1, plotx{lagcount}, ploty{lagcount}, mkrsz, cmp{lagcount}, 'filled'); %switch input order
+                                            hold(hpax1, 'on')
+                                        elseif isequal(indpolar, 2)
+                                            hsc1 = polarscatter(hpax1, ploty{lagcount}, plotx{lagcount}, mkrsz, cmp{lagcount}, 'filled');
+                                            hold(hpax1, 'on')
+                                        elseif isequal(indpolar, [1, 2])
+                                            hsc1 = polarscatter(hpax1, plotx{lagcount}, r_dummy1{lagcount}, mkrsz, 'filled');
+                                            hold(hpax1, 'on')
+                                            hsc2 = polarscatter(hpax1, ploty{lagcount}, r_dummy2{lagcount}, mkrsz, 'filled');
+                                        end
+                                        hax2.YAxis.Visible = 'off';
+                                        hax2.XAxis.Visible = 'off';
+                                        %hpax1.RTickLabel = [];
+                                        %hsc3 = polarplot(hpax1, [-pi/12 -pi/12], [min(hsc1.RData) max(hsc1.RData)], 'r');
+
+                                        hpax1.RLim = [min(hsc1.RData) - range(hsc1.RData)*roomfac_x max(hsc1.RData) + range(hsc1.RData)*roomfac_x];
+                                        hsc3 = polarplot(hpax1, [-pi/12 -pi/12], hpax1.RLim, 'r');
+
+                                        hpax1.ThetaTick = theta_ticks;
+                                        hpax1.ThetaTickLabel = theta_tick_labels;
+
+                                        hold(hpax1, 'on')
+
+                                end
+                                set(hax1,'box','off')
+                                set(hax2,'box','off')
+                                hax2.PlotBoxAspectRatio = [1 1 1];
+
+                                hax1.XLabel.String = 'lag';
+                                hax1.YLabel.String = 'corr coeff';
+                                hax2.XLabel.String = varx;
+                                hax2.YLabel.String = vary;
+                                hax2.ZLabel.String = labz;
+
+                            else
+
+                                hlin.Value = lagsall(lagcount);
+
+                                switch num2str(indpolar)
+                                    case ''
+                                        hsc1.XData = plotx{lagcount};
+                                        hsc1.YData = ploty{lagcount};
+                                        hsc1.CData = cmp{lagcount};
+                                        if ~plot_z_as_color
+                                            hsc1.ZData = plotz{lagcount};
+                                        end
+                                    case '1'
+                                        %hpax1.RTickLabel = [];
+                                        hsc1.ThetaData = plotx{lagcount};
+                                        hsc1.RData = ploty{lagcount};
+                                        hsc1.CData = cmp{lagcount};
+                                    case '2'
+                                        hpax1.RTickLabel = [];
+                                        hsc1.ThetaData = ploty{lagcount};
+                                        hsc1.RData = plotx{lagcount};
+                                        hsc1.CData = cmp{lagcount};
+                                    case '1  2'
+                                        hpax1.RTickLabel = [];
+                                        hsc1.ThetaData = plotx{lagcount};
+                                        hsc1.RData = r_dummy1{lagcount};
+                                        hsc2.ThetaData = ploty{lagcount};
+                                        hsc2.RData = r_dummy2{lagcount};
+                                end
+
+
                             end
 
+                            fig2gif(hfg, lagcount, fngif)
+
+                            if ~plot_z_as_color
+                                saveas( gcf, [fngif(1:end-4) num2str(lagsxy(lxyi)) '_.fig'])
+                            end
 
                         end
-
-                        fig2gif(hfg, lagcount, fngif)
-
-                        if plot_z_as_color
-                            saveas( gcf, [fngif(1:end-4) num2str(lagsxy(lxyi)) '_.fig'])
-                        end
-
                     end
                 end
-            end
-            %close all
+                %close all
 
+
+            end
         end
     end
+
+end
 
 
 end
 
 
 
+function skipplot = skip_plot_criteria(laball)
+
+if ~any(endsWith(laball, 'vel')) & ~any(endsWith(laball, 'speed'))
+    skipplot = 1;
+end
+
+if numel(unique(laball(:)))~=numel(laball(:)) %must not have duplicate vars
+    skipplot = 1;
+end
+
+if any(strcmp(laball, 'cuevel')) & skip_cuevel %must not have cuevel if skip_cuevel
+    skipplot = 1;
+end
+
+if ((any(strcmp(laball, 'respgal')) | any(strcmp(laball, 'respgar'))) & any(strcmp(laball, 'respgalrmean'))) | ... %must not have no and ga from "same side" (not connected)
+        ((any(strcmp(laball, 'respnol')) | any(strcmp(laball, 'respnor'))) & any(strcmp(laball, 'respnolrmean')))
+    skipplot = 1;
+end
+
+if (any(endsWith(laball, 'gar')) & any(endsWith(laball, 'no_r'))) | ... %must not have no and ga from "same side" (not connected)
+        (any(endsWith(laball, 'gal')) & any(endsWith(laball, 'no_l')))
+    skipplot = 1;
+end
+
+end
 

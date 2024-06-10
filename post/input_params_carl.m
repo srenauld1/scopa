@@ -273,6 +273,7 @@ opt.fit = default_fit_params(opt.fit);
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
 opt.scatter.do = 1;
 
+%if any of x, y, or z are polar, they are moved to theta on the scatterplots 
 opt.scatter(1).vars.x_str{1} = {['ball, *']};
 opt.scatter(1).vars.y_str{1} = {['vis, *']};
 opt.scatter(1).vars.z_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
@@ -281,7 +282,7 @@ opt.scatter(1).plot_z_as_color = 1; %0 will make 3d scatterplot, 1 will make 2d 
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scatter(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scatter(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.scatter(1).gif_visibility = 1; %0 will save but not plot, 1 will do both
+opt.scatter(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 %% HIRES
 

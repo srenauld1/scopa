@@ -17,6 +17,15 @@ if isempty(croplim)
         [croplim, croplimstr] = make_croplim(stack, sz_crop(4), pth_fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore);
     end
     pth_mroi = strrep(pth_mroi, 'nocroplim', croplimstr);
+
+elseif strcmp(croplim, 'backupdefault')
+
+    yinds = 1:size(stack, 1);
+    xinds = 1:size(stack, 2);
+    zinds = 1:size(stack, 3);
+    tinds = 1:size(stack, 4);
+    croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
+
 end
 
 stackcrop = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), :)); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single

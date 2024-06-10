@@ -50,6 +50,8 @@ end
 
 %% variables for each regionex
 
+croplim_all.backupdefault = 'backupdefault'; %make this field available when regionex are not available 
+
 for i = 1:length(regionex_all)
 
     regionex = regionex_all{i};

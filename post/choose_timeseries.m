@@ -1,14 +1,14 @@
-function [fitin, dochoose] = choose_timeseries(opt, ts, md, pth_tsuse_save, pth_stack_analysis, fitcount, dochoose)
+function [fitin, dochoose] = choose_timeseries(opt, ts, md, pth_tsuse_save, pth_stack_analysis, choosecount, dochoose)
 
-% for convenience, saves substrings used to match variable within 'ts' 
+% for convenience, saves substrings used to match variable within 'ts'
 % as table ('fieldspec_all') and as string ('fieldspecstr_all')
 
-if fitcount>1 %the set of all 'vars' fields combos is determined on the first fit (fitcount==1), so subsequent calls to choose_timeseries just  
+if choosecount>1 %the set of all 'vars' fields combos is determined on the first fit (choosecount==1), so subsequent calls to choose_timeseries just
 
     load(pth_tsuse_save)
 
 else
-    
+
     fieldspec_parent_fields = fieldnames(opt(1).vars);
 
     count = zeros(length(fieldspec_parent_fields), 1);
@@ -37,7 +37,6 @@ else
                 for ici = 1:length(innercell) %for each inner cell (results are concatenated)
                     varstr = innercell{ici}; %variable specification string
                     varsubstr = strsplit(varstr, ', '); %variable specification substrings
-                    regionex_all = varsubstr(find(strcmp(varsubstr, 'resp'))+1);
                     clear tstmp
                     tstmp{1} = ts;
                     fn = fieldnames(tstmp{1});
@@ -48,10 +47,14 @@ else
                         keepfields{1} = fn(strcmp( fn, varsubstr{1} ) );
                     end
                     if isempty(keepfields{1})
-                        if opt(ofi).ignore_missing_vars
-                            disp("REQUESTED SUBFIELD '" + varsubstr{1} + "' DOES NOT CURRENTLY EXIST IN STRUCT 'ts', 'IGNORING IT BECAUSE ignore_missing_vars=1")
+                        if isempty(varsubstr{1})
+                            disp("PASSED EMPTY STRING TO " + fieldspec_parent_fields{vpfi})
                         else
-                            error("REQUESTED SUBFIELD '" + varsubstr{1} + "' DOES NOT CURRENTLY EXIST IN STRUCT 'ts'")
+                            if opt(ofi).ignore_missing_vars
+                                disp("REQUESTED SUBFIELD '" + varsubstr{1} + "' DOES NOT CURRENTLY EXIST IN STRUCT 'ts', 'IGNORING IT BECAUSE ignore_missing_vars=1")
+                            else
+                                error("REQUESTED SUBFIELD '" + varsubstr{1} + "' DOES NOT CURRENTLY EXIST IN STRUCT 'ts'")
+                            end
                         end
                     end
                     breaktmp = 0;
@@ -107,13 +110,14 @@ else
 end
 
 
-fitin.fieldspecstr = fieldspecstr_all(fitcount);
-fn = fieldnames(fitin.fieldspecstr);
+fn = fieldnames(fieldspecstr_all(choosecount));
+regionex_cat = [];
 for fi = 1:length(fn)
     outfn = erase(fn{fi}, '_str');
     fitin.(outfn) = [];
-    for vsi2 = 1:length(fitin.fieldspecstr.(fn{fi}))
-        tmp = eval(fitin.fieldspecstr.(fn{fi}){vsi2});
+    fitin.fieldspecstr.(fn{fi}) = [];
+    for vsi2 = 1:length(fieldspecstr_all(choosecount).(fn{fi}))
+        tmp = eval(fieldspecstr_all(choosecount).(fn{fi}){vsi2});
         if size(tmp, 2)~=length(md.ti)
             tmp = tmp.';
         end
@@ -121,18 +125,34 @@ for fi = 1:length(fn)
             error("timeseries is does not match number imaging volumes (length md.ti)")
         end
         fitin.(outfn) = cat(1, fitin.(outfn), tmp);
-        if strcmp(fn{fi}, 'depvpre_str')
-            fitin.regionex = fieldspec_all(fitcount).(fn{fi}){vsi2,2}{1};
-            fitin.parsex = fieldspec_all(fitcount).(fn{fi}){vsi2,3}{1};
-            fitin.parsnorm = fieldspec_all(fitcount).(fn{fi}){vsi2,4}{1};
-            fitin.fitcount = fitcount;
-            fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.fitcount)];
+        fsstmp = repmat(fieldspecstr_all(choosecount).(fn{fi})(vsi2), size(tmp, 1), 1);
+        fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+        if strcmp(fieldspec_all(choosecount).(fn{fi}){vsi2,1}{1}, 'resp')
+            fitin.regionex = fieldspec_all(choosecount).(fn{fi}){vsi2,2}{1};
+            fitin.parsex = fieldspec_all(choosecount).(fn{fi}){vsi2,3}{1};
+            fitin.parsnorm = fieldspec_all(choosecount).(fn{fi}){vsi2,4}{1};
+            fitin.choosecount = choosecount;
+            fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.choosecount)];
+
+            regionex_cat = cat(1, regionex_cat, {fitin.regionex});
+            if numel(unique(regionex_cat))~=1
+                error("fitin cannot yet decide how to use multiple regionex across input vars")
+                % fitin.regionex = 'backupdefault';
+            end
         end
     end
 end
 
+if ~isfield(fitin, 'regionex')
+    fitin.regionex = 'backupdefault';
+    fitin.parsex = 'noparsex';
+    fitin.parsnorm = 'noparsnorm';
+    fitin.choosecount = choosecount;
+    fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.choosecount)];
+end
 
-if fitcount==length(fieldspecstr_all) %quit flag on final
+fitin = orderfields_recursive(fitin);
+if choosecount==length(fieldspecstr_all) %quit flag on final
     dochoose = 0;
 end
 

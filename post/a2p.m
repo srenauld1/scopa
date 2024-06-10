@@ -153,7 +153,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
             [fitin, dochoose] = choose_timeseries(opt.scatter(si), ts, md, pth.tsuse.scatter, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
             stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
 
-            scatterplots(fitin.x, fitin.y, fitin.z, opt.scatter(si).epochinds, stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.epochs.epochinds_ts_i, opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix) %3d scatterplots (2d plus color) of any available timeseries
+            scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, opt.scatter(si).epochinds, stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.epochs.epochinds_ts_i, opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix) %3d scatterplots (2d plus color) of any available timeseries
         end
     end
 
