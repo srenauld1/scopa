@@ -96,7 +96,6 @@ pth_morphroidata = [pth_mroi_prefix 'morphroidata_.mat'];
 
 try
 
-    fool=mool
     load(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi');
 
 catch
