@@ -31,17 +31,20 @@ fontmedium = 15;
 xlim_makeroomfac = 0.1;
 extrax = 2*maxlagxy*xlim_makeroomfac;
 
-numrows = 1;
+numrows = 2;
 numcolumns = 3; %keep room for 2nd polar scatterplot
 margins_fig = 0.03;
-margins_subfig = 0.03;
+margins_subfig = 0.05;
 [axx, axy, axw, axh] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig);
 
 
 if isempty(varsz)
+    z_is_empty = 1;
     varsz = ones(size(varsx(1,:)));
-    labsz = {'null'};
+    labsz = {''};
     maxlagz = 0;
+else
+    z_is_empty = 0;
 end
 
 
@@ -75,9 +78,9 @@ for rind = 1:numel(epochinds_all)
                 vary = varsy(yi, tinds);
                 varz = varsz(zi, tinds);
 
-                labx = labsx{xi};
-                laby = labsy{yi};
-                labz = labsz{zi};
+                labx = strrep(strrep(strrep(labsx{xi}, '_', ' '), '.', ' '), 'ts', '');
+                laby = strrep(strrep(strrep(labsy{yi}, '_', ' '), '.', ' '), 'ts', '');
+                labz = strrep(strrep(strrep(labsz{zi}, '_', ' '), '.', ' '), 'ts', '');
 
                 laball = {labx, laby, labz};
 
@@ -95,6 +98,8 @@ for rind = 1:numel(epochinds_all)
                     indpolar = [indpolar 3];
                 end
 
+                axtype = set_axtype(indpolar, z_is_empty, plot_z_as_color);
+
                 if numel(indpolar)>1 || any(indpolar==3)
                     error("can't use multiple polar variables yet, or z polar")
                 end
@@ -102,12 +107,15 @@ for rind = 1:numel(epochinds_all)
                 if ~skipplot
 
                     if isequal(indpolar, 2)
-                        tittmp = {['_XT' laby]; ['_YR' labx]; ['_ZC' labz]; ['_e' epochstring '_' dimstring ]}; %switch order
+                        figure_title = {[axtype{1} laby]; [axtype{2} labx]; [axtype{3} labz]; ['e' epochstring ' ' dimstring ]}; %switch order
+                        labt = laby;
+                        labr = labx;
                     else
-                        tittmp = {['_XT' labx]; ['_YR' laby]; ['_ZC' labz]; ['_e' epochstring '_' dimstring ]}; %switch order
+                        figure_title = {[axtype{1} labx]; [axtype{2} laby]; [axtype{3} labz]; ['e' epochstring ' ' dimstring ]}; %switch order
+                        labt = labx;
+                        labr = laby;
                     end
-                    figure_title = strrep(strrep(strrep(tittmp, '_', ' '), 'ts', ''), '.', ' ');
-                    fngif = [fn_prefix '_' strrep(strrep(strrep(strjoin(tittmp), ' ', ''), '.', '_'), 'ts', '') '_.gif' ];
+                    fngif = [fn_prefix '_' strrep(strjoin(figure_title), ' ', '_') '_.gif' ];
 
                     hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], 'Color', 'white', 'visible', gif_visibility) ;
                     bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
@@ -185,9 +193,9 @@ for rind = 1:numel(epochinds_all)
 
 
                             %sort for color plot (if plot_z_as_color)
-                            if isempty(varz) | (~isempty(varz) & ~plot_z_as_color)
+                            if z_is_empty | (~z_is_empty & ~plot_z_as_color)
                                 cmp{lagcount} = [0 0 1];
-                            elseif ~isempty(varz) & plot_z_as_color
+                            elseif ~z_is_empty & plot_z_as_color
                                 [~, idx4] = sort(plotz{lagcount});
                                 plotx{lagcount} = plotx{lagcount}(idx4);
                                 ploty{lagcount} = ploty{lagcount}(idx4);
@@ -246,8 +254,8 @@ for rind = 1:numel(epochinds_all)
                                 hlin = xline(hax1, lagsall(lagcount), 'k');
 
 
-                                spind = 2;
-                                hax2 = axes( 'Parent', hfg, 'Position', [axx(spind), axy(spind), axw(spind), axh(spind)] );
+                                spind = 4;
+                                hax2 = axes( 'Parent', hfg, 'Position', [axx(spind), axy(spind), axw(spind)*2, axh(spind)*2] );
 
                                 switch num2str(indpolar)
                                     case ''
@@ -256,6 +264,9 @@ for rind = 1:numel(epochinds_all)
                                         else
                                             hsc1 = scatter3(hax2, plotx{lagcount}, ploty{lagcount}, plotz{lagcount}, mkrsz, cmp{lagcount}, 'filled');
                                         end
+                                        hax2.XLabel.String = labx;
+                                        hax2.YLabel.String = laby;
+                                        % hax2.ZLabel.String = labz;
                                     otherwise
                                         hpax1 = polaraxes('Units', hax2.Units, 'Position', hax2.Position);
                                         if isequal(indpolar, 1)
@@ -282,6 +293,12 @@ for rind = 1:numel(epochinds_all)
 
                                         hold(hpax1, 'on')
 
+                                        % hpax1.RAxis.Label.String = ['Rho: ' labr];
+                                        hpax1.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
+                                        hpax1.ThetaAxis.Label.Position = [-90, 155, 0];
+                                        hpax1.ThetaAxis.Label.Rotation = 0;
+                                        % hpax1.zaxis??
+
                                 end
                                 set(hax1,'box','off')
                                 set(hax2,'box','off')
@@ -289,9 +306,7 @@ for rind = 1:numel(epochinds_all)
 
                                 hax1.XLabel.String = 'lag';
                                 hax1.YLabel.String = 'corr coeff';
-                                hax2.XLabel.String = varx;
-                                hax2.YLabel.String = vary;
-                                hax2.ZLabel.String = labz;
+
 
                             else
 
@@ -329,7 +344,7 @@ for rind = 1:numel(epochinds_all)
                             fig2gif(hfg, lagcount, fngif)
 
                             if ~plot_z_as_color
-                                saveas( gcf, [fngif(1:end-4) num2str(lagsxy(lxyi)) '_.fig'])
+                                saveas( gcf, [fngif(1:end-4) num2str(lagsxy(lxyi)) '_.fig']) %save 3d plots as fig so you can rotate
                             end
 
                         end
@@ -375,3 +390,22 @@ end
 
 end
 
+
+function axtype = set_axtype(indpolar, z_is_empty, plot_z_as_color)
+
+if isempty(indpolar)
+    axtype = {'X', 'Y'};
+else
+    axtype = {'T', 'R'};
+end
+if z_is_empty
+    axtype{3} = '';
+else
+    if plot_z_as_color
+        axtype{3} = 'C';
+    else
+        axtype{3} = 'Z';
+    end
+end
+
+end
