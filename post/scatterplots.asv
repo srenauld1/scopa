@@ -1,13 +1,13 @@
 function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, epochinds_all, stack, roiinfo, ti, epochinds_ts_i, plot_z_as_color, gif_visibility, fn_prefix)
 
 
-%plots xy and optional z with optional lags in xy and xy-z; 
-% z can be assigned color instead of spatial dimension 
+%plots xy and optional z with optional lags in xy and xy-z;
+% z can be assigned color instead of spatial dimension
 
 % will need a switch to crop to model timeseries numel
 threshold_data = 0;
 maxlagxy = 10;
-maxlagcol = 0;
+maxlagz = 10;
 roomfac_x = 0.1;
 
 rdummy1_lbnd = 0.1;
@@ -20,6 +20,44 @@ pval_siglev = 0.05;
 theta_ticks = [0 90 180 270];
 theta_tick_labels = {'0', '', '180', ''};
 
+if plot_z_as_color
+    dimstring = '2dcol';
+else
+    dimstring = '3d';
+end
+
+mkrsz = 4; %scatter marker size
+fontmedium = 15;
+xlim_makeroomfac = 0.1;
+extrax = 2*maxlagxy*xlim_makeroomfac;
+
+numrows = 1;
+numcolumns = 3; %keep room for 2nd polar scatterplot
+margins_fig = 0.03;
+margins_subfig = 0.03;
+[axx, axy, axw, axh] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig);
+
+
+if isempty(varsz)
+    varsz = ones(size(varsx(1,:)));
+    labsz = {''};
+    maxlagz = 0;
+end
+
+
+lagsxy = -maxlagxy:maxlagxy;
+lagsz = -maxlagz:maxlagz;
+count = 0;
+%this will repeatedly plot the xy lag numel(lagz) times
+for lzi = lagsz
+    for lxyi = lagsxy
+        count = count + 1;
+        lagsall(count) = lxyi;
+    end
+end
+numlags = numel(lagsxy) * numel(lagsz);
+
+
 for rind = 1:numel(epochinds_all)
 
     epochinds = epochinds_all{rind};
@@ -28,47 +66,14 @@ for rind = 1:numel(epochinds_all)
     tinds = find(ismember_each_element(epochinds_ts_i, epochinds));
     tinew = ti(tinds);
 
-    if plot_z_as_color
-        dimstring = '2dcol';
-    else
-        dimstring = '3d';
-    end
-
-    mkrsz = 4; %scatter marker size
-    xlim_makeroomfac = 0.1;
-    extrax = 2*maxlagxy*xlim_makeroomfac;
-    font1 = 10;
-
-    numrows = 2;
-    numcolumns = 2; %keep room for 2nd polar scatterplot
-    margins_fig = 0.03;
-    margins_subfig = 0.03;
-    [axx, axy, axw, axh] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig);
-
-
-    lagsxy = -maxlagxy:maxlagxy;
-    lagsz = -maxlagcol:maxlagcol;
-    count = 0;
-    for lzi = lagsz
-        for lxyi = lagsxy
-            count = count + 1;
-            lagsall(count) = lxyi;
-        end
-    end
-    numlags = numel(lagsxy) * numel(lagsz);
-
-    if isempty(varsz)
-        varsz = ones(size(varsx(1,:)));
-        labsz = {''};
-    end
 
     for zi = 1:size(varsz, 1)
         for yi = 1:size(varsy, 1)
             for xi = 1:size(varsx, 1)
 
-                varx = varsx(xi, :);
-                vary = varsy(yi,:);
-                varz = varsz(zi,:);
+                varx = varsx(xi, tinds);
+                vary = varsy(yi, tinds);
+                varz = varsz(zi, tinds);
 
                 labx = labsx{xi};
                 laby = labsy{yi};
@@ -97,16 +102,16 @@ for rind = 1:numel(epochinds_all)
                 if ~skipplot
 
                     if isequal(indpolar, 2)
-                        tittmp = [laby '_xth_' labx '_yr_' labz '_colz_epoch_' epochstring '_' dimstring ]; %switch order
+                        tittmp = {['_XT' laby]; ['_YR' labx]; ['_ZC' labz]; ['_e' epochstring '_' dimstring ]}; %switch order
                     else
-                        tittmp = [labx '_xth_' laby '_yr_' labz '_colz_epoch_' epochstring '_' dimstring ]; %keep order
+                        tittmp = {['_XT' labx]; ['_YR' laby]; ['_ZC' labz]; ['_e' epochstring '_' dimstring ]}; %switch order
                     end
-                    fngif = [fn_prefix '_' tittmp '_.gif' ];
-                    figure_title = strrep(tittmp, '_', ' ');
+                    figure_title = strrep(strrep(strrep(tittmp, '_', ' '), 'ts', ''), '.', ' ');
+                    fngif = [fn_prefix '_' strrep(strrep(strrep(strjoin(tittmp), ' ', ''), '.', '_'), 'ts', '') '_.gif' ];
 
                     hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], 'Color', 'white', 'visible', gif_visibility) ;
                     bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-                    text( 0.5, 0.99, figure_title, 'FontSize', font1, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
+                    text( 0.5, 0.95, figure_title, 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
 
 
                     plotx = cell(1, numel(lagsxy));
@@ -120,8 +125,8 @@ for rind = 1:numel(epochinds_all)
 
                     %hack: first find ccr in seperate initial loop because of plot hold problem in plot loop below
                     lagcount = 0;
-                    for lxyi = 1:numel(lagsxy) 
-                        for lzi = 1:numel(lagsz) 
+                    for lxyi = 1:numel(lagsxy)
+                        for lzi = 1:numel(lagsz)
                             lagcount = lagcount+1;
 
                             %first apply xy lag
@@ -160,14 +165,14 @@ for rind = 1:numel(epochinds_all)
 
 
 
-                            %threshold if requested 
+                            %threshold if requested
                             if threshold_data
-                                if strcmp('ballvel', laball{1})
+                                if contains(laball{1}, 'ball.vel')
                                     [histdt, histx] = hist(abs(plotx{lagcount}(:)), 500);
                                     thrbin = triangle_threshold(histdt, 'R', 0);
                                     thrvel = histx(thrbin);
                                     excludeinds = abs(plotx{lagcount})<thrvel;
-                                elseif strcmp('ballvel', laball{2})
+                                elseif contains(laball{2}, 'ball.vel')
                                     [histdt, histx] = hist(abs(ploty{lagcount}(:)), 500);
                                     thrbin = triangle_threshold(histdt, 'R', 0);
                                     thrvel = histx(thrbin);
@@ -189,7 +194,7 @@ for rind = 1:numel(epochinds_all)
                                 cmp{lagcount} = jet(numel(idx4));
                             end
 
-                 
+
                             %dummy variables for possible polar plots
                             r_dummy1{lagcount} = rdummy1_lbnd + (rdummy1_ubnd-rdummy1_lbnd)*rand(size(plotx{lagcount}));
                             r_dummy2{lagcount} = rdummy2_lbnd + (rdummy2_ubnd-rdummy2_lbnd)*rand(size(ploty{lagcount}));
@@ -211,8 +216,8 @@ for rind = 1:numel(epochinds_all)
 
                     %now the plotting loop
                     lagcount = 0;
-                    for lxyi = 1:numel(lagsxy) 
-                        for lzi = 1:numel(lagsz) 
+                    for lxyi = 1:numel(lagsxy)
+                        for lzi = 1:numel(lagsz)
                             lagcount = lagcount+1;
                             if lagcount==1
 

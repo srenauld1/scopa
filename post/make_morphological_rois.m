@@ -168,7 +168,7 @@ end
 
 %% compute morphological roi responses
 
-resp = extract_roi_responses(stack(:,:,1,:), mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
+resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
 pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 

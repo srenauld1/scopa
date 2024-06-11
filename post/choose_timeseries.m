@@ -86,10 +86,14 @@ else
                     tmp{ici} = combinations(keepfields{:}); %all combinations after expanding the string
 
                     tmpcat = table2cell(tmp{ici});
-                    for tci = 1:size(tmpcat, 1)
-                        strcount = strcount+1;
-                        suffixtmp = strjoin(tmpcat(tci,:), '.');
-                        fieldspecstr_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
+                    if isempty(tmpcat)
+                        fieldspecstr_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){1, 1} = '';
+                    else
+                        for tci = 1:size(tmpcat, 1)
+                            strcount = strcount+1;
+                            suffixtmp = strjoin(tmpcat(tci,:), '.');
+                            fieldspecstr_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
+                        end
                     end
 
 
@@ -117,27 +121,29 @@ for fi = 1:length(fn)
     fitin.(outfn) = [];
     fitin.fieldspecstr.(fn{fi}) = [];
     for vsi2 = 1:length(fieldspecstr_all(choosecount).(fn{fi}))
-        tmp = eval(fieldspecstr_all(choosecount).(fn{fi}){vsi2});
-        if size(tmp, 2)~=length(md.ti)
-            tmp = tmp.';
-        end
-        if size(tmp, 2)~=length(md.ti)
-            error("timeseries is does not match number imaging volumes (length md.ti)")
-        end
-        fitin.(outfn) = cat(1, fitin.(outfn), tmp);
-        fsstmp = repmat(fieldspecstr_all(choosecount).(fn{fi})(vsi2), size(tmp, 1), 1);
-        fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
-        if strcmp(fieldspec_all(choosecount).(fn{fi}){vsi2,1}{1}, 'resp')
-            fitin.regionex = fieldspec_all(choosecount).(fn{fi}){vsi2,2}{1};
-            fitin.parsex = fieldspec_all(choosecount).(fn{fi}){vsi2,3}{1};
-            fitin.parsnorm = fieldspec_all(choosecount).(fn{fi}){vsi2,4}{1};
-            fitin.choosecount = choosecount;
-            fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.choosecount)];
+        if isempty(fieldspecstr_all(choosecount).(fn{fi}){vsi2})
+            tmp = [];
+        else
+            tmp = eval(fieldspecstr_all(choosecount).(fn{fi}){vsi2});
+            if size(tmp, 2)~=length(md.ti)
+                tmp = tmp.';
+            end
+            if size(tmp, 2)~=length(md.ti)
+                error("timeseries is does not match number imaging volumes (length md.ti)")
+            end
+            fitin.(outfn) = cat(1, fitin.(outfn), tmp);
+            fsstmp = repmat(fieldspecstr_all(choosecount).(fn{fi})(vsi2), size(tmp, 1), 1);
+            fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+            if strcmp(fieldspec_all(choosecount).(fn{fi}){vsi2,1}{1}, 'resp')
+                fitin.regionex = fieldspec_all(choosecount).(fn{fi}){vsi2,2}{1};
+                fitin.parsex = fieldspec_all(choosecount).(fn{fi}){vsi2,3}{1};
+                fitin.parsnorm = fieldspec_all(choosecount).(fn{fi}){vsi2,4}{1};
 
-            regionex_cat = cat(1, regionex_cat, {fitin.regionex});
-            if numel(unique(regionex_cat))~=1
-                error("fitin cannot yet decide how to use multiple regionex across input vars")
-                % fitin.regionex = 'backupdefault';
+                regionex_cat = cat(1, regionex_cat, {fitin.regionex});
+                if numel(unique(regionex_cat))~=1
+                    error("fitin cannot yet decide how to use multiple regionex across input vars")
+                    % fitin.regionex = 'backupdefault';
+                end
             end
         end
     end
@@ -147,9 +153,11 @@ if ~isfield(fitin, 'regionex')
     fitin.regionex = 'backupdefault';
     fitin.parsex = 'noparsex';
     fitin.parsnorm = 'noparsnorm';
-    fitin.choosecount = choosecount;
-    fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.choosecount)];
 end
+
+fitin.choosecount = choosecount;
+fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.parsex '_' fitin.parsnorm '_fit' num2str(fitin.choosecount)];
+fitin.fn_save_prefix_short = [pth_stack_analysis(1:end-4) '_fit' num2str(fitin.choosecount)];
 
 fitin = orderfields_recursive(fitin);
 if choosecount==length(fieldspecstr_all) %quit flag on final
