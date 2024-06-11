@@ -10,6 +10,9 @@ function opt = input_params_carl()
 %% MAIN
 
 %params for main pipeline control in file a2p
+opt.main.do_popfeat = 0; %compute population features (pf 
+opt.main.do_fit = 0; %model fitting
+opt.main.do_scatter = 1; %scatterplots
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
@@ -273,15 +276,19 @@ opt.fit = default_fit_params(opt.fit);
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
 opt.scatter.do = 1;
 
-opt.scatter(1).vars.x_str{1} = {['ball, *']};
-opt.scatter(1).vars.y_str{1} = {['vis, *']};
-opt.scatter(1).vars.z_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.scatter(1).vars.z_str{2} = {['resp, fullfov, cm*, *']};
-opt.scatter(1).plot_z_as_color = 1; %0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+%if any of x, y, or z are polar, they are moved to theta on the scatterplots 
+opt.scatter(1).vars.x_str{1} = {['ball, *'], ['vis, *']};
+opt.scatter(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, *']};
+opt.scatter(1).vars.z_str{1} = {['']};
+opt.scatter(1).maxlagxy = 10; %samples
+opt.scatter(1).maxlagz = 10; %samples, will overwrite to 0 if z variable doesn't exist 
+opt.scatter(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+opt.scatter(1).plot_zero_lag_only = 1; %doesn't scatterplot for each lag, but does cc for each lag in inset bar plot
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scatter(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scatter(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.scatter(1).gif_visibility = 1; %0 will save but not plot, 1 
+opt.scatter(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 %% HIRES
 

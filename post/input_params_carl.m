@@ -10,6 +10,7 @@ function opt = input_params_carl()
 %% MAIN
 
 %params for main pipeline control in file a2p
+
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
@@ -20,9 +21,11 @@ opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename su
 opt.main.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-
 opt.main.old_project = 0; %for carl
 
+opt.main.do_popfeat = 0; %compute population features (opt.pf below)
+opt.main.do_fit = 0; %model fitting (opt.fit below)
+opt.main.do_scatter = 1; %scatterplots (opt.scatter below)
 
 %% DAQ (i.e. FICTRAC/STIMULUS)
 
@@ -168,7 +171,6 @@ opt.froi.norm.doplots = 0;
 % opt.pf.bump.fit(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
-opt.pf.bump.do = 1; %0 to skip compute_bump
 opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
 opt.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
@@ -248,7 +250,6 @@ opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
 %    opt.fit(1).vars.indvpre_str{1} = {['ball, angvel'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
-opt.fit.do = 1; %0 to skip fit_mdl
 opt.fit(1).vars.depvpre_str{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 opt.fit(1).vars.depvpre_str{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 opt.fit(1).vars.indvpre_str{1} = {['ball, angvel'], ['bump, eb, mo*, *, all, vel']};
@@ -271,14 +272,16 @@ opt.fit = default_fit_params(opt.fit);
 
 % params for scatterplots
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
-opt.scatter.do = 1;
 
-%if any of x, y, or z are polar, they are moved to theta on the scatterplots 
+%if any of x, y, or z are polar, they are moved to theta on the scatterplots; two polar variables get layered in r
 opt.scatter(1).vars.x_str{1} = {['ball, *'], ['vis, *']};
 opt.scatter(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, *']};
 opt.scatter(1).vars.z_str{1} = {['']};
+opt.scatter(1).maxlagxy = 10; %samples
+opt.scatter(1).maxlagz = 10; %samples, will overwrite to 0 if z variable doesn't exist 
 opt.scatter(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+opt.scatter(1).plot_zero_lag_only = 1; %doesn't scatterplot for each lag, but does cc for each lag in inset bar plot
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scatter(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scatter(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}

@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from map2params import map2params, map2params_t5
+from map2params import map2params
 
 ##########################################################################################################################################
 
@@ -137,16 +137,11 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     use_patch_size_threshold = 50 #skip patch extraction if all dims are smaller than this 
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
-        if md['dims'][1]==1:
-            print("USING ALTERNATE MAP2PARAMS FOR CARLS OLD PROJECT")
-            map_index_2_params = map2params_t5()
-        else:
-            map_index_2_params = map2params()
-
+        map_index_2_params = map2params(index_extraction_param_set)
         print('indexing into param set')
         merge_thresh, m2p_gsig_xy, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = \
             map_index_2_params.map_index(int(index_extraction_param_set))
-        gSig = [m2p_gsig_xy, m2p_gsig_xy, gSig_z]  
+        gSig = [m2p_gsig_xy, m2p_gsig_xy, gSig_z]
 
     if np.all(np.array(dims_spatial_ex)<use_patch_size_threshold): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
         do_patches = False
