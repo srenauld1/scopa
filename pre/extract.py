@@ -50,8 +50,8 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
             
             print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF ORIGINALLY 3D), REGION EXTRACTION HAS SHAPE: \n" + str(Ycrop.shape))
 
-            if index_extraction_param_set == 'default':
-                index_extraction_param_set_new = ['default'] #make it iterable with brackets
+            if isinstance(index_extraction_param_set, str):
+                index_extraction_param_set_new = [index_extraction_param_set] #if string, make it iterable with brackets
             elif index_extraction_param_set<0: #if negative, initiate loop over extraction params here, range [0 - index_extraction_param_set]
                 manual_start_ind = 0
                 index_extraction_param_set_new = np.arange(manual_start_ind, -index_extraction_param_set)

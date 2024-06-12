@@ -6,11 +6,11 @@ class map2params():
         self.params = {}
         if index_extraction_param_set=='defaultset':
             self.params['m2p_merge_thresh'] = [.9]
-            self.params['m2p_gsig_xy'] = [1, 2] 
+            self.params['m2p_gsig_xy'] = [2] 
             self.params['m2p_nb'] = [1]
             self.params['SC_sigma'] = [1]
-            self.params['lambda_gnmf'] = [1, 4]
-            self.params['perc_baseline_snmf'] = [5, 20] 
+            self.params['lambda_gnmf'] = [1]
+            self.params['perc_baseline_snmf'] = [20] 
             self.params['max_iter_snmf'] = [1000]
         elif index_extraction_param_set=='t5':
             self.params['m2p_merge_thresh'] = [.9]

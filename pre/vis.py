@@ -89,7 +89,7 @@ def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, extract_in_2d, pth_
         cnm.estimates.plot_contours(img=Cn) #img=None for mean projection
         cnm.estimates.view_components(img=Cn)
         cnm.estimates.play_movie(images_sliced, q_min=1, q_max=99.75, gain_res=2, magnification=2, 
-                                 include_bck=False, frame_range=slice(0,100,1), bpx=False, thr=1, 
+                                 include_bck=False, frame_range=slice(0,3048,1), bpx=False, thr=1, 
                                  save_movie=True, movie_name=pth_results, display=True, opencv_codec='H264',
                                  use_color=False, gain_color=4, gain_bck=0.2)
         

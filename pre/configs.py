@@ -55,7 +55,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
         indices_ex = [slice(None), slice(None), slice(None)]
 
 
-    p = 1 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
+    p = 0 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
     merge_thresh = 0.85
     gSig_z = 1 # gSig in z dimension (ignored if extract_in_2d==True), anything below 1 will have same effect as 1, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1
     gSig = [2, 2, gSig_z] #forced to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
@@ -71,7 +71,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     p_tsub = 1 #patch downsampling in time
 
     only_init = False #only use the initialization for extraction (no alternating least squares for spatial and temporal refinement)
-    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources 
+    method_init = 'greedy_roi' #'greedy_roi' #'graph_nmf' #sparse_nmf 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources 
 
     #params for method_init sparse_nmf or graph_nmf
     max_iter_snmf = 1000 #for method_init sparse_nmf or graph_nmf
@@ -92,7 +92,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     SC_nnn = 20      #ONLY FOR method_init graph_nmf . . .           # number of nearest neighbors to use if SC_use_NN = True
 
 
-    low_rank_background = True #True #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated withg global background
+    low_rank_background = True #True #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
     update_background_components = True
 
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
@@ -134,7 +134,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     #   when stride_to_rf_ratio = 0.8, patch is ~3 times larger than neuron diameter, max(gsiz), and stride is still 50% larger
     
     stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8
-    use_patch_size_threshold = 50 #skip patch extraction if all dims are smaller than this 
+    use_patch_size_threshold = 5000000000 #skip patch extraction if all dims are smaller than this 
 
     if index_extraction_param_set != 'default': #create param set whose index matches value in index_extraction_param_set
         map_index_2_params = map2params(index_extraction_param_set)

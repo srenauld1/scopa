@@ -46,7 +46,7 @@ num_grayscales_bg = 256; %arbitrary
 
 hfg = figure;
 aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-close all
+close(hfg)
 
 
 

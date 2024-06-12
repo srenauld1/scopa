@@ -355,7 +355,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         regionex = args.regionex #keep as list
 
     index_extraction_param_set = args.index_extraction_param_set[0] 
-    if index_extraction_param_set != 'default':
+    if index_extraction_param_set != 'default' and index_extraction_param_set != 'defaultset':
         index_extraction_param_set = int(index_extraction_param_set) #convert to int if not 'default'
 
     do_analysis = int(args.do_analysis[0])

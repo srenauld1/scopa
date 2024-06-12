@@ -29,11 +29,11 @@ fontmedium = 15;
 xlim_makeroomfac = 0.1;
 extrax = 2*maxlagxy*xlim_makeroomfac;
 
-numrows = 2;
-numcolumns = 3; %keep room for 2nd polar scatterplot
+numrows = 4;
+numcolumns = 4; %keep room for 2nd polar scatterplot
 margins_fig = 0.03;
-margins_subfig = 0.05;
-[axx, axy, axw, axh] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig);
+margins_subfig = 0.04;
+[axx, axy, axw, axh] = arrange_subplots([4 4], [4 1], [], [], 'v', 0.6);
 
 if plot_z_as_color
     dimstring = '2dcol';
@@ -105,13 +105,13 @@ for rind = 1:numel(epochinds_all)
                 % skipplot = skip_plot_criteria(laball);
 
                 indpolar = [];
-                if contains(labx, 'yaw') || contains(labx, 'angle')
+                if endsWith(labx, 'yaw') || endsWith(labx, 'angle')
                     indpolar = [indpolar 1];
                 end
-                if contains(laby, 'yaw') || contains(laby, 'angle')
+                if endsWith(laby, 'yaw') || endsWith(laby, 'angle')
                     indpolar = [indpolar 2];
                 end
-                if contains(labz, 'yaw') || contains(labz, 'angle')
+                if endsWith(labz, 'yaw') || endsWith(labz, 'angle')
                     indpolar = [indpolar 3];
                 end
 
@@ -125,11 +125,11 @@ for rind = 1:numel(epochinds_all)
 
                     if isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
                         figstate = 'cartesian';
-                        hndls = init_axes(hndls, figstate, axx, axy, axw, axh, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                        hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
                     end
                     if ~isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
                         figstate = 'polar';
-                        hndls = init_axes(hndls, figstate, axx, axy, axw, axh, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                        hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
                     end
                     indpolar_prev = indpolar;
 
@@ -264,49 +264,49 @@ for rind = 1:numel(epochinds_all)
 
                         if isempty(indpolar)
 
-                            hndls.hsc1.XData = plotx{lagind};
-                            hndls.hsc1.YData = ploty{lagind};
-                            hndls.hsc1.CData = cmp{lagind};
+                            hndls.hplscc.XData = plotx{lagind};
+                            hndls.hplscc.YData = ploty{lagind};
+                            hndls.hplscc.CData = cmp{lagind};
                             if ~plot_z_as_color
-                                hndls.hsc1.ZData = plotz{lagind};
+                                hndls.hplscc.ZData = plotz{lagind};
                             end
-                            hndls.hax2.XLabel.String = labx;
-                            hndls.hax2.YLabel.String = laby;
-                            % hndls.hax2.ZLabel.String = labz;
+                            hndls.haxscc.XLabel.String = labx;
+                            hndls.haxscc.YLabel.String = laby;
+                            % hndls.haxscc.ZLabel.String = labz;
 
                         else
 
                             if indpolar==1
-                                hndls.hscp1.ThetaData = plotx{lagind};
-                                hndls.hscp1.RData = ploty{lagind};
-                                hndls.hscp1.CData = cmp{lagind};
+                                hndls.hplscp1.ThetaData = plotx{lagind};
+                                hndls.hplscp1.RData = ploty{lagind};
+                                hndls.hplscp1.CData = cmp{lagind};
                             elseif indpolar==2
-                                hndls.hscp1.ThetaData = ploty{lagind};
-                                hndls.hscp1.RData = plotx{lagind};
-                                hndls.hscp1.CData = cmp{lagind};
+                                hndls.hplscp1.ThetaData = ploty{lagind};
+                                hndls.hplscp1.RData = plotx{lagind};
+                                hndls.hplscp1.CData = cmp{lagind};
                             elseif isequal(indpolar, [1 2])
-                                hndls.hscp1.ThetaData = plotx{lagind};
-                                hndls.hscp1.RData = r_dummy1{lagind};
-                                hndls.hscp2.ThetaData = ploty{lagind};
-                                hndls.hscp2.RData = r_dummy2{lagind};
+                                hndls.hplscp1.ThetaData = plotx{lagind};
+                                hndls.hplscp1.RData = r_dummy1{lagind};
+                                hndls.hplscp2.ThetaData = ploty{lagind};
+                                hndls.hplscp2.RData = r_dummy2{lagind};
                             end
                             
-                            hndls.hpax1.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
+                            hndls.haxscp.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
 
-                            % hndls.hpax1.RLim = [min(hndls.hscp1.RData) - range(hndls.hscp1.RData)*roomfac_x max(hndls.hscp1.RData) + range(hndls.hscp1.RData)*roomfac_x];
-                            % hndls.hpax1.RAxis.Label.String = ['Rho: ' labr];
+                            % hndls.haxscp.RLim = [min(hndls.hplscp1.RData) - range(hndls.hplscp1.RData)*roomfac_x max(hndls.hplscp1.RData) + range(hndls.hplscp1.RData)*roomfac_x];
+                            % hndls.haxscp.RAxis.Label.String = ['Rho: ' labr];
 
                         end
 
 
-                        hndls.hbr.FaceColor = 'flat';
-                        hndls.hbr.XData = lagsall(1,:);
-                        hndls.hbr.YData = ccr;
-                        hndls.hbr.CData = repmat([0 0 1], numel(pval_norm), 1);
-                        hndls.hbr.CData(:,1) = pval_norm;
-                        hndls.hbr.CData(:,2) = pval_norm;
+                        hndls.hplbr.FaceColor = 'flat';
+                        hndls.hplbr.XData = lagsall(1,:);
+                        hndls.hplbr.YData = ccr;
+                        hndls.hplbr.CData = repmat([0 0 1], numel(pval_norm), 1);
+                        hndls.hplbr.CData(:,1) = pval_norm;
+                        hndls.hplbr.CData(:,2) = pval_norm;
 
-                        hndls.hlin.Value = lagsall(1,lagind);
+                        hndls.hplbrln.Value = lagsall(1,lagind);
 
                         fig2gif(hndls.hfg, framecount, fngif)
 
@@ -413,100 +413,135 @@ r_dummy2 = cat(1, r_dummy2, nan(numsamp_pad, 1));
 
 end
 
-function hndls = init_axes(hndls, figstate, axx, axy, axw, axh, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
+function hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, ti, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
-dummyvec_scatter = nan(numsamp_max, 1);
-dummyvec_bar = nan(numlags, 1);
+dummyvec_ts = nan(numsamp_max, 1);
+dummyvec_lag = nan(numlags, 1);
 
 if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
 
-    hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], 'Color', 'white', 'visible', gif_visibility) ;
+    hfg = figure;
+    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
+    close(hfg)
+    figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
+
+
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+    if aspect_screen>1
+        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
+    else
+        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
+    end
     bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     htx = text( 0.5, 0.95, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
 
-    spind = 1;
-    hax1 = axes( 'Parent', hfg, 'Units', 'normalized', 'Position', [axx(spind), axy(spind), axw(spind), axh(spind)] );
-    hold(hax1, 'on')
 
-    hbr = bar(hax1, dummyvec_bar, dummyvec_bar);
-    hlin = xline(hax1, nan, 'k');
+    subplot_location_index = 1;
+    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index), axh(subplot_location_index)] );
+    hold(haxbr, 'on')
 
-    %hndls.hax1.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
-    hax1.YLim = [-1 1];
-    hax1.PlotBoxAspectRatio = [1 1 1];
-    hax1.Box = 'off';
-    hax1.XLabel.String = 'lag';
-    hax1.YLabel.String = 'corr coeff';
+    hplbr = bar(haxbr, dummyvec_lag, dummyvec_lag);
+    hplbrln = xline(haxbr, nan, 'k');
 
-    hold(hax1, 'off')
+    %hndls.haxbr.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
+    haxbr.YLim = [-1 1];
+    haxbr.PlotBoxAspectRatio = [1 1 1];
+    haxbr.Box = 'off';
+    haxbr.XLabel.String = 'lag';
+    haxbr.YLabel.String = 'corr coeff';
+
+    hold(haxbr, 'off')
+
+
+    subplot_location_index = 4;
+    haxts = axes( 'Parent', hfg, 'Units', 'normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index)*1, axh(subplot_location_index)] );
+    hold(haxts, 'on')
+
+    hplts1 = plot(haxts, ti, dummyvec_ts);
+    hplts2 = plot(haxts, ti, dummyvec_ts);
+    hpltsln = xline(haxts, nan, 'k');
+
+    %hndls.haxbr.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
+    % haxts.YLim = [-1 1];
+    % haxts.PlotBoxAspectRatio = [1 1 1];
+    haxts.Box = 'off';
+    haxts.XLabel.String = 'ts';
+    haxts.YLabel.String = 'amp';
+
+    hold(haxts, 'off')
+
 
     hndls.hfg = hfg;
     hndls.htx = htx;
-    hndls.hax1 = hax1;
-    hndls.hbr = hbr;
-    hndls.hlin = hlin;
+    hndls.haxbr = haxbr;
+    hndls.haxts = haxts;
+    hndls.hplbr = hplbr;
+    hndls.hplbrln = hplbrln;
+    hndls.hplts1 = hplts1;
+    hndls.hplts2 = hplts2;
+    hndls.hpltsln = hpltsln;
 
 end
 
-spind = 4;
+subplot_location_index = 7;
 switch figstate
 
     case 'cartesian'
 
-        if isfield(hndls, 'hpax1')
-            delete(hndls.hpax1)
-            delete(hndls.hscp1)
-            delete(hndls.hscp2)
-            delete(hndls.hscp3)
+        if isfield(hndls, 'haxscp')
+            delete(hndls.haxscp)
+            delete(hndls.hplscp1)
+            delete(hndls.hplscp2)
+            delete(hndls.hpllnp)
         end
 
-        hax2 = axes( 'Parent', hndls.hfg, 'Units', 'normalized', 'Position', [axx(spind), axy(spind), axw(spind)*2, axh(spind)*2] );
-        hold(hax2, 'on')
+        haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index), axh(subplot_location_index)] );
+        hold(haxscc, 'on')
         if plot_z_as_color
-            hsc1 = scatter(hax2, dummyvec_scatter, dummyvec_scatter, mkrsz, dummyvec_scatter, 'filled');
+            hplscc = scatter(haxscc, dummyvec_ts, dummyvec_ts, mkrsz, dummyvec_ts, 'filled');
         else
-            hsc1 = scatter3(hax2, dummyvec_scatter, dummyvec_scatter, dummyvec_scatter, mkrsz, dummyvec_scatter, 'filled');
+            hplscc = scatter3(haxscc, dummyvec_ts, dummyvec_ts, dummyvec_ts, mkrsz, dummyvec_ts, 'filled');
         end
 
-        hax2.Box = 'off';
-        hax2.PlotBoxAspectRatio = [1 1 1];
-        hold(hax2, 'off')
+        haxscc.Box = 'off';
+        haxscc.PlotBoxAspectRatio = [1 1 1];
+        hold(haxscc, 'off')
 
-        hndls.hax2 = hax2;
-        hndls.hsc1 = hsc1;
+        hndls.haxscc = haxscc;
+        hndls.hplscc = hplscc;
 
 
     case 'polar'
 
-        if isfield(hndls, 'hax2')
-            delete(hndls.hax2)
-            delete(hndls.hsc1)
+        if isfield(hndls, 'haxscc')
+            delete(hndls.haxscc)
+            delete(hndls.hplscc)
         end
 
-        hpax1 = polaraxes('Parent', hndls.hfg, 'Units', 'normalized', 'Position', [axx(spind), axy(spind), axw(spind)*2, axh(spind)*2]);
-        hold(hpax1, 'on')
-        hscp1 = polarscatter(hpax1, dummyvec_scatter, dummyvec_scatter, mkrsz, 'filled');
-        hscp2 = polarscatter(hpax1, dummyvec_scatter, dummyvec_scatter, mkrsz, 'filled');
-        hscp3 = polarplot(hpax1, [-pi/12 -pi/12], hpax1.RLim, 'r');
+        haxscp = polaraxes('Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index)*2, axh(subplot_location_index)*2]);
+        hold(haxscp, 'on')
+        hplscp1 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
+        hplscp2 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
+        hpllnp = polarplot(haxscp, [-pi/12 -pi/12], haxscp.RLim, 'r');
 
-        hpax1.RTickLabel = [];
+        haxscp.RTickLabel = [];
 
-        hpax1.ThetaTick = theta_ticks;
-        hpax1.ThetaTickLabel = theta_tick_labels;
+        haxscp.ThetaTick = theta_ticks;
+        haxscp.ThetaTickLabel = theta_tick_labels;
 
-        hpax1.ThetaAxis.Label.Units = 'normalized';
-        hpax1.ThetaAxis.Label.Position = [0.5, 0, 0];
-        hpax1.ThetaAxis.Label.Rotation = 0;
+        haxscp.ThetaAxis.Label.Units = 'normalized';
+        haxscp.ThetaAxis.Label.Position = [0.5, 0, 0];
+        haxscp.ThetaAxis.Label.Rotation = 0;
 
-        % hpax1.RLim = [0 1];
+        % haxscp.RLim = [0 1];
 
-        hold(hpax1, 'off')
+        hold(haxscp, 'off')
 
-        hndls.hpax1 = hpax1;
-        hndls.hscp1 = hscp1;
-        hndls.hscp2 = hscp2;
-        hndls.hscp3 = hscp3;
+        hndls.haxscp = haxscp;
+        hndls.hplscp1 = hplscp1;
+        hndls.hplscp2 = hplscp2;
+        hndls.hpllnp = hpllnp;
 
 
 end
