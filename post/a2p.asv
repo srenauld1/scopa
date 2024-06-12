@@ -55,8 +55,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     md = load_scanimage_metadata(pth.metadata, opt.md);
     md = load_flyg_metadata(ids, pth.fldr, md);
 
-
-    %% load and process daq 
+    %% load and process daq
 
     if opt.main.old_project
         [md, ts.vis] = load_stim(md, ids, opt.daq);
@@ -75,13 +74,9 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     end
 
 
-    %% load/visualize movies (stacks)
-
+    %% load/visualize stack (and optional hires stack)
 
     stack = load_stack(md, pth, opt.gif, ids.recid);
-
-
-    %% load high resolution movie (stack)
 
     if any(cell2mat(struct2cell(opt.mroi.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
@@ -116,50 +111,56 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     end
 
     %% compute population features (e.g. bump), add them to ts
-    % 
-    % pffn = fieldnames(opt.pf);
-    % for pfi = 1:numel(pffn)
-    %     ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, opt.pf.(pffn{pfi}), md, pth);
-    % end
-    % 
-    % %% model/predict
-    % 
-    % 
-    % for si = 1:numel(opt.fit)
-    %     dochoose = 1;
-    %     choosecount = 0;
-    %     while dochoose && opt.fit(si).do
-    % 
-    %         choosecount = choosecount + 1;
-    %         [fitin, dochoose] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
-    %         stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
-    % 
-    %         opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
-    %         opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
-    %         opt.fit.mdlname = 'fnet_A_xsie';
-    %         opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
-    %         fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
-    % 
-    %     end
-    % end
-     
-     
-    for si = 1:numel(opt.scatter)
-        dochoose = 1;
-        choosecount = 0;
-        while dochoose && opt.scatter(si).do
 
-            choosecount = choosecount + 1;
-            [fitin, dochoose] = choose_timeseries(opt.scatter(si), ts, md, pth.tsuse.scatter, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
-            stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
-
-            scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, ...
-                fitin.fieldspecstr.z_str, opt.scatter(si).epochinds, opt.scatter(si).plot_zero_lag_only, opt.scatter(si).plot_zero_lag_only, stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), ...
-                md.ti, md.epochs.epochinds_ts_i, opt.scatter(si).plot_z_as_color, opt.scatter(si).plot_zero_lag_only, ...
-                opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short) %3d scatterplots (2d plus color) of any available timeseries
+    if opt.main.do_popfeat
+        pffn = fieldnames(opt.pf);
+        for pfi = 1:numel(pffn)
+            ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, opt.pf.(pffn{pfi}), md, pth);
         end
     end
 
+    %% model/predict
+
+    if opt.main.do_fit
+        for si = 1:numel(opt.fit)
+            dochoose = 1;
+            choosecount = 0;
+            while dochoose
+
+                choosecount = choosecount + 1;
+                [fitin, dochoose] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
+                stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
+
+                opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
+                opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
+                opt.fit.mdlname = 'fnet_A_xsie';
+                opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
+                fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
+
+            end
+        end
+    end
+
+    %% scatterplots 
+
+    if opt.main.do_scatter
+        for si = 1:numel(opt.scatter)
+            dochoose = 1;
+            choosecount = 0;
+            while dochoose
+
+                choosecount = choosecount + 1;
+                [fitin, dochoose] = choose_timeseries(opt.scatter(si), ts, md, pth.tsuse.scatter, pth.stack_analysis, choosecount, dochoose);
+                stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack for plotting fov/rois
+
+                scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
+                    opt.scatter(si).epochinds, stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, ...
+                    md.epochs.epochinds_ts_i, opt.scatter(si).maxlagxy, opt.scatter(si).maxlagz, opt.scatter(si).lags_to_plot, ...
+                    opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short)
+
+            end
+        end
+    end
 
     %% summary plot
 

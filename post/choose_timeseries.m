@@ -132,8 +132,15 @@ for fi = 1:length(fn)
                 error("timeseries is does not match number imaging volumes (length md.ti)")
             end
             fitin.(outfn) = cat(1, fitin.(outfn), tmp);
-            fsstmp = repmat(fieldspecstr_all(choosecount).(fn{fi})(vsi2), size(tmp, 1), 1);
-            fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+            if size(tmp, 1)>1
+                for tmpi = 1:size(tmp, 1)
+                    fsstmp = {[fieldspecstr_all(choosecount).(fn{fi}){vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
+                    fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+                end
+            else
+                fsstmp = fieldspecstr_all(choosecount).(fn{fi})(vsi2);
+                fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+            end
             if strcmp(fieldspec_all(choosecount).(fn{fi}){vsi2,1}{1}, 'resp')
                 fitin.regionex = fieldspec_all(choosecount).(fn{fi}){vsi2,2}{1};
                 fitin.parsex = fieldspec_all(choosecount).(fn{fi}){vsi2,3}{1};

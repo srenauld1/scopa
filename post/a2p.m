@@ -144,7 +144,6 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     %% scatterplots 
 
     if opt.main.do_scatter
-
         for si = 1:numel(opt.scatter)
             dochoose = 1;
             choosecount = 0;
@@ -155,9 +154,10 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
                 stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack for plotting fov/rois
 
                 scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
-                    opt.scatter(si).epochinds, opt.scatter(si).maxlagxy, opt.scatter(si).maxlagz, ...
-                    stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.epochs.epochinds_ts_i, ...
-                    opt.scatter(si).plot_z_as_color, opt.scatter(si).plot_zero_lag_only, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short)
+                    opt.scatter(si).epochinds, stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, ...
+                    md.epochs.epochinds_ts_i, opt.scatter(si).maxlagxy, opt.scatter(si).maxlagz, opt.scatter(si).lags_to_plot, ...
+                    opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short)
+
             end
         end
     end

@@ -274,14 +274,16 @@ opt.fit = default_fit_params(opt.fit);
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
 
 %if any of x, y, or z are polar, they are moved to theta on the scatterplots; two polar variables get layered in r
-opt.scatter(1).vars.x_str{1} = {['ball, *'], ['vis, *']};
+opt.scatter(1).vars.x_str{1} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
 opt.scatter(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, *']};
 opt.scatter(1).vars.z_str{1} = {['']};
+opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
+opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, *']};
+opt.scatter(1).vars.z_str{2} = {['']};
 opt.scatter(1).maxlagxy = 10; %samples
 opt.scatter(1).maxlagz = 10; %samples, will overwrite to 0 if z variable doesn't exist 
+opt.scatter(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'
 opt.scatter(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
-opt.scatter(1).plot_zero_lag_only = 1; %doesn't scatterplot for each lag, but does cc for each lag in inset bar plot
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scatter(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scatter(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}

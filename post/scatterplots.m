@@ -1,4 +1,7 @@
-function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, epochinds_all, stack, roiinfo, ti, epochinds_ts_i, maxlagxy, maxlagz, plot_z_as_color, plot_zero_lag_only, gif_visibility, fn_prefix)
+function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, ...
+    epochinds_all, stack, roiinfo, ti, epochinds_ts_i, maxlagxy, ...
+    maxlagz, lags_to_plot, plot_z_as_color, ...
+    gif_visibility, fn_prefix)
 
 
 % plots xy and optional z with optional lags in x-y and xy-z;
@@ -6,6 +9,8 @@ function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, epochinds_all, s
 % todo: will need a switch to crop to model timeseries numel
 % todo: z lag not plotted yet
 
+label_blind_spot = 1;
+gif_scope = 'allvars';
 threshold_data = 0;
 pval_siglev = 0.05; %pval bar gets colored if below pval_siglev
 
@@ -52,22 +57,27 @@ end
 lagsxy = -maxlagxy:maxlagxy;
 lagsz = -maxlagz:maxlagz;
 lagind = 0;
-for lzi = lagsz 
+for lzi = lagsz
     for lxyi = lagsxy
         lagind = lagind + 1;
-        lagsall(1, lagind) = lxyi; 
-        lagsall(2, lagind) = lzi; 
+        lagsall(1, lagind) = lxyi;
+        lagsall(2, lagind) = lzi;
     end
 end
 
-if plot_zero_lag_only
-else
-    laginds_to_plot = 1:size(lagsall, 2);
+numsamp_max = 0;
+for rind = 1:numel(epochinds_all)
+    numsamp_max = max(numsamp_max, numel(find(ismember_each_element(epochinds_ts_i, epochinds_all{rind}))));
 end
+
+zero_lag_index = find(lagsall(1,:)==0 & lagsall(2,:)==0);
 
 numlags = numel(lagsxy) * numel(lagsz);
 
-
+framecount = 0;
+fngif = [];
+indpolar_prev = Inf;
+hndls = struct;
 for rind = 1:numel(epochinds_all)
 
     epochinds = epochinds_all{rind};
@@ -108,10 +118,20 @@ for rind = 1:numel(epochinds_all)
                 axtype = set_axtype(indpolar, z_is_empty, plot_z_as_color);
 
                 if numel(indpolar)>1 || any(indpolar==3)
-                    error("can't use multiple polar variables yet, or z polar")
+                    error("need to make sure this works")
                 end
 
                 if ~skipplot
+
+                    if isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
+                        figstate = 'cartesian';
+                        hndls = init_axes(hndls, figstate, axx, axy, axw, axh, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                    end
+                    if ~isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
+                        figstate = 'polar';
+                        hndls = init_axes(hndls, figstate, axx, axy, axw, axh, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                    end
+                    indpolar_prev = indpolar;
 
                     if isequal(indpolar, 2)
                         figure_title = {[axtype{1} laby]; [axtype{2} labx]; [axtype{3} labz]; ['e' epochstring ' ' dimstring ]}; %switch order
@@ -122,21 +142,25 @@ for rind = 1:numel(epochinds_all)
                         labt = labx;
                         labr = laby;
                     end
-                    fngif = [fn_prefix '_' strrep(strjoin(figure_title), ' ', '_') '_.gif' ];
 
-                    hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], 'Color', 'white', 'visible', gif_visibility) ;
-                    bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-                    text( 0.5, 0.95, figure_title, 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
+                    if strcmp(gif_scope, 'eachvar')
+                        fngif = [fn_prefix '_' strrep(strjoin(figure_title), ' ', '_') '_.gif' ];
+                    elseif strcmp(gif_scope, 'allvars')
+                        if isempty(fngif)
+                            fngif = [fn_prefix '_' strrep(strjoin(figure_title), ' ', '_') '_.gif' ];
+                        end
+                    end
 
+                    hndls.htx.String = figure_title;
 
-                    plotx = cell(1, numel(lagsxy));
-                    ploty = cell(1, numel(lagsxy));
-                    plotz = cell(1, numel(lagsxy));
-                    r_dummy1 = cell(1, numel(lagsxy));
-                    r_dummy2 = cell(1, numel(lagsxy));
-                    cmp = cell(1, numel(lagsxy));
-                    ccr = zeros(1, numel(lagsxy));
-                    ccpv = zeros(1, numel(lagsxy));
+                    plotx = cell(1, numlags);
+                    ploty = cell(1, numlags);
+                    plotz = cell(1, numlags);
+                    r_dummy1 = cell(1, numlags);
+                    r_dummy2 = cell(1, numlags);
+                    cmp = cell(1, numlags);
+                    ccr = zeros(1, numlags);
+                    ccpv = zeros(1, numlags);
 
                     %hack: first find ccr in seperate initial loop because of plot hold problem in plot loop below
                     lagind = 0;
@@ -149,13 +173,13 @@ for rind = 1:numel(epochinds_all)
                             %remove nans
                             keepind = ~(isnan(varx_lagxyz) | isnan(vary_lagxyz));
                             varz_lagxyz_isnan = isnan(varz_lagxyz);
-                            if ~isempty(varz_lagxyz_isnan)
+                            if any(varz_lagxyz_isnan)
                                 keepind = keepind | varz_lagxyz_isnan;
                                 plotz{lagind} = varz_lagxyz(keepind);
                             end
                             plotx{lagind} = varx_lagxyz(keepind);
                             ploty{lagind} = vary_lagxyz(keepind);
-                            if isempty(varz_lagxyz_isnan)
+                            if ~any(varz_lagxyz_isnan)
                                 plotz{lagind} = ones(numel(plotx{lagind}), 1);
                             end
 
@@ -207,144 +231,101 @@ for rind = 1:numel(epochinds_all)
                                 case '1  2'
                                     [ccr(lagind) ccpv(lagind)] = circ_corrcc(plotx{lagind}, ploty{lagind}); %circ-circ
                             end
+
+                            [plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind}] = nanpadvars(numsamp_max, plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind});
+
                         end
                     end
 
+                    ccpv = linspace(0, 0.07, numel(ccr));
+                    pval_norm = pval_siglev-ccpv;
+                    pval_norm(pval_norm<0) = 0;
+                    pval_norm = 1-rescale(pval_norm, 0.1, 1);
+
+
+                    switch lags_to_plot
+                        case 'zero'
+                            laginds_to_plot = zero_lag_index;
+                        case 'best'
+                            [~, laginds_to_plot] = max(abs(ccr));
+                        case 'zeroandbest'
+                            [~, ccrmaxabs] = max(abs(ccr));
+                            laginds_to_plot = [zero_lag_index ccrmaxabs];
+                        case 'all'
+                            laginds_to_plot = 1:size(lagsall, 2);
+                    end
 
                     %now the plotting loop
+                    if strcmp(gif_scope, 'eachvar')
+                        framecount = 0;
+                    end
                     for lagind = laginds_to_plot
-                        
-                        if lagind==1
+                        framecount = framecount+1;
 
-                            spind = 1;
-                            hax1 = axes( 'Parent', hfg, 'Position', [axx(spind), axy(spind), axw(spind), axh(spind)] );
-                            hax1.PlotBoxAspectRatio = [1 1 1];
+                        if isempty(indpolar)
 
-                            hbr = gobjects(numlags);
-                            %cla()
-                            hold on
-
-                            for li = 1:numlags
-                                hbr(li) = bar(lagsall(1,li),ccr(li));
-                                pval_norm = pval_siglev-ccpv(li);
-                                if pval_norm<0
-                                    pval_norm = 0;
-                                end
-                                set(hbr(li), 'FaceColor', 'b', 'FaceAlpha', pval_norm);
+                            hndls.hsc1.XData = plotx{lagind};
+                            hndls.hsc1.YData = ploty{lagind};
+                            hndls.hsc1.CData = cmp{lagind};
+                            if ~plot_z_as_color
+                                hndls.hsc1.ZData = plotz{lagind};
                             end
-
-                            %hbr = bar(hax1, laginds, ccr);
-
-                            %hax1.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
-                            hax1.YLim = [-1 1];
-                            hlin = xline(hax1, lagsall(1,lagind), 'k');
-
-
-                            spind = 4;
-                            hax2 = axes( 'Parent', hfg, 'Position', [axx(spind), axy(spind), axw(spind)*2, axh(spind)*2] );
-
-                            switch num2str(indpolar)
-                                case ''
-                                    if plot_z_as_color
-                                        hsc1 = scatter(hax2, plotx{lagind}, ploty{lagind}, mkrsz, cmp{lagind}, 'filled');
-                                    else
-                                        hsc1 = scatter3(hax2, plotx{lagind}, ploty{lagind}, plotz{lagind}, mkrsz, cmp{lagind}, 'filled');
-                                    end
-                                    hax2.XLabel.String = labx;
-                                    hax2.YLabel.String = laby;
-                                    % hax2.ZLabel.String = labz;
-                                otherwise
-                                    hpax1 = polaraxes('Units', hax2.Units, 'Position', hax2.Position);
-                                    if isequal(indpolar, 1)
-                                        hsc1 = polarscatter(hpax1, plotx{lagind}, ploty{lagind}, mkrsz, cmp{lagind}, 'filled'); %switch input order
-                                        hold(hpax1, 'on')
-                                    elseif isequal(indpolar, 2)
-                                        hsc1 = polarscatter(hpax1, ploty{lagind}, plotx{lagind}, mkrsz, cmp{lagind}, 'filled');
-                                        hold(hpax1, 'on')
-                                    elseif isequal(indpolar, [1, 2])
-                                        hsc1 = polarscatter(hpax1, plotx{lagind}, r_dummy1{lagind}, mkrsz, 'filled');
-                                        hold(hpax1, 'on')
-                                        hsc2 = polarscatter(hpax1, ploty{lagind}, r_dummy2{lagind}, mkrsz, 'filled');
-                                    end
-                                    hax2.YAxis.Visible = 'off';
-                                    hax2.XAxis.Visible = 'off';
-                                    %hpax1.RTickLabel = [];
-                                    %hsc3 = polarplot(hpax1, [-pi/12 -pi/12], [min(hsc1.RData) max(hsc1.RData)], 'r');
-
-                                    hpax1.RLim = [min(hsc1.RData) - range(hsc1.RData)*roomfac_x max(hsc1.RData) + range(hsc1.RData)*roomfac_x];
-                                    hsc3 = polarplot(hpax1, [-pi/12 -pi/12], hpax1.RLim, 'r');
-
-                                    hpax1.ThetaTick = theta_ticks;
-                                    hpax1.ThetaTickLabel = theta_tick_labels;
-
-                                    hold(hpax1, 'on')
-
-                                    % hpax1.RAxis.Label.String = ['Rho: ' labr];
-                                    hpax1.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
-                                    hpax1.ThetaAxis.Label.Position = [-90, 155, 0];
-                                    hpax1.ThetaAxis.Label.Rotation = 0;
-                                    % hpax1.zaxis??
-
-                            end
-                            set(hax1,'box','off')
-                            set(hax2,'box','off')
-                            hax2.PlotBoxAspectRatio = [1 1 1];
-
-                            hax1.XLabel.String = 'lag';
-                            hax1.YLabel.String = 'corr coeff';
-
+                            hndls.hax2.XLabel.String = labx;
+                            hndls.hax2.YLabel.String = laby;
+                            % hndls.hax2.ZLabel.String = labz;
 
                         else
 
-                            hlin.Value = lagsall(1, lagind);
-
-                            switch num2str(indpolar)
-                                case ''
-                                    hsc1.XData = plotx{lagind};
-                                    hsc1.YData = ploty{lagind};
-                                    hsc1.CData = cmp{lagind};
-                                    if ~plot_z_as_color
-                                        hsc1.ZData = plotz{lagind};
-                                    end
-                                case '1'
-                                    %hpax1.RTickLabel = [];
-                                    hsc1.ThetaData = plotx{lagind};
-                                    hsc1.RData = ploty{lagind};
-                                    hsc1.CData = cmp{lagind};
-                                case '2'
-                                    hpax1.RTickLabel = [];
-                                    hsc1.ThetaData = ploty{lagind};
-                                    hsc1.RData = plotx{lagind};
-                                    hsc1.CData = cmp{lagind};
-                                case '1  2'
-                                    hpax1.RTickLabel = [];
-                                    hsc1.ThetaData = plotx{lagind};
-                                    hsc1.RData = r_dummy1{lagind};
-                                    hsc2.ThetaData = ploty{lagind};
-                                    hsc2.RData = r_dummy2{lagind};
+                            if indpolar==1
+                                hndls.hscp1.ThetaData = plotx{lagind};
+                                hndls.hscp1.RData = ploty{lagind};
+                                hndls.hscp1.CData = cmp{lagind};
+                            elseif indpolar==2
+                                hndls.hscp1.ThetaData = ploty{lagind};
+                                hndls.hscp1.RData = plotx{lagind};
+                                hndls.hscp1.CData = cmp{lagind};
+                            elseif isequal(indpolar, [1 2])
+                                hndls.hscp1.ThetaData = plotx{lagind};
+                                hndls.hscp1.RData = r_dummy1{lagind};
+                                hndls.hscp2.ThetaData = ploty{lagind};
+                                hndls.hscp2.RData = r_dummy2{lagind};
                             end
+                            
+                            hndls.hpax1.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
 
+                            % hndls.hpax1.RLim = [min(hndls.hscp1.RData) - range(hndls.hscp1.RData)*roomfac_x max(hndls.hscp1.RData) + range(hndls.hscp1.RData)*roomfac_x];
+                            % hndls.hpax1.RAxis.Label.String = ['Rho: ' labr];
 
                         end
 
-                        fig2gif(hfg, lagind, fngif)
 
-                        if ~plot_z_as_color & isequal(lagsall(:,lagind), [0;0])
+                        hndls.hbr.FaceColor = 'flat';
+                        hndls.hbr.XData = lagsall(1,:);
+                        hndls.hbr.YData = ccr;
+                        hndls.hbr.CData = repmat([0 0 1], numel(pval_norm), 1);
+                        hndls.hbr.CData(:,1) = pval_norm;
+                        hndls.hbr.CData(:,2) = pval_norm;
+
+                        hndls.hlin.Value = lagsall(1,lagind);
+
+                        fig2gif(hndls.hfg, framecount, fngif)
+
+                        if ~plot_z_as_color & lagind==zero_lag_index
                             saveas( gcf, [fngif(1:end-4) 'nolag_.fig']) %save 3d plots as fig so you can rotate
                         end
 
-                    end %lags
-                end %skip
+                        if strcmp(gif_scope, 'eachvar')
+                            close all
+                        end
 
-                close all
+                    end
+                end
+            end
+        end
+    end
+end
 
-            end %x
-        end %y
-    end %z
-end %epoch
-
-
-end %function
+end
 
 
 
@@ -418,3 +399,119 @@ else
 end
 
 end
+
+function [plotx, ploty, plotz, r_dummy1, r_dummy2] = nanpadvars(numsamp_max, plotx, ploty, plotz, r_dummy1, r_dummy2)
+
+numsamp_pad = numsamp_max-numel(plotx);
+
+plotx = cat(1, plotx, nan(numsamp_pad, 1));
+ploty = cat(1, ploty, nan(numsamp_pad, 1));
+plotz = cat(1, plotz, nan(numsamp_pad, 1));
+r_dummy1 = cat(1, r_dummy1, nan(numsamp_pad, 1));
+r_dummy2 = cat(1, r_dummy2, nan(numsamp_pad, 1));
+
+
+end
+
+function hndls = init_axes(hndls, figstate, axx, axy, axw, axh, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
+
+%must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
+dummyvec_scatter = nan(numsamp_max, 1);
+dummyvec_bar = nan(numlags, 1);
+
+if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
+
+    hfg = figure( 'Units', 'normalized', 'Position', [0.8, 0.8, 0.8, 0.8], 'Color', 'white', 'visible', gif_visibility) ;
+    bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+    htx = text( 0.5, 0.95, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
+
+    spind = 1;
+    hax1 = axes( 'Parent', hfg, 'Units', 'normalized', 'Position', [axx(spind), axy(spind), axw(spind), axh(spind)] );
+    hold(hax1, 'on')
+
+    hbr = bar(hax1, dummyvec_bar, dummyvec_bar);
+    hlin = xline(hax1, nan, 'k');
+
+    %hndls.hax1.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
+    hax1.YLim = [-1 1];
+    hax1.PlotBoxAspectRatio = [1 1 1];
+    hax1.Box = 'off';
+    hax1.XLabel.String = 'lag';
+    hax1.YLabel.String = 'corr coeff';
+
+    hold(hax1, 'off')
+
+    hndls.hfg = hfg;
+    hndls.htx = htx;
+    hndls.hax1 = hax1;
+    hndls.hbr = hbr;
+    hndls.hlin = hlin;
+
+end
+
+spind = 4;
+switch figstate
+
+    case 'cartesian'
+
+        if isfield(hndls, 'hpax1')
+            delete(hndls.hpax1)
+            delete(hndls.hscp1)
+            delete(hndls.hscp2)
+            delete(hndls.hscp3)
+        end
+
+        hax2 = axes( 'Parent', hndls.hfg, 'Units', 'normalized', 'Position', [axx(spind), axy(spind), axw(spind)*2, axh(spind)*2] );
+        hold(hax2, 'on')
+        if plot_z_as_color
+            hsc1 = scatter(hax2, dummyvec_scatter, dummyvec_scatter, mkrsz, dummyvec_scatter, 'filled');
+        else
+            hsc1 = scatter3(hax2, dummyvec_scatter, dummyvec_scatter, dummyvec_scatter, mkrsz, dummyvec_scatter, 'filled');
+        end
+
+        hax2.Box = 'off';
+        hax2.PlotBoxAspectRatio = [1 1 1];
+        hold(hax2, 'off')
+
+        hndls.hax2 = hax2;
+        hndls.hsc1 = hsc1;
+
+
+    case 'polar'
+
+        if isfield(hndls, 'hax2')
+            delete(hndls.hax2)
+            delete(hndls.hsc1)
+        end
+
+        hpax1 = polaraxes('Parent', hndls.hfg, 'Units', 'normalized', 'Position', [axx(spind), axy(spind), axw(spind)*2, axh(spind)*2]);
+        hold(hpax1, 'on')
+        hscp1 = polarscatter(hpax1, dummyvec_scatter, dummyvec_scatter, mkrsz, 'filled');
+        hscp2 = polarscatter(hpax1, dummyvec_scatter, dummyvec_scatter, mkrsz, 'filled');
+        hscp3 = polarplot(hpax1, [-pi/12 -pi/12], hpax1.RLim, 'r');
+
+        hpax1.RTickLabel = [];
+
+        hpax1.ThetaTick = theta_ticks;
+        hpax1.ThetaTickLabel = theta_tick_labels;
+
+        hpax1.ThetaAxis.Label.Units = 'normalized';
+        hpax1.ThetaAxis.Label.Position = [0.5, 0, 0];
+        hpax1.ThetaAxis.Label.Rotation = 0;
+
+        % hpax1.RLim = [0 1];
+
+        hold(hpax1, 'off')
+
+        hndls.hpax1 = hpax1;
+        hndls.hscp1 = hscp1;
+        hndls.hscp2 = hscp2;
+        hndls.hscp3 = hscp3;
+
+
+end
+
+end
+
+
+
