@@ -6,7 +6,11 @@
 #SEE README.md FOR MORE DOCUMENTATION
 
 ##########################################################################################################################################
-         
+import numpy as np
+
+# with open('/Users/wienecke/pars.npy', 'rb') as fnc:
+#     pars = np.load(fnc, allow_pickle=True)
+
 import sys
 import os
 currscriptdir = os.path.dirname(os.path.abspath(__file__))

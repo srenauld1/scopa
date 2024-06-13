@@ -219,7 +219,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1
                 time_str=00:30:00
                 ntasks_str=1
-                if [ "${HALFWIDTH_WINDOW_BGSUB[@]}"==0 ]; then #use less memory if no bg subtraction
+                if [ "${HALFWIDTH_WINDOW_BGSUB[@]}" == 0 ]; then #use less memory if no bg subtraction
                     cpus_per_task_str=5
                     mem_per_cpu_str=3G
                 else #use more memory if using bg subtraction

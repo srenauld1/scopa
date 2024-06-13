@@ -33,7 +33,7 @@ numrows = 4;
 numcolumns = 4; %keep room for 2nd polar scatterplot
 margins_fig = 0.03;
 margins_subfig = 0.04;
-[axx, axy, axw, axh] = arrange_subplots([4 4], [4 1], [], [], 'v', 0.6);
+[axx, axy, axw, axh] = arrange_subplots([4 4], [4 2], [], [], 'v', 0.6);
 
 if plot_z_as_color
     dimstring = '2dcol';

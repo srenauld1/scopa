@@ -80,7 +80,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        for ri = 1:num_dim_depvpre
+        for ri = 5%1:num_dim_depvpre
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));

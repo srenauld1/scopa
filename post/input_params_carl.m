@@ -14,12 +14,12 @@ function opt = input_params_carl()
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
-opt.main.recdate = '20230627'; %can use wildcards
-opt.main.fly = '2'; %can use wildcards
-opt.main.trial = '2'; %can use wildcards
+opt.main.recdate = '20240602'; %can use wildcards
+opt.main.fly = '4'; %can use wildcards
+opt.main.trial = '*'; %can use wildcards
 opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 opt.main.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.main.regionex_all = {'pnew' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+opt.main.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 opt.main.old_project = 0; %for carl
 
@@ -63,7 +63,7 @@ opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 %%params for the manually drawn morphological rois
 opt.mroi.use_drawn_rois_str =  {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-opt.mroi.use_drawn_rois_str =  {'pnew' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+opt.mroi.use_drawn_rois_str =  {'fullfov' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 opt.mroi.num_mroi_auto_str = {'fullfov-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
@@ -126,7 +126,7 @@ opt.mroi.norm.doplots = 0;
 %% FUCNTIONAL ROIS
 
 %params for loading/selecting/viewing functional rois (applied in process_functional_rois)
-opt.froi.caiman_lr_str = {'2_1_*_*_*_*_*_1000_*_*_*_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
+opt.froi.caiman_lr_str = {'2_1_*_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
 opt.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
 opt.froi.min_roi_size = 5;%pixels, roi selection criterion
 opt.froi.max_roi_size = 300; %pixels
@@ -137,7 +137,7 @@ opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'no
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
 opt.froi.numrois_for_gif = 0; %how many roi to put in gif, big number to plot all, 0 to skip gif
 opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
-opt.froi.do_other_plots = 1; %do the other plots
+opt.froi.do_other_plots = 0; %do the other plots
 opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
 opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
@@ -177,7 +177,7 @@ opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left
 opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.pf.bump.numcluster_for_bump_domain_resample_str = {'pnew-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fit.vars.depvpre_str  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fit.vars.depvpre_str  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
 opt.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
@@ -186,8 +186,7 @@ opt.pf.bump.doplots = 0;
 %params for finding preferred heading using fitmdl
 % opt.pf.bump.fit(1).vars.depvpre_str{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fit(1).depv{1} = {};
 opt.pf.bump.fit(1).vars.depvpre_str{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fit(1).depv{1} = {};
-opt.pf.bump.fit(1).vars.depvpre_str{1} = {['resp, pnew, cm*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fit(1).depv{1} = {};
-opt.pf.bump.fit(1).vars.indvpre_str{1} = {['vis, ang']};
+opt.pf.bump.fit(1).vars.indvpre_str{1} = {['vis, angsd']};
 opt.pf.bump.fit(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
 opt.pf.bump.fit(1).normalize_indv = 'none';

@@ -1,4 +1,4 @@
-function [axx_tmp, axy_tmp, axw_tmp, axh_tmp] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig, splitdim, splitfrac)
+function [axx, axy, axw, axh] = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig, splitdim, splitfrac)
 
 arguments
     numrows double %scalar or vector; if vector, element index refers to sector of figure; sector split by splitdim;
@@ -28,28 +28,21 @@ if ~isequal(numel(numrows), numel(numcolumns), numel(margins_fig), numel(margins
 end
 
 
-axx = [];
-axy = [];
-axw = [];
-axh = [];
+
 for j = 1:num_sectors
 
     [axx_tmp{j}, axy_tmp{j}, axw_tmp{j}, axh_tmp{j}] = arrange_subplots_onesector(numrows(j), numcolumns(j), margins_fig(j), margins_subfig(j));
 
     if j==2
         axw_tmp{j} = axw_tmp{j}*(1-splitfrac(j-1))-margins_subfig(j);
-        for axxi = 1:numel(axx_tmp{j})
-            axx_tmp{j}(axxi) = axx_tmp(end)+axw_tmp(end)+axw_tmp{j}(axxi)*((ceil(axxi/numcolumns(j)))-1)+margins_subfig;
-        end
+        axx_tmp{j} = axx_tmp{j} + max(axx_tmp{j-1})+unique(axw_tmp{j-1})+margins_subfig(j);
     end
-
-    axx = cat(1, axx, cell2mat(axx_tmp{j}));
-    axy = cat(1, axy, cell2mat(axy_tmp{j}));
-    axw = cat(1, axw, cell2mat(axw_tmp{j}));
-    axh = cat(1, axh, cell2mat(axh_tmp{j}));
-
 end
 
+axx = cell2mat(axx_tmp);
+axy = cell2mat(axy_tmp);
+axw = cell2mat(axw_tmp);
+axh = cell2mat(axh_tmp);
 
 end
 
