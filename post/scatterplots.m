@@ -29,11 +29,13 @@ fontmedium = 15;
 xlim_makeroomfac = 0.1;
 extrax = 2*maxlagxy*xlim_makeroomfac;
 
-numrows = 4;
-numcolumns = 4; %keep room for 2nd polar scatterplot
+numrows = [4 4];
+numcolumns = [4 1]; 
 margins_fig = 0.03;
 margins_subfig = 0.04;
-[axx, axy, axw, axh] = arrange_subplots([4 4], [4 2], [], [], 'v', 0.6);
+splitdim = 'x';
+splitfrac = 0.7;
+ax = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig, splitdim, splitfrac);
 
 if plot_z_as_color
     dimstring = '2dcol';
