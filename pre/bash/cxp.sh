@@ -69,8 +69,8 @@ DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for su
 NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, this is faster than rerunning denoising, but still stupid, fix it soon) 
 
-USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack for roi extraction (suffix *bksb_cmrg_.tif), 0 to use the registered stack (without background subtraction) for roi extraction (suffix *cmrg_.tif) 
-USE_DENOISED=(1) #1 to use the registered, denoised stack for roi extraction (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for roi extraction (suffix *cmrg_.tif) 
+USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
+USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
 
 LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise (only used if do_remove=1)
 

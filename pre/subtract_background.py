@@ -89,6 +89,7 @@ class bgremover:
 
         ax5.hist(self.img.ravel(), bins=50)
         ax5.set_yscale('log')
+        
         ax6.hist(self.out.ravel(), bins=50)
         ax6.set_yscale('log')
             

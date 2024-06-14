@@ -33,8 +33,8 @@ num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model 
 
 do_stitch = 0
 
-use_background_subtracted = 0 #use the registered data that had background subtracted before registration  
-use_denoised = 1 #use the deepcad denoised data, or just the caiman registered data, if 1,  
+use_background_subtracted = 0 #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
+use_denoised = 1  #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
 epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)
 
 do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
