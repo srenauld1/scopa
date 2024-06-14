@@ -509,7 +509,7 @@ switch figstate
             delete(hndls.hpllnp)
         end
 
-        haxscc = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
+        haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
         hold(haxscc, 'on')
         if plot_z_as_color
             hplscc = scatter(haxscc, dummyvec_ts, dummyvec_ts, mkrsz, dummyvec_ts, 'filled');
