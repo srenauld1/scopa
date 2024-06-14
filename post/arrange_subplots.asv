@@ -3,13 +3,14 @@ function ax = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig,
 % find xy position and extent of subplots 
 % can split figure into sectors along x or y (not both yet); sectors can have different subplot arrangements 
 % output ax is struct, where each element is sector, and each field is x or y position or extent 
+% sectors are ordered top to bottom (if splitdim 'y') or left to right (if split dim 'x') 
 
 arguments
     numrows double %scalar or vector; element n denotes number of rows in sector n; 
     numcolumns double %scalar or vector; element n denotes number of columns in sector n; 
-    margins_fig double = 0.03 %scalar; margins of entire 
-    margins_subfig double = 0.03 %scalar or vector; if vector, element index refers to sector of figure; sector split by splitdim;
-    splitdim char = 'x' %scalar denoting split dimension, x or y
+    margins_fig double = 0.03 %scalar; margins of entire figure (not sectors)
+    margins_subfig double = 0.03 %scalar or vector; element n denotes x and y margins between subplots in sector n; if scalar, while numrows and numcolumns are vector, will apply scalar to all sectors 
+    splitdim char = 'x' %'x', or 'y', denoting whether sector(s) created by split along x or y axis
     splitfrac double = repelem(1/numel(numrows), numel(numrows)-1) %scalar or vector denoting each sector's fraction of splitdim extent; default is even split among num_sectors
 end
 
@@ -70,7 +71,7 @@ end
 
 function [ax, maxpos] = arrange_subplots_onesector(numsubfigs, margins_fig, margins_subfig, splitfrac, startpos)
 
-fn = fieldnames(splitfrac);
+fn = fieldnames(numsubfigs);
 for fi = 1:numel(fn)
     [ax.([fn{fi} 'p']), ax.([fn{fi} 'e']), maxpos.(fn{fi})] = arrange_subplots_onedim(numsubfigs.(fn{fi}), margins_fig.(fn{fi}), margins_subfig, splitfrac.(fn{fi}), startpos.(fn{fi}));
 end

@@ -63,7 +63,17 @@ end
 
 for j = 1:num_sectors
     ax(j).yp = flip(ax(j).yp); %make y order top to bottom
+
+    [p,q] = meshgrid(ax(j).xp, ax(j).yp); %transform into 2d array
+    tmp = [p(:) q(:)];
+
+    ax(j).xp = tmp(:,1);
+    ax(j).yp = tmp(:,2);
+
 end
+
+
+
 
 
 end
@@ -71,7 +81,7 @@ end
 
 function [ax, maxpos] = arrange_subplots_onesector(numsubfigs, margins_fig, margins_subfig, splitfrac, startpos)
 
-fn = fieldnames(splitfrac);
+fn = fieldnames(numsubfigs);
 for fi = 1:numel(fn)
     [ax.([fn{fi} 'p']), ax.([fn{fi} 'e']), maxpos.(fn{fi})] = arrange_subplots_onedim(numsubfigs.(fn{fi}), margins_fig.(fn{fi}), margins_subfig, splitfrac.(fn{fi}), startpos.(fn{fi}));
 end

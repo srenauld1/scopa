@@ -29,11 +29,13 @@ fontmedium = 15;
 xlim_makeroomfac = 0.1;
 extrax = 2*maxlagxy*xlim_makeroomfac;
 
-numrows = 4;
-numcolumns = 4; %keep room for 2nd polar scatterplot
+numrows = [4 4];
+numcolumns = [4 1]; 
 margins_fig = 0.03;
 margins_subfig = 0.04;
-[axx, axy, axw, axh] = arrange_subplots([4 4], [4 1], [], [], 'v', 0.6);
+splitdim = 'x';
+splitfrac = 0.7;
+ax = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig, splitdim, splitfrac);
 
 if plot_z_as_color
     dimstring = '2dcol';
@@ -125,11 +127,11 @@ for rind = 1:numel(epochinds_all)
 
                     if isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
                         figstate = 'cartesian';
-                        hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                        hndls = init_axes(hndls, figstate, numrows, numcolumns, ax, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
                     end
                     if ~isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
                         figstate = 'polar';
-                        hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                        hndls = init_axes(hndls, figstate, numrows, numcolumns, ax, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
                     end
                     indpolar_prev = indpolar;
 
@@ -413,7 +415,7 @@ r_dummy2 = cat(1, r_dummy2, nan(numsamp_pad, 1));
 
 end
 
-function hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, ti, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
+function hndls = init_axes(hndls, figstate, numrows, numcolumns, ax, ti, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
@@ -437,8 +439,10 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
     htx = text( 0.5, 0.95, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
 
 
-    subplot_location_index = 1;
-    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index), axh(subplot_location_index)] );
+    sector_ind = 1;
+    subfig_ind = 
+
+    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe(subfig_ind) ax(sector_ind).ye(subfig_ind)] );
     hold(haxbr, 'on')
 
     hplbr = bar(haxbr, dummyvec_lag, dummyvec_lag);

@@ -30,7 +30,7 @@ xlim_makeroomfac = 0.1;
 extrax = 2*maxlagxy*xlim_makeroomfac;
 
 numrows = [4 4];
-numcolumns = [4 1]; 
+numcolumns = [4 1];
 margins_fig = 0.03;
 margins_subfig = 0.04;
 splitdim = 'x';
@@ -127,11 +127,11 @@ for rind = 1:numel(epochinds_all)
 
                     if isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
                         figstate = 'cartesian';
-                        hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                        hndls = init_axes(hndls, figstate, numrows, numcolumns, ax, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
                     end
                     if ~isempty(indpolar) & ~isequal(indpolar, indpolar_prev)
                         figstate = 'polar';
-                        hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
+                        hndls = init_axes(hndls, figstate, numrows, numcolumns, ax, tinew, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium);
                     end
                     indpolar_prev = indpolar;
 
@@ -292,7 +292,7 @@ for rind = 1:numel(epochinds_all)
                                 hndls.hplscp2.ThetaData = ploty{lagind};
                                 hndls.hplscp2.RData = r_dummy2{lagind};
                             end
-                            
+
                             hndls.haxscp.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
 
                             % hndls.haxscp.RLim = [min(hndls.hplscp1.RData) - range(hndls.hplscp1.RData)*roomfac_x max(hndls.hplscp1.RData) + range(hndls.hplscp1.RData)*roomfac_x];
@@ -415,7 +415,7 @@ r_dummy2 = cat(1, r_dummy2, nan(numsamp_pad, 1));
 
 end
 
-function hndls = init_axes(hndls, figstate, numrows, numcolumns, axx, axy, axw, axh, ti, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
+function hndls = init_axes(hndls, figstate, numrows, numcolumns, ax, ti, numsamp_max, numlags, plot_z_as_color, mkrsz, theta_ticks, theta_tick_labels, gif_visibility, fontmedium)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
@@ -439,8 +439,11 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
     htx = text( 0.5, 0.95, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
 
 
-    subplot_location_index = 1;
-    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index), axh(subplot_location_index)] );
+    sector_ind = 1;
+    subfig_ind = 1;
+    width_multiplier = 1;
+    height_multiplier = 1;
+    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
     hold(haxbr, 'on')
 
     hplbr = bar(haxbr, dummyvec_lag, dummyvec_lag);
@@ -456,8 +459,12 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
     hold(haxbr, 'off')
 
 
-    subplot_location_index = 4;
-    haxts = axes( 'Parent', hfg, 'Units', 'normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index)*1, axh(subplot_location_index)] );
+    sector_ind = 1;
+    subfig_ind = 4;
+    width_multiplier = 4;
+    height_multiplier = 1;
+    haxts = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
+
     hold(haxts, 'on')
 
     hplts1 = plot(haxts, ti, dummyvec_ts);
@@ -486,7 +493,11 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
 
 end
 
-subplot_location_index = 7;
+sector_ind = 1;
+subfig_ind = 7;
+width_multiplier = 3;
+height_multiplier = 3;
+
 switch figstate
 
     case 'cartesian'
@@ -498,7 +509,7 @@ switch figstate
             delete(hndls.hpllnp)
         end
 
-        haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index), axh(subplot_location_index)] );
+        haxscc = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
         hold(haxscc, 'on')
         if plot_z_as_color
             hplscc = scatter(haxscc, dummyvec_ts, dummyvec_ts, mkrsz, dummyvec_ts, 'filled');
@@ -521,7 +532,7 @@ switch figstate
             delete(hndls.hplscc)
         end
 
-        haxscp = polaraxes('Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [axx(subplot_location_index), axy(subplot_location_index), axw(subplot_location_index)*2, axh(subplot_location_index)*2]);
+        haxscp = polaraxes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
         hold(haxscp, 'on')
         hplscp1 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
         hplscp2 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
