@@ -70,6 +70,8 @@ for j = 1:num_sectors
     ax(j).xp = tmp(:,1);
     ax(j).yp = tmp(:,2);
 
+    ax(j).margins_subfig = margins_subfig(j);
+
 end
 
 

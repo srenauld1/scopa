@@ -25,14 +25,14 @@ theta_ticks = [0 90 180 270];
 theta_tick_labels = {'0', '', '180', ''};
 
 mkrsz = 4; %scatter marker size
-fontmedium = 15;
+fontmedium = 8;
 xlim_makeroomfac = 0.1;
 extrax = 2*maxlagxy*xlim_makeroomfac;
 
 numrows = [4 4];
 numcolumns = [4 1];
-margins_fig = 0.03;
-margins_subfig = 0.04;
+margins_fig = 0.05;
+margins_subfig = 0.05;
 splitdim = 'x';
 splitfrac = 0.7;
 ax = arrange_subplots(numrows, numcolumns, margins_fig, margins_subfig, splitdim, splitfrac);
@@ -435,15 +435,17 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
     else
         hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
     end
-    bgAxes = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    htx = text( 0.5, 0.95, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
+    haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+    htx = text( 0.5, 0.97, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
 
 
+    %%%%%%%%%%%%BAR PLOT%%%%%%%%%%%%
     sector_ind = 1;
     subfig_ind = 1;
-    width_multiplier = 1;
-    height_multiplier = 1;
-    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
+    width_multiplier = 0.8;
+    height_multiplier = 0.8;
+    xy_extent = min([ax(sector_ind).xe*width_multiplier+(width_multiplier-1)*ax(sector_ind).margins_subfig/2 ax(sector_ind).ye*height_multiplier+(height_multiplier-1)*ax(sector_ind).margins_subfig/2]); %make figure square like this rather than haxbr.PlotBoxAspectRatio = [1 1 1] to ensure bottom left corner doesnt change position
+    haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition', 'InnerPosition', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) xy_extent xy_extent] );
     hold(haxbr, 'on')
 
     hplbr = bar(haxbr, dummyvec_lag, dummyvec_lag);
@@ -451,7 +453,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
 
     %hndls.haxbr.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
     haxbr.YLim = [-1 1];
-    haxbr.PlotBoxAspectRatio = [1 1 1];
+    % haxbr.PlotBoxAspectRatio = [1 1 1];
     haxbr.Box = 'off';
     haxbr.XLabel.String = 'lag';
     haxbr.YLabel.String = 'corr coeff';
@@ -459,11 +461,12 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
     hold(haxbr, 'off')
 
 
+    %%%%%%%%%%%%TIMESERIES%%%%%%%%%%%%
     sector_ind = 1;
     subfig_ind = 4;
     width_multiplier = 4;
-    height_multiplier = 1;
-    haxts = axes( 'Parent', hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
+    height_multiplier = 0.8;
+    haxts = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition', 'InnerPosition', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier+(width_multiplier-1)*ax(sector_ind).margins_subfig/2 ax(sector_ind).ye*height_multiplier+(height_multiplier-1)*ax(sector_ind).margins_subfig/2] );
 
     hold(haxts, 'on')
 
@@ -473,7 +476,6 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
 
     %hndls.haxbr.XLim = [-maxlagxy - extrax1 maxlagxy + extrax1];
     % haxts.YLim = [-1 1];
-    % haxts.PlotBoxAspectRatio = [1 1 1];
     haxts.Box = 'off';
     haxts.XLabel.String = 'ts';
     haxts.YLabel.String = 'amp';
@@ -493,10 +495,14 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet
 
 end
 
+%%%%%%%%%%%%SCATTERPLOT%%%%%%%%%%%%
+
 sector_ind = 1;
 subfig_ind = 7;
 width_multiplier = 3;
 height_multiplier = 3;
+xy_extent = min([ax(sector_ind).xe*width_multiplier+(width_multiplier-1)*ax(sector_ind).margins_subfig/2 ax(sector_ind).ye*height_multiplier+(height_multiplier-1)*ax(sector_ind).margins_subfig/2]); %make figure square like this rather than haxbr.PlotBoxAspectRatio = [1 1 1] to ensure bottom left corner doesnt change position
+
 
 switch figstate
 
@@ -509,7 +515,7 @@ switch figstate
             delete(hndls.hpllnp)
         end
 
-        haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
+        haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition', 'InnerPosition', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) xy_extent xy_extent] );
         hold(haxscc, 'on')
         if plot_z_as_color
             hplscc = scatter(haxscc, dummyvec_ts, dummyvec_ts, mkrsz, dummyvec_ts, 'filled');
@@ -518,7 +524,7 @@ switch figstate
         end
 
         haxscc.Box = 'off';
-        haxscc.PlotBoxAspectRatio = [1 1 1];
+        % haxscc.PlotBoxAspectRatio = [1 1 1];
         hold(haxscc, 'off')
 
         hndls.haxscc = haxscc;
@@ -532,7 +538,7 @@ switch figstate
             delete(hndls.hplscc)
         end
 
-        haxscp = polaraxes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'Position', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) ax(sector_ind).xe*width_multiplier ax(sector_ind).ye*height_multiplier] );
+        haxscp = polaraxes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition', 'InnerPosition', [ax(sector_ind).xp(subfig_ind) ax(sector_ind).yp(subfig_ind) xy_extent xy_extent] );
         hold(haxscp, 'on')
         hplscp1 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
         hplscp2 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
