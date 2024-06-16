@@ -38,9 +38,9 @@ if exist('optin', 'var') && ~isempty(optin)
         numrows_plot = 1;%supp.num_model_functions;
         numcolumns_plot = 1;%supp.num_dim_indvpre*supp.num_unit;
         margins_fig = 0.03;
-        margins_subfig = 0.06;
+        margins_subplot = 0.06;
 
-        [axx, axy, axw, axh] = arrange_subplots(numrows_plot, numcolumns_plot, margins_fig, margins_subfig);
+        [axx, axy, axw, axh] = arrange_subplots(numrows_plot, numcolumns_plot, margins_fig, margins_subplot);
 
         hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', 'on') ;
         hfg.Position = [0 0 0.5 0.5]; %make square inner size (excludes top menu bar), plot in bottom left

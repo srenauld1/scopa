@@ -1,6 +1,6 @@
-function [hfg, hax, htx] = initialize_figure(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subfig, sizefont)
+function [hfg, hax, htx] = initialize_figure(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subplot, sizefont)
 
-[axx, axy, axw, axh] = arrange_subplots(numrows_plot, numcolumns_plot, margins_fig, margins_subfig);
+[axx, axy, axw, axh] = arrange_subplots(numrows_plot, numcolumns_plot, margins_fig, margins_subplot);
 
 if isempty(hax)
     hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', 'on') ;

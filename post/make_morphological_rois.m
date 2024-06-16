@@ -50,7 +50,7 @@ subsample_mask_method = opts_mroi.subsample_mask_method;
 edgethresh = opts_mroi.edgethresh;
 edgesig = opts_mroi.edgesig;
 closing_element_size = opts_mroi.closing_element_size;
-extract_morph_rois_in_3d = opts_mroi.extract_morph_rois_in_3d; 
+extract_morph_rois_in_3d = opts_mroi.extract_morph_rois_in_3d;
 
 hsvopt = opts_mroi.hsvopt;
 olayopt = opts_mroi.olayopt;
@@ -136,7 +136,7 @@ end
 
 save(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi', '-mat', '-v7.3');
 
-%% compute some morphological roi data 
+%% compute some morphological roi data
 
 pixinds_roi = cell(num_mroi, 1);
 for ii = 1:length(pixinds_roi)
@@ -174,12 +174,9 @@ save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 %% create/plot roi overlay (can plot n specific rois with their index into pixinds_roi and change num_mroi to n)
 
-roi_overlay = [];
-if olayopt.do
-    filename_olay = [pth_mroi_prefix 'eachroired_.gif'];
-    roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
-        olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay);
-end
+filename_olay = [pth_mroi_prefix 'eachroired_.gif'];
+roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
+    olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay, olayopt.doplot);
 
 %% create/plot roi hsv
 
@@ -191,7 +188,7 @@ if hsvopt.do
     hsvmap = plots_compute_hsv(hsvopt, hue_feature);
 
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
+    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
 
 end
 
@@ -254,7 +251,7 @@ if do_other_plots %all these are at imaging resolution
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
     plot_gif( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_.gif'])
 
-    %manual roi mask 
+    %manual roi mask
     plot_gif(maskmanual, [pth_mroi_prefix 'maskmanual_.gif'])
 
     %mask all rois (without stack background)
@@ -266,7 +263,7 @@ if do_other_plots %all these are at imaging resolution
     % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
     % axis image
     % saveas( gcf, [pth_mroi_prefix 'maskallroi_surface_.png'])
-    
+
 
 end
 

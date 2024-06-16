@@ -7,7 +7,7 @@ function [outtmpall, hax, out2] = mdl_fnet(pars, indv, supp, optin)
 
 make_figure = 0; %0 to not make figure (during optimization), 1 to make and save here, 2 if plotting on axes that are passed in as argument (and not saving here)
 margins_fig = 0.03; %if not passing in figure
-margins_subfig = 0.06;%if not passing in figure
+margins_subplot = 0.06;%if not passing in figure
 extra_xlim_fac = 0.1;%if not passing in figure
 fontsmall = 8;
 outflag = 0; %made 1 if making figures; flag to make some functions output an extra variable for plotting
@@ -71,7 +71,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
                 newaxes = 1;
                 numrows_plot = num_unit_curr_layer;
                 numcolumns_plot = max_num_fun_curr_layer;
-                [hfg, hax, htx] = initialize_figure(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subfig, fontsmall);
+                [hfg, hax, htx] = initialize_figure(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subplot, fontsmall);
             end
         end
     end

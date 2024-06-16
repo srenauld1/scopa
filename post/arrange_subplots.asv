@@ -82,11 +82,6 @@ for j = 1:num_sectors
     ax(j).yp = tmp(:,2);
 
     ax(j).margins_subplot = margins_subplot(j);
-    
-    ax(j).numsubplot = numel(ax(j).xp);
-    [~, uu1, uu2] = unique(ax(j).xp);
-    ax(j).numrows = numel(find(uu2==uu1(1)));
-    ax(j).numcolumns = numel(uu1);
 
 end
 
@@ -130,8 +125,6 @@ end
 function [ax, maxpos] = arrange_subplots_stack(subplot_layout_struct, margins_fig, margins_subplot, splitfrac, startpos)
 
 
-margins_subplot = 0; %for now, override to make no subplot margins in stack sector
-
 sectorwidth = 1*splitfrac.x - margins_fig.x(1) - margins_fig.x(2);
 sectorheight = 1*splitfrac.y - margins_fig.y(1) - margins_fig.y(2);
 numsubplot = subplot_layout_struct(3);
@@ -170,17 +163,17 @@ if wid2*hgt2>wid*hgt %overwrite if 2nd loop found larger area subfigures
     numcolumns = numcolumns2;
 end
 
-
+minpos = 0+startpos+margins_fig(1);
+maxpos = minpos+1*splitfrac-margins_fig(2);
 minposx = 0 + startpos.x + margins_fig.x(1);
-maxposx = minposx + sectorwidth; %sectorwidth computed above, already accounts for margins_fig
+maxposx = 0 + sectorwidth;
+maxposy = 1-margins_fig.y(2);
+minposy = maxposy-sectorheight;
 
-minposy = 0 + startpos.y + margins_fig.y(1);
-maxposy = minposy + sectorheight; %sectorwidth computed above, already accounts for margins_fig
-
-xpos = minposx : wid+margins_subplot : maxposx;
+xpos = minposx : wid+margins_fig : maxposx;
 xpos = xpos(1:numcolumns);
 
-ypos = minposy : hgt+margins_subplot : maxposy;
+ypos = minposy : hgt+margins_fig : maxposy;
 ypos = ypos(1:numrows);
 
 maxpos.x = maxposx;

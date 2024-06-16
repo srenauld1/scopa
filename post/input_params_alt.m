@@ -76,7 +76,7 @@ opt.mroi.extract_morph_rois_in_3d = 0; %1 makes 3d mask unless stack is 2d, 0 ma
 opt.mroi.do_other_plots = 1; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
-opt.mroi.olayopt.do = 1; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+opt.mroi.olayopt.doplot = 1; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
 opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
 opt.mroi.olayopt.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 opt.mroi.olayopt.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max

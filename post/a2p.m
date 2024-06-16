@@ -4,12 +4,8 @@ clear all
 close all
 clc
 
-disp("make hemisphere option (eg option to analyze left or right or both)")
-disp("fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)")
-disp("need to make fitmdl_parse_mdlname_string run with other inputs ignored during param setting to check the syntax (so you don't find out later, halfway through the pipeline")
-disp("allow recursive mdl")
-disp("constrain amplitude of all intermediate functions")
-disp("time in all functions")
+display_todos()
+
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity
@@ -154,7 +150,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
                 stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack for plotting fov/rois
 
                 scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
-                    opt.scatter(si).epochinds, stackcrop, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, ...
+                    opt.scatter(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, ...
                     md.epochs.epochinds_ts_i, opt.scatter(si).maxlagxy, opt.scatter(si).maxlagz, opt.scatter(si).lags_to_plot, ...
                     opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short)
 

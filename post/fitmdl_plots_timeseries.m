@@ -20,7 +20,7 @@ depvp_alpha = 0.7;
 numrows_ts = 6; %no functional significance, just how many rows you want to spread the timeseries out
 numcolumns_ts = 1;
 margins_fig = 0.04;
-margins_subfig = 0.02;
+margins_subplot = 0.02;
 
 title_add_each = 'TIMESERIES';
 figext = '.gif';
@@ -47,18 +47,18 @@ num_total_subplots = numrows_ts+supp.num_total_model_functions;
 hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
 hfg.Position = [0 0.2 0.8 0.6];
 bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-[axx, axy, axw, axh] = arrange_subplots(numrows_ts, numcolumns_ts, margins_fig, margins_subfig);
+[axx, axy, axw, axh] = arrange_subplots(numrows_ts, numcolumns_ts, margins_fig, margins_subplot);
 leftfrac = 0.6;
 axw = axw*leftfrac;
 
 numrows_ts2 = supp.num_total_model_functions/supp.max_num_fun_per_unit; 
 numcolumns_ts2 = supp.max_num_fun_per_unit;
-[axx2, axy2, axw2, axh2] = arrange_subplots(numrows_ts2, numcolumns_ts2, margins_fig, margins_subfig);
+[axx2, axy2, axw2, axh2] = arrange_subplots(numrows_ts2, numcolumns_ts2, margins_fig, margins_subplot);
 
-axw2 = axw2*(1-leftfrac)-margins_subfig;
+axw2 = axw2*(1-leftfrac)-margins_subplot;
 for axxi = 1:numel(axx2)
     onecolumn_lefside_hack = 1;
-    axx2(axxi) = axx(onecolumn_lefside_hack)+axw(onecolumn_lefside_hack)+axw2(axxi)*((ceil(axxi/numrows_ts2))-1)+margins_subfig;
+    axx2(axxi) = axx(onecolumn_lefside_hack)+axw(onecolumn_lefside_hack)+axw2(axxi)*((ceil(axxi/numrows_ts2))-1)+margins_subplot;
     if axh2>axh(1)
         axh2(:) = axh(onecolumn_lefside_hack);
     end
