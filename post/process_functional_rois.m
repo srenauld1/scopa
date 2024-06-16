@@ -84,6 +84,12 @@ if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
     cmrval = cmrval(:);
     cmsnr = cmsnr(:);
 
+
+
+    cmc = cmdffr;
+
+
+
 end
 
 if ~isequal( [size(cma, 1), size(cma, 2)], [size(stack_mnt_rs, 1), size(stack_mnt_rs, 2)] ) %make sure roimask and stack_mnt sizes match
@@ -99,6 +105,8 @@ if croptimeinds
 end
 
 numrois = size(cma, 4);
+
+
 
 
 
@@ -346,19 +354,19 @@ resp = extract_roi_responses(resptmp, mask_roi_vec, pth_froi, normopts, dtmni); 
 
 %% plots
 
+%create colormap for roi+mean image overlay (roi is red by default)
+startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
+endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
+startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
+endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
+cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
+
+cmap_im = colormap_custom(cmap_method, ncol_each, ...
+    startcol1, endcol1, saturation_factor_background, ...
+    startcol2, endcol2, saturation_factor_rois);
+
 
 if numrois_for_gif~=0
-
-    %create colormap for roi+mean image overlay (roi is red by default)
-    startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
-    endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
-    startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
-    endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
-    cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
-
-    cmap_im = colormap_custom(cmap_method, ncol_each, ...
-        startcol1, endcol1, saturation_factor_background, ...
-        startcol2, endcol2, saturation_factor_rois);
 
 
     if numroi>numrois_for_gif
@@ -562,11 +570,19 @@ if do_other_plots
 
 end
 
+%this needs to be inserted above elsewhere; hack in here for now
+
+roi_overlay_new = zeros(size(roi_overlay, 1), size(roi_overlay, 2), size(roi_overlay, 3), 3, size(roi_overlay, 4),  'single');
+for ri = 1:size(roi_overlay, 4)
+    for zi = 1:size(roi_overlay, 3)
+        roi_overlay_new(:,:,zi,:,ri) = ind2rgb(round(roi_overlay(:,:,zi,ri)), cmap_im);
+    end
+end
 
 
 %% assign to struct
 
-roiinfo.roi_overlay = roi_overlay;
+roiinfo.roi_overlay = roi_overlay_new;
 roiinfo.numroi = numroi;
 roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
