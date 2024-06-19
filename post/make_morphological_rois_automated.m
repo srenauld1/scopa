@@ -177,7 +177,7 @@ else
                 midz_check = midz;
                 [midx,midy,midz] = graph_sort3(midx,midy,midz); %here set up to work for 2d and 3d align the points of the midline starting at the first point and going around in a circle. this requires that the midline be continuous!
                 if numel(midz)~=numel(midz_check)
-                    error("you are attempting to use subsample_mask_method skeleton for 2d extraction from a 3d stack with a manual mask that is discontiguous in z; subsample_mask_method skeleton cannot yet accommodate that, but uniform and uniformp can")
+                    error("you are attempting to use subsample_mask_method skeleton for 2d extraction from a 3d stack with a manual mask that is discontiguous in z; subsample_mask_method skeleton cannot yet accommodate that, but uniform and uniformp can; or your skeleton is just discontiguous in 3d")
                 end
                 xq = [-min_axis:(length(midx)+min_axis)]; %extend the midline so that it reaches the border of the mask. extrapolate as many points as the minimum axis length
 
