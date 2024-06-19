@@ -88,8 +88,8 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
         regionex = opt.main.regionex_all{rei};
 
         %%crop movie to regionex cuboid
-        [stackcrop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
-            crop_stacks(stack, croplim_all.(regionex), ids.recid, regionex, pth.fldr, pth.tmpfiles, ...
+        [stackcrop, zstartpos_crop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
+            crop_stacks(stack, croplim_all.(regionex), md.zstartpos, ids.recid, regionex, pth.fldr, pth.tmpfiles, ...
             md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
@@ -125,7 +125,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
-                stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack based on regionex of the depv (stack for plots, not model)
+                stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
                 opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
@@ -147,12 +147,12 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(opt.scatter(si), ts, md, pth.tsuse.scatter, pth.stack_analysis, choosecount, dochoose);
-                stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex)); %crop stack for plotting fov/rois
+                [stackcrop, zstartpos_crop] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
 
                 scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
-                    opt.scatter(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, ...
+                    opt.scatter(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
                     md.epochs.epochinds_ts_i, opt.scatter(si).lagsxy_sec, opt.scatter(si).lagsz_sec, opt.scatter(si).lags_to_plot, ...
-                    opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short)
+                    opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short, fitin.fn_save_prefix)
 
             end
         end

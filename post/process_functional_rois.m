@@ -86,7 +86,7 @@ if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
 
 
 
-    cmc = cmdffr;
+    %cmc = cmdffr;
 
 
 

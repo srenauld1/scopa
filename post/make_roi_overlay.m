@@ -3,7 +3,7 @@ function roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, numrois, ncol_ea
 
 stack_mnt_rs = rescale(stack_mnt, 1, ncol_each);
 
-img = zeros([size(stack_mnt_rs) numrois], 'single');
+img = zeros([size(stack_mnt_rs, 1), size(stack_mnt_rs, 2), size(stack_mnt_rs, 3), numrois], 'single');
 for ci = 1:numrois
 
     roipixvals = stack_mnt(pixinds_roi{ci});

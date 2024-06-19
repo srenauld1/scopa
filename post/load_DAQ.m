@@ -72,7 +72,6 @@ if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) && ~fast_versio
     try
         load([pth_daq_resamp(1:end-4) 'sliceinds.mat'], 'sliceinds');
     catch
-        trialData.frameClock
         if trialData.frameClock(1) == 1
             sprintf("warning, first daq sample is during an imaging frame")
         end

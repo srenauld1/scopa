@@ -1,21 +1,21 @@
 function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, ...
-    epochinds_all, roiinfo, ti, epochinds_ts_i, lagsxy_sec, ...
-    lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    gif_visibility, fngif_prefix)
+    epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, lagsxy_sec, ...
+    lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, fngif_prefix_short, fngif_prefix)
 
+
+%don't subset the stack 
 
 gif_scope = 'allvars';
 lag_style = 'each'; %currently 'each' is only option; lags xy, then z for each xy; lag_style 'any' (soon available) will allow all combinations
 threshold_data = 0;
 blindspot = -pi/12; %nan to not draw blind spot
 pval_siglev = 0.05; %pval bar gets colored if below pval_siglev
-bar_contrast = 0.9;
 axisroomfac = 0.1;
 maxlablength = 10000; %making this large to skip, isn't necessary so far
 mkrsz = 4; %scatter marker size
-fontmedium = 8;
-ylim_constant = 0; %keep at 0 for now, otherwise too small; 1 to keep at min max across all frames, 0 to change with each frame
-
+fontmedium = 11;
+ylim_constancy = 'eachvar';  %allvars, eachvar, none
+sample_period_string = [num2str(dtmni*1000, '%.2g') ' ms'];
 
 stack = roiinfo.roi_overlay;
 roi_type = 'rois';
@@ -38,19 +38,21 @@ splitfrac = 0.65;
 ax = arrange_subplots(subplot_layout, margins_fig, margins_subplot, splitdim, splitfrac);
 
 
-[varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = checkvars(varsx, varsy, varsz);
+[varsx, varsy, varsz] = convert_to_single_precision(varsx, varsy, varsz);
+[varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz);
 
 labsx = check_labels(labsx, varsx);
 labsy = check_labels(labsy, varsy);
 labsz = check_labels(labsz, varsz);
 
-[limall, numsamp_max] = find_axis_limits(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i);
+[lims, numsamp_max] = find_axis_limits(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i);
 
 
-framecount = 0;
+timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 fngif = [fngif_prefix '_.gif' ];
 indpolar_prev = Inf;
 hndls = struct;
+framecount = 0;
 for ei = 1:numel(epochinds_all)
 
     epochinds = epochinds_all{ei};
@@ -77,26 +79,32 @@ for ei = 1:numel(epochinds_all)
                 [polar_index, labt, labr] = find_polar_index(labx, laby, labz);
                 axtype = set_axtype(polar_index, z_is_empty, plot_z_as_color);
                 skipplot = skip_plot_criteria(laball, 'none');
-                [fngif, figure_title, labx, laby, labz] = process_strings(labx, laby, labz, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix, fngif);
+                [fngif, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix_short, fngif_prefix, fngif, roi_index, sample_period_string);
 
+                % switch polar_index
+                %     case 1
+                %         lims.r = lims.x;
+                %     case 2
+                %         lims.r = lims.y;
+                % end
 
                 if ~skipplot
 
                     if isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
                         scatter_type = 'cartesian';
-                        hndls = init_axes(hndls, stack, limall, ylim_constant, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac);
+                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     if ~isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
                         scatter_type = 'polar';
-                        hndls = init_axes(hndls, stack, limall, ylim_constant, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac);
+                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     indpolar_prev = polar_index;
 
                     [plotx, ploty, plotz, r_dummy1, r_dummy2, cmp, ccr, pval_norm, laginds_to_plot] = ...
                         prepvars(numlags, lagsall_xy, lagsall_z, varx, vary, varz, threshold_data, laball, z_is_empty, ...
-                        plot_z_as_color, polar_index, numsamp_max, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast);
+                        plot_z_as_color, polar_index, numsamp_max, zero_lag_index, lags_to_plot, pval_siglev);
 
-                    [hndls, framecount] = plot_axes(hndls, stack, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, ...
+                    [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, ...
                         plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, ...
                         polar_index, actual_lags_xy_sec, ccr, pval_norm, fngif, roi_type, plot_z_as_color, figure_title);
 
@@ -111,7 +119,32 @@ end
 
 
 
-function [varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = checkvars(varsx, varsy, varsz)
+function [varsx, varsy, varsz] = convert_to_single_precision(varsx, varsy, varsz)
+
+if ~isa(varsx, 'single') & ~isa(varsx, 'double')
+    error("varsx is neither single nor double, are you sure you want to proceed?");
+end
+if ~isa(varsy, 'single') & ~isa(varsy, 'double')
+    error("varsy is neither single nor double, are you sure you want to proceed?");
+end
+if ~isa(varsz, 'single') & ~isa(varsz, 'double')
+    error("varsz is neither single nor double, are you sure you want to proceed?");
+end
+if isa(varsx, 'double')
+    varsx = single(varsx);
+end
+if isa(varsy, 'double')
+    varsy = single(varsy);
+end
+if isa(varsz, 'double')
+    varsz = single(varsz);
+end
+
+
+
+end
+
+function [varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz)
 
 if isempty(varsx) & isempty(varsy) || isempty(varsx) & isempty(varsz) || isempty(varsy) & isempty(varsz)
     error("only one nonempty variable, at least 2 nonempty variables are required")
@@ -138,14 +171,23 @@ end
 
 end
 
-function [limall, numsamp_max] = find_axis_limits(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i)
+function [lims, numsamp_max] = find_axis_limits(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i)
 
-rangex = range(varsx(:));
-rangey = range(varsy(:));
-rangez = range(varsz(:));
-limall.x = [min(varsx(:)) - rangex*axisroomfac, max(varsx(:)) + rangex*axisroomfac];
-limall.y = [min(varsy(:)) - rangey*axisroomfac, max(varsy(:)) + rangey*axisroomfac];
-limall.z = [min(varsz(:)) - rangez*axisroomfac, max(varsz(:)) + rangez*axisroomfac];
+rngx = range(varsx, 2);
+rngy = range(varsy, 2);
+rngz = range(varsz, 2);
+lims.x_each = [min(varsx, [], 2, 'omitmissing'), max(varsx, [], 2, 'omitmissing')];
+lims.y_each = [min(varsy, [], 2, 'omitmissing'), max(varsy, [], 2, 'omitmissing')];
+lims.z_each = [min(varsz, [], 2, 'omitmissing'), max(varsz, [], 2, 'omitmissing')];
+lims.x_each_xtra = [lims.x_each(:,1) - rngx*axisroomfac, lims.x_each(:,2) + rngx*axisroomfac];
+lims.y_each_xtra = [lims.y_each(:,1) - rngy*axisroomfac, lims.y_each(:,2) + rngy*axisroomfac];
+lims.z_each_xtra = [lims.z_each(:,1) - rngz*axisroomfac, lims.z_each(:,2) + rngz*axisroomfac];
+lims.x_all = [min(lims.x_each), max(lims.x_each)];
+lims.y_all = [min(lims.y_each), max(lims.y_each)];
+lims.z_all = [min(lims.z_each), max(lims.z_each)];
+lims.x_all_xtra = [min(lims.x_each_xtra), max(lims.x_each_xtra)];
+lims.y_all_xtra = [min(lims.y_each_xtra), max(lims.y_each_xtra)];
+lims.z_all_xtra = [min(lims.z_each_xtra), max(lims.z_each_xtra)];
 
 numsamp_max = 0;
 for ei = 1:numel(epochinds_all)
@@ -205,7 +247,7 @@ function labs = check_labels(labs, vars)
 
 if ~isempty(labs) && ~all(isnan(vars(:))) %if it's not an empty variable
     if numel(labs)~=size(vars, 1) %if label length doesn't match variable dim 1 size
-        if numel(labs)==1 
+        if numel(labs)==1
             labs = repmat(labs, size(vars, 1), 1);
             disp("repeating singleton lab for all vars")
         else
@@ -249,8 +291,8 @@ if endsWith(labz, 'yaw') || endsWith(labz, 'ang')
     polar_index = [polar_index 3];
 end
 
-labt = [];
-labr = [];
+labt = '';
+labr = '';
 if isequal(polar_index, 1)
     labt = labx;
     labr = laby;
@@ -330,7 +372,7 @@ end
 end
 
 
-function [fngif_new, figure_title, labx, laby, labz] = process_strings(labx, laby, labz, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix, fngif_old)
+function [fngif_new, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix_short, fngif_prefix, fngif_old, roi_index, sample_period_string)
 
 if isempty(labz)
     dimstring = '2d';
@@ -344,16 +386,13 @@ end
 epochstring = sprintf('%.0f,' , epochinds);
 epochstring = epochstring(1:end-1);
 if strcmp(epochstring, '1')
-    epochstring_parsed = 'closedloop';
+    epochstring_parsed = 'CLOSED LOOP';
 end
-labx = strrep(labx, 'vis', 'cue');
-laby = strrep(laby, 'vis', 'cue');
-labz = strrep(labz, 'vis', 'cue');
-labx = regexprep(labx, 'ind\d+$', '');
-laby = regexprep(laby, 'ind\d+$', '');
-labz = regexprep(labz, 'ind\d+$', '');
 
-figure_title = {[epochstring_parsed ' ' dimstring ]};
+stackidtmp = strsplit(fngif_prefix_short, filesep);
+stackid = stackidtmp{end};
+figure_title = [strrep(stackid, '_', ' ') ',   ' epochstring_parsed  ',   ' sample_period_string ' SAMPLES,    ROI #' num2str(roi_index)];
+figure_title = upper(figure_title);
 
 fngif_suffix = {[axtype{1} laby]; [axtype{2} labx]; [axtype{3} labz]; ['e' epochstring ' ' dimstring ]}; %switch order
 fngif_suffix = strrep(strjoin(fngif_suffix), ' ', '_');
@@ -366,6 +405,54 @@ elseif strcmp(gif_scope, 'var') %update for each variable
 else
     fngif_new = fngif_old;
 end
+
+labx = strrep(labx, 'vis', 'cue');
+laby = strrep(laby, 'vis', 'cue');
+labz = strrep(labz, 'vis', 'cue');
+labt = strrep(labt, 'vis', 'cue');
+labr = strrep(labr, 'vis', 'cue');
+labx = regexprep(labx, 'resp.*ind\d+$', ['ROI #' num2str(roi_index) ' (F)']);
+laby = regexprep(laby, 'resp.*ind\d+$', ['ROI #' num2str(roi_index) ' (F)']);
+labz = regexprep(labz, 'resp.*ind\d+$', ['ROI #' num2str(roi_index) ' (F)']);
+labt = regexprep(labt, 'resp.*ind\d+$', ['ROI #' num2str(roi_index) ' (F)']);
+labr = regexprep(labr, 'resp.*ind\d+$', ['ROI #' num2str(roi_index) ' (F)']);
+if contains(labx, 'int')
+    labx = [labx ' (RAD)'];
+end
+if contains(laby, 'int')
+    laby = [laby ' (RAD)'];
+end
+if contains(labz, 'int')
+    labz = [labz ' (RAD)'];
+end
+if contains(labt, 'int')
+    labt = [labt ' (RAD)'];
+end
+if contains(labr, 'int')
+    labr = [labr ' (RAD)'];
+end
+if endsWith(labx, 'vel')
+    labx = [labx ' (RAD/S)'];
+end
+if endsWith(laby, 'vel')
+    laby = [laby ' (RAD/S)'];
+end
+if endsWith(labz, 'vel')
+    labz = [labz ' (RAD/S)'];
+end
+if endsWith(labt, 'vel')
+    labt = [labt ' (RAD/S)'];
+end
+if endsWith(labr, 'vel')
+    labr = [labr ' (RAD/S)'];
+end
+
+labx = upper(labx);
+laby = upper(laby);
+labz = upper(labz);
+labt = upper(labt);
+labr = upper(labr);
+
 
 end
 
@@ -401,7 +488,47 @@ r_dummy2 = cat(1, r_dummy2, nan(numsamp_pad, 1));
 
 end
 
-function hndls = init_axes(hndls, stack, limall, ylim_constant, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac)
+function varnew = insert_nan_for_polar_wrap(var)
+%replace diffs greater than pi with nan in the wrapped bumpang plot because the lines make it difficult to read
+diff_rep_thresh = pi;
+diffspace1 = 1;
+filt1 = [zeros(1,diffspace1-1) 1 zeros(1,diffspace1-1) -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
+diffspace2 = 2;
+filt2 = [zeros(1,diffspace2-1) 1 zeros(1,diffspace2-1) -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
+
+varnew = var;
+
+diffsignal = conv(var, filt1, 'full');
+diffsignal = diffsignal((length(filt1) - 1)+1:end-(length(filt1) - (1 + (diffspace1-1))));
+diffsignal1 = [zeros((diffspace1-1)+1, 1); diffsignal];
+
+diffsignal = conv(var, filt2, 'full');
+diffsignal = diffsignal((length(filt2) - 1)+1:end-(length(filt2) - (1 + (diffspace2-1))));
+diffsignal2 = [zeros((diffspace2-1)+1, 1); diffsignal];
+
+excludeinds = abs(diffsignal1)>diff_rep_thresh | abs(diffsignal2)>diff_rep_thresh;
+varnew(excludeinds) = nan;
+
+end
+
+
+function [varx_lagxyz, vary_lagxyz, varz_lagxyz] = remove_nans_as_group(varx_lagxyz, vary_lagxyz, varz_lagxyz)
+
+keepind = ~(isnan(varx_lagxyz) | isnan(vary_lagxyz));
+varz_lagxyz_isnan = isnan(varz_lagxyz);
+if any(varz_lagxyz_isnan)
+    keepind = keepind | varz_lagxyz_isnan;
+    varz_lagxyz = varz_lagxyz(keepind);
+end
+varx_lagxyz = varx_lagxyz(keepind);
+vary_lagxyz = vary_lagxyz(keepind);
+if ~any(varz_lagxyz_isnan)
+    varz_lagxyz = ones(numel(varx_lagxyz), 1);
+end
+
+end
+
+function hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac, zstartpos)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
@@ -423,7 +550,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
         hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
     end
     haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    htx = text( 0.5, 0.97, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'FontWeight', 'bold' ) ;
+    htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
 
     %%%%%%%%%%%% BAR PLOT %%%%%%%%%%%%
@@ -431,7 +558,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     sector_ind = 1;
     subfig_ind = 1;
     width_multiplier = 2.8;
-    height_multiplier = 0.6;
+    height_multiplier = 1;
     haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
     haxbr.InnerPosition(1) = ax(sector_ind).xp(subfig_ind);
     haxbr.InnerPosition(2) = ax(sector_ind).yp(subfig_ind);
@@ -478,9 +605,11 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
 
     haxts.XTick = round(max(ti));
     haxts.XTickLabel = [num2str(haxts.XTick) ' sec'];
-    if ylim_constant
-        haxts.YAxis(1).Limits = limall.x;
-        haxts.YAxis(2).Limits = limall.y;
+    haxts.YAxis(1).Color = [0 0 1];
+    haxts.YAxis(2).Color = [1 0 0];
+    if strcmp(ylim_constancy, 'allvars')
+        haxts.YAxis(1).Limits = lims.x_all;
+        haxts.YAxis(2).Limits = lims.y_all;
     end
     haxts.Box = 'off';
     haxts.XLabel.String = '';
@@ -513,12 +642,15 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
             dummy_index_dim5 = 1;
             hplfov{subfig_ind} = image(haxfov{subfig_ind}, squeeze(stack(:,:,subfig_ind,:,dummy_index_dim5))); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
 
-            axis image %should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
+            % axis image %should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
             axis off
             axis ij
 
             hplfovlnx{subfig_ind} = xline(haxfov{subfig_ind}, nan, 'w', 'LineStyle', 'none');
             hplfovlny{subfig_ind} = yline(haxfov{subfig_ind}, nan, 'w', 'LineStyle', 'none');
+            txfov{subfig_ind} = text( haxfov{subfig_ind}, size(stack, 2), size(stack, 1), num2str(zstartpos(subfig_ind)), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
+            txfov{subfig_ind}.HorizontalAlignment = 'right';
+            txfov{subfig_ind}.VerticalAlignment = 'bottom';
 
         end
 
@@ -589,7 +721,7 @@ switch scatter_type
         end
 
         haxscc.Box = 'off';
-        if ylim_constant
+        if ylim_constancy
             % haxscp.XLim = [0 1];
             % haxscp.YLim = [0 1];
         end
@@ -611,13 +743,13 @@ switch scatter_type
         haxscp = polaraxes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
         haxscp.InnerPosition(1) = ax(sector_ind).xp(subfig_ind);
         haxscp.InnerPosition(2) = ax(sector_ind).yp(subfig_ind);
-        haxscp.InnerPosition(3) = tmp_x_extent;
-        haxscp.InnerPosition(4) = tmp_y_extent;
+        haxscp.InnerPosition(3) = minextent;
+        haxscp.InnerPosition(4) = minextent;
 
         hold(haxscp, 'on')
         hplscp1 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
         hplscp2 = polarscatter(haxscp, dummyvec_ts, dummyvec_ts, mkrsz, 'filled');
-        hpllnp = polarplot(haxscp, [blindspot blindspot], haxscp.RLim, 'r');
+        hpllnp = polarplot(haxscp, [blindspot blindspot], [0 0], 'r');
 
         hplscp1.MarkerFaceColor = 'k';
         hplscp2.MarkerFaceColor = 'k';
@@ -625,18 +757,17 @@ switch scatter_type
 
         haxscp.RTickLabel = [];
 
-        haxscp.ThetaTick = [0 90 180];
-        haxscp.ThetaTickLabel = {'0', '90', '180', ''};
+        haxscp.ThetaTick = [0 90 180 270];
+        haxscp.ThetaTickLabel = {'0', '90', '180', '270'};
 
         haxscp.ThetaAxis.Label.Units = 'normalized';
-        haxscp.ThetaAxis.Label.Position = [0.5, 0, 0];
+        haxscp.ThetaAxis.Label.Position = [0.5, -0.05, 0];
         haxscp.ThetaAxis.Label.Rotation = 0;
-        haxscp.RhoAxis.Label.Units = 'normalized';
-        haxscp.RhoAxis.Label.Position = [0.5, 0, 0];
-        haxscp.RhoAxis.Label.Rotation = 90;
+        haxscp.RAxis.Label.Units = 'normalized';
+        haxscp.RAxis.Label.Position = [-0.13, 0.5, 0];
+        haxscp.RAxis.Label.Rotation = 90;
 
-
-        if ylim_constant
+        if ylim_constancy
             % haxscp.RLim = [0 1];
         end
 
@@ -654,7 +785,7 @@ end
 
 
 
-function [plotx, ploty, plotz, r_dummy1, r_dummy2, cmp, ccr, pval_norm, laginds_to_plot] = prepvars(numlags, lagsall_xy, lagsall_z, varx, vary, varz, threshold_data, laball, z_is_empty, plot_z_as_color, polar_index, numsamp_max, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast)
+function [plotx, ploty, plotz, r_dummy1, r_dummy2, cmp, ccr, pval_norm, laginds_to_plot] = prepvars(numlags, lagsall_xy, lagsall_z, varx, vary, varz, threshold_data, laball, z_is_empty, plot_z_as_color, polar_index, numsamp_max, zero_lag_index, lags_to_plot, pval_siglev)
 
 
 plotx = cell(1, numlags);
@@ -670,29 +801,26 @@ for lagind = 1:numlags
 
     [varx_lagxyz, vary_lagxyz, varz_lagxyz] = lagvars(varx, vary, varz, lagsall_xy(lagind), lagsall_z(lagind));
 
-    %remove nans
-    keepind = ~(isnan(varx_lagxyz) | isnan(vary_lagxyz));
-    varz_lagxyz_isnan = isnan(varz_lagxyz);
-    if any(varz_lagxyz_isnan)
-        keepind = keepind | varz_lagxyz_isnan;
-        plotz{lagind} = varz_lagxyz(keepind);
-    end
-    plotx{lagind} = varx_lagxyz(keepind);
-    ploty{lagind} = vary_lagxyz(keepind);
-    if ~any(varz_lagxyz_isnan)
-        plotz{lagind} = ones(numel(plotx{lagind}), 1);
-    end
+    [plotx{lagind}, ploty{lagind}, plotz{lagind}] = remove_nans_as_group(varx_lagxyz, vary_lagxyz, varz_lagxyz);
 
-
+    if ismember(1, polar_index)
+        plotx{lagind} = insert_nan_for_polar_wrap(plotx{lagind});
+    end
+    if ismember(2, polar_index)
+        ploty{lagind} = insert_nan_for_polar_wrap(plotx{lagind});
+    end
+    if ismember(3, polar_index)
+        plotz{lagind} = insert_nan_for_polar_wrap(plotx{lagind});
+    end
 
     %threshold if requested
     if threshold_data
-        if contains(laball{1}, 'ball.vel')
+        if contains(laball{1}, 'vel')
             [histdt, histx] = hist(abs(plotx{lagind}(:)), 500);
             thrbin = triangle_threshold(histdt, 'R', 0);
             thrvel = histx(thrbin);
             excludeinds = abs(plotx{lagind})<thrvel;
-        elseif contains(laball{2}, 'ball.vel')
+        elseif contains(laball{2}, 'vel')
             [histdt, histx] = hist(abs(ploty{lagind}(:)), 500);
             thrbin = triangle_threshold(histdt, 'R', 0);
             thrvel = histx(thrbin);
@@ -742,8 +870,17 @@ end
 
 pval_norm = pval_siglev-ccpv;
 pval_norm(pval_norm<0) = 0;
-pval_norm = 1-rescale(pval_norm, 1-bar_contrast, 1);
-
+if ~any(pval_norm)
+    pval_norm = 1;
+else
+    rngpvalnorm = max(pval_norm)-min(pval_norm);
+    if rngpvalnorm==0
+        pval_norm = 0;
+    else
+        bar_contrast = 0.3; %to make difference between non-significant (white) and barely significant (0.05) clear in blue saturation 
+        pval_norm = 1 - (pval_norm - min(pval_norm)) / rngpvalnorm + bar_contrast;
+    end
+end
 
 switch lags_to_plot
     case 'zero'
@@ -763,7 +900,7 @@ end
 
 
 
-function [hndls, framecount] = plot_axes(hndls, stack, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, fngif, roi_type, plot_z_as_color, figure_title)
+function [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, fngif, roi_type, plot_z_as_color, figure_title)
 
 
 hndls.htx.String = figure_title;
@@ -783,7 +920,6 @@ for lagind = laginds_to_plot
             hndls.hplscc.ZData = plotz{lagind};
         end
 
-        hndls.haxscc.Title.String = ['ROI # ' num2str(roi_index)];
         hndls.haxscc.XLabel.String = ['\color{blue} ' labx];
         hndls.haxscc.YLabel.String = ['\color{red} ' laby];
         % hndls.haxscc.ZLabel.String = labz;
@@ -805,26 +941,31 @@ for lagind = laginds_to_plot
             hndls.hplscp2.RData = r_dummy2{lagind};
         end
 
-        % hndls.haxscp.ThetaAxis.Label.String = {['Theta: ' labt]; ['Rho: ' labr]};
-        hndls.haxscp.Title.String = ['ROI # ' num2str(roi_index)];
-
         % if numel(laby)>maxlablength
         %     labt = cat(2, labt(1:maxlablength), '\newline', labt(maxlablength+1:end)))
         % end
         hndls.haxscp.ThetaAxis.Label.String = ['\color{blue} Theta:' labt];
-        hndls.haxscp.RhoAxis.Label.String = ['\color{red} Rho: ' labr];
+        hndls.haxscp.RAxis.Label.String = ['\color{red} Rho: ' labr];
+        if strcmp(ylim_constancy, 'eachvar')
+            hndls.haxscp.RLim = lims.y_each_xtra(yi,:);
+            hndls.haxscp.RTick = sort([0, lims.y_each(yi,1), lims.y_each(yi,2)]);
+            hndls.haxscp.RTickLabel = [];
+            % for tti = 1:numel(hndls.haxscp.RTick)
+            %     hndls.haxscp.RTickLabel{tti} = num2str(hndls.haxscp.RTick(tti), 4);%'%.2g'
+            % end
+        end
 
-        if isempty(regexp(labt, 'vis*ang'))
+        if isempty(regexp(labt, ' CUE ANG'))
             hndls.hpllnp.LineStyle = 'none';
         else
+            hndls.hpllnp.RData = [lims.y_each(yi,2) lims.y_each_xtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
             hndls.hpllnp.LineStyle = '-';
         end
-        % hndls.haxscp.RLim = [min(hndls.hplscp1.RData) - range(hndls.hplscp1.RData)*axisroomfac max(hndls.hplscp1.RData) + range(hndls.hplscp1.RData)*axisroomfac];
-        % hndls.haxscp.RAxis.Label.String = ['Rho: ' labr];
 
     end
 
 
+    hndls.haxbr.Title.String = ['LAGS (CURR: ' sprintf('%.2g', actual_lags_xy_sec(lagind)) ' SEC)']; 
     hndls.hplbr.FaceColor = 'flat';
     hndls.hplbr.XData = actual_lags_xy_sec;
     hndls.hplbr.YData = ccr;
@@ -837,7 +978,18 @@ for lagind = laginds_to_plot
     hndls.hplts1.YData = plotx{lagind};
     hndls.hplts2.YData = ploty{lagind};
     hndls.haxts.XLabel.String = ['\color{blue} ' labx '    \color{red}' laby];
-
+    if strcmp(ylim_constancy, 'eachvar')
+        hndls.haxts.YAxis(1).Limits = lims.x_each_xtra(xi,:);
+        hndls.haxts.YAxis(2).Limits = lims.y_each_xtra(yi,:);
+        hndls.haxts.YAxis(1).TickValues = sort([0, lims.x_each(xi,1), lims.x_each(xi,2)]);
+        hndls.haxts.YAxis(2).TickValues = sort([0, lims.y_each(yi,1), lims.y_each(yi,2)]);
+        hndls.haxts.YAxis(1).TickLabels = [];
+        hndls.haxts.YAxis(2).TickLabels = [];
+        for tti = 1:numel(hndls.haxts.YAxis(2).TickValues)
+            hndls.haxts.YAxis(1).TickLabels{tti} = num2str(hndls.haxts.YAxis(1).TickValues(tti), 4);%'%.2g'
+            hndls.haxts.YAxis(2).TickLabels{tti} = num2str(hndls.haxts.YAxis(2).TickValues(tti), 4);%'%.2g'
+        end
+    end
 
     if roi_index
 

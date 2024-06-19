@@ -31,7 +31,7 @@ opt.main.do_scatter = 1; %scatterplots (opt.scatter below)
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
-opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
+opt.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen_sec = 0.8; %window length used to fit slope
 opt.daq.use_carls_epochs = 1; %0 for everybody else
@@ -46,8 +46,8 @@ opt.gif.suffixes_plot = {
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.gif.plotinds_t = [200:300]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.gif.plotinds_t = [350:1200]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.gif.plotinds_z = [2:5]; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
@@ -186,7 +186,7 @@ opt.pf.bump.doplots = 0;
 %params for finding preferred heading using fitmdl
 % opt.pf.bump.fit(1).vars.depvpre_str{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fit(1).depv{1} = {};
 opt.pf.bump.fit(1).vars.depvpre_str{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fit(1).depv{1} = {};
-opt.pf.bump.fit(1).vars.indvpre_str{1} = {['vis, angsd']};
+opt.pf.bump.fit(1).vars.indvpre_str{1} = {['vis, ang']};
 opt.pf.bump.fit(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
 opt.pf.bump.fit(1).normalize_indv = 'none';
@@ -278,10 +278,8 @@ opt.fit = default_fit_params(opt.fit);
 opt.scatter(1).vars.x_str{1} = {['ball, *for*'], ['vis, *']};
 opt.scatter(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.scatter(1).vars.z_str{1} = {['']};
-% opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
-opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['vis, *']};
 opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
-opt.scatter(1).vars.z_str{2} = {['']};
+% opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
 opt.scatter(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
 opt.scatter(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
 opt.scatter(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'

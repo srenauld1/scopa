@@ -1,5 +1,5 @@
-function [stackcrop, stack_mnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
-    crop_stacks(stack, croplim, recid, regionex, pth_fldr, pth_tmpfiles, sz_crop, ...
+function [stackcrop, zstartpos_crop, stack_mnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
+    crop_stacks(stack, croplim, zstartpos, recid, regionex, pth_fldr, pth_tmpfiles, sz_crop, ...
     use_hires, stack_hires_mnt, map_hires_lores, pth_mroi )
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
@@ -27,6 +27,8 @@ elseif strcmp(croplim, 'backupdefault')
     croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
 
 end
+
+zstartpos_crop = zstartpos(croplim(5):croplim(6));
 
 stackcrop = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), :)); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single
 

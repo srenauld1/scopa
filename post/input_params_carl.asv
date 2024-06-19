@@ -14,16 +14,15 @@ function opt = input_params_carl()
 opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
-opt.main.recdate = '20240602'; %can use wildcards
-opt.main.fly = '4'; %can use wildcards
-opt.main.trial = '*'; %can use wildcards
-opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+opt.main.recdate = '20230627'; %can use wildcards
+opt.main.fly = '2'; %can use wildcards
+opt.main.trial = '2'; %can use wildcards
+opt.main.suffix_analysis = 'cmrg'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 opt.main.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.main.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 opt.main.old_project = 0; %for carl
 
-opt.main.do_popfeat = 0; %compute population features (opt.pf below)
+opt.main.do_popfeat = 1; %compute population features (opt.pf below)
 opt.main.do_fit = 0; %model fitting (opt.fit below)
 opt.main.do_scatter = 1; %scatterplots (opt.scatter below)
 
@@ -31,7 +30,7 @@ opt.main.do_scatter = 1; %scatterplots (opt.scatter below)
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
-opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
+opt.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen_sec = 0.8; %window length used to fit slope
 opt.daq.use_carls_epochs = 1; %0 for everybody else
@@ -44,10 +43,10 @@ opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same 
 opt.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.gif.plotinds_t = [200:300]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.gif.plotinds_t = [350:1200]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.gif.plotinds_z = [2:5]; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
 opt.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
 opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
@@ -278,12 +277,10 @@ opt.fit = default_fit_params(opt.fit);
 opt.scatter(1).vars.x_str{1} = {['ball, *for*'], ['vis, *']};
 opt.scatter(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.scatter(1).vars.z_str{1} = {['']};
-% opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
-opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['vis, *']};
 opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
-opt.scatter(1).vars.z_str{2} = {['']};
-opt.scatter(1).lagxy_sec = linspace(-1, 1, 10); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing ); negative means x follows y, positive means y follows x; 
-opt.scatter(1).lagz_sec = linspace(-1, 1, 10); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
+% opt.scatter(1).vars.x_str{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
+opt.scatter(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
+opt.scatter(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
 opt.scatter(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'
 opt.scatter(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element

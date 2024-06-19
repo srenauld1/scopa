@@ -113,18 +113,19 @@ else
 
 end
 
-
-fn = fieldnames(fieldspecstr_all(choosecount));
+fieldspecstr_chosen = fieldspecstr_all(choosecount);
+fieldspec_chosen = fieldspec_all(choosecount);
+fn = fieldnames(fieldspecstr_chosen);
 regionex_cat = [];
 for fi = 1:length(fn)
     outfn = erase(fn{fi}, '_str');
     fitin.(outfn) = [];
     fitin.fieldspecstr.(fn{fi}) = [];
-    for vsi2 = 1:length(fieldspecstr_all(choosecount).(fn{fi}))
-        if isempty(fieldspecstr_all(choosecount).(fn{fi}){vsi2})
+    for vsi2 = 1:length(fieldspecstr_chosen.(fn{fi}))
+        if isempty(fieldspecstr_chosen.(fn{fi}){vsi2})
             tmp = [];
         else
-            tmp = eval(fieldspecstr_all(choosecount).(fn{fi}){vsi2});
+            tmp = eval(fieldspecstr_chosen.(fn{fi}){vsi2});
             if size(tmp, 2)~=length(md.ti)
                 tmp = tmp.';
             end
@@ -134,17 +135,17 @@ for fi = 1:length(fn)
             fitin.(outfn) = cat(1, fitin.(outfn), tmp);
             if size(tmp, 1)>1
                 for tmpi = 1:size(tmp, 1)
-                    fsstmp = {[fieldspecstr_all(choosecount).(fn{fi}){vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
+                    fsstmp = {[fieldspecstr_chosen.(fn{fi}){vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
                     fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
                 end
             else
-                fsstmp = fieldspecstr_all(choosecount).(fn{fi})(vsi2);
+                fsstmp = fieldspecstr_chosen.(fn{fi})(vsi2);
                 fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
             end
-            if strcmp(fieldspec_all(choosecount).(fn{fi}){vsi2,1}{1}, 'resp')
-                fitin.regionex = fieldspec_all(choosecount).(fn{fi}){vsi2,2}{1};
-                fitin.parsex = fieldspec_all(choosecount).(fn{fi}){vsi2,3}{1};
-                fitin.parsnorm = fieldspec_all(choosecount).(fn{fi}){vsi2,4}{1};
+            if strcmp(fieldspec_chosen.(fn{fi}){vsi2,1}{1}, 'resp')
+                fitin.regionex = fieldspec_chosen.(fn{fi}){vsi2,2}{1};
+                fitin.parsex = fieldspec_chosen.(fn{fi}){vsi2,3}{1};
+                fitin.parsnorm = fieldspec_chosen.(fn{fi}){vsi2,4}{1};
 
                 regionex_cat = cat(1, regionex_cat, {fitin.regionex});
                 if numel(unique(regionex_cat))~=1
@@ -167,7 +168,7 @@ fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.par
 fitin.fn_save_prefix_short = [pth_stack_analysis(1:end-4) '_fit' num2str(fitin.choosecount)];
 
 fitin = orderfields_recursive(fitin);
-if choosecount==length(fieldspecstr_all) %quit flag on final
+if choosecount==numel(fieldspecstr_all) %quit flag on final
     dochoose = 0;
 end
 
