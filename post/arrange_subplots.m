@@ -36,8 +36,8 @@ end
 
 for j = 1:num_sectors
     if numel(subplot_layout{j})==2
-        subplot_layout_struct(j).x = subplot_layout{j}(1);
-        subplot_layout_struct(j).y = subplot_layout{j}(2);
+        subplot_layout_struct(j).x = subplot_layout{j}(2);
+        subplot_layout_struct(j).y = subplot_layout{j}(1);
     else
         if ndims(subplot_layout{j})>5
             error("error, you've passed an array with more than 5 dimensions")
