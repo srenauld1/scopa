@@ -15,23 +15,23 @@ arguments
     margins_fig double = 0.03 %scalar; margins of entire figure (not sectors)
     margins_subplot double = 0.03 %scalar or vector; element n denotes x and y margins between subplots in sector n; if scalar, while numrows and numcolumns are vector, will apply scalar to all sectors
     splitdim char = 'x' %'x', or 'y', denoting whether sector(s) created by split along x or y axis
-    splitfrac double = repelem(1/numel(subplot_layout), numel(subplot_layout)-1) %scalar or vector denoting each sector's fraction of splitdim extent; default is even split among num_sectors
+    splitfrac double = tern(numel(subplot_layout)==1, 1, repelem(1/numel(subplot_layout), numel(subplot_layout)-1)) %scalar or vector denoting each sector's fraction of splitdim extent; if num_sectors==1, default is 1; if num_sectors>1, default if is even split among num_sectors
 end
 
 num_sectors = numel(subplot_layout);
-
-if isempty(margins_fig) %allow empty
+if num_sectors==1 && splitfrac~=1
+    error("for single sector, don't pass splitfrac argument, or pass value of 1")
+end
+if isempty(margins_fig) %handle empty argument for margins_fig (not handled in arguments block above)
     margins_fig = 0.03;
 end
-if isempty(margins_subplot) %allow empty
+if isempty(margins_subplot) %handle empty argument for margins_subplot (not handled in arguments block above)
     margins_subplot = repelem(0.03, num_sectors);
 end
-if numel(margins_subplot)==1 && num_sectors~=1 %allow singleton to be repeated to match num_sectors
+if numel(margins_subplot)==1 && num_sectors~=1 %repeat singleton margins_subplot to match num_sectors
     margins_subplot = repelem(margins_subplot, num_sectors);
 end
-if ~isequal(numel(subplot_layout), numel(margins_subplot), numel(splitfrac)+1)
-    error("length must be same for subplot_layout, margins_subplot, splitfrac+1")
-end
+
 
 
 for j = 1:num_sectors
@@ -48,18 +48,19 @@ for j = 1:num_sectors
     splitfracfull(j).y = 1;
     margins_fig_full(j).x = [margins_fig margins_fig];
     margins_fig_full(j).y = [margins_fig margins_fig];
-    if j==1
-        margins_fig_full(j).(splitdim) = [margins_fig 0];
-    elseif j==num_sectors
-        margins_fig_full(j).(splitdim) = [0 margins_fig];
-    else
-        margins_fig_full(j).(splitdim) = [0 0];
+    if num_sectors>1
+        if j==1
+            margins_fig_full(j).(splitdim) = [margins_fig 0];
+        elseif j==num_sectors
+            margins_fig_full(j).(splitdim) = [0 margins_fig];
+        else
+            margins_fig_full(j).(splitdim) = [0 0];
+        end
     end
-    if j==num_sectors
+    if j==num_sectors && num_sectors>1
         splitfracfull(j).(splitdim) = 1-cumsum(splitfrac);
     else
         splitfracfull(j).(splitdim) = splitfrac(j);
-
     end
 end
 startpos.x = 0;
@@ -191,3 +192,4 @@ ax.yp = ypos;
 ax.ye = hgt;
 
 end
+
