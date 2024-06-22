@@ -8,7 +8,7 @@ function plot_multi_timeseries(ts1, ts2, pth_gif, xlim_segments, titlein, consta
 arguments
     ts1 double %timeseries 1, can be different length than ts2
     ts2 double %timeseries 2, can be different length than ts1
-    pth_gif char = '' %figure save path
+    pth_gif char %figure save path
     xlim_segments double = 1 %(n,2) vector of x axis limits as fraction range 0-1, or scalar n for partitioning x axis into n segments and plotting them all in gif, will plot all n
     titlein char = '' %title
     constant_ylim logical = 0 %whether to update y limits for each xlim subset

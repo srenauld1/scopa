@@ -49,11 +49,13 @@ end
 
 %% set daq variables to read, according to variable type
 
-daqvars.normal = {'Time', 'heat', 'virmenIteration'}; %virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-daqvars.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'};
-daqvars.categorical = {''};
+daqvars_bytype.normal = {'Time', 'heat', 'virmenIteration'}; %virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
+daqvars_bytype.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'};
+daqvars_bytype.categorical = {''};
 
-daqvars_to_scale_by_ball_diameter = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be rescaled
+daqvars_to_scale_by_ball_diameter = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be rescaled from radians to mm
+daqvars_to_unwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be unwrapped 
+daqvars_to_zero = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be zeroed (made to start at 0)
 
 minvolt = 0; %daq voltage min; need to find this in metadata
 maxvolt = 10; %daq voltage max, need to find this in metadata
@@ -70,7 +72,8 @@ trialData = timetable2table(trialData);
 if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) && ~fast_version
 
     try
-        load([pth_daq_resamp(1:end-4) 'sliceinds.mat'], 'sliceinds');
+        pth_sliceinds = [pth_daq_resamp(1:end-4) 'sliceinds.mat'];
+        load(pth_sliceinds, 'sliceinds');
     catch
         if trialData.frameClock(1) == 1
             sprintf("warning, first daq sample is during an imaging frame")
@@ -82,13 +85,16 @@ if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) && ~fast_versio
         end
         usi = unique(frameinds(frameinds~=0),'stable'); %index of each frame
         sliceinds = nan(size(frameinds));
-        for ii = 1:numel(usi) %loop is much faster than using arrayfun
-            volume_centroid = mean(trialData.Time(frameinds==usi(ii))); %find time centroid for each volume
-            [~, volume_centroid_ind] = min(abs(trialData.Time - volume_centroid)); %find nearest daq sample to volume centroid
-            sliceinds(volume_centroid_ind) = frameinds(volume_centroid_ind); %put volume index at nearest daq sample to volume centroid
+        trialdata_time_tmp = seconds(trialData.Time);
+        volume_centroid_ind = zeros(numel(usi), 1);
+        parfor ii = 1:numel(usi) %loop is much faster than using arrayfun
+            volume_centroid = mean(trialdata_time_tmp(frameinds==usi(ii))); %find time centroid for each volume
+            [~, volume_centroid_ind(ii)] = min(abs(trialdata_time_tmp - volume_centroid)); %find nearest daq sample to volume centroid
         end
+        sliceinds(volume_centroid_ind) = frameinds(volume_centroid_ind); %put volume index at nearest daq sample to volume centroid
         sliceinds = fillmissing(sliceinds, 'nearest');
         sliceinds = mod(sliceinds-1, numslice_withflyback)+1; %get one-indexed slice indices
+        save(pth_sliceinds, 'sliceinds', '-v7.3', '-mat');
     end
 
 else
@@ -122,23 +128,37 @@ for si = 1:num_resamples
         end
     end
 
-    fn = fieldnames(daqvars);
+    fn = fieldnames(daqvars_bytype);
     for fni = 1:numel(fn)
-        daqvartypes = fn{fni};
-        for ii = 1:numel(daqvars.(daqvartypes))
-            scale_by_ball_diameter = any(strcmp(daqvars.(daqvartypes){ii}, daqvars_to_scale_by_ball_diameter));
-            daqvarname = daqvars.(daqvartypes){ii};
+        daqvartype = fn{fni};
+        for ii = 1:numel(daqvars_bytype.(daqvartype))
+            daqvarname = daqvars_bytype.(daqvartype){ii};
             if ~strcmp(trialData.Properties.VariableNames, daqvarname)
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
-                [ newrow.(daqvarname), newrow.([daqvarname '_diff']) ] = process_DAQ_signal(daqvartypes, daqvarname, trialData.(daqvarname), numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, ball_diameter, scale_by_ball_diameter, pth_daq_resamp, doplots);
+                [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, pth_daq_resamp, doplots);
+                if any(strcmp(daqvars_bytype.(daqvartype){ii}, daqvars_to_unwrap))
+                    tmp = unwrap(tmp); %convert to mm (not for tmp_diff)
+                end
+                if any(strcmp(daqvars_bytype.(daqvartype){ii}, daqvars_to_zero))
+                    tmp = tmp - tmp(1); %convert to mm (not for tmp_diff)
+                end
+                if any(strcmp(daqvars_bytype.(daqvartype){ii}, daqvars_to_scale_by_ball_diameter))
+                    tmp = tmp*ball_diameter/2; %convert to mm
+                    tmp_diff = tmp_diff*ball_diameter/2; %convert to mm
+                end
+                if ~strcmp(daqvarname, 'Time') %we don't care to 'Time_diff'
+                    tmp_diff = tmp_diff / dtmni; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
+                end
+                newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes
+                newrow.([daqvarname '_diff']) = {tmp_diff}; %put in cell, then table, for variable sizes
             end
         end
     end
     daqdata_resamp = [daqdata_resamp; newrow];
 end
 
-save(pth_daq_resamp, 'daqdata_resamp');
+save(pth_daq_resamp, 'daqdata_resamp', '-v7.3', '-mat');
 
 
 

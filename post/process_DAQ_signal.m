@@ -1,6 +1,6 @@
 function [daqvarout, daqvarout_diff] = process_DAQ_signal(daqvartype, daqvarname, daqvarin, ...
     newlength, inds, dt, maxvolt, slopelen_sec, slopeorder, ...
-    ball_diameter, scale_by_ball_diameter, pth_daq_resamp, doplots)
+    pth_daq_resamp, doplots)
 
 % default resampling uses daq frame timestamps ('inds')
 % if they're not on daq, backup uses matlab 'resample', matching goal length ('newlength')
@@ -11,7 +11,6 @@ function [daqvarout, daqvarout_diff] = process_DAQ_signal(daqvartype, daqvarname
 % and differentiate_timeseries allows variable slope window anyway (increase to reduce output noise)
 % but if you still want to smooth first, try passing output of smooth_timeseries to differentiate_timeseries, like this:
 % differentiate_timeseries(daqvartype, smooth_timeseries(daqvartype, daqvarin, smoothwindow_sec, dt), slopelen_sec, slopeorder, dt);
-% note: after accounting for ball, y stretching will occur in plot for side and for, not yaw
 
 if isduration(daqvarin)
     daqvarin = seconds(daqvarin); %convert to seconds, whatever the units
@@ -22,44 +21,21 @@ if strcmp(daqvartype, 'circular')
 end
 
 
-if scale_by_ball_diameter
-    rescalefac = ball_diameter/2;
-else
-    rescalefac = 1;
-end
-
-
 daqvarout = resample_timeseries(daqvartype, daqvarin, inds, newlength); %downsample into imaging rate
 daqvarout_diff = differentiate_timeseries(daqvartype, daqvarout, slopelen_sec, slopeorder, dt);
 
 
-daqvarout = {(daqvarout * rescalefac)}; %optional rescale, and put in cell for table
-daqvarout_diff = {(daqvarout_diff * rescalefac)};  %optional rescale, and put in cell for table
-
-
 if doplots
 
-    numplots = 20;
-
-    % these two have any rescaling by ball removed
+    numframes = 20; 
 
     titlein = [daqvarname '_hires_v_lores_' num2str(dt) 'sec_norescale'];
-    pth_fig = [pth_daq_resamp(1:end-4) titlein '_norescale_.gif'];
-    plot_multi_timeseries(daqvarin, daqvarout{1} / rescalefac, pth_fig, numplots, titlein)
+    pth_fig = [pth_daq_resamp(1:end-4) titlein '_.gif'];
+    plot_multi_timeseries(daqvarin, daqvarout{1} / rescalefac, pth_fig, numframes, titlein)
 
     titlein = [daqvarname '_hires_v_difflores_' num2str(dt) 'sec_slopelen_' num2str(slopelen_sec) 'sec_norescale'];
-    pth_fig = [pth_daq_resamp(1:end-4) titlein '_norescale_.gif'];
-    plot_multi_timeseries(daqvarin, daqvarout_diff{1} / rescalefac, pth_fig, numplots, titlein)
-
-    % these two are the same but do plot the rescale
-    % titlein = [daqvarname '_hires_v_lores_' num2str(dt) 'sec_rescale'];
-    % pth_fig = [pth_daq_resamp(1:end-4) titlein '_rescale_.gif']; %with any rescaling by ball removed, for easier comparison
-    % plot_multi_timeseries(daqvarin, daqvarout{1} / rescalefac, pth_fig, numplots, titlein)
-    %
-    % titlein = [daqvarname '_hires_v_difflores_' num2str(dt) 'sec_slopelen_' num2str(slopelen_sec) 'sec_rescale'];
-    % pth_fig = [pth_daq_resamp(1:end-4) titlein '_.gif']; %with any rescaling by ball removed, for easier comparison
-    % plot_multi_timeseries(daqvarin, daqvarout_diff{1} / rescalefac, pth_fig, numplots, titlein)
-
+    pth_fig = [pth_daq_resamp(1:end-4) titlein '_.gif'];
+    plot_multi_timeseries(daqvarin, daqvarout_diff{1} / rescalefac, pth_fig, numframes, titlein)
 
 end
 
