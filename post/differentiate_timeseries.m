@@ -18,8 +18,8 @@ if strcmp(vartypein, 'circular')
     inpx = cos(inp);
     inpy = sin(inp);
 
-    inpdx = movingslope(inpx, slopelen, slopeorder, dt);
-    inpdy = movingslope(inpy, slopelen, slopeorder, dt);
+    inpdx = movingslope(inpx, slopelen, slopeorder);
+    inpdy = movingslope(inpy, slopelen, slopeorder);
     %inpdx = movmedian(inpdx, [smoothwindow smoothwindow], 'omitnan');
     %inpdy = movmedian(inpdy, [smoothwindow smoothwindow], 'omitnan');
 
@@ -28,7 +28,7 @@ if strcmp(vartypein, 'circular')
 
 elseif strcmp(vartypein, 'normal')
 
-    differ = movingslope(inp, slopelen, slopeorder, dt);
+    differ = movingslope(inp, slopelen, slopeorder);
 
 elseif strcmp(vartypein, 'categorical')
 
