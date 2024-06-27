@@ -175,7 +175,7 @@ save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 %% create/plot roi overlay (can plot n specific rois with their index into pixinds_roi and change num_mroi to n)
 
 filename_olay = [pth_mroi_prefix 'eachroired_.gif'];
-roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, num_mroi, olayopt.ncol_each, ...
+roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, olayopt.ncol_each, ...
     olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay, olayopt.doplot);
 
 %% create/plot roi hsv

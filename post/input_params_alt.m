@@ -10,13 +10,22 @@ function opt = input_params_alt()
 %% MAIN
 
 %params for main pipeline control in file a2p
-opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
+opt.main.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
 opt.main.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.main.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.main.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
-opt.main.recdate = '*'; %can use wildcards
-opt.main.fly = '*'; %can use wildcards
-opt.main.trial = '*'; %can use wildcards
-opt.main.suffix_analysis = 'cmrg'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+
+if isempty(fieldnames(filespec_in))
+    opt.main.recdate = '20240602'; %can use wildcards
+    opt.main.fly = '4'; %can use wildcards
+    opt.main.trial = '*'; %can use wildcards
+    opt.main.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+else
+    opt.main.recdate = filespec_in.recdate; %can use wildcards
+    opt.main.fly = filespec_in.fly; %can use wildcards
+    opt.main.trial = filespec_in.trial; %can use wildcards
+    opt.main.suffix_analysis = filespec_in.suffix_analysis;
+end
+
 opt.main.regionex_all = {'ebfb_eb', 'ebfb_fb'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.main.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 opt.main.old_project = 0; %for carl
@@ -39,20 +48,22 @@ opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same 
 
 %% STACK VISUALIZATION (GIF)
 
-%params for making gif of raw data movies in function load_stack
-opt.gif.suffixes_plot = {
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+%opt.load holds params used in load_stack
+%opt.load.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.main.suffix_analysis)
+
+opt.load.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want toa plot (can comment all too)
-    }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.gif.plotinds_t = [50.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-opt.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-opt.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-opt.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
-opt.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
-opt.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'bksb_cmrg_dcdn', ...
+    %'bksb_cmrg_dcdn_nosn'
+    };  %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
+opt.load.gif.plotinds_t = [50.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.load.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.load.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
+opt.load.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.load.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.load.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 
 %% MORPHOLOGICAL ROIS
@@ -83,11 +94,11 @@ opt.mroi.olayopt.saturation_factor_background = 1; %for gif, above this fraction
 opt.mroi.olayopt.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
 
 %params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
-opt.mroi.hsvopt.do = 1; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
+opt.mroi.hsvopt.do = 1; %1 to plot/save, 0 to just compute hsv image but skip plot/save
 opt.mroi.hsvopt.foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
-opt.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 
-opt.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty 
-opt.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in opt.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set opt.mroi.hsvopt.hrange_in_manual it will switch to 'relative'      
+opt.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set
+opt.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty
+opt.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in opt.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set opt.mroi.hsvopt.hrange_in_manual it will switch to 'relative'
 opt.mroi.hsvopt.satnorm = 'relative'; %sat normalization method, same logic as huenorm
 opt.mroi.hsvopt.valnorm = 'relative';%val normalization method, same logic as huenorm
 opt.mroi.hsvopt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
@@ -278,8 +289,8 @@ opt.scatter(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}
 opt.scatter(1).vars.y_str{2} = {['resp, fullfov, cm*, *']};
 opt.scatter(1).vars.z_str{1} = {['']};
 opt.scatter(1).maxlagxy = 10; %samples
-opt.scatter(1).maxlagz = 10; %samples, will overwrite to 0 if z variable doesn't exist 
-opt.scatter(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+opt.scatter(1).maxlagz = 10; %samples, will overwrite to 0 if z variable doesn't exist
+opt.scatter(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color
 opt.scatter(1).plot_zero_lag_only = 1; %doesn't scatterplot for each lag, but does cc for each lag in inset bar plot
 opt.scatter(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scatter(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
@@ -294,10 +305,8 @@ opt.scatter(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 %params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
 opt.hires.gif.plotinds_t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.hires.gif.plotinds_z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.hires.gif.swapdim = 1; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-opt.hires.gif.nan_numlines = 4; %how many lines of nans to insert in dim 1 above each subplot
-opt.hires.gif.rescale_each_subplot = 1; %rescale each subplot to same range 0-1 before combining
-opt.hires.gif.rescalefac_wholeplot = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.hires.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
+opt.hires.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.hires.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.hires.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
 opt.hires.gif.plot_stack_gif = 1;

@@ -1,5 +1,4 @@
 
-
 function remove_scan_noise(pth_datafile, len_window_smooth_t_rsc, makeplots)
 
 fprintf("\n\n\nENTERING remove_scan_noise")
@@ -75,9 +74,7 @@ elseif plotinds_t<0
     end
 end
 
-
-plotinds_z_str = sprintf('%.0f,', plotinds_z);
-plotinds_z_str = plotinds_z_str(1:end-1); %strip final comma
+plotinds_z_str = regexprep( mat2str(plotinds_z), {'\[', '\]', '\s+'}, {'', '', '-'});
 
 %% load
 
@@ -127,7 +124,7 @@ if makeplots
 
     pth_gif = [pth_fldr 'prefilt_' datestr(now,30) '_.gif'];
     title_str = 'filt';
-    plot_gif_fast(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), swapdim_plot, pth_gif, title_str)
+    stack2fig(rescale(stack(:,:,plotinds_z, plotinds_t), 0, 1), swapdim_plot, pth_gif, title_str)
 
 end
 
@@ -145,7 +142,7 @@ if makeplots
 
     pth_gif = [pth_fldr 'postfilt_' datestr(now,30) '_.gif'];
     title_str = 'filt';
-    plot_gif_fast(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), swapdim_plot, pth_gif, title_str)
+    stack2fig(rescale(single(stack(:,:,plotinds_z, plotinds_t)), 0, 1), swapdim_plot, pth_gif, title_str)
 
 end
 

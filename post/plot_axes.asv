@@ -1,0 +1,75 @@
+
+function [hndls, framecount] = plot_axes(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, plotx, ploty, plotz, ti, labx, laby, labz, labt, labr, polar_index, fngif, roi_type, plot_z_as_color, figure_title)
+
+
+hndls.httl.String = figure_title;
+
+for fr = 1:size(stack,4)
+
+    for j = 1:numel(hndls.ts.hax)
+
+        for k = 1:numel(hndls.ts.hpll)
+            hndls.ts.hpll{j}{k}.XData = ti; %move this
+            hndls.ts.hpll{j}{k}.YData = plotx;
+        end
+        for k = 1:numel(hndls.ts.hplr)
+            hndls.ts.hpll{j}{k}.XData = ti;%move this
+            hndls.ts.hplr{j}{k}.YData = ploty;
+        end
+
+        hndls.ts.hlnx{j}.Value = ti(fr);
+        hndls.ts.hax{j}.YAxis(1).Label.String = ['\color{blue} ' labx];
+        hndls.ts.hax{j}.YAxis(2).Label.String = ['\color{red}' laby];
+        if strcmp(ylim_constancy, 'eachvar')
+            hndls.ts.hax{j}.YAxis(1).Limits = lims.x.each_xtra(xi,:);
+            hndls.ts.hax{j}.YAxis(2).Limits = lims.y.each_xtra(yi,:);
+            hndls.ts.hax{j}.YAxis(1).TickValues = sort([0, lims.x.each(xi,1), lims.x.each(xi,2)]);
+            hndls.ts.hax{j}.YAxis(2).TickValues = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
+            hndls.ts.hax{j}.YAxis(1).TickLabels = [];
+            hndls.ts.hax{j}.YAxis(2).TickLabels = [];
+            for tti = 1:numel(hndls.ts.hax{j}.YAxis(2).TickValues)
+                hndls.ts.hax{j}.YAxis(1).TickLabels{tti} = num2str(hndls.ts.hax{j}.YAxis(1).TickValues(tti), 4);%'%.2g'
+                hndls.ts.hax{j}.YAxis(2).TickLabels{tti} = num2str(hndls.ts.hax{j}.YAxis(2).TickValues(tti), 4);%'%.2g'
+            end
+        end
+
+        if j==2
+            hndls.ts.hax{j}.XAxis.Limits = [ti(fr)-3, ti(fr)+3];
+            hndls.ts.hax{1}.XAxis.TickLabels = num2str(ti(fr)+3, 4);
+        end
+
+
+    end
+
+
+
+    for j = 1:numel(hndls.st.hax)
+
+        if strcmp(roi_type, 'rois') %roi_type pixels image never changes
+            % hndls.st.hpl{j}.CData = squeeze(stack(:,:,j,:,roi_index));
+            hndls.st.hpl{j}.CData = stack(:,:,j,fr);
+        end
+
+        if fr==1
+            if j==crosshair{roi_index}(3)
+                hndls.st.hlny{j}.Value = crosshair{roi_index}(1);
+                hndls.st.hlnx{j}.Value = crosshair{roi_index}(2);
+                hndls.st.hlny{j}.LineStyle = '-';
+                hndls.st.hlnx{j}.LineStyle = '-';
+            else
+                hndls.st.hlny{j}.LineStyle = 'none';
+                hndls.st.hlnx{j}.LineStyle = 'none';
+            end
+        end
+    end
+
+
+    fig2gif(hndls.hfg, fr, fngif)
+
+end
+
+% if strcmp(gif_scope, 'eachvar')
+%     close all
+% end
+
+end

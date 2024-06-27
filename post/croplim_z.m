@@ -147,8 +147,7 @@ while true
     him.Parent.XLabel.FontSize = fontsize_xlabel;
 
     if quit_flag
-        zinds_str = sprintf('%.0f,', zinds);
-        zinds_str = zinds_str(1:end-1);
+        zinds_str = regexprep( mat2str(zinds), {'\[', '\]', '\s+'}, {'', '', '-'});
         him.Parent.Title.String = {'QUITTING IN 3 SEC '; ['Z LIMITS ARE: [' zinds_str ']']};
         him.Parent.XLabel.String = '';
         pause(3)

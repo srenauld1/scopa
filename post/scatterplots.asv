@@ -485,6 +485,20 @@ end
 
 end
 
+function [plotx, ploty, plotz, r_dummy1, r_dummy2] = nanpadvars(numsamp_max, plotx, ploty, plotz, r_dummy1, r_dummy2)
+
+numsamp_pad = numsamp_max-numel(plotx);
+
+plotx = cat(1, plotx, nan(numsamp_pad, 1));
+ploty = cat(1, ploty, nan(numsamp_pad, 1));
+plotz = cat(1, plotz, nan(numsamp_pad, 1));
+r_dummy1 = cat(1, r_dummy1, nan(numsamp_pad, 1));
+r_dummy2 = cat(1, r_dummy2, nan(numsamp_pad, 1));
+
+
+end
+
+
 
 function [varx_lagxyz, vary_lagxyz, varz_lagxyz] = remove_nans_as_group(varx_lagxyz, vary_lagxyz, varz_lagxyz)
 

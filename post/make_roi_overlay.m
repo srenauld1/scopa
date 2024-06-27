@@ -1,20 +1,44 @@
-function roi_overlay = make_roi_overlay(stack_mnt, pixinds_roi, numrois, ncol_each, ...
-    foreground_plot_style, saturation_factor_background, saturation_factor_rois, filename_gif, doplot)
+function roi_overlay = make_roi_overlay(stack, pixinds_roi, ncol_each, ...
+    foreground_plot_style, saturation_factor_background, ...
+    saturation_factor_rois, filename_gif, doplot)
 
-stack_mnt_rs = rescale(stack_mnt, 1, ncol_each);
+arguments
+    stack
+    pixinds_roi
+    ncol_each = 128
+    foreground_plot_style char = 'overlay'
+    saturation_factor_background = 1
+    saturation_factor_rois = 1
+    filename_gif char = 'roioverlay.gif'
+    doplot = 0
+end
 
-img = zeros([size(stack_mnt_rs, 1), size(stack_mnt_rs, 2), size(stack_mnt_rs, 3), numrois], 'single');
-for ci = 1:numrois
+if ~iscell(pixinds_roi)
+    if isvector(pixinds_roi)
+        pixinds_roi = {pixinds_roi};
+    else
+        error("pixinds_roi must be cell, or vector")
+    end
+end
 
-    roipixvals = stack_mnt(pixinds_roi{ci});
 
-    overlay_tmp = rescale(stack_mnt_rs, 1, ncol_each); %redefine for each roi
+numrois = numel(pixinds_roi);
+
+stack_rs = rescale(stack, 1, ncol_each);
+
+img = zeros([size(stack_rs, 1), size(stack_rs, 2), size(stack_rs, 3), numrois], 'single');
+
+for ri = 1:numrois
+
+    roipixvals = stack(pixinds_roi{ri});
+
+    overlay_tmp = rescale(stack_rs, 1, ncol_each); %redefine for each roi
 
     switch foreground_plot_style
 
         case 'overlay'
 
-            overlay_tmp(pixinds_roi{ci}) = rescale(roipixvals, ncol_each+1, ncol_each*2); %for overlay (filled roi), maintains intensity of original, but with different hue
+            overlay_tmp(pixinds_roi{ri}) = rescale(roipixvals, ncol_each+1, ncol_each*2); %for overlay (filled roi), maintains intensity of original, but with different hue
 
         case 'boundary'
 
@@ -26,7 +50,7 @@ for ci = 1:numrois
 
     end
 
-    img(:,:,:,ci) = overlay_tmp;
+    img(:,:,:,ri) = overlay_tmp;
 
 end
 

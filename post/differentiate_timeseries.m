@@ -13,15 +13,13 @@ slopelen = round(slopelen_sec / dt);
 
 if strcmp(vartypein, 'circular')
 
-    % differentiate circular variable without using unwrap (unwrap can cause rare spikes)
+    % differentiate circular variable 
 
     inpx = cos(inp);
     inpy = sin(inp);
 
     inpdx = movingslope(inpx, slopelen, slopeorder);
     inpdy = movingslope(inpy, slopelen, slopeorder);
-    %inpdx = movmedian(inpdx, [smoothwindow smoothwindow], 'omitnan');
-    %inpdy = movmedian(inpdy, [smoothwindow smoothwindow], 'omitnan');
 
     denom = inpx.^2 + inpy.^2;
     differ = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)

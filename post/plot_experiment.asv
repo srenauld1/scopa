@@ -43,18 +43,18 @@ switch roi_type
 end
 
 
-% videoFile = rdir('~/stacks/20240602-4_60312gal4_2_syt8m_vk5/FicTracData/fictrac-raw*.avi');
-% videoFile = videoFile.name;
-% if exist(videoFile, 'file')
-%     currVid = VideoReader(videoFile);
-%     vidData = readVideo(videoFile);
-%     vidsz = size(vidData);
-%     ftFrameLength = vidsz(4);
-%     %vidData = squeeze(vidData(:,:,3,:));  % greyscale
-%     ftRate = ftFrameLength/currVid.Duration;
-% else
-%     error('fictrac video not found')
-% end
+videoFile = rdir('~/stacks/20240602-4_60312gal4_2_syt8m_vk5/FicTracData/fictrac-raw*.avi');
+videoFile = videoFile.name;
+if exist(videoFile, 'file')
+    currVid = VideoReader(videoFile);
+    vidData = readVideo(videoFile);
+    vidsz = size(vidData);
+    ftFrameLength = vidsz(4);
+    %vidData = squeeze(vidData(:,:,3,:));  % greyscale
+    ftRate = ftFrameLength/currVid.Duration;
+else
+    error('fictrac video not found')
+end
 
 label_prefix = 'z';
 [plotinds_z, plotinds_z_str] = make_plot_inds(size(stack, 3), plotinds_z, label_prefix);
@@ -120,21 +120,15 @@ for ei = 1:numel(epochinds_all)
 
                 [fngif, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix_short, fngif_prefix, fngif, roi_index, sample_period_string);
 
-                if isempty(polar_index)
-                    polar_index = 100;
-                    lims.t = lims.y;
-                    lims.r = lims.x;
-                else
-                    switch polar_index
-                        case 1
-                            lims.t = lims.y;
-                            lims.r = lims.x;
-                        case 2
-                            lims.t = lims.x;
-                            lims.r = lims.y;
-                        otherwise
-                            error("not built for this yet")
-                    end
+                switch polar_index
+                    case 1
+                        lims.t = lims.y;
+                        lims.r = lims.x;
+                    case 2
+                        lims.t = lims.x;
+                        lims.r = lims.y;
+                    otherwise
+                        error("not built for this yet")
                 end
 
                 if ~skipplot

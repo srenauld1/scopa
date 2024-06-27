@@ -374,14 +374,14 @@ start an interactive session, then module load the python version you intend to 
 
 matlabengine will fail to install in the default directory because you don't have write permission there, so the installer will automatically try installing in your home folder, within hidden folder .locals . . . it should work, and if it works, there will be two new folders in ~/.local/lib/python3.10/site-packages, one called matlab and one called matlabengine-9.14.3.dist-info
 
-move both folders into a path you want the pipeline to find . . . for example, you can move them into a virtual environment a conda environment that the pipeline uses . . . below are the commands to move them into the caiman conda environment 
+move both folders into a path you want the pipeline to find . . . for example, you can move them into a virtual environment a conda environment that the pipeline uses . . . below are the commands to move them into the caiman conda environment in the shared wilson lab folder (in the miniforge3 folder)
 
 srun -p interactive --pty -t 3:00:00 -c 5 --mem=10G bash
 module purge
-python/3.10.11
+ml python/3.10.11
 pip install matlabengine==9.14.3
-mv ~/.local/lib/python3.10/site-packages/matlab ~/.conda/envs/caiman/lib/python3.10/site-packages
-mv ~/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info ~/.conda/envs/caiman/lib/python3.10/site-packages
+mv ~/.local/lib/python3.10/site-packages/matlab /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/lib/python3.11/site-packages
+mv ~/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/lib/python3.11/site-packages
 
 that should be all you need to do, but here are some more comments
 

@@ -15,8 +15,7 @@ sz = size(inp);
 szsub = size(inpsub);
 ncol = 128;
 
-sindz_str = sprintf('%.0f,' , sindz);
-sindz_str = sindz_str(1:end-1);% strip final comma
+sindz_str = regexprep( mat2str(sindz), {'\[', '\]', '\s+'}, {'', '', '-'});
 
 if isempty(mask)
     masked = 0;

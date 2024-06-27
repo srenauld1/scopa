@@ -398,7 +398,7 @@ if do_plots
 
         %roi overlay in upsampled res
         filename_olay = [pth_mroi_prefix 'eachroired_upsamp_.gif'];
-        roi_overlay = make_roi_overlay(premask, pixinds_roi_upsamp, num_mroi_auto_final, olayopt.ncol_each, ...
+        roi_overlay = make_roi_overlay(premask, pixinds_roi_upsamp, olayopt.ncol_each, ...
             olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay);
 
         %hsv gif, each slice, each roi a different hue

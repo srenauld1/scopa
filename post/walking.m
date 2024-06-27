@@ -16,17 +16,32 @@ gif_visibility = 'on';
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 fontmedium = 12;
 threshmagvel = 5; %mm/s
-staticlims = [0 1 1];
-plotside = 1;
+threshmagvel2 = 3; %mm/s
+staticlims = [0 1 1 1 1];
+plotside = 0;
+patchalpha = 0.1;
+doall = 1;
+numgoodinds = 86;
+numax = 5;
+nbin = 20;
+plotpaths = 0;
 
-pthprefix = '~/stacks/*/FicTracData/**/';
-% pthprefix2 = '/Volumes/neurobio/wilsonlab/Wenyi/2pData/R37G12/';
-fngif_xyfs = '~/stacks/xyfs.gif';
-fngif_paths = '~/stacks/paths.gif';
+
+if doall
+    pthinsert = '*';
+else
+    pthinsert = '1';
+end
+
+timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
+
+parent_path = '~/walking/';
+pthprefix = [parent_path '**/walking' pthinsert '/FicTracData/**/'];
+fngif_paths = [parent_path 'paths_' timestr  '.gif'];
+fngif_stats = [parent_path 'stats_' timestr  '.gif'];
+fngif_hists = [parent_path 'hists_' timestr  '.gif'];
 
 fnp = rdir([pthprefix '**' filesep '*dat']);
-% fn2 = rdir([pthprefix2 '**' filesep '*dat']);
-% fn = [fn; fn2];
 for j = 1:numel(fnp)
     fn{j} = fnp(j).name;
 end
@@ -35,10 +50,8 @@ fn = natsortfiles(fn);
 
 for j = 1:numel(fn)
     ft = readFictracCSV(fn{j});
-    if ~strcmp(ft.Properties.VariableNames{15}, 'posX') && ~strcmp(ft.Properties.VariableNames{15}, 'posY') ...
-            && ~strcmp(ft.Properties.VariableNames{15}, 'intX') && ~strcmp(ft.Properties.VariableNames{15}, 'intY') ...
-            && strcmp(ft.Properties.VariableNames{25}, 'altTimestamp')
-        error("wrong")
+    if ~strcmp(ft.Properties.VariableNames{15}, 'posX') && ~strcmp(ft.Properties.VariableNames{15}, 'posY') && strcmp(ft.Properties.VariableNames{25}, 'altTimestamp')
+        error("wrong fictrac variables")
     end
     tmpt = ft.altTimestamp-ft.altTimestamp(1);
     dt(j) = mean(diff(tmpt))/1000;
@@ -55,57 +68,68 @@ end
 numposxmax = max(cellfun(@numel, allposx));
 numposxmin = min(cellfun(@numel, allposx));
 
-
-
+count = 0;
 for j = 1:numel(allposx)
     if numel(allposx{j})>numposxmax*numnumelfac && allt{j}(end)>minsec*1e3
+        count = count+1;
         slopelen_samp = round(slopelen_sec/dt(j));
 
         % tmp = alldrlx{j};
-        % alldrlxcrop{j} = smoothdata(tmp, 'gaussian', slopelen_samp, 'omitmissing');
+        % alldrlxgood{count} = smoothdata(tmp, 'gaussian', slopelen_samp, 'omitmissing');
         % tmp = alldrly{j};
-        % alldrlycrop{j} = smoothdata(tmp, 'gaussian', slopelen_samp, 'omitmissing');
+        % alldrlygood{count} = smoothdata(tmp, 'gaussian', slopelen_samp, 'omitmissing');
 
-        allposxcrop{j} = allposx{j}*ball_radius;
-        allposycrop{j} = allposy{j}*ball_radius;
+        allposxgood{count} = allposx{j}*ball_radius;
+        allposygood{count} = allposy{j}*ball_radius;
 
-        % allintxcrop{j} = allintx{j}*ball_radius;
-        % allintycrop{j} = allinty{j}*ball_radius;
+        % allintxgood{count} = allintx{j}*ball_radius;
+        % allintygood{count} = allinty{j}*ball_radius;
 
-        allvelx{j} = differentiate_timeseries('circular', allintx{j}, slopelen_samp, slopeorder, 1)*ball_radius/dt(j); %same as (smoothed) alldrlycrop
+        allvelx{count} = differentiate_timeseries('circular', allintx{j}, slopelen_sec, slopeorder, dt(j))*ball_radius/dt(j); %same as (smoothed) alldrlygood
+        cumvelxtmp = cumsum(allvelx{count});
+        cumvelx(count) = cumvelxtmp(end);
 
-        allvelxthresh{j} = allvelx{j};
-        allvelxthresh{j}( allvelxthresh{j}>-threshmagvel & allvelxthresh{j}<threshmagvel) = 0;
-        cumvelxthreshtmp = cumsum(allvelxthresh{j});
-        cumvelxthresh(j) = cumvelxthreshtmp(end);
+        allvelxthresh{count} = allvelx{count};
+        allvelxthresh{count}( allvelxthresh{count}>-threshmagvel2 & allvelxthresh{count}<threshmagvel2) = 0;
+        cumvelxthreshtmp = cumsum(allvelxthresh{count});
+        cumvelxthresh(count) = cumvelxthreshtmp(end);
+        allvelxthresh{count}( allvelxthresh{count}>-threshmagvel & allvelxthresh{count}<threshmagvel) = 0;
+        cumvelxthreshtmp = cumsum(allvelxthresh{count});
+        cumvelxthresh2(count) = cumvelxthreshtmp(end);
 
-        allvely{j} = differentiate_timeseries('circular', allinty{j}, slopelen_samp, slopeorder, 1)*ball_radius/dt(j); %same as (smoothed) -alldrlxcrop
+        allvely{count} = differentiate_timeseries('circular', allinty{j}, slopelen_sec, slopeorder, dt(j))*ball_radius/dt(j); %same as (smoothed) -alldrlxgood
+        cumvelytmp = cumsum(allvely{count});
+        cumvely(count) = cumvelytmp(end);
 
-        allvelythresh{j} = allvely{j};
-        allvelythresh{j}( allvelythresh{j}>-threshmagvel & allvelythresh{j}<threshmagvel) = 0;
-        cumvelythreshtmp = cumsum(allvelythresh{j});
-        cumvelythresh(j) = cumvelythreshtmp(end);
+        allvelythresh{count} = allvely{count};
+        allvelythresh{count}( allvelythresh{count}>-threshmagvel2 & allvelythresh{count}<threshmagvel2) = 0;
+        cumvelythreshtmp = cumsum(allvelythresh{count});
+        cumvelythresh(count) = cumvelythreshtmp(end);
+        allvelythresh{count}( allvelythresh{count}>-threshmagvel & allvelythresh{count}<threshmagvel) = 0;
+        cumvelythreshtmp = cumsum(allvelythresh{count});
+        cumvelythresh2(count) = cumvelythreshtmp(end);
 
+        cumdistend(count) = sum(allspd{j}); %cumulative distance
 
-        cumdisttmp = zeros(numposxmin-1, 2, 2);
-        cumdisttmp(:,1,1) = allposxcrop{j}(1:numposxmin-1);
-        cumdisttmp(:,2,1) = allposycrop{j}(1:numposxmin-1);
-        cumdisttmp(:,1,2) = allposxcrop{j}(2:numposxmin);
-        cumdisttmp(:,2,2) = allposycrop{j}(2:numposxmin);
-        cumdistdiff = cumdisttmp(:,:,2)-cumdisttmp(:,:,1);
-        cumdist = sqrt(sum(cumdistdiff .* cumdistdiff, 2));
-        cumdist = cumsum(cumdist);
-        cumdistend(j) = cumdist(end);
-        cumdistend2(j) = sum(allspd{j});
+        %alternative computation for cumulative distance
+        % cumdisttmp = zeros(numposxmin-1, 2, 2);
+        % cumdisttmp(:,1,1) = allposxgood{count}(1:numposxmin-1);
+        % cumdisttmp(:,2,1) = allposygood{count}(1:numposxmin-1);
+        % cumdisttmp(:,1,2) = allposxgood{count}(2:numposxmin);
+        % cumdisttmp(:,2,2) = allposygood{count}(2:numposxmin);
+        % cumdistdiff = cumdisttmp(:,:,2)-cumdisttmp(:,:,1);
+        % cumdist = sqrt(sum(cumdistdiff .* cumdistdiff, 2));
+        % cumdist = cumsum(cumdist);
+        % cumdistend2(count) = cumdist(end);
 
     end
 end
 
 
-minposx = min(cellfun(@min, allposxcrop));
-maxposx = max(cellfun(@max, allposxcrop));
-minposy = min(cellfun(@min, allposycrop));
-maxposy = max(cellfun(@max, allposycrop));
+minposx = min(cell2mat(cellfun(@min, allposxgood, 'UniformOutput', false)), [], 'omitmissing');
+maxposx = max(cell2mat(cellfun(@max, allposxgood, 'UniformOutput', false)), [], 'omitmissing');
+minposy = min(cell2mat(cellfun(@min, allposygood, 'UniformOutput', false)), [], 'omitmissing');
+maxposy = max(cell2mat(cellfun(@max, allposygood, 'UniformOutput', false)), [], 'omitmissing');
 
 % minintx = min(cellfun(@min, allintx));
 % maxintx = max(cellfun(@max, allintx));
@@ -120,16 +144,16 @@ maxvely = max(cell2mat(cellfun(@max, allvely, 'UniformOutput', false)), [], 'omi
 minvelall = min([minvelx, minvely]);
 maxvelall = max([maxvelx, maxvely]);
 
-% figure; plot(allvely{j}); yyaxis right; plot(-alldrlxcrop{j});
-% figure; plot(allvelx{j}); yyaxis right; plot(alldrlycrop{j});
-% figure; plot(cumsum(allvelx{j})); yyaxis right; plot(allintxcrop{j});
+% figure; plot(allvely{j}); yyaxis right; plot(-alldrlxgood{j});
+% figure; plot(allvelx{j}); yyaxis right; plot(alldrlygood{j});
+% figure; plot(cumsum(allvelx{j})); yyaxis right; plot(allintxgood{j});
 
 dummyvec = nan(numposxmax, 1);
 
-subplot_layout = {[4,4]};
-margins_fig = 0.05;
+subplot_layout = {[6,4]};
 margins_subplot = 0.05;
-ax = arrange_subplots(subplot_layout, margins_fig, margins_subplot);
+margins_fig = 0.05;
+ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig);
 
 
 hfg = figure;
@@ -147,130 +171,213 @@ haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'X
 htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
 sector_ind = 1;
-for subfig_ind = 1:3
-    hax{subfig_ind} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+for axcount = 1:numax
+    hax{axcount} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
-    if subfig_ind==1
+    if axcount==1
         subplot_pos_ind = 2;
         widthfac = 2;
         heightfac = 2;
-        hax{subfig_ind}.InnerPosition(1) = ax(sector_ind).xp(subplot_pos_ind);
-        hax{subfig_ind}.InnerPosition(2) = ax(sector_ind).yp(subplot_pos_ind);
-        hax{subfig_ind}.InnerPosition(3) = ax(sector_ind).ye*widthfac;
-        hax{subfig_ind}.InnerPosition(4) = ax(sector_ind).ye*heightfac;
+        hax{axcount}.InnerPosition(1) = ax(sector_ind).xp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(sector_ind).yp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(sector_ind).ye(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(sector_ind).ye(heightfac);
     else
-        if subfig_ind==2
-            subplot_pos_ind = 3;
-        elseif subfig_ind==3
-            subplot_pos_ind = 4;
-        end
+        subplot_pos_ind = axcount+1;
         widthfac = 4;
         heightfac = 1;
-        hax{subfig_ind}.InnerPosition(1) = ax(sector_ind).xp(subplot_pos_ind);
-        hax{subfig_ind}.InnerPosition(2) = ax(sector_ind).yp(subplot_pos_ind);
-        hax{subfig_ind}.InnerPosition(3) = ax(sector_ind).xe*widthfac;
-        hax{subfig_ind}.InnerPosition(4) = ax(sector_ind).ye*heightfac;
+        hax{axcount}.InnerPosition(1) = ax(sector_ind).xp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(sector_ind).yp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(sector_ind).xe(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(sector_ind).ye(heightfac);
     end
 
-    hold(hax{subfig_ind}, 'on')
+    hold(hax{axcount}, 'on')
     % yyaxis left
-    hpl1{subfig_ind} = plot(hax{subfig_ind}, dummyvec, dummyvec, 'b-');
+    hpl1{axcount} = plot(hax{axcount}, dummyvec, dummyvec, 'b-');
     if plotside
-        hpl2{subfig_ind} = plot(hax{subfig_ind}, dummyvec, dummyvec, 'r-');
+        error("need to put hpl2 below")
+        hpl2{axcount} = plot(hax{axcount}, dummyvec, dummyvec, 'r-');
     end
     % yyaxis right
     % hpl3 = plot(hax, dummyvec, dummyvec, 'm-');
     % hpl4 = plot(hax, dummyvec, dummyvec, 'k-');
 
-    hpt{subfig_ind} = patch(hax{subfig_ind}, dummyvec, dummyvec, dummyvec, 'EdgeColor','interp','LineWidth',1,'LineJoin','round');
-    if subfig_ind~=1
-        yline(hax{subfig_ind}, 5, 'k')
+    hpt{axcount} = patch(hax{axcount}, dummyvec, dummyvec, dummyvec, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
+    if axcount~=1
+        yline(hax{axcount}, 5, 'k')
     end
     title('');
-    hold(hax{subfig_ind}, 'off')
+    hold(hax{axcount}, 'off')
 
 end
 
+if plotpaths
+    for j = 1:numel(allposxgood)
+        indsplot = 1:numel(allposxgood{j});
+        for axcount = 1:numax
+            hpl1{axcount}.XData = dummyvec;
+            hpl1{axcount}.YData = dummyvec;
+            hpt{axcount}.XData = dummyvec;
+            hpt{axcount}.YData = dummyvec;
+            hpt{axcount}.CData = dummyvec;
 
-for j = 1:numel(allposxcrop)
-    if ~isempty(allposxcrop{j})
-        for subfig_ind = 1:3
-            if subfig_ind==1
-                hpl1{subfig_ind}.XData = dummyvec;
-                hpl1{subfig_ind}.YData = dummyvec;
-                hpl1{subfig_ind}.CData = dummyvec;
-                allposxcrop{j}(end) = nan; %do this to make patch coloring work
-                allposycrop{j}(end) = nan; %do this to make patch coloring work
-                hpl1{subfig_ind}.XData(1:numel(allposxcrop{j})) = allposxcrop{j};
-                hpl1{subfig_ind}.YData(1:numel(allposxcrop{j})) = allposycrop{j};
-                hpt{subfig_ind}.XData(1:numel(allposxcrop{j})) = allposxcrop{j};
-                hpt{subfig_ind}.YData(1:numel(allposxcrop{j})) = allposycrop{j};
-                hpt{subfig_ind}.CData(1:numel(allposxcrop{j})) = 1:numel(allposycrop{j});
-                if staticlims(subfig_ind)
-                    hax{subfig_ind}.XLim = [minposx, maxposx];
-                    hax{subfig_ind}.YLim = [minposy, maxposy];
-                end
-            elseif subfig_ind==2
-                hpl1{subfig_ind}.YData = dummyvec;
-                hpl1{subfig_ind}.XData(1:numel(allposxcrop{j})) = 1:numel(allvelx{j});
-                hpl1{subfig_ind}.YData(1:numel(allposxcrop{j})) = allvelx{j};
-                hax{subfig_ind}.YLim = [minvelx, maxvelx];
-                if staticlims(subfig_ind)
-                    hpl2{subfig_ind}.YData = dummyvec;
-                end
-                if plotside
-                    hpl2{subfig_ind}.XData(1:numel(allposxcrop{j})) = 1:numel(allvely{j});
-                    hpl2{subfig_ind}.YData(1:numel(allposxcrop{j})) = allvely{j};
-                    if staticlims(subfig_ind)
-                        hax{subfig_ind}.YLim = [minvelall, maxvelall];
-                    end
-                end
-            elseif subfig_ind==3
-                hpl1{subfig_ind}.YData = dummyvec;
-                hpl1{subfig_ind}.XData(1:numel(allposxcrop{j})) = 1:numel(allvelxthresh{j});
-                hpl1{subfig_ind}.YData(1:numel(allposxcrop{j})) = allvelxthresh{j};
-                if staticlims(subfig_ind)
-                    hax{subfig_ind}.YLim = [minvelx, maxvelx];
-                end
-                if plotside
-                    hpl2{subfig_ind}.YData = dummyvec;
-                    hpl2{subfig_ind}.XData(1:numel(allposxcrop{j})) = 1:numel(allvelythresh{j});
-                    hpl2{subfig_ind}.YData(1:numel(allposxcrop{j})) = allvelythresh{j};
-                    if staticlims(subfig_ind)
-                        hax{subfig_ind}.YLim = [minvelall, maxvelall];
-                    end
-                end
+            if axcount==1
+                hpl1{axcount}.XData(indsplot) = allposxgood{j};
+                hpl1{axcount}.YData(indsplot) = allposygood{j};
+            elseif axcount==2
+                hpl1{axcount}.XData(indsplot) = 1:numel(allvelx{j});
+                hpl1{axcount}.YData(indsplot) = allvelx{j};
+            elseif axcount==3
+                hpl1{axcount}.XData(indsplot) = 1:numel(allvelxthresh{j});
+                hpl1{axcount}.YData(indsplot) = allvelxthresh{j};
+            elseif axcount==4
+                hpl1{axcount}.XData(indsplot) = 1:numel(allvely{j});
+                hpl1{axcount}.YData(indsplot) = allvely{j};
+            elseif axcount==5
+                hpl1{axcount}.XData(indsplot) = 1:numel(allvelythresh{j});
+                hpl1{axcount}.YData(indsplot) = allvelythresh{j};
             end
+
+            if axcount==1 && staticlims(axcount)
+                hax{axcount}.XLim = [minposx, maxposx];
+                hax{axcount}.YLim = [minposy, maxposy];
+            elseif axcount~=1 && staticlims(axcount) && ~plotside
+                hax{axcount}.YLim = [minvelx, maxvelx];
+            elseif axcount~=1 && staticlims(axcount) && plotside
+                hax{axcount}.YLim = [minvelall, maxvelall];
+            end
+
+            hpt{axcount}.XData(indsplot) = [hpl1{axcount}.XData(indsplot(1:end-1)) nan]; %need the nan to make patch work
+            hpt{axcount}.YData(indsplot) = [hpl1{axcount}.YData(indsplot(1:end-1)) nan]; %need the nan to make patch work
+            hpt{axcount}.CData(indsplot) = [indsplot(1:end-1) nan]; %need the nan to make patch work
+
         end
         htx.String = strrep(fn{j}, '_', ' ');
-        fig2gif(hfg, j, fngif_xyfs)
+        fig2gif(hfg, j, fngif_paths)
     end
 end
+%%
+
+numrecs = numel(cumdistend);
+if numrecs~=numgoodinds
+    indies = randperm(numrecs-numgoodinds, numgoodinds)+numgoodinds-1;
+else
+    indies = [];
+end
+cumdistend_sort = [sort(cumdistend(1:numgoodinds), 'descend') sort(cumdistend(indies), 'descend')];
+cumvelx_sort = [sort(cumvelx(1:numgoodinds), 'descend') sort(cumvelx(indies), 'descend')];
+cumvely_sort = [sort(cumvely(1:numgoodinds), 'descend') sort(cumvely(indies), 'descend')];
+cumvelxthresh_sort = [sort(cumvelxthresh(1:numgoodinds), 'descend') sort(cumvelxthresh(indies), 'descend')];
+cumvelythresh_sort = [sort(cumvelythresh(1:numgoodinds), 'descend') sort(cumvelythresh(indies), 'descend')];
+cumvelxthresh2_sort = [sort(cumvelxthresh2(1:numgoodinds), 'descend') sort(cumvelxthresh2(indies), 'descend')];
+cumvelythresh2_sort = [sort(cumvelythresh2(1:numgoodinds), 'descend') sort(cumvelythresh2(indies), 'descend')];
 
 
-% figure; plot(cumvelx)
-% xline(12)
-% xline(88)
-% xline(240)
-% median(cumvelx(1:88))
-% median(cumvelx(89:240))
-% median(cumvelx(240:end))
+
+hfg = figure;
+
+spl = subplot(2,4,1); hold on;
+plot(spl, cumdistend_sort);
+title("total distance (not trip vector magnitude), sorted") %cumdistend2
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+spl = subplot(2,4,2); hold on;
+plot(spl, cumvelx_sort);
+title("sum of forward velocities, sorted")
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+spl = subplot(2,4,6); hold on;
+plot(spl, cumvely_sort);
+title("sum of side velocities, sorted")
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+spl = subplot(2,4,3); hold on;
+plot(spl, cumvelxthresh_sort);
+title("sum of forward velocities > +/- 3 mm/s, sorted")
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+spl = subplot(2,4,7); hold on;
+plot(spl, cumvelythresh_sort);
+title("sum of side velocities > +/- 3 mm/s, sorted")
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+spl = subplot(2,4,4); hold on;
+plot(spl, cumvelxthresh2_sort);
+title("sum of forward velocities > +/- 5 mm/s, sorted")
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+spl = subplot(2,4,8); hold on;
+plot(spl, cumvelythresh2_sort);
+title("sum of side velocities > 5 +/- mm/s, sorted")
+ylm = ylim;
+patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+fig2gif(hfg, 1, fngif_stats)
 
 
 
-figure; plot(cumdistend);
-%
-% cc = sort(cumdistend(1:88), 'descend');
-% cw = sort(cumdistend(89:108), 'descend');
-% cp = sort(cumdistend(109:end), 'descend');
-%
-% median(cc(:))
-% median(cw(:))
-% median(cp(:))
-%
-% median(cc(1:20))
-% median(cw(1:20))
-% median(cp(1:20))
-%
-% median(cc(:))
-% median(cp(1:88))
+cumdistend_sort = cumdistend(1:numgoodinds);
+cumdistend_sort_o = cumdistend(indies);
+cumvelx_sort = cumvelx(1:numgoodinds);
+cumvelx_sort_o = cumvelx(indies);
+cumvely_sort = cumvely(1:numgoodinds);
+cumvely_sort_o = cumvely(indies);
+cumvelxthresh_sort = cumvelxthresh(1:numgoodinds);
+cumvelxthresh_sort_o = cumvelxthresh(indies);
+cumvelythresh_sort = cumvelythresh(1:numgoodinds);
+cumvelythresh_sort_o = cumvelythresh(indies);
+cumvelxthresh2_sort = cumvelxthresh2(1:numgoodinds);
+cumvelxthresh2_sort_o = cumvelxthresh2(indies);
+cumvelythresh2_sort = cumvelythresh2(1:numgoodinds);
+cumvelythresh2_sort_o = cumvelythresh2(indies);
+
+
+
+hfg = figure;
+
+spl = subplot(2,4,1); hold on;
+histogram(spl, cumdistend_sort, nbin);
+histogram(spl, cumdistend_sort_o, nbin);
+title("total distance (not trip vector magnitude)") %cumdistend2
+
+spl = subplot(2,4,2); hold on;
+histogram(spl, cumvelx_sort, nbin);
+histogram(spl, cumvelx_sort_o, nbin);
+title("sum of forward velocities")
+
+spl = subplot(2,4,6); hold on;
+histogram(spl, cumvely_sort, nbin);
+histogram(spl, cumvely_sort_o, nbin);
+title("sum of side velocities")
+
+spl = subplot(2,4,3); hold on;
+histogram(spl, cumvelxthresh_sort, nbin);
+histogram(spl, cumvelxthresh_sort_o, nbin);
+title("sum of forward velocities > +/- 3 mm/s")
+
+spl = subplot(2,4,7); hold on;
+histogram(spl, cumvelythresh_sort, nbin);
+histogram(spl, cumvelythresh_sort_o, nbin);
+title("sum of side velocities > +/- 3 mm/s")
+
+spl = subplot(2,4,4); hold on;
+histogram(spl, cumvelxthresh2_sort, nbin);
+histogram(spl, cumvelxthresh2_sort_o, nbin);
+title("sum of forward velocities > +/- 5 mm/s")
+
+spl = subplot(2,4,8); hold on;
+histogram(spl, cumvelythresh2_sort, nbin);
+histogram(spl, cumvelythresh2_sort_o, nbin);
+title("sum of side velocities > 5 +/- mm/s")
+
+fig2gif(hfg, 1, fngif_hists)
+
+%%
+
+

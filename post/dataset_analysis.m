@@ -22,16 +22,14 @@ epochindstmp = {[5]; [4]; [3]; [2]; [1]};
 % end
 recid_bad = {'20230609_3_1' ,   '20230610_3_2' ,   '20230613_1_1'  ,  '20230627_3_1'};
 
-epochstring = sprintf('%.0f,' , epochindstmp{1});
-epochstring = epochstring(1:end-1);
+epochstring = regexprep( mat2str(epochindstmp{1}), {'\[', '\]', '\s+'}, {'', '', '-'});
 fn_sd_all = rdir([pth_allrec '*_' epochstring '_scatter4*.mat']);
 numrecordings = length(fn_sd_all);
 
 for epi = 1:length(epochindstmp)
 
     epochindstmp2 = epochindstmp{epi};
-    epochstring = sprintf('%.0f,' , epochindstmp2);
-    epochstring = epochstring(1:end-1);
+    epochstring = regexprep( mat2str(epochindstmp2), {'\[', '\]', '\s+'}, {'', '', '-'});
 
     %fn_sd_all = rdir([pth_allrec '2023*/*' num2str(epochinds{epi}) '_scatter3data.mat']);
     fn_sd_all = rdir([pth_allrec '*_' epochstring '_scatter4*.mat']);

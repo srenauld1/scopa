@@ -8,18 +8,13 @@ if any(reshape(strcmp({ST.name}, 'a2pf'), size(ST)))
     filespec_in.recdate = spl{1}; %can use wildcards
     filespec_in.fly = spl{2}; %can use wildcards
     filespec_in.trial = spl{3}; %can use wildcards
-    tmp = strjoin(spl(4:end), '_');
-    if strcmp(tmp(end), '_')
-        tmp = tmp(1:end-1);
-    end
-    filespec_in.suffix_analysis = tmp;
+    filespec_in.suffix_analysis = spl{4};
 
 else
 
     clear all
     close all
     clc
-    filespec_in = struct;
 
 end
 
@@ -49,7 +44,7 @@ display_todos()
 %% params
 
 
-opt = input_params_carl(filespec_in);
+opt = input_params_carl(file_in);
 
 %% loop over recordings
 

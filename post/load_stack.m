@@ -1,7 +1,7 @@
 
 %% input
 
-% load stacks output by scopa pipeline, and raw stack output by scan image 
+% load stacks output by scopa pipeline, and raw stack output by scan image
 
 % if mat doesn't exist, will read tif and save as mat (read large tif
 % requires TIFFStack library)
@@ -15,7 +15,7 @@
 
 % this script converts raw scanimage tif from int16 to uint16
 % all scopa output stacks should be uint16, but if not they are converted
-% if possible without clipping 
+% if possible without clipping
 
 
 function stack = load_stack(md, pth, opts, recid)
@@ -24,32 +24,26 @@ pth_fldr = pth.fldr;
 pth_stack_analysis = pth.stack_analysis;
 pth_stacks_prefix = pth.stacks_prefix;
 
-plotinds_t = opts.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-plotinds_z = opts.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
-swapdim = opts.swapdim; %true will flip z and t for plotting to change perspective on registration, recommended for length(plotinds_z)>1
-nan_numlines = opts.nan_numlines; %how many lines of nans to insert in dim 1 above each subplot
-rescale_each_subplot = opts.rescale_each_subplot; %rescale each subplot to same range 0-1 before combining
-rescalefac_wholeplot = opts.rescalefac_wholeplot; %combined plot rescale arguments, [lower, upper]
-smooth_window_temporal = opts.smooth_window_temporal; %smooth the stack in time, 0 to skip
+plot_stack_gif = opts.gif.plot_stack_gif;
+plotinds_t = opts.gif.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+plotinds_z = opts.gif.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
+rescale_each_stack = opts.gif.rescale_each_stack; %rescale each subplot to same range 0-1 before combining
+display_range = opts.gif.display_range; %combined plot rescale arguments, [lower, upper]
+smooth_window_temporal = opts.gif.smooth_window_temporal; %smooth the stack in time, 0 to skip
 plot_stack_stats = opts.plot_stack_stats;
-plot_stack_gif = opts.plot_stack_gif;
-if ~isfield(opts, 'plot_stack_order')
+
+max_num_inds_to_print = 20;
+
+if ~isfield(opts.gif, 'plot_stack_order')
     plot_stack_order = 1;
 else
-    plot_stack_order = opts.plot_stack_order;
+    plot_stack_order = opts.gif.plot_stack_order;
 end
 
 sz = md.sz_o;
 
-if isempty(plotinds_z)
-    plotinds_z = 1:sz(3);
-elseif plotinds_z<0
-    if -plotinds_z<sz(3)
-        plotinds_z = round(linspace(1, sz(3), -plotinds_z));
-    else
-        plotinds_z = 1:sz(3);
-    end
-end
+label_prefix = 'z';
+[plotinds_z, plotinds_z_str] = make_plot_inds(sz(3), plotinds_z, label_prefix, max_num_inds_to_print);
 
 if md.croptimeinds
     keepinds_t = md.croptimeinds(1)+1:sz(4)-md.croptimeinds(2);
@@ -57,54 +51,31 @@ else
     keepinds_t = 1:sz(4);
 end
 
-if isempty(plotinds_t)
-    plotinds_t = 1:length(keepinds_t);
-elseif plotinds_t<0
-    if -plotinds_t<length(keepinds_t)
-        plotinds_t = round(linspace(1, length(keepinds_t), -plotinds_t));
-    else
-        plotinds_t = 1:length(keepinds_t);
-    end
-elseif mod(plotinds_t, 1)~=0
-    seglength = fix(plotinds_t);
-    factmp = 10^(numel(num2str(plotinds_t))-numel(num2str(seglength))-1);
-    timeseries_numsegments = mod(plotinds_t, 1)*factmp;
-    timeseries_numsegments = round(timeseries_numsegments);
-    segspacing = floor(length(keepinds_t)/timeseries_numsegments);
-    plotinds_t = [1:seglength]+segspacing*([1:timeseries_numsegments]'-1)+segspacing-seglength;
-    plotinds_t = vec(plotinds_t.');
-    if numel(plotinds_t)>length(keepinds_t) | any(plotinds_t<0)
-        disp("warning, seglength*timeseries_numsegments exceeds num samples, plotting all samples")
-        plotinds_t = 1:length(keepinds_t);
-    end
-end
+label_prefix = 't';
+[plotinds_t, plotinds_t_str] = make_plot_inds(keepinds_t, plotinds_t, label_prefix, max_num_inds_to_print);
 
-if length(plotinds_z)>20
-    plotinds_z_str = [num2str(plotinds_z(1)) 'to' num2str(plotinds_z(end))];
+if isequal(display_range, [0 1])
+    dr_str = 'DRfull';
 else
-    plotinds_z_str = sprintf('%.0f,', plotinds_z);
-    plotinds_z_str = plotinds_z_str(1:end-1);% strip final comma
+    dr_str = ['DR' num2str(display_range(1)) 'to' num2str(display_range(2))];
 end
-rescale_str = [' rescale ' num2str(rescalefac_wholeplot(1)) ' ' num2str(rescalefac_wholeplot(2))];
 
-if rescale_each_subplot
-    rseachstr = 'eachrescaled';
+if rescale_each_stack
+    rs_str = 'RSeach';
 else
-    rseachstr = '';
+    rs_str = 'RSnone';
 end
 
-
-stackall = cell(length(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
-stackall_mn = cell(length(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
-fn_gif_insert = cell(length(pth_stacks_prefix), 1);
+stackplot = cell(numel(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
+stackplot_mn = cell(numel(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
 
 
 %%  loop over suffixes, loading and concatenating
 
 
-for spi = 1:length(pth_stacks_prefix)
+for spi = 1:numel(pth_stacks_prefix)
 
-    if ~isempty(pth_stacks_prefix{spi}) %if it's not empty it means either mat or tif or both exist 
+    if ~isempty(pth_stacks_prefix{spi}) %if it's not empty it means either mat or tif or both exist
 
         [~, filnam, ~] = fileparts(pth_stacks_prefix{spi});
         pth_stack_tif = [pth_stacks_prefix{spi} '.tif'];
@@ -125,7 +96,7 @@ for spi = 1:length(pth_stacks_prefix)
             size_t_read_from = sz(4);
             inds_z_read_from = 1:sz(3); %can choose any subset of z (e.g. passing 1:sz(3) will skip flyback frames for raw and hires, for example, do 1:size_z_read_from to read fluback frames), does not have to be contiguous
             inds_t_read_from = 1:size_t_read_from; %can choose any subset of t, does not have to be contiguous
-            size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within read_tif_tzyx
+            size_read_to = [numel(inds_t_read_from), numel(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within read_tif_tzyx
 
             stack = read_tif_tzyx(pth_stack_tif, ...
                 size_read_to, size_z_read_from, size_t_read_from, ...
@@ -153,8 +124,6 @@ for spi = 1:length(pth_stacks_prefix)
 
         end
 
-        stacktmp_mn = single(mean(stack, 4));
-        stacktmp = single(stack(:,:,plotinds_z, plotinds_t));
 
         if plot_stack_stats
             sindz = 1:size(stack, 3);
@@ -164,25 +133,32 @@ for spi = 1:length(pth_stacks_prefix)
             plots_imdata(single(stack(:,:,:,tindz)), [], sindz, tindz, tindz_sub, size(stack), pth_stack_mat)
         end
 
-        if smooth_window_temporal
-            stack = smoothdata(stack, 4, 'gaussian', smooth_window_temporal); %ideally this comes before plot indexing but smoothdata will output double so that could be huge and not worth it
-        end
-
         if plot_stack_gif
+
+            stacktmp_mn = single(mean(stack, 4));
+
+            if smooth_window_temporal
+                stacktmp = single(smoothdata(stack, 4, 'gaussian', smooth_window_temporal)); %smoothdata will output double so that could be huge and slow
+            else
+                stacktmp = stack; %this does not double RAM usage
+            end
+
+            stacktmp = single(stacktmp(:,:,plotinds_z, plotinds_t));
+
             if ~strcmp(pth_stack_mat, pth_stack_analysis) %if it's the stack for analysis outside this function
                 stack = [];
             end
 
-            if rescale_each_subplot
+            if rescale_each_stack
                 stacktmp = rescale(stacktmp);
                 stacktmp_mn = rescale(stacktmp_mn);
             end
-            stackall{spi} = single(ones([nan_numlines+sz(1), sz(2), length(plotinds_z), length(plotinds_t)]));
-            stackall_mn{spi} = single(ones([nan_numlines+sz(1), sz(2), sz(3)]));
-            stackall{spi}(nan_numlines+1:end, :, :, :) = stacktmp;
-            stackall_mn{spi}(nan_numlines+1:end, :, :) = stacktmp_mn;
+
+            stackplot{spi} = stacktmp;
+            stackplot_mn{spi} = stacktmp_mn;
+
             clear stacktmp*
-            fn_gif_insert{spi} = filnam;
+            fn_suffix_insert{spi} = erase(filnam, recid);
         end
     end
 end
@@ -192,26 +168,40 @@ end
 
 if plot_stack_gif
 
-    stackall = stackall(plot_stack_order);
-    stackall = cell2mat(stackall(~cellfun( @isempty, stackall )));
-    stackall_mn = stackall_mn(plot_stack_order);
-    stackall_mn = cell2mat(stackall_mn(~cellfun( @isempty, stackall_mn )));
-    fn_gif_insert = strjoin(fn_gif_insert(~cellfun( @isempty, fn_gif_insert )), '_AND_');
+    stackplot = stackplot(plot_stack_order);
+    stackplot = stackplot(~cellfun( @isempty, stackplot ));
+    stackplot_mn = stackplot_mn(plot_stack_order);
+    stackplot_mn = stackplot_mn(~cellfun( @isempty, stackplot_mn ));
 
-    title_insert = strrep(fn_gif_insert, '_', ' ');
-    recid_title = strrep(recid, '_', ' ');
-    filename_prefix = [pth_fldr recid '_' fn_gif_insert rseachstr '_zinds' plotinds_z_str '_' ];
-    figtitle_prefix = {[recid_title ' : ' title_insert]; ['z inds ' plotinds_z_str]; rescale_str};
+    fn_suffix_insert = strjoin(fn_suffix_insert(~cellfun( @isempty, fn_suffix_insert )), '_AND_');
 
-    plot_gif_fast(rescale(stackall, rescalefac_wholeplot(1), rescalefac_wholeplot(2)), ...
-        swapdim, ...
-        [filename_prefix '_.gif'], ...
-        figtitle_prefix, plotinds_z, plotinds_t)
+    figtitle_prefix = [recid '_' fn_suffix_insert rs_str dr_str];
+    filename_prefix = [pth_fldr figtitle_prefix '_' plotinds_z_str '_' plotinds_t_str ];
 
-    plot_gif_fast(rescale(stackall_mn, rescalefac_wholeplot(1), rescalefac_wholeplot(2)), ...
-        swapdim, ...
-        [filename_prefix '_meanframe_.gif'], ...
-        [figtitle_prefix; '_meanframe_.gif'])
+    % testing RGB arguments to stack2fig 
+    % for spp = 1:size(stackplot{1}, 3)
+    %     for sppp = 1:size(stackplot{1}, 4)
+    %         stackplotnew(:,:,spp,sppp,:) = ind2rgb(stackplot{1}(:,:,spp,sppp), gray(256));
+    %     end
+    % end
+    % stackplot{1} = stackplotnew;
+    % stackplot{2} = stackplotnew;
+
+    fngif = [filename_prefix '.gif'];
+    cmap = gray(256);
+    framenumdims = 3;
+    dimorder = [1,2,3,4];
+    figsidelen = 0.75;
+    index_labels = arrayfun(@(x) 1:x(end), size(stackplot{1}), 'UniformOutput', false);
+    index_labels{3} = plotinds_z;
+    index_labels{4} = plotinds_t;
+    stack2fig(stackplot, fngif, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+
+    fngif = [filename_prefix 'meant_.gif'];
+    framenumdims = 2;
+    dimorder = [1,2,3];
+    index_labels = index_labels(1:3);
+    stack2fig(stackplot_mn, fngif, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 
 end

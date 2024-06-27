@@ -95,13 +95,13 @@ if 0
         end
         %%
 
-        plot_gif_fast(rescale(imin(:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
+        stack2fig(rescale(imin(:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
 
 
-        plot_gif_fast(rescale(imout(:,:,:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
+        stack2fig(rescale(imout(:,:,:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
 
 
-        plot_gif_fast( ...
+        stack2fig( ...
             cat(1, ...
             rescale(imin(:,:,plotindz)), ...
             rescale(log(abs(imfm(:,:,plotindz)))), ...

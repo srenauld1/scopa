@@ -1,0 +1,167 @@
+function stack2fig(stack, fngif, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility, numcolorsgif)
+
+%alphamapping is not yet an option
+
+arguments
+    stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,pmtchannel,colorchannel); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
+    fngif char %filename for gif
+    cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
+    display_range (1,2) double = [0,1] %[low,high] for image property CLim (contrast); ignored if stack is RGB
+    framenumdims = 2 %how many dims to display on a each frame
+    dimorder = [1,2,3,4,5,6] %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
+    title_prefix char = ''
+    index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
+    figsidelength double = 0.75 %figure size as proportion of your available screen small dimension (cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
+    axord char = 'rowmajor'
+    gif_visibility char = 'on'
+    numcolorsgif double = 128
+end
+
+if isempty(cmap)
+    error("RGB reshaping below work in progress, don't pass rgb to this function yet")
+end
+
+%% check vars
+
+dimlabels = vec(num2cell('yxztpc'));
+fontmedium = 10;
+maxnumdims = 6;
+margins_fig = 0.05;
+margins_subplot = 0;
+max_num_inds_to_print = 20;
+max_num_im_per_frame = 60;
+
+
+if iscell(stack)
+    if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
+        error("all stacks (each cell element) must be same size")
+    end
+    stack = cell2mat(stack(:)); %convert to mat and concatenate multiple stacks along first dim
+end
+
+numdims = ndims(stack);
+num_missing_dims = maxnumdims-numdims;
+
+if numdims>maxnumdims
+    error("max numdims is 6 (y,x,z,t,pmtchannel,colorchannel) ")
+end
+
+if isempty(cmap) && size(stack, numdims)~=3
+    error("final dimension must be length 3 if no cmap passed as argument (stack assumed to be rgb)")
+end
+
+if framenumdims>numdims
+    error("framenumdims must not exceed numdims")
+end
+if ~isequal(sort(dimorder), 1:numdims)
+    error("dimorder must contain all integers 1 to numdims")
+end
+
+if isempty(index_labels)
+    index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
+end
+
+if numel(index_labels)~=numdims
+    error("index_label length must match numdims")
+end
+
+
+%% prep images
+
+dimorder = [dimorder [1:num_missing_dims]+numel(dimorder)];
+stack = permute(stack, dimorder);
+dimlabels = dimlabels(dimorder);
+index_labels = cat(1, index_labels(:), repelem({[nan]}, num_missing_dims, 1));
+index_labels = index_labels(dimorder);
+szo = size(stack);
+sz_framedims = szo(1:framenumdims);
+sz_framedims = num2cell([sz_framedims(1:2) prod(sz_framedims(3:framenumdims))]);
+stack = reshape(stack, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
+numxpix = size(stack,2);
+numypix = size(stack,1);
+numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
+numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
+dummyim = nan(numypix, numxpix);
+stackmin = min(stack(:));
+stackmax = max(stack(:));
+stackrange = stackmax-stackmin;
+
+
+if numim_per_frame>max_num_im_per_frame
+    error(sprintf("you are attempting to plot " + num2str(numim_per_frame) + " images per frame, which exceeds the default max of " + num2str(max_num_im_per_frame)))
+end
+
+%% prep titles
+
+lab_framestable = index_labels(1:framenumdims); %labels that are the same on every frame
+for li = 1:numel(lab_framestable)
+    [~, lab_framestable{li}] = make_plot_inds(lab_framestable{li}, lab_framestable{li}, dimlabels{li}, max_num_inds_to_print);
+end
+dims_changing_across_frames = framenumdims+1:maxnumdims;
+lab_framechange = index_labels(dims_changing_across_frames); %labels that can change on each frame
+lab_framechange_numel = cellfun(@numel, lab_framechange);
+for k = 1:numframes
+    [i1,i2,i3,i4,i5,i6]=ind2sub(lab_framechange_numel(:)', k); %subscript of frame in all possible dimensions
+    subtmp = [i1,i2,i3,i4,i5,i6];
+    subtmp = subtmp(1:numel(lab_framechange));
+    labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
+    labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
+    labtmp = cellfun(@horzcat, dimlabels(dims_changing_across_frames), repelem({'-'}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
+    titlesuffix = cat(1, lab_framestable(:), labtmp(:));
+    titlesuffix = strjoin(titlesuffix, ', ');
+    titlenew{k} = {strrep(title_prefix, '_', ' ') ; titlesuffix};
+end
+
+%% init subplots
+
+ax = arrange_subplots(stack, margins_subplot, margins_fig);
+
+hfg = figure;
+aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
+close(hfg)
+
+hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility, 'Position', [0, 0, 1, 1]);
+if aspect_screen>1
+    hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
+else
+    hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
+end
+
+haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
+
+
+for j = 1:numim_per_frame
+
+    hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    hax{j}.InnerPosition(1) = ax.(axord).xp(j);
+    hax{j}.InnerPosition(2) = ax.(axord).yp(j);
+    hax{j}.InnerPosition(3) = ax.xe(1);
+    hax{j}.InnerPosition(4) = ax.ye(1);
+    hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
+    hax{j}.XLim = [1 numxpix];
+    hax{j}.YLim = [1 numypix];
+    hax{j}.CLim = stackrange*display_range+stackmin;
+    colormap(hax{j}, cmap);
+    axis off
+    axis ij
+
+    hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
+    hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
+
+end
+
+%% plot
+
+for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after framenumdims
+    for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
+
+        hpl{j}.CData = stack(:,:,j,k);
+
+    end
+
+    htx.String = titlenew{k};
+
+    fig2gif(hfg, k, fngif, numcolorsgif)
+
+end

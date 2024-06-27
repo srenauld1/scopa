@@ -6,7 +6,7 @@ suffix_analysis = opt.main.suffix_analysis;
 regionex_all = opt.main.regionex_all;
 tmp_folder_name = opt.main.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
-suffixes_plot = opt.gif.suffixes_plot;
+suffixes_plot = opt.load.gif.suffixes_plot;
 use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname use_hires
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
 num_mroi_auto = opt.mroi.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
@@ -235,6 +235,7 @@ end
 
 pth.tsuse.fit = [pth_fldr 'tsuse_finfits_.mat'];
 pth.tsuse.scatter = [pth_fldr 'tsuse_finscatter_.mat'];
+pth.tsuse.pltexp = [pth_fldr 'tsuse_finpltexp_.mat'];
 
 %% assign to struct
 
@@ -267,6 +268,6 @@ opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field, change from user in
 opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting
 opt.mroi.use_hires = use_hires_new; %update field, change from user input formatting
 
-opt.gif.plot_stack_order = plot_stack_order;
-opt.gif.plot_stack_gif = plot_stack_gif;
+opt.load.gif.plot_stack_order = plot_stack_order;
+opt.load.gif.plot_stack_gif = plot_stack_gif;
 
