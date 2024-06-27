@@ -146,7 +146,7 @@ for ri, _ in enumerate(pth_tif_read_all):
           
       if do_analysis:
         eng = matlab.engine.start_matlab()
-        eng.analysis(pth_tif_read_all[ri], makeplots, nargout=0)
+        eng.analysis(pth_tif_read_all[ri], nargout=0)
           
          
 
