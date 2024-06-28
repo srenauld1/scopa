@@ -32,11 +32,24 @@ else
 end
 
 fn_pattern_tif = [pth_parent '**' filesep opts.recdate '_' opts.fly '_' opts.trial '_' opts.suffix_analysis '_.tif'];
-pthz_all_tif = rdir(fn_pattern_tif);
+valid_tif_fns = {'raw_.tif', 'cmrg_.tif', 'dcdn_.tif'};
+pth_all_tif = rdir(fn_pattern_tif);
+pth_all_tif = pth_all_tif(contains({pth_all_tif.name}, valid_tif_fns)); %in case wildcard opts.suffix_analysis returns unwanted files
+
+if strcmp(opts.trial, '*')
+    fn_pattern_flyg_raw_tif = [pth_parent '**' filesep opts.recdate '-' opts.fly '_*_' opts.suffix_analysis '_.tif'];
+else
+    fn_pattern_flyg_raw_tif = [pth_parent '**' filesep opts.recdate '-' opts.fly '_' sprintf( '%03s', opts.trial ) '_' opts.suffix_analysis '_.tif'];
+end
+pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
+
+valid_mat_fns = {'raw_.mat', 'cmrg_.mat', 'dcdn_.mat'};
 fn_pattern_mat = [fn_pattern_tif(1:end-4) '.mat'];
 pth_all_mat = rdir(fn_pattern_mat);
-pth_all = cat(1, pthz_all_tif, pth_all_mat);
-pth_all = unique(cellfun(@(x) x(1:end-3), {pth_all(:).name}, 'UniformOutput', false)); %unique files, whether tif or mat
+pth_all_mat = pth_all_mat(contains({pth_all_mat.name}, valid_mat_fns)); %in case wildcard opts.suffix_analysis returns unwanted files
+
+pth_all = cat(1, pth_all_tif, pth_all_flyg_raw_tif, pth_all_mat);
+pth_all = unique(cellfun(@(x) x(1:end-3), {pth_all(:).name}, 'UniformOutput', false)); %unique files, whether tif or mat (will not find duplicates with one scopa and one flyg filename)
 
 pth_grandparent = strsplit(pth_parent, filesep); %in case trailing filesep, or not
 pth_grandparent = [strjoin(pth_grandparent(1:end-2), filesep) filesep];

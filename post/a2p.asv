@@ -1,25 +1,4 @@
 
-[ST, ~] = dbstack('-completenames');
-
-if any(reshape(strcmp({ST.name}, 'a2pf'), size(ST)))
-
-    [~, fnin, ~] = fileparts(pth_filein);
-    spl = strsplit(fnin, '_');
-    filespec_in.recdate = spl{1}; %can use wildcards
-    filespec_in.fly = spl{2}; %can use wildcards
-    filespec_in.trial = spl{3}; %can use wildcards
-    filespec_in.suffix_analysis = spl{4};
-
-else
-
-    clear all
-    close all
-    clc
-
-end
-
-display_todos()
-
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity
@@ -29,22 +8,29 @@ display_todos()
 % struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.ti (imaging frame timestamps)
 % struct 'roiinfo' holds roi info for morphological and functional rois
 % struct 'md' holds metadata
-% struct 'paths' holds paths
-% numeric array 'stack' is the imaging movie chosen for analysis (using 'opt.main.suffix_analysis')
+% struct 'pth' holds paths
+% numeric array 'stack' is the imaging movie chosen for analysis (using 'opt.mn.suffix_analysis')
 
 % struct 'opt.fit' holds options that do not change across all calls function 'fitmdl'
 % struct 'fitin' (stands for 'fit input') holds data (e.g. depv & indv) used in each individual call to function 'fitmdl' (can change across calls)
-
 
 % in variable names
 %   prefix, infix, or suffix 'ts' denotes 'timeseries'
 %   suffix '*_i' denotes imaging sampling, suffix '*_b' denotes behavior sampling (suffix can be used for timeseries variable, or variable used exclusively with one or the other sampling regimes)
 %   suffix '*_m' denotes model sampling (e.g., in a linear model integrating 5 imaging samples into the past, num_samp
+% display_todos()
+
+function a2p(varargin)
+
+filespec_in = struct;
+if ~isempty(varargin{1})
+    filespec_in = parse_input_a2p(varargin{1});
+end
 
 %% params
 
 
-opt = input_params_carl(file_in);
+opt = input_params_carl(filespec_in);
 
 %% loop over recordings
 
@@ -52,8 +38,6 @@ opt = input_params_carl(file_in);
 
 for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
-    resp = [];
-    pars_all = [];
 
     %% assign filenames
 
@@ -62,17 +46,16 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% load metadata
 
-    md = load_scanimage_metadata(pth.metadata, opt.md);
+    md = load_scanimage_metadata(pth.metadata, opt.load, opt.hires.load);
     md = load_flyg_metadata(ids, pth.fldr, md);
 
     %% load and process daq
 
-    if opt.main.old_project
+    if opt.mn.old_project
         [md, ts.vis] = load_stim(md, ids, opt.daq);
     else
         if ~opt.daq.ignore_daq
             try
-                fool=mm
                 load(pth.daq_resamp, 'daqdata_resamp')
             catch
                 daqdata_resamp = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, ...
@@ -87,7 +70,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% load/visualize stack (and optional hires stack)
 
-    stack = load_stack(md, pth, opt.load, ids.recid);
+    stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.load, ids.recid);
 
     if any(cell2mat(struct2cell(opt.mroi.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
@@ -98,9 +81,9 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% create/load/select rois/responses for each regionex
 
-    for rei = 1:length(opt.main.regionex_all) %for each regionex
+    for rei = 1:length(opt.mn.regionex_all) %for each regionex
 
-        regionex = opt.main.regionex_all{rei};
+        regionex = opt.mn.regionex_all{rei};
 
         %%crop movie to regionex cuboid
         [stackcrop, zstartpos_crop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
@@ -123,7 +106,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% compute population features (e.g. bump), add them to ts
 
-    if opt.main.do_popfeat
+    if opt.mn.do_popfeat
         pffn = fieldnames(opt.pf);
         for pfi = 1:numel(pffn)
             ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, opt.pf.(pffn{pfi}), md, pth);
@@ -132,50 +115,50 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% model/predict
 
-    if opt.main.do_fit
+    if opt.mn.do_fit
         for si = 1:numel(opt.fit)
             dochoose = 1;
             choosecount = 0;
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.fit(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
+                [fitin, dochoose] = choose_timeseries(opt.fitm(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
                 stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack based on regionex of the depv (stack for plots, not model)
 
-                opt.fit.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
-                opt.fit.mdlname = 'fnet_A01_s_A02_s_B_h16';
-                opt.fit.mdlname = 'fnet_A_xsie';
-                opt.fit.validation_fold = 0; opt.fit.use_saved_model = 1; opt.fit.mdl_length_sec = 2; opt.fit.num_synthetic_depv = 0; opt.fit.epochinds = {[2 3 4]};
-                fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fit(si)); %fit model using any available timeseries
+                opt.fitm.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
+                opt.fitm.mdlname = 'fnet_A01_s_A02_s_B_h16';
+                opt.fitm.mdlname = 'fnet_A_xsie';
+                opt.fitm.validation_fold = 0; opt.fitm.use_saved_model = 1; opt.fitm.mdl_length_sec = 2; opt.fitm.num_synthetic_depv = 0; opt.fitm.epochinds = {[2 3 4]};
+                fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, opt.fitm(si)); %fit model using any available timeseries
 
             end
         end
     end
 
-    %% scatterplots 
+    %% scatterplots
 
-    if opt.main.do_scatter
-        for si = 1:numel(opt.scatter)
+    if opt.mn.do_scatter
+        for si = 1:numel(opt.scat)
             dochoose = 1;
             choosecount = 0;
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.scatter(si), ts, md, pth.tsuse.scatter, pth.stack_analysis, choosecount, dochoose);
+                [fitin, dochoose] = choose_timeseries(opt.scat(si), ts, md, pth.tsuse.scat, pth.stack_analysis, choosecount, dochoose);
                 [stackcrop, zstartpos_crop] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
 
                 scatterplots(fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
-                    opt.scatter(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
-                    md.epochs.epochinds_ts_i, opt.scatter(si).lagsxy_sec, opt.scatter(si).lagsz_sec, opt.scatter(si).lags_to_plot, ...
-                    opt.scatter(si).plot_z_as_color, opt.scatter(si).gif_visibility, fitin.fn_save_prefix_short, fitin.fn_save_prefix)
+                    opt.scat(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
+                    md.epochs.epochinds_ts_i, opt.scat(si).lagsxy_sec, opt.scat(si).lagsz_sec, opt.scat(si).lags_to_plot, ...
+                    opt.scat(si).plot_z_as_color, opt.scat(si).gif_visibility, fitin.fn_save_prefix_short, fitin.fn_save_prefix)
 
             end
         end
     end
 
-    %% plot experiment 
+    %% plot experiment
 
-    if opt.main.do_pltexp
+    if opt.mn.do_pltexp
         for si = 1:numel(opt.pltexp)
             dochoose = 1;
             choosecount = 0;
@@ -187,9 +170,9 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
                 plot_experiment(stackcrop, fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
                     opt.pltexp(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
-                    md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds_t, ...
-                    opt.pltexp(si).plotinds_z, [0 0.5], fitin.fn_save_prefix_short, fitin.fn_save_prefix)
-              
+                    md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds.t, ...
+                    opt.pltexp(si).plotinds.z, [0 0.5], fitin.fn_save_prefix_short, fitin.fn_save_prefix)
+
             end
         end
     end
@@ -197,3 +180,6 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
 end
 
+
+
+end

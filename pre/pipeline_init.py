@@ -102,8 +102,8 @@ if not do_copyfiles:
   elif do_denoise:
      from denoise import denoise
     
-  elif do_remove or do_analysis:
-     import matlab.engine
+#   elif do_remove or do_analysis:
+#      import matlab.engine
 
 
 
@@ -137,19 +137,19 @@ for ri, _ in enumerate(pth_tif_read_all):
         else:
             stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_tif_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
-      if do_remove:
-        eng = matlab.engine.start_matlab()
-        eng.remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, makeplots, nargout=0)
+    #   if do_remove:
+    #     eng = matlab.engine.start_matlab()
+    #     eng.remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, makeplots, nargout=0)
 
       if do_extract or do_crop:
           extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, extract_in_2d, regionex, makeplots, cluster_backend, use_cluster)
           
-      if do_analysis:
-        eng = matlab.engine.start_matlab()
-        eng.a2pf(pth_tif_read_all[ri], nargout=0)
+    #   if do_analysis:
+    #     eng = matlab.engine.start_matlab()
+    #     eng.a2pf(pth_tif_read_all[ri], nargout=0)
           
          
 
 
 print("\n\n\nEXITING pipeline_init.py") 
-
+print(pth_tif_read_all)

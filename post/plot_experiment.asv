@@ -1,6 +1,6 @@
 function plot_experiment(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, ...
-    gif_visibility, plotinds_t, plotinds_z, display_range, fngif_prefix_short, fngif_prefix)
+    gif_visibility, plotinds_t, plotinds.z, display_range, fngif_prefix_short, fngif_prefix)
 
 
 %don't subset the stack
@@ -57,11 +57,11 @@ else
 end
 
 label_prefix = 'z';
-[plotinds_z, plotinds_z_str] = make_plot_inds(size(stack, 3), plotinds_z, label_prefix);
+[plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, label_prefix);
 label_prefix = 't';
 [plotinds_t, plotinds_t_str] = make_plot_inds(size(stack, 4), plotinds_t, label_prefix);
 
-stack = stack(:,:,plotinds_z,plotinds_t);
+stack = stack(:,:,plotinds.z,plotinds_t);
 epochinds_ts_i = epochinds_ts_i(plotinds_t);
 ti = ti(plotinds_t);
 varsx = varsx(:,plotinds_t);

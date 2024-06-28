@@ -18,15 +18,15 @@
 % if possible without clipping
 
 
-function stack = load_stack(md, pth, opts, recid)
+function stack = load_stack(sz, numslice_withflyback, pth, opts, recid)
 
 pth_fldr = pth.fldr;
 pth_stack_analysis = pth.stack_analysis;
 pth_stacks_prefix = pth.stacks_prefix;
 
 plot_stack_gif = opts.gif.plot_stack_gif;
-plotinds_t = opts.gif.plotinds_t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-plotinds_z = opts.gif.plotinds_z; %z indices to plot, empty for all, negative for that number equidistant from all available
+plotinds.t = opts.gif.plotinds.t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+plotinds.z = opts.gif.plotinds.z; %z indices to plot, empty for all, negative for that number equidistant from all available
 rescale_each_stack = opts.gif.rescale_each_stack; %rescale each subplot to same range 0-1 before combining
 display_range = opts.gif.display_range; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = opts.gif.smooth_window_temporal; %smooth the stack in time, 0 to skip
@@ -40,19 +40,13 @@ else
     plot_stack_order = opts.gif.plot_stack_order;
 end
 
-sz = md.sz_o;
-
-label_prefix = 'z';
-[plotinds_z, plotinds_z_str] = make_plot_inds(sz(3), plotinds_z, label_prefix, max_num_inds_to_print);
-
-if md.croptimeinds
-    keepinds_t = md.croptimeinds(1)+1:sz(4)-md.croptimeinds(2);
-else
-    keepinds_t = 1:sz(4);
-end
+keepinds_t = opts.cropinds_t_start+1:sz(4)-opts.cropinds_t_end; %same as all t inds (1:sz(4)) if cropinds_t_start and cropinds_t_end are both 0
 
 label_prefix = 't';
-[plotinds_t, plotinds_t_str] = make_plot_inds(keepinds_t, plotinds_t, label_prefix, max_num_inds_to_print);
+[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix, max_num_inds_to_print);
+
+label_prefix = 'z';
+[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix, max_num_inds_to_print);
 
 if isequal(display_range, [0 1])
     dr_str = 'DRfull';
@@ -77,53 +71,7 @@ for spi = 1:numel(pth_stacks_prefix)
 
     if ~isempty(pth_stacks_prefix{spi}) %if it's not empty it means either mat or tif or both exist
 
-        [~, filnam, ~] = fileparts(pth_stacks_prefix{spi});
-        pth_stack_tif = [pth_stacks_prefix{spi} '.tif'];
-        pth_stack_mat = [pth_stacks_prefix{spi} '.mat'];
-
-        try
-
-            stack = struct2cell(load(pth_stack_mat));
-            stack = stack{1};
-
-        catch
-
-            if ~isempty(regexp(filnam, 'raw')) || ~isempty(regexp(filnam, 'hires'))
-                size_z_read_from = md.numslice_withflyback; %raw and hires includes flyback
-            else
-                size_z_read_from = sz(3);
-            end
-            size_t_read_from = sz(4);
-            inds_z_read_from = 1:sz(3); %can choose any subset of z (e.g. passing 1:sz(3) will skip flyback frames for raw and hires, for example, do 1:size_z_read_from to read fluback frames), does not have to be contiguous
-            inds_t_read_from = 1:size_t_read_from; %can choose any subset of t, does not have to be contiguous
-            size_read_to = [numel(inds_t_read_from), numel(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within read_tif_tzyx
-
-            stack = read_tif_tzyx(pth_stack_tif, ...
-                size_read_to, size_z_read_from, size_t_read_from, ...
-                inds_z_read_from, inds_t_read_from);
-
-            datmin = min(stack(:));
-            datmax = max(stack(:));
-            if ~isa(stack, 'uint16')
-                stack = single(stack);
-            end
-            stack = stack - double(datmin);
-            if ~isa(stack, 'uint16')
-                if datmax > 2^16-1
-                    "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
-                    error
-                end
-                stack = uint16(stack);
-            end
-
-            if md.croptimeinds
-                stack = stack(:,:,:,keepinds_t);
-            end
-
-            save(pth_stack_mat, 'stack', '-v7.3', '-mat')
-
-        end
-
+        stack = tif2mat(pth_stacks_prefix{spi}, numslice_withflyback, sz, opts.crop_flyback, opts.zero_stack, keepinds_t);
 
         if plot_stack_stats
             sindz = 1:size(stack, 3);
@@ -143,7 +91,7 @@ for spi = 1:numel(pth_stacks_prefix)
                 stacktmp = stack; %this does not double RAM usage
             end
 
-            stacktmp = single(stacktmp(:,:,plotinds_z, plotinds_t));
+            stacktmp = single(stacktmp(:,:,plotinds.z, plotinds.t));
 
             if ~strcmp(pth_stack_mat, pth_stack_analysis) %if it's the stack for analysis outside this function
                 stack = [];
@@ -176,7 +124,7 @@ if plot_stack_gif
     fn_suffix_insert = strjoin(fn_suffix_insert(~cellfun( @isempty, fn_suffix_insert )), '_AND_');
 
     figtitle_prefix = [recid '_' fn_suffix_insert rs_str dr_str];
-    filename_prefix = [pth_fldr figtitle_prefix '_' plotinds_z_str '_' plotinds_t_str ];
+    filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_str ];
 
     % testing RGB arguments to stack2fig 
     % for spp = 1:size(stackplot{1}, 3)
@@ -193,8 +141,8 @@ if plot_stack_gif
     dimorder = [1,2,3,4];
     figsidelen = 0.75;
     index_labels = arrayfun(@(x) 1:x(end), size(stackplot{1}), 'UniformOutput', false);
-    index_labels{3} = plotinds_z;
-    index_labels{4} = plotinds_t;
+    index_labels{3} = plotinds.z;
+    index_labels{4} = plotinds.t;
     stack2fig(stackplot, fngif, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
     fngif = [filename_prefix 'meant_.gif'];

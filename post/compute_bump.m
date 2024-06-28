@@ -15,7 +15,7 @@ resample_smoothfac = opts.resample_smoothfac;
 omitnan_bump = opts.omitnan;
 doplots = opts.doplots;
 
-fitopts = opts.fit(si);
+fitopts = opts.fitm(si);
 
 fn_save_prefix = fitin.fn_save_prefix;
 

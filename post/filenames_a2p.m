@@ -2,11 +2,11 @@ function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_p
 
 %% params
 
-suffix_analysis = opt.main.suffix_analysis;
-regionex_all = opt.main.regionex_all;
-tmp_folder_name = opt.main.tmp_folder_name;
+suffix_analysis = opt.mn.suffix_analysis;
+regionex_all = opt.mn.regionex_all;
+tmp_folder_name = opt.mn.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
-suffixes_plot = opt.load.gif.suffixes_plot;
+suffixes_plot = opt.ldst.gif.suffixes_plot;
 use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname use_hires
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
 num_mroi_auto = opt.mroi.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
@@ -157,13 +157,13 @@ end
 
 pffn = fieldnames(opt.pf);
 for pfi = 1:numel(pffn)
-    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fit.vars.depvpre_str]))
+    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fitm.vars.depvpre_str]))
         opt.pf.(pffn{pfi}).do = 0;
     end
 end
 
-if all(cellfun(@isempty, [opt.fit.vars.depvpre_str]))
-    opt.fit.do_predict = 0;
+if all(cellfun(@isempty, [opt.fitm.vars.depvpre_str]))
+    opt.fitm.do_predict = 0;
 end
 
 %% gif in load_stacks
@@ -234,7 +234,7 @@ for pfi = 1:numel(pffn)
 end
 
 pth.tsuse.fit = [pth_fldr 'tsuse_finfits_.mat'];
-pth.tsuse.scatter = [pth_fldr 'tsuse_finscatter_.mat'];
+pth.tsuse.scat = [pth_fldr 'tsuse_finscatter_.mat'];
 pth.tsuse.pltexp = [pth_fldr 'tsuse_finpltexp_.mat'];
 
 %% assign to struct
@@ -268,6 +268,6 @@ opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field, change from user in
 opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting
 opt.mroi.use_hires = use_hires_new; %update field, change from user input formatting
 
-opt.load.gif.plot_stack_order = plot_stack_order;
-opt.load.gif.plot_stack_gif = plot_stack_gif;
+opt.ldst.gif.plot_stack_order = plot_stack_order;
+opt.ldst.gif.plot_stack_gif = plot_stack_gif;
 

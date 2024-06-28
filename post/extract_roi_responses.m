@@ -126,15 +126,15 @@ if normopts.doplots
     % 
     % figure;
     % subplot(3,1,1)
-    % scatter(1:length(pfn), pfn)
+    % scat(1:length(pfn), pfn)
     % title("raw")
     % 
     % subplot(3,1,2)
-    % scatter(1:length(pdfn), pdfn)
+    % scat(1:length(pdfn), pdfn)
     % title("dff")
     % 
     % subplot(3,1,3)
-    % scatter(1:length(pzfn), pzfn)
+    % scat(1:length(pzfn), pzfn)
     % title("percentile normalized")
     % 
     % saveas( gcf, [pth_save_prefix 'normcompprct_.png'])
