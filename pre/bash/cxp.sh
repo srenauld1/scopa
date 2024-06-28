@@ -244,7 +244,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 mem_per_cpu_str=10G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then 
                 partition_str=short #use transfer partition if do_copyfiles==1
-                time_str=11:40:00
+                time_str=1:00:00 #11:40:00
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=12G
