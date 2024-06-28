@@ -393,6 +393,9 @@ pip3 install matlabengine==9.14.3
 pip3 install mat73
 pip3 install natsort
 pip3 install scanimage-tiff-reader
+pip3 install scipy
+pip3 install tifffile
+pip3 install opencv-python
 
 python3 -m pip install mat73
 python3 -m pip install natsort

@@ -103,8 +103,7 @@ if not do_copyfiles:
      from denoise import denoise
     
   elif do_remove or do_analysis:
-     import write_matlab_inputs
-    #  import matlab.engine
+     import matlab.engine
 
 
 
