@@ -72,7 +72,7 @@ EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack sav
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
 USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
 
-LEN_WINDOW_SMOOTH_T_RSC=(0) #smoothing window in remove_scan_noise (only used if do_remove=1)
+LEN_WINDOW_SMOOTH_T_RSC=(5) #smoothing window in remove_scan_noise (only used if do_remove=1)
 
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
