@@ -376,12 +376,27 @@ matlabengine will fail to install in the default directory because you don't hav
 
 move both folders into a path you want the pipeline to find . . . for example, you can move them into a virtual environment a conda environment that the pipeline uses . . . below are the commands to move them into the caiman conda environment in the shared wilson lab folder (in the miniforge3 folder)
 
-srun -p interactive --pty -t 3:00:00 -c 5 --mem=10G bash
+srun -p interactive --pty -t 3:00:00 -c 5 --mem=15G bash
 module purge
+module load gcc/9.2.0
 ml python/3.10.11
+
+cd /n/data1/hms/neurobio/wilson
+virtualenv mle --system-site-packages
+source  /n/data1/hms/neurobio/wilson/mle/bin/activate
+
 pip install matlabengine==9.14.3
 mv ~/.local/lib/python3.10/site-packages/matlab /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/lib/python3.11/site-packages
 mv ~/.local/lib/python3.10/site-packages/matlabengine-9.14.3.dist-info /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/lib/python3.11/site-packages
+
+pip3 install matlabengine==9.14.3
+pip3 install mat73
+pip3 install natsort
+pip3 install scanimage-tiff-reader
+
+python3 -m pip install mat73
+python3 -m pip install natsort
+python3 -m pip install scanimage-tiff-reader
 
 that should be all you need to do, but here are some more comments
 
@@ -413,6 +428,7 @@ bash Miniforge3-$(uname)-$(uname -m).sh
 told it not to modify any config files 
 
 #CAIMAN
+
 
 fork caiman repo and rename caiman (no capitals)
 srun --pty -p interactive -t 0-1:00 --mem=5G bash

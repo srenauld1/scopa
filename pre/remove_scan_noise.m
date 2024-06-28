@@ -1,8 +1,10 @@
 
-function remove_scan_noise(fool)
+function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
 
-fool
-disp(fool)
+pth_stack_tif
+print(pth_stack_tif)
+len_window_smooth_t_rsc
+print(len_window_smooth_t_rsc)
 sprintf("\n\n\nENTERING remove_scan_noise")
 fprintf("\n\n\nENTERING remove_scan_noise")
 
@@ -22,10 +24,6 @@ framenumdims = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
 figsidelen = 0.75;%for plotting, if makeplots
 
-
-len_window_smooth_t = len_window_smooth_t_rsc; %helps with filtering the scan noise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
-
-pth_stack_tif = pth_tif_read_all;
 
 display(['processing : ' pth_tif_read_all] )
 
@@ -96,8 +94,8 @@ end
 %% smooth
 
 
-if len_window_smooth_t
-    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t);
+if len_window_smooth_t_rsc
+    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc);
 end
 "DONE SMOOTHING"
 
@@ -148,7 +146,7 @@ end
 
 function imout = fft_filter_1d(imin, stopband)
 
-%%
+%%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
 
 sz = size(imin);
 numlines = sz(1);

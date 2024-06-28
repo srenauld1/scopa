@@ -11,33 +11,29 @@ else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
     # eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
     # conda activate caiman
+    source /n/data1/hms/neurobio/wilson/mle/bin/activate
 fi
 
-initout=$(/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 $PARENDIR/pipeline_init.py \
+/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 $PARENDIR/pipeline_init.py \
 --pth_parsfile "$PTH_PARSFILE" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \
 --do_remove 1 \
---recording_index $SLURM_ARRAY_TASK_ID) &
+--recording_index $SLURM_ARRAY_TASK_ID &
 
-if [ -z "${initout}" ]; then
-echo "NO FILES FOUND, NOT STARTING MATLAB"
-exit 1
-else
 
-echo "FINISHED PIPELINE_INIT, STARTING MATLAB"
+# echo "FINISHED PIPELINE_INIT, STARTING MATLAB"
 
-module purge
-module load matlab/2023a
+# module purge
+# module load matlab/2023a
 
-matlab -batch "try; remove_scan_noise("$initout"); catch; end; quit"
+# matlab -batch "try; remove_scan_noise('$PTH_PARSFILE', '$SLURM_ARRAY_TASK_ID'); catch; end; quit"
 
 wait
 sleep 1m
 date
 sleep 1m
 
-fi
 
 
 
