@@ -31,7 +31,7 @@ opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmss
 opt.mn.old_project = 0; %for carl
 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_fit = 0; %model fitting (opt.fit below)
+opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
 
 
@@ -48,22 +48,22 @@ opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same 
 
 %% STACK VISUALIZATION (GIF)
 
-%opt.load holds params used in load_stack
-%opt.ldst.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis)
+%opt.ld holds params used in load_stack
+%opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis)
 
-opt.ldst.gif.suffixes_plot = {
+opt.ld.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     };  %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.ldst.gif.plotinds.t = [50.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.ldst.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.ldst.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
-opt.ldst.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
-opt.ldst.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
-opt.ldst.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.ld.gif.plotinds.t = [50.3]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.ld.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
+opt.ld.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 
 %% MORPHOLOGICAL ROIS
@@ -214,7 +214,7 @@ opt.pf.bump.fitm(1).use_saved_model = 1;
 opt.pf.bump.fitm(1).doplots = 1;
 
 
-opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
+opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 %% FIT MODEL
 
@@ -275,7 +275,7 @@ opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-val
 opt.fitm(1).mdlname = 'fnet_A01_sh16';
 opt.fitm(1).plt.doplots = 100;
 
-opt.fit = default_fit_params(opt.fit);
+opt.fitm = default_fit_params(opt.fitm);
 
 
 %% SCATTERPLOTS

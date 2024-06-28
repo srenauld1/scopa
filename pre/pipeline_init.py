@@ -152,4 +152,4 @@ for ri, _ in enumerate(pth_tif_read_all):
 
 
 print("\n\n\nEXITING pipeline_init.py") 
-print(pth_tif_read_all)
+print(pth_tif_read_all, len_window_smooth_t_rsc)

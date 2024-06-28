@@ -1,32 +1,35 @@
 
-function remove_scan_noise(pth_tif_read_all, len_window_smooth_t_rsc, makeplots)
+function remove_scan_noise(fool)
 
+fool
+disp(fool)
+sprintf("\n\n\nENTERING remove_scan_noise")
 fprintf("\n\n\nENTERING remove_scan_noise")
 
 %pth_tif_read_all is full path to tif or mat (if mat is in same folder with
 %tif, it will be loaded without reading the tif)
 
+makeplots = 1;
 stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
 
 plotinds.t = 50.4; %t indices to plot, blank for all, negative for that number equidistant from all available
 plotinds.z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 
-timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
+zero_stack = 1; %subtract min to make min zero 
 
-fngif_pre = [filename_prefix 'prefilt_' timestr '_.gif'];
-fngif_post = [filename_prefix 'postfilt_' timestr '_.gif'];
-cmap = gray(256);
-framenumdims = 3;
-dimorder = [1,2,3,4];
-index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
-index_labels{3} = plotinds.z;
-index_labels{4} = plotinds.t;
-figsidelen = 0.75;
+cmap = gray(256); %for plotting, if makeplots
+framenumdims = 3;%for plotting, if makeplots
+dimorder = [1,2,3,4];%for plotting, if makeplots
+figsidelen = 0.75;%for plotting, if makeplots
+
 
 len_window_smooth_t = len_window_smooth_t_rsc; %helps with filtering the scan noise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
 
+pth_stack_tif = pth_tif_read_all;
 
-[~, filnam, ~] = fileparts(pth_tif_read_all);
+display(['processing : ' pth_tif_read_all] )
+
+[pth_fldr, filnam, ~] = fileparts(pth_tif_read_all);
 
 if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(regexp(filnam, regexptranslate('wildcard', '_trial')))
     error(sprintf("ERROR, \nTHIS FUNCTION IS NOT WRITTEN FOR STACKS WITH FLYBACK " + ...
@@ -36,56 +39,49 @@ if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(reg
         "TO MAKE THEM AS THEY APPEAR IN load_stack.m"))
 end
 
-
-display(['processing : ' pth_tif_read_all] )
-
-[pth_fldr, fn_datafile, ~] = fileparts(pth_tif_read_all);
 pth_fldr = [pth_fldr filesep];
-spl = strjoin(strsplit(fn_datafile, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
+spl = strjoin(strsplit(filnam, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
 spl = strsplit(spl, '_'); %then separate by underscore
 
 datenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});
+suffix_analysis = strjoin(spl(4:end));
 
 recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
-recid_tit = strrep(recid, '_', ' ');
 
-pth_dn_mat = [pth_tif_read_all(1:end-4) '.mat']; %in case pth_tif_read_all is a tif, also look for mat (and if it's mat, this does nothing
+pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_tif_read_all is a tif, also look for mat (and if it's mat, this does nothing
 pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
 pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
-load(pth_metadata) %file created in initial python part of pipeline
+md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
+md = md{1};
 sz = single([md.ypix md.xpix md.numslice md.numvol]);
 
-size_z_read_from = sz(3);
-size_t_read_from = sz(4);
-inds_z_read_from = 1:size_z_read_from; %can choose to not read the flyback frames here
-inds_t_read_from = 1:size_t_read_from;
-size_read_to = [length(inds_t_read_from), length(inds_z_read_from) sz(1) sz(2)]; %read the way it was written for speed, permute within read_tif_tzyx
+crop_flyback = 0;
+numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
+keepinds_t = 1:sz(4);
 
 
-if isempty(plotinds.z)
-    plotinds.z = 1:sz(3);
-elseif plotinds.z<0
-    if -plotinds.z<sz(3)
-        plotinds.z = round(linspace(1, sz(3), -plotinds.z));
-    else
-        plotinds.z = 1:sz(3);
-    end
+label_prefix = 't';
+[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix, max_num_inds_to_print);
+
+label_prefix = 'z';
+[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix, max_num_inds_to_print);
+
+if isequal(display_range, [0 1])
+    dr_str = 'DRfull';
+else
+    dr_str = ['DR' num2str(display_range(1)) 'to' num2str(display_range(2))];
 end
 
-if isempty(plotinds.t)
-    plotinds.t = 1:sz(4);
-elseif plotinds.t<0
-    if -plotinds.t<sz(4)
-        plotinds.t = round(linspace(1, sz(4), -plotinds.t));
-    else
-        plotinds.t = 1:sz(4);
-    end
-end
+figtitle_prefix = [recid '_' suffix_analysis '_' dr_str];
+filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_str ];
 
-plotinds.z_str = regexprep( mat2str(plotinds.z), {'\[', '\]', '\s+'}, {'', '', '-'});
+timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
+
+fn_gif_prefilt = [filename_prefix 'prefilt_' timestr '_.gif'];
+fn_gif_postfilt = [filename_prefix 'postfilt_' timestr '_.gif'];
 
 %% load
 
@@ -93,29 +89,7 @@ try
     stack = struct2cell(load(pth_dn_mat));
     stack = stack{1};
 catch
-
-    "READING DNEOISED TIF"
-    stack = read_tif_tzyx(pth_stack_tif, ...
-        size_read_to, size_z_read_from, size_t_read_from, ...
-        inds_z_read_from, inds_t_read_from);
-
-    datmin = min(stack(:));
-    datmax = max(stack(:));
-    if ~isa(stack, 'uint16')
-        stack = single(stack);
-    end
-    stack = stack - double(datmin);
-    if ~isa(stack, 'uint16')
-        if datmax > 2^16-1
-            "ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE"
-            error
-        end
-        stack = uint16(stack);
-    end
-
-    "SAVING DENOISED AS MAT"
-    save(pth_dn_mat, 'stack', '-v7.3', '-mat')
-
+    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, zero_stack, keepinds_t);
 end
 
 
@@ -131,9 +105,15 @@ end
 
 %% plot before filtering
 
-if makeplots
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fngif_pre, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+
+if makeplots
+    
+    index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
+    index_labels{3} = plotinds.z;
+    index_labels{4} = plotinds.t;
+
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_prefilt, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 end
 
@@ -149,7 +129,7 @@ stack = fft_filter_1d(stack, stopband);
 
 if makeplots
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fngif_post, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_postfilt, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 end
 

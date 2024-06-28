@@ -11,7 +11,7 @@
 % struct 'pth' holds paths
 % numeric array 'stack' is the imaging movie chosen for analysis (using 'opt.mn.suffix_analysis')
 
-% struct 'opt.fit' holds options that do not change across all calls function 'fitmdl'
+% struct 'opt.fitm' holds options that do not change across all calls function 'fitmdl'
 % struct 'fitin' (stands for 'fit input') holds data (e.g. depv & indv) used in each individual call to function 'fitmdl' (can change across calls)
 
 % in variable names
@@ -22,30 +22,24 @@
 
 function a2p(varargin)
 
-%% read optional input 
-
-filespec_in = struct;
-if ~isempty(varargin)
-    filespec_in = parse_input_a2p(varargin{1});
-end
 
 %% params
 
-opt = input_params_carl(filespec_in);
+opt = input_params_carl(varargin);
 
 %% loop over recordings
 
-for pai = 1:length(pth_usefile_prefix_all) %for each recording
+for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
 
     %% assign filenames
 
-    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix_all{pai}, pth_grandparent);
+    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, opt.mn.pth_usefile_prefix_all{pai});
 
 
     %% load metadata
 
-    md = load_scanimage_metadata(pth.metadata, opt.load, opt.hires.load);
+    md = load_scanimage_metadata(pth.metadata, opt.ld, opt.hires.ld);
     md = load_flyg_metadata(ids, pth.fldr, md);
 
     %% load and process daq
@@ -69,7 +63,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
 
     %% load/visualize stack (and optional hires stack)
 
-    stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.load, ids.recid);
+    stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.ld, ids.recid);
 
     if any(cell2mat(struct2cell(opt.mroi.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
@@ -115,13 +109,13 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     %% model/predict
 
     if opt.mn.do_fit
-        for si = 1:numel(opt.fit)
+        for si = 1:numel(opt.fitm)
             dochoose = 1;
             choosecount = 0;
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.fitm(si), ts, md, pth.tsuse.fit, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
+                [fitin, dochoose] = choose_timeseries(opt.fitm(si), ts, md, pth.tsuse.fitm, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
                 stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 opt.fitm.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';

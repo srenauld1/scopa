@@ -1,6 +1,4 @@
-function opt = input_params_carl(filespec_in)
-
-
+function opt = input_params_carl(varargin)
 
 % struct 'opt' holds all input params
 % substructures within opt are mostly used within single functions called from a2p
@@ -8,7 +6,6 @@ function opt = input_params_carl(filespec_in)
 %some params below have suffix '_str'; these are string inputs (for user input convenience) that are mapped later to numeric variables
 
 %% MAIN
-[pth_usefile_prefix_all, pth_grandparent] = find_preprocessed_files(opt.main);
 
 %params for main pipeline control in file a2p
 
@@ -16,16 +13,16 @@ opt.mn.parent_folder_path_local = '~/stacks'; %on local machine, full path to fo
 opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.mn.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
-if isempty(fieldnames(filespec_in))
+if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
     opt.mn.recdate = '*'; %can use wildcards
     opt.mn.fly = '*'; %can use wildcards
     opt.mn.trial = '*'; %can use wildcards
     opt.mn.suffix_analysis = '*'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+    [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
 else
-    opt.mn.recdate = filespec_in.recdate; %can use wildcards
-    opt.mn.fly = filespec_in.fly; %can use wildcards
-    opt.mn.trial = filespec_in.trial; %can use wildcards
-    opt.mn.suffix_analysis = filespec_in.suffix_analysis;
+    [pthin, ~, ~] = fileparts(varargin{1});
+    opt.mn.pth_usefile_prefix_all = varargin{1};
+    opt.mn.pth_grandparent = [strjoin(pthin(1:end-2), filesep) filesep];
 end
 
 opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -34,9 +31,10 @@ opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmss
 opt.mn.old_project = 0; %for carl
 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_fit = 0; %model fitting (opt.fit below)
+opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
 opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
+
 
 %% DAQ (i.e. FICTRAC/STIMULUS)
 
@@ -51,26 +49,26 @@ opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same 
 
 %% STACK VISUALIZATION (GIF)
 
-%opt.load holds params used in load_stack
-%opt.ldst.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
-opt.ldst.crop_flyback = 1; %crop flyback frames from each volume 
-opt.ldst.zero_stack = 1; %subtract min to make min zero 
-opt.ldst.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.ldst.cropinds_t_end = 0; % how many samples to remove from end of stack
-opt.ldst.plot_stack_stats = 0; %function this uses is old and needs to be updated
+%opt.ld holds params used in load_stack
+%opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
+opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
+opt.ld.zero_stack = 1; %subtract min to make min zero 
+opt.ld.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.ld.cropinds_t_end = 0; % how many samples to remove from end of stack
+opt.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
-opt.ldst.gif.suffixes_plot = { 
+opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
     'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.ldst.gif.plotinds.t = [30:100];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.ldst.gif.plotinds.z = [2,5,8]; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.ldst.gif.rescale_each_stack = 0; %1 to rescale 0-1 before combining into single plot; 
-opt.ldst.gif.display_range = [0,1]; %2-element vector, [low,high], where anything below low in 0-1 normalized image is displayed as black, and anything above high is displayed as white, 
-opt.ldst.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.ld.gif.plotinds.t = [30:100];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.ld.gif.plotinds.z = [2,5,8]; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.ld.gif.rescale_each_stack = 0; %1 to rescale 0-1 before combining into single plot; 
+opt.ld.gif.display_range = [0,1]; %2-element vector, [low,high], where anything below low in 0-1 normalized image is displayed as black, and anything above high is displayed as white, 
+opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
 
 %% MORPHOLOGICAL ROIS
@@ -217,7 +215,7 @@ opt.pf.bump.fitm(1).use_saved_model = 1;
 opt.pf.bump.fitm(1).doplots = 1;
 
 
-opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
+opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 %% FIT MODEL
 
@@ -278,7 +276,7 @@ opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-val
 opt.fitm(1).mdlname = 'fnet_A01_sh16';
 opt.fitm(1).plt.doplots = 100;
 
-opt.fit = default_fit_params(opt.fit);
+opt.fitm = default_fit_params(opt.fitm);
 
 
 %% SCATTERPLOTS
@@ -328,18 +326,18 @@ opt.pltexp(1).display_range = [0,1];
 %params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
 %hires stack is only used in making morphological rois, set opt.mroi.use_hires=1 to use
 %params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
-opt.hires.ldst.crop_flyback = 1; %crop flyback frames from each volume 
-opt.hires.ldst.zero_stack = 1; %subtract min to make min zero 
-opt.hires.ldst.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.hires.ldst.cropinds_t_end = 0; % how many samples to remove from end of stack
-opt.hires.ldst.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
+opt.hires.ld.zero_stack = 1; %subtract min to make min zero 
+opt.hires.ld.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.hires.ld.cropinds_t_end = 0; % how many samples to remove from end of stack
+opt.hires.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
-opt.hires.ldst.gif.plotinds.t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.hires.ldst.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.hires.ldst.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
-opt.hires.ldst.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
-opt.hires.ldst.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
-opt.hires.ldst.gif.plot_stack_gif = 1; %this one is not available in opt.ldst.gif (it is automatically determined); haven't made this one automatic yet
+opt.hires.ld.gif.plotinds.t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.hires.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.hires.ld.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
+opt.hires.ld.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
+opt.hires.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.hires.ld.gif.plot_stack_gif = 1; %this one is not available in opt.ld.gif (it is automatically determined); haven't made this one automatic yet
 
 opt.hires.do_reg_plots = 1;
 opt.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
@@ -350,13 +348,13 @@ opt.hires.caiman_hr_str = '*'; %empty to skip
 %% CARL'S OLD PROJECT
 
 %overwrite some params for carl's old project
-if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override some settings for old project
-    opt.mn.old_project = 1;
-    opt.md.cropinds_t_start = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-    opt.md.cropinds_t_start = 2; % how many samples to remove from end of stack
-    opt.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
-    opt.fitm.mdl_length_sec = 1.25;
-end
+% if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override some settings for old project
+%     opt.mn.old_project = 1;
+%     opt.md.cropinds_t_start = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+%     opt.md.cropinds_t_start = 2; % how many samples to remove from end of stack
+%     opt.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
+%     opt.fitm.mdl_length_sec = 1.25;
+% end
 
 %% order fields
 

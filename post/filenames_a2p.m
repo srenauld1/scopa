@@ -1,12 +1,14 @@
-function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix, pth_grandparent)
+function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix)
 
 %% params
 
-suffix_analysis = opt.mn.suffix_analysis;
+
+pth_grandparent = opt.mn.pth_grandparent;
+% suffix_analysis = opt.mn.suffix_analysis;
 regionex_all = opt.mn.regionex_all;
 tmp_folder_name = opt.mn.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
-suffixes_plot = opt.ldst.gif.suffixes_plot;
+suffixes_plot = opt.ld.gif.suffixes_plot;
 use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname use_hires
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
 num_mroi_auto = opt.mroi.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
@@ -24,6 +26,7 @@ spl = strsplit(spl, '_'); %then separate by underscore
 datenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});    % trialnum = str2double(spl(find(strcmp(spl, 'trial'))+1));
+suffix_analysis = strjoin(spl(4:end));
 
 datefly_hyphen = [num2str(datenum) '-' num2str(flynum)];
 recid_underscore = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
@@ -233,7 +236,7 @@ for pfi = 1:numel(pffn)
     pth.tsuse.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi} '_.mat'];
 end
 
-pth.tsuse.fit = [pth_fldr 'tsuse_finfits_.mat'];
+pth.tsuse.fitm = [pth_fldr 'tsuse_finfits_.mat'];
 pth.tsuse.scat = [pth_fldr 'tsuse_finscatter_.mat'];
 pth.tsuse.pltexp = [pth_fldr 'tsuse_finpltexp_.mat'];
 
@@ -268,6 +271,6 @@ opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field, change from user in
 opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting
 opt.mroi.use_hires = use_hires_new; %update field, change from user input formatting
 
-opt.ldst.gif.plot_stack_order = plot_stack_order;
-opt.ldst.gif.plot_stack_gif = plot_stack_gif;
+opt.ld.gif.plot_stack_order = plot_stack_order;
+opt.ld.gif.plot_stack_gif = plot_stack_gif;
 

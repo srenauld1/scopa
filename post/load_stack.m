@@ -71,7 +71,16 @@ for spi = 1:numel(pth_stacks_prefix)
 
     if ~isempty(pth_stacks_prefix{spi}) %if it's not empty it means either mat or tif or both exist
 
-        stack = tif2mat(pth_stacks_prefix{spi}, numslice_withflyback, sz, opts.crop_flyback, opts.zero_stack, keepinds_t);
+        [~, filnam, ~] = fileparts(pth_stacks_prefix);
+        pth_stack_tif = [pth_stacks_prefix '.tif'];
+        pth_stack_mat = [pth_stacks_prefix '.mat'];
+
+        try
+            stack = struct2cell(load(pth_stack_mat));
+            stack = stack{1};
+        catch
+            stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, opts.crop_flyback, opts.zero_stack, keepinds_t);
+        end
 
         if plot_stack_stats
             sindz = 1:size(stack, 3);
@@ -126,7 +135,7 @@ if plot_stack_gif
     figtitle_prefix = [recid '_' fn_suffix_insert rs_str dr_str];
     filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_str ];
 
-    % testing RGB arguments to stack2fig 
+    % testing RGB arguments to stack2fig
     % for spp = 1:size(stackplot{1}, 3)
     %     for sppp = 1:size(stackplot{1}, 4)
     %         stackplotnew(:,:,spp,sppp,:) = ind2rgb(stackplot{1}(:,:,spp,sppp), gray(256));

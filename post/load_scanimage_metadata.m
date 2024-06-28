@@ -1,4 +1,4 @@
-function md = load_scanimage_metadata(pth_metadata, optload, optload_hires)
+function md = load_scanimage_metadata(pth_metadata, optld, optload_hires)
 
 
 md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
@@ -8,10 +8,10 @@ md = md{1};
 % md = ff(md, mdnew);
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optldst.cropinds_t_start - optldst.cropinds_t_end;
+md.numvol_crop = md.numvol_o - optld.cropinds_t_start - optld.cropinds_t_end;
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
-md.crop_flyback = optldst.crop_flyback;
-md.zero_stack = optldst.zero_stack;
+md.crop_flyback = optld.crop_flyback;
+md.zero_stack = optld.zero_stack;
 
 if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];

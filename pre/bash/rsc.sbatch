@@ -13,17 +13,33 @@ else #load virtual env if not copying files
     conda activate caiman
 fi
 
-/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 $PARENDIR/pipeline_init.py \
+initout=$(/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 $PARENDIR/pipeline_init.py \
 --pth_parsfile "$PTH_PARSFILE" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \
 --do_remove 1 \
---recording_index $SLURM_ARRAY_TASK_ID &
+--recording_index $SLURM_ARRAY_TASK_ID) &
+
+if [ -z "${initout}" ]; then
+echo "NO FILES FOUND, NOT STARTING MATLAB"
+exit 1
+else
+
+echo "FINISHED PIPELINE_INIT, STARTING MATLAB"
+
+module purge
+module load matlab/2023a
+
+matlab -batch "try; remove_scan_noise("$initout"); catch; end; quit"
 
 wait
 sleep 1m
 date
 sleep 1m
+
+fi
+
+
 
 
 # scontrol show job $SLURM_JOB_ID

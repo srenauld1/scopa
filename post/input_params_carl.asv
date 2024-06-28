@@ -8,6 +8,7 @@ function opt = input_params_carl(filespec_in)
 %some params below have suffix '_str'; these are string inputs (for user input convenience) that are mapped later to numeric variables
 
 %% MAIN
+[pth_usefile_prefix_all, pth_grandparent] = find_preprocessed_files(opt.main);
 
 %params for main pipeline control in file a2p
 
@@ -16,10 +17,10 @@ opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all re
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(fieldnames(filespec_in))
-    opt.mn.recdate = '20240602'; %can use wildcards
-    opt.mn.fly = '4'; %can use wildcards
+    opt.mn.recdate = '*'; %can use wildcards
+    opt.mn.fly = '*'; %can use wildcards
     opt.mn.trial = '*'; %can use wildcards
-    opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
+    opt.mn.suffix_analysis = '*'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
 else
     opt.mn.recdate = filespec_in.recdate; %can use wildcards
     opt.mn.fly = filespec_in.fly; %can use wildcards
@@ -33,7 +34,7 @@ opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmss
 opt.mn.old_project = 0; %for carl
 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_fit = 0; %model fitting (opt.fit below)
+opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
 opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
 
@@ -50,26 +51,26 @@ opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same 
 
 %% STACK VISUALIZATION (GIF)
 
-%opt.load holds params used in load_stack
-%opt.ldst.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
-opt.ldst.crop_flyback = 1; %crop flyback frames from each volume 
-opt.ldst.zero_stack = 1; %subtract min to make min zero 
-opt.ldst.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.ldst.cropinds_t_end = 0; % how many samples to remove from end of stack
-opt.ldst.plot_stack_stats = 0; %function this uses is old and needs to be updated
+%opt.ld holds params used in load_stack
+%opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
+opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
+opt.ld.zero_stack = 1; %subtract min to make min zero 
+opt.ld.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.ld.cropinds_t_end = 0; % how many samples to remove from end of stack
+opt.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
-opt.ldst.gif.suffixes_plot = { 
+opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.ldst.gif.plotinds.t = [30:100];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.ldst.gif.plotinds.z = [2,5,8]; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.ldst.gif.rescale_each_stack = 0; %1 to rescale 0-1 before combining into single plot; 
-opt.ldst.gif.display_range = [0,1]; %2-element vector, [low,high], where anything below low in 0-1 normalized image is displayed as black, and anything above high is displayed as white, 
-opt.ldst.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+opt.ld.gif.plotinds.t = [30:100];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.ld.gif.plotinds.z = [2,5,8]; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.ld.gif.rescale_each_stack = 0; %1 to rescale 0-1 before combining into single plot; 
+opt.ld.gif.display_range = [0,1]; %2-element vector, [low,high], where anything below low in 0-1 normalized image is displayed as black, and anything above high is displayed as white, 
+opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
 
 %% MORPHOLOGICAL ROIS
@@ -208,11 +209,7 @@ opt.pf.bump.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and 
 opt.pf.bump.fitm(1).normalize_indv = 'none';
 opt.pf.bump.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 opt.pf.bump.fitm(1).mdlname = 'fnet_v'; %'fnet_v';
-if str2double(opt.mn.recdate)<20231119
-    opt.pf.bump.fitm(1).epochinds = {[4]}; %closed loop epochind for 1st dataset
-else
-    opt.pf.bump.fitm(1).epochinds = {[5]}; %closed loop epochind for 2nd dataset
-end
+opt.pf.bump.fitm(1).epochinds = {[4]};
 opt.pf.bump.fitm(1).mdl_length_sec = 0;
 opt.pf.bump.fitm(1).hsv_background = 'rois';
 opt.pf.bump.fitm(1).sort_method = 'unbiased';
@@ -220,7 +217,7 @@ opt.pf.bump.fitm(1).use_saved_model = 1;
 opt.pf.bump.fitm(1).doplots = 1;
 
 
-opt.pf.bump.fit = default_fit_params(opt.pf.bump.fit);
+opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 %% FIT MODEL
 
@@ -281,7 +278,7 @@ opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-val
 opt.fitm(1).mdlname = 'fnet_A01_sh16';
 opt.fitm(1).plt.doplots = 100;
 
-opt.fit = default_fit_params(opt.fit);
+opt.fitm = default_fit_params(opt.fitm);
 
 
 %% SCATTERPLOTS
@@ -304,54 +301,19 @@ opt.scat(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterpl
 opt.scat(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scat(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scat(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 
-
-%% PLOT EXPERIMENT
-
-% params for plot_experiment
 
 opt.pltexp(1).vars.x_str{1} = {['ball, *forv*']};
-% opt.pltexp(1).vars.x_str{1} = {['ball, *for*'], ['vis, *']};
 opt.pltexp(1).vars.y_str{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.pltexp(1).vars.z_str{1} = {['']};
-% opt.pltexp(1).vars.y_str{2} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
-opt.pltexp(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
-opt.pltexp(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 opt.pltexp(1).plotinds.t = [];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.pltexp(1).plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.pltexp(1).display_range = [0,1]; 
 
-%% HIRES
-
-%params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set opt.mroi.use_hires=1 to use
-%params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
-opt.hires.ldst.crop_flyback = 1; %crop flyback frames from each volume 
-opt.hires.ldst.zero_stack = 1; %subtract min to make min zero 
-opt.hires.ldst.cropinds_t_start = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.hires.ldst.cropinds_t_end = 0; % how many samples to remove from end of stack
-opt.hires.ldst.plot_stack_stats = 0; %function this uses is old and needs to be updated
-
-opt.hires.ldst.gif.plotinds.t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.hires.ldst.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.hires.ldst.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
-opt.hires.ldst.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
-opt.hires.ldst.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
-opt.hires.gif.plot_stack_stats = 0; %function this uses is old and needs to be updated
-opt.hires.gif.plot_stack_gif = 1;
-opt.hires.do_reg_plots = 1;
-opt.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
-opt.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
-opt.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
-opt.hires.caiman_hr_str = '*'; %empty to skip
-
-    %% CARL'S OLD PROJECT
-
+%% CARL'S OLD PROJECT
 
 %overwrite some params for carl's old project
 if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override some settings for old project
@@ -363,5 +325,7 @@ if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override s
 end
 
 %% order fields
+
+opt = default_params_a2p(opt);
 
 opt = orderfields_recursive(opt);

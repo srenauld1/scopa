@@ -5,7 +5,7 @@ switch fid
     case 'bump'
 
 
-        for si = 1:numel(opts.fit)
+        for si = 1:numel(opts.fitm)
             dochoose = 1;
             choosecount = 0;
             while dochoose
