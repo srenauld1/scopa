@@ -153,7 +153,7 @@ function imout = fft_filter_1d(imin, stopband)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
 disp(size(imin));
-imin = imin(1:3,:,:,:);
+
 sz = size(imin);
 numlines = sz(1);
 numxpix = sz(2);
