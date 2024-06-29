@@ -22,7 +22,7 @@ arguments
     margins_subplot double = 0.03 %scalar or vector; element n denotes x and y margins between subplots in sector n; if scalar, while numrows and numcolumns are vector, will apply scalar to all sectors
     margins_fig double = 0.03 %scalar; margins of entire figure (not sectors)
     splitdim char = 'x' %'x', or 'y', denoting whether sector(s) created by split along x or y axis
-    splitfrac double = []  %scalar or vector denoting each sector's fraction of splitdim extent; if num_sectors==1, default is 1; if num_sectors>1, default if is even split among num_sectors
+    splitfrac double = 1  %scalar or vector denoting each sector's fraction of splitdim extent; if num_sectors==1, default is 1; if num_sectors>1, default if is even split among num_sectors
     y_order char = 'down' %'up' or 'down'; direction of y position indices
 end
 
@@ -30,12 +30,10 @@ if ~iscell(subplot_layout)
     subplot_layout = {subplot_layout};
 end
 
-if isempty(splitfrac)
-    if numel(subplot_layout)==1
-        splitfrac = 1;
-    else
-        splitfrac = repelem(1/numel(subplot_layout), numel(subplot_layout)-1);
-    end
+if numel(subplot_layout)==1
+    splitfrac = 1;
+else
+    repelem(1/numel(subplot_layout), numel(subplot_layout)-1);
 end
 
 if numel(splitfrac)~=numel(subplot_layout) && numel(splitfrac)~=numel(subplot_layout)-1  
