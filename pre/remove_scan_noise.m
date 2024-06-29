@@ -167,7 +167,8 @@ fstop2 = fv(stopband(2)); % Frequency Corresponding To stopband(2)
 
 %% make linear phase fir stopband filter to minimize distortion in reconstructed signal
 
-filtord = 2^6; %for these fir filters, higher order means longer in time domain, means better filtering but longer startup transient
+
+filtord = pow2(floor(log2(numxpix/3))); %for these fir filters, higher order means longer in time domain, means better filtering but longer startup transient
 
 filt = designfilt(...
     'bandstopfir', ...
