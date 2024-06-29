@@ -27,9 +27,9 @@
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
 do_stitch=0 #0 or 1, no space after =, stitch together denoised z slices into one tif
-do_remove=1 #0 or 1, no space after =, remove scan noise (matlab)
+do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
-do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
+do_analysis=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
@@ -49,9 +49,9 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20240601')
+RECDATE=('20230627')
 FLY=('2')
-TRIAL=('*')
+TRIAL=('2')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
