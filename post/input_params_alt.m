@@ -23,6 +23,7 @@ if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here
 else
     opt.mn.pth_usefile_prefix_all = varargin{1};
     [pthin, ~, ~] = fileparts(opt.mn.pth_usefile_prefix_all);
+    pthin = strsplit(pthin, filesep);
     opt.mn.pth_grandparent = [strjoin(pthin(1:end-2), filesep) filesep];
 end
 
