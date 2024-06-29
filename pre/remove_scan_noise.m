@@ -3,9 +3,9 @@ function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
 
 % len_window_smooth_t_rsc = 0;
 pth_stack_tif
-print(pth_stack_tif)
+disp(pth_stack_tif)
 len_window_smooth_t_rsc
-print(len_window_smooth_t_rsc)
+disp(len_window_smooth_t_rsc)
 sprintf("\n\n\nENTERING remove_scan_noise")
 fprintf("\n\n\nENTERING remove_scan_noise")
 
