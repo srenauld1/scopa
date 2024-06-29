@@ -35,9 +35,13 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_sha
                 mdt['framerate_hires'] = float(re.findall( 'scanFrameRate = (.*)', meta_hires)[0])
                 mdt['volrate_hires'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
 
-            
+
             meta = ScanImageTiffReader(pth_datafile).metadata()    #tiffile might be able to read metadata
             
+            mdt['channelSave'] = int(re.findall( 'channelSave = (.*)', meta)[0])
+            mdt['channelsActive'] = int(re.findall( 'channelsActive = (.*)', meta)[0])
+            print("\n\n\nchannelSave: \n" + str(mdt['channelSave']))
+            print("\n\n\nchannelsActive: \n" + str(mdt['channelsActive']))
             mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
             mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
             mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
@@ -76,21 +80,7 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_sha
 
     except:
         
-        print("WARNING: CANNOT READ METADATA, USING DEFAULTS")
-        mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is 1 because old project is not volumetric 
-        mdt['framerate'] = 20
-        mdt['volrate'] = 20
-        mdt['xpix'] = 256
-        mdt['xfov'] = 74
-        mdt['ypix'] = 128
-        mdt['yfov'] = 37
-        mdt['numslice'] = 1
-        mdt['numslice_withflyback'] = 1
-        mdt['numvol'] = mat_file_shape[0]
-        mdt['zfov'] = 1  #set to 1 to avoid division by zero later, even though it's not really 1
-        mdt['flyback'] = 0
-        mdt['zwid'] = 0
-        mdt['zstartpos'] = 0
+        raise Exception("\n\n\n CANNOT READ METADATA")
 
                 
     md = {  'numvol': mdt['numvol'],

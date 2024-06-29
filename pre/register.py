@@ -36,10 +36,19 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     Y = imread(pth_tif_read).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
     
+    Y = np.ones((2, md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3]))
     Y = Y.reshape(md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
         
     if md['flyback']!=0:    
         Y = Y[:,:-md['flyback'],:,:] #crop md['flyback'] frames
+
+    Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
+
+    Y_1 = imread(pth_tif_read).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
+    Y_1 = Y_1.reshape(2, md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
+        
+    if md['flyback']!=0:    
+        Y = np.squeeze(Y_1[1,:,:-md['flyback'],:,:]) #crop md['flyback'] frames
 
     Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
     
