@@ -1,10 +1,15 @@
 
-function remove_scan_noise(pth_parsfile, recording_index)
+function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
 
+% len_window_smooth_t_rsc = 0;
+pth_stack_tif
+disp(pth_stack_tif)
+len_window_smooth_t_rsc
+disp(len_window_smooth_t_rsc)
 sprintf("\n\n\nENTERING remove_scan_noise")
 fprintf("\n\n\nENTERING remove_scan_noise")
 
-%pth_tif_read_all is full path to tif or mat (if mat is in same folder with
+%pth_stack_tif is full path to tif or mat (if mat is in same folder with
 %tif, it will be loaded without reading the tif)
 
 makeplots = 1;
@@ -21,13 +26,9 @@ dimorder = [1,2,3,4];%for plotting, if makeplots
 figsidelen = 0.75;%for plotting, if makeplots
 
 
-len_window_smooth_t = len_window_smooth_t_rsc; %helps with filtering the scan noise, make 0 to skip, gaussian window length, std is 1/10th len_window_smooth_t
+display(['processing : ' pth_stack_tif] )
 
-pth_stack_tif = pth_tif_read_all;
-
-display(['processing : ' pth_tif_read_all] )
-
-[pth_fldr, filnam, ~] = fileparts(pth_tif_read_all);
+[pth_fldr, filnam, ~] = fileparts(pth_stack_tif);
 
 if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(regexp(filnam, regexptranslate('wildcard', '_trial')))
     error(sprintf("ERROR, \nTHIS FUNCTION IS NOT WRITTEN FOR STACKS WITH FLYBACK " + ...
@@ -48,7 +49,7 @@ suffix_analysis = strjoin(spl(4:end));
 
 recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
-pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_tif_read_all is a tif, also look for mat (and if it's mat, this does nothing
+pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
 pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
 pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
@@ -62,10 +63,10 @@ keepinds_t = 1:sz(4);
 
 
 label_prefix = 't';
-[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix, max_num_inds_to_print);
+[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix);
 
 label_prefix = 'z';
-[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix, max_num_inds_to_print);
+[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix);
 
 if isequal(display_range, [0 1])
     dr_str = 'DRfull';
@@ -94,8 +95,8 @@ end
 %% smooth
 
 
-if len_window_smooth_t
-    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t);
+if len_window_smooth_t_rsc
+    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc);
 end
 "DONE SMOOTHING"
 
@@ -150,6 +151,7 @@ function imout = fft_filter_1d(imin, stopband)
 
 sz = size(imin);
 numlines = sz(1);
+numlines = 
 numxpix = sz(2);
 fs = numxpix; %sampling frequency (num x pixels)
 fn = fs/2; % Nyquist Frequency

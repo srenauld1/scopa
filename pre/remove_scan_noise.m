@@ -63,10 +63,10 @@ keepinds_t = 1:sz(4);
 
 
 label_prefix = 't';
-[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix, max_num_inds_to_print);
+[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix);
 
 label_prefix = 'z';
-[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix, max_num_inds_to_print);
+[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix);
 
 if isequal(display_range, [0 1])
     dr_str = 'DRfull';
@@ -148,7 +148,8 @@ end
 function imout = fft_filter_1d(imin, stopband)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
-
+disp(size(imin));
+imin = imin(1:3,:,:,:);
 sz = size(imin);
 numlines = sz(1);
 numxpix = sz(2);
