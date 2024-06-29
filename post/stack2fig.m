@@ -82,8 +82,8 @@ numypix = size(stack,1);
 numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
 numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
 dummyim = nan(numypix, numxpix);
-stackmin = min(stack(:));
-stackmax = max(stack(:));
+stackmin = double(min(stack(:)));
+stackmax = double(max(stack(:)));
 stackrange = stackmax-stackmin;
 
 
