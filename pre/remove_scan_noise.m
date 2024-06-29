@@ -21,6 +21,7 @@ plotinds.z = []; %z indices to plot, blank for all, negative for that number equ
 zero_stack = 1; %subtract min to make min zero 
 
 cmap = gray(256); %for plotting, if makeplots
+display_range = [0,1]; %for plotting, if makeplots
 framenumdims = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
 figsidelen = 0.75;%for plotting, if makeplots
@@ -68,7 +69,7 @@ label_prefix = 't';
 label_prefix = 'z';
 [plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix);
 
-if isequal(display_range, [0 1])
+if isequal(display_range, [0,1])
     dr_str = 'DRfull';
 else
     dr_str = ['DR' num2str(display_range(1)) 'to' num2str(display_range(2))];
