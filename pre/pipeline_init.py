@@ -105,6 +105,10 @@ if not do_copyfiles:
   elif do_remove or do_analysis:
      import matlab.engine
      import io
+     from pathlib import Path
+     pp = Path(currscriptdir).parts #split path
+     pp_splitind = pp.index('scopa') + 1
+     pth_scopa = os.path.join(*pp[:pp_splitind])
 
 
 
@@ -140,7 +144,7 @@ for ri, _ in enumerate(pth_tif_read_all):
 
       if do_remove:
         eng = matlab.engine.start_matlab()
-        eng.addpath(eng.genpath('/home/caw846/scopa'))
+        eng.addpath(eng.genpath(pth_scopa))
         mtlout = io.StringIO()
         mtlerr = io.StringIO()
         eng.remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
@@ -150,7 +154,10 @@ for ri, _ in enumerate(pth_tif_read_all):
           
       if do_analysis:
         eng = matlab.engine.start_matlab()
-        eng.a2p(pth_tif_read_all[ri], nargout=0)
+        eng.addpath(eng.genpath(pth_scopa))
+        mtlout = io.StringIO()
+        mtlerr = io.StringIO()
+        eng.a2p(pth_tif_read_all[ri], stdout=mtlout, stderr=mtlerr, nargout=0)
           
          
 
