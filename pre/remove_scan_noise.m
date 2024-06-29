@@ -1,7 +1,7 @@
 
-function remove_scan_noise(pth_stack_tif)
+function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
 
-len_window_smooth_t_rsc = 0;
+% len_window_smooth_t_rsc = 0;
 pth_stack_tif
 print(pth_stack_tif)
 len_window_smooth_t_rsc
