@@ -1,6 +1,3 @@
-
-
-
 from ScanImageTiffReader import ScanImageTiffReader
 from ast import literal_eval
 import re
@@ -38,8 +35,8 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_sha
 
             meta = ScanImageTiffReader(pth_datafile).metadata()    #tiffile might be able to read metadata
             
-            mdt['channelSave'] = int(re.findall( 'channelSave = (.*)', meta)[0])
-            mdt['channelsActive'] = int(re.findall( 'channelsActive = (.*)', meta)[0])
+            mdt['channelSave'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
+            mdt['channelsActive'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))
             print("\n\n\nchannelSave: \n" + str(mdt['channelSave']))
             print("\n\n\nchannelsActive: \n" + str(mdt['channelsActive']))
             mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])

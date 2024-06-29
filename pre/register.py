@@ -34,9 +34,16 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
 
-    Y = imread(pth_tif_read).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
+    Y = imread(pth_tif_read).astype('float32') ## (tz)yx, or if multiple channels, (tz)cyx 
     
-    Y = np.ones((2, md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3]))
+    if not isinstance(md['channelSave'], int):
+        if len(md['channelSave'])==2:
+            print("stack has 2 channels, discarding the first as temporary hack")
+            keepchannel = 0 #which channel to keep, 0 or 1
+            Y = Y[:,keepchannel,:,:]
+        else:
+            raise Exception("there is a channels problem")
+        
     Y = Y.reshape(md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
         
     if md['flyback']!=0:    
@@ -44,14 +51,6 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
 
-    Y_1 = imread(pth_tif_read).astype('float32') ##having trouble on O2 with caiman function cm.load so just using imread from tifffile.tifffile
-    Y_1 = Y_1.reshape(2, md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
-        
-    if md['flyback']!=0:    
-        Y = np.squeeze(Y_1[1,:,:-md['flyback'],:,:]) #crop md['flyback'] frames
-
-    Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
-    
     mnmv = np.min(Y).astype('float32')
     Y -= mnmv #make movie nonnegative (not sure this is necessary)
     print("MIN BEFORE MOTION CORRECTION " + str(mnmv))
