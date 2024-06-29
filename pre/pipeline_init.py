@@ -104,6 +104,7 @@ if not do_copyfiles:
     
   elif do_remove or do_analysis:
      import matlab.engine
+     import io
 
 
 
@@ -140,7 +141,9 @@ for ri, _ in enumerate(pth_tif_read_all):
       if do_remove:
         eng = matlab.engine.start_matlab()
         eng.addpath(eng.genpath('/home/caw846/scopa'))
-        eng.remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, nargout=0)
+        mtlout = io.StringIO()
+        mtlerr = io.StringIO()
+        eng.remove_scan_noise(pth_tif_read_all[ri], len_window_smooth_t_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop:
          extract(index_extraction_param_set, pth_prefix_all[ri], pth_tif_read_all[ri], md, do_crop, extract_in_2d, regionex, makeplots, cluster_backend, use_cluster)

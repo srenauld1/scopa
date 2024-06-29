@@ -9,7 +9,7 @@ disp(len_window_smooth_t_rsc)
 sprintf("\n\n\nENTERING remove_scan_noise")
 fprintf("\n\n\nENTERING remove_scan_noise")
 
-%pth_tif_read_all is full path to tif or mat (if mat is in same folder with
+%pth_stack_tif is full path to tif or mat (if mat is in same folder with
 %tif, it will be loaded without reading the tif)
 
 makeplots = 1;
@@ -26,9 +26,9 @@ dimorder = [1,2,3,4];%for plotting, if makeplots
 figsidelen = 0.75;%for plotting, if makeplots
 
 
-display(['processing : ' pth_tif_read_all] )
+display(['processing : ' pth_stack_tif] )
 
-[pth_fldr, filnam, ~] = fileparts(pth_tif_read_all);
+[pth_fldr, filnam, ~] = fileparts(pth_stack_tif);
 
 if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(regexp(filnam, regexptranslate('wildcard', '_trial')))
     error(sprintf("ERROR, \nTHIS FUNCTION IS NOT WRITTEN FOR STACKS WITH FLYBACK " + ...
@@ -49,7 +49,7 @@ suffix_analysis = strjoin(spl(4:end));
 
 recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
-pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_tif_read_all is a tif, also look for mat (and if it's mat, this does nothing
+pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
 pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
 pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
