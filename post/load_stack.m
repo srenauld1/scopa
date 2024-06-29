@@ -71,9 +71,9 @@ for spi = 1:numel(pth_stacks_prefix)
 
     if ~isempty(pth_stacks_prefix{spi}) %if it's not empty it means either mat or tif or both exist
 
-        [~, filnam, ~] = fileparts(pth_stacks_prefix);
-        pth_stack_tif = [pth_stacks_prefix '.tif'];
-        pth_stack_mat = [pth_stacks_prefix '.mat'];
+        [~, filnam, ~] = fileparts(pth_stacks_prefix{spi});
+        pth_stack_tif = [pth_stacks_prefix{spi} '.tif'];
+        pth_stack_mat = [pth_stacks_prefix{spi} '.mat'];
 
         try
             stack = struct2cell(load(pth_stack_mat));

@@ -2,6 +2,8 @@ function stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, 
 
 [~, filnam, ~] = fileparts(pth_stack_tif);
 
+pth_stack_mat = [pth_stack_tif(1:end-4) '.mat'];
+
 if crop_flyback && ( ~isempty(regexp(filnam, 'raw')) || ~isempty(regexp(filnam, 'hires')) )
     size_z_read_from = numslice_withflyback; %raw and hires includes flyback
 else

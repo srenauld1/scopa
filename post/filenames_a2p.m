@@ -26,7 +26,10 @@ spl = strsplit(spl, '_'); %then separate by underscore
 datenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});    % trialnum = str2double(spl(find(strcmp(spl, 'trial'))+1));
-suffix_analysis = strjoin(spl(4:end));
+suffix_analysis = strjoin(spl(4:end), '_');
+if strcmp(suffix_analysis(end), '_')
+    suffix_analysis = suffix_analysis(1:end-1);
+end
 
 datefly_hyphen = [num2str(datenum) '-' num2str(flynum)];
 recid_underscore = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];

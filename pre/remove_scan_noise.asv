@@ -21,6 +21,7 @@ plotinds.z = []; %z indices to plot, blank for all, negative for that number equ
 zero_stack = 1; %subtract min to make min zero 
 
 cmap = gray(256); %for plotting, if makeplots
+display_range = [0,1]; %for plotting, if makeplots
 framenumdims = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
 figsidelen = 0.75;%for plotting, if makeplots
@@ -45,12 +46,15 @@ spl = strsplit(spl, '_'); %then separate by underscore
 datenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});
-suffix_analysis = strjoin(spl(4:end));
+suffix_analysis = strjoin(spl(4:end), '_');
+if strcmp(suffix_analysis(end), '_')
+    suffix_analysis = suffix_analysis(1:end-1);
+end
 
 recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
-pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
-pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
+pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
+pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
 pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
 md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
@@ -68,7 +72,7 @@ label_prefix = 't';
 label_prefix = 'z';
 [plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix);
 
-if isequal(display_range, [0 1])
+if isequal(display_range, [0,1])
     dr_str = 'DRfull';
 else
     dr_str = ['DR' num2str(display_range(1)) 'to' num2str(display_range(2))];
@@ -85,7 +89,7 @@ fn_gif_postfilt = [filename_prefix 'postfilt_' timestr '_.gif'];
 %% load
 
 try
-    stack = struct2cell(load(pth_dn_mat));
+    stack = struct2cell(load(pth_stack_mat));
     stack = stack{1};
 catch
     stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, zero_stack, keepinds_t);
@@ -136,7 +140,7 @@ end
 %% save
 
 
-save(pth_dn_nosn_mat, 'stack', '-v7.3', '-mat')
+save(pth_stack_nosn_mat, 'stack', '-v7.3', '-mat')
 
 "FINISHED SAVING"
 
@@ -148,10 +152,10 @@ end
 function imout = fft_filter_1d(imin, stopband)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
-
+disp(size(imin));
+imin = imin(1:3,:,:,:);
 sz = size(imin);
 numlines = sz(1);
-numlines = 
 numxpix = sz(2);
 fs = numxpix; %sampling frequency (num x pixels)
 fn = fs/2; % Nyquist Frequency

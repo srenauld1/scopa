@@ -46,12 +46,15 @@ spl = strsplit(spl, '_'); %then separate by underscore
 datenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});
-suffix_analysis = strjoin(spl(4:end));
+suffix_analysis = strjoin(spl(4:end), '_');
+if strcmp(suffix_analysis(end), '_')
+    suffix_analysis = suffix_analysis(1:end-1);
+end
 
 recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
-pth_dn_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
-pth_dn_nosn_mat = [pth_dn_mat(1:end-4) 'nosn_.mat'];
+pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
+pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
 pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
 
 md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
@@ -86,7 +89,7 @@ fn_gif_postfilt = [filename_prefix 'postfilt_' timestr '_.gif'];
 %% load
 
 try
-    stack = struct2cell(load(pth_dn_mat));
+    stack = struct2cell(load(pth_stack_mat));
     stack = stack{1};
 catch
     stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, zero_stack, keepinds_t);
@@ -137,7 +140,7 @@ end
 %% save
 
 
-save(pth_dn_nosn_mat, 'stack', '-v7.3', '-mat')
+save(pth_stack_nosn_mat, 'stack', '-v7.3', '-mat')
 
 "FINISHED SAVING"
 
