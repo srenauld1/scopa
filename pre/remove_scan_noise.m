@@ -1,5 +1,5 @@
 
-function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
+function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc_sec)
 
 
 sprintf("\n\n\nENTERING remove_scan_noise")
@@ -54,7 +54,7 @@ md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
 md = md{1};
 sz = single([md.ypix md.xpix md.numslice md.numvol]);
 dtmni = 1/md.volrate;
-slopelen = round(slopelen_sec / dtmni);
+
 
 crop_flyback = 0;
 numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
@@ -73,7 +73,15 @@ else
     dr_str = ['DR' num2str(display_range(1)) 'to' num2str(display_range(2))];
 end
 
-figtitle_prefix = [recid '_' suffix_analysis '_' dr_str];
+if len_window_smooth_t_rsc_sec
+    smooth_str = [strrep(num2str(len_window_smooth_t_rsc_sec), '.', 'p') 'secSmooth'];
+    len_window_smooth_t_rsc_samp = len_window_smooth_t_rsc_sec / dtmni; %does not need to be rounded for smoothdata
+else
+    smooth_str = 'nosmooth';
+    len_window_smooth_t_rsc_samp = 0;
+end
+
+figtitle_prefix = [recid '_' suffix_analysis '_' dr_str '_' smooth_str];
 filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_str ];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
@@ -94,8 +102,8 @@ end
 %% smooth
 
 
-if len_window_smooth_t_rsc
-    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc);
+if len_window_smooth_t_rsc_samp
+    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc_samp);
 end
 "DONE SMOOTHING"
 

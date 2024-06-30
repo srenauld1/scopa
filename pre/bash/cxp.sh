@@ -62,7 +62,7 @@ REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimit
 
 REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
-LEN_WINDOW_SMOOTH_T_MCP=(0) #gaussian smoothing window length in register (prior to registration, helps register noisy movies)
+LEN_WINDOW_SMOOTH_T_MCP_SEC=(0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
@@ -72,7 +72,7 @@ EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack sav
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
 USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif); if it doesn't exist, won't error
 
-LEN_WINDOW_SMOOTH_T_RSC=(5.3) #smoothing window in remove_scan_noise (only used if do_remove=1)
+LEN_WINDOW_SMOOTH_T_RSC_SEC=(5.3) #seconds, gaussian temporal smoothing window length in remove_scan_noise (only used if do_remove=1)
 USE_SCANNOISE_REMOVED=(1) #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
 
 EXTRACT_IN_2D=(1)
@@ -144,7 +144,7 @@ pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 pars["REGISTRATION_TEMPLATE_GROUP_ID"]="${REGISTRATION_TEMPLATE_GROUP_ID[@]}"
 pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
 pars["HALFWIDTH_WINDOW_BGSUB"]="${HALFWIDTH_WINDOW_BGSUB[@]}"
-pars["LEN_WINDOW_SMOOTH_T_MCP"]="${LEN_WINDOW_SMOOTH_T_MCP[@]}"
+pars["LEN_WINDOW_SMOOTH_T_MCP_SEC"]="${LEN_WINDOW_SMOOTH_T_MCP_SEC[@]}"
 pars["DENOISE_VOLUME"]="${DENOISE_VOLUME[@]}"
 pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"
 pars["NUM_EPOCHS_DENOISE"]="${NUM_EPOCHS_DENOISE[@]}"
@@ -152,7 +152,7 @@ pars["USE_BACKGROUND_SUBTRACTED"]="${USE_BACKGROUND_SUBTRACTED[@]}"
 pars["USE_DENOISED"]="${USE_DENOISED[@]}"
 pars["USE_SCANNOISE_REMOVED"]="${USE_SCANNOISE_REMOVED[@]}"
 pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
-pars["LEN_WINDOW_SMOOTH_T_RSC"]="${LEN_WINDOW_SMOOTH_T_RSC[@]}"
+pars["LEN_WINDOW_SMOOTH_T_RSC_SEC"]="${LEN_WINDOW_SMOOTH_T_RSC_SEC[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
 pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"

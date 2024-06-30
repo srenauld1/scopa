@@ -13,7 +13,7 @@ from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
 
     ########################## LOAD STACK, PREPARE VARIABLES ##########################
@@ -36,13 +36,14 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     Y = imread(pth_tif_read).astype('float32') ## (tz)yx, or if multiple channels, (tz)cyx 
     
-    if not isinstance(md['channelSave'], int):
-        if len(md['channelSave'])==2:
-            print("stack has 2 channels, discarding the first as temporary hack")
-            keepchannel = 0 #which channel to keep, 0 or 1
-            Y = Y[:,keepchannel,:,:]
-        else:
-            raise Exception("there is a channels problem")
+    if 'channelSave' in md: #older runs of do_register will not have this field in md, if you need it, delete metadatanew and rerun
+        if not isinstance(md['channelSave'], int):
+            if len(md['channelSave'])==2:
+                print("stack has 2 channels, discarding the first as temporary hack")
+                keepchannel = 0 #which channel to keep, 0 or 1
+                Y = Y[:,keepchannel,:,:]
+            else:
+                raise Exception("there is a channels problem")
         
     Y = Y.reshape(md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3])
         
@@ -103,7 +104,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     ########################## TEMPORAL SMOOTHING (OPTIONAL) ##########################
 
-    if len_window_smooth_t_mcp: #if you smooth before registering (very noisy data), create another file for smoothed movie
+    if len_window_smooth_t_mcp_sec: #if you smooth before registering (very noisy data), create another file for smoothed movie
 
         if register_in_2d: #for planar extraction write one presmoothed z at a time
             pth_tif_presmooth = ['']*len(zindall)
@@ -120,7 +121,9 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
         dimtmp_presmooth = Y.shape
         numsigma_smooth_prereg = 5.0
-        sigma_smooth_prereg = (len_window_smooth_t_mcp - 1) / numsigma_smooth_prereg / 2
+        dtmni = 1/md['volrate']
+        len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / dtmni #smooth might require int, cant remember 
+        sigma_smooth_prereg = (len_window_smooth_t_mcp_samp - 1) / numsigma_smooth_prereg / 2
         Y = smooth_movie(Y.reshape(md['dims'][0], -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
         Y = Y.reshape(dimtmp_presmooth)
         # mnmv = np.min(Y).astype('float32')
@@ -176,7 +179,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True, template = regtemplate_oneloop)
         input_for_save_memmap = mc.mmap_file #create this variable because it can be memmap file or ndarray
-        if len_window_smooth_t_mcp: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
+        if len_window_smooth_t_mcp_sec: #apply shifts learned from smoothed movie to the raw movie (we don't want smoothed movie ultimately)
             input_for_save_memmap = mc.apply_shifts_movie(pth_tif_presmooth[countz], save_memmap=False, order='F') #for some reason cannot save_memmap
             input_for_save_memmap = [input_for_save_memmap] #so must pass nd array to save_memmap below
             os.remove(pth_tif_presmooth[countz])

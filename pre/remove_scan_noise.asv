@@ -1,5 +1,5 @@
 
-function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
+function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc_sec)
 
 
 sprintf("\n\n\nENTERING remove_scan_noise")
@@ -92,8 +92,8 @@ end
 %% smooth
 
 
-if len_window_smooth_t_rsc
-    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc);
+if len_window_smooth_t_rsc_sec
+    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc_sec);
 end
 "DONE SMOOTHING"
 
