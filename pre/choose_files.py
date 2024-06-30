@@ -57,7 +57,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
             if use_scannoise_removed and (do_extract or do_crop or do_analysis):
                 fn_suffix_scopa = fn_suffix_scopa + '_nosn'
-        fn_suffix_scopa = fn_suffix_scopa + '_.tif'
+        if use_scannoise_removed and do_extract:
+            fn_suffix_scopa = fn_suffix_scopa + '_.mat' 
+            raise Exception("you requested do_extract for a file with suffix: \n" + fn_suffix_scopa + "\nonly a mat file is made with suffix 'nosn', but do_extract needs tif exclusively, so need to run something like mat2tif_carls_old_project below to make tif for extract, haven't done that yet though, so raising exception to warn user")
+        else:
+            fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa
         pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine with empty (functionally pointless here, just for readability/symmetry with pattern below
@@ -79,7 +83,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_carlold, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since multiple patterns are valid as input
 
-        if do_remove or do_analysis:
+        if do_remove or do_analysis: #these jobs use mat files (or convert tif to mat) so check if mat exists too
             fn_suffix_scopa_mat = fn_suffix_scopa[:-5] + '_.mat'
             fn_pattern_scopa_mat = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa_mat
             pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa_mat, recursive=True)
