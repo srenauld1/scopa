@@ -15,7 +15,10 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                  do_register, do_denoise, do_stitch, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
-    
+    use_scannoise_removed = 0
+
+    ######### FORMAT FILE SPECIFIERS, BASED ON INPUT #########
+
     pth_fnind = pth_fldr_fnind + fnind_fn_prefix + '_' + str(recording_index[0]) + '_.txt'
     
     if not first_job:
@@ -41,20 +44,24 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
             filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdate, fly, trial, folder_substring)] 
 
+    ######### FIND FILES #########
+
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
-        fn_suffix_scopa = '_raw' #find files matching scopa output pattern
+        fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
         if do_denoise or do_stitch or do_extract or do_crop or do_remove or do_analysis:
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
                 fn_suffix_scopa =  '_bksb' + fn_suffix_scopa
             if use_denoised and (do_extract or do_crop or do_remove or do_analysis):
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
+            if use_scannoise_removed and (do_extract or do_crop or do_analysis):
+                fn_suffix_scopa = fn_suffix_scopa + '_nosn'
         fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa
         pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa, recursive=True)
-        pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine, since both patterns are valid as input
+        pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine with empty (functionally pointless here, just for readability/symmetry with pattern below
 
         if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
             
@@ -65,29 +72,49 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + fn_suffix_flyg
             # pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
             pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_flyg, recursive=True)
-            pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since both patterns are valid as input
+            pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since multiple patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
             fn_pattern_carlold = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + '_' + fn_suffix_carlold 
             # pth_allfiles_carlold = glob.glob(pth_allrec + '**/' + fn_pattern_carlold, recursive=True)
             pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_carlold, recursive=True)
-            pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since both patterns are valid as input
+            pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since multiple patterns are valid as input
 
-    pth_allfiles_singles = [item for item, count in collections.Counter(pth_allfiles).items() if count == 1] #files that appear once 
-    pth_allfiles_singles_full = [item for item, count in collections.Counter([x[:-3] for x in pth_allfiles_singles]).items() if count == 1] #files that appear once, even ignoring extension
+        if do_remove or do_analysis:
+            fn_suffix_scopa_mat = fn_suffix_scopa[:-5] + '_.mat'
+            fn_pattern_scopa_mat = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa_mat
+            pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa_mat, recursive=True)
+            pth_allfiles = pth_allfiles + pth_allfiles_scopa_mat #combine, since multiple patterns are valid as input
+
+
+    ######### ORGANIZE LIST OF FOUND FILES, REMOVE DUPLICATES #########
+
+    pth_allfiles_singles = [item for item, count in collections.Counter(pth_allfiles).items() if count == 1] #files that appear in pth_allfiles once 
+    pth_allfiles_singles_full = [item for item, count in collections.Counter([x[:-3] for x in pth_allfiles_singles]).items() if count == 1] #files that appear in pth_allfiles once, even ignoring extension
     tmptmp = [x[:-3] for x in pth_allfiles_singles]
     keepidx = [tmptmp.index(i) for i in pth_allfiles_singles_full if i in tmptmp] #find indices of extensionless singles in full filename list 
     pth_allfiles_singles_full = [pth_allfiles_singles[i] for i in keepidx] #this puts the extension back on
     pth_allfiles_multi_noext = [item for item, count in collections.Counter([x[:-3] for x in pth_allfiles_singles]).items() if count > 1] #files that appear more than once when ignoring extension
-    pth_allfiles_tif_with_mat = [tmp + 'tif' for tmp in pth_allfiles_multi_noext] #force tif extension on those that appear with multiple extensions  
-    pth_allfiles_duplicates = [item for item, count in collections.Counter(pth_allfiles).items() if count > 1] #files that appear multiple times 
-    pth_allfiles = pth_allfiles_singles_full + pth_allfiles_tif_with_mat + pth_allfiles_duplicates #combine 
+    if do_remove or do_analysis:
+        pth_allfiles_mat_with_tif = [tmp + 'mat' for tmp in pth_allfiles_multi_noext] #force mat extension on those that appear with mat and tif extensions (since do_remove and do_analysis want mat if available)  
+        pth_allfiles_tif_with_mat = []
+    else:
+        pth_allfiles_tif_with_mat = [tmp + 'tif' for tmp in pth_allfiles_multi_noext] #force tif extension on those that appear with mat and tif extensions (since everything but do_remove and do_analysis want tif if available)  
+        pth_allfiles_mat_with_tif = []
+    pth_allfiles_duplicates = [item for item, count in collections.Counter(pth_allfiles).items() if count > 1] #files that appear multiple times in pth_allfiles
+    pth_allfiles = pth_allfiles_singles_full + pth_allfiles_tif_with_mat + pth_allfiles_mat_with_tif + pth_allfiles_duplicates #combine 
     pth_allfiles = natsorted(pth_allfiles) #DON'T FORGET TO SORT NATURALLY (NATURALLY)
+
+
+    ######### REPORT RESULTS #########
 
     if do_register:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]
     else:
-        fn_suffixes_all = [fn_suffix_scopa]
+        if do_remove or do_analysis:
+            fn_suffixes_all = [fn_suffix_scopa, fn_suffix_scopa_mat]
+        else:
+            fn_suffixes_all = [fn_suffix_scopa]
 
     if not pth_allfiles:
         search_result_string = "NO FILES WERE FOUND"
@@ -108,31 +135,44 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 search_result_string + '\n' + recindstr)
 
 
+    ######### LOOP OVER FOUND FILES #########
 
-    pth_tif_read_all = []
+    pth_read_all = []
     pth_fldr_all = []
     fn_prefix_all = []
     pth_prefix_all = []
     pth_md_all = []
+    pth_md_flyg_all = []
+    pth_daq_all = []
     carls_old_project_all = []
     countz = 0
-    for pth_datafile in pth_allfiles: #loop over all found files
+    for pth_readfile in pth_allfiles: #loop over all found files
             
         if not first_job or (first_job and ( recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file matching recording_index, if not first_job, don't apply this selection
 
-            print("\n\n\nPREPARING FILE: \n" + pth_datafile)
+            print("\n\n\nPREPARING FILE: \n" + pth_readfile)
 
-            pth_fldr = ('/').join(pth_datafile.split('/')[:-1]) + '/'
-            fname = pth_datafile.split('/')[-1]
+            pth_fldr = ('/').join(pth_readfile.split('/')[:-1]) + '/'
+            fname = pth_readfile.split('/')[-1]
 
             if re.search('trial', fname):                       
                 fn_prefix = fname.split('_')[0].split('-')[0] + '_' + fname.split('_')[0].split('-')[1]  + '_' + str(int(fname.split('_')[-2][-1])) #change hyphen to underscore
+                trialnum = int(str(int(fname.split('_')[-2][-1])))
             else:
                 fn_prefix = '_'.join(fname.split('_')[:3])
+                trialnum = int(fname.split('_')[2])
+            fn_prefix_flyg = '-'.join(fname.split('_')[:2])
 
             pth_prefix = pth_fldr + fn_prefix
+
+            ######### FIND SOME ADDITIONAL OPTIONAL FILES #########
+
             pth_md = pth_prefix + '_metadatanew_.npy'
             pth_md_mat = pth_md[:-4] + '.mat'  
+            fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + str(trialnum).zfill(3) + '.mat'
+            pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
+            fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqfoolData_*_trial_' + str(trialnum).zfill(3) + '.mat'
+            pth_daq = glob.glob(fn_pattern_daq, recursive=True)
             
             pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_' + fn_prefix.split('_')[2] + '_hires_.tif'
             pth_hires = glob.glob(pth_pattern_hires)
@@ -142,9 +182,12 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             if pth_hires:
                 pth_hires = pth_hires[0]
 
+            
+            ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
+
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname) or re.search('stackraw', fname) or pth_hires: #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
-                    [pth_datafile, fname, pth_hires] = rename_files(pth_datafile, fname, fn_prefix, pth_fldr, pth_hires)
+                    [pth_readfile, fname, pth_hires] = rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires)
             
             mat_file_shape = None
             if int(fn_prefix.split('_')[0])>20230101:
@@ -152,24 +195,35 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             else:
                 carls_old_project = 1
                 if fname[-3:]=='mat':
-                    mat_file_shape = mat2tif_carls_old_project(pth_datafile)
+                    mat_file_shape = mat2tif_carls_old_project(pth_readfile)
 
+
+            ######### READ METADATA #########
 
             if not os.path.isfile(pth_md) or not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
-                read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
+                if do_register:
+                    read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
+                else:
+                    raise Exception("metadatanew.npy and/or metadatanew.mat are not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or do_register to create them")
                 
+            
+            ######### PUT IN LISTS #########
 
-            pth_tif_read_all.append(pth_datafile)
+            pth_read_all.append(pth_readfile)
             pth_fldr_all.append(pth_fldr)
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
             pth_md_all.append(pth_md)
+            pth_md_flyg_all.append(pth_md_flyg_all)
+            pth_daq_all.append(pth_daq_all)
             carls_old_project_all.append(carls_old_project)
             
         
         countz = countz + 1
 
-    if first_job: #if first_job, write a file mathing recording specifiers to recording index, so subsequent jobs in the same run will follow this mapping
+    ######### IF FIRST JOB IN PIPELINE, WRITE FILE SPECIFIERS INTO FILE FOR LATER JOBS #########
+
+    if first_job: #if first_job, write a file matching recording specifiers to recording index, so subsequent jobs in the same run will follow this mapping
         with open(pth_fnind, 'w') as f2:
             
             print("\n\n\nSINCE THIS IS THE FIRST (OR ONLY) JOB IN THE PIPELINE, WILL WRITE FILENAME SPECIFIERS FOR FOUND FILES TO THIS FILE: \n" + pth_fnind)
@@ -193,4 +247,4 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
 
-    return (pth_tif_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, carls_old_project_all) 

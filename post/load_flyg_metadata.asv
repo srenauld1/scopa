@@ -114,7 +114,9 @@ end
 %% assign some metadata to scopa metadata struct 'md'
 
 md.rateft = fictracMetadata.fictracRate;
-md.ratedaq = mD.sampRate;
-md.ball_diameter = patternMetadata.ball_diameter;
+        md.ratedaq = mD.sampRate;
 
+
+
+md.ball_diameter = patternMetadata.ball_diameter;
 

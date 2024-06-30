@@ -9,6 +9,7 @@ from tifffile.tifffile import imwrite, imread
 import shutil
 from pathlib import Path
 import mat73
+import time
 
 
 
@@ -292,20 +293,20 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
 
 
 
-def rename_files(pth_datafile, fname, fn_prefix, pth_fldr, pth_hires):
+def rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires):
 
     if re.search('trial', fname) or re.search('stackraw', fname):
         fname_rename = fn_prefix + '_raw_.' + fname[-3:]
-        pth_datafile_rename = pth_fldr + fname_rename
-        print("RENAMING FILE \n" + pth_datafile + "\nTO \n" + pth_datafile_rename)
-        os.rename(pth_datafile, pth_datafile_rename) 
+        pth_readfile_rename = pth_fldr + fname_rename
+        print("RENAMING FILE \n" + pth_readfile + "\nTO \n" + pth_readfile_rename)
+        os.rename(pth_readfile, pth_readfile_rename) 
         
-        pth_badmat = glob.glob(pth_datafile[:-4] + '.mat') #remove any mat files from old filename pattern
+        pth_badmat = glob.glob(pth_readfile[:-4] + '.mat') #remove any mat files from old filename pattern
         if pth_badmat and re.search('trial', fname):
             print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
             os.remove(pth_badmat[0])
         
-        pth_datafile = pth_datafile_rename
+        pth_readfile = pth_readfile_rename
         fname = fname_rename
     
 
@@ -327,32 +328,32 @@ def rename_files(pth_datafile, fname, fn_prefix, pth_fldr, pth_hires):
     
         
 
-    return (pth_datafile, fname, pth_hires)
+    return (pth_readfile, fname, pth_hires)
 
 
 
-def mat2tif_carls_old_project(pth_datafile):
+def mat2tif_carls_old_project(pth_readfile):
 
     print("converting mat to tif for carls old project, if you're not carl there's a problem")
     
-    if os.path.isfile(pth_datafile[:-4] + '.tif'):
+    if os.path.isfile(pth_readfile[:-4] + '.tif'):
         raise Exception("ERROR: YOU SHOULD ONLY BE IN THIS FUNCTION IF THERE IS NO TIF")
-    mat = mat73.loadmat(pth_datafile)
+    mat = mat73.loadmat(pth_readfile)
     Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
     Y = Y.astype('float32')
     mnmv = np.min(Y).astype('float32')
     Y -= mnmv #make movie nonnegative (not sure this is necessary)
     print("MIN OF STACKRAW_PMC MAT FILE " + str(mnmv))
     Y = np.transpose(Y, (2, 0, 1)) #put in order t y x (not t x y) #stackraw_mc may be flipped relative to stackraw pmc
-    pth_datafile = pth_datafile[:-4] + '.tif'
-    imwrite(pth_datafile, Y.astype('uint16'), bigtiff=True, photometric='minisblack') #write as t x y z (singleton z at end)
+    pth_readfile = pth_readfile[:-4] + '.tif'
+    imwrite(pth_readfile, Y.astype('uint16'), bigtiff=True, photometric='minisblack') #write as t x y z (singleton z at end)
     mat_file_shape = Y.shape
     
     return mat_file_shape
             
 
-def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix, pth_tif_read, 
-                     pth_md, pth_fldr_copydest_prefix, pth_fldr, 
+def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix, 
+                     pth_tif_read, pth_md, pth_md_flyg, pth_daq, pth_fldr_copydest_prefix, pth_fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -374,8 +375,15 @@ def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix
             print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_fldr_copydest)
 
             Path(pth_fldr_copydest).mkdir(parents=True, exist_ok=True)
-            shutil.copy2(pth_tif_read, pth_fldr_copydest)
+            
             shutil.copy2(pth_md, pth_fldr_copydest)
+            time.sleep(5.5) 
+            shutil.copy2(pth_md_flyg, pth_fldr_copydest)
+            time.sleep(5.5) 
+            shutil.copy2(pth_daq, pth_fldr_copydest)
+            time.sleep(5.5) 
+            shutil.copy2(pth_tif_read, pth_fldr_copydest)
+            time.sleep(5.5) 
             
             if do_extract:
                 pth_croplim_pat = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
@@ -393,7 +401,7 @@ def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix
 
 
 
-    elif do_copyfiles==2: #copy from O2 to storage server 
+    elif do_copyfiles==2: #copy, from O2 to storage server (any new filename, or same filename with different edit time)
         
         if do_denoise:
             print("\n\n\nnot copying anything out because do_denoise is true, and they use files in denoising folder")

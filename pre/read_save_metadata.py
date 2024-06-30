@@ -4,7 +4,7 @@ import re
 import scipy.io as sio
 import numpy as np
 
-def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_shape = None):
+def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_shape = None):
 
     mdt = {}
 
@@ -33,7 +33,7 @@ def read_save_metadata(pth_datafile, pth_md, pth_md_mat, pth_hires, mat_file_sha
                 mdt['volrate_hires'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
 
 
-            meta = ScanImageTiffReader(pth_datafile).metadata()    #tiffile might be able to read metadata
+            meta = ScanImageTiffReader(pth_readfile).metadata()    #tiffile might be able to read metadata
             
             mdt['channelSave'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['channelsActive'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))

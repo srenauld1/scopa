@@ -209,11 +209,8 @@ opt.pf.bump.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and 
 opt.pf.bump.fitm(1).normalize_indv = 'none';
 opt.pf.bump.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 opt.pf.bump.fitm(1).mdlname = 'fnet_v'; %'fnet_v';
-if str2double(opt.mn.recdate)<20231119
-    opt.pf.bump.fitm(1).epochinds = {[4]}; %closed loop epochind for 1st dataset
-else
-    opt.pf.bump.fitm(1).epochinds = {[5]}; %closed loop epochind for 2nd dataset
-end
+opt.pf.bump.fitm(1).epochinds = {[4]};
+
 opt.pf.bump.fitm(1).mdl_length_sec = 0;
 opt.pf.bump.fitm(1).hsv_background = 'rois';
 opt.pf.bump.fitm(1).sort_method = 'unbiased';

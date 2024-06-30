@@ -25,9 +25,11 @@ function a2p(varargin)
 
 %% params
 
+"move flyg metadata file create into filenames_a2p"
 opt = input_params_carl(varargin);
 
 %% loop over recordings
+
 
 for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
@@ -49,6 +51,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
     else
         if ~opt.daq.ignore_daq
             try
+                fool
                 load(pth.daq_resamp, 'daqdata_resamp')
             catch
                 daqdata_resamp = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, ...

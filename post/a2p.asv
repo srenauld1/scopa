@@ -22,26 +22,19 @@
 
 function a2p(varargin)
 
-filespec_in = struct;
-if ~isempty(varargin{1})
-    filespec_in = parse_input_a2p(varargin{1});
-end
 
 %% params
 
-
-opt = input_params_carl(filespec_in);
+opt = input_params_carl(varargin);
 
 %% loop over recordings
 
-[pth_usefile_prefix_all, pth_grandparent] = find_preprocessed_files(opt.main);
-
-for pai = 1:length(pth_usefile_prefix_all) %for each recording
+for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
 
     %% assign filenames
 
-    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix_all{pai}, pth_grandparent);
+    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, opt.mn.pth_usefile_prefix_all{pai});
 
 
     %% load metadata
@@ -56,6 +49,7 @@ for pai = 1:length(pth_usefile_prefix_all) %for each recording
     else
         if ~opt.daq.ignore_daq
             try
+                fool
                 load(pth.daq_resamp, 'daqdata_resamp')
             catch
                 daqdata_resamp = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, ...
