@@ -7,9 +7,7 @@ import fnmatch
 import os
 from tifffile.tifffile import imwrite, imread
 import shutil
-from pathlib import Path
 import mat73
-import time
 
 
 
@@ -351,81 +349,6 @@ def mat2tif_carls_old_project(pth_readfile):
     
     return mat_file_shape
             
-
-def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix, 
-                     pth_tif_read, pth_md, pth_md_flyg, pth_daq, pth_fldr_copydest_prefix, pth_fldr, 
-                     folder_with_all_recordings_on_storage_and_compute_filesystems):
-
-
-    pp = Path(pth_fldr).parts #split path
-    split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems) + 1
-    pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
-
-    pth_fldr_copydest = pth_fldr_copydest_prefix + pth_dest_suffix
-    if pth_fldr_copydest[-1] == '/': 
-        pth_fldr_copydest = pth_fldr_copydest[:-1]
-    if pth_fldr[-1] != '/': 
-        pth_fldr = pth_fldr + '/'
-
-    if do_copyfiles==1: #copy from storage server to O2 (unless do_denoise, since that only uses files in O2 denoising folder, whcih is not copied in or out of O2)
-        
-        if do_denoise:
-            print("\n\n\nnot copying anything because do_denoise is true, and they use files in denoising folder")
-        else:
-            print("\n\n\ncopying the following files: \n" + pth_tif_read + "\n" + pth_md + "\nfrom storage server into the following O2 directory: \n" + pth_fldr_copydest)
-
-            Path(pth_fldr_copydest).mkdir(parents=True, exist_ok=True)
-            
-            shutil.copy2(pth_md, pth_fldr_copydest)
-            time.sleep(5.5) 
-            shutil.copy2(pth_md_flyg, pth_fldr_copydest)
-            time.sleep(5.5) 
-            shutil.copy2(pth_daq, pth_fldr_copydest)
-            time.sleep(5.5) 
-            shutil.copy2(pth_tif_read, pth_fldr_copydest)
-            time.sleep(5.5) 
-            
-            if do_extract:
-                pth_croplim_pat = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
-                pth_croplim_all = glob.glob(pth_croplim_pat)
-                if pth_croplim_all:
-                    print("\n\n\ncopying all croplim files for requested recording from storage server into the following O2 directory: \n" + pth_fldr_copydest + "\nhere are the copied croplim files:\n")
-                    for pth_croplim in pth_croplim_all:
-                        print(pth_croplim + "\n")
-                        shutil.copy2(pth_croplim, pth_fldr_copydest)
-                else:
-                    print("there are no croplim files to copy from storage path into compute path, \
-                          \nyou will be prompted to create them in interactive mode; \
-                          \nyou cannot run extract in batch mode without a croplim file, \
-                          \nunless your regionex is 'fullfov'")
-
-
-
-    elif do_copyfiles==2: #copy, from O2 to storage server (any new filename, or same filename with different edit time)
-        
-        if do_denoise:
-            print("\n\n\nnot copying anything out because do_denoise is true, and they use files in denoising folder")
-        else:
-            print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
-
-            fldr_name = os.path.basename(os.path.abspath(pth_fldr))
-            for pth_src_tmp in Path(pth_fldr).glob('**/*'):  #this will copy hidden files too
-                pth_src = str(pth_src_tmp)
-                if os.path.isfile(pth_src): #only files, no directories (will create parent dirs if necessary below)
-                    pp = Path(pth_src).parts #split path
-                    split_index = pp.index(fldr_name) + 1 #find index to split source and destination (in case it's within a subdir)
-                    pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
-                    pth_dest = pth_fldr_copydest + '/' + pth_dest_suffix #append suffix to source path
-                    os.makedirs(os.path.dirname(pth_dest), exist_ok=True) #in case it's within a subdir, create any missing parent dir, if they don't exist  
-                    if (not os.path.exists(pth_dest)) or (os.path.exists(pth_dest) and abs(os.stat(pth_src).st_mtime - os.stat(pth_dest).st_mtime) > 1) :
-                        try:
-                            shutil.copy2(pth_src, pth_dest)
-                        except shutil.SameFileError:
-                            print("same file error error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
-                        except PermissionError:
-                            print("permission error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
-                        except:
-                            print("Unknown error occurred while copying this file: \n" + pth_src + "\nto this path \n:" + pth_dest)
 
 
 

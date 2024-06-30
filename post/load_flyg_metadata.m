@@ -1,4 +1,4 @@
-function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_fldr, md)
+function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_flyg_md, pth_fldr, md)
 
 % optionally output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata
 % also add scopa md to consolidate metadata fields relevant to scopa pipeline
@@ -6,8 +6,7 @@ function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = lo
 %% pattern metadata
 
 try
-    mdFiles = dir(fullfile(pth_fldr,['*',ids.datefly_hyphen,'_metadata_*_trial_'  sprintf( '%03d', ids.trialnum ) '.mat']));
-    load(fullfile(pth_fldr,mdFiles.name),'mD');
+    load(pth_flyg_md,'mD');
 
     if ~mD.trialSettings.usingPanels
         error("no panels data")

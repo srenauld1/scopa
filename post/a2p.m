@@ -41,8 +41,8 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
     %% load metadata
 
-    md = load_scanimage_metadata(pth.metadata, opt.ld, opt.hires.ld);
-    md = load_flyg_metadata(ids, pth.fldr, md);
+    md = load_scanimage_metadata(pth.md, opt.ld, opt.hires.ld);
+    md = load_flyg_metadata(ids, pth.fldr, pth.flyg_md, md);
 
     %% load and process daq
 
@@ -51,7 +51,6 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
     else
         if ~opt.daq.ignore_daq
             try
-                fool
                 load(pth.daq_resamp, 'daqdata_resamp')
             catch
                 daqdata_resamp = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, ...

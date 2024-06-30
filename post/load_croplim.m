@@ -1,6 +1,6 @@
 function [croplim, croplimstr] = load_croplim(pth_fldr, recid_underscore, regionex_nounderscore )
 
-pthcroplimall = rdir([pth_fldr recid_underscore '_' regionex_nounderscore '_*_croplim_.*']);
+pthcroplimall = rdir([pth_fldr recid_underscore '_' regionex_nounderscore '_*_croplim_.*']); %croplim file can be mat of npy, just need to read filename for croplim info 
 
 if isempty(pthcroplimall)
     sprintf("NO CROPLIM FILE FOR REGIONEX: " + regionex_nounderscore + ", YOU WILL BE PROMPTED TO DEFINE CROPLIM ")

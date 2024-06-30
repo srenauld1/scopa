@@ -12,10 +12,9 @@ import ast
 
 
 def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_register, do_denoise, do_stitch, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
+                 do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
-    use_scannoise_removed = 0
 
     ######### FORMAT FILE SPECIFIERS, BASED ON INPUT #########
 
@@ -144,6 +143,8 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     pth_md_all = []
     pth_md_flyg_all = []
     pth_daq_all = []
+    pth_croplim_all = []
+    pth_hires_all = []
     carls_old_project_all = []
     countz = 0
     for pth_readfile in pth_allfiles: #loop over all found files
@@ -171,12 +172,19 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_md_mat = pth_md[:-4] + '.mat'  
             fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + str(trialnum).zfill(3) + '.mat'
             pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
-            fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqfoolData_*_trial_' + str(trialnum).zfill(3) + '.mat'
+            fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqData_*_trial_' + str(trialnum).zfill(3) + '.mat'
             pth_daq = glob.glob(fn_pattern_daq, recursive=True)
+
+            pth_croplim_npy_pattern = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
+            pth_croplim_npy = glob.glob(pth_croplim_npy_pattern)
+            pth_croplim_mat_pattern = pth_prefix + '_*_croplim_.mat' # copy all croplim files from server to O2 
+            pth_croplim_mat = glob.glob(pth_croplim_mat_pattern)
+            pth_croplim = pth_croplim_npy + pth_croplim_mat
             
+
             pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_' + fn_prefix.split('_')[2] + '_hires_.tif'
             pth_hires = glob.glob(pth_pattern_hires)
-            if not pth_hires:
+            if not pth_hires: #alternative pattern, if first doesn't exist
                 pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_hires_.tif'
                 pth_hires = glob.glob(pth_pattern_hires)
             if pth_hires:
@@ -214,8 +222,10 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
             pth_md_all.append(pth_md)
-            pth_md_flyg_all.append(pth_md_flyg_all)
-            pth_daq_all.append(pth_daq_all)
+            pth_md_flyg_all.append(pth_md_flyg)
+            pth_daq_all.append(pth_daq)
+            pth_croplim_all.append(pth_croplim)
+            pth_hires_all.append([pth_hires]) #put this one in brackets, removed them earlier 
             carls_old_project_all.append(carls_old_project)
             
         
@@ -247,4 +257,4 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 

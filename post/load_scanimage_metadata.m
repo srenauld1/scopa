@@ -1,7 +1,7 @@
-function md = load_scanimage_metadata(pth_metadata, optld, optload_hires)
+function md = load_scanimage_metadata(pth_md, optld, optload_hires)
 
 
-md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
+md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
 md = md{1};
 
 % ff = @(x,y) cell2struct([struct2cell(md);struct2cell(mdnew)],[fieldnames(md);fieldnames(mdnew)]);

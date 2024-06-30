@@ -1,16 +1,10 @@
 
 function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc)
 
-% len_window_smooth_t_rsc = 0;
-pth_stack_tif
-disp(pth_stack_tif)
-len_window_smooth_t_rsc
-disp(len_window_smooth_t_rsc)
-sprintf("\n\n\nENTERING remove_scan_noise")
-fprintf("\n\n\nENTERING remove_scan_noise")
 
-%pth_stack_tif is full path to tif or mat (if mat is in same folder with
-%tif, it will be loaded without reading the tif)
+sprintf("\n\n\nENTERING remove_scan_noise")
+
+%pth_stack_tif is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
 
 makeplots = 1;
 stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
@@ -25,7 +19,6 @@ display_range = [0,1]; %for plotting, if makeplots
 framenumdims = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
 figsidelen = 0.75;%for plotting, if makeplots
-
 
 display(['processing : ' pth_stack_tif] )
 
@@ -55,9 +48,9 @@ recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
 pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
 pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
-pth_metadata = [pth_fldr recid '_metadatanew_.mat'];
+pth_md = [pth_fldr recid '_metadatanew_.mat'];
 
-md = struct2cell(load(pth_metadata)); %file created in initial 'pre' pipeline
+md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
 md = md{1};
 sz = single([md.ypix md.xpix md.numslice md.numvol]);
 
@@ -167,7 +160,8 @@ fstop2 = fv(stopband(2)); % Frequency Corresponding To stopband(2)
 
 %% make linear phase fir stopband filter to minimize distortion in reconstructed signal
 
-filtord = 2^6; %for these fir filters, higher order means longer in time domain, means better filtering but longer startup transient
+
+filtord = pow2(floor(log2(numxpix/3))); %for these fir filters, higher order means longer in time domain, means better filtering but longer startup transient
 
 filt = designfilt(...
     'bandstopfir', ...

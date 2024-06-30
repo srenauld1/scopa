@@ -69,10 +69,11 @@ DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for su
 NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 EPOCH_CHOOSE_DENOISE=(5) #denoising epoch used going forward, denoised stack saved as tif with suffix dcdn (TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, this is faster than rerunning denoising, but still stupid, fix it soon) 
 
-USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
-USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
+USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
+USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif); if it doesn't exist, won't error
 
-LEN_WINDOW_SMOOTH_T_RSC=(5) #smoothing window in remove_scan_noise (only used if do_remove=1)
+LEN_WINDOW_SMOOTH_T_RSC=(5.3) #smoothing window in remove_scan_noise (only used if do_remove=1)
+USE_SCANNOISE_REMOVED=(1) #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
 
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
@@ -149,6 +150,7 @@ pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"
 pars["NUM_EPOCHS_DENOISE"]="${NUM_EPOCHS_DENOISE[@]}"
 pars["USE_BACKGROUND_SUBTRACTED"]="${USE_BACKGROUND_SUBTRACTED[@]}"
 pars["USE_DENOISED"]="${USE_DENOISED[@]}"
+pars["USE_SCANNOISE_REMOVED"]="${USE_SCANNOISE_REMOVED[@]}"
 pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
 pars["LEN_WINDOW_SMOOTH_T_RSC"]="${LEN_WINDOW_SMOOTH_T_RSC[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"

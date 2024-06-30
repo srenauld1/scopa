@@ -40,6 +40,8 @@ epoch_choose_denoise = num_epochs_denoise #which denoising epoch to grab and sti
 do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
 len_window_smooth_t_rsc = 30 #gaussian window length in matlab smoothdata for smoothing stack in time prior to removing scan noise (with line by line notch filter) in extremely noisy recordings
 
+use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
+
 do_crop = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
 do_extract = 0 #caiman source extraction 

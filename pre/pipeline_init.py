@@ -24,7 +24,8 @@ else:
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
-from helpers import copy_files_scopa, stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+from helpers import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+from copy_files_scopa import copy_files_scopa
 
 
 if len(sys.argv)>1:
@@ -35,7 +36,7 @@ if len(sys.argv)>1:
                       registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp, 
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, len_window_smooth_t_rsc, 
+                      do_remove, len_window_smooth_t_rsc, use_scannoise_removed,
                       do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
                       do_analysis, first_job] = \
     parse_command_line( folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix = pth_storage_prefix, 
@@ -44,11 +45,13 @@ if len(sys.argv)>1:
                       registration_template_group_id = registration_template_group_id, do_register = do_register, register_in_2d = register_in_2d, halfwidth_window_bgsub = halfwidth_window_bgsub, len_window_smooth_t_mcp = len_window_smooth_t_mcp,  
                       do_denoise = do_denoise, do_stitch = do_stitch, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
                       use_background_subtracted = use_background_subtracted, use_denoised = use_denoised, epoch_choose_denoise = epoch_choose_denoise, 
-                      do_remove = do_remove, len_window_smooth_t_rsc = len_window_smooth_t_rsc, 
+                      do_remove = do_remove, len_window_smooth_t_rsc = len_window_smooth_t_rsc, use_scannoise_removed = use_scannoise_removed, 
                       do_crop = do_crop, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, index_extraction_param_set = index_extraction_param_set, 
                       do_analysis = do_analysis, first_job = first_job)
 
 
+print("fool")
+print(len_window_smooth_t_rsc)
 [pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
@@ -112,19 +115,17 @@ if not do_copyfiles:
 
 
 
-[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, carls_old_project_all] = \
+[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
   choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_register, do_denoise, do_stitch, use_background_subtracted, use_denoised, do_remove, do_crop, do_extract, do_analysis, 
+                 do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 
 
 for ri, _ in enumerate(pth_read_all):
     
-    copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix_all[ri], pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
-
     if do_copyfiles!=0: #copy files from storage server to O2, or vice versa
        
-       copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, pth_prefix_all[ri], pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+       copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
         
     elif do_copyfiles==0: #compute against the data 
       
