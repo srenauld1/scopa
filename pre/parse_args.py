@@ -332,7 +332,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     do_register = int(args.do_register[0])
     register_in_2d = int(args.register_in_2d[0])
     halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
-    len_window_smooth_t_mcp_sec = args.len_window_smooth_t_mcp_sec[0]
+    len_window_smooth_t_mcp_sec = float(args.len_window_smooth_t_mcp_sec[0])
     do_denoise = int(args.do_denoise[0])
     do_stitch = int(args.do_stitch[0])
     denoise_volume = int(args.denoise_volume[0])
@@ -352,7 +352,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     epoch_choose_denoise = int(args.epoch_choose_denoise[0])
     
     do_remove = int(args.do_remove[0])
-    len_window_smooth_t_rsc_sec = args.len_window_smooth_t_rsc_sec[0]
+    len_window_smooth_t_rsc_sec = float(args.len_window_smooth_t_rsc_sec[0])
     do_crop = int(args.do_crop[0])
     do_extract = int(args.do_extract[0])
     extract_in_2d = int(args.extract_in_2d[0])
