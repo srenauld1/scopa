@@ -42,7 +42,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
     %% load metadata
 
     md = load_scanimage_metadata(pth.md, opt.ld, opt.hires.ld);
-    md = load_flyg_metadata(ids, pth.fldr, pth.flyg_md, md);
+    md = load_flyg_metadata(ids, pth.flyg_md, pth.fldr, md);
 
     %% load and process daq
 

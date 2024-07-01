@@ -40,7 +40,7 @@ else
     plot_stack_order = opts.gif.plot_stack_order;
 end
 
-keepinds_t = opts.cropinds_t_start+1:sz(4)-opts.cropinds_t_end; %same as all t inds (1:sz(4)) if cropinds_t_start and cropinds_t_end are both 0
+keepinds_t = opts.numsamp_crop_t_front+1:sz(4)-opts.numsamp_crop_t_back; %same as all t inds (1:sz(4)) if numsamp_crop_t_front and numsamp_crop_t_back are both 0
 
 label_prefix = 't';
 [plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix, max_num_inds_to_print);

@@ -54,6 +54,14 @@ else
 end
 pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphen for compatibility with flyg
 
+pth_ftvid_pat = [pth_fldr '*' datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pth_ftvid = rdir(pth_ftvid_pat);
+if isempty(pth_ftvid)
+    pth_ftvid = [];
+else
+    pth_daq = pth_daq.name;
+end
+
 pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
 pth_epochinfo = [pth_fldr recid_underscore '_epochinfo_.mat'];
 
@@ -266,7 +274,7 @@ pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
 pth.froi_hires = pth_froi_hires;
 pth.md = pth_md;
-pth.md = pth_md;
+pth.flyg_md = pth_flyg_md;
 pth.mroi = pth_mroi;
 pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;

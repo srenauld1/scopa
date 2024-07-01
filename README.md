@@ -114,7 +114,6 @@ for running the pipeline in interactive mode . . .
                 in general this is how you step through 3rd-party libraries during debugging in VS code, the dev mode install let's you step into code without adding this line, and makes changing the code easier
                 the shared caiman on O2 is dev mode, so you don't need this line on o2 
         in interactive mode on O2, do_copyfiles does not work yet, so make sure your files are on O2 before session
-        in interactive mode on O2, deepcad denoising does not work yet (only works in batch/non-interactive mode on O2)
         if you are running on your local machine, you can't use deepcad denoising unless you have a gpu, 
                 so most likely only have to install caiman and a few other small packages locally (see installation below)
 

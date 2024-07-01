@@ -37,7 +37,7 @@ recid_underscore = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 pth_stack_analysis = [pth_fldr recid_underscore '_' suffix_analysis '_.mat'];
 
 pth_md = [pth_fldr recid_underscore '_metadatanew_.mat'];
-pth_flyg_md_pat = [pth_fldr '*' datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pth_flyg_md_pat = [pth_fldr datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
 pth_flyg_md = rdir(pth_flyg_md_pat);
 if isempty(pth_flyg_md)
     pth_flyg_md = [];
@@ -45,7 +45,7 @@ else
     pth_flyg_md = pth_flyg_md.name;
 end
 
-pth_daq_pat = [pth_fldr '*' datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pth_daq_pat = [pth_fldr datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
 pth_daq = rdir(pth_daq_pat);
 if isempty(pth_daq)
     pth_daq = [];
@@ -53,6 +53,14 @@ else
     pth_daq = pth_daq.name;
 end
 pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphen for compatibility with flyg
+
+pth_ftvid_pat = [pth_fldr 'ficTracData' filesep 'fictrac-raw*.avi'];
+pth_ftvid = rdir(pth_ftvid_pat);
+if isempty(pth_ftvid)
+    pth_ftvid = [];
+else
+    pth_ftvid = pth_ftvid.name;
+end
 
 pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
 pth_epochinfo = [pth_fldr recid_underscore '_epochinfo_.mat'];
@@ -272,6 +280,7 @@ pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;
 pth.daq = pth_daq;
 pth.daq_resamp = pth_daq_resamp;
+pth.ftvid = pth_ftvid;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.savedata_oneregion = pth_savedata_oneregion;

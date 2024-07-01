@@ -20,8 +20,8 @@ saturation_factor_background = opts.saturation_factor_background; %above this fr
 saturation_factor_rois = opts.saturation_factor_rois; %above this fraction of data is sent to max
 normopts = opts.norm;
 
-cropinds_t_start = md.cropinds_t_start;
-cropinds_t_end = md.cropinds_t_end;
+numsamp_crop_t_front = md.numsamp_crop_t_front;
+numsamp_crop_t_back = md.numsamp_crop_t_back;
 dtmni = md.dtmni;
 
 cnt_mroi = roiinfo.centroids_roi;
@@ -100,9 +100,9 @@ if ndims(cma)~=4
     error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
 end
 
-if cropinds_t_start || cropinds_t_end
-    cmc = cmc(:,cropinds_t_start+1:end-cropinds_t_end);
-    cms = cms(:,cropinds_t_start+1:end-cropinds_t_end);
+if numsamp_crop_t_front || numsamp_crop_t_back
+    cmc = cmc(:,numsamp_crop_t_front+1:end-numsamp_crop_t_back);
+    cms = cms(:,numsamp_crop_t_front+1:end-numsamp_crop_t_back);
 end
 
 numrois = size(cma, 4);

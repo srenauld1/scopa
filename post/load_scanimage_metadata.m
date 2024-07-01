@@ -1,4 +1,4 @@
-function md = load_scanimage_metadata(pth_md, optld, optload_hires)
+function md = load_scanimage_metadata(pth_md, optld, optld_hires)
 
 
 md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
@@ -8,17 +8,19 @@ md = md{1};
 % md = ff(md, mdnew);
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optld.cropinds_t_start - optld.cropinds_t_end;
+md.numvol_crop = md.numvol_o - optld.numsamp_crop_t_front - optld.numsamp_crop_t_back;
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
-md.crop_flyback = optld.crop_flyback;
-md.zero_stack = optld.zero_stack;
+md.numsamp_crop_t_front = optld.numsamp_crop_t_front; %copy from struct ld
+md.numsamp_crop_t_back = optld.numsamp_crop_t_front;%copy from struct ld
+md.crop_flyback = optld.crop_flyback;%copy from struct ld
+md.zero_stack = optld.zero_stack;%copy from struct ld
 
 if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
-    md.md_hires.cropinds_t_start = 0;
-    md.md_hires.cropinds_t_end = 0;
-    md.md_hires.crop_flyback = optload_hires.crop_flyback;
-    md.md_hires.zero_stack = optload_hires.zero_stack;
+    md.md_hires.numsamp_crop_t_front = 0;
+    md.md_hires.numsamp_crop_t_back = 0;
+    md.md_hires.crop_flyback = optld_hires.crop_flyback;
+    md.md_hires.zero_stack = optld_hires.zero_stack;
     hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
     md = rmfield(md, 'md_hires');
 else
@@ -31,7 +33,7 @@ md.xwid = md.xfov / md.xpix; %do this after conversion to double
 
 md.dtmni = 1/md.volrate;
 
-md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.cropinds_t_start' and 'md.cropinds_t_end'";
+md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.numsamp_crop_t_front' and 'md.numsamp_crop_t_back'";
 
 md = orderfields(md);
 
