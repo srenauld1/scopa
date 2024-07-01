@@ -5,8 +5,8 @@ import os
 
 
 
-def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, do_analysis, 
-                     pth_read, pth_md, pth_md_flyg, pth_daq, pth_croplim, pth_hires, pth_fldr_copydest_prefix, pth_fldr, 
+def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_analysis, 
+                     pth_read, pth_md, pth_md_flyg, pth_daq, pth_ftvid, pth_croplim, pth_hires, pth_fldr_copydest_prefix, pth_fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -36,6 +36,11 @@ def copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, do_analysi
             if pth_daq and do_analysis:
                 print("\n\n\ncopying this file: \n" + pth_daq + "\ninto this directory: \n" + pth_fldr_copydest)
                 shutil.copy2(pth_daq, pth_fldr_copydest)
+                time.sleep(5) 
+
+            if pth_ftvid and do_register or do_analysis: #do at beginning (or end)
+                print("\n\n\ncopying this file: \n" + pth_ftvid + "\ninto this directory: \n" + pth_fldr_copydest)
+                shutil.copy2(pth_ftvid, pth_fldr_copydest)
                 time.sleep(5) 
 
             if pth_hires and do_analysis:

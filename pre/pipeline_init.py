@@ -113,7 +113,7 @@ if not do_copyfiles:
 
 
 
-[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
+[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
   choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
@@ -123,7 +123,7 @@ for ri, _ in enumerate(pth_read_all):
     
     if do_copyfiles!=0: #copy files from storage server to O2, or vice versa
        
-       copy_files_scopa(do_copyfiles, do_denoise, do_stitch, do_extract, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+       copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
         
     elif do_copyfiles==0: #compute against the data 
       

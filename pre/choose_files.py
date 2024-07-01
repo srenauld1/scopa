@@ -147,6 +147,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     pth_md_all = []
     pth_md_flyg_all = []
     pth_daq_all = []
+    pth_ftvid_all = []
     pth_croplim_all = []
     pth_hires_all = []
     carls_old_project_all = []
@@ -232,6 +233,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_md_all.append(pth_md)
             pth_md_flyg_all.append(pth_md_flyg)
             pth_daq_all.append(pth_daq)
+            pth_ftvid_all.append(pth_ftvid)
             pth_croplim_all.append(pth_croplim)
             pth_hires_all.append([pth_hires]) #put this one in brackets, removed them earlier 
             carls_old_project_all.append(carls_old_project)
@@ -264,4 +266,4 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 

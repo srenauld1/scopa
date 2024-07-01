@@ -26,7 +26,6 @@
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=0 #0 or 1, no space after =, deepcad denoise (python)
-do_stitch=0 #0 or 1, no space after =, stitch together denoised z slices into one tif
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
@@ -173,8 +172,6 @@ if [ "$do_register" == 1 ]; then
 fi
 if [ "$do_denoise" == 1 ]; then
     sbatch_job_name_sequence+=(dnp.sbatch)
-fi
-if [ "$do_stitch" == 1 ]; then
     sbatch_job_name_sequence+=(stc.sbatch)
 fi
 if [ "$do_remove" == 1 ]; then
