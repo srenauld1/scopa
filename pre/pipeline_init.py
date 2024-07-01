@@ -132,7 +132,7 @@ for ri, _ in enumerate(pth_read_all):
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix_all[ri], pth_denoising, denoise_volume, carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
+          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix_all[ri], pth_denoising, denoise_volume, pth_ftvid_all[ri], carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_read_all[ri], epoch_choose_denoise)

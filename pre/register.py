@@ -12,13 +12,19 @@ from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
 
+import cv2
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, pth_ftvid, carls_old_project, cluster_backend, use_cluster, makeplots):
    
 
     ########################## LOAD STACK, PREPARE VARIABLES ##########################
 
     print("\n\n\nENTERING REGISTRATION SCRIPT")
+
+    # ftvcap = cv2.VideoCapture(pth_ftvid)
+    # ftvret, ftvframe = ftvcap.read()
+    # print(ftvret)
+    # print(np.shape(ftvframe))
 
     if use_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
