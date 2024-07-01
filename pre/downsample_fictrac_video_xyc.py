@@ -57,4 +57,7 @@ def downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots):
     if makeplots:
         pth_ftvid_gif = pth_ftvid_ds[:-4] + '.gif'
         numframes_gif = 200 #for equidistant frames across entire video
-        plot_gif(ftvds, pth_ftvid_gif, indst = slice(0, ftvds.shape[0], int(ftvlen/numframes_gif)), indimord = 'yx') 
+        gifstep = int(ftvds.shape[0]/numframes_gif)
+        if gifstep==0:
+            gifstep = 1
+        plot_gif(ftvds, pth_ftvid_gif, indst = slice(0, ftvds.shape[0], gifstep), indimord = 'yx') 

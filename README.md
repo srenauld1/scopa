@@ -113,7 +113,8 @@ for running the pipeline in interactive mode . . .
                         "justMyCode": false
                 in general this is how you step through 3rd-party libraries during debugging in VS code, the dev mode install let's you step into code without adding this line, and makes changing the code easier
                 the shared caiman on O2 is dev mode, so you don't need this line on o2 
-        in interactive mode on O2, do_copyfiles does not work yet, so make sure your files are on O2 before session
+        in interactive mode on O2, if you want to do_copyfiles 1 or 2 (to debug the copying for example) make sure you choose 
+                the transfer partition when setting up vscode (and set do_copyfiles to 1 or 2 in input_params_interactive)
         if you are running on your local machine, you can't use deepcad denoising unless you have a gpu, 
                 so most likely only have to install caiman and a few other small packages locally (see installation below)
 
@@ -317,8 +318,7 @@ entrypoint is a2p.m
 
 ############################## JUPYTER ######################################
 
- the pipeline also exists as a jupyter notebook (pipeline_nb.ipynb), 
- but this is slightly outdated (mostly in cosmetic ways)
+ a somewhat outdated version of the python part of the pipeline also exists as a jupyter notebook (pipeline_nb.ipynb), 
  it is mostly the same but the fov selection plots use different packages, 
  and it uses fewer loops and is less automated 
  BUT, i've been unable to get the denoising working in the ipynb version of the pipeline on O2 (it does work on google colab though)
