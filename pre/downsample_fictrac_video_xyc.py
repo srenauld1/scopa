@@ -9,7 +9,7 @@ def downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots):
 
     #downsample in xy, also convert RGB to grayscale, save as uint8 mat file; does not downsample in time (that occurs in matlab, depending on analysis)
 
-    print("entering downsample_fictrac_video")
+    print("\n\n\nENTERING downsample_fictrac_video_xyc")
 
     hack_vid_length = 1
     ftv_dsfac_x = 0.25 #downsample factor in x (linear interp)
@@ -43,16 +43,16 @@ def downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots):
             ftvds[frcnt,:,:] = grfr
             frcnt = frcnt+1
         else:
-            print("fictrac video has been downsampled and converted to grayscale")
             break
 
         
     ftvds = ftvds[:frcnt,:,:] #in case hack_vid_length, crop to last written frame
+    print("fictrac video has been downsampled and converted to grayscale; new size is: \n" + str(ftvds.shape))
 
     pth_ftvid_ds = pth_prefix + '_FTV_DS_.mat'
     sio.savemat(pth_ftvid_ds, {'ftvds':ftvds}) #save for matlab part of pipeline 
 
-    print("saved downsample, grayscale fictrac video to this mat file: \n" + pth_ftvid_ds)
+    print("saved downsampled, grayscale fictrac video to this mat file: \n" + pth_ftvid_ds)
 
     if makeplots:
         pth_ftvid_gif = pth_ftvid_ds[:-4] + '.gif'

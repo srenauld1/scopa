@@ -1,6 +1,6 @@
 function plot_experiment(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, ...
-    gif_visibility, plotinds, display_range, fngif_prefix_short, fngif_prefix)
+    gif_visibility, plotinds, display_range, fngif_prefix_short, fngif_prefix, pth_ftvid)
 
 
 %don't subset the stack
@@ -42,7 +42,11 @@ switch roi_type
         error("raw doens't work yet")
 end
 
-
+if pth_ftvid
+    load(pth_ftvid, 'ftvds')
+else
+    ftvds = [];
+end
 
 label_prefix = 'z';
 [plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, label_prefix);

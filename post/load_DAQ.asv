@@ -69,13 +69,9 @@ load(pth_daq, 'trialData')
 trialData = timetable2table(trialData);
 
 load(pth_ftvid, 'ftvds')
-ftdat = strsplit(pth_ftvid, '/');
-ftdat = strjoin(ftdat(1:end-1), '/');
-ftdat = [ftdat '/FicTracData/*dat'];
-ftdat = rdir(ftdat);
-ftdat = ftdat.name;
-ftdat = readFictracCSV_scopa(ftdat);
-
+spll = strsplit(pth_ftvid, '/');
+spll = strjoin(spll(1:end-1), '/');
+spll = [spll '/FicTracData']
 
 load(pth_ftvid, 'ftvds')
 

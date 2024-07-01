@@ -59,8 +59,10 @@ pth_ftvid_pat = [pth_fldr recid_underscore '_FTV_DS_.mat']; %downsampled ft vide
 pth_ftvid = rdir(pth_ftvid_pat);
 if isempty(pth_ftvid)
     pth_ftvid = [];
+    pth_ftvid_imt = [];
 else
     pth_ftvid = pth_ftvid.name;
+    pth_ftvid_imt = [pth_ftvid(1:end-4) 'IMT_.mat'];
 end
 
 pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
@@ -282,6 +284,7 @@ pth.roi_allmethods = pth_roi_allmethods;
 pth.daq = pth_daq;
 pth.daq_resamp = pth_daq_resamp;
 pth.ftvid = pth_ftvid;
+pth.ftvid_imt = pth_ftvid_imt;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.savedata_oneregion = pth_savedata_oneregion;
