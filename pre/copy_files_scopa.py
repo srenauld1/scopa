@@ -57,7 +57,7 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
                 else:
                     print("there are no croplim files to copy from storage path into compute path, \
                           \nyou will be prompted to create them in interactive mode; \
-                          \nyou cannot run extract in batch mode without a croplim file, \
+                          \nyou cannot run extract in batch mode without creating or loading a croplim file, \
                           \nunless your regionex is 'fullfov'")
             
             if pth_md:

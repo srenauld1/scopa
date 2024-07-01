@@ -175,10 +175,14 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
             pth_md = pth_prefix + '_metadatanew_.npy'
             pth_md_mat = pth_md[:-4] + '.mat'  
+
             fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
+            pth_md_flyg = pth_md_flyg[0]
+
             fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqData_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_daq = glob.glob(fn_pattern_daq, recursive=True)
+            pth_daq = pth_daq[0]
 
             pth_croplim_npy_pattern = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
             pth_croplim_npy = glob.glob(pth_croplim_npy_pattern)
@@ -194,10 +198,10 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 pth_hires = glob.glob(pth_pattern_hires)
             if pth_hires:
                 pth_hires = pth_hires[0]
-
-
+                
             fn_pattern_ftvid = pth_fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
             pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
+            pth_ftvid = pth_ftvid[0]
             
             ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
 
@@ -235,7 +239,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_daq_all.append(pth_daq)
             pth_ftvid_all.append(pth_ftvid)
             pth_croplim_all.append(pth_croplim)
-            pth_hires_all.append([pth_hires]) #put this one in brackets, removed them earlier 
+            pth_hires_all.append(pth_hires)
             carls_old_project_all.append(carls_old_project)
             
         
