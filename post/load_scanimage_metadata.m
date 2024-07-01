@@ -35,5 +35,9 @@ md.dtmni = 1/md.volrate;
 
 md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.numsamp_crop_t_front' and 'md.numsamp_crop_t_back'";
 
+
+% md = load_flyg_metadata(ids, pth.flyg_md, pth.fldr, md); %commenting out bc a2p doens't use anything except ball_diameter, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
+
+
 md = orderfields(md);
 

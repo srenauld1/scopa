@@ -41,6 +41,7 @@ opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 0; %1 to skip daq
+opt.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
 opt.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen_sec = 0.4; %window length used to fit slope

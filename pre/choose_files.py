@@ -144,7 +144,6 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     fn_prefix_all = []
     pth_prefix_all = []
     pth_md_all = []
-    pth_md_flyg_all = []
     pth_daq_all = []
     pth_ftvid_all = []
     pth_croplim_all = []
@@ -176,9 +175,9 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_md = pth_prefix + '_metadatanew_.npy'
             pth_md_mat = pth_md[:-4] + '.mat'  
 
-            fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
-            pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
-            pth_md_flyg = pth_md_flyg[0]
+            # fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
+            # pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
+            # pth_md_flyg = pth_md_flyg[0] #flyg metadata file only exists if you register in flyg
 
             fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqData_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_daq = glob.glob(fn_pattern_daq, recursive=True)
@@ -235,7 +234,6 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
             pth_md_all.append(pth_md)
-            pth_md_flyg_all.append(pth_md_flyg)
             pth_daq_all.append(pth_daq)
             pth_ftvid_all.append(pth_ftvid)
             pth_croplim_all.append(pth_croplim)
@@ -270,4 +268,4 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 
