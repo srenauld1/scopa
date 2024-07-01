@@ -1,6 +1,6 @@
 function plot_experiment(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, ...
-    gif_visibility, plotinds.t, plotinds.z, display_range, fngif_prefix_short, fngif_prefix)
+    gif_visibility, plotinds, display_range, fngif_prefix_short, fngif_prefix)
 
 
 %don't subset the stack
