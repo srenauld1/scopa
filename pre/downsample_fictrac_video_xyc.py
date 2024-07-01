@@ -11,13 +11,20 @@ def downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots):
 
     print("entering downsample_fictrac_video")
 
+    hack_vid_length = 1
     ftv_dsfac_x = 0.25 #downsample factor in x (linear interp)
     ftv_dsfac_y = 0.25 #downsample factor in y (linear interp)
 
     ftvcap = cv2.VideoCapture(pth_ftvid)
     
     if ftvcap.isOpened():
-        ftvlen = int(ftvcap.get(cv2.CAP_PROP_FRAME_COUNT)) #int will take floor
+        if hack_vid_length:  #preallocation hack because CAP_PROP_FRAME_COUNT is not always accurate and I don't want to figure out how to deal with variable codec or whatever is the cause 
+            max_num_min = 60 #assume nobody makes a fictrac video longer than 60 min 
+            approximate_ft_rate = 60 #hz
+            ftvlen = int(max_num_min*60*approximate_ft_rate)
+            print("hacking fictrac video length, if your video is longer than 60 min at ~60 Hz, preallocate larger array")
+        else:
+            ftvlen = int(ftvcap.get(cv2.CAP_PROP_FRAME_COUNT)) #int will take floor
         ftvw  = ftvcap.get(cv2.CAP_PROP_FRAME_WIDTH)
         ftvw_ds = int(ftvw*ftv_dsfac_x) #int will take floor
         ftvh = ftvcap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -39,6 +46,8 @@ def downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots):
             print("fictrac video has been downsampled and converted to grayscale")
             break
 
+        
+    ftvds = ftvds[:frcnt,:,:] #in case hack_vid_length, crop to last written frame
 
     pth_ftvid_ds = pth_prefix + '_FTV_DS_.mat'
     sio.savemat(pth_ftvid_ds, {'ftvds':ftvds}) #save for matlab part of pipeline 

@@ -86,8 +86,8 @@ filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_st
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
-fn_gif_prefilt = [filename_prefix 'prefilt_' timestr '_.gif'];
-fn_gif_postfilt = [filename_prefix 'postfilt_' timestr '_.gif'];
+fn_gif_prefilt = [filename_prefix '_prefilt_' timestr '_.gif'];
+fn_gif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
