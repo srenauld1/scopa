@@ -34,8 +34,10 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
                 time.sleep(5) 
 
             if pth_ftvid and do_register or do_analysis: #do at beginning (or end)
-                print("\n\n\ncopying this file: \n" + pth_ftvid + "\ninto this directory: \n" + pth_fldr_copydest)
-                shutil.copy2(pth_ftvid, pth_fldr_copydest)
+                pth_fldr_copydest_ftv = pth_fldr_copydest + '/FicTracData' #this one requires a subfolder
+                Path(pth_fldr_copydest_ftv).mkdir(parents=True, exist_ok=True)
+                print("\n\n\ncopying this file: \n" + pth_ftvid + "\ninto this directory: \n" + pth_fldr_copydest_ftv)
+                shutil.copy2(pth_ftvid, pth_fldr_copydest_ftv)
                 time.sleep(5) 
 
             if pth_hires and do_analysis:

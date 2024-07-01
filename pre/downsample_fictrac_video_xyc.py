@@ -14,7 +14,7 @@ def downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots):
     ftv_dsfac_x = 0.25 #downsample factor in x (linear interp)
     ftv_dsfac_y = 0.25 #downsample factor in y (linear interp)
 
-    ftvcap = cv2.VideoCapture(pth_ftvid[0])
+    ftvcap = cv2.VideoCapture(pth_ftvid)
     
     if ftvcap.isOpened():
         ftvlen = int(ftvcap.get(cv2.CAP_PROP_FRAME_COUNT)) #int will take floor
