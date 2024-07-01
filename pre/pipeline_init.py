@@ -91,6 +91,7 @@ if not do_copyfiles:
         print("in py file probably")      # Probably standard Python interpreter
 
     from register import register
+    from downsample_fictrac_video_xyc import downsample_fictrac_video_xyc
     from extract import extract
     import logging
     logging.basicConfig(format=
@@ -115,24 +116,25 @@ if not do_copyfiles:
 
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_md_flyg_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
   choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed,
+                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 
 
 for ri, _ in enumerate(pth_read_all):
     
-    if do_copyfiles!=0: #copy files from storage server to O2, or vice versa
+    if do_copyfiles!=0: #copy data (from storage to compute filesystem, or vice versa)
        
-       copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+       copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_md_flyg_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
         
-    elif do_copyfiles==0: #compute against the data 
+    elif do_copyfiles==0: #analyze data 
       
-      print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_read_all[ri] + "\nLOADING METADATA FIRST") 
+      print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_read_all[ri] + "\nLOADING SCANIMAGE METADATA FROM THIS FILE: \n" + pth_md_all[ri]) 
 
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix_all[ri], pth_denoising, denoise_volume, pth_ftvid_all[ri], carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
+          downsample_fictrac_video_xyc(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+          #register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix_all[ri], pth_denoising, denoise_volume, carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
           denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_read_all[ri], epoch_choose_denoise)

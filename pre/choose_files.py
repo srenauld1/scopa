@@ -2,7 +2,7 @@ import os
 import glob
 import numpy as np
 from read_save_metadata import read_save_metadata
-from helpers import rename_files, mat2tif_carls_old_project, ordinal
+from helpers import rename_files, mat2tif_scopa, ordinal
 from natsort import natsorted
 import re
 from itertools import product
@@ -12,7 +12,7 @@ import ast
 
 
 def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
+                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -58,8 +58,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             if use_scannoise_removed and (do_extract or do_crop or do_analysis):
                 fn_suffix_scopa = fn_suffix_scopa + '_nosn'
         if use_scannoise_removed and do_extract:
-            fn_suffix_scopa = fn_suffix_scopa + '_.mat' 
-            raise Exception("you requested do_extract for a file with suffix: \n" + fn_suffix_scopa + "\nonly a mat file is made with suffix 'nosn', but do_extract needs tif exclusively, so need to run something like mat2tif_carls_old_project below to make tif for extract, haven't done that yet though, so raising exception to warn user")
+            fn_suffix_scopa = fn_suffix_scopa + '_.mat'  #this is the only time only a mat is available when a tif is required (besides carls_old_project)
         else:
             fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa
@@ -99,10 +98,10 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     pth_allfiles_singles_full = [pth_allfiles_singles[i] for i in keepidx] #this puts the extension back on
     pth_allfiles_multi_noext = [item for item, count in collections.Counter([x[:-3] for x in pth_allfiles_singles]).items() if count > 1] #files that appear more than once when ignoring extension
     if do_remove or do_analysis:
-        pth_allfiles_mat_with_tif = [tmp + 'mat' for tmp in pth_allfiles_multi_noext] #force mat extension on those that appear with mat and tif extensions (since do_remove and do_analysis want mat if available)  
+        pth_allfiles_mat_with_tif = [tmp + 'mat' for tmp in pth_allfiles_multi_noext] #choose mat not tif, if both available (force mat extension on those that appear with mat and tif extensions since do_remove and do_analysis want mat if available)  
         pth_allfiles_tif_with_mat = []
     else:
-        pth_allfiles_tif_with_mat = [tmp + 'tif' for tmp in pth_allfiles_multi_noext] #force tif extension on those that appear with mat and tif extensions (since everything but do_remove and do_analysis want tif if available)  
+        pth_allfiles_tif_with_mat = [tmp + 'tif' for tmp in pth_allfiles_multi_noext] # choose tif not mat, if both available (force tif extension on those that appear with mat and tif extensions since everything but do_remove and do_analysis want tif if available)  
         pth_allfiles_mat_with_tif = []
     pth_allfiles_duplicates = [item for item, count in collections.Counter(pth_allfiles).items() if count > 1] #files that appear multiple times in pth_allfiles
     pth_allfiles = pth_allfiles_singles_full + pth_allfiles_tif_with_mat + pth_allfiles_mat_with_tif + pth_allfiles_duplicates #combine 
@@ -211,14 +210,15 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 carls_old_project = 0
             else:
                 carls_old_project = 1
-                if fname[-3:]=='mat':
-                    mat_file_shape = mat2tif_carls_old_project(pth_readfile)
+            
+            if fname[-3:]=='mat' and do_copyfiles==0:
+                mat_file_shape = mat2tif_scopa(pth_readfile)
 
 
             ######### READ & WRITE SCANIMAGE METADATA #########
 
             if not os.path.isfile(pth_md) or not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
-                if do_register:
+                if do_register and do_copyfiles==0:
                     read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
                 else:
                     raise Exception("metadatanew.npy and/or metadatanew.mat are not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or do_register to create them")

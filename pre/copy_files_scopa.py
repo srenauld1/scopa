@@ -5,7 +5,7 @@ import os
 
 
 
-def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_analysis, 
+def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop, do_analysis, 
                      pth_read, pth_md, pth_md_flyg, pth_daq, pth_ftvid, pth_croplim, pth_hires, pth_fldr_copydest_prefix, pth_fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
@@ -48,7 +48,7 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
                 shutil.copy2(pth_hires, pth_fldr_copydest)
                 time.sleep(5) 
             
-            if do_extract or do_analysis:
+            if do_extract or do_crop or do_analysis:
                 if pth_croplim:
                     for pcl in pth_croplim:
                         print("\n\n\ncopying this file: \n" + pcl + "\ninto this directory: \n" + pth_fldr_copydest)
@@ -60,9 +60,10 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
                           \nyou cannot run extract in batch mode without a croplim file, \
                           \nunless your regionex is 'fullfov'")
             
-            print("\n\n\ncopying this file: \n" + pth_md_flyg + "\ninto this directory: \n" + pth_fldr_copydest)
-            shutil.copy2(pth_md, pth_fldr_copydest)
-            time.sleep(5) 
+            if pth_md:
+                print("\n\n\ncopying this file: \n" + pth_md + "\ninto this directory: \n" + pth_fldr_copydest)
+                shutil.copy2(pth_md, pth_fldr_copydest)
+                time.sleep(5) 
             
             print("\n\n\ncopying this file: \n" + pth_read + "\ninto this directory: \n" + pth_fldr_copydest)
             shutil.copy2(pth_read, pth_fldr_copydest) #do this last since it's the only big file, i think it helps the small ones finish copying on transfer partition

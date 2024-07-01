@@ -14,16 +14,12 @@ from vis import im_montage, plot_gif
 from downsample_fictrac_video_xyc import downsample_fictrac_video_xyc
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, pth_ftvid, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
    
 
     ########################## LOAD STACK, PREPARE VARIABLES ##########################
 
     print("\n\n\nENTERING REGISTRATION SCRIPT")
-
-    downsample_ftv = 1
-    if downsample_ftv:
-        downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
 
     if use_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -44,7 +40,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     if 'channelSave' in md: #older runs of do_register will not have this field in md, if you need it, delete metadatanew and rerun
         if not isinstance(md['channelSave'], int):
             if len(md['channelSave'])==2:
-                print("stack has 2 channels, discarding the first as temporary hack")
+                print("stack has 2 channels, this pipeline is currently written for one, discarding the second channel as temporary hack")
                 keepchannel = 0 #which channel to keep, 0 or 1
                 Y = Y[:,keepchannel,:,:]
             else:
