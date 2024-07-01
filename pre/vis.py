@@ -32,9 +32,10 @@ def im_montage(images, vmin=None, vmax=None):
     #plt.close('all')
 
 
-def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst = None):
+def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst = None, indimord = 'xy'):
 
-    #input movie "data" should be in order txyz if 4d, or txy if 3d
+    # by default (indimord = 'xy'), input movie "data" is assumed to be txyz if 4d, or txy if 3d
+    # if indimord='yx', data is assumed to be tyxz if 4d, or tyx if 3d
 
     if indst==None:
         indst = slice(0, data.shape[0], 1) 
@@ -48,11 +49,15 @@ def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst
 
     if len(data.shape)==4:
         data = data[indst,indsx,indsy,indsz]
-        data = np.transpose(data, (0, 3, 2, 1)) #put in order (tz) y x
+        if indimord == 'xy':
+            data = np.transpose(data, (0, 3, 2, 1)) #put in order (tz) y x
+        elif indimord == 'yx':
+            data = np.transpose(data, (0, 3, 1, 2)) #put in order (tz) y x
         data = data.reshape(data.shape[0]*data.shape[1], data.shape[2], data.shape[3])
     else:
         data = data[indst,indsx,indsy]
-        data = np.transpose(data, (0, 2, 1)) #put in order (tz) y x
+        if indimord == 'xy':
+            data = np.transpose(data, (0, 2, 1)) #put in order (tz) y x
 
 
     data = data - np.min(data)

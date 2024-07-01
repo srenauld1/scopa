@@ -54,7 +54,8 @@ else
 end
 pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphen for compatibility with flyg
 
-pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi'];
+% pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video 
+pth_ftvid_pat = [pth_fldr recid_underscore '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
 pth_ftvid = rdir(pth_ftvid_pat);
 if isempty(pth_ftvid)
     pth_ftvid = [];

@@ -11,8 +11,8 @@ from registration_template import find_registration_template
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
+from downsample_fictrac_video_xyc import downsample_fictrac_video_xyc
 
-import cv2
 
 def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, pth_ftvid, carls_old_project, cluster_backend, use_cluster, makeplots):
    
@@ -21,10 +21,9 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     print("\n\n\nENTERING REGISTRATION SCRIPT")
 
-    # ftvcap = cv2.VideoCapture(pth_ftvid)
-    # ftvret, ftvframe = ftvcap.read()
-    # print(ftvret)
-    # print(np.shape(ftvframe))
+    downsample_ftv = 1
+    if downsample_ftv:
+        downsample_fictrac_video_xyc(pth_ftvid, pth_prefix, makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
 
     if use_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)

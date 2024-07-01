@@ -215,7 +215,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                     mat_file_shape = mat2tif_carls_old_project(pth_readfile)
 
 
-            ######### READ METADATA #########
+            ######### READ & WRITE SCANIMAGE METADATA #########
 
             if not os.path.isfile(pth_md) or not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
                 if do_register:
