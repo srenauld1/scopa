@@ -54,7 +54,7 @@ else
 end
 pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphen for compatibility with flyg
 
-pth_ftvid_pat = [pth_fldr 'ficTracData' filesep 'fictrac-raw*.avi'];
+pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi'];
 pth_ftvid = rdir(pth_ftvid_pat);
 if isempty(pth_ftvid)
     pth_ftvid = [];

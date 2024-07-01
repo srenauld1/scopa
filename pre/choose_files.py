@@ -162,21 +162,22 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
             if re.search('trial', fname):                       
                 fn_prefix = fname.split('_')[0].split('-')[0] + '_' + fname.split('_')[0].split('-')[1]  + '_' + str(int(fname.split('_')[-2][-1])) #change hyphen to underscore
-                trialnum = int(str(int(fname.split('_')[-2][-1])))
             else:
                 fn_prefix = '_'.join(fname.split('_')[:3])
-                trialnum = int(fname.split('_')[2])
             fn_prefix_flyg = '-'.join(fname.split('_')[:2])
 
             pth_prefix = pth_fldr + fn_prefix
+            datestr_found = fn_prefix.split('_')[0]
+            flystr_found = fn_prefix.split('_')[1]
+            trialstr_found = fn_prefix.split('_')[2]
 
             ######### FIND SOME ADDITIONAL OPTIONAL FILES #########
 
             pth_md = pth_prefix + '_metadatanew_.npy'
             pth_md_mat = pth_md[:-4] + '.mat'  
-            fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + str(trialnum).zfill(3) + '.mat'
+            fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
-            fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqData_*_trial_' + str(trialnum).zfill(3) + '.mat'
+            fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqData_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_daq = glob.glob(fn_pattern_daq, recursive=True)
 
             pth_croplim_npy_pattern = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
@@ -186,14 +187,17 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_croplim = pth_croplim_npy + pth_croplim_mat
             
 
-            pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_' + fn_prefix.split('_')[2] + '_hires_.tif'
+            pth_pattern_hires = pth_fldr + datestr_found + '?' + flystr_found + '_' + trialstr_found + '_hires_.tif'
             pth_hires = glob.glob(pth_pattern_hires)
             if not pth_hires: #alternative pattern, if first doesn't exist
-                pth_pattern_hires = pth_fldr + fn_prefix.split('_')[0] + '?' + fn_prefix.split('_')[1] + '_hires_.tif'
+                pth_pattern_hires = pth_fldr + datestr_found + '?' + flystr_found + '_hires_.tif'
                 pth_hires = glob.glob(pth_pattern_hires)
             if pth_hires:
                 pth_hires = pth_hires[0]
 
+
+            fn_pattern_ftvid = pth_fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
+            pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
             
             ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
 
@@ -202,7 +206,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                     [pth_readfile, fname, pth_hires] = rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires)
             
             mat_file_shape = None
-            if int(fn_prefix.split('_')[0])>20230101:
+            if int(datestr_found)>20230101:
                 carls_old_project = 0
             else:
                 carls_old_project = 1
@@ -257,7 +261,6 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             for line in lines:
                 f2.write(f"{line}\n")
             f2.close()
-
 
 
 

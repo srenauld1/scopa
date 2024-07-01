@@ -43,18 +43,6 @@ switch roi_type
 end
 
 
-% videoFile = rdir('~/stacks/20240602-4_60312gal4_2_syt8m_vk5/FicTracData/fictrac-raw*.avi');
-% videoFile = videoFile.name;
-% if exist(videoFile, 'file')
-%     currVid = VideoReader(videoFile);
-%     vidData = readVideo(videoFile);
-%     vidsz = size(vidData);
-%     ftFrameLength = vidsz(4);
-%     %vidData = squeeze(vidData(:,:,3,:));  % greyscale
-%     ftRate = ftFrameLength/currVid.Duration;
-% else
-%     error('fictrac video not found')
-% end
 
 label_prefix = 'z';
 [plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, label_prefix);
