@@ -59,9 +59,7 @@ opt.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter a
 opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
 opt.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
 opt.ftv.max_peak_distance_change_defining_periodic = 2; %in laser oscillation timeseries, 2 adjacent peaks are only considered periodic with less than a 'max_peak_distance_change_defining_periodic'-sample change in peak-to-peak distance (ie, diff(diff(lk)), where lk is peak indices, or locations in time)
-opt.ftv.num_periodic_peaks_defining_laser_oscillations = 60;%in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction 
-opt.ftv.doplots = 0; %0 saves plots but does not display them, 1 does both
-
+opt.ftv.doplots = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display 
 
 %% STACK VISUALIZATION (GIF)
 

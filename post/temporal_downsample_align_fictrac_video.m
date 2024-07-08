@@ -1,6 +1,6 @@
 function ftvdsrs = temporal_downsample_align_fictrac_video(pth_vid, pth_vidrs, numvol, imrate, ...
-    ftvid_spatial_smooth_window_std, numpix_to_extract_laser_timeseries, laser_timeseries_smooth_window_std, ...
-    max_peak_distance_change_defining_periodic, num_periodic_peaks_defining_laser_oscillations, ...
+    ftvid_spatial_smooth_window_std, numpix_to_extract_laser_timeseries, ...
+    laser_timeseries_smooth_window_std, max_peak_distance_change_defining_periodic, ...
     doplots, pth_dat, pth_vidlog, pth_log)
 
 arguments
@@ -12,8 +12,7 @@ arguments
     numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
     laser_timeseries_smooth_window_std double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
     max_peak_distance_change_defining_periodic double = 2 %in laser oscillation timeseries, 2 adjacent peaks are only considered periodic with less than a 'max_peak_distance_change_defining_periodic'-sample change in peak-to-peak distance (ie, diff(diff(lk)), where lk is peak indices, or locations in time)
-    num_periodic_peaks_defining_laser_oscillations double = 60 %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction 
-    doplots = 0 %0 saves plots but does not display them, 1 does both
+    doplots = 0 %0 skips plots, 1 plots and saves, 2 saves but does not display 
     pth_dat char = '' %fictrac .dat file
     pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime
@@ -45,14 +44,12 @@ end
 % error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data, 
 % and because the fictrac video is currently only used for visualization
 
-if doplots
-    gif_visibility = 'on';
-else
-    gif_visibility = 'off';
-end
+num_periodic_peaks_defining_laser_oscillations = round(numvol*0.8); %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller 
 
-if numvol<num_periodic_peaks_defining_laser_oscillations*2
-    error(sprintf("there are only " + num2str(numvol) + " volumes, and this algorithm searches for " + num2str(num_periodic_peaks_defining_laser_oscillations) + " cycles of laser; consider if you want to adjust anything"))
+if doplots==1
+    gif_visibility = 'on';
+elseif doplots==2
+    gif_visibility = 'off';
 end
 
 if pth_vidlog
@@ -88,23 +85,20 @@ laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of
 laser_ts = laser_ts - mean(laser_ts);
 laser_ts = rescale(laser_ts);
 num_vidframes = numel(laser_ts);
-
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
-hax = axes('Parent', hfg);
-imagesc(hax, ftvid_meanframe); hold on;
-[mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpix_to_extract_laser_timeseries)); %plot with image to confirm these are good pixels for extracting laser timeseries
-scatter(mxc,mxr,5,'red','filled')
-pth_gif = [pth_vid '_mean_t_im_.gif'];
-fig2gif(hfg, 1, pth_gif);
-
 ftvds = reshape(ftvds, szvd);
+
+if doplots
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+    hax = axes('Parent', hfg);
+    imagesc(hax, ftvid_meanframe); hold on;
+    [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpix_to_extract_laser_timeseries)); %plot with image to confirm these are good pixels for extracting laser timeseries
+    scatter(mxc,mxr,5,'red','filled')
+    pth_gif = [pth_vid '_mean_t_im_.gif'];
+    fig2gif(hfg, 1, pth_gif);
+end
 
 
 %% find peaks in the laser timeseries
-
-if num_vidframes<10000
-    error("warning, short fictrac video; algorithm uses mean derivative as threshold; check that it works on your short video")
-end
 
 laser_ts_smoothed = laser_ts;
 laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', laser_timeseries_smooth_window_std);
@@ -118,6 +112,7 @@ pkdistdiff = [0 diff(pkdist)];
 pkhalfper = find_oscillation_halfperiod(laser_ts_smoothed);
 
 %% crop before/after trial period by finding/cropping aperiodic peaks in the laser timeseries
+
 %this worked better than running rmoutliers on peak prominences
 
 [badpeaks_front] = crop_aperiodic_peaks(pkdistdiff, max_peak_distance_change_defining_periodic, num_periodic_peaks_defining_laser_oscillations);
@@ -155,26 +150,28 @@ pkdistdiffg = pkdistdiff(keeppeakinds);
 possible_frame_drops = find(abs(pkdistdiffg)>1);
 
 
-%% find slope (over peak half period) of laser timeseries (currently not used, but previously considered using slopes to define the oscillations against the non-oscillations)
+%% find slope (over peak half period) of laser timeseries (currently not used, but previously considered using slopes to define the oscillations against the non-oscillations, since laser oscillations have much bigger slopes)
 
 dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
 
 %% plot laser intensity timeseries with peaks marked
 
-peaks_timeseries = nan(size(laser_ts_smoothed));
-peaks_timeseries(lkg) = pkg;
-xlim_segments = 50;
-pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
-titlein = '';
-constant_ylim = 1;
-ylim_padfac = 0.1;
-ls1 = '-k';
-ls2 = 'or';
-match_ylim = 1;
 if doplots
-    gif_visibility = 'off';
+    peaks_timeseries = nan(size(laser_ts_smoothed));
+    peaks_timeseries(lkg) = pkg;
+    xlim_segments = 50;
+    pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
+    titlein = '';
+    constant_ylim = 1;
+    ylim_padfac = 0.1;
+    ls1 = '-k';
+    ls2 = 'or';
+    match_ylim = 1;
+    if doplots
+        gif_visibility = 'off';
+    end
+    plot_multi_timeseries(laser_ts_smoothed, peaks_timeseries, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
 end
-plot_multi_timeseries(laser_ts_smoothed, peaks_timeseries, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
 
 %% find downsampling indices
 
@@ -198,7 +195,6 @@ rsinds = fillmissing(rsinds, 'nearest');
 
 %% downsample video
 
-
 ftvds = ftvds(:,:,keepinds_vid);
 rsu = unique(rsinds(rsinds~=0),'stable'); %index of each volume, according to light flashes
 ftvdsrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
@@ -210,23 +206,24 @@ sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
 
 %% plot video before and after resampling
 
-plotinds_t = 1:300;
-cmap = gray(128);
-display_range = [0,1];
-framenumdims = 2;
-dimorder = [1,2,3];
-index_labels = {};
-figsidelength = 0.75;
-axord = 'rowmajor';
+if doplots
+    plotinds_t = 1:300;
+    cmap = gray(128);
+    display_range = [0,1];
+    framenumdims = 2;
+    dimorder = [1,2,3];
+    index_labels = {};
+    figsidelength = 0.75;
+    axord = 'rowmajor';
 
-title_prefix = 'pre resample';
-fngif = [pth_vid(1:end-4) '.gif'];
-stack2fig(ftvds(:,:,plotinds_t), fngif, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
+    title_prefix = 'pre resample';
+    fngif = [pth_vid(1:end-4) '.gif'];
+    stack2fig(ftvds(:,:,plotinds_t), fngif, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
 
-title_prefix = 'post resample';
-fngif = [pth_vid(1:end-4) 'RS_.gif'];
-stack2fig(ftvdsrs(:,:,plotinds_t), fngif, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
-
+    title_prefix = 'post resample';
+    fngif = [pth_vid(1:end-4) 'RS_.gif'];
+    stack2fig(ftvdsrs(:,:,plotinds_t), fngif, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
+end
 
 save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
 sprintf("exiting downsample_fictrac_video")
@@ -235,27 +232,32 @@ sprintf("exiting downsample_fictrac_video")
 
 end
 
-function [jabs] = crop_aperiodic_peaks(pkperdiff, badthresh, goodthresh)
+function [j] = crop_aperiodic_peaks(pkperdiff, pkperdiff_thresh, stopsearch_thresh)
 
-j = 0;
-jabs = 0;
-goodcount = 0;
-while 1
-    jabs = jabs+1;
-    j = j+1;
-    if abs(pkperdiff(j))>badthresh %if peak period abs difference is greater than 2, crop everything before
-        pkperdiff = pkperdiff(j+1:end);
-        j = 0; %reset
-        goodcount = 0; %reset
-    else
-        goodcount = goodcount+1;
+try
+    jrel = 0;
+    j = 0;
+    periodic_peak_count = 0;
+    while 1
+        j = j+1;
+        jrel = jrel+1;
+        if abs(pkperdiff(jrel))>pkperdiff_thresh %if peak period abs difference is greater than 2, crop everything before
+            pkperdiff = pkperdiff(jrel+1:end);
+            jrel = 0; %reset
+            periodic_peak_count = 0; %reset
+        else
+            periodic_peak_count = periodic_peak_count+1;
+        end
+        if periodic_peak_count==stopsearch_thresh %if there have been stopsearch_thresh periodic peaks, stop
+            break
+        end
     end
-    if goodcount==goodthresh %if there have been 10 periodic peaks, stop
-        break
-    end
+
+    j = j-stopsearch_thresh;
+
+catch
+    error("you're defined the laser timeseries to have " + num2str(stopsearch_thresh) + " periodic peaks in a row, but the number of peaks has maxed out; you may have dropped frames, or many peaks in the non-trial period, or you may have chosen an inappropriately high value; it should be less than or equal to the known number of imaging volumes")
 end
-
-jabs = jabs-goodthresh;
 
 end
 
