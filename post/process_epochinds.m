@@ -1,7 +1,7 @@
-function epochs = process_epochinds(trialtime, pth_fldr, ids, dtmni, daqdata_resamp, use_carls_epochs)
+function epochs = process_epochinds(trialtime, pth_fldr, ids, dtmni, daqrs, use_carls_epochs)
 
 
-if any(strcmp(daqdata_resamp.Properties.VariableNames, 'epochs'))
+if any(strcmp(daqrs.Properties.VariableNames, 'epochs'))
 
     error("write function to process epochs from daq")
 
@@ -42,7 +42,7 @@ else
             ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
             epochs = define_stim_epoch_indices(ft_misoffset_sec, trialtime, ids.datenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-            fu = daqdata_resamp.g4panels{1}(epochs.epochinds_ts_i==testepochind);
+            fu = daqrs.g4panels{1}(epochs.epochinds_ts_i==testepochind);
             if testepochind==2 || testepochind==3
                 fu = unwrap(fu); %makes it easier to see
             end
@@ -54,7 +54,7 @@ else
             end
 
             plot(hax,fu)
-            %ylim(hax, [min(daqdata_resamp.g4panels{1}(:)) - abs(min(daqdata_resamp.g4panels{1}(:)))*0.3, max(daqdata_resamp.g4panels{1}(:)) + abs(max(daqdata_resamp.g4panels{1}(:)))*0.3])
+            %ylim(hax, [min(daqrs.g4panels{1}(:)) - abs(min(daqrs.g4panels{1}(:)))*0.3, max(daqrs.g4panels{1}(:)) + abs(max(daqrs.g4panels{1}(:)))*0.3])
 
             title([criter(fmsai) ft_misoffset_sec ft_misoffset_sec])
             fig2gif(hfg, figframes, [pth_fldr 'misoffset_.gif'])
@@ -79,7 +79,7 @@ else
     hax = axes('Parent', hfg);
     for tei = 1:numel(testepochind_all)
         figframes = figframes+1;
-        plot(hax, daqdata_resamp.g4panels{1}(epochs.epochinds_ts_i==testepochind_all(tei)))
+        plot(hax, daqrs.g4panels{1}(epochs.epochinds_ts_i==testepochind_all(tei)))
         title(['final offset'])
         fig2gif(hfg, figframes, [pth_fldr 'misoffset_final.gif'])
     end

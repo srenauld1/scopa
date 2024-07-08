@@ -1,5 +1,6 @@
-function daqdata_resamp = load_DAQ(datenum, flynum, trialnum, numvol, numslice_withflyback, ...
-    dtmni, pth_daq, pth_daq_resamp, pth_ftvid, ball_diameter, slopelen_sec, slopeorder, fast_version, doplots)
+function daqrs = load_DAQ(datenum, flynum, trialnum, numvol, numslice_withflyback, ...
+    dtmni, pth_daq, pth_daqrs, pth_daqinds, ball_diameter, slopelen_sec, slopeorder, ...
+    fast_version, doplots)
 
 arguments
     datenum double
@@ -9,8 +10,8 @@ arguments
     numslice_withflyback double
     dtmni double %imaging frame period (1/volrate)
     pth_daq char
-    pth_daq_resamp char
-    pth_ftvid char
+    pth_daqrs char
+    pth_daqinds char
     ball_diameter double
     slopelen_sec double
     slopeorder double
@@ -20,7 +21,7 @@ end
 
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
 % includes volume and frame flyback samples (reason below)
-% then uses mod to convert to sliceinds
+% then uses mod to convert to daqinds.slice
 % then, operates on daq variables according to coincident slice index, creating a different timeseries for each slice index
 % this occurs differently according to daq variable type (see default 'daqvars' struct below)
 % for 'normal' daq variables, averages daq variables during each frame,
@@ -55,7 +56,7 @@ daqvars_bytype.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 
 daqvars_bytype.categorical = {''};
 
 daqvars_to_scale_by_ball_diameter = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be rescaled from radians to mm
-daqvars_to_unwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be unwrapped 
+daqvars_to_unwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be unwrapped
 daqvars_to_zero = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be zeroed (made to start at 0)
 
 minvolt = 0; %daq voltage min; need to find this in metadata
@@ -65,78 +66,52 @@ maxvolt = 10; %daq voltage max, need to find this in metadata
 %% load daqdata
 
 load(pth_daq, 'trialData')
-
 trialData = timetable2table(trialData);
-
-load(pth_ftvid, 'ftvds')
-ftdat = strsplit(pth_ftvid, '/');
-ftdat = strjoin(ftdat(1:end-1), '/');
-ftdat = [ftdat '/FicTracData/*dat'];
-ftdat = rdir(ftdat);
-ftdat = ftdat.name;
-ftdat = readFictracCSV_scopa(ftdat);
-
-
-load(pth_ftvid, 'ftvds')
 
 %% define inds for downsampling
 
 if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) && ~fast_version
-
     try
-        pth_sliceinds = [pth_daq_resamp(1:end-4) 'sliceinds.mat'];
-        load(pth_sliceinds, 'sliceinds');
+        load(pth_daqinds, 'daqinds');
     catch
-        if trialData.frameClock(1) == 1
-            sprintf("warning, first daq sample is during an imaging frame")
-        end
-        frameinds = binary2count(trialData.frameClock);
-        numvol_from_frames = max(frameinds)/numslice_withflyback;
-        if numvol_from_frames~=numvol
-            error("number of volumes computed from daq frames does not match number of stack volumes")
-        end
-        usi = unique(frameinds(frameinds~=0),'stable'); %index of each frame
-        sliceinds = nan(size(frameinds));
-        trialdata_time_tmp = seconds(trialData.Time);
-        volume_centroid_ind = zeros(numel(usi), 1);
-        parfor ii = 1:numel(usi) %loop is much faster than using arrayfun
-            volume_centroid = mean(trialdata_time_tmp(frameinds==usi(ii))); %find time centroid for each volume
-            [~, volume_centroid_ind(ii)] = min(abs(trialdata_time_tmp - volume_centroid)); %find nearest daq sample to volume centroid
-        end
-        sliceinds(volume_centroid_ind) = frameinds(volume_centroid_ind); %put volume index at nearest daq sample to volume centroid
-        sliceinds = fillmissing(sliceinds, 'nearest');
-        sliceinds = mod(sliceinds-1, numslice_withflyback)+1; %get one-indexed slice indices
-        save(pth_sliceinds, 'sliceinds', '-v7.3', '-mat');
+        daqinds = make_daqinds(trialData.frameClock, trialData.Time, numvol, numslice_withflyback, pth_daqinds);
     end
-
 else
     sprintf("frame clock not on daq, or user requested 'fast_version', downsampling daq data with 'resample' function, rather averaging during frames")
-    sliceinds = [];
+    daqinds.slice = [];
+    daqinds.vol = [];
+end
+
+if daqinds.slice(end)~=numslice_withflyback
+    error("final daq volume is not complete . . . deal with this")
+end
+if daqinds.vol(end)~=numvol
+    error("number stack volumes does not match number recorded in daq . . . deal with this")
 end
 
 
 %% make/save resampled daqdata
 
-uniquesliceinds = unique(sliceinds(sliceinds~=0));
+uniquesliceinds = unique(daqinds.slice(daqinds.slice~=0));
 num_unique_sliceinds = numel(uniquesliceinds);
 num_resamples = num_unique_sliceinds + 1; %resample for each frame, and add one for volume
-daqdata_resamp = table();
+daqrs = table();
 for si = 1:num_resamples
 
     newrow = table();
     newrow.datenum = {datenum};
     newrow.flynum = {flynum};
     newrow.trialnum = {trialnum};
-    if isempty(sliceinds)
+    if isempty(daqinds)
         resample_inds = [];
-        newrow.sliceindex = {'volume'};
+        newrow.methodrs = {'volumeapprox'};
     else
         if si<num_unique_sliceinds+1
-            resample_inds = binary2count(sliceinds==uniquesliceinds(si)); %each slice
-            newrow.sliceindex = {uniquesliceinds(si)};
+            resample_inds = binary2count(daqinds.slice==uniquesliceinds(si)); %each slice
+            newrow.methodrs = {['slice' num2str(uniquesliceinds(si))]};
         else
-            resample_inds = ceil(binary2count(logical(sliceinds))/num_unique_sliceinds); %all slices (the whole volume)
-            newrow.sliceindex = {'volume'};
+            resample_inds = daqinds.vol;
+            newrow.methodrs = {'volume'};
         end
     end
 
@@ -148,7 +123,7 @@ for si = 1:num_resamples
             if ~strcmp(trialData.Properties.VariableNames, daqvarname)
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
-                [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, pth_daq_resamp, doplots);
+                [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, pth_daqrs, doplots);
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, daqvars_to_unwrap))
                     tmp = unwrap(tmp); %convert to mm (not for tmp_diff)
                 end
@@ -167,10 +142,10 @@ for si = 1:num_resamples
             end
         end
     end
-    daqdata_resamp = [daqdata_resamp; newrow];
+    daqrs = [daqrs; newrow];
 end
 
-save(pth_daq_resamp, 'daqdata_resamp', '-v7.3', '-mat');
+save(pth_daqrs, 'daqrs', '-v7.3', '-mat');
 
 
 

@@ -1,4 +1,4 @@
-function plot_multi_timeseries(ts1, ts2, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac)
+function plot_multi_timeseries(ts1, ts2, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
 
 % plot two timeseries on one figure, using different x and y axes
 % if showing multiple xlim segments, the entire timeseries are only plotted once
@@ -13,6 +13,17 @@ arguments
     titlein char = '' %title
     constant_ylim logical = 0 %whether to update y limits for each xlim subset
     ylim_padfac double = 0.1 %percentage of y range to pad above and below
+    ls1 char = '-k'
+    ls2 char = '-r'
+    match_ylim = 0
+    gif_visibility char = 'on'
+end
+
+if isempty(ls1)
+    ls1 = '-k';
+end
+if isempty(ls2)
+    ls2 = '-r';
 end
 
 if isscalar(xlim_segments)
@@ -24,7 +35,7 @@ if size(xlim_segments, 1)==2 %this will fail to fix transposed (2,2) xlim_segmen
     xlim_segments = xlim_segments';
 end
 
-hfg = figure;
+hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
 
 ax1 = axes('Parent', hfg);
 ax2 = axes('Parent', hfg);
@@ -33,14 +44,14 @@ for fi = 1:size(xlim_segments, 1)
 
     if fi==1
 
-        plot(ax1,1:numel(ts1),ts1,'-k');
+        plot(ax1,1:numel(ts1),ts1,ls1);
         ax1.XColor = 'k';
         ax1.YColor = 'k';
         ax1.Box = 'off';
 
 
 
-        plot(ax2,1:numel(ts2),ts2,'-r');
+        plot(ax2,1:numel(ts2),ts2,ls2);
         ax2.XAxisLocation = 'top';
         ax2.YAxisLocation = 'right';
         ax2.Color = 'none';
@@ -59,17 +70,26 @@ for fi = 1:size(xlim_segments, 1)
         ylm1 = [min(ts1) max(ts1)];
         ylm2 = [min(ts2) max(ts2)];
     else
+        % error("something is wrong with this limit computation when constany_ylim==0, maybe only with nans")
         xrangenew1 = floor(ax1.XLim(1)):ceil(ax1.XLim(2));
         xrangenew1(xrangenew1==0) = []; %remove 0 if it exists
         xrangenew2 = floor(ax2.XLim(1)):ceil(ax2.XLim(2));
         xrangenew2(xrangenew2==0) = []; %remove 0 if it exists
-        ylm1 = [min(ts1(xrangenew1)) max(ts1(xrangenew1))];
-        ylm2 = [min(ts2(xrangenew2)) max(ts2(xrangenew2))];
+        ylm1 = [min(ts1(xrangenew1), [], 'all', 'omitmissing') max(ts1(xrangenew1), [], 'all', 'omitmissing')];
+        ylm2 = [min(ts2(xrangenew2), [], 'all', 'omitmissing') max(ts2(xrangenew2), [], 'all', 'omitmissing')];
     end
-    ax1.YLim(1) = ylm1(1) - range(ylm1)*ylim_padfac;
-    ax1.YLim(2) = ylm1(2) + range(ylm1)*ylim_padfac;
-    ax2.YLim(1) = ylm2(1) - range(ylm2)*ylim_padfac;
-    ax2.YLim(2) = ylm2(2) + range(ylm2)*ylim_padfac;
+    
+    if all(isfinite(ylm1))
+        ax1.YLim = [ylm1(1) - range(ylm1)*ylim_padfac, ylm1(2) + range(ylm1)*ylim_padfac];
+    end
+
+    if match_ylim
+        ax2.YLim = ax1.YLim;
+    else
+        if all(isfinite(ylm2))
+            ax2.YLim = [ylm2(1) - range(ylm2)*ylim_padfac, ylm2(2) + range(ylm2)*ylim_padfac];
+        end
+    end
 
 
     fig2gif(hfg, fi, pth_gif)

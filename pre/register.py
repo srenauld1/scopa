@@ -11,7 +11,7 @@ from registration_template import find_registration_template
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from vis import im_montage, plot_gif
-from downsample_fictrac_video_xyc import downsample_fictrac_video_xyc
+from spatial_downsample_fictrac_video import spatial_downsample_fictrac_video
 
 
 def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):

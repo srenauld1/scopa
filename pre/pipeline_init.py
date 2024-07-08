@@ -91,7 +91,7 @@ if not do_copyfiles:
         print("in py file probably")      # Probably standard Python interpreter
 
     from register import register
-    from downsample_fictrac_video_xyc import downsample_fictrac_video_xyc
+    from spatial_downsample_fictrac_video import spatial_downsample_fictrac_video
     from extract import extract
     import logging
     logging.basicConfig(format=
@@ -133,7 +133,7 @@ for ri, _ in enumerate(pth_read_all):
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          downsample_fictrac_video_xyc(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+          spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix_all[ri], pth_denoising, denoise_volume, carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
 
       if do_denoise:

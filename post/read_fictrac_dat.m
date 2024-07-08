@@ -1,4 +1,4 @@
-function [ftD] = readFictracCSV_scopa(file)
+function [ftD] = read_fictrac_dat(file)
         
 %copied verbatim from flyg, renamed to avoid conflict 
 

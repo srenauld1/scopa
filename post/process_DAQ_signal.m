@@ -1,6 +1,6 @@
 function [daqvarout, daqvarout_diff] = process_DAQ_signal(daqvartype, daqvarname, daqvarin, ...
     newlength, inds, dt, maxvolt, slopelen_sec, slopeorder, ...
-    pth_daq_resamp, doplots)
+    pth_daqrs, doplots)
 
 % default resampling uses daq frame timestamps ('inds')
 % if they're not on daq, backup uses matlab 'resample', matching goal length ('newlength')
@@ -30,11 +30,11 @@ if doplots
     numframes = 20; 
 
     titlein = [daqvarname '_hires_v_lores_' num2str(dt) 'sec_norescale'];
-    pth_fig = [pth_daq_resamp(1:end-4) titlein '_.gif'];
+    pth_fig = [pth_daqrs(1:end-4) titlein '_.gif'];
     plot_multi_timeseries(daqvarin, daqvarout{1} / rescalefac, pth_fig, numframes, titlein)
 
     titlein = [daqvarname '_hires_v_difflores_' num2str(dt) 'sec_slopelen_' num2str(slopelen_sec) 'sec_norescale'];
-    pth_fig = [pth_daq_resamp(1:end-4) titlein '_.gif'];
+    pth_fig = [pth_daqrs(1:end-4) titlein '_.gif'];
     plot_multi_timeseries(daqvarin, daqvarout_diff{1} / rescalefac, pth_fig, numframes, titlein)
 
 end

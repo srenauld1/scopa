@@ -93,10 +93,12 @@ end
 
 %% prep titles
 
-lab_framestable = index_labels(1:framenumdims); %labels that are the same on every frame
-for li = 1:numel(lab_framestable)
-    [~, lab_framestable{li}] = make_plot_inds(lab_framestable{li}, lab_framestable{li}, dimlabels{li}, max_num_inds_to_print);
+lab_framestable = {['dr-' mat2str(display_range)]};
+index_labels_tmp = index_labels(1:framenumdims); %labels that are the same on every frame
+for li = 1:numel(index_labels_tmp)
+    [~, index_labels_tmp{li}] = make_plot_inds(index_labels_tmp{li}, index_labels_tmp{li}, dimlabels{li}, max_num_inds_to_print);
 end
+lab_framestable = cat(1, lab_framestable, index_labels_tmp);
 dims_changing_across_frames = framenumdims+1:maxnumdims;
 lab_framechange = index_labels(dims_changing_across_frames); %labels that can change on each frame
 lab_framechange_numel = cellfun(@numel, lab_framechange);

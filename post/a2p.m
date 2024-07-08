@@ -48,19 +48,33 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
     if opt.mn.old_project
         [md, ts.vis] = load_stim(md, ids, opt.daq);
     else
-        if ~opt.daq.ignore_daq
+        if opt.mn.do_daq
             try
-                fool=moo
-                load(pth.daq_resamp, 'daqdata_resamp')
+                load(pth.daqrs, 'daqrs')
             catch
-                daqdata_resamp = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, md.dtmni, ...
-                    pth.daq, pth.daq_resamp, pth.ftvid, opt.daq.ball_diameter, opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.fast_version, opt.daq.doplots);
+                daqrs = load_DAQ(ids.datenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, md.dtmni, ...
+                    pth.daq, pth.daqrs, pth.daqinds, opt.daq.ball_diameter, opt.daq.slopelen_sec, opt.daq.slopeorder, opt.daq.fast_version, opt.daq.doplots);
             end
-            [ts.ball, ts.vis, md.ti] = assign_a2p_timeseries(daqdata_resamp);
-            [md.epochs, ts.vis] = load_stim_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.dtmni, daqdata_resamp, opt.daq.use_carls_epochs);
+            [ts.ball, ts.vis, md.ti] = assign_a2p_timeseries(daqrs);
+            [md.epochs, ts.vis] = load_stim_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.dtmni, daqrs, opt.daq.use_carls_epochs);
         end
     end
 
+
+    %% temporally downsample fictrac video and align with imaging timeseries
+
+    if opt.mn.do_temporal_downsample_align_fictrac_video
+        try
+            load(pth.ft.vidrs, 'ftvdsrs')
+        catch
+            ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
+                opt.ftv.ftvid_spatial_smooth_window_std, opt.ftv.numpix_to_extract_laser_timeseries, opt.ftv.laser_timeseries_smooth_window_std, ...
+                opt.ftv.max_peak_distance_change_defining_periodic, opt.ftv.num_periodic_peaks_defining_laser_oscillations, ...
+                opt.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
+        end
+    else
+        ftvdsrs = [];
+    end
 
     %% load/visualize stack (and optional hires stack)
 
@@ -165,7 +179,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
                 plot_experiment(stackcrop, fitin.x, fitin.y, fitin.z, fitin.fieldspecstr.x_str, fitin.fieldspecstr.y_str, fitin.fieldspecstr.z_str, ...
                     opt.pltexp(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
                     md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds, ...
-                    opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, pth.ftvid)
+                    opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs)
 
             end
         end

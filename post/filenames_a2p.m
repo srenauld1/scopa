@@ -34,6 +34,8 @@ end
 datefly_hyphen = [num2str(datenum) '-' num2str(flynum)];
 recid_underscore = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
+pth_prefix = [pth_fldr recid_underscore '_'];
+
 pth_stack_analysis = [pth_fldr recid_underscore '_' suffix_analysis '_.mat'];
 
 pth_md = [pth_fldr recid_underscore '_metadatanew_.mat'];
@@ -52,17 +54,44 @@ if isempty(pth_daq)
 else
     pth_daq = pth_daq.name;
 end
-pth_daq_resamp = [pth_fldr recid_underscore '_daqdata_resamp_.mat']; %keep hyphen for compatibility with flyg
 
-% pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video 
+pth_daqrs = [pth_fldr recid_underscore '_daqrs_.mat']; %keep hyphen for compatibility with flyg
+pth_daqinds = [pth_fldr recid_underscore '_daqinds_.mat'];
+
+% pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video
+pth_ftdat_pat = [pth_fldr 'FicTracData' filesep 'fictrac-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.dat']; %
+pth_ftdat = rdir(pth_ftdat_pat);
+if isempty(pth_ftdat)
+    pth_ftdat = [];
+else
+    pth_ftdat = pth_ftdat.name;
+end
+
+pth_ftlog_pat = [pth_fldr 'FicTracData' filesep 'fictrac-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.log']; %
+pth_ftlog = rdir(pth_ftlog_pat);
+if isempty(pth_ftlog)
+    pth_ftlog = [];
+else
+    pth_ftlog = pth_ftlog.name;
+end
+
+
+pth_ftvidlog_pat = [pth_fldr 'FicTracData' filesep 'fictrac-vidLogFrames-' num2str(datenum) '*_trial_' sprintf( '%03d', trialnum ) '.txt']; %
+pth_ftvidlog = rdir(pth_ftvidlog_pat);
+if isempty(pth_ftvidlog)
+    pth_ftvidlog = [];
+else
+    pth_ftvidlog = pth_ftvidlog.name;
+end
+
 pth_ftvid_pat = [pth_fldr recid_underscore '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
 pth_ftvid = rdir(pth_ftvid_pat);
 if isempty(pth_ftvid)
     pth_ftvid = [];
-    pth_ftvid_imt = [];
+    pth_ftvidrs = [];
 else
     pth_ftvid = pth_ftvid.name;
-    pth_ftvid_imt = [pth_ftvid(1:end-4) 'IMT_.mat'];
+    pth_ftvidrs = [pth_ftvid(1:end-4) 'RS_.mat'];
 end
 
 pth_epochinds = [pth_fldr recid_underscore '_epochinds_.bin'];
@@ -270,6 +299,7 @@ ids.trialnum = trialnum;
 ids.recid = recid_underscore;
 ids.datefly_hyphen = datefly_hyphen; %for some flyg files
 
+pth.prefix = pth_prefix;
 pth.fldr = pth_fldr;
 pth.stack_analysis = pth_stack_analysis;
 pth.stacks_prefix = pth_stacks_prefix;
@@ -282,9 +312,13 @@ pth.mroi = pth_mroi;
 pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;
 pth.daq = pth_daq;
-pth.daq_resamp = pth_daq_resamp;
-pth.ftvid = pth_ftvid;
-pth.ftvid_imt = pth_ftvid_imt;
+pth.daqrs = pth_daqrs;
+pth.daqinds = pth_daqinds;
+pth.ft.dat = pth_ftdat;
+pth.ft.log = pth_ftlog;
+pth.ft.vidlog = pth_ftvidlog;
+pth.ft.vid = pth_ftvid;
+pth.ft.vidrs = pth_ftvidrs;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.savedata_oneregion = pth_savedata_oneregion;

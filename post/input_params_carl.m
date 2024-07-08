@@ -14,8 +14,8 @@ opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all re
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    opt.mn.recdate = '20231119'; %can use wildcards
-    opt.mn.fly = '2'; %can use wildcards
+    opt.mn.recdate = '20240602'; %can use wildcards
+    opt.mn.fly = '4'; %can use wildcards
     opt.mn.trial = '1'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
     [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
@@ -29,25 +29,36 @@ end
 opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-opt.mn.old_project = 0; %for carl
 
+
+opt.mn.do_daq = 1;
+opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample to match imaging 
+opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
 opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
+opt.mn.old_project = 0; %for carl
 
 
 %% DAQ (i.e. FICTRAC/STIMULUS)
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
-opt.daq.ignore_daq = 0; %1 to skip daq
 opt.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-opt.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
+opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen_sec = 0.4; %window length used to fit slope
 opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
+%% TEMPORALLY DOWNSAMPLE AND ALIGN FICTRAC VIDEO WITH IMAGING 
+
+opt.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
+opt.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+opt.ftv.max_peak_distance_change_defining_periodic = 2; %in laser oscillation timeseries, 2 adjacent peaks are only considered periodic with less than a 'max_peak_distance_change_defining_periodic'-sample change in peak-to-peak distance (ie, diff(diff(lk)), where lk is peak indices, or locations in time)
+opt.ftv.num_periodic_peaks_defining_laser_oscillations = 60;%in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction 
+opt.ftv.doplots = 0; %0 saves plots but does not display them, 1 does both
 
 %% STACK VISUALIZATION (GIF)
 
