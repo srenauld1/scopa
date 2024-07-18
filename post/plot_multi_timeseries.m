@@ -13,18 +13,29 @@ arguments
     titlein char = '' %title
     constant_ylim logical = 0 %whether to update y limits for each xlim subset
     ylim_padfac double = 0.1 %percentage of y range to pad above and below
-    ls1 char = '-k'
-    ls2 char = '-r'
+    ls1 char = '-'
+    ls2 char = '-'
     match_ylim = 0
     gif_visibility char = 'on'
 end
 
 if isempty(ls1)
-    ls1 = '-k';
+    ls1 = '-';
 end
 if isempty(ls2)
-    ls2 = '-r';
+    ls2 = '-';
 end
+if isempty(ts2)
+    ts2 = ts1;
+    ls2 = 'none';
+end
+
+ts1x = 1:numel(ts1);
+ts2x = 1:numel(ts2);
+
+dummyvec1 = nan(size(ts1));
+dummyvec2 = nan(size(ts2));
+
 
 if isscalar(xlim_segments)
     xlim_segments = linspace(0, 1, xlim_segments+1); %x axis limits as fraction of total, since two x axes are plotted
@@ -38,20 +49,28 @@ end
 hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
 
 ax1 = axes('Parent', hfg);
+hpl1 = plot(ax1,dummyvec1,dummyvec1);
 ax2 = axes('Parent', hfg);
+hpl2 = plot(ax2,dummyvec1,dummyvec1);
 
 for fi = 1:size(xlim_segments, 1)
 
     if fi==1
 
-        plot(ax1,1:numel(ts1),ts1,ls1);
+        hpl1.XData = ts1x;
+        hpl1.YData = ts1;
+        hpl1.Color = 'k';
         ax1.XColor = 'k';
         ax1.YColor = 'k';
         ax1.Box = 'off';
 
-
-
-        plot(ax2,1:numel(ts2),ts2,ls2);
+        hpl2.XData = ts2x;
+        hpl2.YData = ts2;
+        hpl2.Color = 'r';
+        % hpl2.LineStyle = ls2;
+        if startsWith(ls2, 'o')
+            hpl2.Marker = 'o';
+        end
         ax2.XAxisLocation = 'top';
         ax2.YAxisLocation = 'right';
         ax2.Color = 'none';

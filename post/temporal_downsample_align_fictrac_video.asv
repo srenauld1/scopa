@@ -1,6 +1,6 @@
 function ftvdsrs = temporal_downsample_align_fictrac_video(pth_vid, pth_vidrs, numvol, imrate, ...
     ftvid_spatial_smooth_window_std, numpix_to_extract_laser_timeseries, ...
-    laser_timeseries_smooth_window_std, max_peak_distance_change_defining_periodic, ...
+    laser_timeseries_smooth_window_std, ...
     doplots, pth_dat, pth_vidlog, pth_log)
 
 arguments
@@ -11,7 +11,6 @@ arguments
     ftvid_spatial_smooth_window_std double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
     laser_timeseries_smooth_window_std double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    max_peak_distance_change_defining_periodic double = 2 %in laser oscillation timeseries, 2 adjacent peaks are only considered periodic with less than a 'max_peak_distance_change_defining_periodic'-sample change in peak-to-peak distance (ie, diff(diff(lk)), where lk is peak indices, or locations in time)
     doplots = 0 %0 skips plots, 1 plots and saves, 2 saves but does not display 
     pth_dat char = '' %fictrac .dat file
     pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
@@ -27,7 +26,8 @@ end
 % extracts timeseries from their spatial average
 % smooths timeseries with small gaussian window
 % finds peaks using findpeaks
-% removes aperiodic peaks at the beginning and end of laser_ts (laser timeseries) . . . ie crops laser_ts to actual laser oscillation portion only
+% 
+% removes peaks at the beginning and end of laser_ts (laser timeseries) if distance to next period is not ceil(ftrate/imrate) or floor(ftrate/imrate) . . . ie crops laser_ts to actual laser oscillation portion only
 % peaks are considered aperiodic if the distance between successive peaks changes by more than 'max_change_in_peak_to_peak_distance_to_be_considered_periodic'
 % includes half-period before the first peak and after the last (half-period is the average half distance between peaks remaining after cropping)
 % assigns each sample in laser_ts (laser timeseries) the index of its nearest intensity peak using nearest neighbor interpolation, these are putative volume indices in the fictrac video
@@ -44,7 +44,7 @@ end
 % error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data, 
 % and because the fictrac video is currently only used for visualization
 
-num_periodic_peaks_defining_laser_oscillations = round(numvol*0.8); %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller 
+num_periodic_peaks_defining_laser_oscillations = 30; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
 
 if doplots==1
     gif_visibility = 'on';
@@ -66,7 +66,8 @@ if pth_log
 end
 
 ftdat = read_fictrac_dat(pth_dat);
-ftrate = 1e9/mean(ftdat.deltaTimestamp);
+ftrate = 1e9/median(ftdat.deltaTimestamp);
+goodper = ftrate/imrate;
 
 if imrate > ftrate / 2
     error(sprintf("imaging rate is approximately " + num2str(imrate) + " hz, while fictrac rate is approximately " + num2str(ftrate) + " hz; this algorithm will not work well if imaging rate is high, relative to fictrac rate; threshold set at half fictrac rate"))
@@ -104,7 +105,12 @@ laser_ts_smoothed = laser_ts;
 laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', laser_timeseries_smooth_window_std);
 [pk,lk,pw,pp] = findpeaks(laser_ts_smoothed);
 pkdist = diff(lk);
-pkdistdiff = [0 diff(pkdist)];
+
+[~, f, v] = ordernrank(pkdist);
+% goodper = v(isoutlier(f));
+goodpers = [floor(goodper) ceil(goodper)];
+
+pkdistdiff = [pkdist(1)-1 diff(pkdist)];
 
 
 %% find laser oscillation period by finding delay between signal and its inverse
@@ -115,31 +121,25 @@ pkhalfper = find_oscillation_halfperiod(laser_ts_smoothed);
 
 %this worked better than running rmoutliers on peak prominences
 
-[badpeaks_front] = crop_aperiodic_peaks(pkdistdiff, max_peak_distance_change_defining_periodic, 8000);
+[badpeaks_front] = crop_wrong_periods(pkdist, goodpers, num_periodic_peaks_defining_laser_oscillations);
 if badpeaks_front==0
     badpeaks_front_msg = "there are no initial bad peaks to remove, the fictrac video may begin after imaging begins";
 else
     badpeaks_front_msg = 'there were bad peaks to remove at the front, so the imaging does seem to begin during the video, at least';
 end
 
-pkdistdiff_backwards = flip(pkdistdiff);
-[badpeaks_back] = crop_aperiodic_peaks(pkdistdiff_backwards, max_peak_distance_change_defining_periodic, num_periodic_peaks_defining_laser_oscillations);
+[badpeaks_back] = crop_wrong_periods(flip(pkdist), goodpers, num_periodic_peaks_defining_laser_oscillations);
 if badpeaks_back==0
     badpeaks_back_msg = "there are no bad peaks at the end to remove, the fictrac video may end before imaging";
 else
     badpeaks_back_msg = 'there were bad peaks to remove at the end, so the imaging does seem to end during the video, at least';
 end
-keeppeakinds = badpeaks_front+1:numel(pkdistdiff)-badpeaks_back;
+keeppeakinds = badpeaks_front+1:numel(lk)-badpeaks_back;
 
-firstpeakper = lk(badpeaks_front(end)+1)-lk(badpeaks_front(end)); %first peak will be missed, make sure it fits pattern and add it to the list of good peaks
 peakperiods_good = unique(pkdist(keeppeakinds));
-if range(peakperiods_good)>max_peak_distance_change_defining_periodic
-    error("range of peakperiods_good should not exceed cycle_period_tiolerance")
-end
-if ismember(firstpeakper, peakperiods_good)
-    keeppeakinds = [badpeaks_front(end) keeppeakinds];
-    sprintf("adding an initial peak to the list of good peaks because the distance between it and the next peak matches the periods in what has been defined to  be the trial period")
-end
+% if range(peakperiods_good)>max_peak_distance_change_defining_periodic
+%     error("range of peakperiods_good should not exceed cycle_period_tiolerance")
+% end
 
 pkg = pk(keeppeakinds);
 lkg = lk(keeppeakinds);
@@ -149,6 +149,10 @@ pkdistdiffg = pkdistdiff(keeppeakinds);
 
 possible_frame_drops = find(abs(pkdistdiffg)>1);
 
+% numgoodpeaks_to_plot = 3;
+%peakinds_to_plot = 10; figure; plot(1:lk(peakinds_to_plot), laser_ts_smoothed(1:lk(peakinds_to_plot)), lk(1:peakinds_to_plot), pk(1:peakinds_to_plot), 'o')
+% peakinds_to_plot = 185:badpeaks_front+numgoodpeaks_to_plot; figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
+% peakinds_to_plot = numel(lk)-badpeaks_back-(numgoodpeaks_to_plot-1):numel(lk); figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
 
 %% find slope (over peak half period) of laser timeseries (currently not used, but previously considered using slopes to define the oscillations against the non-oscillations, since laser oscillations have much bigger slopes)
 
@@ -167,13 +171,11 @@ if doplots
     ls1 = '-k';
     ls2 = 'or';
     match_ylim = 1;
-    if doplots
-        gif_visibility = 'off';
-    end
     plot_multi_timeseries(laser_ts_smoothed, peaks_timeseries, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
 end
 
 %% find downsampling indices
+
 
 numpk = numel(pkg);
 sprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol))
@@ -181,7 +183,6 @@ sprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol))
 if numpk~=numvol
     error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
 end
-
 
 keepinds_vid = lkg(1)-pkhalfper:lkg(end)+pkhalfper;
 
@@ -232,6 +233,37 @@ sprintf("exiting downsample_fictrac_video")
 
 end
 
+
+function [j] = crop_wrong_periods(pkdiff, pkper_good, stopsearch_thresh)
+
+try
+    jrel = 0;
+    j = 0;
+    periodic_peak_count = 0;
+    while 1
+        j = j+1;
+        jrel = jrel+1;
+        if ~ismember(pkdiff(jrel), pkper_good) %if peak period abs difference is greater than pkperdiff_thresh, crop everything before
+            pkdiff = pkdiff(jrel+1:end);
+            jrel = 0; %reset
+            periodic_peak_count = 0; %reset
+        else
+            periodic_peak_count = periodic_peak_count+1;
+        end
+        if periodic_peak_count==stopsearch_thresh %if there have been stopsearch_thresh periodic peaks, stop
+            break
+        end
+    end
+
+    j = j-stopsearch_thresh;
+
+catch
+    error("you're defined the laser timeseries to have " + num2str(stopsearch_thresh) + " periodic peaks in a row, but the number of peaks has maxed out; you may have dropped frames, or many peaks in the non-trial period, or you may have chosen an inappropriately high value; it should be less than or equal to the known number of imaging volumes")
+end
+
+end
+
+
 function [j] = crop_aperiodic_peaks(pkperdiff, pkperdiff_thresh, stopsearch_thresh)
 
 try
@@ -241,7 +273,7 @@ try
     while 1
         j = j+1;
         jrel = jrel+1;
-        if abs(pkperdiff(jrel))>pkperdiff_thresh %if peak period abs difference is greater than 2, crop everything before
+        if abs(pkperdiff(jrel))>pkperdiff_thresh %if peak period abs difference is greater than pkperdiff_thresh, crop everything before
             pkperdiff = pkperdiff(jrel+1:end);
             jrel = 0; %reset
             periodic_peak_count = 0; %reset
@@ -256,7 +288,7 @@ try
     j = j-stopsearch_thresh;
 
 catch
-    sprintf("you're requested ")
+    error("you're defined the laser timeseries to have " + num2str(stopsearch_thresh) + " periodic peaks in a row, but the number of peaks has maxed out; you may have dropped frames, or many peaks in the non-trial period, or you may have chosen an inappropriately high value; it should be less than or equal to the known number of imaging volumes")
 end
 
 end

@@ -50,12 +50,7 @@ else
 end
 
 
-epochs.closedinitiallight = 1;
-epochs.openslow = 2;
-epochs.openfast = 3;
-epochs.closed = 4;
-epochs.dark = 5;
-epochs.closedfinaldark = 6;
+epochs = get_epoch_number();
 
 boutinds_onecycle_cell = struct2cell(boutinds_onecycle);
 boutinds_onecycle_cell = boutinds_onecycle_cell(~cellfun(@isempty, boutinds_onecycle_cell));

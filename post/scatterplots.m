@@ -39,7 +39,7 @@ ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, sp
 
 
 [varsx, varsy, varsz] = convert_to_single_precision(varsx, varsy, varsz);
-[varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz);
+[varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz, labsz, lagsz_sec);
 
 labsx = check_labels(labsx, varsx);
 labsy = check_labels(labsy, varsy);
@@ -149,7 +149,7 @@ end
 
 end
 
-function [varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz)
+function [varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz, labsz)
 
 if isempty(varsx) & isempty(varsy) || isempty(varsx) & isempty(varsz) || isempty(varsy) & isempty(varsz)
     error("only one nonempty variable, at least 2 nonempty variables are required")
@@ -380,6 +380,19 @@ end
 
 end
 
+
+
+function varargout = nanpadvec(numsamp_max, varargin)
+
+for j = 1:numel(varargin)
+    if ~isvector(varargin{j})
+        error("must be vector")
+    end
+    numsamp_pad = numsamp_max-numel(varargin{j});
+    varargout{j} = cat(1, varargin{j}(:), nan(numsamp_pad, 1));
+end
+
+end
 
 function [fngif_new, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix_short, fngif_prefix, fngif_old, roi_index, sample_period_string)
 
@@ -838,7 +851,7 @@ for lagind = 1:numlags
             [ccr(lagind) ccpv(lagind)] = circ_corrcc(plotx{lagind}, ploty{lagind}); %circ-circ
     end
 
-    [plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind}] = nanpadvars(numsamp_max, plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind});
+    [plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind}] = nanpadvec(numsamp_max, plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind});
 
 end
 

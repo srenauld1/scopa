@@ -1,11 +1,21 @@
-function out = rescale_to_range(inp, target)
+function out = rescale_to_range(inp, source, target, skipnan)
 
-%rescale inp to range of target 
+%rescale inp from source to target
+% normal rescale would use inp as source, and target of [0 1]
 
-tmin = min(target(:));
-tmax = max(target(:));
+if skipnan
+    tmin = min(target, [], 'all', 'omitmissing');
+    tmax = max(target, [], 'all', 'omitmissing');
+else
+    tmin = min(target, [], 'all');
+    tmax = max(target, [], 'all');
+end
+if skipnan
+    smin = min(source, [], 'all', 'omitmissing');
+    smax = max(source, [], 'all', 'omitmissing');
+else
+    smin = min(source, [], 'all');
+    smax = max(source, [], 'all');
+end
 
-inmax = min(inp(:));
-inmin = max(inp(:));
-
-out = tmin + [(inp-inmin)./(inmax-inmin)].*(tmax-tmin);
+out = tmin + [(inp-smin)./(smax-smin)].*(tmax-tmin);

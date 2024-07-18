@@ -1,11 +1,10 @@
-function hndls = init_axes_stack(hndls, ax, stack, cmap, pixinds_roi, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, figsidelength, gif_visibility, axorder)
+function hndls = init_axes_stack(hndls, ax, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, figsidelength, gif_visibility, axorder)
 
 arguments
     hndls struct
     ax struct
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
-    pixinds_roi = []
     zstartpos = []
     display_range = [0,1]
     sector_ind = 1
@@ -28,10 +27,14 @@ numypix = size(stack,1);
 numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
 numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
 dummyim = nan(numypix, numxpix);
-stackmin = min(stack(:));
-stackmax = max(stack(:));
+
+roi_color_im = zeros(numypix, numxpix, 3, 'single'); %make ones here, so only alphadata has to change later (showing the ones where the roi is located, scaled by alphafac)
+
+roi_alpha_im = zeros(numypix, numxpix, 'single');
+
+stackmin = double(min(stack(:)));
+stackmax = double(max(stack(:)));
 stackrange = stackmax-stackmin;
-imalpha = ones(size(dummyim))*0.5;
 
 if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
 
@@ -77,11 +80,7 @@ for j = 1:numsubplot
 
     hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
     hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
-    if ~isempty(pixinds_roi) %if there are roi variables
-        hol{j} = image(dummyim, 'AlphaData', imalpha);
-    else
-        hol{j} = [];
-    end
+    hol{j} = image(roi_color_im, 'AlphaData', roi_alpha_im);
 
     hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');
     hlny{j} = yline(hax{j}, nan, 'w', 'LineStyle', 'none');

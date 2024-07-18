@@ -211,12 +211,12 @@ end
 
 pffn = fieldnames(opt.pf);
 for pfi = 1:numel(pffn)
-    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fitm.vars.depvpre_str]))
+    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fitm.varnms.depvpre]))
         opt.pf.(pffn{pfi}).do = 0;
     end
 end
 
-if all(cellfun(@isempty, [opt.fitm.vars.depvpre_str]))
+if all(cellfun(@isempty, [opt.fitm.varnms.depvpre]))
     opt.fitm.do_predict = 0;
 end
 

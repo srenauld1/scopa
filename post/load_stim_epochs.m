@@ -1,5 +1,8 @@
 function [epochs, vis] = load_stim_epochs(trialtime, pth_epochinfo, vis, pth_fldr, ids, dtmni, daqrs, use_carls_epochs)
 
+% if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial) 
+% if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
+
 try
 
     load(pth_epochinfo, 'epochs')

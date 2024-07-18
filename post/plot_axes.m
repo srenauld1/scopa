@@ -1,77 +1,65 @@
 
-function [hndls, framecount] = plot_axes(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, plotx, ploty, plotz, ti, labx, laby, labz, labt, labr, polar_index, fngif, roi_type, plot_z_as_color, figure_title)
+function [hndls, framecount] = plot_axes(hndls, stack, ftv, roi_index, crosshair, framecount, varsp, tinew, fngif, roi_type, figure_title, roiim, alphaim)
 
+
+fn = fieldnames(varsp);
 
 hndls.httl.String = figure_title;
 
-tinds2 = 1:5:size(stack,4);
-
-for fr = tinds2
-
-    for j = 1:numel(hndls.ts.hax)
-
-        for k = 1:numel(hndls.ts.hpll)
-            hndls.ts.hpll{j}{k}.XData = ti; %move this
-            hndls.ts.hpll{j}{k}.YData = plotx;
+for j = 1:numel(hndls.ts.hax) %for each subplot
+    for fi = 1:numel(fn) %for each side (left and right)
+        for k = 1:numel(hndls.ts.hpl{j}{fi}) %for each variable
+            hndls.ts.hpl{j}{fi}{k}.YData = varsp.(fn{fi})(k,:);
         end
-        for k = 1:numel(hndls.ts.hplr)
-            hndls.ts.hplr{j}{k}.XData = ti;%move this
-            hndls.ts.hplr{j}{k}.YData = ploty;
-        end
+    end
+end
 
-        hndls.ts.hlnx{j}.Value = ti(fr);
-        hndls.ts.hax{j}.YAxis(1).Label.String = ['\color{blue} ' labx];
-        hndls.ts.hax{j}.YAxis(2).Label.String = ['\color{red}' laby];
-        if strcmp(ylim_constancy, 'eachvar')
-            hndls.ts.hax{j}.YAxis(1).Limits = lims.x.each_xtra(xi,:);
-            hndls.ts.hax{j}.YAxis(2).Limits = lims.y.each_xtra(yi,:);
-            hndls.ts.hax{j}.YAxis(1).TickValues = sort([0, lims.x.each(xi,1), lims.x.each(xi,2)]);
-            hndls.ts.hax{j}.YAxis(2).TickValues = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
-            hndls.ts.hax{j}.YAxis(1).TickLabels = [];
-            hndls.ts.hax{j}.YAxis(2).TickLabels = [];
-            for tti = 1:numel(hndls.ts.hax{j}.YAxis(2).TickValues)
-                hndls.ts.hax{j}.YAxis(1).TickLabels{tti} = num2str(hndls.ts.hax{j}.YAxis(1).TickValues(tti), 4);%'%.2g'
-                hndls.ts.hax{j}.YAxis(2).TickLabels{tti} = num2str(hndls.ts.hax{j}.YAxis(2).TickValues(tti), 4);%'%.2g'
-            end
-        end
+for fr = 1:size(stack,4) %for each frame (sample)
 
+    %%%% TIMESERIES %%%%
+    for j = 1:numel(hndls.ts.hax) %for each subplot
         if j==2
-            hndls.ts.hax{j}.XAxis.Limits = [ti(fr)-6, ti(fr)+6];
-            hndls.ts.hax{1}.XAxis.TickLabels = num2str(ti(fr)+6, 4);
+            hndls.ts.hax{j}.XAxis.Limits = [tinew(fr)-6, tinew(fr)+6];
+            hndls.ts.hax{j}.XAxis.TickLabels = num2str(tinew(fr)+6, 4);
+            hndls.ts.hax{j}.XTick = tinew(fr);
+            hndls.ts.hax{j}.XTickLabel = [num2str(hndls.ts.hax{j}.XTick) ' sec (+/- 6 sec)'];
         end
-
-
+        hndls.ts.hlnx{j}.XData = [tinew(fr) tinew(fr)];
     end
 
-
-
-    for j = 1:numel(hndls.st.hax)
+    %%%% STACK %%%%
+    for j = 1:numel(hndls.st.hax) %for each z slice
 
         if strcmp(roi_type, 'rois') %roi_type pixels image never changes
-            % hndls.st.hpl{j}.CData = squeeze(stack(:,:,j,:,roi_index));
             hndls.st.hpl{j}.CData = stack(:,:,j,fr);
-        end
-
-        if fr==1
-            if j==crosshair{roi_index}(3)
-                hndls.st.hlny{j}.Value = crosshair{roi_index}(1);
-                hndls.st.hlnx{j}.Value = crosshair{roi_index}(2);
-                hndls.st.hlny{j}.LineStyle = '-';
-                hndls.st.hlnx{j}.LineStyle = '-';
-            else
-                hndls.st.hlny{j}.LineStyle = 'none';
-                hndls.st.hlnx{j}.LineStyle = 'none';
+            if fr==1 && ~isempty(alphaim) %if there are roi variables
+                hndls.st.hol{j}.CData = squeeze(roiim(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
+                hndls.st.hol{j}.AlphaData = alphaim(:,:,j);
             end
         end
+
+        % if fr==1
+        %     if j==crosshair{roi_index}(3)
+        %         hndls.st.hlny{j}{ri}.Value = crosshair{roi_index}(1);
+        %         hndls.st.hlnx{j}{ri}.Value = crosshair{roi_index}(2);
+        %         hndls.st.hlny{j}{ri}.LineStyle = '-';
+        %         hndls.st.hlnx{j}{ri}.LineStyle = '-';
+        %     else
+        %         hndls.st.hlny{j}{ri}.LineStyle = 'none';
+        %         hndls.st.hlnx{j}{ri}.LineStyle = 'none';
+        %     end
+        % end
     end
 
 
-    fig2gif(hndls.hfg, fr, fngif)
+    %%%% FICTRAC VID %%%%
+    hndls.ftv.hpl{1}.CData = ftv(:,:,fr); %fictrac video
+
+
+    framecount = framecount + 1;
+    fig2gif(hndls.hfg, framecount, fngif) %write to gif
 
 end
 
-% if strcmp(gif_scope, 'eachvar')
-%     close all
-% end
 
 end

@@ -10,7 +10,7 @@ if isvector(fitin.indvpre) & iscolumn(fitin.indvpre)
     fitin.indvpre = fitin.indvpre(:)';
 end
 
-[ fitin.num_dim_indvpre, fitin.num_samp_indvpre ] = size( fitin.indvpre );
+[ fitin.num_dim_indvpre, fitin.num_samp_indvpre ] = size(fitin.indvpre);
 [ fitin.num_dim_depvpre, fitin.num_samp_depvpre ] = size(fitin.depvpre);
 
 if fitin.num_samp_indvpre~=fitin.num_samp_depvpre | ndims(fitin.depvpre)~=2 | ndims(fitin.indvpre)~=2

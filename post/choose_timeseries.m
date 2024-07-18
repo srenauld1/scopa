@@ -1,34 +1,34 @@
 function [fitin, dochoose] = choose_timeseries(opt, ts, md, pth_tsuse_save, pth_stack_analysis, choosecount, dochoose)
 
 % for convenience, saves substrings used to match variable within 'ts'
-% as table ('fieldspec_all') and as string ('fieldspecstr_all')
+% as table ('fieldspec_all') and as string ('varnms_all')
 
-if choosecount>1 %the set of all 'vars' fields combos is determined on the first fit (choosecount==1), so subsequent calls to choose_timeseries just
+if choosecount>1 %the set of all 'varnms' fields combos is determined on the first fit (choosecount==1), so subsequent calls to choose_timeseries just
 
     load(pth_tsuse_save)
 
 else
 
-    fieldspec_parent_fields = fieldnames(opt(1).vars);
+    fieldspec_parent_fields = fieldnames(opt(1).varnms);
 
     count = zeros(length(fieldspec_parent_fields), 1);
     for ofi = 1:length(opt)
 
         combinecell = {};
         for vpfi = 1:length(fieldspec_parent_fields)
-            combinecell{vpfi} = opt(ofi).vars.(fieldspec_parent_fields{vpfi});
+            combinecell{vpfi} = opt(ofi).varnms.(fieldspec_parent_fields{vpfi});
         end
         if strcmp(opt(ofi).vars_combine, 'any')
-            combinecell = table2cell(combinations(combinecell{:})); %make all combos of vars fields outer cells
+            combinecell = table2cell(combinations(combinecell{:})); %make all combos of varnms fields outer cells
             for vpfi = 1:length(fieldspec_parent_fields)
-                opt(ofi).vars.(fieldspec_parent_fields{vpfi}) = combinecell(:, vpfi);
+                opt(ofi).varnms.(fieldspec_parent_fields{vpfi}) = combinecell(:, vpfi);
             end
         elseif strcmp(opt(ofi).vars_combine, 'each')
             error("is this optimized?")
         end
 
         for vpfi = 1:length(fieldspec_parent_fields)
-            outercell = opt(ofi).vars.(fieldspec_parent_fields{vpfi});
+            outercell = opt(ofi).varnms.(fieldspec_parent_fields{vpfi});
             for oci = 1:length(outercell) %for each outer cell (results are kept separate)
                 count(vpfi) = count(vpfi)+1;
                 innercell = outercell{oci};
@@ -87,12 +87,12 @@ else
 
                     tmpcat = table2cell(tmp{ici});
                     if isempty(tmpcat)
-                        fieldspecstr_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){1, 1} = '';
+                        varnms_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){1, 1} = '';
                     else
                         for tci = 1:size(tmpcat, 1)
                             strcount = strcount+1;
                             suffixtmp = strjoin(tmpcat(tci,:), '.');
-                            fieldspecstr_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
+                            varnms_all(count(vpfi)).(fieldspec_parent_fields{vpfi}){strcount, 1} = ['ts.' suffixtmp];
                         end
                     end
 
@@ -109,38 +109,38 @@ else
         end
     end
 
-    save(pth_tsuse_save, 'fieldspecstr_all', 'fieldspec_all', '-v7.3', '-mat')
+    save(pth_tsuse_save, 'varnms_all', 'fieldspec_all', '-v7.3', '-mat')
 
 end
 
-fieldspecstr_chosen = fieldspecstr_all(choosecount);
+varnms_chosen = varnms_all(choosecount);
 fieldspec_chosen = fieldspec_all(choosecount);
-fn = fieldnames(fieldspecstr_chosen);
+fn = fieldnames(varnms_chosen);
 regionex_cat = [];
 for fi = 1:length(fn)
-    outfn = erase(fn{fi}, '_str');
-    fitin.(outfn) = [];
-    fitin.fieldspecstr.(fn{fi}) = [];
-    for vsi2 = 1:length(fieldspecstr_chosen.(fn{fi}))
-        if isempty(fieldspecstr_chosen.(fn{fi}){vsi2})
+    outfn = erase(fn{fi}, '_str'); %deprecated, '_str' is no longer suffix
+    fitin.vars.(outfn) = [];
+    fitin.varnms.(fn{fi}) = [];
+    for vsi2 = 1:length(varnms_chosen.(fn{fi}))
+        if isempty(varnms_chosen.(fn{fi}){vsi2})
             tmp = [];
         else
-            tmp = eval(fieldspecstr_chosen.(fn{fi}){vsi2});
+            tmp = eval(varnms_chosen.(fn{fi}){vsi2});
             if size(tmp, 2)~=length(md.ti)
                 tmp = tmp.';
             end
             if size(tmp, 2)~=length(md.ti)
                 error("timeseries is does not match number imaging volumes (length md.ti)")
             end
-            fitin.(outfn) = cat(1, fitin.(outfn), tmp);
+            fitin.vars.(outfn) = cat(1, fitin.vars.(outfn), tmp);
             if size(tmp, 1)>1
                 for tmpi = 1:size(tmp, 1)
-                    fsstmp = {[fieldspecstr_chosen.(fn{fi}){vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
-                    fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+                    fsstmp = {[varnms_chosen.(fn{fi}){vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
+                    fitin.varnms.(fn{fi}) = cat(1, fitin.varnms.(fn{fi}), fsstmp);
                 end
             else
-                fsstmp = fieldspecstr_chosen.(fn{fi})(vsi2);
-                fitin.fieldspecstr.(fn{fi}) = cat(1, fitin.fieldspecstr.(fn{fi}), fsstmp);
+                fsstmp = varnms_chosen.(fn{fi})(vsi2);
+                fitin.varnms.(fn{fi}) = cat(1, fitin.varnms.(fn{fi}), fsstmp);
             end
             if strcmp(fieldspec_chosen.(fn{fi}){vsi2,1}{1}, 'resp')
                 fitin.regionex = fieldspec_chosen.(fn{fi}){vsi2,2}{1};
@@ -168,7 +168,7 @@ fitin.fn_save_prefix = [pth_stack_analysis(1:end-4) fitin.regionex '_' fitin.par
 fitin.fn_save_prefix_short = [pth_stack_analysis(1:end-4) '_fit' num2str(fitin.choosecount)];
 
 fitin = orderfields_recursive(fitin);
-if choosecount==numel(fieldspecstr_all) %quit flag on final
+if choosecount==numel(varnms_all) %quit flag on final
     dochoose = 0;
 end
 
