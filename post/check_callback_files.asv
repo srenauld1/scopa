@@ -1,0 +1,76 @@
+function cbflags = check_callback_files(cbflags, pth_tmpfiles, varsz)
+
+fid = fopen([pth_tmpfiles 'tmp_cbf_.bin'], 'r');
+if fid>=3
+    tmpflag = fread(fid, '*uint16');
+    fclose('all');
+    delete([pth_tmpfiles 'tmp_cbf_.bin'])
+    if tmpflag==1 %pressed enter
+        if isempty(cbflags.getpvarind)
+            if ~isempty(cbflags.getivarind) && ~ismember(cbflags.ivarind, 1:varsz(cbflags.pvarind, 1))
+                cbflags.newtitle = ['INPUT VARIABLE #' num2str(cbflags.ivarind) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(cbflags.pvarind) ', CHOOSE INDEX 1 TO ' num2str(varsz(cbflags.pvarind, 1))];
+                cbflags.ivarind = [];
+            else
+                cbflags.restart = 1;
+                cbflags.newtitle = 'PRESSED "enter", RESTARTING';
+            end
+        else
+            if ~ismember(cbflags.pvarind, 1:size(varsz, 1))
+                cbflags.newtitle = ['PLOT VARIABLE #' num2str(cbflags.pvarind) ' DOES NOT EXIST, CHOOSE INDEX 1 TO ' num2str(size(varsz, 1))];
+                cbflags.getpvarind = 1;
+            else
+                cbflags.newtitle = ['PRESSED "enter", NOW CHOOSE HOW TO CHANGE PLOT VARIABLE #' num2str(cbflags.pvarind) ' BY PRESSING "i", OR CLICKING ON PLOT'];
+            end
+            cbflags.pvarind = [];
+        end
+    elseif tmpflag==2
+        cbflags.newtitle = 'PRESSED "p", PRESS DIGITS TO CHOOSE WHICH PLOT VARIABLE INDEX TO CHANGE';
+        cbflags.getpvarind = 1;
+    elseif tmpflag==3 && ~isempty(cbflags.getpvarind)
+        cbflags.newtitle = ['PRESSED "i", PRESS DIGITS TO CHOOSE WHICH INPUT VARIABLE INDEX TO USE FOR PLOT VARIABLE #' num2str(cbflags.pvarind)];
+        cbflags.getpvarind = [];
+        cbflags.getivarind = 1;
+    end
+end
+
+if ~isempty(cbflags.getpvarind)
+    fid = fopen([pth_tmpfiles 'tmp_cbf_uiroi_.bin'], 'r');
+    if fid>=3
+        cbflags.getpvarind = [];
+        tmpflag = fread(fid, '*uint16');
+        fclose('all');
+        delete([pth_tmpfiles 'tmp_cbf_uiroi_.bin'])
+        if tmpflag %pressed enter
+            cbflags.newtitle = ['SELECTED VOXEL ' mat2str(vec(tmpflag)') ', PRESS ENTER TO MAKE THAT THE CURRENT ROI'];
+            cbflags.uiroipixind = tmpflag;
+        end
+    end
+end
+
+
+if cbflags.getpvarind %choose plot variable
+    fid = fopen([pth_tmpfiles 'tmp_cbf_digit_.bin'], 'r');
+    if fid>=3
+        tmpflag_d = fread(fid, '*uint16');
+        fclose('all');
+        delete([pth_tmpfiles 'tmp_cbf_digit_.bin'])
+        cbflags.newtitle = ['PRESSED ' num2str(tmpflag_d) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH PLOT VARIABLE INDEX TO CHANGE'];
+        cbflags.pvarind = [cbflags.pvarind tmpflag_d];
+        cbflags.pvarind = str2double(strrep(num2str(cbflags.pvarind), ' ', ''));
+    end
+end
+
+if cbflags.getivarind %choose input variable 
+    fid = fopen([pth_tmpfiles 'tmp_cbf_digit_.bin'], 'r');
+    if fid>=3
+        tmpflag_d = fread(fid, '*uint16');
+        fclose('all');
+        delete([pth_tmpfiles 'tmp_cbf_digit_.bin'])
+        cbflags.newtitle = ['PRESSED ' num2str(tmpflag_d) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH INPUT VARIABLE INDEX TO CHANGE'];
+        cbflags.ivarind = [cbflags.ivarind tmpflag_d];
+        cbflags.ivarind = str2double(strrep(num2str(cbflags.ivarind), ' ', ''));
+
+    end
+end
+
+end

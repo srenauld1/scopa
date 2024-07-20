@@ -1,6 +1,13 @@
 
-function [hndls, framecount] = plot_axes(hndls, stack, ftv, roi_index, crosshair, framecount, varsp, tinew, fngif, roi_type, figure_title, roiim, alphaim)
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, tinew, fngif, figure_title, roiim, alphaim, interactive, pth_tmpfiles, varsz)
 
+cbflags.restart = [];
+cbflags.getpvarind = [];
+cbflags.getivarind = [];
+cbflags.pvarind = [];
+cbflags.ivarind = [];
+cbflags.newtitle = [];
+cbflags.uiroipixind = [];
 
 fn = fieldnames(varsp);
 
@@ -30,25 +37,12 @@ for fr = 1:size(stack,4) %for each frame (sample)
     %%%% STACK %%%%
     for j = 1:numel(hndls.st.hax) %for each z slice
 
-        if strcmp(roi_type, 'rois') %roi_type pixels image never changes
-            hndls.st.hpl{j}.CData = stack(:,:,j,fr);
-            if fr==1 && ~isempty(alphaim) %if there are roi variables
-                hndls.st.hol{j}.CData = squeeze(roiim(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
-                hndls.st.hol{j}.AlphaData = alphaim(:,:,j);
-            end
+        hndls.st.hpl{j}.CData = stack(:,:,j,fr);
+        if fr==1 && ~isempty(alphaim) %if there are roi variables
+            hndls.st.hol{j}.CData = squeeze(roiim(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
+            hndls.st.hol{j}.AlphaData = alphaim(:,:,j);
         end
 
-        % if fr==1
-        %     if j==crosshair{roi_index}(3)
-        %         hndls.st.hlny{j}{ri}.Value = crosshair{roi_index}(1);
-        %         hndls.st.hlnx{j}{ri}.Value = crosshair{roi_index}(2);
-        %         hndls.st.hlny{j}{ri}.LineStyle = '-';
-        %         hndls.st.hlnx{j}{ri}.LineStyle = '-';
-        %     else
-        %         hndls.st.hlny{j}{ri}.LineStyle = 'none';
-        %         hndls.st.hlnx{j}{ri}.LineStyle = 'none';
-        %     end
-        % end
     end
 
 
@@ -59,7 +53,25 @@ for fr = 1:size(stack,4) %for each frame (sample)
     framecount = framecount + 1;
     fig2gif(hndls.hfg, framecount, fngif) %write to gif
 
+
+    if interactive
+
+        cbflags = process_callback_files(cbflags, pth_tmpfiles, varsz);
+
+        if cbflags.newtitle
+            hndls.httl.String = cbflags.newtitle;
+        end
+
+        if cbflags.restart==1
+            pause(0.2)
+            break;
+        end
+
+    end
 end
 
 
 end
+
+
+

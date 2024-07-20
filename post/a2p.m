@@ -65,7 +65,6 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
     if opt.mn.do_temporal_downsample_align_fictrac_video
         try
-            crnwkj=crwnbhj
             load(pth.ft.vidrs, 'ftvdsrs')
         catch
             ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
@@ -180,7 +179,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
                 plot_experiment(opt.pltexp(si).interactive, stackcrop, fitin.vars, fitin.varnms, opt.pltexp(si).varinds, opt.pltexp(si).epochinds, ...
                     roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
                     md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds, ...
-                    opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs)
+                    opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs, pth.tmpfiles)
 
             end
         end

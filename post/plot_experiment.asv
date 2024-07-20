@@ -1,48 +1,42 @@
-function plot_experiment(stack, vars, labs, varinds, epochinds_all, roiinfo, ...
+function plot_experiment(interactive, stack, vars, labs, varinds, epochinds_all, roiinfo, ...
     ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, plotinds, ...
-    display_range, fngif_prefix_short, fngif_prefix, ftv)
+    display_range, fngif_prefix_short, fngif_prefix, ftv, pth_tmpfiles)
 
 
-gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or all (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
-ts_scope = 'full'; 
-axisroomfac = 0.15;
+
+"currently, stack must not be subset in x,y, or z, otherwise interactive roi indices will be wrong"
+
+gif_scope = 'allv_alle'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
+ts_scope = 'full';
+yaxisroomfac = 0.15; %fraction of total, extra room on y axis 
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
-sampinc = 5; %sample increment per gif frame
-skipnan_rescale = 1;
-alphafac = 0.2;
-rescale_timeseries = 1;
+sampinc = 1; %sample increment per gif frame
+alphafac = 0.2; %transparency in roi overlay
+rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep labels at original scale)
+skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
 
 
 %% prep vars
 
 
-ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
+delete([pth_tmpfiles 'tmp_cbf_.bin']) %try delete first in case you errored in the middle of callback last time
+delete([pth_tmpfiles 'tmp_cbf_digit_.bin']) %try delete first in case you errored in the middle of callback last time
+delete([pth_tmpfiles 'tmp_cbf_uiroi_.bin']) %try delete first in case you errored in the middle of callback last time
 
-roi_type = 'rois';
-switch roi_type
-    case 'pixels'
-        for roi_ind = 1:roiinfo.numroi
-            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roiinfo.mask_allroi), roiinfo.pixinds_roi{roi_ind});
-        end
-    case 'rois'
-        crosshair = cellfun(@round, roiinfo.centroids_roi, 'UniformOutput', false); %will this take it out of bounds? should not
-    case 'raw'
-        error("roi_type 'raw' doens't work yet")
-end
-
-
-label_prefix = 'z';
-[plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, label_prefix);
-label_prefix = 't';
-[plotinds.t, plotinds.t_str] = make_plot_inds(size(stack, 4), plotinds.t, label_prefix);
+[plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, 'z');
+[plotinds.t, plotinds.t_str] = make_plot_inds(size(stack, 4), plotinds.t, 't');
 
 stack = stack(:,:,plotinds.z,plotinds.t);
 ftv = ftv(:,:,plotinds.t);
 epochinds_ts_i = epochinds_ts_i(plotinds.t);
-ti = ti(plotinds.t);
+% ti = ti(plotinds.t);
 
-roiim_tmp = zeros(size(stack,1), size(stack,2), size(stack,3), 3, 'single'); %rgb
-alphaim_tmp = zeros(size(stack,1), size(stack,2), size(stack,3), 'single'); %alpha for rgb
+roiim_tmp = zeros(size(stack,1), size(stack,2), size(stack,3), 3, 'single'); %rgb for roi overlay
+alphaim_tmp = zeros(size(stack,1), size(stack,2), size(stack,3), 'single'); %alpha for rgb roi overlay
+
+if numel(size(ftv))==3
+    ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
+end
 
 fnp = fieldnames(varinds);
 
@@ -51,33 +45,15 @@ for fi = 1:numel(fn)
     % vars.(fn{fi}) = vars.(fn{fi})(:,plotinds.t);
     vars.(fn{fi}) = convert_to_single_precision(vars.(fn{fi}));
     labs.(fn{fi}) = check_labels(labs.(fn{fi}), vars.(fn{fi}));
-    lims.(fn{fi}) = find_axis_limits(vars.(fn{fi}), axisroomfac);
+    lims.(fn{fi}) = find_axis_limits(vars.(fn{fi}), yaxisroomfac);
 end
 
 varsc = struct2cell(vars);
 labsc = struct2cell(labs);
 limsc = struct2cell(lims);
 
-varsz = cell2mat(cellfun(@size,varsc,'UniformOutput',false));
+varcombos = make_varcombos(varsc);
 
-if all(varsz ~= varsz(1))
-    error("timeseries do not have equal number samples")
-end
-
-
-for vi = 1:size(varsz,1)
-    varcombstmp{vi} = 1:varsz(vi,:);
-end
-varcombos = cell(1, numel(varcombstmp));
-[varcombos{:}] = ndgrid(varcombstmp{:});
-varcombos = cellfun(@(x) x(:), varcombos, 'uniformoutput', false);
-varcombos = [varcombos{:}];
-numvarcombos = size(varcombos,1);
-
-numsamp_max_full_ts_allepochsets = 0;
-for ecount = 1:numel(epochinds_all)
-    numsamp_max_full_ts_allepochsets = max(numsamp_max_full_ts_allepochsets, numel(find(ismember_each_element(epochinds_ts_i, epochinds_all{ecount}))));
-end
 
 subplot_layout = {[4,4], stack};
 margins_subplot = [0.05,0.005];
@@ -86,45 +62,50 @@ splitdim = 'y';
 splitfrac = [0.5];
 ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
-cols = distinguishable_colors(numel(varsc)); %make black first color, so subtract one for distinguishable_colors
+cols = cat(1, [0 0 0], distinguishable_colors(numel(varsc))); %make black first color, so subtract one for distinguishable_colors
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
+
 %% loop over epoch sets and plotting variables
 
-for ecount = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
 
-    epochinds = epochinds_all{ecount};
-    epochstring = make_epoch_string(epochinds);
-    tinds = find(ismember_each_element(epochinds_ts_i, epochinds));
-    tinds = tinds(1):sampinc:tinds(end);
+plotloop = 1;
+while plotloop
 
-    if strcmp(ts_scope, 'full')
-        numsamp_max_full_ts_onegif = numel(ti);
-    elseif strcmp(ts_scope, 'epocb')
-        if strcmp(gif_scope, 'allv_alle')
-            numsamp_max_full_ts_onegif = numsamp_max_full_ts_allepochsets;
-        else
-            numsamp_max_full_ts_onegif = numel(tinds);
-        end
+
+    if exist('cbflags', 'var') && ~all(structfun(@isempty, fuk))
+        [varcombos_use, varsc_use, labsc_use] = user_input_updates(cbflags, varsc, labsc);
+    else
+        varcombos_use = varcombos;
+        varsc_use = varsc;
+        labsc_use = labsc;
     end
 
-    tinew = ti(tinds);
-    stack = stack(:,:,:,tinds);
-    ftv = ftv(:,:,tinds);
+
+    for ecount = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
+
+        epochinds = epochinds_all{ecount};
+        epochstring = make_epoch_string(epochinds);
+        tinds = find(ismember_each_element(epochinds_ts_i, epochinds));
+        tinds = tinds(1):sampinc:tinds(end);
+
+        numsamp_max_full_ts_onegif = find_maxnumsamp(ts_scope, ti, tinds, epochinds_all, epochinds_ts_i);
+
+        tinew = ti(tinds);
+        stack = stack(:,:,:,tinds);
+        ftv = ftv(:,:,tinds);
 
 
-    for vcount = 12:numvarcombos %loop over all variable sets
+        for vcount = 1:size(varcombos_use,1) %loop over all variable sets
 
-        varcombo = varcombos(vcount,:);
-        for vi = 1:numel(varcombo)
-            varstmp(vi,:) = varsc{vi}(varcombo(vi),:);
-            labstmp(vi) = labsc{vi}(varcombo(vi));
-        end
-
-        skipplot = skip_plot_criteria(labstmp, 'none');
-
-        if ~skipplot
+            varcombo = varcombos_use(vcount,:);
+            varstmp = zeros(numel(varcombo), numsamp_max_full_ts_onegif, 'single');
+            labstmp = cell(1, numel(varcombo));
+            for vi = 1:numel(varcombo)
+                varstmp(vi,:) = varsc_use{vi}(varcombo(vi),:);
+                labstmp(vi) = labsc_use{vi}(varcombo(vi));
+            end
 
 
             fngif = make_filename(labstmp, gif_scope, varinds, epochstring, fngif_prefix);
@@ -132,77 +113,99 @@ for ecount = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples w
             figure_title = make_figure_title(fngif_prefix_short, epochstring, dtmni, roi_index_str);
             labstmp = process_labels(labstmp, roi_index);
 
+            skipplot = skip_plot_criteria(labstmp, 'none');
 
-            %%%% PREP TIMESERIES VARS %%%%
-            cnt = 0;
-            for fi = 1:numel(fnp) %for each side (left and right)
-                varindstmp = varinds.(fnp{fi});
-                for vi = 1:numel(varindstmp) %for each variable
-                    cnt = cnt + 1;
-                    labsp.(fnp{fi}){vi} = labstmp{varindstmp(vi)};
-                    ticklab.(fnp{fi}){vi} = limsc{varindstmp(vi)}.(ylim_constancy);
-                    limsp.(fnp{fi}).rescale = limsc{varindstmp(vi)}.rescale;
-                    limsp.(fnp{fi}).rescale_xtra = limsc{varindstmp(vi)}.rescale_xtra;
-                    if endsWith(labsp.(fnp{fi}){vi}, 'yaw') | endsWith(labsp.(fnp{fi}){vi}, 'ang')
-                        varstmp(cnt,:) = insert_nan_for_polar_wrap(varstmp(cnt,:));
+            if ~skipplot
+
+
+                %%%% PREP TIMESERIES VARS %%%%
+                cnt = 0;
+                for fi = 1:numel(fnp) %for each side (left and right)
+                    varindstmp = varinds.(fnp{fi});
+                    for vi = 1:numel(varindstmp) %for each variable
+                        cnt = cnt + 1;
+                        labsp.(fnp{fi}){vi} = labstmp{varindstmp(vi)};
+                        ticklab.(fnp{fi}){vi} = limsc{varindstmp(vi)}.(ylim_constancy);
+                        limsp.(fnp{fi}).rescale = limsc{varindstmp(vi)}.rescale;
+                        limsp.(fnp{fi}).rescale_xtra = limsc{varindstmp(vi)}.rescale_xtra;
+                        if contains(labsp.(fnp{fi}){vi}, 'yaw', 'IgnoreCase', true) | contains(labsp.(fnp{fi}){vi}, 'ang', 'IgnoreCase', true)
+                            varstmp(cnt,:) = insert_nan_for_polar_wrap(varstmp(cnt,:));
+                        end
+                        varstmp(cnt,:) = nanpadvec(numsamp_max_full_ts_onegif, varstmp(cnt,:));
+                        varsp.(fnp{fi})(vi,:) = rescale_to_range(varstmp(varindstmp(vi),:), ticklab.(fnp{fi}){vi}, [0 1], skipnan_rescale); %rescale from tick label to [0,1], to multiple lines can be on same scale (but tick label remains unchanged)
                     end
-                    varstmp(cnt,:) = nanpadvec(numsamp_max_full_ts_onegif, varstmp(cnt,:));
-                    varsp.(fnp{fi})(vi,:) = rescale_to_range(varstmp(varindstmp(vi),:), ticklab.(fnp{fi}){vi}, [0 1], skipnan_rescale); %rescale from tick label to [0,1], to multiple lines can be on same scale (but tick label remains unchanged)
                 end
-            end
 
 
-            %%%% PREP STACK AND ROI OVERLAY %%%%
-            roiim = roiim_tmp;
-            alphaim = alphaim_tmp;
-            for ri = 1:numel(roi_index)
-                if ~isempty(roi_index{ri})
-                    pixind_oneroi = roiinfo.pixinds_roi{roi_index{ri}};
-                    pixind_oneroi_rgb = pixind_oneroi+numel(alphaim)*([1:3]-1);
-                    roiim = reshape(roiim, [], 3);
-                    roiim(pixind_oneroi_rgb(:,1)) = cols(ri,1);
-                    roiim(pixind_oneroi_rgb(:,2)) = cols(ri,2);
-                    roiim(pixind_oneroi_rgb(:,3)) = cols(ri,3);
-                    roiim = reshape(roiim, [size(alphaim), 3]);
-                    alphaim(pixind_oneroi) = alphafac; %roi inds work for each channel of rgb since channel is last dim
+                %%%% PREP STACK AND ROI OVERLAY %%%%
+                roiim = roiim_tmp;
+                alphaim = alphaim_tmp;
+                for ri = 1:numel(roi_index)
+                    if ~isempty(roi_index{ri})
+                        pixind_oneroi = roiinfo.pixinds_roi{roi_index{ri}};
+                        pixind_oneroi_rgb = pixind_oneroi+numel(alphaim)*([1:3]-1);
+                        roiim = reshape(roiim, [], 3);
+                        roiim(pixind_oneroi_rgb(:,1)) = cols(ri,1);
+                        roiim(pixind_oneroi_rgb(:,2)) = cols(ri,2);
+                        roiim(pixind_oneroi_rgb(:,3)) = cols(ri,3);
+                        roiim = reshape(roiim, [size(alphaim), 3]);
+                        alphaim(pixind_oneroi) = alphafac; %roi inds work for each channel of rgb since channel is last dim
+                    end
                 end
+
+
+                %%%% INIT AXES %%%%
+                if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecount == 1 && vcount == 1)
+                    
+                    close all
+                    hndls = struct;
+                    framecount = 0;
+
+                    hndls = init_fig(hndls, gif_visibility);
+
+                    sector_ind = 1;
+                    subplot_ind = [1 13];
+                    widfac = [4 1];
+                    htfac = [1 3];
+                    hndls = init_axes_timeseries(hndls, ax, numsamp_max_full_ts_onegif, varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+
+                    sector_ind = 1;
+                    subplot_ind = 15;
+                    widfac = 3;
+                    htfac = 3;
+                    cmap = gray(256);
+                    display_range_ftv = [0 1];
+                    hndls = init_axes_ftvid(hndls, ax, ftv, cmap, [], [], display_range_ftv, sector_ind, subplot_ind, widfac, htfac);
+
+                    sector_ind = 2;
+                    cmap = gray(256);
+                    hndls = init_axes_stack(hndls, pth_tmpfiles, ax, stack, cmap, zstartpos, display_range, sector_ind);
+
+                    if interactive
+                        set(hndls.hfg, 'KeyPressFcn', @(src,evnt)pltexp_key_press_fcn(src,evnt,pth_tmpfiles));
+                    else
+                        plotloop = 0;
+                    end
+
+                end
+
+
+                %%%% PLOT AXES %%%%
+                [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
+                    framecount, varsp, tinew, fngif, figure_title, ...
+                    roiim, alphaim, interactive, pth_tmpfiles);
+
+                if cbflags.restart==1
+                    break;
+                end
+
             end
-
-
-            %%%% INIT AXES %%%%
-            if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecount == 1)
-                close all
-                hndls = struct;
-                framecount = 0;
-
-                sector_ind = 1;
-                subplot_ind = [1 13];
-                widfac = [4 2];
-                htfac = [1 2];
-                hndls = init_axes_timeseries(hndls, ax, numsamp_max_full_ts_onegif, varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
-
-                sector_ind = 1;
-                subplot_ind = 15;
-                widfac = 3;
-                htfac = 3;
-                cmap = gray(256);
-                display_range_ftv = [0 1];
-                hndls = init_axes_ftvid(hndls, ax, ftv, cmap, [], [], display_range_ftv, sector_ind, subplot_ind, widfac, htfac);
-
-                sector_ind = 2;
-                cmap = gray(256);
-                hndls = init_axes_stack(hndls, ax, stack, cmap, zstartpos, display_range, sector_ind);
-            end
-
-            %%%% PLOT AXES %%%%
-            [hndls, framecount] = plot_axes(hndls, stack, ftv, roi_index, crosshair, ...
-                framecount, varsp, tinew, fngif, roi_type, figure_title, roiim, alphaim);
-
         end
     end
 end
 
 end
+
 
 
 %% helper functions
@@ -222,15 +225,15 @@ end
 
 
 
-function lims = find_axis_limits(varsin, axisroomfac)
+function lims = find_axis_limits(varsin, yaxisroomfac)
 
 varrng = range(varsin, 2);
 lims.each = [min(varsin, [], 2, 'omitmissing'), max(varsin, [], 2, 'omitmissing')];
-lims.each_xtra = [lims.each(:,1) - varrng*axisroomfac, lims.each(:,2) + varrng*axisroomfac];
+lims.each_xtra = [lims.each(:,1) - varrng*yaxisroomfac, lims.each(:,2) + varrng*yaxisroomfac];
 lims.all = [min(lims.each, [], 'all', 'omitmissing'), max(lims.each, [], 'all', 'omitmissing')];
 lims.all_xtra = [min(lims.each_xtra, [], 'all', 'omitmissing'), max(lims.each_xtra, [], 'all', 'omitmissing')];
 lims.rescale = [0 1];
-lims.rescale_xtra = [0 - axisroomfac, 1 + axisroomfac];
+lims.rescale_xtra = [0 - yaxisroomfac, 1 + yaxisroomfac];
 
 end
 
@@ -273,8 +276,6 @@ roi_index_str = regexprep( mat2str(cell2mat(roi_index(~cellfun('isempty',roi_ind
 
 
 end
-
-
 
 
 function skipplot = skip_plot_criteria(labsp, noneflag)
@@ -352,7 +353,8 @@ end
 function lab = process_labels(lab, roi_index)
 
 
-lab = strrep(lab, 'vis', 'cue');
+lab = strrep(lab, 'ts.', '');
+lab = strrep(lab, '.', ' ');
 lab = strrep(lab, 'vis', 'cue');
 
 for ri = 1:numel(roi_index)
@@ -362,10 +364,13 @@ for ri = 1:numel(roi_index)
 end
 
 for j = 1:numel(lab)
-    if contains(lab{j}, 'int')
+    if contains(lab{j}, 'intfor') || contains(lab{j}, 'intside') || contains(lab{j}, 'yaw') || contains(lab{j}, 'ang')
         lab{j} = [lab{j} ' (RAD)'];
     end
-    if endsWith(lab{j}, 'vel')
+    if contains(lab{j}, 'forvel') || contains(lab{j}, 'sidevel')
+        lab{j} = [lab{j} ' (MM/S)'];
+    end
+    if contains(lab{j}, 'angvel') || contains(lab{j}, 'yawvel')
         lab{j} = [lab{j} ' (RAD/S)'];
     end
 end
@@ -394,9 +399,55 @@ end
 
 end
 
+function numsamp_max_full_ts_onegif = find_maxnumsamp(ts_scope, ti, tinds, epochinds_all, epochinds_ts_i)
+
+if strcmp(ts_scope, 'full')
+    numsamp_max_full_ts_onegif = numel(ti); %show full timeseries
+elseif strcmp(ts_scope, 'epoch')
+    if strcmp(gif_scope, 'allv_alle')
+        numsamp_max_full_ts_allepochsets = 0;
+        for ecount = 1:numel(epochinds_all)
+            numsamp_max_full_ts_allepochsets = max(numsamp_max_full_ts_allepochsets, numel(find(ismember_each_element(epochinds_ts_i, epochinds_all{ecount}))));
+        end
+        numsamp_max_full_ts_onegif = numsamp_max_full_ts_allepochsets; %show all epochs in input epoch sets
+    else
+        numsamp_max_full_ts_onegif = numel(tinds); %show only current epoch
+    end
+end
+
+end
+
+function varcombos = make_varcombos(varsc)
+
+varsz = cell2mat(cellfun(@size,varsc,'UniformOutput',false));
+
+if all(varsz ~= varsz(1))
+    error("timeseries do not have equal number samples")
+end
+
+for vi = 1:size(varsz,1)
+    varcombstmp{vi} = 1:varsz(vi,:);
+end
+varcombos = cell(1, numel(varcombstmp));
+[varcombos{:}] = ndgrid(varcombstmp{:});
+varcombos = cellfun(@(x) x(:), varcombos, 'uniformoutput', false);
+varcombos = [varcombos{:}];
+
+end
+
+function [varcombos, varsc_out, labsc_out] = user_input_updates(cbflags, varsc_in, labsc_in)
+
+try
+    varsc_out = varsc_in;
+    labsc_out = labsc_in;
+    varsc_out{cbflags.pvarind} = varsc_in{cbflags.pvarind}(cbflags.ivarind,:);
+    labsc_out{cbflags.pvarind} = labsc_in{cbflags.pvarind}(cbflags.ivarind,:);
+catch ME
+    sprintf("user input for variable change is wrong, returning to original variables")
+    sprintf(ME.message)
+end
+
+varcombos = make_varcombos(varsc_out);
 
 
-
-
-
-
+end

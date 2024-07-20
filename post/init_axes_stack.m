@@ -1,7 +1,8 @@
-function hndls = init_axes_stack(hndls, ax, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, figsidelength, gif_visibility, axorder)
+function hndls = init_axes_stack(hndls, pth_tmpfiles, ax, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hndls struct
+    pth_tmpfiles char
     ax struct
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
@@ -12,8 +13,6 @@ arguments
     widfac = 1
     htfac = 1
     fontsz = [6 11 15]
-    figsidelength = 0.75
-    gif_visibility = 'on'
     axorder char = 'rowmajor'
 end
 
@@ -36,28 +35,6 @@ stackmin = double(min(stack(:)));
 stackmax = double(max(stack(:)));
 stackrange = stackmax-stackmin;
 
-if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
-
-    hfg = figure;
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
-    haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    httl = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
-
-    hndls.hfg = hfg;
-    hndls.haxmain = haxmain;
-    hndls.httl = httl;
-
-end
-
-
 
 for j = 1:numsubplot
 
@@ -70,6 +47,8 @@ for j = 1:numsubplot
     hax{j}.XLim = [1 numxpix];
     hax{j}.YLim = [1 numypix];
     hax{j}.CLim = stackrange*display_range+stackmin;
+    hax{j}.Toolbar.Visible = 'off';
+
     colormap(hax{j}, cmap);
     % hax{j}.XLabel.String = xlab;
     % hax{j}.YLabel.String = ylab;
@@ -80,7 +59,19 @@ for j = 1:numsubplot
 
     hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
     hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
+    hpl{j}.ButtonDownFcn = 'callbacks_for_this_image_are_assigned_to_overlay_image_with_handle_hol';
+
+    udat.imageindex = j;
+
+    hpl{j}.UserData = udat;
+
     hol{j} = image(roi_color_im, 'AlphaData', roi_alpha_im);
+    hol{j}.UserData = udat;
+
+    hol{j}.ButtonDownFcn = @(src,evnt)roiclickcb(src,evnt,pth_tmpfiles);
+    hol{j}.PickableParts = 'visible';
+    hol{j}.HitTest = 'on';
+
 
     hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');
     hlny{j} = yline(hax{j}, nan, 'w', 'LineStyle', 'none');
@@ -106,4 +97,6 @@ hndls.st.htx = htx;
 
 
 end
+
+
 

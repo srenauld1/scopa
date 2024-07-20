@@ -1,6 +1,13 @@
 
-function [hndls, framecount] = plot_axes(hndls, stack, ftv, roi_index, crosshair, framecount, varsp, tinew, fngif, roi_type, figure_title, alphaim)
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, roi_index, crosshair, framecount, varsp, tinew, fngif, roi_type, figure_title, roiim, alphaim, interactive, pth_tmpfiles)
 
+cbflags.restart = [];
+cbflags.pvarind = [];
+cbflags.ivarind = [];
+cbflags.pvarind = [];
+cbflags.ivarind = [];
+cbflags.newtitle = [];
+cbflags.uiroipixind = [];
 
 fn = fieldnames(varsp);
 
@@ -16,47 +23,58 @@ end
 
 for fr = 1:size(stack,4) %for each frame (sample)
 
+    %%%% TIMESERIES %%%%
     for j = 1:numel(hndls.ts.hax) %for each subplot
         if j==2
             hndls.ts.hax{j}.XAxis.Limits = [tinew(fr)-6, tinew(fr)+6];
             hndls.ts.hax{j}.XAxis.TickLabels = num2str(tinew(fr)+6, 4);
+            hndls.ts.hax{j}.XTick = tinew(fr);
+            hndls.ts.hax{j}.XTickLabel = [num2str(hndls.ts.hax{j}.XTick) ' sec (+/- 6 sec)'];
         end
-        hndls.ts.hlnx{j}.XData = tinew(fr);
+        hndls.ts.hlnx{j}.XData = [tinew(fr) tinew(fr)];
     end
 
-    for j = 1:numel(hndls.ftv.hax)
-        hndls.ftv.hpl{j}.CData = ftv(:,:,j,fr);
-    end
-
-    for j = 1:numel(hndls.st.hax)
+    %%%% STACK %%%%
+    for j = 1:numel(hndls.st.hax) %for each z slice
 
         if strcmp(roi_type, 'rois') %roi_type pixels image never changes
             hndls.st.hpl{j}.CData = stack(:,:,j,fr);
             if fr==1 && ~isempty(alphaim) %if there are roi variables
+                hndls.st.hol{j}.CData = squeeze(roiim(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
                 hndls.st.hol{j}.AlphaData = alphaim(:,:,j);
             end
         end
 
-        if fr==1
-            if j==crosshair{roi_index}(3)
-                hndls.st.hlny{j}.Value = crosshair{roi_index}(1);
-                hndls.st.hlnx{j}.Value = crosshair{roi_index}(2);
-                hndls.st.hlny{j}.LineStyle = '-';
-                hndls.st.hlnx{j}.LineStyle = '-';
-            else
-                hndls.st.hlny{j}.LineStyle = 'none';
-                hndls.st.hlnx{j}.LineStyle = 'none';
-            end
-        end
+     
     end
 
 
-    fig2gif(hndls.hfg, fr, fngif)
+    %%%% FICTRAC VID %%%%
+    hndls.ftv.hpl{1}.CData = ftv(:,:,fr); %fictrac video
+
+
+    framecount = framecount + 1;
+    fig2gif(hndls.hfg, framecount, fngif) %write to gif
+
+
+    if interactive
+
+        cbflags = check_callback_files(cbflags, pth_tmpfiles);
+
+        if cbflags.newtitle
+            hndls.httl.String = cbflags.newtitle;
+        end
+
+        if cbflags.restart==1
+            pause(0.2)
+            break;
+        end
+
+    end
+end
+
 
 end
 
-% if strcmp(gif_scope, 'eachvar')
-%     close all
-% end
 
-end
+

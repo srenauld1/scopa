@@ -1,4 +1,4 @@
-function hndls = init_axes_ftvid(hndls, ax, stack, cmap, overlay_variable, text_variable, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, figsidelength, gif_visibility, axorder)
+function hndls = init_axes_ftvid(hndls, ax, stack, cmap, overlay_variable, text_variable, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hndls struct
@@ -13,8 +13,6 @@ arguments
     widfac = 1
     htfac = 1
     fontsz = [6 11 15]
-    figsidelength = 0.75
-    gif_visibility = 'on'
     axorder char = 'rowmajor'
 end
 
@@ -32,28 +30,6 @@ stackmin = double(min(stack(:)));
 stackmax = double(max(stack(:)));
 stackrange = stackmax-stackmin;
 imalpha = ones(size(dummyim))*0.5;
-
-if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
-
-    hfg = figure;
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
-    haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-    httl = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
-
-    hndls.hfg = hfg;
-    hndls.haxmain = haxmain;
-    hndls.httl = httl;
-
-end
-
 
 
 for j = 1:numsubplot

@@ -1,0 +1,35 @@
+function hndls = init_fig(hndls, gif_visibility, figsidelength, fontsz)
+
+arguments
+    hndls
+    gif_visibility = 'on'
+    figsidelength = 0.75
+    fontsz = 11
+end
+
+if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
+
+    hfg = figure;
+
+    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
+    close(hfg)
+
+
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+    if aspect_screen>1
+        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
+    else
+        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
+    end
+    
+    haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+    
+    haxmain.Toolbar.Visible = 'off';
+    
+    httl = text( haxmain, 0.5, 0.99, '', 'FontSize', fontsz, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
+
+    hndls.hfg = hfg;
+    hndls.haxmain = haxmain;
+    hndls.httl = httl;
+
+end
