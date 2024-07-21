@@ -1,4 +1,5 @@
 
+
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity
@@ -22,10 +23,8 @@
 
 function a2p(varargin)
 
-
 %% params
 
-"move flyg metadata file create into filenames_a2p"
 opt = input_params_carl(varargin);
 
 %% loop over recordings

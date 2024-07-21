@@ -3,7 +3,7 @@ function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
     make_morphological_rois_automated(stack_mnt, maskmanual, ...
     num_mroi_auto_initial, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
     xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
-    edgethresh, edgesig, closing_element_size, regionex, hsvopt, olayopt, do_plots)
+    edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_plots)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -397,9 +397,10 @@ if do_plots
         end
 
         %roi overlay in upsampled res
-        filename_olay = [pth_mroi_prefix 'eachroired_upsamp_.gif'];
-        roi_overlay = make_roi_overlay(premask, pixinds_roi_upsamp, olayopt.ncol_each, ...
-            olayopt.foreground_plot_style, olayopt.saturation_factor_background, olayopt.saturation_factor_rois, filename_olay);
+        filename_olay = [pth_mroi_prefix 'roiolay_upsamp_.gif'];
+        gif_visibility = 'on';
+        stack2fig(premask, filename_olay, gif_visibility, pixinds_roi_upsamp) %include pixinds_roi as argument to plot roi overlay
+
 
         %hsv gif, each slice, each roi a different hue
         hsvopt = plots_setup_hsv(hsvopt);

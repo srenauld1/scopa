@@ -31,10 +31,6 @@ ftv = ftv(:,:,plotinds.t);
 epochinds_ts_i = epochinds_ts_i(plotinds.t);
 % ti = ti(plotinds.t);
 
-roiim = zeros(size(stack,1), size(stack,2), size(stack,3), 3, 'single'); %rgb for roi overlay
-alphaim = zeros(size(stack,1), size(stack,2), size(stack,3), 'single'); %alpha for rgb roi overlay
-
-
 if numel(size(ftv))==3
     ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
 end
@@ -137,23 +133,6 @@ while plotloop
                         varsp.(fnp{fi})(vi,:) = rescale_to_range(varstmp(varindstmp(vi),:), ticklab.(fnp{fi}){vi}, [0 1], skipnan_rescale); %rescale from tick label to [0,1], to multiple lines can be on same scale (but tick label remains unchanged)
                     end
                 end
-
-
-                %%%% PREP STACK AND ROI OVERLAY %%%%
-                roiim = reshape(roiim, [], 3);
-                roiim(:) = 0;
-                alphaim(:) = 0;
-                for ri = 1:numel(roi_index)
-                    if ~isempty(roi_index{ri})
-                        pixind_oneroi = roiinfo.pixinds_roi{roi_index{ri}};
-                        pixind_oneroi_rgb = pixind_oneroi+numel(alphaim)*([1:3]-1);
-                        roiim(pixind_oneroi_rgb(:,1)) = cols(ri,1);
-                        roiim(pixind_oneroi_rgb(:,2)) = cols(ri,2);
-                        roiim(pixind_oneroi_rgb(:,3)) = cols(ri,3);
-                        alphaim(pixind_oneroi) = alphafac; %roi inds work for each channel of rgb since channel is last dim
-                    end
-                end
-                roiim = reshape(roiim, [size(alphaim), 3]);
 
 
                 %%%% INIT AXES %%%%

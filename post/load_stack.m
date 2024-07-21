@@ -1,21 +1,12 @@
 
 %% input
 
-% load stacks output by scopa pipeline, and raw stack output by scan image
-
-% if mat doesn't exist, will read tif and save as mat (read large tif
-% requires TIFFStack library)
-%
+% load stacks output by scopa 'pre' pipeline, and raw stack output by scanimage
+% if mat doesn't exist, will read tif and save as mat (reading large tif requires TIFFStack library)
 % will plot all stacks as a single movie, concatenated along first dim, and
-% save as gif (user can choose z and t indices, can be nonconsecutive)
-
-% will also plot rescaled movie, and mean movie with and without rescaling
-% can optionally rescale all subplots to same range
-% nans inserted above each subplot to separate them clearly (nan_numlines)
-
-% this script converts raw scanimage tif from int16 to uint16
-% all scopa output stacks should be uint16, but if not they are converted
-% if possible without clipping
+% save as gif (user can choose z and t indices)
+% converts raw scanimage tif from int16 to uint16
+% all scopa output stacks should be uint16, but if not they are converted to uint16
 
 
 function stack = load_stack(sz, numslice_withflyback, pth, opts, recid)
@@ -152,13 +143,14 @@ if plot_stack_gif
     index_labels = arrayfun(@(x) 1:x(end), size(stackplot{1}), 'UniformOutput', false);
     index_labels{3} = plotinds.z;
     index_labels{4} = plotinds.t;
-    stack2fig(stackplot, fngif, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    gif_visibility = 'on';
+    stack2fig(stackplot, fngif, gif_visibility, [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
     fngif = [filename_prefix 'meant_.gif'];
     framenumdims = 2;
     dimorder = [1,2,3];
     index_labels = index_labels(1:3);
-    stack2fig(stackplot_mn, fngif, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stackplot_mn, fngif, gif_visibility, [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 
 end

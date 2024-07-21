@@ -28,7 +28,8 @@ numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frame
 dummyim = nan(numypix, numxpix);
 
 imroi = zeros(numypix, numxpix, 3, 'single'); %make ones here, so only alphadata has to change later (showing the ones where the roi is located, scaled by alphafac)
-imroialpha = zeros(numypix, numxpix, 'single');
+
+roi_alpha_im = zeros(numypix, numxpix, 'single');
 
 stackmin = double(min(stack(:)));
 stackmax = double(max(stack(:)));
@@ -64,7 +65,7 @@ for j = 1:numsubplot
 
     hpl{j}.UserData = udat;
 
-    hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
+    hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', roi_alpha_im);
     hol{j}.UserData = udat;
 
     hol{j}.ButtonDownFcn = @(src,evnt)roiclickcb(src,evnt,pth_tmpfiles);

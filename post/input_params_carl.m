@@ -104,11 +104,10 @@ opt.mroi.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 ma
 opt.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
-opt.mroi.olayopt.doplot = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
 opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
-opt.mroi.olayopt.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
-opt.mroi.olayopt.saturation_factor_background = 1; %for gif, above this fraction of data is sent to max
-opt.mroi.olayopt.saturation_factor_rois = 1; %for gif above this fraction of data is sent to max
+opt.mroi.olayopt.roi_color = [1 0 0]; %color for roi overlay
+opt.mroi.olayopt.roialpha = 0.3; %transparency for roi overlay
 
 %params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
 opt.mroi.hsvopt.do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  

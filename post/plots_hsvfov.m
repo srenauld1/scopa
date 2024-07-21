@@ -1,4 +1,4 @@
-function [img] = plots_hsvfov(plt, stackmean, hsvmap, pixinds_roi, mask_roi_vec, filename_save)
+function img = plots_hsvfov(plt, stackmean, hsvmap, pixinds_roi, mask_roi_vec, filename_save)
 
 num_grayscales_bg = 256; %arbitrary
 
@@ -61,6 +61,8 @@ switch plt.foreground
 
 
     case 'raw'
+
+        error("hsv method raw does not exist yet")
 
 end
 

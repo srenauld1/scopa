@@ -1,11 +1,13 @@
-function stack2fig(stack, fngif, pixinds_roi, roi_colors, roialpha, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility, numcolorsgif)
+function stack2fig(stack, fngif, gif_visibility, pixinds_roi, roiinds, roi_colors, roialpha, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, numcolorsgif)
 
 %alphamapping is not yet an option
 
 arguments
     stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,pmtchannel,colorchannel); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
     fngif char = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'))
+    gif_visibility char = 'on'
     pixinds_roi = []
+    roiinds = []
     roi_colors = [1 0 0]
     roialpha = 0.3
     cmap double = gray(256) %colormap or 'rgb' if stack is truecolor (final dim length 3 . . . can be any numeric type)
@@ -16,7 +18,6 @@ arguments
     index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
     figsidelength double = 0.75 %figure size as proportion of your available screen small dimension (cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
     axord char = 'rowmajor'
-    gif_visibility char = 'on'
     numcolorsgif double = 128
 end
 
@@ -46,8 +47,12 @@ if iscell(stack)
     stack = cell2mat(stack(:)); %convert to mat and concatenate multiple stacks along first dim
 end
 
+
 if isempty(pixinds_roi)
     roi_loop_size = 1;
+    if ~isempty(roiinds)
+        sprintf("you passed a roi index as argument without pixinds_roi; will not plot roi without pixinds_roi")
+    end
 else
     if ~iscell(pixinds_roi)
         if isvector(pixinds_roi)
@@ -59,7 +64,12 @@ else
     if numel(size(stack))>3
         error("you passed pixinds_roi as argument; to plot roi overlay, pass stack xyz only; do not include any additional dimensions (t, p, or c)")
     end
-    roi_loop_size = numel(pixinds_roi);
+    if isempty(roiinds)
+        roiinds = 1:numel(pixinds_roi);
+        roi_loop_size = numel(pixinds_roi);
+    else
+        roi_loop_size = numel(roiinds);
+    end
 end
 
 if size(roi_colors, 1)==1
@@ -141,16 +151,27 @@ lab_framestable = cat(1, lab_framestable, index_labels_tmp);
 dims_changing_across_frames = framenumdims+1:maxnumdims;
 lab_framechange = index_labels(dims_changing_across_frames); %labels that can change on each frame
 lab_framechange_numel = cellfun(@numel, lab_framechange);
-for k = 1:numframes
-    [i1,i2,i3,i4,i5,i6]=ind2sub(lab_framechange_numel(:)', k); %subscript of frame in all possible dimensions
-    subtmp = [i1,i2,i3,i4,i5,i6];
-    subtmp = subtmp(1:numel(lab_framechange));
-    labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
-    labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
-    labtmp = cellfun(@horzcat, dimlabels(dims_changing_across_frames), repelem({'-'}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
-    titlesuffix = cat(1, lab_framestable(:), labtmp(:));
-    titlesuffix = strjoin(titlesuffix, ', ');
-    titlenew{k} = {strrep(title_prefix, '_', ' ') ; titlesuffix};
+
+framecount = 0;
+for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
+    if isempty(pixinds_roi)
+        roinum_title = '';
+    else
+        roinum_title = [', roi-' num2str(roiinds(ri))];
+    end
+    for k = 1:numframes
+        framecount = framecount+1;
+        [i1,i2,i3,i4,i5,i6]=ind2sub(lab_framechange_numel(:)', k); %subscript of frame in all possible dimensions
+        subtmp = [i1,i2,i3,i4,i5,i6];
+        subtmp = subtmp(1:numel(lab_framechange));
+        labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
+        labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
+        labtmp = cellfun(@horzcat, dimlabels(dims_changing_across_frames), repelem({'-'}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
+        titlesuffix = cat(1, lab_framestable(:), labtmp(:));
+        titlesuffix = strjoin(titlesuffix, ', ');
+        titlesuffix = [titlesuffix roinum_title];
+        titlenew{framecount} = {strrep(title_prefix, '_', ' '); titlesuffix};
+    end
 end
 
 %% init subplots
@@ -200,7 +221,7 @@ end
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(pixinds_roi)
-        [imroi, imalpha] = make_roi_overlay(pixinds_roi{ri}, roi_colors(ri,:), imroi, imalpha, roialpha); %make an overlay for one roi
+        [imroi, imalpha] = make_roi_overlay(pixinds_roi{roiinds(ri)}, imroi, imalpha, roi_colors(ri,:), roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after framenumdims
         framecount = framecount+1;
@@ -214,7 +235,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
 
         end
 
-        htx.String = titlenew{k};
+        htx.String = titlenew{framecount};
 
         fig2gif(hfg, framecount, fngif, numcolorsgif)
 

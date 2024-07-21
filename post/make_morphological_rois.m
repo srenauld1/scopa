@@ -128,7 +128,7 @@ catch
             make_morphological_rois_automated(stack_mnt, maskmanual, ...
             num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
             xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
-            edgethresh, edgesig, closing_element_size, regionex, hsvopt, olayopt, do_other_plots);
+            edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_other_plots);
 
     end
 
@@ -183,20 +183,6 @@ pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 
-%% create/plot roi hsv
-
-if hsvopt.do
-
-    hsvopt = plots_setup_hsv(hsvopt);
-
-    hue_feature = [1:num_mroi]';
-    hsvmap = plots_compute_hsv(hsvopt, hue_feature);
-
-    hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
-
-end
-
 
 %% put in struct 'roiinfo'
 
@@ -217,10 +203,23 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 
 %% plots
 
-if do_other_plots %all these are at imaging resolution
 
+if hsvopt.do %roi hsv map
+    hsvopt = plots_setup_hsv(hsvopt);
+    hue_feature = [1:num_mroi]';
+    hsvmap = plots_compute_hsv(hsvopt, hue_feature);
+    hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
+    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
+end
+
+if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
-    stack2fig(stack_mnt, filename_olay, pixinds_roi) %include pixinds_roi as argument to plot roi overlay
+    gif_visibility = 'on';
+    stack2fig(stack_mnt, filename_olay, gif_visibility, pixinds_roi, [], olayopt.roi_color, olayopt.roialpha) %include pixinds_roi as argument to plot roi overlay
+end
+
+
+if do_other_plots %all these are at imaging resolution
 
     %colormap for each roi
     cmap = distinguishable_colors(size(mask_roi_vec,1));

@@ -23,12 +23,14 @@ end
 
 
 if ~isempty(pixinds_roi)
-    imalpha = zeros(size(stack,1), size(stack,2), size(stack,3), 'single'); %alpha for rgb roi overlay
+    imalpha = zeros(size(stack,1), szo(2), szo(3), 'single'); %alpha for rgb roi overlay
+    imalpha = permute(imalpha, dimorder);
+    imalpha = reshape(imalpha, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
     imroi = repmat(imalpha, [ones(1, numel(size(imalpha))) 3]);
 end
 
 if ~isempty(pixinds_roi)
-    [imroi, imalpha] = make_roi_overlay(pixinds_roi{ri}, imroi, imalpha, roi_colors(ri,:), roialpha); %make an overlay for one roi
+    [imroi, imalpha] = make_roi_overlay(pixinds_roi{ri}, roi_colors(ri,:), imroi, imalpha, roialpha); %make an overlay for one roi
 end
 
 for fr = 1:size(stack,4) %for each frame (sample)

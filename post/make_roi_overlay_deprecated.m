@@ -79,7 +79,6 @@ for ri = 1:size(img, 4)
 end
 
 if doplot
-    stack2fig(img, filename_gif, cmap, [0 1], 2, [1 2 3 4]) 
-    % plot_gif(img, filename_gif, cmap)
-    % % plot_gif(roi_overlay, filename_gif) %make this work instead of above 
+    gif_visibility = 'on';
+    stack2fig(img, filename_gif, gif_visibility) 
 end

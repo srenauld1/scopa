@@ -11,7 +11,6 @@ within_mask_threshold = opts.within_mask_threshold;
 numbins = opts.numbins;
 sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 numrois_for_gif = opts.numrois_for_gif;
-ncol_each = opts.ncol_each; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 
 do_other_plots = opts.do_other_plots;
 
@@ -31,8 +30,6 @@ mask_mroi_all = roiinfo.mask_allroi;
 num_mroi = length(cnt_mroi);
 cenmorphflat = cell2mat(cnt_mroi(:));
 flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(cnt_mroi{idx},1),1), (1:size(cnt_mroi{idx},1)).'], (1:numel(cnt_mroi)).', 'uniform', 0));
-
-stack_mnt_rs = rescale(stack_mnt, 1, ncol_each);
 
 mask_mroi_all_xy = sum(mask_mroi_all, 3);
 
@@ -290,6 +287,7 @@ cmc = single(cmc(good_roi_indices, :)); %components denoised by caiman (nonnegat
 %cms = single(cms(good_roi_indices, :)); %deconvolved version of c, not using for now
 
 numroi = length(good_roi_indices);
+pixinds_roi_bad = pixinds_roi(bad_roi_indices);  %pixel indices of each roi, one roi per cell
 pixinds_roi = pixinds_roi(good_roi_indices);  %pixel indices of each roi, one roi per cell
 mask_roi_vec = mask_roi_vec(:,good_roi_indices); %boolean mask vector of each roi
 mask_roi_vec_wt = mask_roi_vec_wt(:,good_roi_indices); %same as mask_roi_vec but weighted pixel indices
@@ -336,7 +334,8 @@ if numrois_for_gif~=0
     end
 
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    plot_gif(roi_overlay(:,:,:, roi_plot_inds_good), filename_gif, cmap_im)
+    gif_visibility = 'on';
+    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi(roi_plot_inds_good)) %include pixinds_roi as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -345,7 +344,7 @@ if numrois_for_gif~=0
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    plot_gif(roi_overlay_bad(:,:,:, roi_plot_inds_bad), filename_gif, cmap_im)
+    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi_bad(roi_plot_inds_bad)) %include pixinds_roi as argument to plot roi overlay
 
     figure; imagesc(mask_roi_vec); title("which caiman rois are closest to which morph roi")
 

@@ -118,8 +118,9 @@ if makeplots
     index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
     index_labels{3} = plotinds.z;
     index_labels{4} = plotinds.t;
+    gif_visibility = 'on';
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_prefilt, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_prefilt, gif_visibility, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 end
 
@@ -135,7 +136,7 @@ stack = fft_filter_1d(stack, stopband);
 
 if makeplots
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_postfilt, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_postfilt, gif_visibility, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 end
 
