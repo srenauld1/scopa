@@ -127,7 +127,7 @@ if ~isempty(pixinds_roi)
     imalpha = zeros(szo(1), szo(2), szo(3), 'single'); %alpha for rgb roi overlay
     imalpha = permute(imalpha, dimorder);
     imalpha = reshape(imalpha, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
-    imroi = repmat(imalpha, [ones(1, numel(size(imalpha))) 3]);
+    imroi = repmat(imalpha, ;
 end
 
 %% prep titles
@@ -208,8 +208,8 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
 
             hpl{j}.CData = stack(:,:,j,k);
             if ~isempty(pixinds_roi) %&& k==1 %if there are roi variables
-                hol{j}.CData = squeeze(imroi(:,:,j,k,:)); %squeeze to make it 3d (2d plus color channel)
-                hol{j}.AlphaData = imalpha(:,:,j,k);
+                hol{j}.CData = squeeze(imroi(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
+                hol{j}.AlphaData = imalpha(:,:,j);
             end
 
         end

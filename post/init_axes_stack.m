@@ -65,7 +65,7 @@ for j = 1:numsubplot
 
     hpl{j}.UserData = udat;
 
-    hol{j} = image(roi_color_im, 'AlphaData', roi_alpha_im);
+    hol{j} = image(hax{j}, 'CData', roi_color_im, 'AlphaData', roi_alpha_im);
     hol{j}.UserData = udat;
 
     hol{j}.ButtonDownFcn = @(src,evnt)roiclickcb(src,evnt,pth_tmpfiles);

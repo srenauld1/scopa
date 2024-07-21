@@ -183,6 +183,10 @@ pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
 
 
+%% create/plot roi overlay (can plot n specific rois with their index into pixinds_roi and change num_mroi to n)
+
+
+
 %% create/plot roi hsv
 
 if hsvopt.do
@@ -218,9 +222,6 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 %% plots
 
 if do_other_plots %all these are at imaging resolution
-
-    filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
-    stack2fig(stack_mnt, filename_olay, pixinds_roi) %include pixinds_roi as argument to plot roi overlay
 
     %colormap for each roi
     cmap = distinguishable_colors(size(mask_roi_vec,1));

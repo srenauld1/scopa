@@ -21,7 +21,6 @@ if fid>=3
                 cbflags.pvarind = [];
             else
                 cbflags.newtitle = ['PRESSED "enter", NOW CHOOSE HOW TO CHANGE PLOT VARIABLE #' num2str(cbflags.pvarind) ' BY PRESSING "i", OR CLICKING ON PLOT'];
-                cbflags.getpvarind = [];
             end
         end
     elseif tmpflag==2

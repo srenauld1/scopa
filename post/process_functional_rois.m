@@ -1,5 +1,4 @@
-function [roiinfo, resp] = process_functional_rois(stack_mnt, ...
-    roiinfo, pth_froi, regionex, md, opts)
+function [roiinfo, resp] = process_functional_rois(stack_mnt, roiinfo, pth_froi, regionex, md, opts)
 
 
 %% params
@@ -11,13 +10,11 @@ max_regions_per_roi = opts.max_regions_per_roi;
 within_mask_threshold = opts.within_mask_threshold;
 numbins = opts.numbins;
 sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
-foreground_plot_style = opts.foreground_plot_style; %'boundary'; %options to show roi are 'boundary' and 'overlay'
 numrois_for_gif = opts.numrois_for_gif;
 ncol_each = opts.ncol_each; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 
 do_other_plots = opts.do_other_plots;
-saturation_factor_background = opts.saturation_factor_background; %above this fraction of data is sent to max
-saturation_factor_rois = opts.saturation_factor_rois; %above this fraction of data is sent to max
+
 normopts = opts.norm;
 
 numsamp_crop_t_front = md.numsamp_crop_t_front;
@@ -109,8 +106,6 @@ numrois = size(cma, 4);
 
 
 
-
-
 %% find roi centroids
 
 
@@ -136,9 +131,9 @@ good_roi_indices = zeros(numrois, 1);
 roinumpix = zeros(1, numrois);
 roipixvals_binned = cell(numrois, 1);
 roipixvals_edges = cell(numrois, 1);
-roi_overlay = zeros(size(cma), 'single');
 pixinds_roi = cell(numrois, 1); %suffix 'pixels' distinguishes this from inds_froi_all and inds_froi_wt_all, which are indices into set of roi timeseries, rather than pixel indices like inds_mroi, but nevertheless are used in extract_volue_responses the same way as inds_mroi, since they are applied to "stack" of roi timeseries rather than movie stack (stack of pixel timeseries)
 subroi_primary = ones(numrois, 1);
+
 for ci = 1:numrois
 
     imtmp = cma(:,:,:,ci);
@@ -220,28 +215,6 @@ for ci = 1:numrois
     roinumpix(ci) = numel(roipixvals);
 
 
-    overlay_tmp = rescale(stack_mnt_rs, 1, ncol_each);
-
-    switch foreground_plot_style
-
-        case 'overlay'
-
-            overlay_tmp(pixinds_roi{ci}) = rescale(roipixvals, ncol_each+1, ncol_each*2); %for overlay (filled roi), maintains intensity of original, but with different hue
-
-        case 'boundary'
-
-            bound2d = zeros(size(imtmp), 'logical');
-            for ii = 1:size(imtmp, 3)
-                bound2d(:,:,ii) = bwperim(imtmp(:,:,ii));
-            end
-
-            overlay_tmp(bound2d) = ncol_each*2; %for boundary (hollow roi) with different hue
-
-    end
-
-    roi_overlay(:,:,:,ci) = overlay_tmp;
-
-
 end
 
 %% map functional rois to morphological rois (ie map to location)
@@ -304,15 +277,12 @@ roipixvals_binned = roipixvals_binned(roisortinds);
 roipixvals_edges = roipixvals_edges(roisortinds);
 pixinds_roi = pixinds_roi(roisortinds);
 
-roi_overlay = roi_overlay(:,:,:,roisortinds);
 
 %% remove rois that failed morphological criteria above
 
 bad_roi_indices = find(~good_roi_indices);
-roi_overlay_bad = roi_overlay(:,:,:,bad_roi_indices); %no need to save bad rois to roiinfo struct
 
 good_roi_indices = find(good_roi_indices);
-roi_overlay = roi_overlay(:,:,:,good_roi_indices);
 
 cmc = single(cmc(good_roi_indices, :)); %components denoised by caiman (nonnegative . . . that seems bad)
 %cmdff = single(cmdff(good_roi_indices, :)); %cmdff computed on cmc
@@ -354,17 +324,6 @@ resp = extract_roi_responses(resptmp, mask_roi_vec, pth_froi, normopts, dtmni); 
 
 
 %% plots
-
-%create colormap for roi+mean image overlay (roi is red by default)
-startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
-endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
-startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
-endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
-cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
-
-cmap_im = colormap_custom(cmap_method, ncol_each, ...
-    startcol1, endcol1, saturation_factor_background, ...
-    startcol2, endcol2, saturation_factor_rois);
 
 
 if numrois_for_gif~=0
@@ -571,19 +530,9 @@ if do_other_plots
 
 end
 
-%this needs to be inserted above elsewhere; hack in here for now
-
-roi_overlay_new = zeros(size(roi_overlay, 1), size(roi_overlay, 2), size(roi_overlay, 3), 3, size(roi_overlay, 4),  'single');
-for ri = 1:size(roi_overlay, 4)
-    for zi = 1:size(roi_overlay, 3)
-        roi_overlay_new(:,:,zi,:,ri) = ind2rgb(round(roi_overlay(:,:,zi,ri)), cmap_im);
-    end
-end
-
 
 %% assign to struct
 
-roiinfo.roi_overlay = roi_overlay_new;
 roiinfo.numroi = numroi;
 roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi

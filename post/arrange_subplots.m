@@ -249,6 +249,11 @@ for k = 1:numel(ypos)
     hgts(k) = hgt*k+(k-1)*margins_subplot;
 end
 
+if numsubplot==1 %for 'stack' subplots, frames with single subplots need to be centered since they're at bottom by default
+    xpos = xpos + (xpos+(maxposx-xpos)/2) - (xpos+wids/2); %actual x center plus goal x center minus actual x center
+    ypos = ypos + (ypos+(maxposy-ypos)/2) - (ypos+hgts/2); %actual y center plus goal y center minus actual y center
+end
+
 maxpos.x = maxposx;
 maxpos.y = maxposy;
 ax.xp = xpos;

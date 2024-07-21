@@ -31,8 +31,9 @@ ftv = ftv(:,:,plotinds.t);
 epochinds_ts_i = epochinds_ts_i(plotinds.t);
 % ti = ti(plotinds.t);
 
-roiim_tmp = zeros(size(stack,1), size(stack,2), size(stack,3), 3, 'single'); %rgb for roi overlay
-alphaim_tmp = zeros(size(stack,1), size(stack,2), size(stack,3), 'single'); %alpha for rgb roi overlay
+roiim = zeros(size(stack,1), size(stack,2), size(stack,3), 3, 'single'); %rgb for roi overlay
+alphaim = zeros(size(stack,1), size(stack,2), size(stack,3), 'single'); %alpha for rgb roi overlay
+
 
 if numel(size(ftv))==3
     ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
@@ -63,7 +64,6 @@ ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, sp
 
 cols = cat(1, [0 0 0], distinguishable_colors(numel(varsc))); %make black first color, so subtract one for distinguishable_colors
 
-timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 
 %% loop over epoch sets and plotting variables
@@ -75,10 +75,12 @@ while plotloop
 
     if exist('cbflags', 'var') && ~all(structfun(@isempty, cbflags))
         [varcombos_use, varsc_use, labsc_use] = user_input_updates(cbflags, varsc, labsc);
+        timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')); %insert timestring when interactive to record each change in user input
     else
         varcombos_use = varcombos;
         varsc_use = varsc;
         labsc_use = labsc;
+        timestr = '';
     end
 
 
@@ -107,15 +109,16 @@ while plotloop
             end
 
 
-            fngif = make_filename(labstmp, gif_scope, varinds, epochstring, fngif_prefix);
+            fngif = make_filename(labstmp, gif_scope, varinds, epochstring, fngif_prefix, timestr);
             [roi_index, roi_index_str] = find_roi_index(labstmp);
             figure_title = make_figure_title(fngif_prefix_short, epochstring, dtmni, roi_index_str);
             labstmp = process_labels(labstmp, roi_index);
 
             skipplot = skip_plot_criteria(labstmp, 'none');
 
-            if ~skipplot
-
+            if skipplot
+                sprintf("skipping plot with these labels: " + cell2mat(labstmp))
+            else
 
                 %%%% PREP TIMESERIES VARS %%%%
                 cnt = 0;
@@ -137,20 +140,20 @@ while plotloop
 
 
                 %%%% PREP STACK AND ROI OVERLAY %%%%
-                roiim = roiim_tmp;
-                alphaim = alphaim_tmp;
+                roiim = reshape(roiim, [], 3);
+                roiim(:) = 0;
+                alphaim(:) = 0;
                 for ri = 1:numel(roi_index)
                     if ~isempty(roi_index{ri})
                         pixind_oneroi = roiinfo.pixinds_roi{roi_index{ri}};
                         pixind_oneroi_rgb = pixind_oneroi+numel(alphaim)*([1:3]-1);
-                        roiim = reshape(roiim, [], 3);
                         roiim(pixind_oneroi_rgb(:,1)) = cols(ri,1);
                         roiim(pixind_oneroi_rgb(:,2)) = cols(ri,2);
                         roiim(pixind_oneroi_rgb(:,3)) = cols(ri,3);
-                        roiim = reshape(roiim, [size(alphaim), 3]);
                         alphaim(pixind_oneroi) = alphafac; %roi inds work for each channel of rgb since channel is last dim
                     end
                 end
+                roiim = reshape(roiim, [size(alphaim), 3]);
 
 
                 %%%% INIT AXES %%%%
@@ -321,7 +324,7 @@ epochstring.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '',
 end
 
 
-function fngif = make_filename(lab, gif_scope, varinds, epochstring, fngif_prefix)
+function fngif = make_filename(lab, gif_scope, varinds, epochstring, fngif_prefix, timestr)
 
 lab = strrep(strrep(lab, 'ts.', ''), '.', '-');
 
@@ -333,7 +336,7 @@ elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
     fngif_suffix = {['L_' strjoin(lab(varinds.left), '_')]; ['R_' strjoin(lab(varinds.right), '_')]; ['e' epochstring.short ]};
 end
 
-fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') '_.gif' ];
+fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') '_' timestr '_.gif' ];
 
 end
 
@@ -437,12 +440,17 @@ end
 function [varcombos, varsc_out, labsc_out] = user_input_updates(cbflags, varsc_in, labsc_in)
 
 try
+    if ~isempty(cbflags.uiroipixind)
+        cbflags.uiroipixind
+
+    else
     varsc_out = varsc_in;
     labsc_out = labsc_in;
     varsc_out{cbflags.pvarind} = varsc_in{cbflags.pvarind}(cbflags.ivarind,:);
-    labsc_out{cbflags.pvarind} = labsc_in{cbflags.pvarind}(cbflags.ivarind,:);
+    labsc_out{cbflags.pvarind} = labsc_in{cbflags.pvarind}(cbflags.ivarind);
+    end
 catch ME
-    sprintf("user input for variable change is wrong, returning to original variables")
+    sprintf("user input for variable change has problem, returning to original variables")
     sprintf(ME.message)
 end
 
