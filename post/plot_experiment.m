@@ -1,20 +1,23 @@
-function plot_experiment(interactive, stack, vars, labs, varinds, epochinds_all, roiinfo, ...
-    ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, plotinds, ...
-    display_range, fngif_prefix_short, fngif_prefix, ftv, pth_tmpfiles)
+function plot_experiment(interactive, stack, stack_mnt, vars, labs, varinds, ...
+    epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, ...
+    plotinds, display_range, fngif_prefix_short, fngif_prefix, ftv, ...
+    pth_mroi_interactive, pth_tmpfiles, normopt, xwid, zwid)
 
 
 
 "currently, stack must not be subset in x,y, or z, otherwise interactive roi indices will be wrong"
+"labsc shouldn't be cell in cell"
+"passing full stack to init_axes_stack, likewise for ftv"
 
 gif_scope = 'allv_alle'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top 
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis 
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
-sampinc = 1; %sample increment per gif frame
-alphafac = 0.2; %transparency in roi overlay
+sampinc = 5; %sample increment per gif frame
+roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
-
+newroirad = 2.5; %num pixels radius
 
 %% prep vars
 
@@ -58,8 +61,14 @@ splitdim = 'y';
 splitfrac = [0.5];
 ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
-cols = cat(1, [0 0 0], distinguishable_colors(numel(varsc))); %make black first color, so subtract one for distinguishable_colors
+% cols = distinguishable_colors(numel(varsc)); %make black first color, so subtract one for distinguishable_colors
+cols = [0 0 1; 1 0 0; 0.2 0.8 0.2; 0.8 0.2 0.8];
 
+if any(ismember(cols, [0 0 0], 'rows'))
+    error("cannot use black for plotting until there is code to prevent it from being assigned to rois (since black roi overlay will cause error")
+end
+
+newroicen_all = cell(numel(varsc), 1);
 
 
 %% loop over epoch sets and plotting variables
@@ -70,12 +79,14 @@ while plotloop
 
 
     if exist('cbflags', 'var') && ~all(structfun(@isempty, cbflags))
-        [varcombos_use, varsc_use, labsc_use] = user_input_updates(cbflags, varsc, labsc);
+        framecount = 0;
         timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')); %insert timestring when interactive to record each change in user input
+        [varcombos_use, varsc_use, labsc_use, roiinfo_use, newroicen_all, limsc] = apply_user_input(cbflags, varsc_use, labsc_use, roiinfo_use, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, timestr, newroicen_all, xwid, zwid, limsc, yaxisroomfac);
     else
         varcombos_use = varcombos;
         varsc_use = varsc;
         labsc_use = labsc;
+        roiinfo_use = roiinfo;
         timestr = '';
     end
 
@@ -88,10 +99,6 @@ while plotloop
         tinds = tinds(1):sampinc:tinds(end);
 
         numsamp_max_full_ts_onegif = find_maxnumsamp(ts_scope, ti, tinds, epochinds_all, epochinds_ts_i);
-
-        tinew = ti(tinds);
-        stack = stack(:,:,:,tinds);
-        ftv = ftv(:,:,tinds);
 
 
         for vcount = 1:size(varcombos_use,1) %loop over all variable sets
@@ -134,6 +141,13 @@ while plotloop
                     end
                 end
 
+                for ri = 1:numel(roi_index)
+                    if isempty(roi_index{ri})
+                        pixinds_roi{ri} = [];
+                    else
+                        pixinds_roi{ri} = roiinfo_use.pixinds_roi{roi_index{ri}};
+                    end
+                end
 
                 %%%% INIT AXES %%%%
                 if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecount == 1 && vcount == 1)
@@ -145,15 +159,15 @@ while plotloop
                     hndls = init_fig(hndls, gif_visibility);
 
                     sector_ind = 1;
-                    subplot_ind = [1 13];
+                    subplot_ind = [5 13];
                     widfac = [4 1];
-                    htfac = [1 3];
+                    htfac = [2 2];
                     hndls = init_axes_timeseries(hndls, ax, numsamp_max_full_ts_onegif, varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
                     sector_ind = 1;
-                    subplot_ind = 15;
-                    widfac = 3;
-                    htfac = 3;
+                    subplot_ind = 16;
+                    widfac = 2;
+                    htfac = 2;
                     cmap = gray(256);
                     display_range_ftv = [0 1];
                     hndls = init_axes_ftvid(hndls, ax, ftv, cmap, [], [], display_range_ftv, sector_ind, subplot_ind, widfac, htfac);
@@ -173,8 +187,8 @@ while plotloop
 
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
-                    framecount, varsp, tinew, fngif, figure_title, ...
-                    roiim, alphaim, interactive, pth_tmpfiles, varsz);
+                    framecount, varsp, ti, tinds, cols, roialpha, pixinds_roi, ...
+                    fngif, figure_title, interactive, pth_tmpfiles, varsz);
 
                 if cbflags.restart==1
                     break;
@@ -206,18 +220,6 @@ end
 
 
 
-function lims = find_yaxis_limits(varsin, yaxisroomfac)
-
-varrng = range(varsin, 2);
-lims.each = [min(varsin, [], 2, 'omitmissing'), max(varsin, [], 2, 'omitmissing')];
-lims.each_xtra = [lims.each(:,1) - varrng*yaxisroomfac, lims.each(:,2) + varrng*yaxisroomfac];
-lims.all = [min(lims.each, [], 'all', 'omitmissing'), max(lims.each, [], 'all', 'omitmissing')];
-lims.all_xtra = [min(lims.each_xtra, [], 'all', 'omitmissing'), max(lims.each_xtra, [], 'all', 'omitmissing')];
-lims.rescale = [0 1];
-lims.rescale_xtra = [0 - yaxisroomfac, 1 + yaxisroomfac];
-
-end
-
 
 function labs = check_labels(labs, vars)
 
@@ -235,28 +237,7 @@ end
 end
 
 
-function [roi_index, roi_index_str] = find_roi_index(labsp)
 
-varind_with_rois = find(startsWith(labsp, 'ts.resp') | startsWith(labsp, ' ts.resp')); %only check labels beginning with 'resp'
-for li = 1:numel(labsp)
-    if ismember(li, varind_with_rois) %if none begin with 'resp', then there is no roi data
-        roi_index_expression = 'ind\d+$'; %ends with ind followed by integer
-        [futmp, ~] = regexp(labsp{li}, roi_index_expression, 'match');
-        if isempty(futmp) %single responses don't get 'ind1' suffix, but if string begins with resp, we can call it roi_index 1
-            roi_index{li} = 1;
-        else
-            roi_index{li} = sscanf(cell2mat(futmp), 'ind%d'); %extract number at end, following 'ind'
-        end
-    else
-        roi_index{li} = [];
-    end
-end
-
-delim = ',';
-roi_index_str = regexprep( mat2str(cell2mat(roi_index(~cellfun('isempty',roi_index)))), {'\[', '\]', '\s+'}, {'', '', delim});
-
-
-end
 
 
 function skipplot = skip_plot_criteria(labsp, noneflag)
@@ -398,42 +379,4 @@ end
 
 end
 
-function [varcombos, varsz] = make_varcombos(varsc)
 
-varsz = cell2mat(cellfun(@size,varsc,'UniformOutput',false));
-
-if all(varsz ~= varsz(1))
-    error("timeseries do not have equal number samples")
-end
-
-for vi = 1:size(varsz,1)
-    varcombstmp{vi} = 1:varsz(vi,:);
-end
-varcombos = cell(1, numel(varcombstmp));
-[varcombos{:}] = ndgrid(varcombstmp{:});
-varcombos = cellfun(@(x) x(:), varcombos, 'uniformoutput', false);
-varcombos = [varcombos{:}];
-
-end
-
-function [varcombos, varsc_out, labsc_out] = user_input_updates(cbflags, varsc_in, labsc_in)
-
-try
-    if ~isempty(cbflags.uiroipixind)
-        cbflags.uiroipixind
-
-    else
-    varsc_out = varsc_in;
-    labsc_out = labsc_in;
-    varsc_out{cbflags.pvarind} = varsc_in{cbflags.pvarind}(cbflags.ivarind,:);
-    labsc_out{cbflags.pvarind} = labsc_in{cbflags.pvarind}(cbflags.ivarind);
-    end
-catch ME
-    sprintf("user input for variable change has problem, returning to original variables")
-    sprintf(ME.message)
-end
-
-varcombos = make_varcombos(varsc_out);
-
-
-end

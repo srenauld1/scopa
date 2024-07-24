@@ -9,9 +9,6 @@ function opt = input_params_carl(varargin)
 
 %params for main pipeline control in file a2p
 
-global showfigs 
-showfigs = 0; %if figure is requested, showfigs = 1 will show and save it, showfigs = 0 will save it but not show it  
-
 opt.mn.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
 opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.mn.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
@@ -88,29 +85,29 @@ opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 %% MORPHOLOGICAL ROIS
 
 % params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
-% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+% for opt.mroi.auto.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
 opt.mroi.use_drawn_rois_str =  {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 opt.mroi.use_drawn_rois_str =  {'fullfov' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.num_mroi_auto_str = {'fullfov-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-opt.mroi.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-opt.mroi.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
-opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.num_mroi_auto_str must be power of 2
-opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
-opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
-opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
-opt.mroi.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
+opt.mroi.auto.num_mroi_auto_str = {'fullfov-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+opt.mroi.auto.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.auto.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+opt.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.auto.num_mroi_auto_str must be power of 2
+opt.mroi.auto.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
+opt.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
+opt.mroi.auto.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
+opt.mroi.auto.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
 opt.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
-opt.mroi.olayopt.doplot = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
 opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
-opt.mroi.olayopt.alphafac = 1; %transparency for roi overlay
 opt.mroi.olayopt.roi_color = [1 0 0]; %color for roi overlay
+opt.mroi.olayopt.roialpha = 0.3; %transparency for roi overlay
 
 %params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
 opt.mroi.hsvopt.do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
@@ -163,6 +160,7 @@ opt.froi.within_mask_threshold = 0.5; %discard roi if more than within_mask_thre
 opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
 opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
+opt.froi.doplot = 0; %plot roi overlay
 opt.froi.numrois_for_gif = 0; %how many roi to put in gif, big number to plot all, 0 to skip gif
 opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 opt.froi.do_other_plots = 0; %do the other plots
@@ -322,7 +320,14 @@ opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 opt.pltexp(1).varnms.ts1{1} = {['ball, forvel']};
 opt.pltexp(1).varnms.ts2{1} = {['vis, ang']};
 opt.pltexp(1).varnms.ts3{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.pltexp(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
+opt.pltexp(1).vars_combine = 'any'; 
+
+opt.pltexp(1).varnms.ts1{1} = {['ball, forvel']};
+opt.pltexp(1).varnms.ts2{1} = {['vis, ang']};
+opt.pltexp(1).varnms.ts3{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.pltexp(1).vars_combine = 'any'; 
+
+%any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.pltexp(1).varinds.left = [1 2];
 opt.pltexp(1).varinds.right = [3];
 opt.pltexp(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
@@ -337,7 +342,7 @@ opt.pltexp(1).interactive = 1;
 %% HIRES
 
 %params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set opt.mroi.use_hires=1 to use
+%hires stack is only used in making morphological rois, set opt.mroi.auto.use_hires=1 to use
 %params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
 opt.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.hires.ld.zero_stack = 1; %subtract min to make min zero 

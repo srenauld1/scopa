@@ -120,7 +120,7 @@ if makeplots
     index_labels{4} = plotinds.t;
     gif_visibility = 'on';
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_prefilt, gif_visibility, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_prefilt, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 end
 
@@ -136,7 +136,7 @@ stack = fft_filter_1d(stack, stopband);
 
 if makeplots
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_postfilt, gif_visibility, cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_postfilt, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
 end
 

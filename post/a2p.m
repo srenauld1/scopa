@@ -79,7 +79,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
     stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.ld, ids.recid);
 
-    if any(cell2mat(struct2cell(opt.mroi.use_hires)))
+    if any(cell2mat(struct2cell(opt.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
     else
         stack_hires_mnt = [];
@@ -95,11 +95,12 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
         %%crop movie to regionex cuboid
         [stackcrop, zstartpos_crop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
             crop_stacks(stack, croplim_all.(regionex), md.zstartpos, ids.recid, regionex, pth.fldr, pth.tmpfiles, ...
-            md.sz_crop, opt.mroi.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
+            md.sz_crop, opt.mroi.auto.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            make_morphological_rois(stackcrop, stack_mnt.(regionex), opt.mroi, md, pth, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
+            make_morphological_rois(stackcrop, stack_mnt.(regionex), opt.mroi, md.dtmni, md.xwid, md.zwid, ...
+            pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
 
         %%load/select functional (caiman) roi responses
@@ -173,12 +174,13 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(opt.pltexp(si), ts, md, pth.tsuse.pltexp, pth.stack_analysis, choosecount, dochoose);
-                [stackcrop, zstartpos_crop] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
+                [stackcrop, zstartpos_crop, stack_mnt] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
 
-                plot_experiment(opt.pltexp(si).interactive, stackcrop, fitin.vars, fitin.varnms, opt.pltexp(si).varinds, opt.pltexp(si).epochinds, ...
+                plot_experiment(opt.pltexp(si).interactive, stackcrop, stack_mnt, fitin.vars, fitin.varnms, opt.pltexp(si).varinds, opt.pltexp(si).epochinds, ...
                     roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
                     md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds, ...
-                    opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs, pth.tmpfiles)
+                    opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs, ...
+                    pth.mroi_interactive.(regionex), pth.tmpfiles, opt.mroi.norm, md.xwid, md.zwid)
 
             end
         end

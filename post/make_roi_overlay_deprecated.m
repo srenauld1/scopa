@@ -79,6 +79,5 @@ for ri = 1:size(img, 4)
 end
 
 if doplot
-    gif_visibility = 'on';
-    stack2fig(img, filename_gif, gif_visibility) 
+    stack2fig(img, filename_gif) 
 end

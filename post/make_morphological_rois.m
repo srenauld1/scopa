@@ -1,5 +1,6 @@
 function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ...
-    md, pth, stack_hires, map_hires_lores, regionex, parstr_mroi)
+    dtmni, xwid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
+    regionex, parstr_mroi, roiinfo, maskmanual)
 
 
 %if you want to automate rois from multiple drawn regions, use different
@@ -40,52 +41,51 @@ function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, 
 
 %% params
 
-use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
-num_mroi_auto = opts_mroi.num_mroi_auto.(regionex);
-do_other_plots = opts_mroi.do_other_plots;
-normopts = opts_mroi.norm;
+if exist('maskmanual', 'var') %if passing in a morph roi mask (interactive mode)
+    use_drawn_rois = 0;
+    num_mroi_auto = 0;
+    normopts = opts_mroi;
+    hsvopt.do = 0;
+    olayopt.do = 0;
+    do_other_plots = 0;
+else
+    use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
+    num_mroi_auto = opts_mroi.auto.num_mroi_auto.(regionex);
+    autoopts = opts_mroi.auto;
+    normopts = opts_mroi.norm;
+    hsvopt = opts_mroi.hsvopt;
+    olayopt = opts_mroi.olayopt;
+    do_other_plots = opts_mroi.do_other_plots;
+end
 
-create_mask_method = opts_mroi.create_mask_method;
-subsample_mask_method = opts_mroi.subsample_mask_method;
-edgethresh = opts_mroi.edgethresh;
-edgesig = opts_mroi.edgesig;
-closing_element_size = opts_mroi.closing_element_size;
-extract_morph_rois_in_3d = opts_mroi.extract_morph_rois_in_3d;
-
-hsvopt = opts_mroi.hsvopt;
-olayopt = opts_mroi.olayopt;
-
-pth_mroi_prefix = pth.mroi.(regionex)(1:end-4);
-pth_tmpfiles = pth.tmpfiles;
-
-xwid = md.xwid;
-zwid = md.zwid;
-dtmni = md.dtmni;
-
+pth_mroi_prefix = pth_mroi(1:end-4);
 
 %% draw rois (polygons/polyhedra)
 
+if ~exist('maskmanual', 'var')
 
-if use_drawn_rois
+    if use_drawn_rois
 
-    pth_mroi_manual_prefix = erase(pth_mroi_prefix, ['_' parstr_mroi]); %different prefix since the parstr_mroi are irrelevant for manually drawn rois, allowing manually drawn to be used for different parstr_mroi
-    pth_mroi_manual_prefix = erase(pth_mroi_manual_prefix, ['_morph']); %string 'morph' is redundant here, since this has suffix manual
-    pth_maskmanual = [pth_mroi_manual_prefix 'maskmanual_.mat'];
+        pth_mroi_manual_prefix = erase(pth_mroi_prefix, ['_' parstr_mroi]); %different prefix since the parstr_mroi are irrelevant for manually drawn rois, allowing manually drawn to be used for different parstr_mroi
+        pth_mroi_manual_prefix = erase(pth_mroi_manual_prefix, ['_morph']); %string 'morph' is redundant here, since this has suffix manual
+        pth_maskmanual = [pth_mroi_manual_prefix 'maskmanual_.mat'];
 
-    try
-        load(pth_maskmanual, 'maskmanual');
-        if all(maskmanual(:)==1)
-            disp(["WARNING, MASK MANUAL IS ALL ONES FOR REGION: " regionex])
+        try
+            load(pth_maskmanual, 'maskmanual');
+            if all(maskmanual(:)==1)
+                disp(["WARNING, MASK MANUAL IS ALL ONES FOR REGION: " regionex])
+            end
+        catch
+            flag_limit_one_manual_roi = 0;
+            if num_mroi_auto>1
+                flag_limit_one_manual_roi = 1;
+            end
+            maskmanual = drawrois(stack, regionex, pth_maskmanual, pth_tmpfiles, flag_limit_one_manual_roi);
         end
-    catch
-        flag_limit_one_manual_roi = 0;
-        if num_mroi_auto>1
-            flag_limit_one_manual_roi = 1;
-        end
-        maskmanual = drawrois(stack, regionex, pth_maskmanual, pth_tmpfiles, flag_limit_one_manual_roi);
+    else
+        maskmanual = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %otherwise just ones
     end
-else
-    maskmanual = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %otherwise just ones
+
 end
 
 num_mroi_manual = size(maskmanual, 4);
@@ -120,21 +120,31 @@ catch
 
         centroids_roi = find_roi_centroids(maskmanual);
 
-        sprintf("WARNING,\nif sort_roi_method is 'morph_long_axis', rois will be sorted by drawn roi index, \nnot morph long axis, \nsince long axis extraction requires automated morph roi extraction")
+        sprintf("WARNING,\n" + ...
+            "if sort_roi_method is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
+            "since determining the long axis of extraction currently requires automated morph roi extraction")
 
     else
 
         [mask_roi_vec, centroids_roi, num_mroi] = ...
-            make_morphological_rois_automated(stack_mnt, maskmanual, ...
-            num_mroi_auto, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
+            make_morphological_rois_automated(stack_mnt, maskmanual, num_mroi_auto, ...
             xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
-            edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_other_plots);
+            regionex, hsvopt, do_other_plots, autoopts);
 
     end
 
+    save(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi', '-mat', '-v7.3');
+
 end
 
-save(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi', '-mat', '-v7.3');
+
+%% add to existing roiinfo, if passed as variable
+
+if exist('roiinfo', 'var')
+    num_mroi = num_mroi + roiinfo.numroi;
+    mask_roi_vec = cat(1, roiinfo.mask_roi_vec, mask_roi_vec);
+    centroids_roi = cat(2, roiinfo.centroids_roi, centroids_roi);
+end
 
 %% compute some morphological roi data
 
@@ -178,11 +188,13 @@ end
 
 %% compute morphological roi responses
 
-resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
 pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
-save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
-
-
+try
+    load(pth_morphroiresp, 'resp')
+catch
+    resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
+    save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
+end
 
 %% put in struct 'roiinfo'
 
@@ -255,13 +267,13 @@ if do_other_plots %all these are at imaging resolution
 
     %mask overlay
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    plot_gif( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_.gif'])
+    stack2fig( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_.gif'])
 
     %manual roi mask
-    plot_gif(maskmanual, [pth_mroi_prefix 'maskmanual_.gif'])
+    stack2fig(maskmanual, [pth_mroi_prefix 'maskmanual_.gif'])
 
     %mask all rois (without stack background)
-    plot_gif(mask_allroi, [pth_mroi_prefix 'maskallroi_.gif'])
+    stack2fig(mask_allroi, [pth_mroi_prefix 'maskallroi_.gif'])
 
     % %3d surface plot
     % kbnd = boundary([maskx,masky,maskz]);

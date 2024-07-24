@@ -21,6 +21,7 @@ arguments
     numcolorsgif double = 128
 end
 
+clear make_roi_overlay %to clear the persistent variable within
 
 if strcmp(cmap, 'rgb')
     error("don't pass truecolor stack yet, testing still")
@@ -50,8 +51,10 @@ end
 
 if isempty(pixinds_roi)
     roi_loop_size = 1;
-    if ~isempty(roiinds)
-        sprintf("you passed a roi index as argument without pixinds_roi; will not plot roi without pixinds_roi")
+    if isempty(roiinds)
+        roi_message = ', roi-NaN';
+    else
+        roi_message = ', roi-not plotting roi without pixinds roi argument';
     end
 else
     if ~iscell(pixinds_roi)
@@ -132,13 +135,13 @@ stackrange = stackmax-stackmin;
 if numim_per_frame>max_num_im_per_frame
     error(sprintf("you are attempting to plot " + num2str(numim_per_frame) + " images per frame, which exceeds the default max of " + num2str(max_num_im_per_frame)))
 end
-
-if ~isempty(pixinds_roi)
-    imalpha = zeros(szo(1), szo(2), szo(3), 'single'); %alpha for rgb roi overlay
-    imalpha = permute(imalpha, dimorder);
-    imalpha = reshape(imalpha, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
-    imroi = repmat(imalpha, [ones(1, numel(size(imalpha))) 3]);
-end
+% 
+% if ~isempty(pixinds_roi)
+%     imalpha = zeros(szo(1), szo(2), szo(3), 'single'); %alpha for rgb roi overlay
+%     imalpha = permute(imalpha, dimorder);
+%     imalpha = reshape(imalpha, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
+%     imroi = repmat(imalpha, [ones(1, numel(size(imalpha))) 3]);
+% end
 
 %% prep titles
 
@@ -155,7 +158,7 @@ lab_framechange_numel = cellfun(@numel, lab_framechange);
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if isempty(pixinds_roi)
-        roinum_title = '';
+        roinum_title = roi_message;
     else
         roinum_title = [', roi-' num2str(roiinds(ri))];
     end
@@ -221,7 +224,7 @@ end
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(pixinds_roi)
-        [imroi, imalpha] = make_roi_overlay(pixinds_roi{roiinds(ri)}, imroi, imalpha, roi_colors(ri,:), roialpha); %make an overlay for one roi
+        [imroi, imalpha] = make_roi_overlay(stack, pixinds_roi{roiinds(ri)}, roi_colors(ri,:), roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after framenumdims
         framecount = framecount+1;
@@ -243,6 +246,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
 
 end
 
+clear make_roi_overlay %to clear the persistent variable within
 
 end
 

@@ -1,9 +1,8 @@
 
 function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
     make_morphological_rois_automated(stack_mnt, maskmanual, ...
-    num_mroi_auto_initial, extract_morph_rois_in_3d, create_mask_method, subsample_mask_method, ...
-    xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
-    edgethresh, edgesig, closing_element_size, regionex, hsvopt, do_plots)
+    num_mroi_auto_initial, xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
+    regionex, hsvopt, do_plots, opts)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -11,6 +10,14 @@ function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
 %stack_mnt must be 3d (xyz), although 3rd dim (z) can be singleton
 %maskmanual must match dimensionality of stack_mnt, or be lower dimensional
 %stack_hires is optional, must be 3d xyz, and match xy size of stack_mnt
+
+create_mask_method = opts.create_mask_method;
+subsample_mask_method = opts.subsample_mask_method;
+edgethresh = opts.edgethresh;
+edgesig = opts.edgesig;
+closing_element_size = opts.closing_element_size;
+extract_morph_rois_in_3d = opts.extract_morph_rois_in_3d;
+
 
 %% preprocess stack_mnt, make mean stack_mnt
 
@@ -352,7 +359,7 @@ if do_plots
 
         %mask overlay 
         overlayarray = rescale(0.2*rescale(mask_allroi_approx_upsamp) + rescale(premask, 0, 1));
-        plot_gif( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
+        stack2fig( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
 
 
         %colormap for each roi
@@ -437,7 +444,7 @@ if do_plots
 
     end
 
-    plot_gif(premask, [pth_mroi_prefix 'autopremask_.gif'])
+    stack2fig(premask, [pth_mroi_prefix 'autopremask_.gif'])
 
     if strcmp(create_mask_method, 'triangle')
         duk = sort(tmpup_nz);

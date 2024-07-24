@@ -9,9 +9,9 @@ regionex_all = opt.mn.regionex_all;
 tmp_folder_name = opt.mn.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
 suffixes_plot = opt.ld.gif.suffixes_plot;
-use_hires = opt.mroi.use_hires_str; %gets updated to numeric struct, fieldname use_hires
+use_hires = opt.mroi.auto.use_hires_str; %gets updated to numeric struct, fieldname use_hires
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
-num_mroi_auto = opt.mroi.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
+num_mroi_auto = opt.mroi.auto.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
 caiman_lr_str = opt.froi.caiman_lr_str;
 numcluster_for_bump_domain_resample = opt.pf.bump.numcluster_for_bump_domain_resample_str; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
 caiman_hr_str = opt.hires.caiman_hr_str;
@@ -140,6 +140,7 @@ for i = 1:length(regionex_all)
     parstr.mroi.(regionex) = paramstr;
 
     pth_mroi.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_morph_.mat'];
+    pth_mroi_interactive.(regionex) = [pth_stack_analysis(1:end-4) regionex '_' croplimstr '_interactive_rois_morph_.mat'];
     pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
 
     pth_froi_all_tmp = [];
@@ -309,6 +310,7 @@ pth.froi_hires = pth_froi_hires;
 pth.md = pth_md;
 pth.flyg_md = pth_flyg_md;
 pth.mroi = pth_mroi;
+pth.mroi_interactive = pth_mroi_interactive;
 pth.froi_all = pth_froi_all;
 pth.roi_allmethods = pth_roi_allmethods;
 pth.daq = pth_daq;
@@ -327,8 +329,8 @@ pth.tmpfiles = pth_tmpfiles;
 opt.pf.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_new; %update field, change from user input formatting
 
 opt.mroi.use_drawn_rois = use_drawn_rois_new; %update field, change from user input formatting
-opt.mroi.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting
-opt.mroi.use_hires = use_hires_new; %update field, change from user input formatting
+opt.mroi.auto.num_mroi_auto = num_mroi_auto_new; %update field, change from user input formatting
+opt.mroi.auto.use_hires = use_hires_new; %update field, change from user input formatting
 
 opt.ld.gif.plot_stack_order = plot_stack_order;
 opt.ld.gif.plot_stack_gif = plot_stack_gif;

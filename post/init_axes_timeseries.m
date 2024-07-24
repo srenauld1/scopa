@@ -15,10 +15,11 @@ arguments
     widfac = 1
     htfac = 1
     rescale_timeseries = 1
-    fontsz = [6 11 15]
+    fontsz = [6 8 12]
     axorder char = 'rowmajor'
 end
 
+numxtick = 20;
 
 numsubplot = numel(subplot_ind);
 if numel(widfac)==1 && numsubplot>1
@@ -88,8 +89,18 @@ for j = 1:numsubplot
 
     end
 
-    hax{j}.XTick = round(max(ti));
-    hax{j}.XTickLabel = [num2str(hax{j}.XTick) ' sec'];
+    if j==1
+        hax{j}.XTick = round(linspace(0, max(ti), numxtick));
+        for tlx = 1:numel(hax{j}.XTick)
+            if tlx==numel(hax{j}.XTick)
+                hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx)) ' sec'];
+            else
+                hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx))];
+            end
+        end
+    end
+    hax{j}.XAxis.FontSize = fontmedium;
+    hax{j}.XAxis.TickLength(1) = 0.005;
 
     % hax{j}.Color = 'k';
 

@@ -31,7 +31,7 @@ end
 if ~isempty(pth_stack)
 
     %plot the clipped stack 
-    plot_gif(stackout, [pth_stack(1:end-4) '_chosencontrastforROIdraw_.gif'])
+    stack2fig(stackout, [pth_stack(1:end-4) '_chosencontrastforROIdraw_.gif'])
 
 
     numdims_out = ndims(stackin);
@@ -52,6 +52,6 @@ if ~isempty(pth_stack)
             outall(otherdims{:},countz) = stackout;
         end
     end
-    plot_gif(outall, [pth_stack(1:end-4) '_contrastsweep_.gif'])
+    stack2fig(outall, [pth_stack(1:end-4) '_contrastsweep_.gif'])
 
 end

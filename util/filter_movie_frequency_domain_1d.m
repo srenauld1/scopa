@@ -53,7 +53,6 @@ for indi = 1:size(imin, 2)
 
 end
 
-fuk=2;
 
 if 0
 
@@ -95,19 +94,16 @@ if 0
         end
         %%
 
-        stack2fig(rescale(imin(:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
+        stack2fig(rescale(imin(:,1:30)), [pth_fldr '/imout.gif'])
 
 
-        stack2fig(rescale(imout(:,:,:,1:30)), swapdim, [pth_fldr '/imout.gif'], {'3d transform'})
-
-
-        stack2fig( ...
-            cat(1, ...
+        catstack = cat(1, ...
             rescale(imin(:,:,plotindz)), ...
             rescale(log(abs(imfm(:,:,plotindz)))), ...
             rescale(log(abs(imff(:,:,plotindz)))), ...
-            rescale(imout(:,:,plotindz))), ...
-            swapdim, [pth_fldr '/finalcat.gif'], {'3d transform'})
+            rescale(imout(:,:,plotindz)));
+
+        stack2fig( catstack, [pth_fldr '/finalcat.gif'])
 
     end
 end

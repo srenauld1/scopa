@@ -3,6 +3,7 @@ function [roiinfo, resp] = process_functional_rois(stack_mnt, roiinfo, pth_froi,
 
 %% params
 
+
 min_pixels_per_region = opts.min_pixels_per_region;
 min_roi_size = opts.min_roi_size;
 max_roi_size = opts.max_roi_size;
@@ -11,6 +12,7 @@ within_mask_threshold = opts.within_mask_threshold;
 numbins = opts.numbins;
 sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 numrois_for_gif = opts.numrois_for_gif;
+doplot = opts.doplot;
 
 do_other_plots = opts.do_other_plots;
 
@@ -87,7 +89,7 @@ if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
 
 end
 
-if ~isequal( [size(cma, 1), size(cma, 2)], [size(stack_mnt_rs, 1), size(stack_mnt_rs, 2)] ) %make sure roimask and stack_mnt sizes match
+if ~isequal( [size(cma, 1), size(cma, 2)], [size(stack_mnt, 1), size(stack_mnt, 2)] ) %make sure roimask and stack_mnt sizes match
     error("roimask and stack_mnt sizes do not match")
 end
 if ndims(cma)~=4
@@ -324,7 +326,7 @@ resp = extract_roi_responses(resptmp, mask_roi_vec, pth_froi, normopts, dtmni); 
 %% plots
 
 
-if numrois_for_gif~=0
+if doplot
 
 
     if numroi>numrois_for_gif
@@ -335,7 +337,7 @@ if numrois_for_gif~=0
 
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     gif_visibility = 'on';
-    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi(roi_plot_inds_good)) %include pixinds_roi as argument to plot roi overlay
+    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi, roi_plot_inds_good) %include pixinds_roi as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -344,7 +346,7 @@ if numrois_for_gif~=0
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi_bad(roi_plot_inds_bad)) %include pixinds_roi as argument to plot roi overlay
+    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi_bad, roi_plot_inds_bad) %include pixinds_roi as argument to plot roi overlay
 
     figure; imagesc(mask_roi_vec); title("which caiman rois are closest to which morph roi")
 

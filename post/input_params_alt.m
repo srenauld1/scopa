@@ -88,16 +88,16 @@ opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 %% MORPHOLOGICAL ROIS
 
 % params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
-% for opt.mroi.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+% for opt.mroi.auto.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
 opt.mroi.use_drawn_rois_str =  {'ebfb_eb', 'ebfb_fb'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.num_mroi_auto_str = {'ebfb_eb-32', 'ebfb_fb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-opt.mroi.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.auto.num_mroi_auto_str = {'ebfb_eb-32', 'ebfb_fb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+opt.mroi.auto.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
-opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.num_mroi_auto_str must be power of 2
+opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.auto.num_mroi_auto_str must be power of 2
 opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 opt.mroi.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 opt.mroi.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
@@ -341,7 +341,7 @@ opt.pltexp(1).display_range = [0,1];
 %% HIRES
 
 %params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set opt.mroi.use_hires=1 to use
+%hires stack is only used in making morphological rois, set opt.mroi.auto.use_hires=1 to use
 %params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
 opt.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.hires.ld.zero_stack = 1; %subtract min to make min zero 

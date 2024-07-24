@@ -26,6 +26,11 @@ else
         fwrite(fid, 3, 'uint16');
         fclose('all');
 
+    elseif strcmpi(eventkey, 't')
+        fid = fopen([pth_tmpfiles 'tmp_cbf_.bin'], 'w');
+        fwrite(fid, 4, 'uint16');
+        fclose('all');
+
     elseif strcmpi(eventkey, 'backspace')
         % error("undo not implemented yet")
         fid = fopen([pth_tmpfiles 'tmp_cbf_.bin'], 'w');
