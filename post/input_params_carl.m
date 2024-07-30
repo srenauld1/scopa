@@ -235,8 +235,7 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 % opt.fitm.varnms.indvpre.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'yawvel'}, {'bump',
-% 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
+% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'yawvel'}, {'bump','mu'}} will fit depv (specified as described above) in regionex 'no_r' to
 % two-dimensional input, the first dimension being ball.yawvel, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fitm.regionpat_fit
 %since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
@@ -247,27 +246,24 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % format opt.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 % format opt.fitm(i).varnms.indvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
-% where fieldspec is a string, with substrings separated by comma then space
-% fieldspec specifies the data to use from struct 'ts', which stores various timeseries
-% for example, for ts.resp, fieldspec requires 4 delimiters (', '), since there are 4 levels in the struct ts.resp,
-% namely ts.resp.tsclass.regionex.parsex.normex,
-% so fieldspec would follow the pattern ['tsclass, regionex, parsex, normex']
+% where fieldspec is a pattern used to match the flattened struct fieldname, with wildcard (*) allowed anywhere 
+% fieldspec specifies the data to use from struct 'ts', which stores all timeseries
+
+% fieldspec for ts.resp would follow the pattern ['tsclass.regionex.parsex.normex']
 % where tsclass is a field in the first level of struct 'ts'
 % regionex is region extraction string in opt.mn.regionex_all above,
 % parsex is extraction param string
 % normex is normalization param string
+
 % for ts.ball and ts.vis, fieldspec only has two levels, since ball and vis are not derived from specific brain regions, or roi extraction runs
 % for ts.bump, fieldspec has 6 levels (the same four as bump.resp, with 2 more specifying bump domain, and bump parameter, following this pattern
 % ['tsclass, regionex, parsex, normex, bumpdomain, bumpparam']
-% for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used
+% for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used (or a single * will match everything)
 % you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
+% any field defined for the first struct index but not subsequent will be copied from the first 
 % opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre are matched by index i in opt.fitm(i)
 % within a single opt.fitm(i).varnms.indvpre or opt.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single opt.fitm(i).indv{j} or opt.fitm(i).varnms.depvpre{j}
-% indvpre_str and depvpre_str are matched by index j if opt.fitm(i).vars_combine is 'each',
-% if opt.fitm(1).vars_combine is 'any', then all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv are used
-% for example
-%    opt.fitm(1).varnms.depvpre{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
-%    opt.fitm(1).varnms.indvpre{1} = {['ball, yawvel'], ['bump, pb, mo*, *, all, mu']};
+% all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv at the outer cell level are used
 
 %for now, depv at single struct and outer cell level should come from single regionex
 opt.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
