@@ -311,7 +311,7 @@ entrypoint is a2p.m
 #with the average of the movies over samples where exceptional events happen, after  removing (if possible)
 #frames when neighboring neurons were active
 
-##g4 frame 0 (in vis.raw) assigned to angle -pi (in vis.ang)
+##g4 frame 0 (in vis.raw) assigned to angle -pi (in vis.yaw)
 
 
 

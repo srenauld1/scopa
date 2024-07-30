@@ -13,6 +13,7 @@ disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
+disp("fix hard coded, field-dependent nesting in varnms")
 pause(2)
 
 end

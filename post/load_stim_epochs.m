@@ -120,7 +120,7 @@ catch
 end
 
 
-vis.ang(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.angvel(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.yaw(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.yawvel(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
 
 

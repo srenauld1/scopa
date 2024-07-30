@@ -3,6 +3,8 @@ function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
 % for docs, see file fitmdl_notes.m
 
 % indvpre and depvpre are independent and dependent variables before processing 
+% the unintuitive thing that needs to be changed is that depvpre first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim), 
+% while for indvpre, the whole array input to fitmdl is the independent variable . . . need to check if there's a goodreason for this or whether choose_timeseries should output vector depvpre (and input them to this function fitmdl)  
 
 %% check some inputs and prepare save path
 
@@ -33,12 +35,12 @@ pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 if strcmp(opts.plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion
     pixfitflag = 1;
-    pixinds_roi2 = logical(sum(roiinfo.pixinds_roi)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
+    roipixind2 = logical(sum(roiinfo.roipixind)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
     depv2 = reshape(stack, [], size(stack, 4));
-    depv2 = depv2(cell2mat(pixinds_roi2), :);
+    depv2 = depv2(cell2mat(roipixind2), :);
     fitin2.depv = depv2;
     roiinfo2 = roiinfo;
-    roiinfo2.pixinds_roi = pixinds_roi2;
+    roiinfo2.roipixind = roipixind2;
     fitmdl(stack, fitin2, roiinfo2, md, opts, pixfitflag); %call fitmdl on pixels if you want a pixel fit background behind your roi fit background
     pixfitflag = 0; %reset to zero
 end

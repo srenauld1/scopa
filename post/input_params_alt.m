@@ -241,9 +241,9 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 % opt.fitm.varnms.indvpre.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'angvel'}, {'bump',
+% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'yawvel'}, {'bump',
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
-% two-dimensional input, the first dimension being ball.angvel, the second being bump.mu
+% two-dimensional input, the first dimension being ball.yawvel, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fitm.regionpat_fit
 %since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
 %since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
@@ -273,14 +273,14 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % if opt.fitm(1).vars_combine is 'any', then all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv are used
 % for example
 %    opt.fitm(1).varnms.depvpre{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
-%    opt.fitm(1).varnms.indvpre{1} = {['ball, angvel'], ['bump, pb, mo*, *, all, mu']};
+%    opt.fitm(1).varnms.indvpre{1} = {['ball, yawvel'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
 opt.fitm(1).varnms.depvpre{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 opt.fitm(1).varnms.depvpre{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.indvpre{1} = {['ball, angvel'], ['bump, eb, mo*, *, all, vel']};
-opt.fitm(1).varnms.indvpre{2} = {['ball, angvel'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
-opt.fitm(1).varnms.indvpre{3} = {['ball, angvel']};
+opt.fitm(1).varnms.indvpre{1} = {['ball, yawvel'], ['bump, eb, mo*, *, all, vel']};
+opt.fitm(1).varnms.indvpre{2} = {['ball, yawvel'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
+opt.fitm(1).varnms.indvpre{3} = {['ball, yawvel']};
 
 opt.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fitm(1).epochinds = {[2 3 4]};

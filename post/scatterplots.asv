@@ -22,7 +22,7 @@ roi_type = 'rois';
 switch roi_type
     case 'pixels'
         for roi_ind = 1:roiinfo.numroi
-            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roiinfo.mask_allroi), roiinfo.pixinds_roi{roi_ind});
+            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roiinfo.mask_allroi), roiinfo.roipixind{roi_ind});
         end
     case 'rois'
         crosshair = cellfun(@round, roiinfo.centroids_roi, 'UniformOutput', false); %will this take it out of bounds? should not
@@ -290,13 +290,13 @@ end
 function [polar_index, labt, labr] = find_polar_index(labx, laby, labz)
 
 polar_index = [];
-if endsWith(labx, 'yaw') || endsWith(labx, 'ang')
+if endsWith(labx, 'yaw') || endsWith(labx, 'yaw')
     polar_index = [polar_index 1];
 end
-if endsWith(laby, 'yaw') || endsWith(laby, 'ang')
+if endsWith(laby, 'yaw') || endsWith(laby, 'yaw')
     polar_index = [polar_index 2];
 end
-if endsWith(labz, 'yaw') || endsWith(labz, 'ang')
+if endsWith(labz, 'yaw') || endsWith(labz, 'yaw')
     polar_index = [polar_index 3];
 end
 
@@ -362,7 +362,7 @@ else
         skipplot = 1;
     end
 
-    if any(strcmp(laball, 'angvel')) %must not have cuevel if skip_cuevel
+    if any(strcmp(laball, 'yawvel')) %must not have cuevel if skip_cuevel
         skipplot = 1;
     end
 
@@ -943,7 +943,7 @@ for lagind = laginds_to_plot
             % end
         end
 
-        if isempty(regexp(labt, ' CUE ANG'))
+        if isempty(regexp(labt, ' CUE yaw'))
             hndls.hpllnp.LineStyle = 'none';
         else
             hndls.hpllnp.RData = [lims.y.each(yi,2) lims.y.each_xtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 

@@ -1,0 +1,61 @@
+
+function [varcombos, varsc_out, labsc_out, roiinfo_out, newroicen_all, limsc] = apply_user_input(cbflags, varsc_in, labsc_in, roiinfo_in, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, timestr, newroicen_all, xwid, zwid, limsc, yaxisroomfac)
+
+varsc_out = varsc_in;
+labsc_out = labsc_in;
+
+try
+    if ~isempty(cbflags.val.roipix) || ~isempty(cbflags.delete.roi)
+
+        maskmanual = [];
+        maskmanual_oneroi = zeros(size(stack_mnt,1), size(stack_mnt,2), size(stack_mnt,3), 'logical');
+        [umy, umx, umz] = meshgrid(0:xwid:xwid*(size(maskmanual_oneroi,2)-1), 0:xwid:xwid*(size(maskmanual_oneroi,1)-1), 0:zwid:zwid*(size(maskmanual_oneroi,3)-1));
+        
+        if ~isempty(cbflags.val.roipix)
+            tmp = (double(vec(double(cbflags.val.roipix)))'-1).*[xwid xwid zwid];
+            newroicen_all{cbflags.val.v} = cat(1, newroicen_all{cbflags.val.v}, tmp);
+        elseif ~isempty(cbflags.delete.roi)
+            newroicen_all{cbflags.val.v} = newroicen_all{cbflags.val.v}(1:end-1,:);
+        end
+
+        max_index_available_rois = [];
+        for k = 1:numel(labsc_in)
+            [rri, ~] = find_roi_index(labsc_in{k});
+            max_index_available_rois = max([max_index_available_rois, cell2mat(rri)], [], 'all');
+        end
+
+        if ~isempty(newroicen_all{cbflags.val.v})
+            for j = 1:size(newroicen_all{cbflags.val.v}, 1)
+                newroicen = newroicen_all{cbflags.val.v}(j,:);
+                maskmanual_oneroi((umy - newroicen(1)).^2 + (umx - newroicen(2)).^2 + (umz - newroicen(3)).^2 <= newroirad.^2) = 1;
+            end
+        end
+        maskmanual = cat(4, maskmanual, maskmanual_oneroi);
+        % pth_mroi_interactive = insertBefore(pth_mroi_interactive, '.mat', timestr);
+        [roiinfo_out, resp_new] = make_morphological_rois(stack, stack_mnt, normopt, dtmni, [], [], pth_mroi_interactive, [], [], [], [], [], roiinfo_in, maskmanual);
+        % optchts.vars_combine = 'any';
+        % optchts.ignore_missing_vars;
+        %choose_timeseries
+
+        cnt = 0;
+        for k = 1:numel(newroicen_all)
+            if ~isempty(newroicen_all{k})
+                cnt = cnt+1;
+                varsc_out{k} = resp_new.in_rawf_pc_f_cl_f_w_no(cnt,:);
+                labsc_out{k} = {['ts.resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]};
+                limsc{k} = find_yaxis_limits(varsc_out{k}, yaxisroomfac);
+            end
+        end
+    else
+        varsc_out{cbflags.val.v} = varsc_in{cbflags.val.v}(cbflags.val.i,:);
+        labsc_out{cbflags.val.v} = labsc_in{cbflags.val.v}(cbflags.val.i);
+    end
+catch ME
+    sprintf("user input for variable change has problem, returning to original variables")
+    sprintf(ME.message)
+end
+
+varcombos = make_varcombos(varsc_out);
+
+
+end

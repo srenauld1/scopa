@@ -1,12 +1,11 @@
 function [tsuse, dochoose] = choose_timeseries(varnms, ts, ti, pth_tsuse_nms_prefix, pth_stack_analysis, choosecount, dochoose)
 
-% select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern,
-% output variables, their names, and some info in struct 'tsuse'
+% select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern, 
+% output variables, their names, and some info in struct 'tsuse' 
 
 
 force_single_precision = 1;
-must_have_full_var_sets = 0;
-
+remove_missing = 0;
 pth_tsuse_nms = [pth_tsuse_nms_prefix num2str(choosecount) '_.mat'];
 
 %%% FLATTEN TIMESERIES STRUCT ts FOR SIMPLE MATCHING WITH USER INPUT PATTERN varnms %%%
@@ -34,13 +33,13 @@ tmp2 = cellfun(@(x) unique(x, 'stable'), tmp2, 'UniformOutput', false);
 
 %%% MAKE ALL COMBINATIONS OF PATTERNS ACROSS fn %%%
 
-tmp2 = table2cell(combinations(tmp2{:})); %make all combos of varnms fields outer cells
-tmp3 = cell(size(tmp2));
-for vpfi = 1:size(tmp2, 2)
-    for j = 1:size(tmp2, 1)
-        tmp3{j, vpfi} = strsplit(tmp2{j, vpfi}, ', ');
+    tmp2 = table2cell(combinations(tmp2{:})); %make all combos of varnms fields outer cells
+    tmp3 = cell(size(tmp2));
+    for vpfi = 1:size(tmp2, 2)
+        for j = 1:size(tmp2, 1)
+            tmp3{j, vpfi} = strsplit(tmp2{j, vpfi}, ', ');
+        end
     end
-end
 
 %%% FLATTEN TIMESERIES STRUCT ts AND FIND MATCHES WITH PATTERNS IN varnms %%%
 
@@ -64,7 +63,7 @@ for vpfi = 1:size(tmp3,2)
 end
 
 
-if must_have_full_var_sets %remove an entire var set if any one fn is missing (ts struct has no match with varnms)
+if remove_missing %remove an entire var set if any one fn is missing (ts struct has no match with varnms)
     fnflatcat = fnflatcat(:,~sum(cell2mat(cellfun(@isempty, fnflatcat, 'UniformOutput', false)))); %remove any empty cells, where there are no matches to varnms pattern
     tsflatcat = tsflatcat(:,~sum(cell2mat(cellfun(@isempty, tsflatcat, 'UniformOutput', false)))); %remove any empty cells, where there are no matches to varnms pattern
 end
@@ -92,26 +91,30 @@ for fi = 1:numel(fn)
     tsuse.vars.(fntmp) = [];
     tsuse.varnms.(fntmp) = [];
     for vsi2 = 1:numel(varnms_chosen{fi})
-        tsuse.vars.(fntmp) = cat(1, tsuse.vars.(fntmp), vars_chosen.(fntmp));
-        if size(vars_chosen.(fntmp), 1)>1
-            for tmpi = 1:size(vars_chosen.(fntmp), 1)
-                fsstmp = {[varnms_chosen{fi}{vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
+        if isempty(varnms_chosen{fi}{vsi2})
+            vars_chosen.(fntmp) = [];
+        else
+            tsuse.vars.(fntmp) = cat(1, tsuse.vars.(fntmp), vars_chosen.(fntmp));
+            if size(vars_chosen.(fntmp), 1)>1
+                for tmpi = 1:size(vars_chosen.(fntmp), 1)
+                    fsstmp = {[varnms_chosen{fi}{vsi2} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
+                    tsuse.varnms.(fntmp) = cat(1, tsuse.varnms.(fntmp), fsstmp);
+                end
+            else
+                fsstmp = varnms_chosen{fi}(vsi2);
                 tsuse.varnms.(fntmp) = cat(1, tsuse.varnms.(fntmp), fsstmp);
             end
-        else
-            fsstmp = varnms_chosen{fi}(vsi2);
-            tsuse.varnms.(fntmp) = cat(1, tsuse.varnms.(fntmp), fsstmp);
-        end
-        if startsWith(varnms_chosen{fi}{vsi2}, 'resp')
-            varnmtmp = strsplit(varnms_chosen{fi}{vsi2}, '.');
-            tsuse.regionex = varnmtmp{2};
-            tsuse.parsex = varnmtmp{3};
-            tsuse.parsnorm = varnmtmp{4};
+            if startsWith(varnms_chosen{fi}{vsi2}, 'resp')
+                varnmtmp = strsplit(varnms_chosen{fi}{vsi2}, '.');
+                tsuse.regionex = varnmtmp{2};
+                tsuse.parsex = varnmtmp{3};
+                tsuse.parsnorm = varnmtmp{4};
 
-            regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
-            if numel(unique(regionex_cat))~=1
-                error("tsuse cannot yet decide how to use multiple regionex across input vars")
-                % tsuse.regionex = 'backupdefault';
+                regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
+                if numel(unique(regionex_cat))~=1
+                    error("tsuse cannot yet decide how to use multiple regionex across input vars")
+                    % tsuse.regionex = 'backupdefault';
+                end
             end
         end
     end

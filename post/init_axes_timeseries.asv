@@ -1,10 +1,8 @@
-function hndls = init_axes_timeseries(hndls, ax, letui, fnuip, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hndls = init_axes_timeseries(hndls, ax, letui, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
     hndls struct
     ax struct
-    letui
-    fnuip char
     numsamp
     varinds
     ti
@@ -46,9 +44,6 @@ for j = 1:numsubplot
     hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac(j));
     hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac(j));
-
-    hax{j}.Toolbar.Visible = 'off';
-
 
     hold(hax{j}, 'on')
     for fi = 1:numel(fn)
@@ -96,11 +91,9 @@ for j = 1:numsubplot
 
     if j==1
 
-        if letui
-            hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt,fnuip);
-            hax{j}.PickableParts = 'visible';
-            hax{j}.HitTest = 'on';
-        end
+        hax{j}.ButtonDownFcn = @(src,evnt)ui_click_cb_fcn(src,evnt,fnuip);
+        hax{j}.PickableParts = 'visible';
+        hax{j}.HitTest = 'on';
 
         hax{j}.XTick = round(linspace(0, max(ti), numxtick));
         for tlx = 1:numel(hax{j}.XTick)

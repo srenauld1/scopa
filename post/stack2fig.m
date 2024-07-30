@@ -1,4 +1,4 @@
-function stack2fig(stack, fngif, gif_visibility, pixinds_roi, roiinds, roi_colors, roialpha, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, numcolorsgif)
+function stack2fig(stack, fngif, gif_visibility, roipixind, roiinds, roi_colors, roialpha, cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, numcolorsgif)
 
 %alphamapping is not yet an option
 
@@ -6,7 +6,7 @@ arguments
     stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,pmtchannel,colorchannel); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
     fngif char = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'))
     gif_visibility char = 'on'
-    pixinds_roi = []
+    roipixind = []
     roiinds = []
     roi_colors = [1 0 0]
     roialpha = 0.3
@@ -42,14 +42,14 @@ if iscell(stack)
     if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
         error("all stacks (each cell element) must be same size")
     end
-    if numel(stack)~=1 && ~isempty(pixinds_roi)
+    if numel(stack)~=1 && ~isempty(roipixind)
         error("cannot currently plot roi overlay on multi-stack image")
     end
     stack = cell2mat(stack(:)); %convert to mat and concatenate multiple stacks along first dim
 end
 
 
-if isempty(pixinds_roi)
+if isempty(roipixind)
     roi_loop_size = 1;
     if isempty(roiinds)
         roi_message = ', roi-NaN';
@@ -57,19 +57,19 @@ if isempty(pixinds_roi)
         roi_message = ', roi-not plotting roi without pixinds roi argument';
     end
 else
-    if ~iscell(pixinds_roi)
-        if isvector(pixinds_roi)
-            pixinds_roi = {pixinds_roi};
+    if ~iscell(roipixind)
+        if isvector(roipixind)
+            roipixind = {roipixind};
         else
-            error("pixinds_roi must be cell, or vector")
+            error("roipixind must be cell, or vector")
         end
     end
     if numel(size(stack))>3
-        error("you passed pixinds_roi as argument; to plot roi overlay, pass stack xyz only; do not include any additional dimensions (t, p, or c)")
+        error("you passed roipixind as argument; to plot roi overlay, pass stack xyz only; do not include any additional dimensions (t, p, or c)")
     end
     if isempty(roiinds)
-        roiinds = 1:numel(pixinds_roi);
-        roi_loop_size = numel(pixinds_roi);
+        roiinds = 1:numel(roipixind);
+        roi_loop_size = numel(roipixind);
     else
         roi_loop_size = numel(roiinds);
     end
@@ -136,7 +136,7 @@ if numim_per_frame>max_num_im_per_frame
     error(sprintf("you are attempting to plot " + num2str(numim_per_frame) + " images per frame, which exceeds the default max of " + num2str(max_num_im_per_frame)))
 end
 % 
-% if ~isempty(pixinds_roi)
+% if ~isempty(roipixind)
 %     imalpha = zeros(szo(1), szo(2), szo(3), 'single'); %alpha for rgb roi overlay
 %     imalpha = permute(imalpha, dimorder);
 %     imalpha = reshape(imalpha, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
@@ -157,7 +157,7 @@ lab_framechange_numel = cellfun(@numel, lab_framechange);
 
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
-    if isempty(pixinds_roi)
+    if isempty(roipixind)
         roinum_title = roi_message;
     else
         roinum_title = [', roi-' num2str(roiinds(ri))];
@@ -223,15 +223,15 @@ end
 
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
-    if ~isempty(pixinds_roi)
-        [imroi, imalpha] = make_roi_overlay(stack, pixinds_roi{roiinds(ri)}, roi_colors(ri,:), roialpha); %make an overlay for one roi
+    if ~isempty(roipixind)
+        [imroi, imalpha] = make_roi_overlay(stack, roipixind{roiinds(ri)}, roi_colors(ri,:), roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after framenumdims
         framecount = framecount+1;
         for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
 
             hpl{j}.CData = stack(:,:,j,k);
-            if ~isempty(pixinds_roi) %&& k==1 %if there are roi variables
+            if ~isempty(roipixind) %&& k==1 %if there are roi variables
                 hol{j}.CData = squeeze(imroi(:,:,j,k,:)); %squeeze to make it 3d (2d plus color channel)
                 hol{j}.AlphaData = imalpha(:,:,j,k);
             end

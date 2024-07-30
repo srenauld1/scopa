@@ -1,9 +1,10 @@
-function hndls = init_axes_stack(hndls, pth_tmpfiles, ax, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hndls = init_axes_stack(hndls, ax, letui, fnuip, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hndls struct
-    pth_tmpfiles char
     ax struct
+    letui
+    fnuip char
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
     zstartpos = []
@@ -67,9 +68,11 @@ for j = 1:numsubplot
     hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
     hol{j}.UserData = udat;
 
-    hol{j}.ButtonDownFcn = @(src,evnt)roiclickcb(src,evnt,pth_tmpfiles);
-    hol{j}.PickableParts = 'visible';
-    hol{j}.HitTest = 'on';
+    if letui
+        hol{j}.ButtonDownFcn = @(src,evnt)ui_roi_click_fcn(src,evnt,fnuip);
+        hol{j}.PickableParts = 'visible';
+        hol{j}.HitTest = 'on';
+    end
 
 
     hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');

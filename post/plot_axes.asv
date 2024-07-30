@@ -14,7 +14,7 @@ tinds_use = tinds;
 do_write_gif = 1;
 tloop = 1;
 
-% dlg = uicontrol();
+dlg = uicontrol();
 
 
 

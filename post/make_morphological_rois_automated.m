@@ -398,15 +398,15 @@ if do_plots
         for i = 1:num_mroi_auto_final
             mask_roi_vec_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
         end
-        pixinds_roi_upsamp = cell(num_mroi_auto_final, 1);
-        for ii = 1:numel(pixinds_roi_upsamp)
-            pixinds_roi_upsamp{ii} = find(vec(mask_roi_vec_upsamp(ii,:)));
+        roipixind_upsamp = cell(num_mroi_auto_final, 1);
+        for ii = 1:numel(roipixind_upsamp)
+            roipixind_upsamp{ii} = find(vec(mask_roi_vec_upsamp(ii,:)));
         end
 
         %roi overlay in upsampled res
         filename_olay = [pth_mroi_prefix 'roiolay_upsamp_.gif'];
         gif_visibility = 'on';
-        stack2fig(premask, filename_olay, gif_visibility, pixinds_roi_upsamp) %include pixinds_roi as argument to plot roi overlay
+        stack2fig(premask, filename_olay, gif_visibility, roipixind_upsamp) %include roipixind as argument to plot roi overlay
 
 
         %hsv gif, each slice, each roi a different hue
@@ -414,7 +414,7 @@ if do_plots
         hue_feature = [1:num_mroi_auto_final]';
         hsvmap = plots_compute_hsv(hsvopt, hue_feature);
         filename_hsv = [pth_mroi_prefix 'hsvfov_upsamp_.gif'];
-        hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, pixinds_roi_upsamp, mask_roi_vec_upsamp, filename_hsv);
+        hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, roipixind_upsamp, mask_roi_vec_upsamp, filename_hsv);
 
 
         %3d scatter plot 

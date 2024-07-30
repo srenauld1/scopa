@@ -1,55 +1,64 @@
 
 function pltexp_key_press_fcn(hfg, event, varargin)
 
-fnuic = varargin{1};
-fnuis = varargin{2};
+pth_tmpfiles = varargin{1};
 
 eventkey = event.Key;
 eventmod = event.Modifier;
 
 if isstrprop(eventkey, 'digit')
-    fid = fopen(fnuis, 'w');
-    fwrite(fid, str2double(eventkey), 'uint16')
+    fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
+    fwrite(fid, str2num(eventkey), 'uint16')
 else
 
-    if strcmpi(eventkey, 'return') || strcmpi(eventkey, '0')
-        fid = fopen(fnuic, 'w');
+    if strcmpi(eventkey, 'escape') 
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 1, 'uint16');
+        fclose('all');
+    
+    elseif strcmpi(eventkey, 'return') || strcmpi(eventkey, '0')
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
+        fwrite(fid, 2, 'uint16');
         fclose('all');
 
     elseif strcmpi(eventkey, 'v')
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 3, 'uint16');
         fclose('all');
 
+    elseif strcmpi(eventkey, 'k')
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
+        fwrite(fid, 3, 'char');
+        fclose('all');
+
     elseif strcmpi(eventkey, 'i')
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 4, 'uint16');
         fclose('all');
 
     elseif strcmpi(eventkey, 't')
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 5, 'uint16');
         fclose('all');
 
     elseif strcmpi(eventkey, 'hyphen')
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 6, 'uint16');
         fclose('all');
     
     elseif strcmpi(eventkey, 'n')
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 7, 'uint16');
         fclose('all');
     
     elseif strcmpi(eventkey, 'a')
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 8, 'uint16');
         fclose('all');
     
     elseif strcmpi(eventkey, 'backspace')
         % error("undo not implemented yet")
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, 9, 'uint16');
         fclose('all');
 
@@ -58,7 +67,7 @@ else
         if strcmpi(eventmod, 'shift')
             scaleshift = -5;
         end
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, scaleshift, 'uint16')
         fclose('all');
 
@@ -67,7 +76,7 @@ else
         if strcmpi(eventmod, 'shift')
             scaleshift = 5;
         end
-        fid = fopen(fnuic, 'w');
+        fid = fopen([pth_tmpfiles 'tmp_ui_control_.bin'], 'w');
         fwrite(fid, scaleshift, 'uint16')
         fclose('all');
 

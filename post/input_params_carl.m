@@ -34,7 +34,6 @@ opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmss
 opt.mn.do_daq = 1;
 opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample to match imaging 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
 opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
@@ -211,9 +210,8 @@ opt.pf.bump.doplots = 0;
 
 %params for finding preferred heading using fitmdl
 % opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
-opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
-opt.pf.bump.fitm(1).varnms.indvpre{1} = {['vis, ang']};
-opt.pf.bump.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
+opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp.eb.mo*.in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
+opt.pf.bump.fitm(1).varnms.indvpre{1} = {['vis.yaw']};
 
 opt.pf.bump.fitm(1).normalize_indv = 'none';
 opt.pf.bump.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
@@ -225,7 +223,7 @@ opt.pf.bump.fitm(1).sort_method = 'unbiased';
 opt.pf.bump.fitm(1).use_saved_model = 1;
 opt.pf.bump.fitm(1).doplots = 1;
 
-
+opt.pf.bump.fitm = fill_struct(opt.pf.bump.fitm);
 opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 %% FIT MODEL
@@ -237,9 +235,9 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 % opt.fitm.varnms.indvpre.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'angvel'}, {'bump',
+% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'yawvel'}, {'bump',
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
-% two-dimensional input, the first dimension being ball.angvel, the second being bump.mu
+% two-dimensional input, the first dimension being ball.yawvel, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fitm.regionpat_fit
 %since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
 %since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
@@ -269,16 +267,15 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % if opt.fitm(1).vars_combine is 'any', then all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv are used
 % for example
 %    opt.fitm(1).varnms.depvpre{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
-%    opt.fitm(1).varnms.indvpre{1} = {['ball, angvel'], ['bump, pb, mo*, *, all, mu']};
+%    opt.fitm(1).varnms.indvpre{1} = {['ball, yawvel'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
-opt.fitm(1).varnms.depvpre{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.depvpre{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.indvpre{1} = {['ball, angvel'], ['bump, eb, mo*, *, all, vel']};
-opt.fitm(1).varnms.indvpre{2} = {['ball, angvel'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
-opt.fitm(1).varnms.indvpre{3} = {['ball, angvel']};
+opt.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+opt.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+opt.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
+opt.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
+opt.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
 
-opt.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.fitm(1).epochinds = {[2 3 4]};
 opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
@@ -287,6 +284,7 @@ opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-val
 opt.fitm(1).mdlname = 'fnet_A01_sh16';
 opt.fitm(1).plt.doplots = 100;
 
+opt.fitm = fill_struct(opt.fitm);
 opt.fitm = default_fit_params(opt.fitm);
 
 
@@ -297,41 +295,47 @@ opt.fitm = default_fit_params(opt.fitm);
 
 %if any of x, y, or z are polar, they are moved to theta on the scatterplots; two polar variables get layered in r
 % opt.scat(1).varnms.x{1} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
-opt.scat(1).varnms.x{1} = {['ball, *'], ['vis, *']};
-opt.scat(1).varnms.y{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.scat(1).varnms.x{1} = {['ball.*'], ['vis.*']};
+opt.scat(1).varnms.y{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.scat(1).varnms.z{1} = {['']};
-opt.scat(1).varnms.y{2} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
-opt.scat(1).varnms.y{3} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
+opt.scat(1).varnms.y{2} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
+opt.scat(1).varnms.y{3} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
 % opt.scat(1).varnms.x{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
 opt.scat(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
 opt.scat(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
 opt.scat(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'
 opt.scat(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
-opt.scat(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 opt.scat(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scat(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
-
+opt.scat = fill_struct(opt.scat);
 
 %% PLOT EXPERIMENT
 
 % params for plot_experiment
-opt.pltexp(1).varnms.ts1{1} = {['ball, forvel']};
-opt.pltexp(1).varnms.ts2{1} = {['vis, ang']};
-opt.pltexp(1).varnms.ts3{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts4{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.pltexp(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
+opt.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
+opt.pltexp(1).varnms.ts2{1} = {['vis.yaw']};
+opt.pltexp(1).varnms.ts3{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts4{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+
+opt.pltexp(2).varnms.ts1{1} = {['*']};
+opt.pltexp(2).varnms.ts2{1} = {['*']};
+opt.pltexp(2).varnms.ts3{1} = {['*']}; %if empty, do will be set to false
+opt.pltexp(2).varnms.ts4{1} = {['*']}; %if empty, do will be set to false
+
 opt.pltexp(1).varinds.left = [1 2];
 opt.pltexp(1).varinds.right = [3 4];
-opt.pltexp(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
+opt.pltexp(1).ignore_missing_vars = 1; %set to 1 not error if any requested timeseries in vars above do not exist (let's you use more general wildcards)
 opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 opt.pltexp(1).plotinds.t = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.pltexp(1).plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.pltexp(1).display_range = [0,1]; 
-opt.pltexp(1).interactive = 1;
+opt.pltexp(1).letui = 1;
+
+opt.pltexp = fill_struct(opt.pltexp);
 
 %% HIRES
 

@@ -130,7 +130,7 @@ good_roi_indices = zeros(numrois, 1);
 roinumpix = zeros(1, numrois);
 roipixvals_binned = cell(numrois, 1);
 roipixvals_edges = cell(numrois, 1);
-pixinds_roi = cell(numrois, 1); %suffix 'pixels' distinguishes this from inds_froi_all and inds_froi_wt_all, which are indices into set of roi timeseries, rather than pixel indices like inds_mroi, but nevertheless are used in extract_volue_responses the same way as inds_mroi, since they are applied to "stack" of roi timeseries rather than movie stack (stack of pixel timeseries)
+roipixind = cell(numrois, 1); %suffix 'pixels' distinguishes this from inds_froi_all and inds_froi_wt_all, which are indices into set of roi timeseries, rather than pixel indices like inds_mroi, but nevertheless are used in extract_volue_responses the same way as inds_mroi, since they are applied to "stack" of roi timeseries rather than movie stack (stack of pixel timeseries)
 subroi_primary = ones(numrois, 1);
 
 for ci = 1:numrois
@@ -207,8 +207,8 @@ for ci = 1:numrois
     %% create roi image, and save some roi pixel data
 
 
-    pixinds_roi{ci} = find(imtmp);
-    roipixvals = imtmp(pixinds_roi{ci});
+    roipixind{ci} = find(imtmp);
+    roipixvals = imtmp(roipixind{ci});
     [roipixvals_binned{ci},roipixvals_edges{ci}] = histcounts(roipixvals, numbins);
     roipixvals_edges{ci} = roipixvals_edges{ci}(1:end-1);
     roinumpix(ci) = numel(roipixvals);
@@ -274,7 +274,7 @@ cmsnr = cmsnr(roisortinds);
 roinumpix = roinumpix(roisortinds);
 roipixvals_binned = roipixvals_binned(roisortinds);
 roipixvals_edges = roipixvals_edges(roisortinds);
-pixinds_roi = pixinds_roi(roisortinds);
+roipixind = roipixind(roisortinds);
 
 
 %% remove rois that failed morphological criteria above
@@ -289,8 +289,8 @@ cmc = single(cmc(good_roi_indices, :)); %components denoised by caiman (nonnegat
 %cms = single(cms(good_roi_indices, :)); %deconvolved version of c, not using for now
 
 numroi = length(good_roi_indices);
-pixinds_roi_bad = pixinds_roi(bad_roi_indices);  %pixel indices of each roi, one roi per cell
-pixinds_roi = pixinds_roi(good_roi_indices);  %pixel indices of each roi, one roi per cell
+roipixind_bad = roipixind(bad_roi_indices);  %pixel indices of each roi, one roi per cell
+roipixind = roipixind(good_roi_indices);  %pixel indices of each roi, one roi per cell
 mask_roi_vec = mask_roi_vec(:,good_roi_indices); %boolean mask vector of each roi
 mask_roi_vec_wt = mask_roi_vec_wt(:,good_roi_indices); %same as mask_roi_vec but weighted pixel indices
 centroids_roi = centroids_froi(good_roi_indices);
@@ -308,7 +308,7 @@ roipixvals_binned = roipixvals_binned(good_roi_indices);
 roipixvals_edges = roipixvals_edges(good_roi_indices);
 
 
-pixinds_allroi_tmp = unique(vertcat(pixinds_roi{:}));
+pixinds_allroi_tmp = unique(vertcat(roipixind{:}));
 pixinds_allroi = cell(length(pixinds_allroi_tmp), 1);
 for ii = 1:length(pixinds_allroi)
     pixinds_allroi{ii} = pixinds_allroi_tmp(ii); %put each pixel in cell to match what happens with functional rois
@@ -337,7 +337,7 @@ if doplot
 
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     gif_visibility = 'on';
-    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi, roi_plot_inds_good) %include pixinds_roi as argument to plot roi overlay
+    stack2fig(stack_mnt, filename_gif, gif_visibility, roipixind, roi_plot_inds_good) %include roipixind as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -346,7 +346,7 @@ if doplot
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    stack2fig(stack_mnt, filename_gif, gif_visibility, pixinds_roi_bad, roi_plot_inds_bad) %include pixinds_roi as argument to plot roi overlay
+    stack2fig(stack_mnt, filename_gif, gif_visibility, roipixind_bad, roi_plot_inds_bad) %include roipixind as argument to plot roi overlay
 
     figure; imagesc(mask_roi_vec); title("which caiman rois are closest to which morph roi")
 
@@ -535,7 +535,7 @@ end
 %% assign to struct
 
 roiinfo.numroi = numroi;
-roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
+roiinfo.roipixind = roipixind;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
 roiinfo.mask_roi_vec_wt = mask_roi_vec_wt; %same as mask_roi_vec but weighted pixel indices
 roiinfo.centroids_roi = centroids_froi;

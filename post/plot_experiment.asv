@@ -9,7 +9,6 @@ function plot_experiment(letui, stack, stack_mnt, vars, labs, varinds, ...
 "labsc shouldn't be cell in cell"
 "passing full stack to init_axes_stack, likewise for ftv"
 "make additional varcombo rather than overwrite all rois with interactive"
-"sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 
 gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top 
@@ -22,17 +21,12 @@ skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeser
 newroirad = 2.5; %num pixels radius
 max_num_gif_frames = 2000; %throw error if there will be more
 
-
-fnuic = [pth_tmpfiles 'tmp_ui_control_.bin'];
-fnuis = [pth_tmpfiles 'tmp_ui_select_.bin'];
-fnuip = [pth_tmpfiles 'tmp_ui_press_.bin'];
-
 %% prep vars
 
 
-delete(fnuic) %try delete first in case you errored in the middle of callback last time
-delete(fnuis) %try delete first in case you errored in the middle of callback last time
-delete(fnuip) %try delete first in case you errored in the middle of callback last time
+delete([pth_tmpfiles 'tmp_ui_control_.bin']) %try delete first in case you errored in the middle of callback last time
+delete([pth_tmpfiles 'tmp_ui_control_.bin']) %try delete first in case you errored in the middle of callback last time
+delete([pth_tmpfiles 'tmp_ui_control_.bin']) %try delete first in case you errored in the middle of callback last time
 
 [plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, 'z');
 [plotinds.t, plotinds.t_str] = make_plot_inds(size(stack, 4), plotinds.t, 't');
@@ -46,7 +40,7 @@ if numel(size(ftv))==3
     ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
 end
 
-axsides = fieldnames(varinds);
+fnp = fieldnames(varinds);
 
 fn = fieldnames(vars);
 for fi = 1:numel(fn)
@@ -91,22 +85,25 @@ newroicen_all = cell(numplotvars, 1);
 
 revert_vars = 0;
 
-timestr_ui = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')); %insert timestring when interactive to record each change in user input
+set_global_timestr();
+timestr = get_global_timestr();
 
+timestr_suffix.interactive = ['_' timestr];
+timestr_suffix.auto = '';
+plotmode = 'auto';
 plotloop = 1;
 while plotloop %loop is shut off if no user inputa2
 
 
     if exist('cbflags', 'var') && ~all(structfun(@isempty, cbflags)) && ~revert_vars
         framecount = 0;
+        plotmode = 'interactive';
         [varcombos_use, varsc_use, labsc_use, roipixind_use, newroicen_all, limsc] = apply_user_input(cbflags, varsc_use, labsc_use, roipixind_use, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsc, yaxisroomfac);
-        timestr_use = timestr_ui;
     else
         varcombos_use = varcombos;
         varsc_use = varsc;
         labsc_use = labsc;
         roipixind_use = roipixind;
-        timestr_use = '';
     end
 
 
@@ -123,7 +120,7 @@ while plotloop %loop is shut off if no user inputa2
             end
 
 
-            fngif = make_filename(labstmp, gif_scope, varinds, epochstring{ecount}, fngif_prefix, timestr_use);
+            fngif = make_filename(labstmp, gif_scope, varinds, epochstring{ecount}, fngif_prefix, timestr_suffix.(plotmode));
             [roi_index, roi_index_str] = find_roi_index(labstmp);
             figure_title = make_figure_title(fngif_prefix_short, epochstring{ecount}, dtmni, roi_index_str);
             labstmp = process_labels(labstmp, roi_index);
@@ -136,19 +133,19 @@ while plotloop %loop is shut off if no user inputa2
 
                 %%%% PREP TIMESERIES VARS %%%%
                 cnt = 0;
-                for fi = 1:numel(axsides) %for each side (left and right)
-                    varindstmp = varinds.(axsides{fi});
+                for fi = 1:numel(fnp) %for each side (left and right)
+                    varindstmp = varinds.(fnp{fi});
                     for vi = 1:numel(varindstmp) %for each variable
                         cnt = cnt + 1;
-                        labsp.(axsides{fi}){vi} = labstmp{varindstmp(vi)};
-                        ticklab.(axsides{fi}){vi} = limsc{varindstmp(vi)}.(ylim_constancy);
-                        limsp.(axsides{fi}).rescale = limsc{varindstmp(vi)}.rescale;
-                        limsp.(axsides{fi}).rescale_xtra = limsc{varindstmp(vi)}.rescale_xtra;
-                        if contains(labsp.(axsides{fi}){vi}, 'yaw', 'IgnoreCase', true) | contains(labsp.(axsides{fi}){vi}, 'yaw', 'IgnoreCase', true)
+                        labsp.(fnp{fi}){vi} = labstmp{varindstmp(vi)};
+                        ticklab.(fnp{fi}){vi} = limsc{varindstmp(vi)}.(ylim_constancy);
+                        limsp.(fnp{fi}).rescale = limsc{varindstmp(vi)}.rescale;
+                        limsp.(fnp{fi}).rescale_xtra = limsc{varindstmp(vi)}.rescale_xtra;
+                        if contains(labsp.(fnp{fi}){vi}, 'yaw', 'IgnoreCase', true) | contains(labsp.(fnp{fi}){vi}, 'yaw', 'IgnoreCase', true)
                             varstmp(cnt,:) = insert_nan_for_polar_wrap(varstmp(cnt,:));
                         end
                         varstmp(cnt,:) = nanpadvec(numsamp_tslong_eachgif(ecount), varstmp(cnt,:));
-                        varsp.(axsides{fi})(vi,:) = rescale_to_range(varstmp(varindstmp(vi),:), ticklab.(axsides{fi}){vi}, [0 1], skipnan_rescale); %rescale from tick label to [0,1], to multiple lines can be on same scale (but tick label remains unchanged)
+                        varsp.(fnp{fi})(vi,:) = rescale_to_range(varstmp(varindstmp(vi),:), ticklab.(fnp{fi}){vi}, [0 1], skipnan_rescale); %rescale from tick label to [0,1], to multiple lines can be on same scale (but tick label remains unchanged)
                     end
                 end
 
@@ -168,17 +165,16 @@ while plotloop %loop is shut off if no user inputa2
                     hndls = struct;
                     framecount = 0;
 
-                    hndls = init_fig(hndls, letui, fnuic, fnuis, gif_visibility);
-
+                    hndls = init_fig(hndls, gif_visibility);
 
                     sector_ind = 1;
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    hndls = init_axes_timeseries(hndls, ax, letui, fnuip, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    hndls = init_axes_timeseries(hndls, ax, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
                     sector_ind = 1;
-                    subplot_ind = 16; %16 with widfac~=1 forces this into the margins, but it looks fine and gives more room 
+                    subplot_ind = 16;
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
@@ -187,7 +183,13 @@ while plotloop %loop is shut off if no user inputa2
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    hndls = init_axes_stack(hndls, ax, letui, fnuip, stack, cmap, zstartpos, display_range, sector_ind);
+                    hndls = init_axes_stack(hndls, pth_tmpfiles, ax, stack, cmap, zstartpos, display_range, sector_ind);
+
+                    if strcmp(plotmode, 'interactive')
+                        set(hndls.hfg, 'KeyPressFcn', @(src,evnt)pltexp_key_press_fcn(src,evnt,pth_tmpfiles));
+                    else
+                        plotloop = 0;
+                    end
 
                 end
 
@@ -195,13 +197,10 @@ while plotloop %loop is shut off if no user inputa2
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
                     framecount, varsp, ti, tinds{ecount}, cols, roialpha, roipixindp, ...
-                    fngif, figure_title, varsz, letui, timestr_ui, sampinc, fnuic, fnuis, fnuip);
+                    fngif, figure_title, plotmode, pth_tmpfiles, varsz);
 
                 if cbflags.restart.v==1
-                    plotloop = 1;
                     break;
-                else
-                    plotloop = 0;
                 end
 
             end
@@ -295,7 +294,7 @@ epochstring.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '',
 end
 
 
-function fngif = make_filename(lab, gif_scope, varinds, epochstring, fngif_prefix, timestr)
+function fngif = make_filename(lab, gif_scope, varinds, epochstring, fngif_prefix, timestr_suffix)
 
 lab = strrep(strrep(lab, 'ts.', ''), '.', '-');
 
@@ -307,7 +306,7 @@ elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
     fngif_suffix = {['L_' strjoin(lab(varinds.left), '_')]; ['R_' strjoin(lab(varinds.right), '_')]; ['e' epochstring.short ]};
 end
 
-fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') '_' timestr '_.gif' ];
+fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') timestr_suffix '_.gif' ];
 
 end
 
@@ -402,3 +401,13 @@ numsamp_tslong_eachgif = find_numsamp_tslong(ts_scope, gif_scope, ti, tinds_full
 
 end
 
+
+function set_global_timestr()
+global timestr
+timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')); %insert timestring when interactive to record each change in user input
+end
+
+function timestr_out = get_global_timestr()
+global timestr
+timestr_out = timestr;
+end

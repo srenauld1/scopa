@@ -1,0 +1,46 @@
+function cbflags = reset_cbflags(varargin)
+
+if any(strcmp('all', varargin))
+
+    if any(strcmp('restart', varargin))
+        cbflags.restart.v = [];
+        cbflags.restart.t = [];
+    end
+
+    if any(strcmp('get', varargin))
+        cbflags.get.v = [];
+        cbflags.get.i = [];
+        cbflags.get.tstart = [];
+        cbflags.get.tend = [];
+    end
+
+    if any(strcmp('tmp', varargin))
+        cbflags.tmp.v = [];
+        cbflags.tmp.i = [];
+        cbflags.tmp.tinds = [];
+        cbflags.tmp.roipix = [];
+    end
+    
+    if any(strcmp('val', varargin))
+        cbflags.val.v = [];
+        cbflags.tmp.v = [];
+        cbflags.val.i = [];
+        cbflags.tmp.i = [];
+        cbflags.val.tinds = [];
+        cbflags.tmp.tinds = [];
+        cbflags.tmp.tstart = [];
+        cbflags.tmp.tend = [];
+        cbflags.val.roipix = [];
+        cbflags.tmp.roipix = [];
+    end
+
+    if any(strcmp('delete', varargin))
+        cbflags.delete.roi = [];
+        cbflags.change.t = [];
+    end
+
+    cbflags.lab.title = [];
+
+end
+
+end

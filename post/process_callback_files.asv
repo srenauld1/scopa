@@ -114,9 +114,9 @@ if any(~structfun(@isempty, cbflags.get))
         tmpf = fread(fid, '*uint16');
         fclose('all');
         delete(fnuip)
-        if 1%cbflags.get.v %direct click
+        if cbflags.get.v %voxel select
             cbflags.tmp.roipix = tmpf;
-            cbflags.lab.title = ['CLICKED ' mat2str(vec(tmpf)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #' num2str(cbflags.tmp.v)];
+            cbflags.lab.title = ['SELECTED VOXEL ' mat2str(vec(tmpf)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #' num2str(cbflags.tmp.v)];
         end
     end
 

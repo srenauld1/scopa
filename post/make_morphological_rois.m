@@ -1,6 +1,6 @@
 function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ...
     dtmni, xwid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
-    regionex, parstr_mroi, roiinfo, maskmanual)
+    regionex, parstr_mroi, maskmanual)
 
 
 %if you want to automate rois from multiple drawn regions, use different
@@ -42,6 +42,7 @@ function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, 
 %% params
 
 if exist('maskmanual', 'var') %if passing in a morph roi mask (interactive mode)
+    maskinput = 1;
     use_drawn_rois = 0;
     num_mroi_auto = 0;
     normopts = opts_mroi;
@@ -49,6 +50,7 @@ if exist('maskmanual', 'var') %if passing in a morph roi mask (interactive mode)
     olayopt.do = 0;
     do_other_plots = 0;
 else
+    maskinput = 0;
     use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
     num_mroi_auto = opts_mroi.auto.num_mroi_auto.(regionex);
     autoopts = opts_mroi.auto;
@@ -62,7 +64,7 @@ pth_mroi_prefix = pth_mroi(1:end-4);
 
 %% draw rois (polygons/polyhedra)
 
-if ~exist('maskmanual', 'var')
+if ~maskinput
 
     if use_drawn_rois
 
@@ -133,29 +135,23 @@ catch
 
     end
 
-    save(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi', '-mat', '-v7.3');
+    if ~maskinput
+        save(pth_morphroidata, 'mask_roi_vec', 'centroids_roi', 'num_mroi', '-mat', '-v7.3');
+    end
 
 end
 
-
-%% add to existing roiinfo, if passed as variable
-
-if exist('roiinfo', 'var')
-    num_mroi = num_mroi + roiinfo.numroi;
-    mask_roi_vec = cat(1, roiinfo.mask_roi_vec, mask_roi_vec);
-    centroids_roi = cat(2, roiinfo.centroids_roi, centroids_roi);
-end
 
 %% compute some morphological roi data
 
 mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');
 
-pixinds_roi = cell(num_mroi, 1);
+roipixind = cell(num_mroi, 1);
 pixinds_bnd_roi = cell(num_mroi, 1);
 bnd2d = zeros(size(mask_allroi), 'logical');
-for ii = 1:length(pixinds_roi)
-    pixinds_roi{ii} = find(vec(mask_roi_vec(ii,:))); %pixel indices of each roi
-    mask_allroi(pixinds_roi{ii}) = 1;
+for ii = 1:length(roipixind)
+    roipixind{ii} = find(vec(mask_roi_vec(ii,:))); %pixel indices of each roi
+    mask_allroi(roipixind{ii}) = 1;
     bnd2d(:) = 0;
     for jj = 1:size(mask_allroi, 3)
         bnd2d(:,:,jj) = bwperim(mask_allroi(:,:,jj));
@@ -164,7 +160,7 @@ for ii = 1:length(pixinds_roi)
     mask_allroi(:) = 0;
 end
 
-pixinds_allroi_tmp = unique(vertcat(pixinds_roi{:})); %this is not always the same as find(mask_allroi) inside morph auto function above, since rois can be overlapping, and also sometimes derived from interpolated z
+pixinds_allroi_tmp = unique(vertcat(roipixind{:})); %this is not always the same as find(mask_allroi) inside morph auto function above, since rois can be overlapping, and also sometimes derived from interpolated z
 
 mask_allroi(pixinds_allroi_tmp) = 1;
 
@@ -193,13 +189,15 @@ try
     load(pth_morphroiresp, 'resp')
 catch
     resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
-    save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
+    if ~maskinput
+        save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
+    end
 end
 
 %% put in struct 'roiinfo'
 
 roiinfo.numroi = num_mroi;
-roiinfo.pixinds_roi = pixinds_roi;  %pixel indices of each roi, one roi per cell
+roiinfo.roipixind = roipixind;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
 roiinfo.centroids_roi = centroids_roi;
 roiinfo.mask_allroi = mask_allroi; %boolean mask of all rois
@@ -209,7 +207,7 @@ roiinfo.cmsnr = [];
 roiinfo.roinumpix = [];
 roiinfo.roipixvals_binned = [];
 roiinfo.roipixvals_edges = [];
-roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of pixinds_roi)
+roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipixind)
 
 
 
@@ -221,13 +219,13 @@ if hsvopt.do %roi hsv map
     hue_feature = [1:num_mroi]';
     hsvmap = plots_compute_hsv(hsvopt, hue_feature);
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, pixinds_roi, mask_roi_vec, hsv_filename);
+    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixind, mask_roi_vec, hsv_filename);
 end
 
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
     gif_visibility = 'on';
-    stack2fig(stack_mnt, filename_olay, gif_visibility, pixinds_roi, [], olayopt.roi_color, olayopt.roialpha) %include pixinds_roi as argument to plot roi overlay
+    stack2fig(stack_mnt, filename_olay, gif_visibility, roipixind, [], olayopt.roi_color, olayopt.roialpha) %include roipixind as argument to plot roi overlay
 end
 
 

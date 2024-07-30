@@ -39,6 +39,8 @@ for j = 1:numsubplot
     hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac);
     hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac);
+    hax{j}.Toolbar.Visible = 'off';
+
     hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
     hax{j}.XLim = [1 numxpix];
     hax{j}.YLim = [1 numypix];

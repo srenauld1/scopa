@@ -285,12 +285,12 @@ end
 
 pffn = fieldnames(opt.pf);
 for pfi = 1:numel(pffn)
-    pth.tsuse.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi} '_.mat'];
+    pth.tsuse_nms_prefix.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi}];
 end
 
-pth.tsuse.fitm = [pth_fldr 'tsuse_finfits_.mat'];
-pth.tsuse.scat = [pth_fldr 'tsuse_finscatter_.mat'];
-pth.tsuse.pltexp = [pth_fldr 'tsuse_finpltexp_.mat'];
+pth.tsuse_nms_prefix.fitm = [pth_fldr 'tsuse_finfits_'];
+pth.tsuse_nms_prefix.scat = [pth_fldr 'tsuse_finscatter_'];
+pth.tsuse_nms_prefix.pltexp = [pth_fldr 'tsuse_finpltexp_'];
 
 %% assign to struct
 

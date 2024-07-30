@@ -9,7 +9,7 @@ num_dim_depvpre = fitin.num_dim_depvpre;
 normalize_depv = opts.normalize_depv;
 epochinds = opts.epochinds;
 
-pixinds_roi = roiinfo.pixinds_roi;
+roipixind = roiinfo.roipixind;
 idx_vox2roi = roiinfo.idx_vox2roi;
 
 gif_visibility = plt.gif_visibility;
@@ -176,24 +176,24 @@ for epi = 1:length(epochinds)
         case 'pixels'
 
             imgtmptmp = imgtmp;
-            imgtmptmp(cell2mat(pixinds_roi), :) = hsv2rgb( hsvmap{epi} );
+            imgtmptmp(cell2mat(roipixind), :) = hsv2rgb( hsvmap{epi} );
             img{epi} = reshape(imgtmptmp, size_imgnew);
             imgtmptmp = [];
 
         case 'rois'
 
             "need to fix roiinds_plot for rois"
-            imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) length(pixinds_roi)]);
-            rgbmap = cell(1, length(pixinds_roi));
-            for ri = 1:length(pixinds_roi)
+            imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) length(roipixind)]);
+            rgbmap = cell(1, length(roipixind));
+            for ri = 1:length(roipixind)
                 rgbmap{ri} = hsv2rgb( hsvmap{epi}(ri, :));
-                rgbmap{ri} = repmat(rgbmap{ri}, [numel(pixinds_roi{ri}) 1]);
-                imgtmp(pixinds_roi{ri}, :, ri) = rgbmap{ri};
+                rgbmap{ri} = repmat(rgbmap{ri}, [numel(roipixind{ri}) 1]);
+                imgtmp(roipixind{ri}, :, ri) = rgbmap{ri};
             end
             imbg = mean(imgtmp, 3);
-            img{epi} = repmat(imbg, [1 1 length(pixinds_roi)]);
-            for ri = 1:length(pixinds_roi)
-                img{epi}(pixinds_roi{ri}, :, ri) = rgbmap{ri};
+            img{epi} = repmat(imbg, [1 1 length(roipixind)]);
+            for ri = 1:length(roipixind)
+                img{epi}(roipixind{ri}, :, ri) = rgbmap{ri};
             end
             img{epi} = reshape(img{epi}, [size_imgnew, size(img{epi}, 3)]);
 
@@ -234,7 +234,7 @@ for framecount = 1:totalplotframes
     epi = ceil(framecount/length(roiinds_plot)); %index into epochinds
     ri = mod(framecount-1, length(roiinds_plot))+1; %index into roiinds_plot
 
-    [py, px, pz] = ind2sub(size(stackmean), pixinds_roi{roiinds_plot(ri)}); %y, x, z of selected pixel
+    [py, px, pz] = ind2sub(size(stackmean), roipixind{roiinds_plot(ri)}); %y, x, z of selected pixel
 
     if strcmp(hsv_background, 'pixels')
         htx.String = [figure_title ' --- roi centroid (xyz): ' num2str(py) ' ' num2str(py) ' ' num2str(pz)];
