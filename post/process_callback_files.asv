@@ -58,7 +58,7 @@ if fid>=3
         end
 
     elseif tmpf==7 || tmpf==8  % pressed 'n' or 'a', meaning 'new' (overwrite) or 'add'
-        if cbflags.get.v & cbflags.tmp.roicen
+        if cbflags.val.v & cbflags.tmp.roicen
             if tmpf==7
                 cbflags.lab.title = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(cbflags.tmp.v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
                 cbflags.val.roicen = [];
@@ -71,6 +71,7 @@ if fid>=3
                 end
             end
             cbflags.val.roicen = unique( cat(1, cbflags.val.roicen, cbflags.tmp.roicen), 'rows');
+            cbflags.change.roicen = 1;
             cbflags = reset_cbflags(cbflags, 'tmp');
 
         elseif cbflags.get.tend
@@ -120,28 +121,18 @@ if ~isempty(hndls.ts.hax{1}.UserData) %right now only the first ts can have t ca
 end
 
 
-if any(cellfun(@(x,y) isfield(x.UserData, y), hndls.st.hol, repelem({'roicen'}, numel(hndls.st.hol)'))) & cbflags.get.v
-    kpind = cellfun(@(x,y) isfield(x.UserData, y), hndls.st.hol, repelem({'roicen'}, numel(hndls.st.hol)'));
-    if ~isempty(hndls.st.hol{~cellfun(@(x) isempty(x.UserData), hndls.st.hol)}.UserData.roicen)
-        cbflags.tmp.roicen = hndls.st.hol{~cellfun(@(x) isempty(x.UserData), hndls.st.hol)}.UserData.roicen;
+if any(~cellfun(@(x) isempty(x.UserData.roicen), hndls.st.hol)) & cbflags.val.v
+    kpind = find(~cellfun(@(x) isempty(x.UserData.roicen), hndls.st.hol));
+    if ~isempty(hndls.st.hol{kpind}.UserData.roicen)
+        cbflags.tmp.roicen = hndls.st.hol{kpind}.UserData.roicen;
         cbflags.lab.title = ['CLICKED ' mat2str(vec(cbflags.tmp.roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
-        cbflags.tmp.roicen = [];
+        hndls.st.hol{kpind}.UserData.roicen = [];
     end
 end
 
 
 if any(~structfun(@isempty, cbflags.get))
 
-    fid = fopen(fnuip, 'r');
-    if fid>=3
-        tmpf = fread(fid, '*uint16');
-        fclose('all');
-        delete(fnuip)
-        if 1%cbflags.get.v %direct click
-            cbflags.tmp.roicen = tmpf;
-            cbflags.lab.title = ['CLICKED ' mat2str(vec(tmpf)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #' num2str(cbflags.tmp.v)];
-        end
-    end
 
     fid = fopen(fnuis, 'r');
     if fid>=3
