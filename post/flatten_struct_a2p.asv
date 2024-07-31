@@ -1,4 +1,4 @@
-function [s1, fn, fnex] = flatten_struct_a2p(s,varargin)
+function [s1, fn] = flatten_struct_a2p(s,varargin)
 
 % adapted from flattenStruct by Uhlending, Markus
 
@@ -58,12 +58,13 @@ try
     
     %% Get all fieldnames
     [~,tab] = fieldnamesAll(s,varargin{:});
+    fn = regexprep(tab.Field, '^s.', ''); %erase 's.' at the beginning
     
     %% Create flatten struct
     if isempty(tab)
         s1 = struct();
     else
-        [s1,fn,fnex] = convertStruct(s,tab,Prefix);
+        s1 = convertStruct(s,tab,Prefix,fn);
     end
 catch ME
     ME = MException('MATLAB:flattenStruct','%s',ME.message);
@@ -71,7 +72,7 @@ catch ME
 end
 end
 % --- convertStruct -------------------------------------------------------
-function [out,varnm,fnex] = convertStruct(s,tab,prefix) %#ok<*INUSL>
+function out = convertStruct(s,tab,prefix,fn) %#ok<*INUSL>
 % Function convert struct to table
 %% Check inputs
 if nargin<3 || isempty(prefix)
@@ -93,26 +94,24 @@ else
 end
 %% Prepare data
 
-fn = tab.Field;
-varnm = convertStringsToChars(regexprep(tab.Field, '^s.', prefix)); 
-varnmval = replace(tab.ValidVarName,'s_',prefix);
+VarNames_valid = tab.ValidVarName;
+VarNames_valid = replace(VarNames_valid,'s_',prefix);
 
 %% Create struct
 nn = numel(fn);
-fnex = cell(nn,1);
 for ii = 1:nn
-    Value = eval(fn(ii));
+    Value         = eval(fn(ii));
+    VarNameCell = [];
     if size(Value,1)>1
         for tmpi = 1:size(Value,1)
-            vntmp = {[varnm{ii} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
-            fnex{ii} = cat(1, fnex{ii}, vntmp);
+            vntmp = {[VarNames_valid(ii) '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
         end
     else
-        vntmp = {varnm{ii}};
-        fnex{ii} = cat(1, fnex{ii}, vntmp);
+        vntmp = {VarNames_valid(ii)};
     end
+    VarNameCell = cat(1, VarNameCell, vntmp);
 
-    VarName = varnmval(ii);
+    VarName       = VarNames_valid(ii);
     out.(VarName) = Value;
 end
 end

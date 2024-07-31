@@ -95,6 +95,10 @@ save(pth_tsuse_nms, 'fnflatcat', '-v7.3', '-mat') %save since this only needs to
 tsuse.varnms = cell2struct(fnflatcat(:,choosecount), fn);
 tsuse.vars = cell2struct(tsflatcat(:,choosecount), fn);
 
+tsuse.choosecount = choosecount;
+tsuse.fn_save_prefix = [pth_stack_analysis(1:end-4) tsuse.regionex '_' tsuse.parsex '_' tsuse.parsnorm '_fit' num2str(tsuse.choosecount)];
+tsuse.fn_save_prefix_short = [pth_stack_analysis(1:end-4) '_fit' num2str(tsuse.choosecount)];
+
 %%% MAKE SURE THERE IS ONLY ONE REGIONEX (FOR NOW) %%%
 
 regionex_cat = [];
@@ -103,9 +107,6 @@ for fi = 1:numel(fn)
         if startsWith(tsuse.varnms.(fn{fi}){vni}, 'resp')
             varnmtmp = strsplit(tsuse.varnms.(fn{fi}){vni}, '.');
             tsuse.regionex = varnmtmp{2};
-            tsuse.parsex = varnmtmp{3};
-            tsuse.parsnorm = varnmtmp{4};
-
             regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
             if numel(unique(regionex_cat))~=1
                 error("tsuse cannot yet use multiple regionex across input vars; in future crop_stack will just have to loop over them and cat the regionex stacks in xy")
@@ -120,13 +121,6 @@ if ~isfield(tsuse, 'regionex')
     tsuse.parsex = 'noparsex';
     tsuse.parsnorm = 'noparsnorm';
 end
-
-
-%%% SET PATHS, ORDER FIELDS, AND STOP dochoose WHILE LOOP IF AT END %%%
-
-tsuse.choosecount = choosecount;
-tsuse.fn_save_prefix = [pth_stack_analysis(1:end-4) tsuse.regionex '_' tsuse.parsex '_' tsuse.parsnorm '_fit' num2str(tsuse.choosecount)];
-tsuse.fn_save_prefix_short = [pth_stack_analysis(1:end-4) '_fit' num2str(tsuse.choosecount)];
 
 
 tsuse = orderfields_recursive(tsuse);
