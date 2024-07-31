@@ -312,13 +312,14 @@ opt.scat = fill_struct(opt.scat);
 % params for plot_experiment
 opt.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
 opt.pltexp(1).varnms.ts2{1} = {['vis.yaw']};
+opt.pltexp(1).varnms.ts2{1} = {['ball.forvel']};
 opt.pltexp(1).varnms.ts3{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.pltexp(1).varnms.ts4{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-
-opt.pltexp(2).varnms.ts1{1} = {['*']};
-opt.pltexp(2).varnms.ts2{1} = {['*']};
-opt.pltexp(2).varnms.ts3{1} = {['*']}; %if empty, do will be set to false
-opt.pltexp(2).varnms.ts4{1} = {['*']}; %if empty, do will be set to false
+% 
+% opt.pltexp(2).varnms.ts1{1} = {['*']};
+% opt.pltexp(2).varnms.ts2{1} = {['*']};
+% opt.pltexp(2).varnms.ts3{1} = {['*']}; %if empty, do will be set to false
+% opt.pltexp(2).varnms.ts4{1} = {['*']}; %if empty, do will be set to false
 
 opt.pltexp(1).varinds.left = [1 2];
 opt.pltexp(1).varinds.right = [3 4];

@@ -21,7 +21,7 @@ end
 if any(strcmp('tmp', varargin)) || any(strcmp('all', varargin))
     cbflags.tmp.v = [];
     cbflags.tmp.i = [];
-    cbflags.tmp.roipix = [];
+    cbflags.tmp.roicen = [];
     cbflags.tmp.tinds = [];
     cbflags.tmp.tstart = [];
     cbflags.tmp.tend = [];
@@ -30,13 +30,14 @@ end
 if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
     cbflags.val.v = [];
     cbflags.val.i = [];
-    cbflags.val.roipix = [];
+    cbflags.val.roicen = [];
     cbflags.val.tinds = [];
 end
 
 if any(strcmp('delete', varargin)) || any(strcmp('all', varargin))
     cbflags.delete.roi = [];
     cbflags.change.t = [];
+    cbflags.change.roicen = [];
 end
 
 if any(strcmp('labs', varargin)) || any(strcmp('all', varargin))

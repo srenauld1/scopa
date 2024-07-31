@@ -133,7 +133,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.fitm(si), ts, md, pth.tsuse_nms_prefix.fitm, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
+                [fitin, dochoose] = choose_timeseries(opt.fitm(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.fitm, pth.stack_analysis, choosecount, dochoose); %select indv/depv for fit using input params
                 stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 opt.fitm.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
@@ -155,7 +155,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.scat(si), ts, md, pth.tsuse_nms_prefix.scat, pth.stack_analysis, choosecount, dochoose);
+                [fitin, dochoose] = choose_timeseries(opt.scat(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.scat, pth.stack_analysis, choosecount, dochoose);
                 [stackcrop, zstartpos_crop] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
 
                 scatterplots(fitin.vars.x, fitin.vars.y, fitin.vars.z, fitin.varnms.x, fitin.varnms.y, fitin.varnms.z, ...
@@ -176,7 +176,7 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.pltexp(si).varnms, opt.pltexp(si).vars_combine, ts, md, pth.tsuse_nms_prefix.pltexp, pth.stack_analysis, choosecount, dochoose);
+                [fitin, dochoose] = choose_timeseries(opt.pltexp(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.pltexp, pth.stack_analysis, choosecount, dochoose);
                 [stackcrop, zstartpos_crop, stack_mnt] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
 
                 plot_experiment(opt.pltexp(si).letui, stackcrop, stack_mnt, fitin.vars, ...

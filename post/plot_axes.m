@@ -72,7 +72,7 @@ while tloop
 
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
-            cbflags = process_callback_files(cbflags, fnuic, fnuis, fnuip, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
+            cbflags = process_callback_files(cbflags, hndls, fnuic, fnuis, fnuip, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
             tloop = 1;
         else
             tloop = 0;

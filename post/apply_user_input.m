@@ -3,13 +3,13 @@ function [varcombos, varsc, labsc, roipixind, newroicen_all, limsc] = apply_user
 
 try
 
-    if ~isempty(cbflags.val.roipix) || ~isempty(cbflags.delete.roi)
+    if ~isempty(cbflags.val.roicen) || ~isempty(cbflags.delete.roi)
 
         maskmanual = zeros(size(stack_mnt,1), size(stack_mnt,2), size(stack_mnt,3), 'logical');
         [umy, umx, umz] = meshgrid(0:xwid:xwid*(size(maskmanual,2)-1), 0:xwid:xwid*(size(maskmanual,1)-1), 0:zwid:zwid*(size(maskmanual,3)-1));
         
-        if ~isempty(cbflags.val.roipix)
-            tmp = (double(vec(double(cbflags.val.roipix)))'-1).*[xwid xwid zwid];
+        if ~isempty(cbflags.val.roicen)
+            tmp = (double(vec(double(cbflags.val.roicen)))'-1).*[xwid xwid zwid];
             newroicen_all{cbflags.val.v} = cat(1, newroicen_all{cbflags.val.v}, tmp);
         elseif ~isempty(cbflags.delete.roi)
             newroicen_all{cbflags.val.v} = newroicen_all{cbflags.val.v}(1:end-1,:);

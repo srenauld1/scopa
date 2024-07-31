@@ -4,12 +4,12 @@ function plot_experiment(letui, stack, stack_mnt, vars, labs, varinds, ...
     pth_mroi_interactive, pth_tmpfiles, normopt, xwid, zwid)
 
 
-
 "currently, stack must not be subset in x,y, or z, otherwise interactive roi indices will be wrong"
 "labsc shouldn't be cell in cell"
 "passing full stack to init_axes_stack, likewise for ftv"
 "make additional varcombo rather than overwrite all rois with interactive"
 "sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
+
 
 gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top 
@@ -93,11 +93,12 @@ revert_vars = 0;
 
 timestr_ui = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')); %insert timestring when interactive to record each change in user input
 
+cbflags = struct;
 plotloop = 1;
 while plotloop %loop is shut off if no user inputa2
 
 
-    if exist('cbflags', 'var') && ~all(structfun(@isempty, cbflags)) && ~revert_vars
+    if ~all(structfun(@isempty, cbflags)) && ~revert_vars
         framecount = 0;
         [varcombos_use, varsc_use, labsc_use, roipixind_use, newroicen_all, limsc] = apply_user_input(cbflags, varsc_use, labsc_use, roipixind_use, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsc, yaxisroomfac);
         timestr_use = timestr_ui;
@@ -175,7 +176,7 @@ while plotloop %loop is shut off if no user inputa2
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    hndls = init_axes_timeseries(hndls, ax, letui, fnuip, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    hndls = init_axes_timeseries(hndls, ax, letui, cbflags, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
                     sector_ind = 1;
                     subplot_ind = 16; %16 with widfac~=1 forces this into the margins, but it looks fine and gives more room 
@@ -187,7 +188,7 @@ while plotloop %loop is shut off if no user inputa2
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    hndls = init_axes_stack(hndls, ax, letui, fnuip, stack, cmap, zstartpos, display_range, sector_ind);
+                    hndls = init_axes_stack(hndls, ax, letui, cbflags, stack, cmap, zstartpos, display_range, sector_ind);
 
                 end
 

@@ -1,4 +1,4 @@
-function cbflags = process_callback_files(cbflags, fnuic, fnuis, fnuip, varsz, varsp, roipixindp, ti, tinds_use, sampinc)
+function cbflags = process_callback_files(cbflags, hndls, fnuic, fnuis, fnuip, varsz, varsp, roipixindp, ti, tinds_use, sampinc)
 
 
 fid = fopen(fnuic, 'r');
@@ -9,7 +9,7 @@ if fid>=3
     delete(fnuic)
 
     if tmpf==1 %enter
-        if cbflags.val.v
+        if cbflags.tmp.v
             if ~ismember(cbflags.tmp.v, 1:size(varsz, 1))
                 cbflags.tmp.v = [];
                 cbflags.lab.title = ['PLOT VARIABLE #' num2str(cbflags.tmp.v) ' DOES NOT EXIST, CHOOSE INDEX 1 TO ' num2str(size(varsz, 1))];
@@ -18,7 +18,7 @@ if fid>=3
                 cbflags.lab.title = ['PRESSED "enter" TO PLACE FOCUS ON PLOT VARIABLE #' num2str(cbflags.val.v) ' NOW CHOOSE HOW TO CHANGE IT'];
             end
         elseif cbflags.get.i
-            if ~ismember(cbflags.tmp.i, 1:varsz(cbflags.tmp.v, 1)) 
+            if ~ismember(cbflags.tmp.i, 1:varsz(cbflags.tmp.v, 1))
                 cbflags.tmp.i = [];
                 cbflags.lab.title = ['INPUT VARIABLE #' num2str(cbflags.tmp.i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(cbflags.tmp.v) ', CHOOSE INDEX 1 TO ' num2str(varsz(cbflags.tmp.v, 1))];
             else
@@ -58,19 +58,21 @@ if fid>=3
         end
 
     elseif tmpf==7 || tmpf==8  % pressed 'n' or 'a', meaning 'new' (overwrite) or 'add'
-        if cbflags.get.v & cbflags.tmp.roipix
+        if cbflags.val.v & cbflags.tmp.roicen
             if tmpf==7
                 cbflags.lab.title = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(cbflags.tmp.v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
-                cbflags.val.roipix = [];
+                cbflags.val.roicen = [];
             end
             if tmpf==8
                 cbflags.lab.title = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(cbflags.tmp.v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
-                if isempty(cbflags.change.t)
-                    cbflags.val.roipix = roipixindp;
+                if isempty(cbflags.change.roicen)
+                    error("this is pixel not centroid")
+                    cbflags.val.roicen = roipixindp;
                 end
             end
-            cbflags.val.tinds = unique([cbflags.val.tinds tinds_tmp]);
-            cbflags = reset_cbflags(cbflags, 'get', 'tmp');
+            cbflags.val.roicen = unique( cat(1, cbflags.val.roicen, cbflags.tmp.roicen), 'rows');
+            cbflags.change.roicen = 1;
+            cbflags = reset_cbflags(cbflags, 'tmp');
 
         elseif cbflags.get.tend
             if cbflags.tmp.tend>max(ti)
@@ -97,7 +99,7 @@ if fid>=3
             cbflags = reset_cbflags(cbflags, 'get', 'tmp');
         end
 
-    elseif tmpf==9 
+    elseif tmpf==9
         cbflags.lab.title = 'PRESSED "backspace", PRESS ENTER TO CONFIRM REMOVE ';
         cbflags = reset_cbflags(cbflags, 'get');
         cbflags.delete.roi = 1;
@@ -106,19 +108,31 @@ if fid>=3
 end
 
 
+if ~isempty(hndls.ts.hax{1}.UserData) %right now only the first ts can have t callback
+    if isempty(cbflags.get.tend)
+        cbflags.tmp.tstart = hndls.ts.hax{1}.UserData;
+        cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.tstart) ', PRESS MORE DIGITS FOR t START, OR PRESS HYPHEN TO ALLOW t END SELECTION'];
+        cbflags.get.tend = 1;
+    else
+        cbflags.tmp.tend = hndls.ts.hax{1}.UserData;
+        cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.tend) ', PRESS MORE DIGITS FOR t END, OR PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING t'];
+    end
+    hndls.ts.hax{1}.UserData = [];
+end
+
+
+if any(~cellfun(@(x) isempty(x.UserData.roicen), hndls.st.hol)) & cbflags.val.v
+    kpind = find(~cellfun(@(x) isempty(x.UserData.roicen), hndls.st.hol));
+    if ~isempty(hndls.st.hol{kpind}.UserData.roicen)
+        cbflags.tmp.roicen = hndls.st.hol{kpind}.UserData.roicen;
+        cbflags.lab.title = ['CLICKED ' mat2str(vec(cbflags.tmp.roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
+        hndls.st.hol{kpind}.UserData.roicen = [];
+    end
+end
+
 
 if any(~structfun(@isempty, cbflags.get))
 
-    fid = fopen(fnuip, 'r');
-    if fid>=3
-        tmpf = fread(fid, '*uint16');
-        fclose('all');
-        delete(fnuip)
-        if 1%cbflags.get.v %direct click
-            cbflags.tmp.roipix = tmpf;
-            cbflags.lab.title = ['CLICKED ' mat2str(vec(tmpf)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #' num2str(cbflags.tmp.v)];
-        end
-    end
 
     fid = fopen(fnuis, 'r');
     if fid>=3

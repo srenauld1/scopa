@@ -28,12 +28,12 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     if letui
         hfg.KeyPressFcn = @(src,evnt)pltexp_key_press_fcn(src,evnt,fnuic,fnuis);
 
-        hfgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
-        hfgd.Position = [hfg.Position(1)+hfg.Position(3) 0 0.9-hfg.Position(3) hfg.Position(4)];
-        uib = uicontrol('Parent', hfgd, 'Units', 'Normalized', 'Style', 'popupmenu');
-        uib.Position = [0 0 1 1];
-        uib.Callback = @(src,evnt)pltexp_dlgcb_fcn(src,evnt,fnuic,fnuis); 
-        uib.String = labsp;
+        % hfgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+        % hfgd.Position = [hfg.Position(1)+hfg.Position(3) 0 0.9-hfg.Position(3) hfg.Position(4)];
+        % uib = uicontrol('Parent', hfgd, 'Units', 'Normalized', 'Style', 'popupmenu');
+        % uib.Position = [0 0 1 1];
+        % uib.Callback = @(src,evnt)pltexp_dlgcb_fcn(src,evnt,fnuic,fnuis); 
+        % uib.String = labsp;
     end
 
     haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;

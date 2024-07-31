@@ -1,10 +1,10 @@
-function hndls = init_axes_stack(hndls, ax, letui, fnuip, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hndls = init_axes_stack(hndls, ax, letui, cbflags, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hndls struct
     ax struct
     letui
-    fnuip char
+    cbflags struct
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
     zstartpos = []
@@ -62,6 +62,7 @@ for j = 1:numsubplot
     hpl{j}.ButtonDownFcn = 'callbacks_for_this_image_are_assigned_to_overlay_image_with_handle_hol';
 
     udat.imageindex = j;
+    udat.roicen = [];
 
     hpl{j}.UserData = udat;
 
@@ -69,7 +70,7 @@ for j = 1:numsubplot
     hol{j}.UserData = udat;
 
     if letui
-        hol{j}.ButtonDownFcn = @(src,evnt)ui_roi_click_fcn(src,evnt,fnuip);
+        hol{j}.ButtonDownFcn = @(src,evnt)ui_roi_click_fcn(src,evnt);
         hol{j}.PickableParts = 'visible';
         hol{j}.HitTest = 'on';
     end

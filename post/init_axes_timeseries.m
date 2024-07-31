@@ -1,10 +1,10 @@
-function hndls = init_axes_timeseries(hndls, ax, letui, fnuip, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hndls = init_axes_timeseries(hndls, ax, letui, cbflags, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
     hndls struct
     ax struct
     letui
-    fnuip char
+    cbflags struct
     numsamp
     varinds
     ti
@@ -97,7 +97,7 @@ for j = 1:numsubplot
     if j==1
 
         if letui
-            hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt,fnuip);
+            hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt);
             hax{j}.PickableParts = 'visible';
             hax{j}.HitTest = 'on';
         end

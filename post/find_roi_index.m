@@ -1,6 +1,6 @@
 function [roi_index, roi_index_str] = find_roi_index(labsp)
 
-varind_with_rois = find(startsWith(labsp, 'ts.resp') | startsWith(labsp, ' ts.resp')); %only check labels beginning with 'resp'
+varind_with_rois = find(startsWith(labsp, 'resp')); %only check labels beginning with 'resp'
 for li = 1:numel(labsp)
     if ismember(li, varind_with_rois) %if none begin with 'resp', then there is no roi data
         roi_index_expression = 'ind\d+$'; %ends with ind followed by integer
