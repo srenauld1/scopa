@@ -15,9 +15,11 @@ pth_fldr = pth.fldr;
 pth_stack_analysis = pth.stack_analysis;
 pth_stacks_prefix = pth.stacks_prefix;
 
+suffixes_plot = opts.gif.suffixes_plot;
 plot_stack_gif = opts.gif.plot_stack_gif;
 plotinds.t = opts.gif.plotinds.t; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 plotinds.z = opts.gif.plotinds.z; %z indices to plot, empty for all, negative for that number equidistant from all available
+rescale_each_stack = opts.gif.rescale_each_stack; %rescale each subplot to same range 0-1 before combining
 display_range = opts.gif.display_range; %combined plot rescale arguments, [lower, upper]
 smooth_window_temporal = opts.gif.smooth_window_temporal; %smooth the stack in time, 0 to skip
 plot_stack_stats = opts.plot_stack_stats;
@@ -38,11 +40,17 @@ label_prefix = 't';
 label_prefix = 'z';
 [plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix, max_num_inds_to_print);
 
-dr_str = vec(cellfun(@num2str, display_range, 'UniformOutput', false))';
+dr_str = cellfun(@num2str, display_range, 'UniformOutput', false);
 dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'to'}, numel(dr_str)), 'UniformOutput', false);
-dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
+dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str),1), repelem({'p'}, numel(dr_str),1), 'UniformOutput', false);
 dr_str = ['DR_' strjoin(dr_str, '_AND_')];
 
+
+if rescale_each_stack
+    rs_str = 'RS_each';
+else
+    rs_str = 'RS_none';
+end
 
 stackplot = cell(numel(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
 stackplot_mn = cell(numel(pth_stacks_prefix), 1); %make it cell column so first dim is cat when cell2mat below
@@ -90,6 +98,11 @@ for spi = 1:numel(pth_stacks_prefix)
                 stack = [];
             end
 
+            if rescale_each_stack
+                stacktmp = rescale(stacktmp);
+                stacktmp_mn = rescale(stacktmp_mn);
+            end
+
             stackplot{spi} = stacktmp;
             stackplot_mn{spi} = stacktmp_mn;
 
@@ -111,7 +124,7 @@ if plot_stack_gif
 
     fn_suffix_insert = strjoin(fn_suffix_insert(~cellfun( @isempty, fn_suffix_insert )), '_AND_');
 
-    figtitle_prefix = [recid '_' fn_suffix_insert dr_str];
+    figtitle_prefix = [recid '_' fn_suffix_insert dr_str '_' rs_str];
     filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_str ];
 
     % testing RGB arguments to stack2fig

@@ -14,8 +14,8 @@ opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all re
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    opt.mn.recdate = '20240602'; %can use wildcards
-    opt.mn.fly = '4'; %can use wildcards
+    opt.mn.recdate = '20240527'; %can use wildcards
+    opt.mn.fly = '2'; %can use wildcards
     opt.mn.trial = '1'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
     [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
@@ -31,8 +31,8 @@ opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex fro
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 
-opt.mn.do_daq = 1;
-opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample to match imaging 
+opt.mn.do_daq = 0;
+opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample to match imaging 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
@@ -69,17 +69,22 @@ opt.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.ld.gif.plotinds.t = [30:100];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.ld.gif.plotinds.z = [2,5,8]; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.ld.gif.rescale_each_stack = 0; %1 to rescale 0-1 before combining into single plot; 
-opt.ld.gif.display_range = [0,1]; %2-element vector, [low,high], where anything below low in 0-1 normalized image is displayed as black, and anything above high is displayed as white, 
-opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
+opt.ld.gif.display_range.raw = [0,1]; %linear proportion of stack range outside which intensity is clipped to min,max; if raw doens't exist this is ignored
+opt.ld.gif.display_range.cmrg = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if cmrg doens't exist this is ignored
+opt.ld.gif.display_range.cmrg_dcdn = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if cmrg_dcdn doens't exist this is ignored
+opt.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if bksb_cmrg_dcdn doens't exist this is ignored
+opt.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if bksb_cmrg_dcdn_nosn doens't exist this is ignored
+
+opt.ld.gif.plotinds.t = [30:60];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.ld.gif.plotinds.z = [2,5]; %z indices to plot, empty for all, negative for that number equidistant from all available
+
+opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
 %% MORPHOLOGICAL ROIS
 

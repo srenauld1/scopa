@@ -1,10 +1,8 @@
-function hndls = init_fig(hndls, letui, fnuic, fnuis, gif_visibility, figsidelength, fontsz)
+function hndls = init_fig(hndls, letui, gif_visibility, figsidelength, fontsz)
 
 arguments
     hndls
     letui
-    fnuic char
-    fnuis char
     gif_visibility = 'on'
     figsidelength = 0.75
     fontsz = 8
@@ -26,7 +24,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     end
 
     if letui
-        hfg.KeyPressFcn = @(src,evnt)pltexp_key_press_fcn(src,evnt,fnuic,fnuis);
+        hfg.KeyPressFcn = @(src,evnt)pltexp_key_press_fcn(src,evnt);
 
         % hfgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
         % hfgd.Position = [hfg.Position(1)+hfg.Position(3) 0 0.9-hfg.Position(3) hfg.Position(4)];

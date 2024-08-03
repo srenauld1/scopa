@@ -35,8 +35,8 @@ if any(strcmp('all', varargin))
     end
 
     if any(strcmp('delete', varargin))
-        cbflags.delete.roi = [];
-        cbflags.change.t = [];
+        cbflags.delete.roicen = [];
+        cbflags.changed.t = [];
     end
 
     cbflags.lab.title = [];

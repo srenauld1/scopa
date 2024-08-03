@@ -1,7 +1,7 @@
 function plot_experiment(letui, stack, stack_mnt, vars, labs, varinds, ...
     epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, ...
     plotinds, display_range, fngif_prefix_short, fngif_prefix, ftv, ...
-    pth_mroi_interactive, pth_tmpfiles, normopt, xwid, zwid)
+    pth_mroi_interactive, normopt, xwid, zwid)
 
 
 "currently, stack must not be subset in x,y, or z, otherwise interactive roi indices will be wrong"
@@ -22,17 +22,8 @@ skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeser
 newroirad = 2.5; %num pixels radius
 max_num_gif_frames = 2000; %throw error if there will be more
 
-
-fnuic = [pth_tmpfiles 'tmp_ui_control_.bin'];
-fnuis = [pth_tmpfiles 'tmp_ui_select_.bin'];
-fnuip = [pth_tmpfiles 'tmp_ui_press_.bin'];
-
 %% prep vars
 
-
-delete(fnuic) %try delete first in case you errored in the middle of callback last time
-delete(fnuis) %try delete first in case you errored in the middle of callback last time
-delete(fnuip) %try delete first in case you errored in the middle of callback last time
 
 [plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, 'z');
 [plotinds.t, plotinds.t_str] = make_plot_inds(size(stack, 4), plotinds.t, 't');
@@ -169,14 +160,14 @@ while plotloop %loop is shut off if no user inputa2
                     hndls = struct;
                     framecount = 0;
 
-                    hndls = init_fig(hndls, letui, fnuic, fnuis, gif_visibility);
+                    hndls = init_fig(hndls, letui, gif_visibility);
 
 
                     sector_ind = 1;
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    hndls = init_axes_timeseries(hndls, ax, letui, cbflags, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    hndls = init_axes_timeseries(hndls, ax, letui, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
                     sector_ind = 1;
                     subplot_ind = 16; %16 with widfac~=1 forces this into the margins, but it looks fine and gives more room 
@@ -188,7 +179,7 @@ while plotloop %loop is shut off if no user inputa2
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    hndls = init_axes_stack(hndls, ax, letui, cbflags, stack, cmap, zstartpos, display_range, sector_ind);
+                    hndls = init_axes_stack(hndls, ax, letui, stack, cmap, zstartpos, display_range, sector_ind);
 
                 end
 
@@ -196,7 +187,7 @@ while plotloop %loop is shut off if no user inputa2
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
                     framecount, varsp, ti, tinds{ecount}, cols, roialpha, roipixindp, ...
-                    fngif, figure_title, varsz, letui, timestr_ui, sampinc, fnuic, fnuis, fnuip);
+                    fngif, figure_title, varsz, letui, timestr_ui, sampinc);
 
                 if cbflags.restart.v==1
                     plotloop = 1;

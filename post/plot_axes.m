@@ -1,5 +1,5 @@
 
-function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc, fnuic, fnuis, fnuip)
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc)
 
 clear make_roi_overlay %make sure persistent variable is cleared
 
@@ -72,7 +72,7 @@ while tloop
 
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
-            cbflags = process_callback_files(cbflags, hndls, fnuic, fnuis, fnuip, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
+            cbflags = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
             tloop = 1;
         else
             tloop = 0;
@@ -86,7 +86,7 @@ while tloop
         if cbflags.restart.v==1
             pause(0.2)
             tloop = 0;
-            break;
+            break; %exit the t for loop 
         end
         if cbflags.restart.t==1
             tloop = 1;
@@ -97,7 +97,7 @@ while tloop
             fngif = insertBefore(fngif, '.gif', timestr_ui);
             force_do_write_gif = 1; %when restarting with new tinds, write to gif the first time through
             pause(0.2)
-            break;
+            break; %exit the t for loop and restart with different t, but same variables
         end
 
     end
@@ -110,7 +110,7 @@ while tloop
 
     if cbflags.restart.v==1 %a new plotvar set was requested
         pause(0.2)
-        break;
+        break; %exit the while loop of the t for loop and restart with changes to variables
     end
 
 end

@@ -35,14 +35,17 @@ if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
 end
 
 if any(strcmp('delete', varargin)) || any(strcmp('all', varargin))
-    cbflags.delete.roi = [];
-    cbflags.change.t = [];
-    cbflags.change.roicen = [];
+    cbflags.delete.roicen = [];
+end
+
+if any(strcmp('changed', varargin)) || any(strcmp('all', varargin))
+    cbflags.changed.v = [];
+    cbflags.changed.t = [];
+    cbflags.changed.roicen = [];
 end
 
 if any(strcmp('labs', varargin)) || any(strcmp('all', varargin))
     cbflags.lab.title = [];
 end
-
 
 end

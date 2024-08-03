@@ -1,10 +1,9 @@
-function hndls = init_axes_stack(hndls, ax, letui, cbflags, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hndls = init_axes_stack(hndls, ax, letui, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hndls struct
     ax struct
     letui
-    cbflags struct
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
     zstartpos = []

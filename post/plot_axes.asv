@@ -1,5 +1,5 @@
 
-function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc, fnuic, fnuis, fnuip)
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc)
 
 clear make_roi_overlay %make sure persistent variable is cleared
 
@@ -14,7 +14,7 @@ tinds_use = tinds;
 do_write_gif = 1;
 tloop = 1;
 
-dlg = uicontrol();
+% dlg = uicontrol();
 
 
 
@@ -72,7 +72,7 @@ while tloop
 
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
-            cbflags = process_callback_files(cbflags, fnuic, fnuis, fnuip, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
+            cbflags = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
             tloop = 1;
         else
             tloop = 0;
@@ -86,7 +86,7 @@ while tloop
         if cbflags.restart.v==1
             pause(0.2)
             tloop = 0;
-            break;
+            break; %exit the 
         end
         if cbflags.restart.t==1
             tloop = 1;

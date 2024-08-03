@@ -11,7 +11,7 @@ arguments
     roi_colors = [1 0 0]
     roialpha = 0.3
     cmap double = gray(256) %colormap or 'rgb' if stack is truecolor (final dim length 3 . . . can be any numeric type)
-    display_range (1,2) double = [0,1] %[low,high] for image property CLim (contrast); ignored if stack is RGB
+    display_range = [0,1] %[low,high] for image property CLim (contrast); ignored if stack is RGB
     framenumdims = 2 %how many dims to display on a each frame
     dimorder = 1:numel(size(stack)) %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
     title_prefix char = ''
@@ -37,6 +37,20 @@ margins_subplot = 0;
 max_num_inds_to_print = 20;
 max_num_im_per_frame = 60;
 
+if ~iscell(display_range)
+    if numel(display_range)~=2
+        error("display range must be a cell of 2-element vectors or a 2-element vector")
+    end
+    display_range = {display_range};
+end
+
+if any(vec(cell2mat(cellfun(@(x) x<0 | x>1 , display_range, 'UniformOutput', false))))
+    error("display_range must be in range 0-1")
+end
+
+if any(cell2mat(cellfun(@(x) x(1)>x(2) , display_range, 'UniformOutput', false)))
+    error("display_range(1) must be less than display_range(2)")
+end
 
 if iscell(stack)
     if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
@@ -45,7 +59,43 @@ if iscell(stack)
     if numel(stack)~=1 && ~isempty(roipixind)
         error("cannot currently plot roi overlay on multi-stack image")
     end
-    stack = cell2mat(stack(:)); %convert to mat and concatenate multiple stacks along first dim
+    if numel(display_range)~=1 && numel(display_range)~=numel(stack)
+        error("display_range length must be 1, or match number of stacks")
+    end
+    if numel(display_range)==1
+        display_range = repmat(display_range, [numel(stack) 1]);
+    end
+
+    for si = 1:numel(stack) %if you are combining multiple stacks, rescale them to apply the display range, and make [0 1] new display_range (CLim)
+        stackmin = double(min(stack{si}(:)));
+        stackmax = double(max(stack{si}(:)));
+        stackrange = stackmax-stackmin; %(max-min)*display_range+min = [0 1]
+
+        if stackmin<0
+            error("need to fix rescaling for negative stack")
+        end
+        rsa = [display_range{si}(1) 1-display_range{si}(1); %display_range{si}(1)*newmax - display_range{si}(1)*newmin + newmin = 0;
+            display_range{si}(2) 1-display_range{si}(2)]; %display_range{si}(2)*newmax - display_range{si}(2)*newmin + newmin = 1;
+        rsb = [0;1];
+        rstmp = mldivide(rsa, rsb); %two equations two unknowns 
+        newmax = rstmp(1);
+        newmin = rstmp(2);
+        stack{si} = newmin + ((stack{si} - stackmin) / stackrange)*(newmax-newmin);
+    end
+
+    clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled 
+    stack = cell2mat(stack(:)); %convert to mat and cat multiple stacks along first dim
+else %if there's only one stack, don't rescale it, just assign display_range to CLim 
+    if numel(display_range)~=1
+        error("display_range length must be 1 if one stack is passed as argument")
+    end
+    stackmin = double(min(stack(:)));
+    stackmax = double(max(stack(:)));
+    if stackmin<0
+        error("need to fix rescaling for negative stack")
+    end
+    stackrange = stackmax-stackmin;
+    clim_tmp = stackrange*display_range+stackmin;
 end
 
 
@@ -127,25 +177,19 @@ numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frame
 dummyim = nan(numypix, numxpix);
 dummyim_rgb = nan(numypix, numxpix, 3);
 
-stackmin = double(min(stack(:)));
-stackmax = double(max(stack(:)));
-stackrange = stackmax-stackmin;
-
 
 if numim_per_frame>max_num_im_per_frame
     error(sprintf("you are attempting to plot " + num2str(numim_per_frame) + " images per frame, which exceeds the default max of " + num2str(max_num_im_per_frame)))
 end
-% 
-% if ~isempty(roipixind)
-%     imalpha = zeros(szo(1), szo(2), szo(3), 'single'); %alpha for rgb roi overlay
-%     imalpha = permute(imalpha, dimorder);
-%     imalpha = reshape(imalpha, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
-%     imroi = repmat(imalpha, [ones(1, numel(size(imalpha))) 3]);
-% end
 
 %% prep titles
 
-lab_framestable = {['dr-' mat2str(display_range)]};
+dr_str = vec(cellfun(@num2str, display_range, 'UniformOutput', false))';
+dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'to'}, numel(dr_str)), 'UniformOutput', false);
+dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
+dr_str = ['dr-' strjoin(dr_str, ',')];
+
+lab_framestable = {dr_str};
 index_labels_tmp = index_labels(1:framenumdims); %labels that are the same on every frame
 for li = 1:numel(index_labels_tmp)
     [~, index_labels_tmp{li}] = make_plot_inds(index_labels_tmp{li}, index_labels_tmp{li}, dimlabels{li}, max_num_inds_to_print);
@@ -206,7 +250,7 @@ for j = 1:numim_per_frame
     hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
     hax{j}.XLim = [1 numxpix];
     hax{j}.YLim = [1 numypix];
-    hax{j}.CLim = stackrange*display_range+stackmin;
+    hax{j}.CLim = clim_tmp;
     colormap(hax{j}, cmap);
     axis off
     axis ij

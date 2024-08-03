@@ -1,10 +1,9 @@
-function hndls = init_axes_timeseries(hndls, ax, letui, cbflags, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hndls = init_axes_timeseries(hndls, ax, letui, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
     hndls struct
     ax struct
     letui
-    cbflags struct
     numsamp
     varinds
     ti

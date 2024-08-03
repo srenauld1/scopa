@@ -8,6 +8,7 @@ pth_grandparent = opt.mn.pth_grandparent;
 regionex_all = opt.mn.regionex_all;
 tmp_folder_name = opt.mn.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
+display_range = opt.ld.gif.display_range;
 suffixes_plot = opt.ld.gif.suffixes_plot;
 use_hires = opt.mroi.auto.use_hires_str; %gets updated to numeric struct, fieldname use_hires
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
@@ -234,12 +235,14 @@ if ~ismember(suffix_analysis, suffixes_plot)
     suffixes_plot{end+1} = suffix_analysis;
 end
 suffixes_plot = unique(suffixes_plot, 'stable'); %make sure there aren't accidental repeats
-suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot), suffix_analysis); %make suffix_analysis the last one so it can be output from load_stack with minimal memory
+suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot, 'stable'), suffix_analysis); %make suffix_analysis the last one so it can be output from load_stack with minimal memory
 
 [~, plot_stack_order] = sort(cellfun(@length, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
 
 
 pth_stacks_prefix = cell(length(suffixes_plot), 1);
+suffixes_plot_new = cell(length(suffixes_plot), 1);
+display_range_new = cell(length(suffixes_plot), 1);
 for spi = 1:length(suffixes_plot)
 
     pthpat = [pth_fldr recid_underscore '_' suffixes_plot{spi} '_.tif'];
@@ -251,11 +254,15 @@ for spi = 1:length(suffixes_plot)
 
     if ~isempty(pth_tmp)
         pth_stacks_prefix{spi} = pth_tmp.name(1:end-4);
+        suffixes_plot_new{spi} = suffixes_plot{spi};
+        display_range_new{spi} = display_range.(suffixes_plot{spi});
     else
         sprintf(['WARNING, NEITHER TIF NOR MAT FOUND FOR' newline pthpat(1:end-4) newline 'SKIPPING IT FOR PLOT'])
     end
 
 end
+
+display_range_new = display_range_new(~cellfun(@isempty, display_range_new));
 
 %% hires
 
@@ -334,4 +341,6 @@ opt.mroi.auto.use_hires = use_hires_new; %update field, change from user input f
 
 opt.ld.gif.plot_stack_order = plot_stack_order;
 opt.ld.gif.plot_stack_gif = plot_stack_gif;
+opt.ld.gif.suffixes_plot = suffixes_plot_new;
+opt.ld.gif.display_range = display_range_new;
 
