@@ -75,11 +75,15 @@ opt.ld.gif.suffixes_plot = {
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 
-opt.ld.gif.display_range.raw = [0,1]; %linear proportion of stack range outside which intensity is clipped to min,max; if raw doens't exist this is ignored
-opt.ld.gif.display_range.cmrg = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if cmrg doens't exist this is ignored
-opt.ld.gif.display_range.cmrg_dcdn = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if cmrg_dcdn doens't exist this is ignored
-opt.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if bksb_cmrg_dcdn doens't exist this is ignored
-opt.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];%linear proportion of stack range outside which intensity is clipped to min,max;if bksb_cmrg_dcdn_nosn doens't exist this is ignored
+% display ranges for each suffixes_plot; applied in stack2fig; display_range represents proportion of full range, where [0,1] is full range; 
+% stack values that are proportionally within display_range are linearly mapped to image intensity; less than or equal to display_range(1) is mapped to image min (black); greater than or equal to display_range(2) is mapped to image max (white); 
+% for example, [0,1] will be full contrast, [0, 0.5] will map upper half of stack intensities to white; 
+% if stack doesn't exist its display_range is ignored
+opt.ld.gif.display_range.raw = [0,1]; 
+opt.ld.gif.display_range.cmrg = [0,1];
+opt.ld.gif.display_range.cmrg_dcdn = [0,1];
+opt.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
+opt.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
 opt.ld.gif.plotinds.t = [30:60];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 opt.ld.gif.plotinds.z = [2,5]; %z indices to plot, empty for all, negative for that number equidistant from all available
