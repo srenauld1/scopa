@@ -60,13 +60,7 @@ for j = 1:numsubplot
     hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
     hpl{j}.ButtonDownFcn = 'callbacks_for_this_image_are_assigned_to_overlay_image_with_handle_hol';
 
-    udat.imageindex = j;
-    udat.roicen = [];
-
-    hpl{j}.UserData = udat;
-
     hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
-    hol{j}.UserData = udat;
 
     if letui
         hol{j}.ButtonDownFcn = @(src,evnt)ui_roi_click_fcn(src,evnt);

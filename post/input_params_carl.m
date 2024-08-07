@@ -14,8 +14,8 @@ opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all re
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    opt.mn.recdate = '20240527'; %can use wildcards
-    opt.mn.fly = '2'; %can use wildcards
+    opt.mn.recdate = '20240602'; %can use wildcards
+    opt.mn.fly = '4'; %can use wildcards
     opt.mn.trial = '1'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
     [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
@@ -31,8 +31,8 @@ opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex fro
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 
-opt.mn.do_daq = 0;
-opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample to match imaging 
+opt.mn.do_daq = 1;
+opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample to match imaging 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
@@ -57,20 +57,20 @@ opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, numbe
 opt.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
 opt.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
 
-%% STACK VISUALIZATION (GIF)
+%% LOAD STACK AND PLOT AS GIF
 
 %opt.ld holds params used in load_stack
-%opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
 opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.ld.zero_stack = 1; %subtract min to make min zero 
 opt.ld.numsamp_crop_t_front = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 opt.ld.numsamp_crop_t_back = 0; % how many samples to remove from end of stack
-opt.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless 
 
+%opt.ld.gif holds params for making gif of imaging movies in function load_stack; opt.ld.gif params not affect stack for analysis (stack with suffix opt.mn.suffix_analysis) 
 opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)

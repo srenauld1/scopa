@@ -11,22 +11,6 @@ if any(strcmp('restart', varargin)) || any(strcmp('all', varargin))
     cbflags.restart.t = [];
 end
 
-if any(strcmp('get', varargin)) || any(strcmp('all', varargin))
-    cbflags.get.v = [];
-    cbflags.get.i = [];
-    cbflags.get.tstart = [];
-    cbflags.get.tend = [];
-end
-
-if any(strcmp('tmp', varargin)) || any(strcmp('all', varargin))
-    cbflags.tmp.v = [];
-    cbflags.tmp.i = [];
-    cbflags.tmp.roicen = [];
-    cbflags.tmp.tinds = [];
-    cbflags.tmp.tstart = [];
-    cbflags.tmp.tend = [];
-end
-
 if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
     cbflags.val.v = [];
     cbflags.val.i = [];
@@ -36,12 +20,6 @@ end
 
 if any(strcmp('delete', varargin)) || any(strcmp('all', varargin))
     cbflags.delete.roicen = [];
-end
-
-if any(strcmp('changed', varargin)) || any(strcmp('all', varargin))
-    cbflags.changed.v = [];
-    cbflags.changed.t = [];
-    cbflags.changed.roicen = [];
 end
 
 if any(strcmp('labs', varargin)) || any(strcmp('all', varargin))

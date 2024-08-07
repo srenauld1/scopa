@@ -8,14 +8,14 @@ function plot_experiment(letui, stack, stack_mnt, vars, labs, varinds, ...
 "labsc shouldn't be cell in cell"
 "passing full stack to init_axes_stack, likewise for ftv"
 "make additional varcombo rather than overwrite all rois with interactive"
-"sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
+"sampinc~=1 will include addlower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 
 
 gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top 
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis 
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
-sampinc = 5; %sample increment per gif frame
+sampinc = 1; %sample increment per gif frame
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
@@ -162,24 +162,24 @@ while plotloop %loop is shut off if no user inputa2
 
                     hndls = init_fig(hndls, letui, gif_visibility);
 
-
                     sector_ind = 1;
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
                     hndls = init_axes_timeseries(hndls, ax, letui, numsamp_tslong_eachgif(ecount), varinds, ti, limsp, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
+                    sector_ind = 2;
+                    cmap = gray(256);
+                    hndls = init_axes_stack(hndls, ax, letui, stack, cmap, zstartpos, display_range, sector_ind);
+
                     sector_ind = 1;
-                    subplot_ind = 16; %16 with widfac~=1 forces this into the margins, but it looks fine and gives more room 
+                    subplot_ind = 16; %subplot_ind=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
                     display_range_ftv = [0 1];
                     hndls = init_axes_ftvid(hndls, ax, ftv, cmap, [], [], display_range_ftv, sector_ind, subplot_ind, widfac, htfac);
 
-                    sector_ind = 2;
-                    cmap = gray(256);
-                    hndls = init_axes_stack(hndls, ax, letui, stack, cmap, zstartpos, display_range, sector_ind);
 
                 end
 

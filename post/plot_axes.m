@@ -1,13 +1,13 @@
 
 function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc)
 
-clear make_roi_overlay %make sure persistent variable is cleared
 
 cbflags = reset_cbflags([], 'all');
 
 axsides = fieldnames(varsp);
 
 stack_oneframe = stack(:,:,:,1);
+clear make_roi_overlay %clear persistent variables in make_roi_overlay
 [imroi, imalpha] = make_roi_overlay(stack_oneframe, roipixindp, cols, roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 
 tinds_use = tinds;
@@ -17,10 +17,13 @@ tloop = 1;
 % dlg = uicontrol();
 
 
+hndls.httl.String{1} = figure_title;
+
 
 
 while tloop
 
+    clear pltexp_process_callbacks  %clear persistent variables in pltexp_process_callbacks
     force_do_write_gif = 0;
 
     for fr = 1:numel(tinds_use) %for each sample in chosen subset
@@ -72,17 +75,12 @@ while tloop
 
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
-            cbflags = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
+            [cbflags, hndls.httl.String{2}] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
             tloop = 1;
         else
             tloop = 0;
         end
 
-        if cbflags.lab.title
-            hndls.httl.String{2} = cbflags.lab.title;
-        else
-            hndls.httl.String{1} = figure_title;
-        end
         if cbflags.restart.v==1
             pause(0.2)
             tloop = 0;

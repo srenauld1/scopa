@@ -1,0 +1,98 @@
+
+function [ttl, val_v, val_i, val_roicen] = pltexp_sequence_v(tmp_button, tmp_click_roicen, save_buttons, v_being_changed, roipixindp, varsz)
+
+persistent get_i
+persistent tmp_v
+persistent tmp_i
+persistent tmp_roicen
+persistent changed_roicen
+persistent val_v_tmp
+persistent val_i_tmp
+persistent val_roicen_tmp
+
+context_buttons = {'i'};
+
+if ~isempty(tmp_click_roicen) && ~isempty(tmp_button)
+    error("tmp_click_roicen and tmp_button cannot both be nonempty")
+end
+
+
+
+if isstrprop(tmp_button, 'digit')
+
+    if get_i 
+        tmp_i = [tmp_i tmp_button];
+        tmp_i = str2double(strrep(num2str(tmp_i), ' ', ''));
+        ttl = ['PRESSED ' num2str(tmp_i) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH INPUT VARIABLE INDEX TO CHANGE'];
+    else
+        tmp_v = [tmp_v tmp_button];
+        tmp_v = str2double(strrep(num2str(tmp_v), ' ', ''));
+        ttl = ['PRESSED ' num2str(tmp_v) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH PLOT VARIABLE INDEX TO CHANGE'];
+    end
+
+elseif any(strcmpi(tmp_button, context_buttons)) || ~isempty(tmp_click_roicen)
+
+    if ~isempty(tmp_v)
+        if ~ismember(tmp_v, 1:size(varsz, 1))
+            ttl = ['PLOT VARIABLE #' num2str(tmp_v) ' DOES NOT EXIST, CHOOSE INDEX 1 TO ' num2str(size(varsz, 1))];
+        else
+            val_v_tmp = tmp_v;
+        end
+        tmp_v = [];
+    end
+
+    if ~isempty(tmp_click_roicen)
+        tmp_roicen = tmp_click_roicen;
+        ttl = ['CLICKED ' mat2str(vec(tmp_roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
+    elseif strcmpi(tmp_button, 'i') && v_being_changed
+        ttl = ['PRESSED "i", USE DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(tmp_v(end))];
+        get_i = 1;
+    end
+
+elseif any(strcmpi(tmp_button, save_buttons))
+
+    if ~isempty(tmp_i)
+
+        if ~ismember(tmp_i, 1:varsz(val_v_tmp, 1))
+            tmp_i = [];
+            ttl = ['INPUT VARIABLE #' num2str(tmp_i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(val_v_tmp) ', CHOOSE INDEX 1 TO ' num2str(varsz(val_v_tmp, 1))];
+        else
+            if strcmpi(tmp_button, 'n')
+                val_i_tmp = unique([val_i_tmp tmp_i]);
+                ttl = ['PRESSED "enter", ASSIGNING INPUT VARIABLE # ' mat2str(val_i_tmp) ' TO PLOT VARIABLE # ' num2str(val_v_tmp)];
+            else
+                error('currently only save_button "n" works with context_button "i"');
+            end
+        end
+
+    elseif ~isempty(tmp_roicen)
+
+        if strcmpi(tmp_button, 'n')
+            ttl = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(tmp_v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
+            val_roicen_tmp = [];
+        end
+        if strcmpi(tmp_button, 'a')
+            ttl = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(tmp_v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
+            if isempty(changed_roicen)
+                val_roicen_tmp = roipixindp;
+                error("roipixindp contains roi pixels not roi centroid; insert find_centroid function")
+            end
+        end
+        val_roicen_tmp = unique( cat(1, val_roicen_tmp, tmp_roicen), 'rows');
+        changed_roicen = 1;
+
+    end
+
+    get_i = [];
+    tmp_v = [];
+    tmp_i = [];
+    tmp_roicen = [];
+    changed_roicen = [];
+
+end
+
+val_v = val_v_tmp;
+val_i = val_i_tmp;
+val_roicen = val_roicen_tmp;
+
+end

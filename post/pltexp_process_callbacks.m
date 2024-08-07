@@ -1,196 +1,113 @@
-function cbflags = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc)
+function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc)
 
 
-% structure this with only one possible route
+% valid main sequences:
+%   pltexp_sequence_v (change plotted variable with index or stack image click): v, digits, [ i, digits, save ] OR [ click, save ]
+%   pltexp_sequence_t (change plotted t with digits or x-axis click): t [ digits, hyphen, digits, save ] OR [ click, click, save ]
 
-if numel(cbflags.val.v)==numel(cbflags.changed.v)
+% where 'save' denotes any save-change button (n,a,c,backspace)
+% where brackets denote sub-sequences; sub-sequences can be repeated within the main sequence; different sub-sequences, when multiple, can be mixed within a single main sequence
+
+% init buttons are: v (modify current plot variable), t (modify plotted t)
+% pressing an init button erases any unsaved changes (changes that have not been finilized with a save button)
+
+% context buttons are: hyphen (sequence_t), r (sequence_v)
+% context buttons have only meaning after init and before save
+
+% save buttons are: n (new), a (add), backspace (delete), c (concatenate)
+% save buttons save changes made in the current sequence
+
+% stack image clicks select spherical roi centroids, with optional specification of radius using button r with digit; only relevant in sequence_v
+
+% timeseries clicks (on x axis) select t plot range; after t or save, 1st click is tstart, 2nd is tstop; only relevant in sequence_t
+
+% todo: elaborate context buttons after roi click (like radius digit, etc)
+
+
+persistent init_t
+persistent init_v
+persistent changed_v
+persistent ttl_tmp
+persistent val_v
+persistent val_i
+persistent val_roicen
+
+plot_buttons = {'0', 'return'};
+init_buttons = {'v', 't'};
+save_buttons = {'n', 'a', 'c', 'backspace'};
+
+if numel(cbflags.val.v)==numel(changed_v)
     v_being_changed = 0;
 else
     v_being_changed = 1; % v flag has been set but changes not finalized by pressing v again (to initiate another set of changes), or by pressing enter (to plot changes)
 end
 
-if ~isempty(hndls.hfg.UserData)
 
-    tmpf = hndls.hfg.UserData;
-    hndls.hfg.UserData = [];
-
-    if all(structfun(@isempty, cbflags.get)) %if all 'get' flags are empty
-
-        if strcmpi(tmpf, 'return') || strcmpi(tmpf, '0') % pressing enter plots any changes
-
-            if cbflags.val.tinds
-                cbflags.restart.t = 1;
-                cbflags.lab.title = 'PRESSED "enter", CHANGING t';
-            end
-
-            if ~isempty(cbflags.val.roicen) || ~isempty(cbflags.val.i)
-                if any(~cellfun(@isempty, cbflags.val.roicen))
-                    cbflags.restart.v = 1;
-                    cbflags.lab.title = 'PRESSED "enter", CHANGING plot variables';
-                end
-            end
-
-            cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-
-        elseif strcmpi(tmpf, 'v')
-            cbflags.lab.title = 'PRESSED "v", NOW PRESS DIGITS TO CHOOSE WHICH PLOT VARIABLE INDEX TO CHANGE';
-            cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-            cbflags.get.v = 1;
-            cbflags.changed.v
-
-        elseif strcmpi(tmpf, 'i') && v_being_changed
-            cbflags.lab.title = ['PRESSED "i", NOW PRESS DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(cbflags.val.v(end))];
-            cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-            cbflags.get.i = 1;
-
-        elseif strcmpi(tmpf, 't')
-            cbflags.lab.title = 'PRESSED "t", NOW PRESS DIGITS FOR t START (SEC)';
-            cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-            cbflags.get.tstart = 1;
-
-        elseif strcmpi(tmpf, 'hyphen') && ~isempty(cbflags.tmp.tstart)
-            if cbflags.tmp.tstart<min(ti)
-                cbflags.lab.title = ['CHOSEN t START ' num2str(cbflags.tmp.tstart) ' IS LESS THAN AVAILABLE MIN t ' num2str(min(ti))];
-                cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-            else
-                cbflags.lab.title = ['PRESSED "hyphen", NOW PRESS DIGITS FOR t END (SEC)'];
-                tmp2 = cbflags.tmp.tstart;
-                cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-                cbflags.tmp.tstart = tmp2; %cheat with tmp2, so you can uniformly reset_cbflags get and tmp for all these (alternative is to make a val.tstart; this seemed the most symmetrical
-                cbflags.get.tend = 1;
-            end
-
-        elseif strcmpi(tmpf, 'n') || strcmpi(tmpf, 'a') || strcmpi(tmpf, 'd')  % pressed 'n' or 'a' or 'd', meaning 'new' (overwrite) or 'add' or 'delete'
-
-
-            if ~isempty(cbflags.tmp.v)
-                if strcmpi(tmpf, 'n')
-                    if ~ismember(cbflags.tmp.v, 1:size(varsz, 1))
-                        cbflags.tmp.v = [];
-                        cbflags.lab.title = ['PLOT VARIABLE #' num2str(cbflags.tmp.v) ' DOES NOT EXIST, CHOOSE INDEX 1 TO ' num2str(size(varsz, 1))];
-                    else
-                        cbflags.val.v = unique([cbflags.val.v cbflags.tmp.v]);
-                        cbflags.lab.title = ['PRESSED "enter" TO PLACE FOCUS ON PLOT VARIABLE #' num2str(cbflags.val.v(end)) ' NOW CHOOSE HOW TO CHANGE IT'];
-                    end
-                else
-                    error("currently can't use a or d with v")
-                end
-
-
-            elseif ~isempty(cbflags.tmp.i)
-                if strcmpi(tmpf, 'n')
-                    if ~ismember(cbflags.tmp.i, 1:varsz(cbflags.tmp.v, 1))
-                        cbflags.tmp.i = [];
-                        cbflags.lab.title = ['INPUT VARIABLE #' num2str(cbflags.tmp.i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(cbflags.tmp.v) ', CHOOSE INDEX 1 TO ' num2str(varsz(cbflags.tmp.v, 1))];
-                    else
-                        cbflags.val.i = unique([cbflags.val.i cbflags.tmp.i]);
-                        cbflags.lab.title = ['PRESSED "enter", ASSIGNING INPUT VARIABLE # ' num2str(cbflags.val.i) ' TO PLOT VARIABLE # ' num2str(cbflags.val.v(end))];
-                    end
-                else
-                    error("currently can't use a or d with v")
-                end
-
-
-
-            elseif ~isempty(cbflags.tmp.roicen)
-                if strcmpi(tmpf, 'n')
-                    cbflags.lab.title = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(cbflags.tmp.v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
-                    cbflags.val.roicen{cbflags.val.v(end)} = [];
-                end
-                if strcmpi(tmpf, 'a')
-                    cbflags.lab.title = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(cbflags.tmp.v) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
-                    if isempty(cbflags.changed.roicen)
-                        error("this is pixel not centroid")
-                        cbflags.val.roicen{cbflags.val.v(end)} = roipixindp;
-                    end
-                end
-                cbflags.val.roicen{cbflags.val.v(end)} = unique( cat(1, cbflags.val.roicen{cbflags.val.v(end)}, cbflags.tmp.roicen), 'rows');
-                cbflags.changed.roicen = 1;
-                cbflags = reset_cbflags(cbflags, 'get', 'tmp'); %was just tmp
-
-
-            elseif ~isempty(cbflags.tmp.tend)
-                if cbflags.tmp.tend>max(ti)
-                    cbflags.lab.title = ['CHOSEN t END ' num2str(cbflags.tmp.tend) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(ti))];
-                elseif cbflags.tmp.tend<=cbflags.tmp.tstart
-                    cbflags.lab.title = ['CHOSEN t END ' num2str(cbflags.tmp.tend) ' IS LESS THAN OR EQUAL TO CHOSEN t START ' num2str(cbflags.tmp.tstart)];
-                else
-                    t_tmp = [cbflags.val.tstart; cbflags.tmp.tend];
-                    tinds_tmp = find(ti>=t_tmp(1) & ti<=t_tmp(2));
-                    tinds_tmp = tinds_tmp(1):sampinc:tinds_tmp(end);
-                    if strcmpi(tmpf, 'n')
-                        cbflags.lab.title = 'PRESSED "n", OVERWRITING EXISTING t, MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES';
-                        cbflags.val.tinds = [];
-                    end
-                    if strcmpi(tmpf, 'a')
-                        cbflags.lab.title = 'PRESSED "a", ADDING TO EXISTING t, MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES';
-                        if isempty(cbflags.changed.t)
-                            cbflags.val.tinds = tinds_use;
-                        end
-                    end
-                    cbflags.val.tinds = unique([cbflags.val.tinds tinds_tmp]);
-                    cbflags.changed.t = 1;
-                end
-                cbflags = reset_cbflags(cbflags, 'get', 'tmp');
-
-            end
-
-        end
-
-    else %if there is a nonempty 'get' flag (get flag gives the ui digits their meaning)
-
-        if cbflags.get.tstart % t start
-            cbflags.tmp.tstart = [cbflags.tmp.tstart tmpf];
-            cbflags.tmp.tstart = str2double(strrep(num2str(cbflags.tmp.tstart), ' ', ''));
-            cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.tstart) ', PRESS MORE DIGITS FOR t START, OR PRESS HYPHEN TO ALLOW t END SELECTION'];
-        elseif cbflags.get.tend % t end
-            cbflags.tmp.tend = [cbflags.tmp.tend tmpf];
-            cbflags.tmp.tend = str2double(strrep(num2str(cbflags.tmp.tend), ' ', ''));
-            cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.tend) ', PRESS MORE DIGITS FOR t END, OR PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING t'];
-        elseif cbflags.get.v % plot variable
-            cbflags.tmp.v = [cbflags.tmp.v tmpf];
-            cbflags.tmp.v = str2double(strrep(num2str(cbflags.tmp.v), ' ', ''));
-            cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.v) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH PLOT VARIABLE INDEX TO CHANGE'];
-        elseif cbflags.get.i % input variable
-            cbflags.tmp.i = [cbflags.tmp.i tmpf];
-            cbflags.tmp.i = str2double(strrep(num2str(cbflags.tmp.i), ' ', ''));
-            cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.i) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH INPUT VARIABLE INDEX TO CHANGE'];
-        end
-        cbflags = reset_cbflags(cbflags, 'get'); %reset get flags
-
-
-    end
-
-elseif ~isempty(hndls.ts.hax{1}.UserData) % currently only full ts can have t callback, does not require a get flag (can click on t without any preceding event)
-
-    tmpf = hndls.ts.hax{1}.UserData;
-    hndls.ts.hax{1}.UserData = [];
-
-    if isempty(cbflags.get.tend)
-        cbflags.tmp.tstart = tmpf;
-        cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.tstart) ', PRESS MORE DIGITS FOR t START, OR PRESS HYPHEN TO ALLOW t END SELECTION'];
-        cbflags.get.tend = 1;
-    else
-        cbflags.tmp.tend = tmpf;
-        cbflags.lab.title = ['PRESSED ' num2str(cbflags.tmp.tend) ', PRESS MORE DIGITS FOR t END, OR PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING t'];
-    end
-
-
-elseif any(~cellfun(@(x) isempty(x.UserData.roicen), hndls.st.hol)) && v_being_changed %clicking on stack images only marks rois if v index has been set (which timeseries to change)
-
-    kpind = find(~cellfun(@(x) isempty(x.UserData.roicen), hndls.st.hol));
-    if ~isempty(hndls.st.hol{kpind}.UserData.roicen)
-        tmpf = hndls.st.hol{kpind}.UserData.roicen;
-        hndls.st.hol{kpind}.UserData.roicen = [];
-        cbflags.tmp.roicen = tmpf;
-        cbflags.lab.title = ['CLICKED ' mat2str(vec(cbflags.tmp.roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
-    end
-
+if numel(find(~cellfun(@(x) isempty(x.UserData), hndls.st.hol)))>1
+    error("multiple images have callback data; should only be one at a time")
 end
 
 
+% ttl = ['PRESSED "enter" TO PLACE FOCUS ON PLOT VARIABLE #' num2str(cbflags.val.v(end)) ' NOW CHOOSE HOW TO CHANGE IT'];
 
 
+tmp_button = hndls.hfg.UserData;
+hndls.hfg.UserData = [];
+tmp_click_t = hndls.ts.hax{1}.UserData;
+hndls.ts.hax{1}.UserData = [];
+for j = 1:numel(hndls.st.hol)
+    tmp_click_roicen = hndls.st.hol{j}.UserData; %add image index, which is z slice
+    hndls.st.hol{j}.UserData = [];
+    if ~isempty(tmp_click_roicen)
+        tmp_click_roicen = [tmp_click_roicen j];
+        break
+    end
+end
+
+if any(strcmpi(tmp_button, plot_buttons))  % pressing enter plots any changes
+
+    if cbflags.val.tinds
+        cbflags.restart.t = 1;
+        ttl_tmp = 'PRESSED "enter", CHANGING t';
+    end
+
+    if ~isempty(cbflags.val.roicen) || ~isempty(cbflags.val.i) %don't use elseif since there can be v and t changes
+        if any(~cellfun(@isempty, cbflags.val.roicen))
+            cbflags.restart.v = 1;
+            ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
+        end
+    end
 
 
+elseif any(strcmpi(tmp_button, init_buttons))
+
+    if strcmpi(tmp_button, 'v')
+        init_v = 1;
+        changed_v = [changed_v 1];
+        ttl_tmp = 'PRESSED "v", USE DIGITS TO CHOOSE WHICH PLOTTED VARIABLE TO CHANGE';
+    elseif strcmpi(tmp_button, 't')
+        init_t = 1;
+        ttl_tmp = 'PRESSED "t", USE DIGITS OR CLICKS TO CHANGE t (SECONDS)';
+    end
+
+    clear pltexp_sequence_t pltexp_sequence_v %clear all sequences' persistent variables after any init button
+
+
+elseif ~isempty(init_v) && ( ~isempty(tmp_button) || ~isempty(tmp_click_roicen) ) 
+
+    [ttl_tmp, val_v, val_i, val_roicen] = pltexp_sequence_v(tmp_button, tmp_click_roicen, save_buttons, v_being_changed, roipixindp, varsp);
+
+    cbflags.val.v = unique([cbflags.val.roicen val_v]);
+    cbflags.val.i{cbflags.val.v(end)} = unique( [cbflags.val.i{cbflags.val.v(end)} val_roicen]);
+    cbflags.val.roicen{cbflags.val.v(end)} = unique( cat(1, cbflags.val.roicen{cbflags.val.v(end)}, val_roicen), 'rows');
+
+elseif ~isempty(init_t) && ( ~isempty(tmp_button) || ~isempty(tmp_click_t) )
+
+    [ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(tmp_button, tmp_click_t, save_buttons, sampinc, ti, tinds_use);
+
+end
+
+ttl = ttl_tmp;
+
+end
 
