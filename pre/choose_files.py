@@ -228,7 +228,10 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 if do_register:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
                         read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
-                    elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't (if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine)
+                    elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
+                        pth_md = []
+                        pth_md_mat = []
+                    elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
                         raise Exception("metadatanew.npy and/or metadatanew.mat are not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or do_register to create them")
                 
             
