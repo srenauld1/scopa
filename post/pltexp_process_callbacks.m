@@ -28,14 +28,13 @@ persistent init_t
 persistent init_v
 persistent changed_v
 persistent ttl_tmp
-persistent val_v
-persistent val_i
-persistent val_roicen
 
-plot_buttons = {'0', 'return'};
+
+plot_buttons = {'return'};
 init_buttons = {'v', 't'};
 save_buttons = {'n', 'a', 'c', 'backspace'};
 
+    
 if numel(cbflags.val.v)==numel(changed_v)
     v_being_changed = 0;
 else
@@ -95,11 +94,18 @@ elseif any(strcmpi(tmp_button, init_buttons))
 
 elseif ~isempty(init_v) && ( ~isempty(tmp_button) || ~isempty(tmp_click_roicen) ) 
 
-    [ttl_tmp, val_v, val_i, val_roicen] = pltexp_sequence_v(tmp_button, tmp_click_roicen, save_buttons, v_being_changed, roipixindp, varsp);
-
-    cbflags.val.v = unique([cbflags.val.roicen val_v]);
-    cbflags.val.i{cbflags.val.v(end)} = unique( [cbflags.val.i{cbflags.val.v(end)} val_roicen]);
-    cbflags.val.roicen{cbflags.val.v(end)} = unique( cat(1, cbflags.val.roicen{cbflags.val.v(end)}, val_roicen), 'rows');
+    [ttl_tmp, cbflags.val.v, cbflags.val.i, cbflags.val.roicen] = pltexp_sequence_v(tmp_button, tmp_click_roicen, save_buttons, v_being_changed, roipixindp, varsz);
+    % 
+    % if ~isempty(val_v)
+    %     cbflags.val.v = unique([cbflags.val.v val_v]);
+    %     if isempty(cbflags.val.i)
+    %         cbflags.val.i{cbflags.val.v(end)} = val_i;
+    %         cbflags.val.roicen{cbflags.val.v(end)} = val_roicen;
+    %     else
+    %         cbflags.val.i{cbflags.val.v(end)} = unique( [cbflags.val.i{cbflags.val.v(end)} val_i]);
+    %         cbflags.val.roicen{cbflags.val.v(end)} = unique( cat(1, cbflags.val.roicen{cbflags.val.v(end)}, val_roicen), 'rows');
+    %     end
+    % end
 
 elseif ~isempty(init_t) && ( ~isempty(tmp_button) || ~isempty(tmp_click_t) )
 

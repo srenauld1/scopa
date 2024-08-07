@@ -14,9 +14,9 @@ opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all re
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    opt.mn.recdate = '20240602'; %can use wildcards
-    opt.mn.fly = '4'; %can use wildcards
-    opt.mn.trial = '1'; %can use wildcards
+    opt.mn.recdate = '202408*'; %can use wildcards
+    opt.mn.fly = '*'; %can use wildcards
+    opt.mn.trial = '*'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
     [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
 else
@@ -36,7 +36,7 @@ opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample to mat
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
-opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
+opt.mn.do_pltexp = 0; %plot experiment (opt.pltexp below)
 opt.mn.old_project = 0; %for carl
 
 
@@ -44,7 +44,7 @@ opt.mn.old_project = 0; %for carl
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
+opt.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
 opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
 opt.daq.slopelen_sec = 0.4; %window length used to fit slope
 opt.daq.use_carls_epochs = 1; %0 for everybody else
@@ -69,8 +69,8 @@ opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/ineffi
 %opt.ld.gif holds params for making gif of imaging movies in function load_stack; opt.ld.gif params not affect stack for analysis (stack with suffix opt.mn.suffix_analysis) 
 opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -85,8 +85,8 @@ opt.ld.gif.display_range.cmrg_dcdn = [0,1];
 opt.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 opt.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-opt.ld.gif.plotinds.t = [30:60];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.ld.gif.plotinds.z = [2,5]; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.ld.gif.plotinds.t = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+opt.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
