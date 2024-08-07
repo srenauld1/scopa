@@ -63,7 +63,10 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
     decay_time = .4  # only for deconvolution, length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
-    dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
+    if md['zfov']==0: #this occurs if it's a 2d stack (not volumetric); below the third element (hard coded 0.0) will be removed
+        dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], 0.0 ] #pixels per micron
+    else:
+        dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
 
     tsub = 1  # temporal downsampling
     ssub = 1  # spatial downsampling

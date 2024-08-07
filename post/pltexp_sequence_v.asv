@@ -20,7 +20,11 @@ if ~isempty(tmp_click_roicen) && ~isempty(tmp_button)
     error("tmp_click_roicen and tmp_button cannot both be nonempty")
 end
 
-
+if ~isempty(tmp_click_roicen)
+ttl = ['PRESSED ' num2str(tmp_i) ', WAITING FOR MORE DIGITS']
+    elseif ~isempty(tmp_button)
+ttl = ['PRESSED ' num2str(tmp_i) ', WAITING FOR MORE DIGITS
+end
 
 if isstrprop(tmp_button, 'digit')
 
@@ -57,32 +61,33 @@ elseif any(strcmpi(tmp_button, save_buttons))
 
     if ~isempty(tmp_i)
 
-        if ~ismember(tmp_i, 1:varsz(val_v_tmp, 1))
+        if ~ismember(tmp_i, 1:varsz(val_v_tmp(end), 1))
             tmp_i = [];
-            ttl = ['INPUT VARIABLE #' num2str(tmp_i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(val_v_tmp) ', CHOOSE INDEX 1 TO ' num2str(varsz(val_v_tmp, 1))];
+            ttl = ['INPUT VARIABLE #' num2str(tmp_i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(val_v_tmp(end)) ', CHOOSE INDEX 1 TO ' num2str(varsz(val_v_tmp(end), 1))];
         else
             if strcmpi(tmp_button, 'n')
-                val_i_tmp = unique([val_i_tmp tmp_i]);
-                ttl = ['PRESSED "n", OVERWRITING INPUT VARIABLE # ' mat2str(val_i_tmp) ' TO PLOT VARIABLE # ' num2str(val_v_tmp)];
+                val_i_tmp{val_v_tmp(end)} = [];
+                ttl = ['PRESSED "n", OVERWRITING INPUT VARIABLE # ' mat2str(val_i_tmp{val_v_tmp(end)}) ' TO PLOT VARIABLE # ' num2str(val_v_tmp(end))];
             else
                 error('currently only save_button "n" works with context_button "i"');
             end
+            val_i_tmp{val_v_tmp(end)} = unique([val_i_tmp{val_v_tmp(end)} tmp_i]);
         end
 
     elseif ~isempty(tmp_roicen)
 
         if strcmpi(tmp_button, 'n')
-            ttl = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(val_v_tmp) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
-            val_roicen_tmp = [];
+            ttl = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(val_v_tmp(end)) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
+            val_roicen_tmp{val_v_tmp(end)} = [];
         end
         if strcmpi(tmp_button, 'a')
-            ttl = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(val_v_tmp) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
+            ttl = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(val_v_tmp(end)) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
             if isempty(changed_roicen)
-                val_roicen_tmp = roipixindp;
+                val_roicen_tmp{val_v_tmp(end)} = roipixindp;
                 error("roipixindp contains roi pixels not roi centroid; insert find_centroid function")
             end
         end
-        val_roicen_tmp = unique( cat(1, val_roicen_tmp, tmp_roicen), 'rows');
+        val_roicen_tmp{val_v_tmp(end)} = unique( cat(1, val_roicen_tmp{val_v_tmp(end)}, tmp_roicen), 'rows');
         
         changed_roicen = 1;
 

@@ -20,18 +20,22 @@ if ~isempty(tmp_click_roicen) && ~isempty(tmp_button)
     error("tmp_click_roicen and tmp_button cannot both be nonempty")
 end
 
-
+if ~isempty(tmp_button)
+    ttl = ['PRESSED ' num2str(tmp_button) ' OUT OF CONTEXT, NOTHING WILL HAPPEN'];
+elseif ~isempty(tmp_click_roicen)
+    ttl = 'CLICKED A STACK IMAGE OUT OF CONTEXT, NOTHING WILL HAPPEN';
+end
 
 if isstrprop(tmp_button, 'digit')
 
     if v_not_set
         tmp_v = [tmp_v str2double(tmp_button)];
         tmp_v = str2double(strrep(num2str(tmp_v), ' ', ''));
-        ttl = ['PRESSED ' num2str(tmp_v) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH PLOT VARIABLE INDEX TO CHANGE'];
+        ttl = ['PRESSED ' num2str(tmp_v) ', CONTINUE ENTERING DIGITS, OR PRESS CONTEXT BUTTON TO CHANGE PLOT VARIABLE #' num2str(tmp_v)];
     elseif get_i
         tmp_i = [tmp_i str2double(tmp_button)];
         tmp_i = str2double(strrep(num2str(tmp_i), ' ', ''));
-        ttl = ['PRESSED ' num2str(tmp_i) ', WAITING FOR MORE DIGITS, OR PRESS ENTER TO FINALIZE WHICH INPUT VARIABLE INDEX TO CHANGE'];
+        ttl = ['PRESSED ' num2str(tmp_i) ', CONTINUE ENTERING DIGITS, OR PRESS SAVE BUTTON TO USE INPUT VARIABLE #' num2str(tmp_i)'];
     end
 
 elseif any(strcmpi(tmp_button, context_buttons)) || ~isempty(tmp_click_roicen)
@@ -62,11 +66,12 @@ elseif any(strcmpi(tmp_button, save_buttons))
             ttl = ['INPUT VARIABLE #' num2str(tmp_i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(val_v_tmp(end)) ', CHOOSE INDEX 1 TO ' num2str(varsz(val_v_tmp(end), 1))];
         else
             if strcmpi(tmp_button, 'n')
-                val_i_tmp{val_v_tmp(end)} = unique([val_i_tmp{val_v_tmp(end)} tmp_i]);
+                val_i_tmp{val_v_tmp(end)} = [];
                 ttl = ['PRESSED "n", OVERWRITING INPUT VARIABLE # ' mat2str(val_i_tmp{val_v_tmp(end)}) ' TO PLOT VARIABLE # ' num2str(val_v_tmp(end))];
             else
                 error('currently only save_button "n" works with context_button "i"');
             end
+            val_i_tmp{val_v_tmp(end)} = unique([val_i_tmp{val_v_tmp(end)} tmp_i]);
         end
 
     elseif ~isempty(tmp_roicen)

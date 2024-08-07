@@ -2,10 +2,11 @@ function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp,
 
 
 % valid main sequences:
-%   pltexp_sequence_v (change plotted variable with index or stack image click): v, digits, [ i, digits, save ] OR [ click, save ]
+%   pltexp_sequence_v (change plotted variable with index or stack image click): v, digits, [ i, [ digits, save ] ] OR [ click, save ]
 %   pltexp_sequence_t (change plotted t with digits or x-axis click): t [ digits, hyphen, digits, save ] OR [ click, click, save ]
 
 % where 'save' denotes any save-change button (n,a,c,backspace)
+% where 'digits' refer to the completed number, not each digit comprising it (which are registered one-at-a-time)
 % where brackets denote sub-sequences; sub-sequences can be repeated within the main sequence; different sub-sequences, when multiple, can be mixed within a single main sequence
 
 % init buttons are: v (modify current plot variable), t (modify plotted t)
@@ -34,7 +35,7 @@ plot_buttons = {'return'};
 init_buttons = {'v', 't'};
 save_buttons = {'n', 'a', 'c', 'backspace'};
 
-    
+
 if numel(cbflags.val.v)==numel(changed_v)
     v_being_changed = 0;
 else
@@ -47,73 +48,70 @@ if numel(find(~cellfun(@(x) isempty(x.UserData), hndls.st.hol)))>1
 end
 
 
-% ttl = ['PRESSED "enter" TO PLACE FOCUS ON PLOT VARIABLE #' num2str(cbflags.val.v(end)) ' NOW CHOOSE HOW TO CHANGE IT'];
-
-
-tmp_button = hndls.hfg.UserData;
+user_input = hndls.hfg.UserData;
 hndls.hfg.UserData = [];
-tmp_click_t = hndls.ts.hax{1}.UserData;
-hndls.ts.hax{1}.UserData = [];
-for j = 1:numel(hndls.st.hol)
-    tmp_click_roicen = hndls.st.hol{j}.UserData; %add image index, which is z slice
-    hndls.st.hol{j}.UserData = [];
-    if ~isempty(tmp_click_roicen)
-        tmp_click_roicen = [tmp_click_roicen j];
-        break
-    end
+if isempty(user_input)
+    user_input = hndls.ts.hax{1}.UserData;
+    hndls.ts.hax{1}.UserData = [];
 end
-
-if any(strcmpi(tmp_button, plot_buttons))  % pressing enter plots any changes
-
-    if cbflags.val.tinds
-        cbflags.restart.t = 1;
-        ttl_tmp = 'PRESSED "enter", CHANGING t';
-    end
-
-    if ~isempty(cbflags.val.roicen) || ~isempty(cbflags.val.i) %don't use elseif since there can be v and t changes
-        if any(~cellfun(@isempty, cbflags.val.roicen))
-            cbflags.restart.v = 1;
-            ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
+if isempty(user_input)
+    for j = 1:numel(hndls.st.hol)
+        user_input = hndls.st.hol{j}.UserData; %add image index, which is z slice
+        hndls.st.hol{j}.UserData = [];
+        if ~isempty(user_input)
+            user_input = [user_input j];
+            break
         end
     end
+end
 
 
-elseif any(strcmpi(tmp_button, init_buttons))
+if ~isempty(user_input)
 
-    if strcmpi(tmp_button, 'v')
-        init_v = 1;
-        changed_v = [changed_v 1];
-        ttl_tmp = 'PRESSED "v", USE DIGITS TO CHOOSE WHICH PLOTTED VARIABLE TO CHANGE';
-    elseif strcmpi(tmp_button, 't')
-        init_t = 1;
-        ttl_tmp = 'PRESSED "t", USE DIGITS OR CLICKS TO CHANGE t (SECONDS)';
+    if any(strcmpi(user_input, plot_buttons))  % pressing enter plots any changes
+
+        if cbflags.val.tinds
+            cbflags.restart.t = 1;
+            ttl_tmp = 'PRESSED "enter", CHANGING t';
+        end
+
+        if ~isempty(cbflags.val.roicen) || ~isempty(cbflags.val.i) %don't use elseif since there can be v and t changes
+            if any(~cellfun(@isempty, cbflags.val.roicen))
+                cbflags.restart.v = 1;
+                ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
+            end
+        end
+
+
+    elseif any(strcmpi(user_input, init_buttons))
+
+        if strcmpi(user_input, 'v')
+            init_v = 1;
+            changed_v = [changed_v 1];
+            ttl_tmp = 'PRESSED "v", USE DIGITS TO CHOOSE WHICH PLOTTED VARIABLE TO CHANGE';
+        elseif strcmpi(user_input, 't')
+            init_t = 1;
+            ttl_tmp = 'PRESSED "t", USE DIGITS OR CLICKS TO CHANGE t (SECONDS)';
+        end
+
+        clear pltexp_sequence_t pltexp_sequence_v %clear all sequences' persistent variables after any init button
+
+
+    elseif ~isempty(init_v)
+
+        [ttl_tmp, cbflags.val.v, cbflags.val.i, cbflags.val.roicen] = pltexp_sequence_v(user_input, user_input, save_buttons, v_being_changed, roipixindp, varsz);
+
+    elseif ~isempty(init_t)
+
+        [ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(user_input, user_input, save_buttons, sampinc, ti, tinds_use);
+
     end
-
-    clear pltexp_sequence_t pltexp_sequence_v %clear all sequences' persistent variables after any init button
-
-
-elseif ~isempty(init_v) && ( ~isempty(tmp_button) || ~isempty(tmp_click_roicen) ) 
-
-    [ttl_tmp, cbflags.val.v, cbflags.val.i, cbflags.val.roicen] = pltexp_sequence_v(tmp_button, tmp_click_roicen, save_buttons, v_being_changed, roipixindp, varsz);
-    % 
-    % if ~isempty(val_v)
-    %     cbflags.val.v = unique([cbflags.val.v val_v]);
-    %     if isempty(cbflags.val.i)
-    %         cbflags.val.i{cbflags.val.v(end)} = val_i;
-    %         cbflags.val.roicen{cbflags.val.v(end)} = val_roicen;
-    %     else
-    %         cbflags.val.i{cbflags.val.v(end)} = unique( [cbflags.val.i{cbflags.val.v(end)} val_i]);
-    %         cbflags.val.roicen{cbflags.val.v(end)} = unique( cat(1, cbflags.val.roicen{cbflags.val.v(end)}, val_roicen), 'rows');
-    %     end
-    % end
-
-elseif ~isempty(init_t) && ( ~isempty(tmp_button) || ~isempty(tmp_click_t) )
-
-    [ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(tmp_button, tmp_click_t, save_buttons, sampinc, ti, tinds_use);
 
 end
 
+
 ttl = ttl_tmp;
+
 
 end
 
