@@ -18,6 +18,8 @@ arguments
 end
 
 
+% NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)   
+
 % align fictrac video to imaging data using oscillations of the laser on fictrac video
 % save and output the aligned, temporally resampled video
 

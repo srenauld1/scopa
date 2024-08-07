@@ -14,9 +14,9 @@ opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all re
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    opt.mn.recdate = '202408*'; %can use wildcards
-    opt.mn.fly = '*'; %can use wildcards
-    opt.mn.trial = '*'; %can use wildcards
+    opt.mn.recdate = '20240602'; %can use wildcards
+    opt.mn.fly = '4'; %can use wildcards
+    opt.mn.trial = '1'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
     [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
 else
@@ -30,9 +30,8 @@ opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' 
 opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
-
-opt.mn.do_daq = 1;
-opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample to match imaging 
+opt.mn.do_daq = 1; %process daq data 
+opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)

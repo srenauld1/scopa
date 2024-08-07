@@ -49,7 +49,10 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
             fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
             mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
-            mdt['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
+            if re.findall( 'actualStackZStepSize = (.*)', meta)[0]=='[]':
+                mdt['zwid'] = 0.0
+            else:
+                mdt['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta)[0])
             mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta)[0].replace(";",","))
             if isinstance(mdt['zstartpos'], int):
                 mdt['zfov'] = mdt['zwid']

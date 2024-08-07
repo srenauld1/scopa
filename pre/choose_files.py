@@ -110,6 +110,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
     ######### REPORT RESULTS #########
 
+    try:
+        fn_suffix_scopa
+    except:
+        raise Exception("fn_suffix_scopa IS NOT DEFINED; recording_index (jobarrayind IN cxp.sh) FOR THIS JOB MAY BE OUTSIDE THE RANGE OF AVAILABLE FILES, IN WHICH CASE THIS JOB, AND ALL DEPENDENT JOBS, WILL ERROR; THIS IS NOT A PROBLEM EXCEPT IT MEANS YOU'RE REQUESTING BUT NOT USING RESOURCES ON O2; MAKE SURE jobarrayind ONLY LISTS INDICES FOR FILES THAT EXIST")
+
     if do_register:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]
     else:
@@ -129,7 +134,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             recindstr = []
             for ri in recording_index:
                 recindstr.append(ordinal(int(ri)+1))
-            recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
+            recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING (ZERO-INDEXED) INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
     print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
           "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
