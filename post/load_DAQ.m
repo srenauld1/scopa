@@ -82,10 +82,10 @@ else
     daqinds.vol = [];
 end
 
-if daqinds.slice(end)~=numslice_withflyback
+if ~isempty(daqinds.slice) && daqinds.slice(end)~=numslice_withflyback
     error("final daq volume is not complete . . . deal with this")
 end
-if daqinds.vol(end)~=numvol
+if ~isempty(daqinds.vol) && daqinds.vol(end)~=numvol
     error("number stack volumes does not match number recorded in daq . . . deal with this")
 end
 

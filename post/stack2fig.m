@@ -95,7 +95,7 @@ else %if there's only one stack, don't rescale it, just assign display_range to 
         error("need to fix rescaling for negative stack")
     end
     stackrange = stackmax-stackmin;
-    clim_tmp = stackrange*display_range+stackmin;
+    clim_tmp = stackrange*cell2mat(display_range)+stackmin;
 end
 
 
