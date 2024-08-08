@@ -1,8 +1,8 @@
 
-function [ttl, val_v, val_i, val_roicen] = pltexp_sequence_v(tmp_button, tmp_click_roicen, save_buttons, v_being_changed, roipixindp, varsz)
+function [subsequence_type, ttl, val_v, val_i, val_roicen] = pltexp_sequence_v(user_input, subsequence_type, save_buttons, v_being_changed, roipixindp, varsz)
 
 persistent v_not_set
-if isempty(v_not_set) %empty when first initialized, 1 when not set, 0 when set 
+if isempty(v_not_set) %empty when first initialized, 1 when not set, 0 when set
     v_not_set = 1;
 end
 persistent get_i
@@ -14,48 +14,52 @@ persistent val_v_tmp
 persistent val_i_tmp
 persistent val_roicen_tmp
 
+val_v = val_v_tmp; %empty herethis is overwritten
+val_i = val_i_tmp;
+val_roicen = val_roicen_tmp;
+
 context_buttons = {'i'};
 
-if ~isempty(tmp_click_roicen) && ~isempty(tmp_button)
-    error("tmp_click_roicen and tmp_button cannot both be nonempty")
+if strcmp(subsequence_type, 'digit')
+    ttl = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
+elseif strcmp(subsequence_type, 'click')
+    ttl = 'CLICKED A STACK IMAGE OUT OF CONTEXT, NOTHING WILL HAPPEN'; %default title, in case not overwritten
 end
 
-if ~isempty(tmp_button)
-    ttl = ['PRESSED ' num2str(tmp_button) ' OUT OF CONTEXT, NOTHING WILL HAPPEN'];
-elseif ~isempty(tmp_click_roicen)
-    ttl = 'CLICKED A STACK IMAGE OUT OF CONTEXT, NOTHING WILL HAPPEN';
-end
 
-if isstrprop(tmp_button, 'digit')
+if isstrprop(user_input, 'digit')
 
     if v_not_set
-        tmp_v = [tmp_v str2double(tmp_button)];
+        tmp_v = [tmp_v str2double(user_input)];
         tmp_v = str2double(strrep(num2str(tmp_v), ' ', ''));
         ttl = ['PRESSED ' num2str(tmp_v) ', CONTINUE ENTERING DIGITS, OR PRESS CONTEXT BUTTON TO CHANGE PLOT VARIABLE #' num2str(tmp_v)];
     elseif get_i
-        tmp_i = [tmp_i str2double(tmp_button)];
+        tmp_i = [tmp_i str2double(user_input)];
         tmp_i = str2double(strrep(num2str(tmp_i), ' ', ''));
-        ttl = ['PRESSED ' num2str(tmp_i) ', CONTINUE ENTERING DIGITS, OR PRESS SAVE BUTTON TO USE INPUT VARIABLE #' num2str(tmp_i)'];
+        ttl = ['PRESSED ' num2str(tmp_i) ', CONTINUE ENTERING DIGITS, OR PRESS SAVE BUTTON TO USE INPUT VARIABLE #' num2str(tmp_i)];
     end
 
-elseif any(strcmpi(tmp_button, context_buttons)) || ~isempty(tmp_click_roicen)
+elseif ( any(strcmpi(user_input, context_buttons)) && strcmp(subsequence_type, 'digit') || strcmp(subsequence_type, 'click') ) && ~isempty(tmp_v) 
 
-    if ~isempty(tmp_v)
+    if v_not_set
         if ~ismember(tmp_v, 1:size(varsz, 1))
             ttl = ['PLOT VARIABLE #' num2str(tmp_v) ' DOES NOT EXIST, CHOOSE INDEX 1 TO ' num2str(size(varsz, 1))];
+            return;
         end
         v_not_set = 0;
     end
 
-    if ~isempty(tmp_click_roicen)
+    if strcmp(subsequence_type, 'digit')
+        if strcmpi(user_input, 'i') && v_being_changed
+            ttl = ['PRESSED "i", USE DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(tmp_v)];
+            get_i = 1;
+        end
+    elseif strcmp(subsequence_type, 'click')
         tmp_roicen = tmp_click_roicen;
         ttl = ['CLICKED ' mat2str(vec(tmp_roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
-    elseif strcmpi(tmp_button, 'i') && v_being_changed
-        ttl = ['PRESSED "i", USE DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(tmp_v)];
-        get_i = 1;
     end
 
-elseif any(strcmpi(tmp_button, save_buttons))
+elseif any(strcmpi(user_input, save_buttons)) && ( ~isempty(tmp_i) || ~isempty(tmp_roicen) )
 
     val_v_tmp = unique([val_v_tmp tmp_v]);
 
@@ -65,9 +69,9 @@ elseif any(strcmpi(tmp_button, save_buttons))
             tmp_i = [];
             ttl = ['INPUT VARIABLE #' num2str(tmp_i) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(val_v_tmp(end)) ', CHOOSE INDEX 1 TO ' num2str(varsz(val_v_tmp(end), 1))];
         else
-            if strcmpi(tmp_button, 'n')
+            if strcmpi(user_input, 'n')
                 val_i_tmp{val_v_tmp(end)} = [];
-                ttl = ['PRESSED "n", OVERWRITING INPUT VARIABLE # ' mat2str(val_i_tmp{val_v_tmp(end)}) ' TO PLOT VARIABLE # ' num2str(val_v_tmp(end))];
+                ttl = ['PRESSED "n", OVERWRITING PLOT VARIABLE # ' num2str(val_v_tmp(end)) ' WITH INPUT VARIABLE # ' num2str(tmp_i)];
             else
                 error('currently only save_button "n" works with context_button "i"');
             end
@@ -76,11 +80,11 @@ elseif any(strcmpi(tmp_button, save_buttons))
 
     elseif ~isempty(tmp_roicen)
 
-        if strcmpi(tmp_button, 'n')
+        if strcmpi(user_input, 'n')
             ttl = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(val_v_tmp(end)) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
             val_roicen_tmp{val_v_tmp(end)} = [];
         end
-        if strcmpi(tmp_button, 'a')
+        if strcmpi(user_input, 'a')
             ttl = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(val_v_tmp(end)) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
             if isempty(changed_roicen)
                 val_roicen_tmp{val_v_tmp(end)} = roipixindp;
@@ -88,7 +92,7 @@ elseif any(strcmpi(tmp_button, save_buttons))
             end
         end
         val_roicen_tmp{val_v_tmp(end)} = unique( cat(1, val_roicen_tmp{val_v_tmp(end)}, tmp_roicen), 'rows');
-        
+
         changed_roicen = 1;
 
     end
@@ -98,11 +102,13 @@ elseif any(strcmpi(tmp_button, save_buttons))
     tmp_i = [];
     tmp_roicen = [];
     changed_roicen = [];
+    subsequence_type = [];
+
+    val_v = val_v_tmp;
+    val_i = val_i_tmp;
+    val_roicen = val_roicen_tmp;
 
 end
 
-val_v = val_v_tmp;
-val_i = val_i_tmp;
-val_roicen = val_roicen_tmp;
 
 end

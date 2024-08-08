@@ -25,15 +25,24 @@ function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp,
 % todo: elaborate context buttons after roi click (like radius digit, etc)
 
 
-persistent init_t
-persistent init_v
+persistent sequence_init
+persistent subsequence_type
 persistent changed_v
+persistent changed_t
 persistent ttl_tmp
 
 
 plot_buttons = {'return'};
 init_buttons = {'v', 't'};
 save_buttons = {'n', 'a', 'c', 'backspace'};
+
+if ~isempty( hndls.hfg.UserData) && ~isempty(hndls.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), hndls.st.hol))
+    error("multiple callback buttons recorded; should only be one at a time")
+end
+
+if numel(find(~cellfun(@(x) isempty(x.UserData), hndls.st.hol)))>1
+    error("multiple images have callback data; should only be one at a time")
+end
 
 
 if numel(cbflags.val.v)==numel(changed_v)
@@ -42,19 +51,24 @@ else
     v_being_changed = 1; % v flag has been set but changes not finalized by pressing v again (to initiate another set of changes), or by pressing enter (to plot changes)
 end
 
-
-if numel(find(~cellfun(@(x) isempty(x.UserData), hndls.st.hol)))>1
-    error("multiple images have callback data; should only be one at a time")
-end
-
-
 user_input = hndls.hfg.UserData;
+if isempty(subsequence_type)
+    subsequence_type = 'digit';
+end
 hndls.hfg.UserData = [];
+
 if isempty(user_input)
+    if isempty(subsequence_type)
+        subsequence_type = 'click';
+    end
     user_input = hndls.ts.hax{1}.UserData;
     hndls.ts.hax{1}.UserData = [];
 end
+
 if isempty(user_input)
+    if isempty(subsequence_type)
+        subsequence_type = 'click';
+    end
     for j = 1:numel(hndls.st.hol)
         user_input = hndls.st.hol{j}.UserData; %add image index, which is z slice
         hndls.st.hol{j}.UserData = [];
@@ -67,6 +81,13 @@ end
 
 
 if ~isempty(user_input)
+
+    if strcmp(subsequence_type, 'digit')
+        ttl_tmp = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
+    else
+        ttl_tmp = 'CLICKED A PLOT OF CONTEXT, NOTHING WILL HAPPEN'; %default title, in case not overwritten
+    end
+
 
     if any(strcmpi(user_input, plot_buttons))  % pressing enter plots any changes
 
@@ -83,27 +104,26 @@ if ~isempty(user_input)
         end
 
 
-    elseif any(strcmpi(user_input, init_buttons))
+    elseif any(strcmpi(user_input, init_buttons)) %pressing an init button initializes a sequence with a unique set of valid buttons (and erases any unsaved sequence in process)
 
+        sequence_init = user_input;
+        ttl_tmp = ['PRESSED "' sequence_init '", INITIATING SEQUENCE "' sequence_init '", USE DIGITS, CONTEXT BUTTONS, SAVE BUTTONS, OR PLOT CLICKS TO MAKE CHANGES TO "' sequence_init '"'];
         if strcmpi(user_input, 'v')
-            init_v = 1;
             changed_v = [changed_v 1];
-            ttl_tmp = 'PRESSED "v", USE DIGITS TO CHOOSE WHICH PLOTTED VARIABLE TO CHANGE';
         elseif strcmpi(user_input, 't')
-            init_t = 1;
-            ttl_tmp = 'PRESSED "t", USE DIGITS OR CLICKS TO CHANGE t (SECONDS)';
+            changed_t = [changed_t 1];
         end
 
         clear pltexp_sequence_t pltexp_sequence_v %clear all sequences' persistent variables after any init button
 
 
-    elseif ~isempty(init_v)
+    elseif strcmp(sequence_init, 'v')
 
-        [ttl_tmp, cbflags.val.v, cbflags.val.i, cbflags.val.roicen] = pltexp_sequence_v(user_input, user_input, save_buttons, v_being_changed, roipixindp, varsz);
+        [subsequence_type, ttl_tmp, cbflags.val.v, cbflags.val.i, cbflags.val.roicen] = pltexp_sequence_v(user_input, subsequence_type, save_buttons, v_being_changed, roipixindp, varsz);
 
-    elseif ~isempty(init_t)
+    elseif strcmp(sequence_init, 't')
 
-        [ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(user_input, user_input, save_buttons, sampinc, ti, tinds_use);
+        [subsequence_type, ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(user_input, subsequence_type, save_buttons, sampinc, ti, tinds_use);
 
     end
 
