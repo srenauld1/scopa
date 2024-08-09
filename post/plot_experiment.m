@@ -201,7 +201,7 @@ while plotloop %loop is shut off if no user inputa2
     end
 end
 
-clear global timestr
+
 end
 
 
@@ -289,6 +289,7 @@ end
 
 function fngif = make_filename(lab, gif_scope, varinds, epochstring, fngif_prefix, timestr)
 
+
 lab = strrep(strrep(lab, 'ts.', ''), '.', '-');
 
 if strcmp(gif_scope, 'allv_alle') %one gif for all variables, all epochinds
@@ -300,12 +301,20 @@ elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
     fngif_suffix = {'eachv_eache'};
 end
 
+fngif_prefix = strsplit(fngif_prefix, '/');
+fngif_prefix{end} = erase(fngif_prefix{end}, '202406');
+fngif_prefix = strjoin(fngif_prefix, '/'); 
+
 fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') '_' timestr '_.gif' ];
 
 end
 
 
 function figure_title = make_figure_title(fngif_prefix_short, epochstring, dtmni, roi_index_str)
+
+fngif_prefix_short = strsplit(fngif_prefix_short, '/');
+fngif_prefix_short{end} = erase(fngif_prefix_short{end}, '202406');
+fngif_prefix_short = strjoin(fngif_prefix_short, '/'); 
 
 stackidtmp = strsplit(fngif_prefix_short, filesep);
 stackid = stackidtmp{end};

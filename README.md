@@ -151,7 +151,7 @@ for caiman registration or source extraction:
                 conda activate caiman
 
 
-for deepcad dneoising:
+for deepcad denoising:
 
         Additional modules to be preloaded:
                 gcc/9.2.0 python/3.9.14 cuda/11.7

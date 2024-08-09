@@ -1,5 +1,5 @@
 
-function [subsequence_type, ttl, val_v, val_i, val_roicen] = pltexp_sequence_v(user_input, subsequence_type, save_buttons, v_being_changed, roipixindp, varsz)
+function [ttl, val_v, val_i, val_roicen] = pltexp_sequence_v(user_input, save_buttons, roipixindp, varsz)
 
 persistent v_not_set
 if isempty(v_not_set) %empty when first initialized, 1 when not set, 0 when set
@@ -10,22 +10,14 @@ persistent tmp_v
 persistent tmp_i
 persistent tmp_roicen
 persistent changed_roicen
+persistent subsequence_type
 persistent val_v_tmp
 persistent val_i_tmp
 persistent val_roicen_tmp
 
-val_v = val_v_tmp; %empty herethis is overwritten
-val_i = val_i_tmp;
-val_roicen = val_roicen_tmp;
-
 context_buttons = {'i'};
 
-if strcmp(subsequence_type, 'digit')
-    ttl = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
-elseif strcmp(subsequence_type, 'click')
-    ttl = 'CLICKED A STACK IMAGE OUT OF CONTEXT, NOTHING WILL HAPPEN'; %default title, in case not overwritten
-end
-
+ttl = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
 
 if isstrprop(user_input, 'digit')
 
@@ -39,9 +31,9 @@ if isstrprop(user_input, 'digit')
         ttl = ['PRESSED ' num2str(tmp_i) ', CONTINUE ENTERING DIGITS, OR PRESS SAVE BUTTON TO USE INPUT VARIABLE #' num2str(tmp_i)];
     end
 
-elseif ( any(strcmpi(user_input, context_buttons)) ) || ( isnumeric(user_input) ) && ~isempty(tmp_v) 
+elseif ( any(strcmpi(user_input, context_buttons)) || isnumeric(user_input) ) && ~isempty(tmp_v)
 
-    if v_not_set
+    if v_not_set %once an intermediate button is pressed v is set 
         if ~ismember(tmp_v, 1:size(varsz, 1))
             ttl = ['PLOT VARIABLE #' num2str(tmp_v) ' DOES NOT EXIST, CHOOSE INDEX 1 TO ' num2str(size(varsz, 1))];
             return;
@@ -49,19 +41,21 @@ elseif ( any(strcmpi(user_input, context_buttons)) ) || ( isnumeric(user_input) 
         v_not_set = 0;
     end
 
-    if isnumeric(user_input) %strcmp(subsequence_type, 'click')
+    if isnumeric(user_input) %click is numeric, keyboard is char
+        subsequence_type = 'click';
         tmp_roicen = user_input;
         ttl = ['CLICKED ' mat2str(vec(tmp_roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
-    else
-        if strcmpi(user_input, 'i') && v_being_changed
+    elseif ischar(user_input)
+        subsequence_type = 'keyboard';
+        if strcmpi(user_input, 'i')
             ttl = ['PRESSED "i", USE DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(tmp_v)];
             get_i = 1;
         end
     end
 
-elseif any(strcmpi(user_input, save_buttons)) && ( ~isempty(tmp_i) || ~isempty(tmp_roicen) )
+elseif any(strcmpi(user_input, save_buttons)) && ~isempty(subsequence_type)
 
-    val_v_tmp = unique([val_v_tmp tmp_v]);
+    val_v_tmp = [val_v_tmp tmp_v]; %don't run unique in case you modify same v multiple times
 
     if ~isempty(tmp_i)
 
@@ -83,8 +77,7 @@ elseif any(strcmpi(user_input, save_buttons)) && ( ~isempty(tmp_i) || ~isempty(t
         if strcmpi(user_input, 'n')
             ttl = ['PRESSED "n", OVERWRITING PLOT VARIABLE #' num2str(val_v_tmp(end)) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
             val_roicen_tmp{val_v_tmp(end)} = [];
-        end
-        if strcmpi(user_input, 'a')
+        elseif strcmpi(user_input, 'a')
             ttl = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(val_v_tmp(end)) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
             if isempty(changed_roicen)
                 val_roicen_tmp{val_v_tmp(end)} = roipixindp;
@@ -92,7 +85,6 @@ elseif any(strcmpi(user_input, save_buttons)) && ( ~isempty(tmp_i) || ~isempty(t
             end
         end
         val_roicen_tmp{val_v_tmp(end)} = unique( cat(1, val_roicen_tmp{val_v_tmp(end)}, tmp_roicen), 'rows');
-
         changed_roicen = 1;
 
     end
@@ -101,14 +93,14 @@ elseif any(strcmpi(user_input, save_buttons)) && ( ~isempty(tmp_i) || ~isempty(t
     tmp_v = [];
     tmp_i = [];
     tmp_roicen = [];
-    changed_roicen = [];
     subsequence_type = [];
 
-    val_v = val_v_tmp;
-    val_i = val_i_tmp;
-    val_roicen = val_roicen_tmp;
 
 end
 
+
+val_v = val_v_tmp;
+val_i = val_i_tmp;
+val_roicen = val_roicen_tmp;
 
 end

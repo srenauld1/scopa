@@ -26,7 +26,6 @@ function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp,
 
 
 persistent sequence_init
-persistent subsequence_type
 persistent changed_v
 persistent changed_t
 persistent ttl_tmp
@@ -45,24 +44,12 @@ if numel(find(~cellfun(@(x) isempty(x.UserData), hndls.st.hol)))>1
 end
 
 
-if numel(cbflags.val.v)==numel(changed_v)
-    v_being_changed = 0;
-else
-    v_being_changed = 1; % v flag has been set but changes not finalized by pressing v again (to initiate another set of changes), or by pressing enter (to plot changes)
-end
-
 user_input = hndls.hfg.UserData;
-if isempty(subsequence_type) && ~any(strcmpi(user_input, init_buttons)) && ~isempty(user_input)
-    subsequence_type = 'digit';
-end
 hndls.hfg.UserData = [];
 
 if isempty(user_input)
     user_input = hndls.ts.hax{1}.UserData;
     hndls.ts.hax{1}.UserData = [];
-    if ~isempty(user_input) && isempty(subsequence_type)
-        subsequence_type = 'click';
-    end
 end
 
 if isempty(user_input)
@@ -71,9 +58,6 @@ if isempty(user_input)
         hndls.st.hol{j}.UserData = [];
         if ~isempty(user_input)
             user_input = [user_input j];
-            if isempty(subsequence_type)
-                subsequence_type = 'click';
-            end
             break
         end
     end
@@ -82,12 +66,7 @@ end
 
 if ~isempty(user_input)
 
-    if strcmp(subsequence_type, 'digit')
-        ttl_tmp = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
-    else
-        ttl_tmp = 'CLICKED A PLOT OF CONTEXT, NOTHING WILL HAPPEN'; %default title, in case not overwritten
-    end
-
+    ttl_tmp = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
 
     if any(strcmpi(user_input, plot_buttons))  % pressing enter plots any changes
 
@@ -97,10 +76,8 @@ if ~isempty(user_input)
         end
 
         if ( ~isempty(cbflags.val.roicen) && any(~cellfun(@isempty, cbflags.val.roicen)) ) || ( ~isempty(cbflags.val.i) && any(~cellfun(@isempty, cbflags.val.i)) ) %don't use elseif since there can be v and t changes
-            if any(~cellfun(@isempty, cbflags.val.roicen))
-                cbflags.restart.v = 1;
-                ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
-            end
+            cbflags.restart.v = 1;
+            ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
         end
 
 
@@ -108,22 +85,21 @@ if ~isempty(user_input)
 
         sequence_init = user_input;
         ttl_tmp = ['PRESSED "' sequence_init '", INITIATING SEQUENCE "' sequence_init '", USE DIGITS, CONTEXT BUTTONS, SAVE BUTTONS, OR PLOT CLICKS TO MAKE CHANGES TO "' sequence_init '"'];
-        if strcmpi(user_input, 'v')
-            changed_v = [changed_v 1];
-        elseif strcmpi(user_input, 't')
-            changed_t = [changed_t 1];
-        end
-
         clear pltexp_sequence_t pltexp_sequence_v %clear all sequences' persistent variables after any init button
-
 
     elseif strcmp(sequence_init, 'v')
 
-        [subsequence_type, ttl_tmp, cbflags.val.v, cbflags.val.i, cbflags.val.roicen] = pltexp_sequence_v(user_input, subsequence_type, save_buttons, v_being_changed, roipixindp, varsz);
+        [ttl_tmp, val_v_out, val_i_out, val_roicen_out] = pltexp_sequence_v(user_input, save_buttons, roipixindp, varsz);
+        if ~isempty(val_v_out)
+            cbflags.val.v = [cbflags.val.v val_v_out];
+            cbflags.val.i{cbflags.val.v(end)} = val_i_out;
+            cbflags.val.roicen{cbflags.val.v(end)} = val_roicen_out;
+        end
+
 
     elseif strcmp(sequence_init, 't')
 
-        [subsequence_type, ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(user_input, subsequence_type, save_buttons, sampinc, ti, tinds_use);
+        [ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(user_input, save_buttons, sampinc, ti, tinds_use);
 
     end
 
