@@ -15,7 +15,7 @@ gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently ca
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top 
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis 
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
-sampinc = 1; %sample increment per gif frame
+sampinc = 5; %sample increment per gif frame
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
@@ -115,7 +115,7 @@ while plotloop %loop is shut off if no user inputa2
             end
 
 
-            fngif = make_filename(labstmp, gif_scope, varinds, epochstring{ecount}, fngif_prefix, timestr_use);
+            fngif = make_filename(labstmp, gif_scope, varinds, epochstring{ecount}, fngif_prefix_short, timestr_use);
             [roi_index, roi_index_str] = find_roi_index(labstmp);
             figure_title = make_figure_title(fngif_prefix_short, epochstring{ecount}, dtmni, roi_index_str);
             labstmp = process_labels(labstmp, roi_index);
@@ -297,6 +297,7 @@ elseif strcmp(gif_scope, 'allv_eache') %different gif for each epochinds
     fngif_suffix = {'gifscopeepoch', ['e' epochstring.short ]};
 elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
     fngif_suffix = {['L_' strjoin(lab(varinds.left), '_')]; ['R_' strjoin(lab(varinds.right), '_')]; ['e' epochstring.short ]};
+    fngif_suffix = {'eachv_eache'};
 end
 
 fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') '_' timestr '_.gif' ];

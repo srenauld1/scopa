@@ -52,28 +52,28 @@ else
 end
 
 user_input = hndls.hfg.UserData;
-if isempty(subsequence_type)
+if isempty(subsequence_type) && ~any(strcmpi(user_input, init_buttons)) && ~isempty(user_input)
     subsequence_type = 'digit';
 end
 hndls.hfg.UserData = [];
 
 if isempty(user_input)
-    if isempty(subsequence_type)
-        subsequence_type = 'click';
-    end
     user_input = hndls.ts.hax{1}.UserData;
     hndls.ts.hax{1}.UserData = [];
+    if ~isempty(user_input) && isempty(subsequence_type)
+        subsequence_type = 'click';
+    end
 end
 
 if isempty(user_input)
-    if isempty(subsequence_type)
-        subsequence_type = 'click';
-    end
     for j = 1:numel(hndls.st.hol)
         user_input = hndls.st.hol{j}.UserData; %add image index, which is z slice
         hndls.st.hol{j}.UserData = [];
         if ~isempty(user_input)
             user_input = [user_input j];
+            if isempty(subsequence_type)
+                subsequence_type = 'click';
+            end
             break
         end
     end
@@ -96,7 +96,7 @@ if ~isempty(user_input)
             ttl_tmp = 'PRESSED "enter", CHANGING t';
         end
 
-        if ~isempty(cbflags.val.roicen) || ~isempty(cbflags.val.i) %don't use elseif since there can be v and t changes
+        if ( ~isempty(cbflags.val.roicen) && any(~cellfun(@isempty, cbflags.val.roicen)) ) || ( ~isempty(cbflags.val.i) && any(~cellfun(@isempty, cbflags.val.i)) ) %don't use elseif since there can be v and t changes
             if any(~cellfun(@isempty, cbflags.val.roicen))
                 cbflags.restart.v = 1;
                 ttl_tmp = 'PRESSED "enter", CHANGING plot variables';

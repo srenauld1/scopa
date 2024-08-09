@@ -39,7 +39,7 @@ if isstrprop(user_input, 'digit')
         ttl = ['PRESSED ' num2str(tmp_i) ', CONTINUE ENTERING DIGITS, OR PRESS SAVE BUTTON TO USE INPUT VARIABLE #' num2str(tmp_i)];
     end
 
-elseif ( any(strcmpi(user_input, context_buttons)) && strcmp(subsequence_type, 'digit') || strcmp(subsequence_type, 'click') ) && ~isempty(tmp_v) 
+elseif ( any(strcmpi(user_input, context_buttons)) ) || ( isnumeric(user_input) ) && ~isempty(tmp_v) 
 
     if v_not_set
         if ~ismember(tmp_v, 1:size(varsz, 1))
@@ -49,14 +49,14 @@ elseif ( any(strcmpi(user_input, context_buttons)) && strcmp(subsequence_type, '
         v_not_set = 0;
     end
 
-    if strcmp(subsequence_type, 'digit')
+    if isnumeric(user_input) %strcmp(subsequence_type, 'click')
+        tmp_roicen = user_input;
+        ttl = ['CLICKED ' mat2str(vec(tmp_roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
+    else
         if strcmpi(user_input, 'i') && v_being_changed
             ttl = ['PRESSED "i", USE DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(tmp_v)];
             get_i = 1;
         end
-    elseif strcmp(subsequence_type, 'click')
-        tmp_roicen = tmp_click_roicen;
-        ttl = ['CLICKED ' mat2str(vec(tmp_roicen)') ', PRESS "n" TO OVERWRITE OR "a" TO ADD TO EXISTING ROI FOR PLOT VARIABLE #'];
     end
 
 elseif any(strcmpi(user_input, save_buttons)) && ( ~isempty(tmp_i) || ~isempty(tmp_roicen) )

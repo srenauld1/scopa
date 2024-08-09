@@ -7,7 +7,7 @@ cbflags = reset_cbflags([], 'all');
 axsides = fieldnames(varsp);
 
 stack_oneframe = stack(:,:,:,1);
-clear make_roi_overlay %clear persistent variables in make_roi_overlay
+clear make_roi_overlay pltexp_process_callbacks  %clear persistent variables 
 [imroi, imalpha] = make_roi_overlay(stack_oneframe, roipixindp, cols, roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 
 tinds_use = tinds;
@@ -23,7 +23,6 @@ hndls.httl.String{1} = figure_title;
 
 while tloop
 
-    clear pltexp_process_callbacks  %clear persistent variables in pltexp_process_callbacks
     force_do_write_gif = 0;
 
     for fr = 1:numel(tinds_use) %for each sample in chosen subset
@@ -95,6 +94,7 @@ while tloop
             fngif = insertBefore(fngif, '.gif', timestr_ui);
             force_do_write_gif = 1; %when restarting with new tinds, write to gif the first time through
             pause(0.2)
+            clear pltexp_process_callbacks
             break; %exit the t for loop and restart with different t, but same variables
         end
 
