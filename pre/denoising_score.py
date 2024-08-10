@@ -37,6 +37,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
     #choosing the best epoch during stitching (after all epochs have run), rather than early stopping during denoising (once the denoising score starts to rise after reaching a minimum), means you may run denoising for longer than necessary, 
     #but the requested O2 resources will be left unused with early stopping, which hurts your priority score, and the extra time denoising is order hours  
 
+    print("\n\n\finding best denoising epoch")
+
 
     zcnt = [] #can be separate trainset for each z, so start the count up here 
     for pth_trainset in pth_trainset_all: #for all trained models (could be all z slices or each individually)
@@ -108,10 +110,18 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
                         print("\n\n\nafter loading the following denoised slice: \n" + f + "\nwhich is denoised slice #" + str(zcnt[ecnt]) + " (stack slice #" + str(sliceind) + "), the updated denoising score is: " + str(dnsc))
                     else:
                         dnsctmp = np.mean(np.std(ytmpnew[:,:,ecnt], axis=0))
-                        dnsc = np.append(dnsc,dnsctmp)
+                        if zcnt[ecnt]==0: 
+                            dnsc = np.append(dnsc,dnsctmp)
+                        else:
+                            dnsc[ecnt] = dnsctmp
                         print("\n\n\nafter loading the following denoised slice: \n" + f + "\nwhich is denoised slice #" + str(zcnt[ecnt]) + " (stack slice #" + str(sliceind) + "), the updated denoising score is: " + str(dnsc[ecnt]))
+                    
+                    if zcnt[ecnt]!=0:
+                        print(indsin)
 
 
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]
+
+    print("best epoch is epoch #" + str(bestepoch) + " stitching its output tifs together into denoised stack")
     
     return bestepoch

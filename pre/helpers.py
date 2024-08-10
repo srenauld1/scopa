@@ -148,8 +148,6 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     
     else:
   
-        print("\n\n\nstitching together denoised tifs (each tif a single z slice), and writing as one tif")
-
         dims_pre_denoise = md['dims']
         if denoise_volume == 1:
             pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_all/')))
@@ -160,7 +158,15 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1]), dtype='float32') #t y x z
 
 
-        bestepoch = denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg)
+        if np.isscalar(epoch_choose_denoise):
+            print("\n\n\nuser passed only one epoch_choose_denoise, which is epoch #" + str(epoch_choose_denoise) + ", so using that to stitch together denoising stack")
+            bestepoch = epoch_choose_denoise
+        else:
+            bestepoch = denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg)
+
+
+
+        print("\n\n\nstitching together denoised tifs (each tif a single z slice), and writing as one tif")
 
         countz = 0
         for pth_trainset in pth_trainset_all:
