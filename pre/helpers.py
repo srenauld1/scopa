@@ -134,11 +134,11 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
 
 
 
-def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, denoise_epoch_choose):
+def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
 
-  #stitch together denoised slices (tyx) into original size (tzyx)
+    #stitch together denoised slices (tyx) into original size (tzyx)
 
-    numpix_bg = 50 #how many pixels to consider unlabaled background for testing denoising fit 
+    numpix_bg = 30 #how many pixels to consider background (unlabaled)
 
     pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif'
     
@@ -160,7 +160,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1]), dtype='float32') #t y x z
 
 
-        bestepoch = denoising_score(pth_trainset_all, denoise_epoch_choose)
+        bestepoch = denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg)
 
         countz = 0
         for pth_trainset in pth_trainset_all:
@@ -210,7 +210,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
 
 
 
-def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, denoise_epoch_choose):
+def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
 
   #stitch together denoised slices (tyx) into original size (tzyx, with singleton z)
 
@@ -254,7 +254,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
 
             fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder
             for fldr_outtiff in fldr_outtiff_all:
-                if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(denoise_epoch_choose) + '_Iter_*'):
+                if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose_denoise) + '_Iter_*'):
                     pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
                     Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], actual_z_size), dtype='float32') #t y x z
