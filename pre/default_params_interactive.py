@@ -33,7 +33,7 @@ do_stitch = 0
 
 use_background_subtracted = 0 #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
 use_denoised = 1  #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
-epoch_choose_denoise = range(1,num_epochs_denoise+1) #one-indexed, which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py)
+epoch_choose_denoise = range(1,num_epochs_denoise+1) #one-indexed, which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py); if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py)
 
 do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
 len_window_smooth_t_rsc_sec = 0 #gaussian window length in matlab smoothdata for smoothing stack in time prior to removing scan noise (with line by line notch filter) in extremely noisy recordings
