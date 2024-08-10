@@ -207,7 +207,7 @@ for sli = sindz
     [pix_mean_sorted, pix_mean_sort_inds] = sort(mean(pix_timeseries, 2));
     pix_mean_sort_inds_allslice(1:length(pix_mean_sort_inds),sli) = pix_mean_sort_inds;
 
-    [~, kneeidx_mean(sli)] = knee_pt(pix_mean_sorted,[],1);
+    [~, kneeidx_mean(sli)] = knee_pt(pix_mean_sorted,[],1,1);
 
     pix_timeseries_sorted = sort(pix_timeseries, 2);
     pix_timeseries_sorted = pix_timeseries_sorted(pix_mean_sort_inds,:);

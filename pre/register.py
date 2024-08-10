@@ -76,7 +76,8 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     
     Y = Y.astype('uint16')
 
-
+    from denoising_score import denoising_score
+    dnsc = denoising_score(Y)
 
     ########################## BACKGROUND SUBTRACTION (OPTIONAL) ##########################
 

@@ -74,6 +74,8 @@ for spi = 1:numel(pth_stacks_prefix)
             plots_imdata(single(stack(:,:,:,tindz)), [], sindz, tindz, tindz_sub, size(stack), pth_stack_mat)
         end
 
+
+
         if plot_stack_gif
 
             stacktmp_mn = single(mean(stack, 4));
@@ -123,6 +125,23 @@ if plot_stack_gif
     % stackplot{1} = stackplotnew;
     % stackplot{2} = stackplotnew;
 
+
+    % for spi = 1:numel(stackplot)
+    %     [histdt, histx] = hist(stackplot_mn{spi}(:), 1000);
+    %     thrbin_tri = triangle_threshold(histdt, 'R', 1);
+    %     thr_tri = histx(thrbin_tri);
+    %     bdsb = find(stackplot_mn{spi}<thr_tri);
+    %     mntmp = min(stackplot_mn{spi}(:));
+    %     stdtmp = zeros(size(stackplot{spi}, 4), numel(bdsb), 'uint16');
+    %     for fr = 1:size(stackplot{spi}, 4)
+    %         tmpfr = stackplot{spi}(:,:,:,fr);
+    %         stdtmp(fr,:) = tmpfr(bdsb);
+    %         tmpfr(bdsb) = mntmp;
+    %         stackplot{spi}(:,:,:,fr) = tmpfr;
+    %     end
+    %     stdtmp = mean(std(single(stdtmp))); %std over time of "unlabeled" pixels 
+    % end
+
     fngif = [filename_prefix '.gif'];
     cmap = gray(256);
     framenumdims = 3;
@@ -140,6 +159,7 @@ if plot_stack_gif
     index_labels = index_labels(1:3);
     stack2fig(stackplot_mn, fngif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
+    
 
 end
 

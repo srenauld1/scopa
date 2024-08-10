@@ -8,6 +8,7 @@ import os
 from tifffile.tifffile import imwrite, imread
 import shutil
 import mat73
+from denoising_score import denoising_score
 
 
 
@@ -137,6 +138,8 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
 
   #stitch together denoised slices (tyx) into original size (tzyx)
 
+    numpix_bg = 50 #how many pixels to consider unlabaled background for testing denoising fit 
+
     pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif'
     
     if os.path.isfile(pth_tif_write):
@@ -156,6 +159,9 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
 
         Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1]), dtype='float32') #t y x z
 
+
+        bestepoch = denoising_score(pth_trainset_all, denoise_epoch_choose)
+
         countz = 0
         for pth_trainset in pth_trainset_all:
         
@@ -169,7 +175,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
             fldr_outtiff_all = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*', 'E_*'))) #for all epochs that were used for denoising, organize tif files into single folder in 'denoised' folder
             for fldr_outtiff in fldr_outtiff_all:
             
-                if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(denoise_epoch_choose) + '_Iter_*'):
+                if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(bestepoch) + '_Iter_*'):
                     pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
                     for fni,f in enumerate(pth_denoised_singles): #loop over each denoised z slice and reassemble into array matching shape of original 4d volume
@@ -179,9 +185,9 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
                         Ynew = imread(f)
                         if Ynew.dtype!='uint16':
                             print("warning, converting type from " + str(Ynew.dtype))
-                            Ynew = Ynew.astype('uint16')
-                            if np.min(Y)<0 or np.max(Y) > 65535:
+                            if np.min(Ynew)<0 or np.max(Ynew) > 65535:
                                 raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
+                            Ynew = Ynew.astype('uint16')
                         print(Ynew.dtype)
                         print(sliceind)
                         Y[:,:,:,sliceind] = Ynew
@@ -266,9 +272,9 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                             Ynew = imread(f)
                             if Ynew.dtype!='uint16':
                                 print("warning, converting type from " + str(Ynew.dtype))
-                                Ynew = Ynew.astype('uint16')
-                                if np.min(Y)<0 or np.max(Y) > 65535:
+                                if np.min(Ynew)<0 or np.max(Ynew) > 65535:
                                     raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
+                                Ynew = Ynew.astype('uint16')
                             print(Ynew.dtype)
                             print(sliceind)
                             Y[:,:,:,sliceind] = Ynew
