@@ -39,7 +39,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
     #choosing the best epoch during stitching (after all epochs have run), rather than early stopping during denoising (once the denoising score starts to rise after reaching a minimum), means you may run denoising for longer than necessary, 
     #but the requested O2 resources will be left unused with early stopping, which hurts your priority score, and the extra time denoising is order hours  
 
-    #todo: maybe background should be per slice, not whole stack; and probably background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't matter)
+    #todo: maybe background should be per slice, not whole stack;
+    #todo: background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't actually matter); it would simplify the code below to compute background once (on cmrg_.tif) before looping through epochs/slices 
 
     print("\n\n\nFINDING BEST DENOISING EPOCH")
 
@@ -80,25 +81,28 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                         ytmp = ytmp.astype('uint16')
 
 
-                    pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
-                    pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
-                    if not os.path.exists(pth_gif_fldr):
-                        Path(pth_gif_fldr).mkdir(parents=True, exist_ok=True)
-                    plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  
-                    plt.close('all')
+                    # pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
+                    # pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
+                    # if not os.path.exists(pth_gif_fldr):
+                    #     Path(pth_gif_fldr).mkdir(parents=True, exist_ok=True)
+                    # plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  
+                    # plt.close('all')
 
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)
-                    srti = srti[:numpix_bg] #numpix_bg pixels with smallest intensity         
+                    srti = srti[:numpix_bg] #numpix_bg pixels with smallest intensity     
+                    srtiz = srti+mnt.size*zcnt[ecnt]    
                     srtv = mnt[np.unravel_index(srti, mnt.shape)]
                     ytmp = ytmp.reshape(ytmp.shape[0],-1)
                     ytmp = ytmp[:,srti]
                     if zcnt[ecnt]==0: #the first slice for its epoch
                         if ecnt==0:
+                            runtot_inds = srtiz
                             runtot_val = srtv
                             ytmpnew = ytmp
                         else:
+                            runtot_inds=np.column_stack((runtot_inds, srtiz))
                             runtot_val=np.column_stack((runtot_val, srtv))
                             ytmpnew=np.dstack((ytmpnew, ytmp))
                     else:
@@ -112,9 +116,11 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                         indsin = topinds[topinds >= numpix_bg] - numpix_bg
                         indsout = botinds[botinds < numpix_bg]
                         if ecnt==0:
+                            runtot_inds[indsout] = srtiz[indsin]
                             runtot_val[indsout] = srtv[indsin]
                             ytmpnew[:,indsout] = ytmp[:,indsin]
                         else:
+                            runtot_inds[indsout,ecnt] = srtiz[indsin]
                             runtot_val[indsout,ecnt] = srtv[indsin]
                             ytmpnew[:,indsout,ecnt] = ytmp[:,indsin]
                     if ecnt==0:
@@ -128,14 +134,23 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                             dnsc[ecnt] = dnsctmp
                         print("\n\n\nAFTER LOADING THE FOLLOWING DENOISED SLICE: \n" + f + "\nWHICH IS DENOISED SLICE #" + str(zcnt[ecnt]) + " (STACK SLICE #" + str(sliceind) + "), THE UPDATED DENOISING SCORE IS: " + str(dnsc[ecnt]))
                     
-                    # if zcnt[ecnt]!=0:
-                    #     print(indsin) #print inds that are going into cumulative record
 
 
+    # for ei in np.arange(runtot_inds.shape[1]): #make sure background inds don't vary too much across epochs (in future just derive background from stack before denoising, but for now make sure background is fairly stable across epochs, which it seems to be so far)
+    #     tmpinds = np.unravel_index(runtot_inds[:,ei], (mnt.shape[:]+ (dims_pre_denoise[1],)))
+    #     print("epoch " + str(ei) + " x inds")
+    #     print(tmpinds[0])
+    #     print("epoch " + str(ei) + " y inds")
+    #     print(tmpinds[1])
+    #     print("epoch " + str(ei) + " z inds")
+    #     print(tmpinds[2])
+            
+    epoch_choose_denoise = list(epoch_choose_denoise)
     for ei, zi in enumerate(zcnt):
         if zi != dims_pre_denoise[1]-1:
-            raise Exception("not all slices present in epoch " + str(epoch_choose_denoise[ei]))
-        
+            print("not all slices present in epoch " + str(epoch_choose_denoise[ei]) + "removing it from consideration")
+            dnsc[ei] = np.max(dnsc)+1 #make incomplete epoch denoising score bigger than max so it can't be chosen as best epoch
+
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]
 
     print("\n\n\nBEST EPOCH IS EPOCH #" + str(bestepoch) + " STITCHING ITS OUTPUT TIFS TOGETHER INTO DENOISED STACK")
