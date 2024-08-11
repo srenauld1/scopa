@@ -67,7 +67,7 @@ LEN_WINDOW_SMOOTH_T_MCP_SEC=(0) #seconds, gaussian temporal smoothing window len
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
 NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
-EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs, or EPOCH_CHOOSE_DENOISE=(2 3 7) for subset, or EPOCH_CHOOSE_DENOISE=(2) for one; denoising epoch used going forward, denoised stack saved as tif with suffix dcdn; one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, this is faster than rerunning denoising, but still stupid, make an override existing option that will overwrite) 
+EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward, denoised stack saved as tif with suffix dcdn; one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); TODO: epoch is not saved in filename, meaning you have to delete or move existing dcdn_.tif and rerun with different EPOCH_CHOOSE_DENOISE if you want to use different epoch, this is faster than rerunning denoising, but still stupid, make an override existing option that will overwrite) 
 
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
 USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif); if it doesn't exist, won't error
@@ -209,7 +209,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
 
         requeue_str=--begin=now #don't change this dummy variable, only overwritten if using the gpu_requeue partition 
         gres_str=--begin=now #this is a dummy string to make gres_str work properly for all jobs (denoising with dnp.sbatch, when gres_str is actully functional by setting gpu, and otherwise, when this dummy string is used to make the job begin "now", which is default anyway . . . empty string doesn't work)
-        if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then
+        if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then #do_copyfiles 1 or 2
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
             time_str=00:10:00
@@ -218,8 +218,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             mem_per_cpu_str=5G
         else
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
-            if [ "$sbatch_job_name" == mcp.sbatch ]; then
-                partition_str=short #use transfer partition if do_copyfiles==1
+            if [ "$sbatch_job_name" == mcp.sbatch ]; then #do_register
+                partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=00:30:00
                 ntasks_str=1
                 if [ "${HALFWIDTH_WINDOW_BGSUB[@]}" == 0 ]; then #use less memory if no bg subtraction
@@ -229,8 +229,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                     cpus_per_task_str=5
                     mem_per_cpu_str=7G
                 fi
-            elif [ "$sbatch_job_name" == dnp.sbatch ]; then 
-                partition_str=$gpu_partition #use transfer partition if do_copyfiles==1
+            elif [ "$sbatch_job_name" == dnp.sbatch ]; then #do_denoise
+                partition_str=$gpu_partition #use transfer partition if do_copyfiles==1 or 2
                 time_str=$gpu_time
                 ntasks_str=1
                 cpus_per_task_str=4
@@ -239,26 +239,26 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 
                 fi 
-            elif [ "$sbatch_job_name" == stc.sbatch ]; then
-                partition_str=short #use transfer partition if do_copyfiles==1
+            elif [ "$sbatch_job_name" == stc.sbatch ]; then #do_stitch
+                partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=00:15:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=20G
-            elif [ "$sbatch_job_name" == rsc.sbatch ]; then 
-                partition_str=short #use transfer partition if do_copyfiles==1
+                mem_per_cpu_str=15G
+            elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
+                partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=11:40:00 #11:40:00
                 ntasks_str=1
                 cpus_per_task_str=5
                 mem_per_cpu_str=12G
-            elif [ "$sbatch_job_name" == exp.sbatch ]; then 
-                partition_str=short #use transfer partition if do_copyfiles==1
+            elif [ "$sbatch_job_name" == exp.sbatch ]; then #do_extract
+                partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=01:30:00
                 ntasks_str=1
                 cpus_per_task_str=1
                 mem_per_cpu_str=20G
-            elif [ "$sbatch_job_name" == a2p.sbatch ]; then 
-                partition_str=short #use transfer partition if do_copyfiles==1
+            elif [ "$sbatch_job_name" == a2p.sbatch ]; then  #do_analysis
+                partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=02:00:00
                 ntasks_str=1
                 cpus_per_task_str=5

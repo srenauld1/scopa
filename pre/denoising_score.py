@@ -122,6 +122,6 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
 
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]
 
-    print("best epoch is epoch #" + str(bestepoch) + " stitching its output tifs together into denoised stack")
+    print("\n\n\nbest epoch is epoch #" + str(bestepoch) + " stitching its output tifs together into denoised stack")
     
     return bestepoch

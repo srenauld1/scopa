@@ -160,7 +160,10 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
 
         if np.isscalar(epoch_choose_denoise) or len(epoch_choose_denoise)==1:
             print("\n\n\nuser passed only one epoch_choose_denoise, which is epoch #" + str(epoch_choose_denoise) + ", so using that to stitch together denoising stack")
-            bestepoch = epoch_choose_denoise
+            if len(epoch_choose_denoise)==1:
+                bestepoch = epoch_choose_denoise[0]
+            else:
+                bestepoch = epoch_choose_denoise
         else:
             bestepoch = denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg)
 
