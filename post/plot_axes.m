@@ -20,7 +20,6 @@ tloop = 1;
 hndls.httl.String{1} = figure_title;
 
 
-
 while tloop
 
     force_do_write_gif = 0;

@@ -152,7 +152,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     CLI.add_argument(
         "--epoch_choose_denoise",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
-        type=int,
+        type=str,
         default=[epoch_choose_denoise],  # default if nothing is provided
     )
     CLI.add_argument(
@@ -349,13 +349,12 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     use_background_subtracted = int(args.use_background_subtracted[0])
     use_denoised = int(args.use_denoised[0])
     use_scannoise_removed = int(args.use_scannoise_removed[0])
-    epoch_choose_denoise = int(args.epoch_choose_denoise[0])
-    
+
     if isinstance(args.epoch_choose_denoise[0], list):
         epoch_choose_denoise = args.epoch_choose_denoise[0] #keep as list
     else:
         epoch_choose_denoise = args.epoch_choose_denoise #keep as list
-    epoch_choose_denoise = [int(ri) for ri in epoch_choose_denoise] #convert to int if not 'all'
+    epoch_choose_denoise = [int(ri) for ri in epoch_choose_denoise] #make sure int
     
     do_remove = int(args.do_remove[0])
     len_window_smooth_t_rsc_sec = float(args.len_window_smooth_t_rsc_sec[0])
