@@ -42,9 +42,9 @@ if isstrprop(user_input, 'digit') || isnumeric(user_input)
         ttl = ['PRESSED ' num2str(tmp_tstart) ', PRESS MORE DIGITS FOR t START, OR PRESS HYPHEN TO ALLOW t END SELECTION'];
     end
 
-elseif any(strcmpi(user_input, context_buttons)) && ~isempty(subsequence_type)
+elseif any(strcmpi(user_input, context_buttons)) 
 
-    if strcmpi(user_input, 'hyphen')
+    if strcmpi(user_input, 'hyphen') && strcmp(subsequence_type, 'keyboard')
         if ~isempty(tmp_tstart)
             if tmp_tstart<min(ti)
                 ttl = ['CHOSEN t START ' num2str(tmp_tstart) ' IS LESS THAN AVAILABLE MIN t ' num2str(min(ti)) '; MAKING THIS t start EMPTY'];
@@ -57,14 +57,15 @@ elseif any(strcmpi(user_input, context_buttons)) && ~isempty(subsequence_type)
                 get_tend = 1;
             end
         end
-    elseif strcmpi(user_input, 's')
+    elseif strcmpi(user_input, 's') && isempty(subsequence_type)
         ttl = 'PRESSED "s", NOW USE DIGITS TO CHOOSE SAMPINC (SAMPLE INCREMENT, NOT SECONDS)';
         get_sampinc = 1;
+        subsequence_type = 'sampinc';
     end
 
 elseif any(strcmpi(user_input, save_buttons))
 
-    if tmp_sampinc
+    if tmp_sampinc && strcmp(subsequence_type, 'sampinc')
 
         if strcmpi(user_input, 'n')
             val_sampinc_tmp = tmp_sampinc;
@@ -73,7 +74,7 @@ elseif any(strcmpi(user_input, save_buttons))
             ttl = 'FOR CHANGING SAMPINC, ONLY SAVE BUTTON "n" IS ALLOWED';
         end
 
-    else
+    elseif tmp_tend && ( strcmp(subsequence_type, 'keyboard') || strcmp(subsequence_type, 'click') )
 
         if tmp_tend>max(ti)
             ttl = ['CHOSEN t END ' num2str(tmp_tend) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(ti))];

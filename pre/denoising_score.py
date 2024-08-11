@@ -9,7 +9,7 @@ from plot_gif import plot_gif
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_frames, pth_tif_read, dims_pre_denoise):
+def denoising_score(pth_trainset_all, epoch_choose_denoise, pth_tif_read, dims_pre_denoise):
 
 
     #this function defines the best epoch as the epoch with the smallest standard deviation in the background (in theory, background is unlabaled brain) 
@@ -43,7 +43,9 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
     #todo: background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't actually matter); it would simplify the code below to compute background once (on cmrg_.tif) before looping through epochs/slices 
 
     print("\n\n\nFINDING BEST DENOISING EPOCH")
-
+    
+    numpix_bg = 300 #how many pixels to consider background (unlabeled brain)
+    num_gif_frames = 50 #how many frames of each epoch, each z slice to plot in gif for comparison of epochs after best epoch is selected in denoising_score (gifs only plotted if code enters denoising_score, ie if len(epoch_choose_denoise)>1 )
     do_plot_gif = 1 #plot sample gifs of all epochs all slices, to visually inspect and be sure best epoch is chosen
 
     zcnt = [] #can be separate trainset for each z, so start the count up here 
@@ -81,6 +83,9 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                         if np.min(ytmp)<0 or np.max(ytmp) > 65535:
                             raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
                         ytmp = ytmp.astype('uint16')
+
+                    # if zcnt[ecnt]==4:
+                    #     dnsc_override = np.mean(np.std(ytmp[:,50:60,100:115], axis=0))
 
                     if do_plot_gif:
                         pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
@@ -136,6 +141,12 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                         print("\n\n\nAFTER LOADING THE FOLLOWING DENOISED SLICE: \n" + f + "\nWHICH IS DENOISED SLICE #" + str(zcnt[ecnt]) + " (STACK SLICE #" + str(sliceind) + "), THE UPDATED DENOISING SCORE IS: " + str(dnsc[ecnt]))
                     
 
+                    # if zcnt[ecnt]==dims_pre_denoise[1]-1:
+                    #     print("\n\n\nOVERRIDING WITH SCORE: " + str(dnsc_override))
+                    #     if ecnt==0:
+                    #         dnsc = dnsc_override
+                    #     else:
+                    #         dnsc[ecnt] = dnsc_override
 
     # for ei in np.arange(runtot_inds.shape[1]): #make sure background inds don't vary too much across epochs (in future just derive background from stack before denoising, but for now make sure background is fairly stable across epochs, which it seems to be so far)
     #     tmpinds = np.unravel_index(runtot_inds[:,ei], (mnt.shape[:]+ (dims_pre_denoise[1],)))
@@ -149,7 +160,7 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
     epoch_choose_denoise = list(epoch_choose_denoise)
     for ei, zi in enumerate(zcnt):
         if zi != dims_pre_denoise[1]-1:
-            print("not all slices present in epoch " + str(epoch_choose_denoise[ei]) + "removing it from consideration")
+            print("not all slices present in epoch " + str(epoch_choose_denoise[ei]) + ", removing it from consideration")
             dnsc[ei] = np.max(dnsc)+1 #make incomplete epoch denoising score bigger than max so it can't be chosen as best epoch
 
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]

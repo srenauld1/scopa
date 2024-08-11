@@ -29,7 +29,7 @@ len_window_smooth_t_mcp_sec = 0 #smoothing window length, uses 1d gaussian with 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all' (all z slices) or selected integer strings . . . which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
-num_epochs_denoise = 5 #how many denoising epochs to run, by defult saves model after each epoch 
+num_epochs_denoise = 10 #how many denoising epochs to run, by defult saves model after each epoch 
 
 do_stitch = 0
 
