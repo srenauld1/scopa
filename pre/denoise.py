@@ -92,7 +92,6 @@ import shutil
 import numpy as np
 import fnmatch
 from natsort import natsorted
-from helpers import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
 
 from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
