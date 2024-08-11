@@ -16,6 +16,7 @@ if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
     cbflags.val.i = [];
     cbflags.val.roicen = [];
     cbflags.val.tinds = [];
+    cbflags.val.sampinc = [];
 end
 
 if any(strcmp('delete', varargin)) || any(strcmp('all', varargin))

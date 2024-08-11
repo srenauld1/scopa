@@ -86,7 +86,7 @@ while tloop
         end
         if cbflags.restart.t==1
             tloop = 1;
-            tinds_use = cbflags.val.tinds;
+            tinds_use = cbflags.val.tinds(1):cbflags.val.sampinc:cbflags.val.tinds(end);
             cbflags.restart.t = [];
             framecount = 0;
             fngif = erase(fngif, timestr_ui); %make sure timestr is not present, otherwise you'll accumulate with insertBefore

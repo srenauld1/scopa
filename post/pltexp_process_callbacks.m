@@ -99,7 +99,7 @@ if ~isempty(user_input)
 
     elseif strcmp(sequence_init, 't')
 
-        [ttl_tmp, cbflags.val.tinds] = pltexp_sequence_t(user_input, save_buttons, sampinc, ti, tinds_use);
+        [ttl_tmp, cbflags.val.tinds, cbflags.val.sampinc] = pltexp_sequence_t(user_input, save_buttons, sampinc, ti, tinds_use, sampinc_use);
 
     end
 

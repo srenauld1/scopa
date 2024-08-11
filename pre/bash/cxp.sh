@@ -33,6 +33,7 @@ do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and sti
 
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
@@ -42,10 +43,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 #matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 
-
-
 #BASH LISTS BELOW MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
-
 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
@@ -242,10 +240,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 fi 
             elif [ "$sbatch_job_name" == stc.sbatch ]; then #do_stitch
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=00:20:00
+                time_str=00:25:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=8G
+                mem_per_cpu_str=12G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=11:40:00 #11:40:00
