@@ -50,9 +50,9 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('202408*')
-FLY=('*')
-TRIAL=('*')
+RECDATE=('20230627')
+FLY=('2')
+TRIAL=('2')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
@@ -67,7 +67,7 @@ LEN_WINDOW_SMOOTH_T_MCP_SEC=(0) #seconds, gaussian temporal smoothing window len
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
-NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
+NUM_EPOCHS_DENOISE=(10) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward in the pipeline, chosen epoch's z slices stitched into stack and saved as tif with suffix dcdn (in stc.sbatch, called by do_stich); one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); will overwrite existing dcdn stack if you run on same data more than once 
 
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
@@ -83,11 +83,11 @@ INDEX_EXTRACTION_PARAM_SET=('default')
 
 ############ SET PARAMS FOR RESOURCE REQUEST ############
 
-gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+#gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
 # gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
 # gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
 #gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
-#gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
 #gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
 # gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
 # this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
