@@ -8,11 +8,11 @@ from tifffile.tifffile import imread
 from vis import plot_gif
 
 
-def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, pth_gif_prefix):
+def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_frames, pth_gif_prefix):
 
 
     #this function defines the best epoch as the epoch with the smallest standard deviation in the background (in theory, background is unlabaled brain) 
-
+    #also plots gif num_gif_frames of each epoch in epoch_choose_denoise, each z slice, 
     #this function defines background as a set of numpix_bg pixels with the lowest time-averaged intensity, 
     #the background set is updated as slices are loaded
     #the denoising score derived from the background set is also updated as slices are loaded
@@ -37,6 +37,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, pth_gif_p
 
     #choosing the best epoch during stitching (after all epochs have run), rather than early stopping during denoising (once the denoising score starts to rise after reaching a minimum), means you may run denoising for longer than necessary, 
     #but the requested O2 resources will be left unused with early stopping, which hurts your priority score, and the extra time denoising is order hours  
+
+    #todo: maybe background should be per slice, not whole stack; and probably background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't matter)
 
     print("\n\n\finding best denoising epoch")
 
@@ -78,7 +80,7 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, pth_gif_p
                         ytmp = ytmp.astype('uint16')
 
                     pth_gif = pth_gif_prefix + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
-                    plot_gif(ytmp, pth_gif, indst = slice(0, 50, 1), indimord='yx')  
+                    plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1), indimord='yx')  
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)

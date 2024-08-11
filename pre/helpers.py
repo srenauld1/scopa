@@ -139,6 +139,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     #stitch together denoised slices (tyx) into original size (tzyx)
 
     numpix_bg = 30 #how many pixels to consider background (unlabaled)
+    num_gif_frames = 50 #how many frames of each epoch, each z slice to plot in gif for comparison of epochs after best epoch is selected in denoising_score (gifs only plotted if code enters denoising_score, ie if len(epoch_choose_denoise)>1 )
 
     pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif'
     pth_gif_prefix = pth_tif_read[:-4]
@@ -162,7 +163,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         else:
             bestepoch = epoch_choose_denoise
     else:
-        bestepoch = denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, pth_gif_prefix)
+        bestepoch = denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_frames, pth_gif_prefix)
 
 
     print("\n\n\nstitching together denoised tifs (each tif a single z slice), and writing as one tif")
