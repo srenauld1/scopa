@@ -7,8 +7,9 @@ import fnmatch
 from tifffile.tifffile import imread
 from plot_gif import plot_gif
 import matplotlib.pyplot as plt
+from pathlib import Path
 
-def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_frames, pth_gif_prefix):
+def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_frames, pth_tif_read, dims_pre_denoise):
 
 
     #this function defines the best epoch as the epoch with the smallest standard deviation in the background (in theory, background is unlabaled brain) 
@@ -42,9 +43,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
 
     print("\n\n\nFINDING BEST DENOISING EPOCH")
 
-
     zcnt = [] #can be separate trainset for each z, so start the count up here 
-    for pth_trainset in pth_trainset_all: #for all trained models (could be all z slices or each individually)
+    for pth_trainset in pth_trainset_all: #for all trained models (could be all z slices in one model or each z slice individually)
     
         fldr_chex = natsorted(glob.glob(os.path.join(pth_trainset, 'DataFolderIs_*')))
         for fcxi,fcx in enumerate(fldr_chex):
@@ -79,9 +79,14 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                             raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
                         ytmp = ytmp.astype('uint16')
 
-                    pth_gif = pth_gif_prefix + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
+
+                    pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
+                    pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
+                    if not os.path.exists(pth_gif_fldr):
+                        Path(pth_gif_fldr).mkdir(parents=True, exist_ok=True)
                     plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  
                     plt.close('all')
+
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)
@@ -127,6 +132,10 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                     #     print(indsin) #print inds that are going into cumulative record
 
 
+    for ei, zi in enumerate(zcnt):
+        if zi != dims_pre_denoise[1]-1:
+            raise Exception("not all slices present in epoch " + str(epoch_choose_denoise[ei]))
+        
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]
 
     print("\n\n\nBEST EPOCH IS EPOCH #" + str(bestepoch) + " STITCHING ITS OUTPUT TIFS TOGETHER INTO DENOISED STACK")

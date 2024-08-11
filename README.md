@@ -109,7 +109,8 @@ for running the pipeline in interactive mode . . .
         entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
         if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 
-                install, you can still step through the code during debugging in vscode if you add this line to file launch.json, which is in hidden folder .vscode, in the scopa repo 
+                install, you can still step through the code during debugging in vscode if you add this line to file 
+                launch.json, which is in hidden folder .vscode, in the scopa repo 
                         "justMyCode": false
                 in general this is how you step through 3rd-party libraries during debugging in VS code, the dev mode install let's you step into code without adding this line, and makes changing the code easier
                 the shared caiman on O2 is dev mode, so you don't need this line on o2 
@@ -151,7 +152,7 @@ for caiman registration or source extraction:
                 conda activate caiman
 
 
-for deepcad denoising:
+for deepcad denoising (if you want to step into deepcad code during VSCode debugging, make "justMyCode": false in launch.json):
 
         Additional modules to be preloaded:
                 gcc/9.2.0 python/3.9.14 cuda/11.7

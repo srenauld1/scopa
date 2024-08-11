@@ -25,7 +25,7 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
+do_denoise=0 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
 do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_analysis)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
@@ -242,10 +242,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 fi 
             elif [ "$sbatch_job_name" == stc.sbatch ]; then #do_stitch
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=00:15:00
+                time_str=00:20:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=15G
+                mem_per_cpu_str=8G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=11:40:00 #11:40:00
