@@ -25,11 +25,12 @@
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
 do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=0 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
-do_stitch=1
+do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
+do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_analysis)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
+
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
@@ -97,7 +98,7 @@ if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then
     gpu_time=12:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
     gpu_partition=gpu_requeue
-    gpu_time=8:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    gpu_time=10:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
     gpu_partition=gpu_quad 
     gpu_time=6:00:00
@@ -233,8 +234,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=$gpu_partition #use transfer partition if do_copyfiles==1 or 2
                 time_str=$gpu_time
                 ntasks_str=1
-                cpus_per_task_str=4
-                mem_per_cpu_str=4G
+                cpus_per_task_str=2
+                mem_per_cpu_str=8G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 

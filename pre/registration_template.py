@@ -12,7 +12,8 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 
 from configs import configs
-from vis import im_montage, plot_gif
+from im_montage import im_montage
+from plot_gif import plot_gif
 
 
 def find_registration_template(Y, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, movie_is_4d, makeplots):

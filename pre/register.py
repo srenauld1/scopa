@@ -10,7 +10,8 @@ from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising,
 from registration_template import find_registration_template
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
-from vis import im_montage, plot_gif
+from im_montage import im_montage
+from plot_gif import plot_gif
 from spatial_downsample_fictrac_video import spatial_downsample_fictrac_video
 
 

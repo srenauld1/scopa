@@ -5,7 +5,7 @@ import os
 import shutil
 import fnmatch
 from tifffile.tifffile import imread
-from vis import plot_gif
+from plot_gif import plot_gif
 
 
 def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_frames, pth_gif_prefix):
@@ -80,7 +80,7 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                         ytmp = ytmp.astype('uint16')
 
                     pth_gif = pth_gif_prefix + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
-                    plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1), indimord='yx')  
+                    plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)

@@ -1,86 +1,10 @@
 
 import numpy as np
-import time
 import caiman as cm
 
-import matplotlib
-from matplotlib import colors
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-
-from skimage.util import montage
     
 from caiman.summary_images import local_correlations_movie_offline
-
-
-def im_montage(images, vmin=None, vmax=None):
-
-    # if you don't pass vmin and vmax each subfigure will be normalized to its own min/max
-
-    numim = images.shape[-1]
-    
-    Nc = 3
-    Nr = int(np.ceil(numim/Nc))
-    fig, ax = plt.subplots(Nr, Nc)
-    for i in range(numim):
-        indies = np.unravel_index(i, (Nr,Nc))
-        ax[indies[0],indies[1]].imshow(images[:,:,i].T, vmin=vmin, vmax=vmax)
-        ax[indies[0],indies[1]].axis('off')
-    
-    # print("create zlimits and assign value")
-    # input("Press Enter to continue...")
-    #plt.close('all')
-
-
-def plot_gif(data, filename_gif, indsx = None, indsy = None, indsz = None, indst = None, indimord = 'xy'):
-
-    # by default (indimord = 'xy'), input movie "data" is assumed to be txyz if 4d, or txy if 3d
-    # if indimord='yx', data is assumed to be tyxz if 4d, or tyx if 3d
-
-    if indst==None:
-        indst = slice(0, data.shape[0], 1) 
-    if indsx==None:
-        indsx = slice(0, data.shape[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
-    if indsy==None:
-        indsy = slice(0, data.shape[2], 1) 
-    if len(data.shape)==4:
-        if indsz==None:
-            indsz = slice(0, data.shape[3], 1) 
-
-    if len(data.shape)==4:
-        data = data[indst,indsx,indsy,indsz]
-        if indimord == 'xy':
-            data = np.transpose(data, (0, 3, 2, 1)) #put in order (tz) y x
-        elif indimord == 'yx':
-            data = np.transpose(data, (0, 3, 1, 2)) #put in order (tz) y x
-        data = data.reshape(data.shape[0]*data.shape[1], data.shape[2], data.shape[3])
-    else:
-        data = data[indst,indsx,indsy]
-        if indimord == 'xy':
-            data = np.transpose(data, (0, 2, 1)) #put in order (tz) y x
-
-
-    data = data - np.min(data)
-
-    mnmv = np.min(data)
-    mxmv = np.max(data)
-
-    #matplotlib.use("Agg")
-
-    def update_im(num, data, img):
-        img.set_data(data[num,:,:])
-        return img,
-
-    Writer = animation.writers['ffmpeg']
-    writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=100)
-
-    fig1 = plt.figure()
-    img = plt.imshow(data[0,:,:], vmin=mnmv, vmax=mxmv)
-
-    plt.title('test')
-    fram = np.arange(1,data.shape[0])
-    line_ani = animation.FuncAnimation(fig1, update_im, fram, fargs=(data, img), interval=50, blit=True)
-    line_ani.save(filename_gif, writer=writer)
 
 
 def caiman_plots_all(cnm, opts, images_sliced, dims_spatial, extract_in_2d, pth_results):

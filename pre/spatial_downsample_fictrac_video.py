@@ -2,7 +2,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from vis import plot_gif
+from plot_gif import plot_gif
 import scipy.io as sio
 
 def spatial_downsample_fictrac_video(pth_ftvid, pth_prefix, makeplots):

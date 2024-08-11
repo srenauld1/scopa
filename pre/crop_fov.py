@@ -2,7 +2,7 @@
 
 import numpy as np
 import glob
-from vis import im_montage 
+from im_montage import im_montage 
 import matplotlib.pyplot as plt
 from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
