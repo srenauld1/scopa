@@ -8,7 +8,7 @@ from tifffile.tifffile import imread
 from vis import plot_gif
 
 
-def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
+def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, pth_gif_prefix):
 
 
     #this function defines the best epoch as the epoch with the smallest standard deviation in the background (in theory, background is unlabaled brain) 
@@ -77,8 +77,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
                             raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
                         ytmp = ytmp.astype('uint16')
 
-                    # filename_gif = f[:-4] + '.gif'
-                    # plot_gif(ytmp, filename_gif, indst = slice(0, 50, 1))  
+                    pth_gif = pth_gif_prefix + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
+                    plot_gif(ytmp, pth_gif, indst = slice(0, 50, 1), indimord='yx')  
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)
@@ -120,8 +120,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
                             dnsc[ecnt] = dnsctmp
                         print("\n\n\nafter loading the following denoised slice: \n" + f + "\nwhich is denoised slice #" + str(zcnt[ecnt]) + " (stack slice #" + str(sliceind) + "), the updated denoising score is: " + str(dnsc[ecnt]))
                     
-                    if zcnt[ecnt]!=0:
-                        print(indsin)
+                    # if zcnt[ecnt]!=0:
+                    #     print(indsin) #print inds that are going into cumulative record
 
 
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]
