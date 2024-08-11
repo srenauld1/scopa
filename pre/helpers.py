@@ -9,7 +9,6 @@ from denoising_score import denoising_score
 
 
 
-
 def rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires):
 
     if re.search('trial', fname) or re.search('stackraw', fname):
@@ -46,7 +45,6 @@ def rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires):
         
 
     return (pth_readfile, fname, pth_hires)
-
 
 
 def mat2tif_scopa(pth_readfile, carls_old_project):
@@ -88,15 +86,12 @@ def mat2tif_scopa(pth_readfile, carls_old_project):
     return mat_file_shape
             
 
-
-
 def ordinal(n: int):
     if 11 <= (n % 100) <= 13:
         suffix = 'th'
     else:
         suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
     return str(n) + suffix
-
 
 
 def tracefunc(frame, event, arg, indent=[0]): # can get line number with frame.f_lineno

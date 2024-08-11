@@ -8,7 +8,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from vis import caiman_plots_all
+from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
 
 

@@ -9,6 +9,8 @@ if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then #no need to load a
     echo "COPYING FILES (NOT DOING ANALYSIS) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
 else #load virtual env if not copying files
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
+    eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
+    conda activate caiman #should not have to activate caiman for do_stitch but ffmpeg does not work when i remove this; should fix this but doens't really matter
 fi
 
 /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3 $PARENDIR/pipeline_init.py \

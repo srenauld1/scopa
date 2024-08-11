@@ -7,7 +7,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
 from helpers import tracefunc 
-from z_stitch import stitch_registered_z_slices 
+from z_stitch import stitch_registered_slices 
 from registration_template import find_registration_template
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
@@ -205,7 +205,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
         if (register_in_2d and si==sliceindz[-1]) or not register_in_2d: #on final slice, if register_in_2d, or if 3d register
             Ynew = None
-            Ynew = stitch_registered_z_slices(pth_tif_write, md['dims']) #output is all slices, txyz
+            Ynew = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
 
         countz = countz + 1
 

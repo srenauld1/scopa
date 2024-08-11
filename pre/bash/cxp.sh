@@ -95,16 +95,16 @@ gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
 
 if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then 
     gpu_partition=gpu_requeue
-    gpu_time=12:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
     gpu_partition=gpu_requeue
-    gpu_time=10:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    gpu_time=12:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
     gpu_partition=gpu_quad 
-    gpu_time=6:00:00
+    gpu_time=9:00:00
 elif [ "$gpu_to_use" == a100:1,vram:80G ]; then 
     gpu_partition=gpu_quad 
-    gpu_time=3:00:00
+    gpu_time=4:30:00
 fi
 
 
@@ -235,7 +235,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=$gpu_time
                 ntasks_str=1
                 cpus_per_task_str=2
-                mem_per_cpu_str=8G
+                mem_per_cpu_str=6G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 

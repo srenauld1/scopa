@@ -40,7 +40,7 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
 
     #todo: maybe background should be per slice, not whole stack; and probably background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't matter)
 
-    print("\n\n\finding best denoising epoch")
+    print("\n\n\nFINDING BEST DENOISING EPOCH")
 
 
     zcnt = [] #can be separate trainset for each z, so start the count up here 
@@ -113,14 +113,14 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                             ytmpnew[:,indsout,ecnt] = ytmp[:,indsin]
                     if ecnt==0:
                         dnsc = np.mean(np.std(ytmpnew, axis=0)) #denoising score, average std in unlabaled brain (underfit and overfit are higher than "optimal model")
-                        print("\n\n\nafter loading the following denoised slice: \n" + f + "\nwhich is denoised slice #" + str(zcnt[ecnt]) + " (stack slice #" + str(sliceind) + "), the updated denoising score is: " + str(dnsc))
+                        print("\n\n\nAFTER LOADING THE FOLLOWING DENOISED SLICE: \n" + f + "\nWHICH IS DENOISED SLICE #" + str(zcnt[ecnt]) + " (STACK SLICE #" + str(sliceind) + "), THE UPDATED DENOISING SCORE IS: " + str(dnsc))
                     else:
                         dnsctmp = np.mean(np.std(ytmpnew[:,:,ecnt], axis=0))
                         if zcnt[ecnt]==0: 
                             dnsc = np.append(dnsc,dnsctmp)
                         else:
                             dnsc[ecnt] = dnsctmp
-                        print("\n\n\nafter loading the following denoised slice: \n" + f + "\nwhich is denoised slice #" + str(zcnt[ecnt]) + " (stack slice #" + str(sliceind) + "), the updated denoising score is: " + str(dnsc[ecnt]))
+                        print("\n\n\nAFTER LOADING THE FOLLOWING DENOISED SLICE: \n" + f + "\nWHICH IS DENOISED SLICE #" + str(zcnt[ecnt]) + " (STACK SLICE #" + str(sliceind) + "), THE UPDATED DENOISING SCORE IS: " + str(dnsc[ecnt]))
                     
                     # if zcnt[ecnt]!=0:
                     #     print(indsin) #print inds that are going into cumulative record
@@ -128,6 +128,6 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
 
     bestepoch = epoch_choose_denoise[np.argmin(dnsc)]
 
-    print("\n\n\nbest epoch is epoch #" + str(bestepoch) + " stitching its output tifs together into denoised stack")
+    print("\n\n\nBEST EPOCH IS EPOCH #" + str(bestepoch) + " STITCHING ITS OUTPUT TIFS TOGETHER INTO DENOISED STACK")
     
     return bestepoch

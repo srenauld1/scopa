@@ -6,18 +6,20 @@
 #SEE README.md FOR MORE DOCUMENTATION
 
 ##########################################################################################################################################
+
 import sys
 import os
+
 currscriptdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(currscriptdir))
 
 print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
 
 if '--pth_parsfile' in sys.argv:
-   print("pth_parsfile passed as input to pipeline_init.py, using params from pth_parsfile (e.g., params from cxp.sh)")
+   print("pth_parsfile passed as input to pipeline_init.py (in batch mode), using params from pth_parsfile (params from cxp.sh)")
    exec(open(currscriptdir + '/' + 'default_params_batch.py').read())
 else:
-   print("pth_parsfile not passed as input (e.g., interactive mode), using params from pipeline_init.py below")
+   print("pth_parsfile not passed as input (in interactive mode), using params from pipeline_init.py below")
    exec(open(currscriptdir + '/' + 'default_params_interactive.py').read())
 
 
@@ -134,7 +136,10 @@ for ri, _ in enumerate(pth_read_all):
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          #spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+          try: #spatial_downsample_fictrac_video is not essential, so put it in a try block
+            spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+          except Exception as err:
+            print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
           register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:

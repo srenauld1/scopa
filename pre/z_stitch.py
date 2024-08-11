@@ -12,7 +12,7 @@ import shutil
 from denoising_score import denoising_score
 
 
-def stitch_registered_z_slices(pth_tif_reg, dims):
+def stitch_registered_slices(pth_tif_reg, dims):
 
     print("\n\n\nstitching together separately registered z slices, and writing as one tif")
 
