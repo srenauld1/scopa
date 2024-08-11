@@ -44,6 +44,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
 
     print("\n\n\nFINDING BEST DENOISING EPOCH")
 
+    do_plot_gif = 1 #plot sample gifs of all epochs all slices, to visually inspect and be sure best epoch is chosen
+
     zcnt = [] #can be separate trainset for each z, so start the count up here 
     for pth_trainset in pth_trainset_all: #for all trained models (could be all z slices in one model or each z slice individually)
     
@@ -80,14 +82,13 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg, num_gif_f
                             raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
                         ytmp = ytmp.astype('uint16')
 
-
-                    # pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
-                    # pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
-                    # if not os.path.exists(pth_gif_fldr):
-                    #     Path(pth_gif_fldr).mkdir(parents=True, exist_ok=True)
-                    # plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  
-                    # plt.close('all')
-
+                    if do_plot_gif:
+                        pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
+                        pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
+                        if not os.path.exists(pth_gif_fldr):
+                            Path(pth_gif_fldr).mkdir(parents=True, exist_ok=True)
+                        plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  
+                        plt.close('all')
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)
