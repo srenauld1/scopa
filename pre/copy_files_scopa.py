@@ -22,7 +22,7 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
 
     if do_copyfiles==1: #copy from storage server to O2 (unless do_denoise, since that only uses files in O2 denoising folder, whcih is not copied in or out of O2)
         
-        if do_denoise:
+        if 0:#do_denoise:
             print("\n\n\nnot copying anything because do_denoise is true, and they use files in denoising folder")
         else:
 
