@@ -77,8 +77,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, numpix_bg):
                             raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
                         ytmp = ytmp.astype('uint16')
 
-                    filename_gif = f[:-4] + '.gif'
-                    plot_gif(ytmp, filename_gif, indst = slice(0, 50, 1))  
+                    # filename_gif = f[:-4] + '.gif'
+                    # plot_gif(ytmp, filename_gif, indst = slice(0, 50, 1))  
 
                     mnt = np.mean(ytmp, axis=0)
                     srti = np.argsort(mnt, axis=None)
