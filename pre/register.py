@@ -6,16 +6,16 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from helpers import stitch_registered_z_slices, separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project, tracefunc 
+from helpers import tracefunc 
+from z_stitch import stitch_registered_z_slices 
 from registration_template import find_registration_template
 from subtract_background import bgremover
 from scipy.ndimage import gaussian_filter as smooth_movie
 from im_montage import im_montage
 from plot_gif import plot_gif
-from spatial_downsample_fictrac_video import spatial_downsample_fictrac_video
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix, pth_denoising, denoise_volume, carls_old_project, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots):
    
 
     ########################## LOAD STACK, PREPARE VARIABLES ##########################
@@ -76,9 +76,6 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         zindall = [0]
     
     Y = Y.astype('uint16')
-
-    from denoising_score import denoising_score
-    dnsc = denoising_score(Y)
 
     ########################## BACKGROUND SUBTRACTION (OPTIONAL) ##########################
 
@@ -238,13 +235,5 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         Ynew = np.transpose(Ynew, (0, 3, 2, 1)).reshape(Ynew_shape[0] * Ynew_shape[3], Ynew_shape[2], Ynew_shape[1])
     imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
-
-
-    ########################## WRITE SEPARATE Z SLICES TO PREPARE FOR OPTIONAL DENOISING ##########################
-
-    if carls_old_project: 
-        separate_z_slices_for_denoising_carls_old_project(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
-    else:
-        separate_z_slices_for_denoising(pth_tif_write, fn_prefix, pth_denoising, md, denoise_volume) 
 
 

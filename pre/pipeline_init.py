@@ -24,7 +24,8 @@ else:
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
-from helpers import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+from z_stitch import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+from z_separate import separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project
 from copy_files_scopa import copy_files_scopa
 
 
@@ -134,10 +135,14 @@ for ri, _ in enumerate(pth_read_all):
 
       if do_register:
           #spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, fn_prefix_all[ri], pth_denoising, denoise_volume, carls_old_project_all[ri], cluster_backend, use_cluster, makeplots)
+          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
-          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_read_all[ri], epoch_choose_denoise)
+        if carls_old_project_all[ri]:  
+          separate_z_slices_for_denoising_carls_old_project(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume) 
+        else:
+          separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume) 
+        denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], pth_read_all[ri], epoch_choose_denoise)
     
       if do_stitch:
         if carls_old_project_all[ri]: 
