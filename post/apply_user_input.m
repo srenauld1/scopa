@@ -1,13 +1,13 @@
 
-function [varcombos, varsc, labsc, roipixind, newroicen_all, limsc] = apply_user_input(cbflags, varsc, labsc, roipixind, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsc, yaxisroomfac)
+function [varcombos, vars, labs, roipixind, newroicen_all, limsc, vpmap] = apply_user_input(cbflags, vars, vpmap, labs, roipixind, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsc, yaxisroomfac)
 
 try
 
     if ~isempty(cbflags.val.roicen) && any(~cellfun(@isempty, cbflags.val.roicen)) % || any(~cellfun(@isempty, cbflags.delete.roicen))
 
         max_index_available_rois = [];
-        for j = 1:numel(labsc)
-            [rri, ~] = find_roi_index(labsc{j});
+        for j = 1:numel(labs)
+            [rri, ~] = find_roi_index(labs{j});
             max_index_available_rois = max([max_index_available_rois, cell2mat(rri)], [], 'all');
         end
 
@@ -16,14 +16,14 @@ try
 
         for j = 1:numel(cbflags.val.v)
             vind = cbflags.val.v(j);
-            [roipixind{vind}, varsc{vind}, labsc{vind}] = make_ui_roi(cbflags.val.roicen{vind}, newroicen_all{vind}, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive); % cbflags.delete.roicen{cbflags.val.v}
+            [roipixind{vind}, vars{vind}, labs{vind}] = make_ui_roi(cbflags.val.roicen{vind}, newroicen_all{vind}, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive); % cbflags.delete.roicen{cbflags.val.v}
         end
 
     else
         for j = 1:numel(cbflags.val.v)
             vind = cbflags.val.v(j);
-            varsc{vind} = mean(varsc{vind}(cbflags.val.i{vind},:));
-            labsc{vind} = labsc{vind}(cbflags.val.i{vind});
+            vars{vind} = mean(vars{vind}(cbflags.val.i{vind},:));
+            labs{vind} = labs{vind}(cbflags.val.i{vind});
         end
     end
 
@@ -32,17 +32,22 @@ catch ME
     sprintf(ME.message)
 end
 
-for j = 1:numel(varsc)
-    limsc{j} = find_yaxis_limits(varsc{j}, yaxisroomfac);
+for j = 1:numel(vars)
+    limsc{j} = find_yaxis_limits(vars{j}, yaxisroomfac);
 end
 
-varcombos = make_varcombos(varsc);
+varcombos = make_varcombos(vars);
+
+axsides = fieldnames(vpmap);
+for fi = 1:numel(axsides) 
+    vpmap.(axsides{fi}) = [1:numel(vpmap.(axsides{fi}))]+numel(vpmap.(axsides{fi}))*(fi-1); %once user input is applied, vpmap must become default (it loses meaning after user input)
+end
 
 
 end
 
 
-function [roipixind, varsc, labsc] = make_ui_roi(roicen, newroicen_all, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive)
+function [roipixind, vars, labs] = make_ui_roi(roicen, newroicen_all, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive)
 
 if ~isempty(roicen)
     tmp = [xwid xwid zwid].*(double(roicen)-1);
@@ -65,9 +70,9 @@ else
     %choose_timeseries
 
     roipixind = roiinfo_new.roipixind;
-    varsc = resp_new.in_rawf_pc_f_cl_f_w_no;
+    vars = resp_new.in_rawf_pc_f_cl_f_w_no;
     disp("warning, hard coding ui parsex and parsnorm, fix this now")
-    labsc = {'resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind1'};
+    labs = {'resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind1'};
 end
 
 end

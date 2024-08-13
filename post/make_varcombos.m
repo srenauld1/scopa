@@ -1,13 +1,11 @@
-function [varcombos, varsz] = make_varcombos(varsc)
+function varcombos = make_varcombos(vars)
 
-varsz = cell2mat(cellfun(@size,varsc,'UniformOutput',false));
-
-if all(varsz ~= varsz(1))
-    error("timeseries do not have equal number samples")
-end
-
-for vi = 1:size(varsz,1)
-    varcombstmp{vi} = 1:varsz(vi,:);
+for vi = 1:numel(vars)
+    if 0 %isempty(vars)
+        varcombstmp{vi} = 1;
+    else
+        varcombstmp{vi} = 1:size(vars{vi}, 1);
+    end
 end
 varcombos = cell(1, numel(varcombstmp));
 [varcombos{:}] = ndgrid(varcombstmp{:});

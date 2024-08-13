@@ -19,6 +19,7 @@ for fi = 1:numel(fn)
         fuk = 2;
     end
 end
-structin = orderfields(structin);
+% structin = orderfields(structin);
+structin = orderfields(structin, natsortrows(fieldnames(structin))); %natural sorting
 
 end

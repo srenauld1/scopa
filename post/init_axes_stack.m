@@ -1,12 +1,12 @@
-function hndls = init_axes_stack(hndls, ax, letui, stack, cmap, zstartpos, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hgroup = init_axes_stack(hfg, ax, letui, stack, cmap, txtvar, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
-    hndls struct
+    hfg
     ax struct
     letui
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
-    zstartpos = []
+    txtvar = []
     display_range = [0,1]
     sector_ind = 1
     subplot_ind = 1:size(stack,3)
@@ -37,9 +37,9 @@ stackrange = stackmax-stackmin;
 
 for j = 1:numsubplot
 
-    hax{j} = axes('Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(j);
-    hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(j);
+    hax{j} = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
+    hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac);
     hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac);
     hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
@@ -71,8 +71,8 @@ for j = 1:numsubplot
 
     hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');
     hlny{j} = yline(hax{j}, nan, 'w', 'LineStyle', 'none');
-    if ~isempty(zstartpos)
-        htx{j} = text(hax{j}, size(stack, 2), size(stack, 1), num2str(zstartpos(j)), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
+    if ~isempty(txtvar)
+        htx{j} = text(hax{j}, size(stack, 2), size(stack, 1), num2str(txtvar(j)), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
     else
         htx{j} = [];
     end
@@ -84,12 +84,12 @@ for j = 1:numsubplot
 end
 
 
-hndls.st.hax = hax;
-hndls.st.hpl = hpl;
-hndls.st.hol = hol;
-hndls.st.hlnx = hlnx;
-hndls.st.hlny = hlny;
-hndls.st.htx = htx;
+hgroup.hax = hax;
+hgroup.hpl = hpl;
+hgroup.hol = hol;
+hgroup.hlnx = hlnx;
+hgroup.hlny = hlny;
+hgroup.htx = htx;
 
 
 end

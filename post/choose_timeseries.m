@@ -3,7 +3,7 @@ function [tsuse, dochoose] = choose_timeseries(varnms, ts, ti, pth_tsuse_nms_pre
 % select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern,
 % output variables, their names, and some info in struct 'tsuse'
 
-
+timedim = 2; %assume second dim is time 
 force_single_precision = 1;
 must_have_full_var_sets = 0;
 
@@ -79,9 +79,9 @@ if must_have_full_var_sets %remove an entire var set if any one fn is missing (t
 end
 
 
-tlens = cell2mat(cellfun(@(x) size(x,2), tsflatcat, 'UniformOutput', false));
-tlens = tlens(tlens~=0); %remove zeros in case remove_missing==0
-if ~all(tlens==numel(ti))
+numsamp = cell2mat(cellfun(@(x) size(x,timedim), tsflatcat, 'UniformOutput', false));
+numsamp = numsamp(numsamp~=0); %remove zeros in case remove_missing==0
+if ~all(numsamp==numel(ti))
     error("timeseries is does not match number imaging volumes (numel ti)")
 end
 
@@ -91,9 +91,11 @@ save(pth_tsuse_nms, 'fnflatcat', '-v7.3', '-mat') %save since this only needs to
 
 %%% SUBSET WITH choosecount AND ORGANIZE INTO STRUCT tsuse %%%
 
-
+tsuse.numsamp = numsamp;
+tsuse.timedim = timedim;
 tsuse.varnms = cell2struct(fnflatcat(:,choosecount), fn);
 tsuse.vars = cell2struct(tsflatcat(:,choosecount), fn);
+
 
 %%% MAKE SURE THERE IS ONLY ONE REGIONEX (FOR NOW) %%%
 

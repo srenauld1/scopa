@@ -1,13 +1,19 @@
-function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc)
+function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_in, sampinc_in)
 
 
-% valid main sequences:
-%   pltexp_sequence_v (change plotted variable with index or stack image click): v, digits, [ i, [ digits, save ] ] OR [ click, save ]
-%   pltexp_sequence_t (change plotted t with digits or x-axis click): t [ digits, hyphen, digits, save ] OR [ click, click, save ]
+% valid sequences:
+%   pltexp_sequence_v (change plotted variable with index or stack image click): 
+%       [ v, digits, [ i, [ digits, save ] ] ] enter
+%           OR 
+%       [ v, digits, [ click, save ] ] enter 
+%   pltexp_sequence_t (change plotted t with digits or x-axis click): 
+%       [ t [ digits, hyphen, digits, save ] ] enter
+%           OR 
+%       [ t [ click, click, save ] ] enter
 
+% where brackets denote sub-sequences; sub-sequences can be repeated within their enclosing sequence sequence, but can equivalently be called but repeating the enclosing sequence; different sub-sequences, when multiple, can be mixed within a single enclosing sequence
 % where 'save' denotes any save-change button (n,a,c,backspace)
 % where 'digits' refer to the completed number, not each digit comprising it (which are registered one-at-a-time)
-% where brackets denote sub-sequences; sub-sequences can be repeated within the main sequence; different sub-sequences, when multiple, can be mixed within a single main sequence
 
 % init buttons are: v (modify current plot variable), t (modify plotted t)
 % pressing an init button erases any unsaved changes (changes that have not been finilized with a save button)
@@ -70,7 +76,12 @@ if ~isempty(user_input)
 
     if any(strcmpi(user_input, plot_buttons))  % pressing enter plots any changes
 
-        if cbflags.val.tinds
+        if ~isempty(cbflags.val.tinds) || ~isempty(cbflags.val.sampinc)
+            if isempty(cbflags.val.tinds)
+                cbflags.val.tinds = tinds_in;
+            elseif isempty(cbflags.val.sampinc)
+                cbflags.val.sampinc = sampinc_in;
+            end
             cbflags.restart.t = 1;
             ttl_tmp = 'PRESSED "enter", CHANGING t';
         end
@@ -99,7 +110,7 @@ if ~isempty(user_input)
 
     elseif strcmp(sequence_init, 't')
 
-        [ttl_tmp, cbflags.val.tinds, cbflags.val.sampinc] = pltexp_sequence_t(user_input, save_buttons, sampinc, ti, tinds_use);
+        [ttl_tmp, cbflags.val.tinds, cbflags.val.sampinc] = pltexp_sequence_t(user_input, save_buttons, sampinc_in, ti, tinds_in);
 
     end
 

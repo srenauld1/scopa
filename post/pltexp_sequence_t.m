@@ -65,16 +65,22 @@ elseif any(strcmpi(user_input, context_buttons))
 
 elseif any(strcmpi(user_input, save_buttons))
 
-    if tmp_sampinc && strcmp(subsequence_type, 'sampinc')
+    if ~isempty(tmp_sampinc) && strcmp(subsequence_type, 'sampinc')
 
         if strcmpi(user_input, 'n')
             val_sampinc_tmp = tmp_sampinc;
             ttl = 'PRESSED "n", OVERWRITING EXISTING sampinc, MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES';
+            get_tend = [];
+            get_sampinc = [];
+            tmp_tend = [];
+            tmp_tstart = [];
+            tmp_sampinc = [];
+            subsequence_type = [];
         else
-            ttl = 'FOR CHANGING SAMPINC, ONLY SAVE BUTTON "n" IS ALLOWED';
+            ttl = 'FOR CHANGING SAMPINC, ONLY SAVE BUTTON "n" IS ALLOWED; DOING NOTHING';
         end
 
-    elseif tmp_tend && ( strcmp(subsequence_type, 'keyboard') || strcmp(subsequence_type, 'click') )
+    elseif ~isempty(tmp_tend) && ( strcmp(subsequence_type, 'keyboard') || strcmp(subsequence_type, 'click') )
 
         if tmp_tend>max(ti)
             ttl = ['CHOSEN t END ' num2str(tmp_tend) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(ti))];

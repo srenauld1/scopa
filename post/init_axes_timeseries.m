@@ -1,15 +1,15 @@
-function hndls = init_axes_timeseries(hndls, ax, letui, numsamp, varinds, ti, lims, ticklab, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hgroup = init_axes_timeseries(hfg, ax, letui, numsamp, vars, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
-    hndls struct
+    hfg
     ax struct
     letui
     numsamp
-    varinds
+    vars
     ti
     lims
     ticklab = []
-    labsp = []
+    labs = []
     cols = []
     sector_ind = 1
     subplot_ind = 1
@@ -32,7 +32,7 @@ end
 fontsmall = fontsz(1);
 fontmedium = fontsz(2);
 dummyvec = nan(numsamp, 1);
-fn = fieldnames(varinds);
+fn = fieldnames(vars);
 
 
 hax = [];
@@ -40,7 +40,7 @@ hpl = [];
 
 for j = 1:numsubplot
 
-    hax{j} = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+    hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
     hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
     hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac(j));
@@ -56,24 +56,24 @@ for j = 1:numsubplot
         formspec = '';
 
         eval(['yyaxis ' fn{fi}])
-        for k = 1:numel(varinds.(fn{fi})) %for each variable on side fn{fi} (left or right)
+        for k = 1:size(vars.(fn{fi}), 1) %for each variable on fn{fi} (left or right side)
             hpl{j}{fi}{k} = plot(hax{j}, ti, dummyvec);
-            hpl{j}{fi}{k}.Color = cols(varinds.(fn{fi})(k),:);
+            hpl{j}{fi}{k}.Color = cols.(fn{fi}){k};
             hpl{j}{fi}{k}.LineStyle = '-';
             hax{j}.YAxis(fi).Color = [0 0 0];
-            hax{j}.YAxis(fi).Label.String{k} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(varinds.(fn{fi})(k),:), labsp.(fn{fi}){k});
+            hax{j}.YAxis(fi).Label.String{k} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols.(fn{fi}){k}, labs.(fn{fi}){k});
             hax{j}.YAxis(fi).Label.FontSize = fontsmall;
 
             hax{j}.YAxis(fi).TickValues = ticklab.(fn{fi}){k};
 
-            if k<numel(varinds.(fn{fi}))
+            if k<size(vars.(fn{fi}), 1)
                 formspec = [formspec '%s\\newline'];
             else
                 formspec = [formspec '%s\n'];
             end
 
             for tti = 1:numel(ticklab.(fn{fi}){k})
-                ticktmp{k,tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(varinds.(fn{fi})(k),:), num2str(ticklab.(fn{fi}){k}(tti), 4));
+                ticktmp{k,tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols.(fn{fi}){k}, num2str(ticklab.(fn{fi}){k}(tti), 4));
             end
 
         end
@@ -126,9 +126,9 @@ for j = 1:numsubplot
 end
 
 
-hndls.ts.hax = hax;
-hndls.ts.hpl = hpl;
-hndls.ts.hlnx = hlnx;
+hgroup.hax = hax;
+hgroup.hpl = hpl;
+hgroup.hlnx = hlnx;
 
 
 end

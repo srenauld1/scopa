@@ -318,19 +318,22 @@ opt.scat = fill_struct(opt.scat);
 %% PLOT EXPERIMENT
 
 % params for plot_experiment
-opt.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
-opt.pltexp(1).varnms.ts2{1} = {['vis.yaw']};
-opt.pltexp(1).varnms.ts2{1} = {['ball.forvel']};
-opt.pltexp(1).varnms.ts3{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts4{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-% 
+opt.pltexp(1).varnms.ts1{1} = {['']};
+opt.pltexp(1).varnms.ts2{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind28']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts3{1} = {['ball.forvel']};
+opt.pltexp(1).varnms.ts4{1} = {['ball.intfor']};
+opt.pltexp(1).varnms.ts5{1} = {['']};
+opt.pltexp(1).varnms.ts6{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind26']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts7{1} = {['']};
+opt.pltexp(1).varnms.ts8{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind27']}; %if empty, do will be set to false
+
 % opt.pltexp(2).varnms.ts1{1} = {['*']};
 % opt.pltexp(2).varnms.ts2{1} = {['*']};
 % opt.pltexp(2).varnms.ts3{1} = {['*']}; %if empty, do will be set to false
 % opt.pltexp(2).varnms.ts4{1} = {['*']}; %if empty, do will be set to false
 
-opt.pltexp(1).varinds.left = [1 2];
-opt.pltexp(1).varinds.right = [3 4];
+opt.pltexp(1).varinds.left = [1 2 3 4];
+opt.pltexp(1).varinds.right = [5 6 7 8];
 opt.pltexp(1).ignore_missing_vars = 1; %set to 1 not error if any requested timeseries in vars above do not exist (let's you use more general wildcards)
 opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both

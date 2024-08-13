@@ -180,11 +180,23 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
                 [stackcrop, zstartpos_crop, stack_mnt] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
 
                 plot_experiment(opt.pltexp(si).letui, stackcrop, stack_mnt, fitin.vars, ...
-                    fitin.varnms, opt.pltexp(si).varinds, opt.pltexp(si).epochinds, ...
+                    fitin.varnms, opt.pltexp(si).vpmap, opt.pltexp(si).epochinds, ...
                     roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
                     md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds, ...
                     opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs, ...
                     pth.mroi_interactive.(regionex), opt.mroi.norm, md.xwid, md.zwid)
+
+
+%% 
+
+figure;
+N = 10;
+axes('ColorOrder',brewermap(N,'Dark2'),'NextPlot','replacechildren')
+X = linspace(0,pi*3,1000);
+Y = bsxfun(@(x,n)n*sin(x+2*n*pi/N), X.', 1:N);
+plot(X,Y, 'linewidth',1)
+
+%% 
 
             end
         end
