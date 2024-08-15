@@ -1,27 +1,39 @@
-function varargout = insert_nan_for_polar_wrap(varargin)
+function inp = insert_nan_for_polar_wrap(inp, spacing, dim, diffthresh)
 
-%replace diffs greater than pi with nan in the wrapped plot because the lines make it difficult to read
+%replace diffs (across 'spacing' samples) greater than diffthresh with nan in timeseries (to make plot easier to read)
 
-diff_rep_thresh = pi;
-diffspace1 = 1;
-filt1 = [zeros(1,diffspace1-1) 1 zeros(1,diffspace1-1) -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
-% diffspace2 = 2;
-% filt2 = [zeros(1,diffspace2-1) 1 zeros(1,diffspace2-1) -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
+arguments 
+    inp
+    spacing = 1
+    dim = 1
+    diffthresh = pi;
+end
 
-for j = 1:numel(varargin)
+if ~isvector(inp)
+    if isempty(dim)
+        error("must specify dim is inp is not vector")
+    end
+end
 
-    varargout{j} = varargin{j};
+filt = [zeros(1,spacing-1), 1, zeros(1,spacing-1), -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
+for j = 1:size(inp, dim)
 
-    diffsignal = conv(varargin{j}, filt1, 'full');
-    diffsignal = diffsignal((length(filt1) - 1)+1:end-(length(filt1) - (1 + (diffspace1-1))));
-    diffsignal1 = [zeros((diffspace1-1)+1, 1) diffsignal];
+    C = repmat({':'},1,ndims(inp));
+    C{dim} = j; 
+    tmp = inp(C{:});
 
-    % diffsignal = conv(varargin{j}, filt2, 'full');
-    % diffsignal = diffsignal((length(filt2) - 1)+1:end-(length(filt2) - (1 + (diffspace2-1))));
-    % diffsignal2 = [zeros((diffspace2-1)+1, 1) diffsignal];
+    dfsg = conv(tmp, filt, 'full');
+    dfsg = dfsg((length(filt) - 1)+1:end-(length(filt) - (1 + (spacing-1))));
+    if dim==1
+        dfsg2 = cat(2, zeros(1, (spacing-1)+1), dfsg);
+    elseif dim==2
+        dfsg2 = cat(1, zeros(1, (spacing-1)+1, 1), dfsg);
+    end
 
-    excludeinds = abs(diffsignal1)>diff_rep_thresh; %| abs(diffsignal2)>diff_rep_thresh;
-    varargout{j}(excludeinds) = nan;
+    excludeinds = abs(dfsg2)>diffthresh;
+    tmp(excludeinds) = nan;
+    inp(C{:}) = tmp;
+
 
 end
 

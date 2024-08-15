@@ -1,14 +1,17 @@
 
-function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc)
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, vpmapflatids, ti, tinds, cols, roialpha, roipixindp, fngif, figure_title, varsz, letui, timestr_ui, sampinc)
 
 
 cbflags = reset_cbflags([], 'all');
 
-axsides = fieldnames(varsp);
-
-stack_oneframe = stack(:,:,:,1);
-clear make_roi_overlay pltexp_process_callbacks  %clear persistent variables 
-[imroi, imalpha] = make_roi_overlay(stack_oneframe, roipixindp, cols, roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+if all(cellfun(@isempty,roipixindp))
+    do_overlay = 0;
+else
+    do_overlay = 1;
+    stack_oneframe = stack(:,:,:,1);
+    clear make_roi_overlay pltexp_process_callbacks %clear persistent variables
+    [imroi, imalpha] = make_roi_overlay(stack_oneframe, roipixindp, cols, roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+end
 
 tinds_use = tinds;
 do_write_gif = 1;
@@ -16,6 +19,7 @@ tloop = 1;
 
 % dlg = uicontrol();
 
+vpmap_nonempty = find(~cellfun(@isempty, vpmapflatids));
 
 hndls.httl.String{1} = figure_title;
 
@@ -29,17 +33,18 @@ while tloop
         %%%% TIMESERIES %%%%
         for j = 1:numel(hndls.ts.hax) %for each subplot
             if fr==1 %only on first frame
-                for fi = 1:numel(axsides) %for each side (left and right)
+                cnt = 0;
+                for fi = 1:numel(hndls.ts.hpl{j}) %for each axis side
                     for k = 1:numel(hndls.ts.hpl{j}{fi}) %for each variable
-                        hndls.ts.hpl{j}{fi}{k}.YData = varsp.(axsides{fi})(k,:);
+                        cnt = cnt+1;
+                        hndls.ts.hpl{j}{fi}{k}.YData = varsp(vpmap_nonempty(cnt),:);
                     end
                 end
             end
             if j==2
                 hndls.ts.hax{j}.XAxis.Limits = [ti(tinds_use(fr))-6, ti(tinds_use(fr))+6];
                 hndls.ts.hax{j}.XTick = ti(tinds_use(fr));
-                hndls.ts.hax{j}.XAxis.TickLabels = [num2str(hndls.ts.hax{j}.XTick, 4) ' sec (+/- 6 sec)'];
-                % hndls.ts.hax{j}.XTickLabel = [num2str(hndls.ts.hax{j}.XTick) ' sec (+/- 6 sec)'];
+                hndls.ts.hax{j}.XAxis.TickLabels = [num2str(hndls.ts.hax{j}.XTick, 4) ' sec (+/- 6 sec)']; %same as hndls.ts.hax{j}.XTickLabel??
             end
             hndls.ts.hlnx{j}.XData = [ti(tinds_use(fr)) ti(tinds_use(fr))];
         end
@@ -50,7 +55,7 @@ while tloop
 
             hndls.st.hpl{j}.CData = stack(:,:,j,tinds_use(fr));
             if fr==1
-                if ~all(cellfun(@isempty,roipixindp)) %if there are roi variables
+                if do_overlay %if there are roi variables
                     hndls.st.hol{j}.CData = squeeze(imroi(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
                     hndls.st.hol{j}.AlphaData = imalpha(:,:,j);
                 end

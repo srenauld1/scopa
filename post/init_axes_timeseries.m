@@ -1,11 +1,11 @@
-function hgroup = init_axes_timeseries(hfg, ax, letui, numsamp, vars, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hgroup = init_axes_timeseries(hfg, ax, letui, numsamp, vpmapflatids, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
     hfg
     ax struct
     letui
     numsamp
-    vars
+    vpmapflatids
     ti
     lims
     ticklab = []
@@ -31,16 +31,20 @@ if numel(htfac)==1 && numsubplot>1
 end
 fontsmall = fontsz(1);
 fontmedium = fontsz(2);
-dummyvec = nan(numsamp, 1);
-fn = fieldnames(vars);
 
+dummyvec = nan(numsamp, 1);
+
+[axidcnts, axids] = hist(cell2mat(vpmapflatids),unique(cell2mat(vpmapflatids)));
+numaxids = numel(axidcnts);
 
 hax = [];
 hpl = [];
+hlnx = [];
 
 for j = 1:numsubplot
 
     hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+
     hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
     hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac(j));
@@ -48,80 +52,89 @@ for j = 1:numsubplot
 
     hax{j}.Toolbar.Visible = 'off';
 
-
     hold(hax{j}, 'on')
-    for fi = 1:numel(fn)
 
-        ticktmp = [];
-        formspec = '';
+    ticktmp = cell(numaxids,1);
+    formspec = cell(numaxids,1);
+    cnt = zeros(numaxids,1);
+    for k = 1:numel(vpmapflatids) %loop over all variables, placing them in their assigned plot position (k), which includes specification of their axis side (vpmapflatids{k})
+        if ~isempty(vpmapflatids{k}) %skip empty variables
 
-        eval(['yyaxis ' fn{fi}])
-        for k = 1:size(vars.(fn{fi}), 1) %for each variable on fn{fi} (left or right side)
-            hpl{j}{fi}{k} = plot(hax{j}, ti, dummyvec);
-            hpl{j}{fi}{k}.Color = cols.(fn{fi}){k};
-            hpl{j}{fi}{k}.LineStyle = '-';
-            hax{j}.YAxis(fi).Color = [0 0 0];
-            hax{j}.YAxis(fi).Label.String{k} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols.(fn{fi}){k}, labs.(fn{fi}){k});
-            hax{j}.YAxis(fi).Label.FontSize = fontsmall;
-
-            hax{j}.YAxis(fi).TickValues = ticklab.(fn{fi}){k};
-
-            if k<size(vars.(fn{fi}), 1)
-                formspec = [formspec '%s\\newline'];
-            else
-                formspec = [formspec '%s\n'];
+            fi = vpmapflatids{k}; %axis side index
+            if fi==1
+                yyaxis left
+            elseif fi==2
+                yyaxis right
             end
 
-            for tti = 1:numel(ticklab.(fn{fi}){k})
-                ticktmp{k,tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols.(fn{fi}){k}, num2str(ticklab.(fn{fi}){k}(tti), 4));
+            cnt(fi) = cnt(fi)+1; %count of nonempty variables for each axis side index
+
+            hpl{j}{fi}{cnt(fi)} = plot(hax{j}, ti, dummyvec);
+            hpl{j}{fi}{cnt(fi)}.Color = cols(k,:);
+            hpl{j}{fi}{cnt(fi)}.LineStyle = '-';
+
+            hax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
+
+            if cnt(fi)<axidcnts(axids==fi)
+                formspec{vpmapflatids{k}} = [formspec{vpmapflatids{k}} '%s\\newline'];
+            else
+                formspec{vpmapflatids{k}} = [formspec{vpmapflatids{k}} '%s\n'];
+            end
+
+            for tti = 1:numel(ticklab{k})
+                ticktmp{vpmapflatids{k}}{cnt(fi),tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), num2str(ticklab{k}(tti), 4));
             end
 
         end
+    end
 
-        YTickString = strtrim(sprintf(formspec, ticktmp{:}));
+    for fi = 1:numaxids
 
-        hax{j}.YAxis(fi).TickLabels = YTickString;
-        hax{j}.YAxis(fi).TickLabelInterpreter = 'tex';
+        hax{j}.YAxis(fi).Color = [0 0 0];
+        hax{j}.YAxis(fi).FontSize = fontsmall;
+        hax{j}.YAxis(fi).FontWeight = 'bold';
+
         if rescale_timeseries
-            hax{j}.YAxis(fi).Limits = lims.(fn{fi}).rescale_xtra;
-            hax{j}.YAxis(fi).TickValues = lims.(fn{fi}).rescale;
+            hax{j}.YAxis(fi).Limits = lims{k}.rescale_xtra;
+            hax{j}.YAxis(fi).TickValues = lims{k}.rescale;
         else
             error("rescale_timeseries is currently required")
         end
 
-        hax{j}.YAxis(fi).FontSize = fontsmall;
+        hax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
 
-    end
 
-    if j==1
+        if j==1
 
-        if letui
-            hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt);
-            hax{j}.PickableParts = 'visible';
-            hax{j}.HitTest = 'on';
-        end
-
-        hax{j}.XTick = round(linspace(0, max(ti), numxtick));
-        for tlx = 1:numel(hax{j}.XTick)
-            if tlx==numel(hax{j}.XTick)
-                hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx)) ' sec'];
-            else
-                hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx))];
+            if letui
+                hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt);
+                hax{j}.PickableParts = 'visible';
+                hax{j}.HitTest = 'on';
             end
+
+            hax{j}.XTick = round(linspace(0, max(ti), numxtick));
+            for tlx = 1:numel(hax{j}.XTick)
+                if tlx==numel(hax{j}.XTick)
+                    hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx)) ' sec'];
+                else
+                    hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx))];
+                end
+            end
+        
         end
+
+        hax{j}.XAxis.FontSize = fontmedium;
+        hax{j}.XAxis.TickLength(1) = 0.005;
+
+        hax{j}.Box = 'off';
+        % hax{j}.Color = 'k'; %axis background color
+        % hax{j}.XLabel.String = '';
+
+        hlnx{j} = line(hax{j}, [nan nan], hax{j}.YAxis(1).Limits, 'color', 'k', 'LineStyle','-');
+
+        hold(hax{j}, 'off')
+    
     end
-    hax{j}.XAxis.FontSize = fontmedium;
-    hax{j}.XAxis.TickLength(1) = 0.005;
-
-    % hax{j}.Color = 'k';
-
-    hax{j}.Box = 'off';
-    % hax{j}.XLabel.String = '';
-
-    % hlnx{j} = xline(hax{j}, nan, 'k');
-    hlnx{j} = line(hax{j}, [nan nan], lims.(fn{fi}).rescale_xtra, 'color', 'k', 'LineStyle','-');
-
-    hold(hax{j}, 'off')
 
 end
 

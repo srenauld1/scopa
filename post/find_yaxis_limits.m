@@ -1,6 +1,7 @@
 
 function lims = find_yaxis_limits(varsin, yaxisroomfac)
 
+
 varrng = range(varsin, 2);
 lims.each = [min(varsin, [], 2, 'omitmissing'), max(varsin, [], 2, 'omitmissing')];
 lims.each_xtra = [lims.each(:,1) - varrng*yaxisroomfac, lims.each(:,2) + varrng*yaxisroomfac];

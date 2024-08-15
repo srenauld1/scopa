@@ -54,6 +54,7 @@ for vpfi = 1:size(tmp3,2)
         fnflatcat{vpfi,oci} = [];
         for ici = 1:numel(innercell_tmp) %for each inner cell (matches are concatenated)
             icpat = regexptranslate('wildcard', innercell_tmp{ici});
+            icpat = [icpat '$']; %mark end of pattern
             chk = cellfun(@(x,y) regexp(x,y), fnflatex, repelem({icpat}, numel(fnflatex))', 'UniformOutput', false);
             kpp = cell(numel(chk),1);
             for j = 1:numel(chk)

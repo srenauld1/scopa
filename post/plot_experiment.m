@@ -10,14 +10,14 @@ function plot_experiment(letui, stack, stack_mnt, vars, labs, vpmap, ...
 "make additional varcombo rather than overwrite all rois with interactive"
 "sampinc~=1 will include addlower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 
-%vpmap maps vars to plot positions 
+%vpmap maps vars to plot positions
 %cols assign color to each plot position
-%user input sets vpmap to default (unless input is change to vpmap)  
+%user input sets vpmap to default (unless input is change to vpmap)
 %if a var doens't exist at a plot position, nothing is plotted there, but the plot positions of other variables do not change
 
 gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
-ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top 
-yaxisroomfac = 0.15; %fraction of total, extra room on y axis 
+ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top
+yaxisroomfac = 0.15; %fraction of total, extra room on y axis
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
 sampinc = 5; %sample increment per gif frame
 roialpha = 0.2; %transparency in roi overlay
@@ -25,10 +25,12 @@ rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (b
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
 newroirad = 2.5; %num pixels radius
 max_num_gif_frames = 2000; %throw error if there will be more
+vardim = 1;
 timedim = 2;
+lrscale = 'equal';
 
 
-%% arrange figure, choose colors 
+%% arrange figure, choose colors
 
 subplot_layout = {[4,4], stack};
 margins_subplot = [0.05,0.005];
@@ -37,7 +39,7 @@ splitdim = 'y';
 splitfrac = 0.5;
 ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
-cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars))); 
+cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 
 if any(ismember(cols, [0 0 0], 'rows'))
     error("cannot use black for plotting until there is code to prevent it from being assigned to rois (since black roi overlay will cause error")
@@ -66,7 +68,7 @@ labs = struct2cell(labs);
 [varsz, numts, numsamp] = get_vars_size(vars, timedim);
 
 vars(cellfun(@isempty, vars)) = {nan(1,numsamp,'single')}; %make empty timeseries nan for now
-labs(cellfun(@isempty, labs)) = {{'NOVAR'}}; %make empty labels 'novar' for now 
+labs(cellfun(@isempty, labs)) = {{''}}; %make empty labels 'novar' for now
 
 for j = 1:numel(vars)
     vars{j} = convert_to_single_precision(vars{j});
@@ -82,7 +84,8 @@ varcombos = make_varcombos(vars);
 %     error("there will be too many frames in gif")
 % end
 
-roipixind = repelem({roiinfo.roipixind}, numts);
+
+
 
 %% loop over epoch sets and plotting variables
 
@@ -98,13 +101,13 @@ while plotloop %loop is shut off if no user input
 
     if ~all(structfun(@isempty, cbflags)) && ~revert_vars
         framecount = 0;
-        [varcombos_use, vars_use, labs_use, roipixind_use, newroicen_all, limsc, vpmap] = apply_user_input(cbflags, vars_use, vpmap, labs_use, roipixind_use, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsc, yaxisroomfac);
+        [varcombos_use, vars_use, labs_use, roipixind_use, limsc, vpmap] = apply_user_input(cbflags, varsp, vpmap, labsp, roiinfo.roipixind, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsp, yaxisroomfac);
         timestr_use = timestr_ui;
     else
         varcombos_use = varcombos;
         vars_use = vars;
         labs_use = labs;
-        roipixind_use = roipixind;
+        roipixind_use = roiinfo.roipixind;
         timestr_use = '';
     end
 
@@ -118,55 +121,37 @@ while plotloop %loop is shut off if no user input
             skipplot = skip_plot_criteria(labstmp, 'none');
 
             if skipplot
+
                 sprintf("skipping plot with these labels: " + cell2mat(labstmp))
+
             else
 
-                %%%% PREP TIMESERIES VARS %%%%
-                axsides = fieldnames(vpmap);
-                pcnt_tot = 0;
-                roiind_st = cell(1, numel(roiind));
-                for fi = 1:numel(axsides) %for each side (left and right)
-                    vpmaptmp = vpmap.(axsides{fi});
-                    pcnt = 0;
-                    for vi = 1:numel(vpmaptmp) %for each variable on one side
-                        pcnt_tot = pcnt_tot + 1;
-                        if ~all(isnan(varstmp(vpmaptmp(vi),:)))
-                            pcnt = pcnt + 1;
-                            labs_ts.(axsides{fi}){pcnt} = labstmp{vpmaptmp(vi)};
-                            ticklabs_ts.(axsides{fi}){pcnt} = limsc{vpmaptmp(vi)}.(ylim_constancy);
-                            cols_ts.(axsides{fi}){pcnt} = cols(pcnt_tot,:); %cols indexed by total, not side
-                            lims_ts.(axsides{fi}).rescale = limsc{vpmaptmp(vi)}.rescale; %right now same for all, move this or make variable
-                            lims_ts.(axsides{fi}).rescale_xtra = limsc{vpmaptmp(vi)}.rescale_xtra;  %right now same for all, move this or make variable
-                            if contains(labs_ts.(axsides{fi}){pcnt}, 'yaw', 'IgnoreCase', true) | contains(labs_ts.(axsides{fi}){pcnt}, 'yaw', 'IgnoreCase', true)
-                                varstmp(vpmaptmp(vi),:) = insert_nan_for_polar_wrap(varstmp(vpmaptmp(vi),:));
-                            end
-                            varstmp(vpmaptmp(vi),:) = nanpadvec(numsamp_tslong_eachgif(ecnt), varstmp(vpmaptmp(vi),:));
-                            vars_ts.(axsides{fi})(pcnt,:) = rescale_to_range(varstmp(vpmaptmp(vi),:), ticklabs_ts.(axsides{fi}){pcnt}, [0 1], skipnan_rescale); %rescale from tick label to [0,1], to plot on same scale (but tick label retains original scale)
-                        end
-                    end
-                end
+                %%%% PREP VARS %%%%
+                [vpmapflat, vpmapflatids] = translate_vpmap(vpmap);
+                labsp = labstmp(vpmapflat);
+                tlabsp = cellfun(@(x) x.(ylim_constancy), limsc(vpmapflat), 'UniformOutput', false);
+                colsp = cols(vpmapflat,:);
+                limsp = limsc(vpmapflat);
+                polarinds = find_polar_inds(labsp);
+                varsp = varstmp(vpmapflat,:);
+                varsp(polarinds,:) = insert_nan_for_polar_wrap(varsp(polarinds,:), 2);
+                varsp = nanpadvec(varsp, numsamp_tslong_eachgif(ecnt));
+                yaxis_true_lims = find_yaxis_true_lims(lrscale, limsp);
+                varsp = rescale_to_range(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
 
-                vpmap_st = vec(cell2mat(transpose(struct2cell(vpmap))));
-                roiind_st = roiind(vpmap_st);
-
-                fngif = make_filename(labstmp, gif_scope, vpmap, epochstring{ecnt}, fngif_prefix_short, timestr_use);
-                [roiind, roi_index_str] = find_roi_index(labstmp);
+                fngif = make_filename(labsp, gif_scope, epochstring{ecnt}, fngif_prefix_short, timestr_use);
+                [roiindp, roi_index_str] = find_roi_index(labsp);
                 figure_title = make_figure_title(fngif_prefix_short, epochstring{ecnt}, dtmni, roi_index_str);
-                labstmp = process_labels(labstmp, roiind);
+                labsp = process_labels(labsp, roiindp);
 
+                roipixindp = cell(numel(roiindp),1);
+                roipixindp(~cellfun(@isempty, roiindp)) = roipixind_use([roiindp{:}]);
 
-                roipixind_st = cell(1, numel(roiind_st));
-                for ri = 1:numel(roiind_st)
-                    if isempty(roiind_st{ri})
-                        roipixind_st{ri} = [];
-                    else
-                        roipixind_st{ri} = roipixind_use{ri}{roiind_st{ri}};
-                    end
-                end
+                vpmapflatids = flag_empty_timeseries(varsp, vpmapflatids, timedim);
 
                 %%%% INIT AXES %%%%
                 if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1)
-                    
+
                     close all
                     hndls = struct;
                     framecount = 0;
@@ -177,7 +162,7 @@ while plotloop %loop is shut off if no user input
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    hndls.ts = init_axes_timeseries(hndls.hfg, ax, letui, numsamp_tslong_eachgif(ecnt), vars_ts, ti, lims_ts, ticklabs_ts, labs_ts, cols_ts, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    hndls.ts = init_axes_timeseries(hndls.hfg, ax, letui, numsamp_tslong_eachgif(ecnt), vpmapflatids, ti, limsp, tlabsp, labsp, colsp, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
                     sector_ind = 2;
                     cmap = gray(256);
@@ -198,7 +183,7 @@ while plotloop %loop is shut off if no user input
 
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
-                    framecount, vars_ts, ti, tinds{ecnt}, cols, roialpha, roipixind_st, ...
+                    framecount, varsp, vpmapflatids, ti, tinds{ecnt}, colsp, roialpha, roipixindp, ...
                     fngif, figure_title, varsz, letui, timestr_ui, sampinc);
 
                 if cbflags.restart.v==1
@@ -299,7 +284,7 @@ epochstring.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '',
 end
 
 
-function fngif = make_filename(lab, gif_scope, vpmap, epochstring, fngif_prefix, timestr)
+function fngif = make_filename(lab, gif_scope, epochstring, fngif_prefix, timestr)
 
 
 lab = strrep(strrep(lab, 'ts.', ''), '.', '-');
@@ -309,7 +294,7 @@ if strcmp(gif_scope, 'allv_alle') %one gif for all variables, all epochinds
 elseif strcmp(gif_scope, 'allv_eache') %different gif for each epochinds
     fngif_suffix = {'gifscopeepoch', ['e' epochstring.short ]};
 elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
-    fngif_suffix = {['L_' strjoin(lab(vpmap.left), '_')]; ['R_' strjoin(lab(vpmap.right), '_')]; ['e' epochstring.short ]};
+    fngif_suffix = {['v_' strjoin(lab, '_')]; ['e' epochstring.short ]};
     fngif_suffix = {'eachv_eache'};
 end
 
@@ -343,13 +328,13 @@ for ri = 1:numel(roiind)
 end
 
 for j = 1:numel(lab)
-    if contains(lab{j}, 'intfor') || contains(lab{j}, 'intside') || contains(lab{j}, 'yaw') || contains(lab{j}, 'yaw')
+    if contains(lab{j}, 'intfor') || contains(lab{j}, 'intside') || endsWith(lab{j}, 'yaw') || endsWith(lab{j}, 'ang')
         lab{j} = [lab{j} ' (RAD)'];
     end
     if contains(lab{j}, 'forvel') || contains(lab{j}, 'sidevel')
         lab{j} = [lab{j} ' (MM/S)'];
     end
-    if contains(lab{j}, 'yawvel') || contains(lab{j}, 'yawvel')
+    if contains(lab{j}, 'yawvel')
         lab{j} = [lab{j} ' (RAD/S)'];
     end
 end
@@ -366,17 +351,7 @@ sample_period_string = [num2str(dtmni*1000, 4) ' ms']; %'%.2g'
 end
 
 
-function varargout = nanpadvec(numsamp_max_onegif, varargin)
 
-for j = 1:numel(varargin)
-    if ~isvector(varargin{j})
-        error("must be vector")
-    end
-    numsamp_pad = numsamp_max_onegif-numel(varargin{j});
-    varargout{j} = cat(1, varargin{j}(:), nan(numsamp_pad, 1));
-end
-
-end
 
 function numsamp_tslong_eachgif = find_numsamp_tslong(ts_scope, gif_scope, ti, tinds_full)
 
@@ -422,15 +397,9 @@ numsamp_tslong_eachgif = find_numsamp_tslong(ts_scope, gif_scope, ti, tinds_full
 
 end
 
-function varinds_visible = find_visible_timeseries(vars, vpmap, timedim)
+function vpmapflatids = flag_empty_timeseries(vars, vpmapflatids, timedim)
 
-ignoreinds = find(cellfun(@(x) all(isnan(x), timedim), vars));
-
-axsides = fieldnames(vpmap);
-for fi = 1:numel(axsides) %for each side (left and right)
-    varinds_visible.(axsides{fi}) = vpmap.(axsides{fi})(~ismember(vpmap.(axsides{fi}), ignoreinds));
-end
-
+vpmapflatids(all(isnan(vars),timedim)) = {[]};
 
 end
 
@@ -444,3 +413,44 @@ for vi = 1:numel(varcombo)
 end
 end
 
+
+function polarinds = find_polar_inds(labsp)
+
+polarinds = (contains(labsp, 'yaw', 'IgnoreCase', true) | contains(labsp, 'ang', 'IgnoreCase', true)) & ~contains(labsp, 'vel', 'IgnoreCase', true);
+
+end
+
+function [vpmapflat, vpmapflatids] = translate_vpmap(vpmap)
+
+if any(~structfun(@isvector, vpmap))
+    error("each field of vpmap must contain a vector")
+end
+vpmap = structfun(@(x) transpose(vec(x)), vpmap, 'UniformOutput', false); %make sure each is row vector
+
+vpmapflat = vec(cell2mat(transpose(struct2cell(vpmap))));
+if numel(vpmapflat)~=numel(unique(vpmapflat))
+    error("vpmap cannot have repeated elements")
+end
+
+vpmapflatids = cell(numel(vpmapflat), 1);
+fn = fieldnames(vpmap);
+for j = 1:numel(vpmapflat)
+    for k = 1:numel(fn)
+        if ismember(vpmapflat(j), vpmap.(fn{k}))
+            vpmapflatids{j} = k;
+        end
+    end
+
+end
+
+end
+
+function yaxis_true_lims = find_yaxis_true_lims(lrscale, lims)
+
+if strcmp(lrscale, 'equal')
+    yaxis_true_lims = [0 1];
+else
+    error("haven't written this yet; make right axis relative to left [0 1] depending on values of limsc")
+end
+
+end

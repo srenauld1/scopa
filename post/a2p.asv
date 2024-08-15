@@ -187,16 +187,6 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
                     pth.mroi_interactive.(regionex), opt.mroi.norm, md.xwid, md.zwid)
 
 
-%% 
-
-figure;
-N = 10;
-axes('ColorOrder',brewermap(N,'Dark2'),'NextPlot','replacechildren')
-X = linspace(0,pi*3,1000);
-Y = bsxfun(@(x,n)n*sin(x+2*n*pi/N), X.', 1:N);
-plot(X,Y, 'linewidth',1)
-
-%% 
 
             end
         end
