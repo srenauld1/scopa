@@ -4,9 +4,13 @@ function inp = insert_nan_for_polar_wrap(inp, spacing, dim, diffthresh)
 
 arguments 
     inp
-    spacing = 1
+    spacing = 2
     dim = 1
     diffthresh = pi;
+end
+
+if spacing<2
+    error("spacing cannot be less than 2");
 end
 
 if ~isvector(inp)

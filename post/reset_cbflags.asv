@@ -1,4 +1,4 @@
-function cbflags = reset_cbflags(varargin)
+function cbflags = default_cbflags(varargin)
 
 if any(strcmp('all', varargin))
 

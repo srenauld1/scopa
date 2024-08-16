@@ -3,10 +3,10 @@
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity
-% variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing
+% for readability, variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing
 
-% struct 'opt' holds input params in various sub-structs, which are each used predominantly in a function below
-% struct 'ts' holds timeseries (in various sub-structs) with indices corresponding to md.ti (imaging frame timestamps)
+% struct 'opt' holds input params in various sub-structs; each substruct is (predominantly) used in one function below, although substruct fields are passed individually as arguments to make the function more portable
+% struct 'ts' holds timeseries (in various sub-structs) with temporal indices corresponding to md.ti (imaging frame timestamps)
 % struct 'roiinfo' holds roi info for morphological and functional rois
 % struct 'md' holds metadata
 % struct 'pth' holds paths

@@ -1,10 +1,9 @@
 
-function [varcombos, vars, labs, roipixind, limsc, vpmap] = apply_user_input(cbflags, vars, vpmap, labs, roipixind, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, limsc, yaxisroomfac)
+function [vars, labs, lims, roipixind, varcombos] = apply_user_input(cbflags, vars, labs, roipixind, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, yaxisroomfac, numsamp)
 
 try
 
-    if ~isempty(cbflags.val.roicen) && any(~cellfun(@isempty, cbflags.val.roicen)) % || any(~cellfun(@isempty, cbflags.delete.roicen))
-
+    if ~isempty(cell2mat(cbflags.val.roicen))
 
         max_index_available_rois = numel(roipixind);
 
@@ -18,19 +17,41 @@ try
                 if cbflags.val.v(cnt)~=j
                     error("v must match cnt")
                 end
-                vind = cbflags.val.v(cnt);
-                [roipixind_new, vars(j,:)] = make_ui_roi(cbflags.val.roicen{j}, newroicen_all{j}, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive); % cbflags.delete.roicen{cbflags.val.v}
+
+                [roipixind_new, vars{j}] = make_ui_roi(cbflags.val.roicen{j}, newroicen_all{j}, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive); % cbflags.delete.roicen{cbflags.val.v}
                 roipixind = cat(1, roipixind, roipixind_new);
                 disp("warning, hard coding ui parsex and parsnorm, fix this now")
-                labs{j} = {['resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]};
+                labs{j} = {['resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of choose_timeseries
             end
         end
 
-    else
-        for j = 1:numel(cbflags.val.v)
-            vind = cbflags.val.v(j);
-            vars{vind} = mean(vars{vind}(cbflags.val.i{vind},:));
-            labs{vind} = labs{vind}(cbflags.val.i{vind});
+    elseif ~isempty(cell2mat(cbflags.val.i))
+
+        cnt = 0;
+        for j = 1:numel(cbflags.val.i)
+            if ~isempty(cbflags.val.i{j})
+                cnt = cnt+1;
+                if cbflags.val.v(cnt)~=j
+                    error("v must match cnt")
+                end
+
+                vars{j} = mean(vars{j}(cbflags.val.i{j},:));
+                labs{j} = labs{vind}(cbflags.val.i{j});
+            end
+        end
+
+    elseif ~isempty(cell2mat(cbflags.val.vdel))
+        
+        cnt = 0;
+        for j = 1:numel(cbflags.val.vdel)
+            if ~isempty(cbflags.val.vdel{j})
+                cnt = cnt+1;
+                if cbflags.val.v(cnt)~=j
+                    error("v must match cnt")
+                end
+                vars{j} = nan(1,numsamp,'single');
+                labs{j} = {''};
+            end
         end
     end
 
@@ -40,16 +61,10 @@ catch ME
 end
 
 for j = 1:numel(vars)
-    limsc{j} = find_yaxis_limits(vars(j,:), yaxisroomfac);
+    lims{j} = find_yaxis_limits(vars{j}, yaxisroomfac);
 end
 
 varcombos = make_varcombos(vars);
-
-axsides = fieldnames(vpmap);
-for fi = 1:numel(axsides) 
-    vpmap.(axsides{fi}) = [1:numel(vpmap.(axsides{fi}))]+numel(vpmap.(axsides{fi}))*(fi-1); %once user input is applied, vpmap must become default (it loses meaning after user input)
-end
-
 
 end
 

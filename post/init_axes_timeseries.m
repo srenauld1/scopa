@@ -1,11 +1,11 @@
-function hgroup = init_axes_timeseries(hfg, ax, letui, numsamp, vpmapflatids, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hgroup = init_axes_timeseries(hfg, ax, letui, numsamp, vpmapflat_axid, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
     hfg
     ax struct
     letui
     numsamp
-    vpmapflatids
+    vpmapflat_axid
     ti
     lims
     ticklab = []
@@ -34,7 +34,7 @@ fontmedium = fontsz(2);
 
 dummyvec = nan(numsamp, 1);
 
-[axidcnts, axids] = hist(cell2mat(vpmapflatids),unique(cell2mat(vpmapflatids)));
+[axidcnts, axids] = hist(vpmapflat_axid(vpmapflat_axid~=0),unique(vpmapflat_axid(vpmapflat_axid~=0)));
 numaxids = numel(axidcnts);
 
 hax = [];
@@ -57,10 +57,10 @@ for j = 1:numsubplot
     ticktmp = cell(numaxids,1);
     formspec = cell(numaxids,1);
     cnt = zeros(numaxids,1);
-    for k = 1:numel(vpmapflatids) %loop over all variables, placing them in their assigned plot position (k), which includes specification of their axis side (vpmapflatids{k})
-        if ~isempty(vpmapflatids{k}) %skip empty variables
+    for k = 1:numel(vpmapflat_axid) %loop over all variables, placing them in their assigned plot position (k), which includes specification of their axis side (vpmapflat_axid(k))
+        if vpmapflat_axid(k) %skip empty variables
 
-            fi = vpmapflatids{k}; %axis side index
+            fi = vpmapflat_axid(k); %axis side index
             if fi==1
                 yyaxis left
             elseif fi==2
@@ -70,19 +70,19 @@ for j = 1:numsubplot
             cnt(fi) = cnt(fi)+1; %count of nonempty variables for each axis side index
 
             hpl{j}{fi}{cnt(fi)} = plot(hax{j}, ti, dummyvec);
-            hpl{j}{fi}{cnt(fi)}.Color = cols(k,:);
+            hpl{j}{fi}{cnt(fi)}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
             hpl{j}{fi}{cnt(fi)}.LineStyle = '-';
 
             hax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
 
             if cnt(fi)<axidcnts(axids==fi)
-                formspec{vpmapflatids{k}} = [formspec{vpmapflatids{k}} '%s\\newline'];
+                formspec{vpmapflat_axid(k)} = [formspec{vpmapflat_axid(k)} '%s\\newline'];
             else
-                formspec{vpmapflatids{k}} = [formspec{vpmapflatids{k}} '%s\n'];
+                formspec{vpmapflat_axid(k)} = [formspec{vpmapflat_axid(k)} '%s\n'];
             end
 
             for tti = 1:numel(ticklab{k})
-                ticktmp{vpmapflatids{k}}{cnt(fi),tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), num2str(ticklab{k}(tti), 4));
+                ticktmp{vpmapflat_axid(k)}{cnt(fi),tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), num2str(ticklab{k}(tti), 4));
             end
 
         end

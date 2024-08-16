@@ -4,7 +4,9 @@ function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_p
 
 
 valid_fnsuffixes = opt.mn.valid_fnsuffixes;
+parent_folder_path_local = opt.mn.parent_folder_path_local;
 parent_folder_path_o2 = opt.mn.parent_folder_path_o2;
+% suffix_analysis = opt.mn.suffix_analysis;
 regionex_all = opt.mn.regionex_all;
 tmp_folder_name = opt.mn.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
@@ -257,7 +259,7 @@ suffixes_plot_new = cell(length(suffixes_plot), 1);
 display_range_new = cell(length(suffixes_plot), 1);
 for spi = 1:length(suffixes_plot)
 
-    pth_tmp = find_preprocessed_files(pth_fldr, parent_folder_path_o2, valid_fnsuffixes, datenum, flynum, trialnum, suffixes_plot{spi});
+    pth_tmp = find_preprocessed_files(pth_fldr, parent_folder_path_o2, datenum, flynum, trialnum, suffixes_plot{spi}, valid_fnsuffixes);
 
     if ~isempty(pth_tmp)
         if numel(pth_tmp)>1

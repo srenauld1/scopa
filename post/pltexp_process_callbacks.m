@@ -12,7 +12,7 @@ function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp,
 %       [ t [ click, click, save ] ] enter
 
 % where brackets denote sub-sequences; sub-sequences can be repeated within their enclosing sequence sequence, but can equivalently be called but repeating the enclosing sequence; different sub-sequences, when multiple, can be mixed within a single enclosing sequence
-% where 'save' denotes any save-change button (n,a,c,backspace)
+% where 'save' denotes any save-change button (n,a,c,d)
 % where 'digits' refer to the completed number, not each digit comprising it (which are registered one-at-a-time)
 
 % init buttons are: v (modify current plot variable), t (modify plotted t)
@@ -21,7 +21,7 @@ function [cbflags, ttl] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp,
 % context buttons are: hyphen (sequence_t), r (sequence_v)
 % context buttons have only meaning after init and before save
 
-% save buttons are: n (new), a (add), backspace (delete), c (concatenate)
+% save buttons are: n (new), a (add), d (delete), c (concatenate)
 % save buttons save changes made in the current sequence
 
 % stack image clicks select spherical roi centroids, with optional specification of radius using button r with digit; only relevant in sequence_v
@@ -39,7 +39,7 @@ persistent ttl_tmp
 
 plot_buttons = {'return'};
 init_buttons = {'v', 't'};
-save_buttons = {'n', 'a', 'c', 'backspace'};
+save_buttons = {'n', 'a', 'c', 'd'};
 
 if ~isempty( hndls.hfg.UserData) && ~isempty(hndls.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), hndls.st.hol))
     error("multiple callback buttons recorded; should only be one at a time")
@@ -86,7 +86,7 @@ if ~isempty(user_input)
             ttl_tmp = 'PRESSED "enter", CHANGING t';
         end
 
-        if ( ~isempty(cbflags.val.roicen) && any(~cellfun(@isempty, cbflags.val.roicen)) ) || ( ~isempty(cbflags.val.i) && any(~cellfun(@isempty, cbflags.val.i)) ) %don't use elseif since there can be v and t changes
+        if ~isempty(cell2mat(cbflags.val.roicen)) || ~isempty(cell2mat(cbflags.val.i)) || ~isempty(cell2mat(cbflags.val.vdel)) %don't use elseif since there can be v and t changes
             cbflags.restart.v = 1;
             ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
         end
@@ -100,11 +100,13 @@ if ~isempty(user_input)
 
     elseif strcmp(sequence_init, 'v')
 
-        [ttl_tmp, val_v_out, val_i_out, val_roicen_out] = pltexp_sequence_v(user_input, save_buttons, roipixindp, varsz);
+        [ttl_tmp, val_v_out, val_i_out, val_roicen_out, val_vdel_out, val_linealpha_out] = pltexp_sequence_v(user_input, save_buttons, roipixindp, varsz);
         if ~isempty(val_v_out)
             cbflags.val.v = [cbflags.val.v val_v_out];
             cbflags.val.i{cbflags.val.v(end)} = val_i_out;
             cbflags.val.roicen{cbflags.val.v(end)} = val_roicen_out;
+            cbflags.val.vdel{cbflags.val.v(end)} = val_vdel_out;
+            cbflags.quick.linealpha = val_linealpha_out;
         end
 
 

@@ -1,7 +1,7 @@
-function pth_prefix_all = find_preprocessed_files(parent_folder_path_local, parent_folder_path_o2, valid_fnsuffixes, recdate, fly, trial, fnsuffix, filespec_matching_style)
+function pth_prefix_all = find_preprocessed_files(parent_folder_path_local, parent_folder_path_o2, recdate, fly, trial, fnsuffix, valid_fnsuffixes, filespec_matching_style)
 
 %todo: there can be duplicate files if one is flyg raw patern and one is scopa raw pattern, but this is unlikely, fix soon
-%besides this, it will find duplicate filenames in different locations and will either error or continue with unique filenames only, depending on value of error_on_repeat_filenames
+%todo: there can be duplicate files in different directories
 
 error_on_repeat_filenames = 1;
 
@@ -26,13 +26,13 @@ justfns = cellfun(@(x) x(end), pthscheck);
 [jp, kp, kp2]=unique(justfns, 'stable');
 yy = hist(kp2,unique(kp2));
 jp = jp(yy>1);
+badpaths = pth_prefix_all(contains(pth_prefix_all, jp));
 
-if ~isempty(cell2mat(jp'))
-    pthdupes = pth_prefix_all(contains(pth_prefix_all, jp));
+if ~isempty(cell2mat(badpaths))
     if error_on_repeat_filenames
-        error(sprintf([sprintf('repeated filenames in different locations, move or rename or set error_on_repeat_filenames to 0 above') '\n' sprintf('%s \n', pthdupes{:})]))
+        error(sprintf([sprintf('repeated filenames in different locations, move or rename or set error_on_repeat_filenames to 0 above') '\n' sprintf('%s \n', badpaths{:})]))
     else
-        sprintf([sprintf('repeated filenames in different locations, operating on the first of each repeat') '\n' sprintf('%s \n', pthdupes{:})])
+        sprintf([sprintf('repeated filenames in different locations, operating on the first of each repeat') '\n' sprintf('%s \n', badpaths{:})])
         pth_prefix_all = pth_prefix_all(kp);
     end
 end
@@ -166,7 +166,7 @@ end
 
 
 pth_prefix_all = cat(1, pth_all_tif, pth_all_mat, pth_all_flyg_raw_tif, pth_all_flyg_raw_mat); %ALL POSSIBLE PATTERNS
-pth_prefix_all = unique(cellfun(@(x) x(1:end-4), {pth_prefix_all(:).name}, 'UniformOutput', false)); %unique files, whether tif or mat (will not find duplicates with one scopa and one flyg filename)
+pth_prefix_all = unique(cellfun(@(x) x(1:end-3), {pth_prefix_all(:).name}, 'UniformOutput', false)); %unique files, whether tif or mat (will not find duplicates with one scopa and one flyg filename)
 
 
 end
