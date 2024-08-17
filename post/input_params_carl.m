@@ -15,17 +15,14 @@ opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, sto
 opt.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'2023062*'}; %cell array of char, can use wildcards
-    fnspec_fly = {'*'}; %cell array of char, can use wildcards
-    fnspec_trial = {'*'}; %cell array of char, can use wildcards
-    fnspec_suffix_analysis = {'raw'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
+    fnspec_recdate = {'20240602'}; %cell array of char, can use wildcards
+    fnspec_fly = {'4'}; %cell array of char, can use wildcards
+    fnspec_trial = {'1'}; %cell array of char, can use wildcards
+    fnspec_suffix_analysis = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     opt.mn.pth_usefile_prefix_all = find_preprocessed_files(opt.mn.parent_folder_path_local, opt.mn.parent_folder_path_o2, opt.mn.valid_fnsuffixes, fnspec_recdate, fnspec_fly, fnspec_trial, fnspec_suffix_analysis, fnspec_matching_style);
 else
     opt.mn.pth_usefile_prefix_all = varargin{1};
-    [pthin, ~, ~] = fileparts(opt.mn.pth_usefile_prefix_all);
-    pthin = strsplit(pthin, filesep);
-    opt.mn.pth_grandparent = [strjoin(pthin(1:end-2), filesep) filesep];
 end
 
 opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -69,7 +66,7 @@ opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/ineffi
 
 %opt.ld.gif holds params for making gif of imaging movies in function load_stack; opt.ld.gif params not affect stack for analysis (stack with suffix opt.mn.suffix_analysis) 
 opt.ld.gif.suffixes_plot = { 
-    'raw', ... %comment if you don't want to plot (can comment all too)
+    %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
     'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
@@ -329,13 +326,14 @@ opt.pltexp(1).varnms.ts6{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind26'
 opt.pltexp(1).varnms.ts7{1} = {['']};
 opt.pltexp(1).varnms.ts8{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind27']}; %if empty, do will be set to false
 
-% opt.pltexp(2).varnms.ts1{1} = {['*']};
-% opt.pltexp(2).varnms.ts2{1} = {['*']};
-% opt.pltexp(2).varnms.ts3{1} = {['*']}; %if empty, do will be set to false
-% opt.pltexp(2).varnms.ts4{1} = {['*']}; %if empty, do will be set to false
-
 opt.pltexp(1).varinds.left = [1 2 3 4];
 opt.pltexp(1).varinds.right = [5 6 7 8];
+
+opt.pltexp(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
+opt.pltexp(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
+opt.pltexp(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
+opt.pltexp(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+
 opt.pltexp(1).ignore_missing_vars = 1; %set to 1 not error if any requested timeseries in vars above do not exist (let's you use more general wildcards)
 opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both

@@ -1,5 +1,6 @@
 function plot_experiment(letui, stack, stack_mnt, vars, labs, vpmap, ...
-    epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, ...
+    epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
+    roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, ...
     plotinds, display_range, fngif_prefix_short, fngif_prefix, ftv, ...
     pth_mroi_interactive, normopt, xwid, zwid)
 
@@ -35,6 +36,12 @@ newroirad = 2.5; %num pixels radius for user input rois
 numfr_gif_max = 2000; %throw error if there will be more
 timedim = 2;
 
+scinds = [1 2 3];
+lag_style = 'each'; %currently 'each' is only option; lags xy, then z for each xy; lag_style 'any' (soon available) will allow all combinations
+threshold_data = 0;
+blindspot = -pi/12; %nan to not draw blind spot
+pval_siglev = 0.05; %pval bar gets colored if below pval_siglev
+mkrsz = 4; %scatter marker size
 
 %% arrange figure, choose colors
 
@@ -149,6 +156,15 @@ while plotloop %loop is turned off if no user input
                 roipixindp(~cellfun(@isempty, roiindp)) = roipixind_use([roiindp{:}]);
 
                 vpmapflat_axid_use = flag_empty_timeseries(varsp, vpmapflat_axid, timedim);
+
+
+
+                [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = pltexp_compute_lags(ti(tinds{ecnt}), lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
+
+                [plotx, ploty, plotz, r_dummy1, r_dummy2, cmp, ccr, pval_norm, laginds_to_plot] = ...
+                    pltexp_scat_prepvars(numlags, lagsall_xy, lagsall_z, varsp(scinds,:), threshold_data, labsp(scinds), vpmapflat_axid_use(scinds), ...
+                    plot_z_as_color, polarinds(scinds), numsamp_tslong_eachgif(ecnt), zero_lag_index, lags_to_plot, pval_siglev);
+
 
                 %%%% INIT AXES %%%%
                 if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1)
@@ -353,8 +369,7 @@ end
 
 
 
-
-function numsamp_tslong_eachgif = find_numsamp_tslong(ts_scope, gif_scope, ti, tinds_full)
+function numsamp_tslong_eachgif = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full)
 
 if strcmp(ts_scope, 'full')
     numsamp_tslong_eachgif = numel(ti); %show full timeseries
@@ -393,14 +408,8 @@ for j = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within
     tinds_full{j} = find(ismember_each_element(epochinds_ts_i, epochinds_all{j}));
     tinds{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
 end
-numsamp_tslong_eachgif = find_numsamp_tslong(ts_scope, gif_scope, ti, tinds_full);
+numsamp_tslong_eachgif = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full);
 
-
-end
-
-function vpmapflat_axid = flag_empty_timeseries(vars, vpmapflat_axid, timedim)
-
-vpmapflat_axid(all(isnan(vars),timedim)) = 0;
 
 end
 
@@ -415,10 +424,12 @@ end
 end
 
 
+function vpmapflat_axid = flag_empty_timeseries(vars, vpmapflat_axid, timedim)
+vpmapflat_axid(all(isnan(vars),timedim)) = 0;
+end
+
 function polarinds = find_polar_inds(labsp)
-
 polarinds = (contains(labsp, 'yaw', 'IgnoreCase', true) | contains(labsp, 'ang', 'IgnoreCase', true)) & ~contains(labsp, 'vel', 'IgnoreCase', true);
-
 end
 
 function [vpmapflat, vpmapflat_axid] = translate_vpmap(vpmap)
