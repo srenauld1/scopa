@@ -3,6 +3,8 @@ function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, fngif_prefix_short, fngif_prefix)
 
 
+error("scatterplots is deprecated, scatterplot module within replaced by plot_experiment")
+
 %don't subset the stack 
 
 gif_scope = 'allvars';

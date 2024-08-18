@@ -136,7 +136,7 @@ else
     badpeaks_back_msg = 'there were bad peaks to remove at the end, so the imaging does seem to end during the video, at least';
 end
 keeppeakinds = badpeaks_front+1:numel(lk)-badpeaks_back;
-
+% keeppeakinds = keeppeakinds(1:end-1);
 peakperiods_good = unique(pkdist(keeppeakinds));
 % if range(peakperiods_good)>max_peak_distance_change_defining_periodic
 %     error("range of peakperiods_good should not exceed cycle_period_tiolerance")

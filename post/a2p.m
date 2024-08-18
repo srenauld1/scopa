@@ -82,6 +82,9 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
     stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.ld, ids.recid);
 
+    % stack2fig(stack, [pth.fldr 'test.gif'], tinds=20.3, dimorder=[1:4], framenumdims=3, display_range=[0 1]);
+    % stack2fig(mean(stack,4), [pth.fldr 'test.gif'], tinds=1, dimorder=[1:3], framenumdims=3, display_range=[0 1]);
+
     if any(cell2mat(struct2cell(opt.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
     else
@@ -146,26 +149,6 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
         end
     end
 
-    %% scatterplots
-
-    if opt.mn.do_scatter
-        for si = 1:numel(opt.scat)
-            dochoose = 1;
-            choosecount = 0;
-            while dochoose
-
-                choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(opt.scat(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.scat, pth.stack_analysis, choosecount, dochoose);
-                [stackcrop, zstartpos_crop] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
-
-                scatterplots(stackcrop, fitin.vars.x, fitin.vars.y, fitin.vars.z, fitin.varnms.x, fitin.varnms.y, fitin.varnms.z, ...
-                    opt.scat(si).epochinds, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
-                    md.epochs.epochinds_ts_i, opt.scat(si).lagsxy_sec, opt.scat(si).lagsz_sec, opt.scat(si).lags_to_plot, ...
-                    opt.scat(si).plot_z_as_color, opt.scat(si).gif_visibility, fitin.fn_save_prefix_short, fitin.fn_save_prefix)
-
-            end
-        end
-    end
 
     %% plot experiment
 
@@ -186,8 +169,6 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
                     md.epochs.epochinds_ts_i, opt.pltexp(si).gif_visibility, opt.pltexp(si).plotinds, ...
                     opt.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs, ...
                     pth.mroi_interactive.(regionex), opt.mroi.norm, md.xwid, md.zwid)
-
-
 
             end
         end
