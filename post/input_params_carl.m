@@ -16,7 +16,7 @@ opt.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_d
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
     fnspec_recdate = {'20231119'}; %cell array of char, can use wildcards
-    fnspec_fly = {'1'}; %cell array of char, can use wildcards
+    fnspec_fly = {'3'}; %cell array of char, can use wildcards
     fnspec_trial = {'1'}; %cell array of char, can use wildcards
     fnspec_suffix_analysis = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
@@ -58,9 +58,9 @@ opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/ineffi
 
 %opt.ld.gif holds params for making gif of imaging movies in function load_stack; opt.ld.gif params not affect stack for analysis (stack with suffix opt.mn.suffix_analysis) 
 opt.ld.gif.suffixes_plot = { 
-    'raw', ... %comment if you don't want to plot (can comment all too)
+    %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)

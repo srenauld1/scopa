@@ -290,6 +290,8 @@ if isempty(index_labels)
         nmitmp2 = cellfun(@isempty, index_labels_opt);
         index_labels_opt(nmitmp2(nmitmp)) = index_labels_default(nmitmp2(nmitmp));
         index_labels = index_labels_opt(~cellfun(@isempty, index_labels_opt));
+    else
+        index_labels = index_labels_default;
     end
 else
     if any(~cellfun(@isempty, index_labels_opt))

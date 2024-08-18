@@ -81,7 +81,6 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
     %% load/visualize stack (and optional hires stack)
 
     stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.ld, ids.recid);
-    stack2fig(stack)
 
     if any(cell2mat(struct2cell(opt.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);
