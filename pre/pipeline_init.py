@@ -143,6 +143,9 @@ for ri, _ in enumerate(pth_read_all):
           register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
+        if md['dims'][0]==75050 and md['dims'][1]==1:
+          md['dims'][0] = int(md['dims'][0]/19)
+          md['dims'][1] = 19
         if carls_old_project_all[ri]:  
           separate_z_slices_for_denoising_carls_old_project(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume) 
         else:
