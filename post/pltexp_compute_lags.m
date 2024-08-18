@@ -34,6 +34,8 @@ if isequal(lags_sec, 0)
     lags_samp = 0;
     actual_lags_sec = 0;
 else
+    ticumdiff = ticumdiff(:); %make sure it's a column vector
+    lags_sec = lags_sec(:)';  %make sure it's a row vector
     lags_sec_neg = abs(lags_sec(lags_sec<0));
     [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
     lags_sec_pos = lags_sec(lags_sec>=0);

@@ -150,18 +150,16 @@ while tloop
 
 
         % hndls.sc.hpl{1}.CData = cmp{lagind};
-        % if fr==1
-        %     hndls.sc.hpl{1}.CData = repmat(cmp{lagind}, size(varsp_sc,3), 1);
-        % end
-        scdimmu = ti(tinds_use(fr)); 
-        scdimmax = 1;
-        scdimmin = 0.02;
-        scdimsd = 20;
-        dimout = exp(-(((ti-scdimmu).^2)/(2*scdimsd.^2))); %gaussian profile for dimming markers
-        dimout = rescale(dimout, scdimmin, scdimmax ); %  plot(ti, dimout);
-        hndls.sc.hpl{1}.CData(:,1) = 1-dimout;
-        hndls.sc.hpl{1}.CData(:,2) = 1-dimout;
-        hndls.sc.hpl{1}.CData(:,3) = 1-dimout;
+        if fr==1
+            figure
+            scdimmu = ti(tinds_use(fr));
+            scdimmax = 1;
+            dimout = exp(-(((ti-scdimmu).^2)/(2*scdimsd.^2)));
+            dimout = rescale(dimout, scdimmin, scdimmax );
+            plot(ti, dimout);
+            newc = repmat(cmp{lagind}, size(varsp_sc,3), 1);
+            hndls.sc.hpl{1}.CData = newc.*newc_profile;
+        end
 
         if ~isempty(hndls.sc.br) %bar plot
             hndls.sc.br{1}.hax.Title.String = ['LAGS (CURR: ' sprintf('%.2g', actual_lags_xy_sec(lagind)) ' SEC)'];

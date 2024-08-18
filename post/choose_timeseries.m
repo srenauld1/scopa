@@ -55,16 +55,29 @@ for vpfi = 1:size(tmp3,2)
         for ici = 1:numel(innercell_tmp) %for each inner cell (matches are concatenated)
             icpat = regexptranslate('wildcard', innercell_tmp{ici});
             icpat = [icpat '$']; %mark end of pattern
+            
             chk = cellfun(@(x,y) regexp(x,y), fnflatex, repelem({icpat}, numel(fnflatex))', 'UniformOutput', false);
             kpp = cell(numel(chk),1);
             for j = 1:numel(chk)
                 kpp{j} = find(~cellfun(@isempty, chk{j}));
             end
-            
             fnflat_tmp = cellfun( @(x,y) x(y), fnflatex, kpp, 'UniformOutput', false);
-            fnflat_tmp = vertcat(fnflat_tmp{:});
 
-            sflat_tmp = cell2mat(cellfun( @(x,y) x(y,:), sflat, kpp, 'UniformOutput', false));
+            if all(cellfun(@isempty, fnflat_tmp)) % if no match, check for match without the 'ind' suffix, in fnflat, rather than fnflatex
+                chk = regexp(fnflat, icpat);
+                kpp = find(~cellfun(@isempty, chk));
+                fnflat_tmp = fnflatex(kpp);
+                if kpp
+                    sflat_tmp = vertcat(sflat{kpp});
+                else
+                    fnflat_tmp = cellfun( @(x,y) x(y), fnflatex, repelem({kpp}, size(sflat,1), 1), 'UniformOutput', false);
+                    sflat_tmp = cell2mat(cellfun( @(x,y) x(y,:), sflat, repelem({kpp}, size(sflat,1), 1), 'UniformOutput', false)); %if it's empty do this to make empty arrays with size matching nonempty in time dimension
+                end
+            else
+                sflat_tmp = cell2mat(cellfun( @(x,y) x(y,:), sflat, kpp, 'UniformOutput', false));
+            end
+
+            fnflat_tmp = vertcat(fnflat_tmp{:});
 
             fnflatcat{vpfi,oci} = cat(1, fnflatcat{vpfi,oci}, fnflat_tmp);
             tsflatcat{vpfi,oci} = cat(1, tsflatcat{vpfi,oci}, sflat_tmp);

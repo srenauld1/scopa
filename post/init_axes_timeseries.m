@@ -73,7 +73,9 @@ for j = 1:numsubplot
             hpl{j}{fi}{cnt(fi)}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
             hpl{j}{fi}{cnt(fi)}.LineStyle = '-';
 
-            hax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
+            if j==1
+                hax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
+            end
 
             if cnt(fi)<axidcnts(axids==fi)
                 formspec{vpmapflat_axid(k)} = [formspec{vpmapflat_axid(k)} '%s\\newline'];
@@ -101,8 +103,9 @@ for j = 1:numsubplot
             error("rescale_timeseries is currently required")
         end
 
-        hax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
-
+        if j==1
+            hax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
+        end
 
         if j==1
 

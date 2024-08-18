@@ -13,8 +13,8 @@ function plot_experiment(letui, stack, stack_mnt, vars, labs, vpmap, ...
 %   scinds can be 2 (x-y scatterplot) or 3 elements (x-y-color scatterplot)
 %   inset bar plot shows correlation coefficient at all requested lags 
 %   markers are dimmed according to distance from current sample/gif frame; dimming is gaussian 
-%   scalpha_min is min marker intensity, ie min of gaussian multiplier; if scalpha_min=1, there is no dimming
-%   scalpha_dist is std of gaussian multiplier, in seconds  
+%   scdimmin is min marker intensity, ie min of gaussian multiplier; if scalpha_min=1, there is no dimming
+%   scdimsd is std of gaussian multiplier, in seconds  
 %   if mark_epochs=1, marker type is mapped to epoch (ie epoch 1 gets period markers, epoch 2 gets star markers, etc) 
 
 %vpmap maps vars to plot positions
@@ -28,7 +28,7 @@ ts_scope = 'full'; %how much of total possible timseries to show in long timesca
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
 lrscale = 'equal'; %whether left and right have relative scaling
-sampinc = 5; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
+sampinc = 20; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
@@ -36,12 +36,24 @@ newroirad = 2.5; %num pixels radius for user input rois
 numfr_gif_max = 2000; %throw error if there will be more
 timedim = 2;
 
-scinds = [1 2 3];
+scinds = [1 5]; %indices of plot variables 
+scdimmin = 0; %min
+scdimsd = 4; %seconds 
 lag_style = 'each'; %currently 'each' is only option; lags xy, then z for each xy; lag_style 'any' (soon available) will allow all combinations
 threshold_data = 0;
 blindspot = -pi/12; %nan to not draw blind spot
 pval_siglev = 0.05; %pval bar gets colored if below pval_siglev
 mkrsz = 4; %scatter marker size
+bar_contrast = 0.3; %to make difference between non-significant (white) and barely significant (0.05) clear in blue saturation
+
+if plot_z_as_color==0
+    error("plot_z_as_color must be 1 for now")
+end
+if ~ismember(numel(scinds), [0 2 3])
+    error("scinds must be length 0, 2, or 3")
+end
+
+clear pltexp_scat_prepvars %clear persistent variable within
 
 %% arrange figure, choose colors
 
@@ -96,9 +108,12 @@ lims = lims(vpmapflat);
 
 varcombos = make_varcombos(vars);
 
-[epochstring, tinds, numsamp_tslong_eachgif] = apply_epochinds(epochinds_ts_i, ti, epochinds_all, sampinc, ts_scope, gif_scope);
+[epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochinds_ts_i, ti, epochinds_all, sampinc, ts_scope, gif_scope);
 
-numfr_gif = check_gif_frame_number(gif_scope, tinds, varcombos, numfr_gif_max);
+numfr_gif = check_gif_frame_number(gif_scope, tinds_all, varcombos, numfr_gif_max);
+
+
+[actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = pltexp_compute_lags(ti, lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
 
 
 %% loop over epoch sets and plotting variables
@@ -126,9 +141,13 @@ while plotloop %loop is turned off if no user input
 
     for ecnt = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
 
+        numsamp_tslong_this_gif = numsamp_tslong_all_gifs(ecnt);
+        tinds = tinds_all{ecnt};
+        epochstring = epochstring_all{ecnt};
+
         for vcount = 1:size(varcombos_use,1) %loop over all variable sets
 
-            [varsp, labsp] = apply_varcombo(vars_use, labs_use, varcombos_use, vcount, numsamp_tslong_eachgif(ecnt));
+            [varsp, labsp] = apply_varcombo(vars_use, labs_use, varcombos_use, vcount, numsamp_tslong_this_gif);
 
             skipplot = skip_plot_criteria(labsp, 'none');
 
@@ -143,13 +162,13 @@ while plotloop %loop is turned off if no user input
                 tlabsp = cellfun(@(x) x.(ylim_constancy), lims_use, 'UniformOutput', false);
                 polarinds = find_polar_inds(labsp);
                 varsp(polarinds,:) = insert_nan_for_polar_wrap(varsp(polarinds,:));
-                varsp = nanpadvec(varsp, numsamp_tslong_eachgif(ecnt));
+                varsp = nanpadvec(varsp, numsamp_tslong_this_gif);
                 yaxis_true_lims = find_yaxis_true_lims(lrscale, lims_use);
                 varsp = rescale_to_range(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
 
-                fngif = make_filename(labsp, gif_scope, epochstring{ecnt}, fngif_prefix_short, timestr_use); %gif_scope determines whether fngif gets updated
+                fngif = make_filename(labsp, gif_scope, epochstring, fngif_prefix_short, timestr_use); %gif_scope determines whether fngif gets updated
                 [roiindp, roi_index_str] = find_roi_index(labsp);
-                figure_title = make_figure_title(fngif_prefix_short, epochstring{ecnt}, dtmni, roi_index_str);
+                figure_title = make_figure_title(fngif_prefix_short, epochstring, dtmni, roi_index_str);
                 labsp = process_labels(labsp, roiindp);
 
                 roipixindp = cell(numel(roiindp),1);
@@ -157,14 +176,9 @@ while plotloop %loop is turned off if no user input
 
                 vpmapflat_axid_use = flag_empty_timeseries(varsp, vpmapflat_axid, timedim);
 
-
-
-                [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = pltexp_compute_lags(ti(tinds{ecnt}), lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
-
-                [plotx, ploty, plotz, r_dummy1, r_dummy2, cmp, ccr, pval_norm, laginds_to_plot] = ...
-                    pltexp_scat_prepvars(numlags, lagsall_xy, lagsall_z, varsp(scinds,:), threshold_data, labsp(scinds), vpmapflat_axid_use(scinds), ...
-                    plot_z_as_color, polarinds(scinds), numsamp_tslong_eachgif(ecnt), zero_lag_index, lags_to_plot, pval_siglev);
-
+                [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
+                    pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, varsp, labsp, cols, threshold_data, vpmapflat_axid_use, ...
+                    plot_z_as_color, polarinds, numsamp_tslong_this_gif, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast);
 
                 %%%% INIT AXES %%%%
                 if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1)
@@ -179,7 +193,7 @@ while plotloop %loop is turned off if no user input
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    hndls.ts = init_axes_timeseries(hndls.hfg, ax, letui, numsamp_tslong_eachgif(ecnt), vpmapflat_axid_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    hndls.ts = init_axes_timeseries(hndls.hfg, ax, letui, numsamp_tslong_this_gif, vpmapflat_axid_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
                     sector_ind = 2;
                     cmap = gray(256);
@@ -197,11 +211,21 @@ while plotloop %loop is turned off if no user input
 
                 end
 
+                if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1) || init_scatter %scatterplot also needs to be initialized if it's changed scatter_type (other plots aren't like this)
+                    sector_ind = 1;
+                    subplot_ind = 14;
+                    widfac = 1;
+                    htfac = 1;
+                    hndls.sc = init_axes_scatter(hndls.hfg, ax, letui, scatter_type, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
+                end
+
 
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
-                    framecount, varsp, vpmapflat_axid_use, ti, tinds{ecnt}, cols, roialpha, roipixindp, ...
-                    fngif, figure_title, varsz, letui, timestr_ui, sampinc);
+                    framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
+                    roialpha, roipixindp, fngif, figure_title, varsz, letui, ...
+                    timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
+                    ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd);
 
                 if cbflags.restart.v==1
                     plotloop = 1;
@@ -292,11 +316,11 @@ end
 end
 
 
-function epochstring = make_epoch_string(epochinds)
+function epochstring_all = make_epoch_string(epochinds)
 
 delim = 'e';
-epochstring.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '', delim});
-[~, epochstring.parsed] = get_epoch_number(epochstring.short);
+epochstring_all.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '', delim});
+[~, epochstring_all.parsed] = get_epoch_number(epochstring_all.short);
 
 end
 
@@ -369,17 +393,17 @@ end
 
 
 
-function numsamp_tslong_eachgif = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full)
+function numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full)
 
 if strcmp(ts_scope, 'full')
-    numsamp_tslong_eachgif = numel(ti); %show full timeseries
-    numsamp_tslong_eachgif = repelem(numsamp_tslong_eachgif, numel(tinds_full));
+    numsamp_tslong_all_gifs = numel(ti); %show full timeseries
+    numsamp_tslong_all_gifs = repelem(numsamp_tslong_all_gifs, numel(tinds_full));
 elseif strcmp(ts_scope, 'epoch')
     if strcmp(gif_scope, 'allv_alle')
-        numsamp_tslong_eachgif = max(cellfun(@numel, tinds_full)); %show max of all epoch sets
-        numsamp_tslong_eachgif = repelem(numsamp_tslong_eachgif, numel(tinds_full));
+        numsamp_tslong_all_gifs = max(cellfun(@numel, tinds_full)); %show max of all epoch sets
+        numsamp_tslong_all_gifs = repelem(numsamp_tslong_all_gifs, numel(tinds_full));
     else
-        numsamp_tslong_eachgif = cellfun(@numel, tinds_full); %show max of all epoch sets
+        numsamp_tslong_all_gifs = cellfun(@numel, tinds_full); %show max of all epoch sets
     end
 end
 
@@ -390,32 +414,31 @@ function [varsz, numts, numsamp] = get_vars_size(vars, timedim)
 
 varsz = cell2mat(cellfun(@size,vars,'UniformOutput',false));
 
-if all(varsz ~= varsz(1))
-    error("timeseries do not all have equal number samples")
-end
-
 numts = numel(vars);
 numsamp = unique(varsz(:,timedim));
 
+if numel(numsamp)~=1
+    error("timeseries do not all have equal number samples; or there are no samples")
+end
 
 end
 
 
-function [epochstring, tinds, numsamp_tslong_eachgif] = apply_epochinds(epochinds_ts_i, ti, epochinds_all, sampinc, ts_scope, gif_scope)
+function [epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochinds_ts_i, ti, epochinds_all, sampinc, ts_scope, gif_scope)
 
 for j = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
-    epochstring{j} = make_epoch_string(epochinds_all{j});
+    epochstring_all{j} = make_epoch_string(epochinds_all{j});
     tinds_full{j} = find(ismember_each_element(epochinds_ts_i, epochinds_all{j}));
-    tinds{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
+    tinds_all{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
 end
-numsamp_tslong_eachgif = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full);
+numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full);
 
 
 end
 
-function [varstmp, labstmp] = apply_varcombo(vars_use, labs_use, varcombos_use, vcount, numsamp_tslong_eachgif)
+function [varstmp, labstmp] = apply_varcombo(vars_use, labs_use, varcombos_use, vcount, numsamp_tslong_all_gifs)
 varcombo = varcombos_use(vcount,:);
-varstmp = zeros(numel(varcombo), numsamp_tslong_eachgif, 'single');
+varstmp = zeros(numel(varcombo), numsamp_tslong_all_gifs, 'single');
 labstmp = cell(1, numel(varcombo));
 for vi = 1:numel(varcombo)
     varstmp(vi,:) = vars_use{vi}(varcombo(vi),:);
@@ -467,11 +490,11 @@ end
 
 end
 
-function numfr_gif = check_gif_frame_number(gif_scope, tinds, varcombos, numfr_gif_max)
+function numfr_gif = check_gif_frame_number(gif_scope, tinds_all, varcombos, numfr_gif_max)
 
 num_extra_frames = 0;
 numfr_gif = num_extra_frames;
-epfr = cellfun(@numel, tinds);
+epfr = cellfun(@numel, tinds_all);
 numfr_gif = numfr_gif + epfr;
 if contains(gif_scope, 'alle')
     numfr_gif = sum(numfr_gif);

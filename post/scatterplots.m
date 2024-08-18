@@ -1,4 +1,4 @@
-function scatterplots(varsx, varsy, varsz, labsx, labsy, labsz, ...
+function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, lagsxy_sec, ...
     lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, fngif_prefix_short, fngif_prefix)
 
@@ -17,7 +17,7 @@ fontmedium = 11;
 ylim_constancy = 'eachvar';  %allvars, eachvar, none
 sample_period_string = [num2str(dtmni*1000, '%.2g') ' ms'];
 
-stack = roiinfo.roi_overlay;
+% stack = roiinfo.roi_overlay;
 roi_type = 'rois';
 switch roi_type
     case 'pixels'
@@ -149,7 +149,7 @@ end
 
 end
 
-function [varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz, labsz)
+function [varsx, varsy, varsz, z_is_empty, labsz, lagsz_sec] = check_variable_size(varsx, varsy, varsz, labsz, lagsz_sec)
 
 if isempty(varsx) & isempty(varsy) || isempty(varsx) & isempty(varsz) || isempty(varsy) & isempty(varsz)
     error("only one nonempty variable, at least 2 nonempty variables are required")
@@ -205,6 +205,51 @@ end
 
 end
 
+
+
+function [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = compute_lags(ti, lagsxy_sec, lagsz_sec, lag_style)
+
+[lagsxy, actual_lags_xy_sec] = compute_lags_onedim(ti, lagsxy_sec);
+[lagsz, actual_lags_z_sec] = compute_lags_onedim(ti, lagsz_sec);
+
+switch lag_style
+    case 'each'
+        lgn = 0;
+        for zitmp = lagsz
+            for xyitmp = lagsxy
+                lgn = lgn + 1;
+                lagsall_xy(lgn) = xyitmp;
+                lagsall_z(lgn) = zitmp;
+            end
+        end
+    case 'any'
+        error("lag_style 'any' not yet available")
+end
+
+zero_lag_index = find(lagsall_xy==0 & lagsall_z==0);
+numlags = numel(lagsall_xy);
+
+end
+
+function [lags_samp, actual_lags_sec] = compute_lags_onedim(ti, lags_sec)
+
+
+ticumdiff = ti - ti(1);
+if isequal(lags_sec, 0)
+    lags_samp = 0;
+    actual_lags_sec = 0;
+else
+    lags_sec_neg = abs(lags_sec(lags_sec<0));
+    [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
+    lags_sec_pos = lags_sec(lags_sec>=0);
+    [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
+    lags_samp = [-lags_samp_neg, 0, lags_samp_pos];
+    lags_samp = unique(lags_samp);
+    actual_lags_sec = [vec(-ticumdiff(abs(lags_samp(lags_samp<0))+1)); vec(ticumdiff(lags_samp(lags_samp>=0)+1))];
+    actual_lags_sec = unique(actual_lags_sec);
+end
+
+end
 
 
 function labs = check_labels(labs, vars)

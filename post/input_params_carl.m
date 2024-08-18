@@ -29,8 +29,8 @@ opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' 
 opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
-opt.mn.do_daq = 0; %process daq data 
-opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+opt.mn.do_daq = 1; %process daq data 
+opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
@@ -68,7 +68,7 @@ opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/ineffi
 opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -235,26 +235,13 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 
 %% FIT MODEL
 
-
-%params for fitting model using fitmdl
-% modeling depv in fitmdl function
-% fitmdl fits model describing how indv is transformed into depv
-
-% opt.fitm.varnms.indvpre.(regionex) specifies which input to use for fit,
-% it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'yawvel'}, {'bump','mu'}} will fit depv (specified as described above) in regionex 'no_r' to
-% two-dimensional input, the first dimension being ball.yawvel, the second being bump.mu
-%the name of the innermost nested field must be a regionex that is listed in opt.fitm.regionpat_fit
-%since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
-%since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
-%subfield not listed, uses all, like wildcard
+% params for modeling depv as function of indv in fitmdl function
 
 % to specify independent and dependent variables for model fitting, use opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre
 % format opt.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 % format opt.fitm(i).varnms.indvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
 % where fieldspec is a pattern used to match the flattened struct fieldname, with wildcard (*) allowed anywhere 
-% fieldspec specifies the data to use from struct 'ts', which stores all timeseries
 
 % fieldspec for ts.resp would follow the pattern ['tsclass.regionex.parsex.normex']
 % where tsclass is a field in the first level of struct 'ts'
@@ -265,16 +252,17 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % for ts.ball and ts.vis, fieldspec only has two levels, since ball and vis are not derived from specific brain regions, or roi extraction runs
 % for ts.bump, fieldspec has 6 levels (the same four as bump.resp, with 2 more specifying bump domain, and bump parameter, following this pattern
 % ['tsclass, regionex, parsex, normex, bumpdomain, bumpparam']
-% for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used (or a single * will match everything)
+% for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used (or a single * will match all timeseries in ts)
 % you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
 % any field defined for the first struct index but not subsequent will be copied from the first 
 % opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre are matched by index i in opt.fitm(i)
 % within a single opt.fitm(i).varnms.indvpre or opt.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single opt.fitm(i).indv{j} or opt.fitm(i).varnms.depvpre{j}
 % all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv at the outer cell level are used
-
 %for now, depv at single struct and outer cell level should come from single regionex
+
 opt.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 opt.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+
 opt.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
 opt.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
 opt.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
@@ -297,18 +285,19 @@ opt.fitm = default_fit_params(opt.fitm);
 %scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
 
 %if any of x, y, or z are polar, they are moved to theta on the scatterplots; two polar variables get layered in r
-% opt.scat(1).varnms.x{1} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
+% opt.scat.varnms follows the same pattern as opt.fitm.varnms above
+
 opt.scat(1).varnms.x{1} = {['ball.*'], ['vis.*']};
+
 opt.scat(1).varnms.y{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.scat(1).varnms.z{1} = {['']};
 opt.scat(1).varnms.y{2} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
-opt.scat(1).varnms.y{3} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
-% opt.scat(1).varnms.x{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
+
+opt.scat(1).varnms.z{1} = {['']};
+
 opt.scat(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
 opt.scat(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
 opt.scat(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'
 opt.scat(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
-opt.scat(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
 opt.scat(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
@@ -317,24 +306,25 @@ opt.scat = fill_struct(opt.scat);
 %% PLOT EXPERIMENT
 
 % params for plot_experiment
-opt.pltexp(1).varnms.ts1{1} = {['']};
-opt.pltexp(1).varnms.ts2{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind28']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts3{1} = {['vis.*']};
-opt.pltexp(1).varnms.ts4{1} = {['ball.yawvel'], ['ball.sidevel']};
-opt.pltexp(1).varnms.ts5{1} = {['']};
-opt.pltexp(1).varnms.ts6{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind26']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts7{1} = {['']};
-opt.pltexp(1).varnms.ts8{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind27']}; %if empty, do will be set to false
+% opt.pltexp.varnms follows the same pattern as opt.fitm.varnms above
 
-opt.pltexp(1).varinds.left = [1 2 3 4];
-opt.pltexp(1).varinds.right = [5 6 7 8];
+opt.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
+opt.pltexp(1).varnms.ts2{1} = {['ball.yaw']};
+opt.pltexp(1).varnms.ts3{1} = {['']};
+opt.pltexp(1).varnms.ts4{1} = {['']};
+opt.pltexp(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind80']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts6{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind20']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts7{1} = {['']};
+opt.pltexp(1).varnms.ts8{1} = {['']};
+
+opt.pltexp(1).vpmap.left = [1 2 3 4]; %map of indices of each varnms.ts above to plot positions (on left axis)
+opt.pltexp(1).vpmap.right = [5 6 7 8]; %map of indices of each varnms.ts above to plot positions (on right axis)
 
 opt.pltexp(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
 opt.pltexp(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
 opt.pltexp(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
 opt.pltexp(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
 
-opt.pltexp(1).ignore_missing_vars = 1; %set to 1 not error if any requested timeseries in vars above do not exist (let's you use more general wildcards)
 opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
