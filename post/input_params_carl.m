@@ -283,11 +283,11 @@ opt.fitm = default_fit_params(opt.fitm);
 % opt.pltexp.varnms follows the same pattern as opt.fitm.varnms above
 
 opt.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
-opt.pltexp(1).varnms.ts2{1} = {['ball.yaw']};
+opt.pltexp(1).varnms.ts2{1} = {['']};
 opt.pltexp(1).varnms.ts3{1} = {['']};
 opt.pltexp(1).varnms.ts4{1} = {['']};
-opt.pltexp(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind80']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts6{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind20']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts6{1} = {['fool']}; %if empty, do will be set to false
 opt.pltexp(1).varnms.ts7{1} = {['']};
 opt.pltexp(1).varnms.ts8{1} = {['']};
 

@@ -2,6 +2,7 @@
 
 #cxp.sh runs the entire preprocessing pipeline by specifying params for pipeline_init.py
 # run as ./cxp.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
+# CURRENTLY YOU CANNOT SUBMIT JOBS WITH CXP WHILE ANOTHER SET OF JOBS SUBMITTED BY CXP IS RUNNING (THERE WILL BE AN ERROR)
 #pipeline_init.py is called from various sbatch files (specified by sbatch_job_name_sequence), which are themselves called below, and each of which uses different resources and depends on the previous (with matching jobarrayind) to finish without error
 #cxp.sh is designed to only be called once  #######
 #the sbatch files called below can run multiple jobs in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)

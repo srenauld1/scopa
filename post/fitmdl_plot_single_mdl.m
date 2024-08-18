@@ -6,7 +6,7 @@ else
     ftsyn = [];
 end
 if ~exist('tinds', 'var') || isempty(tinds)
-    tinds = 1:floor(size(depv, 1)/8);
+    tinds = 1:floor(size(depv, 1)/4);
 end
 % if ~strcmp(normalize_depv, 'none')
 %     indv = rescale(indv, -1, 1);
@@ -16,17 +16,30 @@ pthspre = supp.pthspre;
 
 
 filename_save = [pthspre '_' num2str(ri) '_' datestr(now, 30) '_testpred.gif'];
-nrows = supp.num_total_model_functions + 3; ncols = 1;
-[axx, axy, axw, axh] = arrange_subplots(nrows, ncols);
-hfg = figure; sgtitle({'1st fig: predicted vs measured, all samples'; ['2nd fig: same, but first ' num2str(numel(tinds)) ' samples']; '3rd fig: params'; 'below: model comps'})
-for i = 1:numel(axx)
-    hax{i} = axes('Parent', hfg, 'Position', [axx(i), axy(i), axw(i), axh(i)]); 
+nrows = supp.num_total_model_functions + 3; 
+ncols = 1;
+margins_subplot = 0.05;
+margins_fig = 0.05;
+ax = arrange_subplots([nrows, ncols], margins_subplot, margins_fig);
+
+widfac = 1;
+htfac = 1;
+hfg = figure; sgtitle({'1st fig: predicted (red) and measured (black) and ind var (blue if shown), all samples'; ['2nd fig: same, but first ' num2str(numel(tinds)) ' samples']; '3rd fig: model params'; 'below 3rd fig: model comps'})
+for k = 1:numel(ax.rowmajor.xp)
+    if k==1 || k==4
+        dummyvec = nan(numel(depv),1);
+    elseif k==2
+        dummyvec = nan(numel(tinds),1);
+    elseif k==3
+        dummyvec = nan(numel(ft),1);
+    end
+    hax{k} = axes('Parent', hfg, 'Position', [ax.rowmajor.xp(k), ax.rowmajor.yp(k), ax.xe(widfac), ax.ye(htfac)]); 
     yyaxis left; 
-    hp1{i} = plot(hax{i},1, 'k-'); hold(hax{i}, 'on'); hp2{i} = plot(hax{i},1, 'r-'); 
-    hax{i}.YAxis(1).Color = [0 0 0];
+    hp1{k} = plot(hax{k},dummyvec, 'k-'); hold(hax{k}, 'on'); hp2{k} = plot(hax{k},dummyvec, 'r-'); 
+    hax{k}.YAxis(1).Color = [0 0 0];
     yyaxis right; 
-    hp3{i} = plot(hax{i},1, 'b-'); hold(hax{i}, 'on'); hp4{i} = plot(hax{i},1, 'c-');
-    hax{i}.YAxis(2).Color = [0 0 0];
+    hp3{k} = plot(hax{k},dummyvec, 'b-'); hold(hax{k}, 'on'); hp4{k} = plot(hax{k},dummyvec, 'c-');
+    hax{k}.YAxis(2).Color = [0 0 0];
 end
 
 

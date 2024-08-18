@@ -88,11 +88,11 @@ if max_numfits_to_plot_ts>0
             load(fitdata_saved_files(end).name, 'histfit') %load most recent, based on timestamp in filename
             % histfit_all(ri) = hxistfit;
             if use_best_global
-                [~,globalkeepinds] = min(histfitm.fval_g);
+                [~,globalkeepinds] = min(histfit.fval_g);
             else
-                globalkeepinds = 1:size(histfitm.x_l, 3);
+                globalkeepinds = 1:size(histfit.x_l, 3);
             end
-            histxtmp = reshape(histfitm.x_l(:,:,globalkeepinds), size(histfitm.x_l,1), []);
+            histxtmp = reshape(histfit.x_l(:,:,globalkeepinds), size(histfit.x_l,1), []);
             histxtmp = histxtmp(:,~all(histxtmp==0));
 
             if size(histxtmp, 2)>max_numfits_to_plot_par %can shorten these bc too many on x axis is hard to read
