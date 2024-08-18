@@ -141,6 +141,11 @@ if draw_on_meanzt
     maskmanual_all_roi_all_z = repmat(maskmanual_all_roi_all_z, [1 1 size(stack, 3) 1]); %this projects the 2d mask across all z
 end
 
+
+if all(maskmanual_all_roi_all_z(:)==1) && ndims(maskmanual_all_roi_all_z)==2 && ndims(stack)>2
+    maskmanual_all_roi_all_z = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %insertiung this because i don't remember why the above creates 2d rather than 3d ones
+end
+
 maskmanual = maskmanual_all_roi_all_z;
 save(pth_maskmanual, 'maskmanual', '-v7.3', '-mat')
 

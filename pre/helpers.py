@@ -5,8 +5,6 @@ import re
 import os
 from tifffile.tifffile import imwrite, imread
 import mat73
-from denoising_score import denoising_score
-
 
 
 def rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires):

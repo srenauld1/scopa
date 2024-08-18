@@ -8,6 +8,11 @@ function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
 
 %% check some inputs and prepare save path
 
+fitin.indvpre = fitin.vars.indvpre;
+fitin.vars.indvpre = [];
+fitin.depvpre = fitin.vars.depvpre;
+fitin.vars.depvpre = [];
+
 if isvector(fitin.indvpre) & iscolumn(fitin.indvpre)
     fitin.indvpre = fitin.indvpre(:)';
 end

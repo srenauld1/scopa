@@ -2,7 +2,7 @@
 function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
     roiinfo, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots)
 
-resptmp = fitin.depvpre;
+resptmp = fitin.vars.depvpre;
 
 fitin = fitmdl(stack, fitin, roiinfo, md, fitopt);
 

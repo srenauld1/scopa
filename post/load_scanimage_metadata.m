@@ -15,6 +15,11 @@ md.numsamp_crop_t_back = optld.numsamp_crop_t_front;%copy from struct ld
 md.crop_flyback = optld.crop_flyback;%copy from struct ld
 md.zero_stack = optld.zero_stack;%copy from struct ld
 
+if ~isfield(md,'zstartpos')
+    tmp = 0:md.zwid:md.zfov;
+    md.zstartpos = tmp(1:end-1);
+end
+
 if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
     md.md_hires.numsamp_crop_t_front = 0;

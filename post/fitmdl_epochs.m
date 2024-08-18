@@ -18,7 +18,11 @@ pth_depvpre_bin = fitin.pth_depvpre_bin;
 supp = fitin.opop.supp;
 opop = fitin.opop;
 
-epochinds_str = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '', '-'});
+if numel(epochinds)==1
+    epochinds_str = ['e_' num2str(epochinds)];
+else
+    epochinds_str = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'e_', '', '_'});
+end
 
 %% define indexing variables for taking subset of indv and depv (by epoch, and by train/validation set )
 
