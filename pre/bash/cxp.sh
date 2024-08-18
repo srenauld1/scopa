@@ -32,7 +32,7 @@ do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_analysis=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
+jobarrayind=( 0-6 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind
 
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
@@ -65,7 +65,7 @@ LEN_WINDOW_SMOOTH_T_MCP_SEC=(0) #seconds, gaussian temporal smoothing window len
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
-NUM_EPOCHS_DENOISE=(10) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
+NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward in the pipeline, chosen epoch's z slices stitched into stack and saved as tif with suffix dcdn (in stc.sbatch, called by do_stich); one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); will overwrite existing dcdn stack if you run on same data more than once 
 
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
@@ -96,7 +96,7 @@ if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then
     gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
     gpu_partition=gpu_requeue
-    gpu_time=12:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    gpu_time=6:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
     gpu_partition=gpu_quad 
     gpu_time=9:00:00
