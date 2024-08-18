@@ -30,28 +30,7 @@ arguments
     opt.cinds = []; %rgb color channel indices 
 end
 
-
-if ~isempty(opt.framenumdims)
-    if ~isempty(framenumdims)
-        error("framenumdims passed as positional and name-value argument; just do one")
-    end
-    framenumdims = opt.framenumdims;
-end
-if ~isempty(opt.dimorder)
-    if ~isempty(dimorder)
-        error("dimorder passed as positional and name-value argument; just do one")
-    end
-    dimorder = opt.dimorder;
-end
-if ~isempty(opt.display_range)
-    if ~isempty(display_range)
-        error("display_range passed as positional and name-value argument; just do one")
-    end
-    display_range = opt.display_range;
-end
-
-
-if isempty(display_range)
+if ~isempty(display_range)
     display_range = [0 1];
 end
 if isempty(framenumdims)
@@ -65,6 +44,23 @@ if isempty(dimorder)
         dimorder = 1:numel(size(stack));
     end
 end
+
+
+if ~isempty(opt.framenumdims)
+    if ~isempty(opt.framenumdims)
+        error("")
+
+    end
+    framenumdims = opt.framenumdims;
+end
+if ~isempty(opt.dimorder)
+    dimorder = opt.dimorder;
+end
+if ~isempty(opt.display_range)
+    display_range = opt.display_range;
+end
+
+
 
 if iscell(stack)
     szin = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple

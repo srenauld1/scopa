@@ -15,8 +15,8 @@ opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, sto
 opt.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240602'}; %cell array of char, can use wildcards
-    fnspec_fly = {'4'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'20231119'}; %cell array of char, can use wildcards
+    fnspec_fly = {'1'}; %cell array of char, can use wildcards
     fnspec_trial = {'1'}; %cell array of char, can use wildcards
     fnspec_suffix_analysis = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
@@ -25,20 +25,19 @@ else
     opt.mn.pth_usefile_prefix_all = varargin{1};
 end
 
-opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+opt.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+% opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 opt.mn.do_daq = 1; %process daq data 
-opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
-opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_fit = 0; %model fitting (opt.fitm below)
-opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
-opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
+opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+opt.mn.do_popfeat = 1; %compute population features (opt.pf below)
+opt.mn.do_fit = 1; %model fitting (opt.fitm below)
+opt.mn.do_pltexp = 0; %plot experiment (opt.pltexp below)
 opt.mn.old_project = 0; %for carl
 
 
-%% DAQ (i.e. FICTRAC/STIMULUS)
+%% DAQ
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
@@ -48,14 +47,7 @@ opt.daq.slopelen_sec = 0.4; %window length used to fit slope
 opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
-%% TEMPORALLY DOWNSAMPLE AND ALIGN FICTRAC VIDEO WITH IMAGING 
-
-opt.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-opt.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-opt.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
-
-%% LOAD STACK AND PLOT AS GIF
+%% LOAD/VISUALIZE STACK 
 
 %opt.ld holds params used in load_stack
 opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
@@ -66,9 +58,9 @@ opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/ineffi
 
 %opt.ld.gif holds params for making gif of imaging movies in function load_stack; opt.ld.gif params not affect stack for analysis (stack with suffix opt.mn.suffix_analysis) 
 opt.ld.gif.suffixes_plot = { 
-    %'raw', ... %comment if you don't want to plot (can comment all too)
+    'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -88,17 +80,26 @@ opt.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that
 
 opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
+
+%% TEMPORALLY DOWNSAMPLE AND ALIGN FICTRAC VIDEO WITH IMAGING (if it isn't already on daq)
+
+opt.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
+opt.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+opt.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
+
+
 %% MORPHOLOGICAL ROIS
 
 % params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
 % for opt.mroi.auto.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-opt.mroi.use_drawn_rois_str =  {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-opt.mroi.use_drawn_rois_str =  {'fullfov' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+opt.mroi.use_drawn_rois_str =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+% opt.mroi.use_drawn_rois_str =  {'fullfov' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.auto.num_mroi_auto_str = {'fullfov-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+opt.mroi.auto.num_mroi_auto_str = {'eb-64'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 opt.mroi.auto.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.auto.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 opt.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.auto.num_mroi_auto_str must be power of 2
@@ -216,7 +217,6 @@ opt.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid
 opt.pf.bump.doplots = 0;
 
 %params for finding preferred heading using fitmdl
-% opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
 opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp.eb.mo*.in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
 opt.pf.bump.fitm(1).varnms.indvpre{1} = {['vis.yaw']};
 
@@ -270,38 +270,12 @@ opt.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
 opt.fitm(1).epochinds = {[2 3 4]};
 opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
-% see notes_mdlname for notes about opt.fitm.mdlname syntax
-
-opt.fitm(1).mdlname = 'fnet_A01_sh16';
+opt.fitm(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about opt.fitm.mdlname syntax
 opt.fitm(1).plt.doplots = 100;
 
 opt.fitm = fill_struct(opt.fitm);
 opt.fitm = default_fit_params(opt.fitm);
 
-
-%% SCATTERPLOTS
-
-% params for scatterplots
-%scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
-
-%if any of x, y, or z are polar, they are moved to theta on the scatterplots; two polar variables get layered in r
-% opt.scat.varnms follows the same pattern as opt.fitm.varnms above
-
-opt.scat(1).varnms.x{1} = {['ball.*'], ['vis.*']};
-
-opt.scat(1).varnms.y{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.scat(1).varnms.y{2} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
-
-opt.scat(1).varnms.z{1} = {['']};
-
-opt.scat(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
-opt.scat(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
-opt.scat(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'
-opt.scat(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
-opt.scat(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
-
-opt.scat = fill_struct(opt.scat);
 
 %% PLOT EXPERIMENT
 
