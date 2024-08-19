@@ -112,7 +112,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     stack_size_y = dims[2]
     stack_size_x = dims[3]
     default_patch_xy = 120
-    train_datasets_size = 10000 #approximately how many 3d xyt patches to train on, which can be different from what actually gets used because of how gap/stride in t is computed; in case this number is set too high (will cause deepcad error), scopa code below lowers it to the highest acceptable value 
+    train_datasets_size = 3000 #approximately how many 3d xyt patches to train on, which can be different from what actually gets used because of how gap/stride in t is computed; in case this number is set too high (will cause deepcad error), scopa code below lowers it to the highest acceptable value 
     overlap_factor = 0.8 # the overlap factor between two adjacent patches in x and y (t is more complicated see above)
 
 

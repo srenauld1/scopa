@@ -221,6 +221,12 @@ if hsvopt.do %roi hsv map
     hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
 end
 
+hsvopt = default_hsv_params();
+hue_feature = [1:num_mroi]';
+hsvmap = plots_compute_hsv(hsvopt, hue_feature);
+hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
+hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
+
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
     gif_visibility = 'on';
