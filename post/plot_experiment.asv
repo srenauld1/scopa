@@ -132,7 +132,7 @@ while plotloop %loop is turned off if no user input
         vars_use = vars;
         labs_use = labs;
         lims_use = lims;
-        roipixind_use = roiinfo.roipixind;
+        roipixind_use = roiinfo.roipixinds;
         varcombos_use = varcombos;
         timestr_use = '';
     end

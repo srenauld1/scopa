@@ -146,12 +146,12 @@ end
 
 mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');
 
-roipixind = cell(num_mroi, 1);
+roipixinds = cell(num_mroi, 1);
 pixinds_bnd_roi = cell(num_mroi, 1);
 bnd2d = zeros(size(mask_allroi), 'logical');
-for ii = 1:length(roipixind)
-    roipixind{ii} = find(vec(mask_roi_vec(ii,:))); %pixel indices of each roi
-    mask_allroi(roipixind{ii}) = 1;
+for ii = 1:length(roipixinds)
+    roipixinds{ii} = find(vec(mask_roi_vec(ii,:))); %pixel indices of each roi
+    mask_allroi(roipixinds{ii}) = 1;
     bnd2d(:) = 0;
     for jj = 1:size(mask_allroi, 3)
         bnd2d(:,:,jj) = bwperim(mask_allroi(:,:,jj));
@@ -160,7 +160,7 @@ for ii = 1:length(roipixind)
     mask_allroi(:) = 0;
 end
 
-pixinds_allroi_tmp = unique(vertcat(roipixind{:})); %this is not always the same as find(mask_allroi) inside morph auto function above, since rois can be overlapping, and also sometimes derived from interpolated z
+pixinds_allroi_tmp = unique(vertcat(roipixinds{:})); %this is not always the same as find(mask_allroi) inside morph auto function above, since rois can be overlapping, and also sometimes derived from interpolated z
 
 mask_allroi(pixinds_allroi_tmp) = 1;
 
@@ -197,7 +197,7 @@ end
 %% put in struct 'roiinfo'
 
 roiinfo.numroi = num_mroi;
-roiinfo.roipixind = roipixind;  %pixel indices of each roi, one roi per cell
+roiinfo.roipixinds = roipixinds;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi
 roiinfo.centroids_roi = centroids_roi;
 roiinfo.mask_allroi = mask_allroi; %boolean mask of all rois
@@ -207,7 +207,7 @@ roiinfo.cmsnr = [];
 roiinfo.roinumpix = [];
 roiinfo.roipixvals_binned = [];
 roiinfo.roipixvals_edges = [];
-roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipixind)
+roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipixinds)
 
 
 %% plots
@@ -218,13 +218,13 @@ if hsvopt.do %roi hsv map
     hue_feature = [1:num_mroi]';
     hsvmap = plots_compute_hsv(hsvopt, hue_feature);
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixind, mask_roi_vec, hsv_filename);
+    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
 end
 
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
     gif_visibility = 'on';
-    stack2fig(stack_mnt, filename_olay, gif_visibility, roipixind, [], olayopt.roi_color, olayopt.roialpha) %include roipixind as argument to plot roi overlay
+    stack2fig(stack_mnt, pthgif=filename_olay, gif_visibility=gif_visibility, roipixinds=roipixinds, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipixinds as argument to plot roi overlay
 end
 
 
@@ -264,13 +264,13 @@ if do_other_plots %all these are at imaging resolution
 
     %mask overlay
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    stack2fig( overlayarray, [pth_mroi_prefix 'maskallroi_overlay_.gif'])
+    stack2fig( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_.gif'])
 
     %manual roi mask
-    stack2fig(maskmanual, [pth_mroi_prefix 'maskmanual_.gif'])
+    stack2fig(maskmanual, pthgif=[pth_mroi_prefix 'maskmanual_.gif'])
 
     %mask all rois (without stack background)
-    stack2fig(mask_allroi, [pth_mroi_prefix 'maskallroi_.gif'])
+    stack2fig(mask_allroi, pthgif=[pth_mroi_prefix 'maskallroi_.gif'])
 
     % %3d surface plot
     % kbnd = boundary([maskx,masky,maskz]);

@@ -126,6 +126,7 @@ if plot_stack_gif
     % stackplot{2} = stackplotnew;
 
 
+    %test thresholding stack prior to plot
     % for spi = 1:numel(stackplot)
     %     [histdt, histx] = hist(stackplot_mn{spi}(:), 1000);
     %     thrbin_tri = triangle_threshold(histdt, 'R', 1);
@@ -142,24 +143,29 @@ if plot_stack_gif
     %     stdtmp = mean(std(single(stdtmp))); %std over time of "unlabeled" pixels 
     % end
 
-    pthgif = [filename_prefix '.gif'];
-    cmap = gray(256);
-    framenumdims = 3;
-    dimorder = [1,2,3,4];
-    figsidelen = 0.75;
     index_labels = arrayfun(@(x) 1:x(end), size(stackplot{1}), 'UniformOutput', false);
-    index_labels{3} = plotinds.z;
-    index_labels{4} = plotinds.t;
-    gif_visibility = 'on';
-    stack2fig(stackplot, pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
-
-    pthgif = [filename_prefix 'meant_.gif'];
-    framenumdims = 2;
-    dimorder = [1,2,3];
-    index_labels = index_labels(1:3);
-    stack2fig(stackplot_mn, pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
-
+    index_labels{3} = plotinds.z; %use plotinds.z rather than zinds in stack2fig to subset the large stacks above in the loop, rather than cat them and make a giant variable
+    index_labels{4} = plotinds.t; %use plotinds.t rather than tinds in stack2fig to subset the large stacks above in the loop, rather than cat them and make a giant variable
     
+    stack2fig( ...
+        stackplot, ...
+        pthgif=[filename_prefix '.gif'], ...
+        display_range=display_range, ...
+        framenumdims=3, ...
+        dimorder=[1,2,3,4], ...
+        title_prefix=figtitle_prefix, ...
+        index_labels=index_labels ...
+        )
+
+    stack2fig( ...
+        stackplot_mn, ...
+        pthgif=[filename_prefix 'meant_.gif'], ...
+        display_range=display_range, ...
+        framenumdims=2, ...
+        dimorder=[1,2,3], ...
+        title_prefix=figtitle_prefix, ...
+        index_labels=index_labels(1:3) ...
+        )
 
 end
 

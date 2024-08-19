@@ -1,11 +1,11 @@
 
-function [vars, labs, lims, roipixind, varcombos] = apply_user_input(cbflags, vars, labs, roipixind, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipixinds, varcombos] = apply_user_input(cbflags, vars, labs, roipixinds, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, yaxisroomfac, numsamp)
 
 try
 
     if ~isempty(cell2mat(cbflags.val.roicen))
 
-        max_index_available_rois = numel(roipixind);
+        max_index_available_rois = numel(roipixinds);
 
         maskmanual = zeros(size(stack_mnt,1), size(stack_mnt,2), size(stack_mnt,3), 'logical');
         [umy, umx, umz] = meshgrid(0:xwid:xwid*(size(maskmanual,2)-1), 0:xwid:xwid*(size(maskmanual,1)-1), 0:zwid:zwid*(size(maskmanual,3)-1));
@@ -19,7 +19,7 @@ try
                 end
 
                 [roipixind_new, vars{j}] = make_ui_roi(cbflags.val.roicen{j}, newroicen_all{j}, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive); % cbflags.delete.roicen{cbflags.val.v}
-                roipixind = cat(1, roipixind, roipixind_new);
+                roipixinds = cat(1, roipixinds, roipixind_new);
                 disp("warning, hard coding ui parsex and parsnorm, fix this now")
                 labs{j} = {['resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of choose_timeseries
             end
@@ -69,7 +69,7 @@ varcombos = make_varcombos(vars);
 end
 
 
-function [roipixind, vars] = make_ui_roi(roicen, newroicen_all, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive)
+function [roipixinds, vars] = make_ui_roi(roicen, newroicen_all, xwid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, dtmni, pth_mroi_interactive)
 
 if ~isempty(roicen)
     tmp = [xwid xwid zwid].*(double(roicen)-1);
@@ -88,7 +88,7 @@ else
 
     [roiinfo_new, resp_new] = make_morphological_rois(stack, stack_mnt, normopt, dtmni, [], [], pth_mroi_interactive, [], [], [], [], [], maskmanual);
 
-    roipixind = roiinfo_new.roipixind;
+    roipixinds = roiinfo_new.roipixinds;
     vars = resp_new.in_rawf_pc_f_cl_f_w_no;
 
 end

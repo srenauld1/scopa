@@ -1,12 +1,12 @@
-function [imroi, imalpha] = make_roi_overlay(imbg, roipixind, roi_color, roialpha)
+function [imroi, imalpha] = make_roi_overlay(imbg, roipixinds, roi_color, roialpha)
 
-% make overlay for roi set defined by roipixind, background is imbg; 
+% make overlay for roi set defined by roipixinds, background is imbg; 
 % overlapping rois are averaged in color and transparency/alpha
 % uses persistent variables because typically called in plotting loop
 
 arguments
     imbg
-    roipixind
+    roipixinds
     roi_color = [1 0 0]
     roialpha = 0.3
 end
@@ -18,23 +18,23 @@ if isempty(imalpha_oneroi) && isempty(imroi_oneroi)
     imroi_oneroi = repmat(imalpha_oneroi, [ones(1, numel(size(imalpha_oneroi))) 3]);
 end
 
-if ~iscell(roipixind)
-    if isvector(roipixind)
-        roipixind = {roipixind};
+if ~iscell(roipixinds)
+    if isvector(roipixinds)
+        roipixinds = {roipixinds};
     else
-        error("roipixind must be cell, or vector")
+        error("roipixinds must be cell, or vector")
     end
 end
 if size(roi_color, 1)==1
-    roi_color = repmat(roi_color, [numel(roipixind) 1]);
+    roi_color = repmat(roi_color, [numel(roipixinds) 1]);
 end
 
 
 rcnt = 0;
-for ri = 1:numel(roipixind)
-    if ~isempty(roipixind{ri})
+for ri = 1:numel(roipixinds)
+    if ~isempty(roipixinds{ri})
         rcnt = rcnt+1;
-        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipixind{ri}, imroi_oneroi, imalpha_oneroi, roi_color(ri,:), roialpha); %make an overlay for one roi
+        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipixinds{ri}, imroi_oneroi, imalpha_oneroi, roi_color(ri,:), roialpha); %make an overlay for one roi
         if rcnt==1
             imroi = imroi_oneroi;
             imalpha = imalpha_oneroi;

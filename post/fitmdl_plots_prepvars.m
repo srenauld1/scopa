@@ -51,7 +51,7 @@ end
 if normalize_depv
     plotvars.depvp = fitdata.depvp(:, roiinds_plot);
 end
-plotvars.roipixind = roiinfo.roipixind(roiinds_plot);
+plotvars.roipixinds = roiinfo.roipixinds(roiinds_plot);
 
 %% pad timeseries discontinuities
 

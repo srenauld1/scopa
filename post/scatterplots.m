@@ -24,7 +24,7 @@ roi_type = 'rois';
 switch roi_type
     case 'pixels'
         for roi_ind = 1:roiinfo.numroi
-            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roiinfo.mask_allroi), roiinfo.roipixind{roi_ind});
+            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roiinfo.mask_allroi), roiinfo.roipixinds{roi_ind});
         end
     case 'rois'
         crosshair = cellfun(@round, roiinfo.centroids_roi, 'UniformOutput', false); %will this take it out of bounds? should not

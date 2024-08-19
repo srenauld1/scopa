@@ -34,7 +34,7 @@ depv_allrois = read_mdl_var(fitin.pth_depvpre_bin);
 depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvpre).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
 plotvars.depvp = fitdata.depvp(:, roiinds_plot);
-plotvars.roipixind = roiinfo.roipixind(roiinds_plot);
+plotvars.roipixinds = roiinfo.roipixinds(roiinds_plot);
 
 %% reverse standardization, if it occurred
 

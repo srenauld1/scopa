@@ -96,7 +96,7 @@ if doplots(4)
 end
 
 if doplots(5)
-    compare_roi_with_pix(depv_allrois{epi}, stack, roipixind, pth_fitdata_prefix) %make gif showing roi against each of its pixels
+    compare_roi_with_pix(depv_allrois{epi}, stack, roipixinds, pth_fitdata_prefix) %make gif showing roi against each of its pixels
 end
 
 close all

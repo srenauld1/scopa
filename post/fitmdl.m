@@ -36,12 +36,12 @@ pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
 if strcmp(opts.plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion
     pixfitflag = 1;
-    roipixind2 = logical(sum(roiinfo.roipixind)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
+    roipixind2 = logical(sum(roiinfo.roipixinds)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
     depv2 = reshape(stack, [], size(stack, 4));
     depv2 = depv2(cell2mat(roipixind2), :);
     fitin2.vars.depvpre = depv2;
     roiinfo2 = roiinfo;
-    roiinfo2.roipixind = roipixind2;
+    roiinfo2.roipixinds = roipixind2;
     fitmdl(stack, fitin2, roiinfo2, md, opts, pixfitflag); %call fitmdl on pixels if you want a pixel fit background behind your roi fit background
     pixfitflag = 0; %reset to zero
 end

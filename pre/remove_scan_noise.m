@@ -14,11 +14,9 @@ plotinds.z = []; %z indices to plot, blank for all, negative for that number equ
 
 zero_stack = 1; %subtract min to make min zero 
 
-cmap = gray(256); %for plotting, if makeplots
 display_range = [0,1]; %for plotting, if makeplots
 framenumdims = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
-figsidelen = 0.75;%for plotting, if makeplots
 
 display(['processing : ' pth_stack_tif] )
 
@@ -120,7 +118,7 @@ if makeplots
     index_labels{4} = plotinds.t;
     gif_visibility = 'on';
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_prefilt, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), pthgif=fn_gif_prefilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 
 end
 
@@ -135,11 +133,8 @@ stack = fft_filter_1d(stack, stopband);
 %% plot after filtering
 
 if makeplots
-
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), fn_gif_postfilt, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
-
+    stack2fig(stack(:,:,plotinds.z, plotinds.t), pthgif=fn_gif_postfilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 end
-
 
 %% save
 

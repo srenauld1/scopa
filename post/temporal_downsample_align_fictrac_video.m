@@ -209,23 +209,13 @@ sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
 %% plot video before and after resampling
 
 if doplots
-    plotinds_t = 1:300;
-    cmap = gray(128);
-    display_range = [0,1];
-    framenumdims = 2;
-    dimorder = [1,2,3];
-    index_labels = {};
-    figsidelength = 0.75;
-    axord = 'rowmajor';
-    gif_visibility = 'on';
-
     title_prefix = 'pre resample';
     pthgif = [pth_vid(1:end-4) '.gif'];
-    stack2fig(ftvds(:,:,plotinds_t), pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
+    stack2fig(ftvds, tinds=1:300, pthgif=pthgif, title_prefix=title_prefix)
 
     title_prefix = 'post resample';
     pthgif = [pth_vid(1:end-4) 'RS_.gif'];
-    stack2fig(ftvdsrs(:,:,plotinds_t), pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
+    stack2fig(ftvdsrs, tinds=1:300, pthgif=pthgif, title_prefix=title_prefix)
 end
 
 save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
