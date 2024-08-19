@@ -28,9 +28,9 @@ function a2p(varargin)
 
 % display_todos()
 
-% opt = input_params_carl(varargin);
+opt = input_params_carl(varargin);
 %opt = input_params_carl_eb(varargin);
-opt = input_params_carl_pb(varargin);
+% opt = input_params_carl_pb(varargin);
 
 %% loop over recordings
 
