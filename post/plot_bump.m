@@ -23,7 +23,7 @@ alpha_min = 0;
 
 linwid = 1.5;
 
-fngif = [fn_prefix 'e' strrep(num2str(epochinds), ' ', '_') '_sort_' sorting_target_metric '_mthd_' num2str(bump_method_index) '_BUMP_.gif'];
+pthgif = [fn_prefix 'e' strrep(num2str(epochinds), ' ', '_') '_sort_' sorting_target_metric '_mthd_' num2str(bump_method_index) '_BUMP_.gif'];
 
 "FLIPPING ORDER OF EPOCHINDS BECAUSE PLOT IS BOTTOM TO TOP"
 epochinds = flip(epochinds);
@@ -117,7 +117,7 @@ wp = wlab - room_for_labels*2;
 yp = ylab + room_for_labels;
 hp = hlab - room_for_labels;
 
-tittmp = strsplit(fngif(1:end-4), '/');
+tittmp = strsplit(pthgif(1:end-4), '/');
 figure_title = strrep(tittmp{end}, '_', ' ');
 
 hfg = figure( 'Units', 'normalized', 'Position', [0.4, 0.4, 0.6, 0.6], ...
@@ -825,7 +825,7 @@ for ii = 1:numfram
     end
 
     
-    fig2gif(hfg, ii, fngif)
+    fig2gif(hfg, ii, pthgif)
 
 
     %

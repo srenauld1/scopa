@@ -8,19 +8,15 @@ function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
 
 %% check some inputs and prepare save path
 
-fitin.indvpre = fitin.vars.indvpre;
-fitin.vars.indvpre = [];
-fitin.depvpre = fitin.vars.depvpre;
-fitin.vars.depvpre = [];
 
-if isvector(fitin.indvpre) & iscolumn(fitin.indvpre)
-    fitin.indvpre = fitin.indvpre(:)';
+if isvector(fitin.vars.indvpre) & iscolumn(fitin.vars.indvpre)
+    fitin.vars.indvpre = fitin.vars.indvpre(:)';
 end
 
-[ fitin.num_dim_indvpre, fitin.num_samp_indvpre ] = size(fitin.indvpre);
-[ fitin.num_dim_depvpre, fitin.num_samp_depvpre ] = size(fitin.depvpre);
+[ fitin.num_dim_indvpre, fitin.num_samp_indvpre ] = size(fitin.vars.indvpre);
+[ fitin.num_dim_depvpre, fitin.num_samp_depvpre ] = size(fitin.vars.depvpre);
 
-if fitin.num_samp_indvpre~=fitin.num_samp_depvpre | ndims(fitin.depvpre)~=2 | ndims(fitin.indvpre)~=2
+if fitin.num_samp_indvpre~=fitin.num_samp_depvpre | ndims(fitin.vars.depvpre)~=2 | ndims(fitin.vars.indvpre)~=2
     error("incorrectly sized input(s)")
 end
 
@@ -43,7 +39,7 @@ if strcmp(opts.plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfit
     roipixind2 = logical(sum(roiinfo.roipixind)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
     depv2 = reshape(stack, [], size(stack, 4));
     depv2 = depv2(cell2mat(roipixind2), :);
-    fitin2.depv = depv2;
+    fitin2.vars.depvpre = depv2;
     roiinfo2 = roiinfo;
     roiinfo2.roipixind = roipixind2;
     fitmdl(stack, fitin2, roiinfo2, md, opts, pixfitflag); %call fitmdl on pixels if you want a pixel fit background behind your roi fit background

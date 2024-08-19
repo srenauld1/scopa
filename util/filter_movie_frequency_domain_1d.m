@@ -86,11 +86,11 @@ if 0
 
         swapdim = 1;
         ncol = 128;
-        fngif = [pth_fldr '/imout.gif'];
+        pthgif = [pth_fldr '/imout.gif'];
         hfg = figure;
         for mmi = 1:300
             plot(imfm_log(:,mmi))
-            fig2gif(hfg, mmi, fngif)
+            fig2gif(hfg, mmi, pthgif)
         end
         %%
 

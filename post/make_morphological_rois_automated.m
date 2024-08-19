@@ -386,10 +386,10 @@ if do_plots
         set(gca,'CameraViewAngle',8)
         rotinc = 30;
         views = -180:rotinc:180;
-        fngif = [pth_mroi_prefix 'huerois_3dspin_upsamp.gif'];
+        pthgif = [pth_mroi_prefix 'huerois_3dspin_upsamp.gif'];
         for framecount = 1:length(views) - 1
             view(views(framecount)+2, 20)
-            fig2gif(hfg, framecount, fngif)
+            fig2gif(hfg, framecount, pthgif)
         end
 
 

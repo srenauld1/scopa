@@ -28,7 +28,9 @@ function a2p(varargin)
 
 % display_todos()
 
-opt = input_params_carl(varargin);
+% opt = input_params_carl(varargin);
+%opt = input_params_carl_eb(varargin);
+opt = input_params_carl_pb(varargin);
 
 %% loop over recordings
 
@@ -40,6 +42,9 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
     [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, opt.mn.pth_usefile_prefix_all{pai});
 
+    clear global
+    global pthsv
+    pthsv = pth.fldr;
 
     %% load metadata
 
@@ -82,8 +87,10 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
 
     stack = load_stack(md.sz_o, md.numslice_withflyback, pth, opt.ld, ids.recid);
 
-    % stack2fig(stack, [pth.fldr 'test.gif'], tinds=20.3, framenumdims=3, display_range=[0 1]);
-    % stack2fig(mean(stack,4), [pth.fldr 'test.gif'], framenumdims=3, display_range=[0 1]);
+    % stack2fig(stack, tinds=20.3, framenumdims=3, display_range=[0 1]);
+    % stack2fig(mean(stack,4), framenumdims=3, display_range=[0 1]);
+
+
 
     if any(cell2mat(struct2cell(opt.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, opt.hires);

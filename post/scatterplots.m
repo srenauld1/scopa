@@ -1,6 +1,6 @@
 function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     epochinds_all, roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, lagsxy_sec, ...
-    lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, fngif_prefix_short, fngif_prefix)
+    lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, pthgif_prefix_short, pthgif_prefix)
 
 
 error("scatterplots is deprecated, scatterplot module within replaced by plot_experiment")
@@ -51,7 +51,7 @@ labsz = check_labels(labsz, varsz);
 
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-fngif = [fngif_prefix '_.gif' ];
+pthgif = [pthgif_prefix '_.gif' ];
 indpolar_prev = Inf;
 hndls = struct;
 framecount = 0;
@@ -81,7 +81,7 @@ for ei = 1:numel(epochinds_all)
                 [polar_index, labt, labr] = find_polar_index(labx, laby, labz);
                 axtype = set_axtype(polar_index, z_is_empty, plot_z_as_color);
                 skipplot = skip_plot_criteria(laball, 'none');
-                [fngif, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix_short, fngif_prefix, fngif, roi_index, sample_period_string);
+                [pthgif, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, pthgif_prefix_short, pthgif_prefix, pthgif, roi_index, sample_period_string);
 
                 switch polar_index
                     case 1
@@ -113,7 +113,7 @@ for ei = 1:numel(epochinds_all)
 
                     [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, ...
                         plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, ...
-                        polar_index, actual_lags_xy_sec, ccr, pval_norm, fngif, roi_type, plot_z_as_color, figure_title);
+                        polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title);
 
 
                 end
@@ -396,7 +396,7 @@ end
 
 end
 
-function [fngif_new, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, fngif_prefix_short, fngif_prefix, fngif_old, roi_index, sample_period_string)
+function [pthgif_new, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, pthgif_prefix_short, pthgif_prefix, pthgif_old, roi_index, sample_period_string)
 
 if isempty(labz)
     dimstring = '2d';
@@ -414,21 +414,21 @@ if strcmp(epochstring, '1')
     epochstring_parsed = 'CLOSED LOOP';
 end
 
-stackidtmp = strsplit(fngif_prefix_short, filesep);
+stackidtmp = strsplit(pthgif_prefix_short, filesep);
 stackid = stackidtmp{end};
 figure_title = [strrep(stackid, '_', ' ') ',   ' epochstring_parsed  ',   ' sample_period_string ' SAMPLES,    ROI #' num2str(roi_index)];
 figure_title = upper(figure_title);
 
-fngif_suffix = {[axtype{1} laby]; [axtype{2} labx]; [axtype{3} labz]; ['e' epochstring ' ' dimstring ]}; %switch order
-fngif_suffix = strrep(strjoin(fngif_suffix), ' ', '_');
-if strcmp(gif_scope, 'all') && ei==0 %make fngif at first epoch, first variable, and never update
-    fngif_new = [fngif_prefix '_' fngif_suffix '_.gif' ];
-elseif strcmp(gif_scope, 'epoch') && varcount==0 %update fngif for each epoch
-    fngif_new = [fngif_prefix '_' fngif_suffix '_.gif' ];
+pthgif_suffix = {[axtype{1} laby]; [axtype{2} labx]; [axtype{3} labz]; ['e' epochstring ' ' dimstring ]}; %switch order
+pthgif_suffix = strrep(strjoin(pthgif_suffix), ' ', '_');
+if strcmp(gif_scope, 'all') && ei==0 %make pthgif at first epoch, first variable, and never update
+    pthgif_new = [pthgif_prefix '_' pthgif_suffix '_.gif' ];
+elseif strcmp(gif_scope, 'epoch') && varcount==0 %update pthgif for each epoch
+    pthgif_new = [pthgif_prefix '_' pthgif_suffix '_.gif' ];
 elseif strcmp(gif_scope, 'var') %update for each variable
-    fngif_new = [fngif_prefix '_' fngif_suffix '_.gif' ];
+    pthgif_new = [pthgif_prefix '_' pthgif_suffix '_.gif' ];
 else
-    fngif_new = fngif_old;
+    pthgif_new = pthgif_old;
 end
 
 labx = strrep(labx, 'vis', 'cue');
@@ -889,7 +889,7 @@ end
 
 
 
-function [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, fngif, roi_type, plot_z_as_color, figure_title)
+function [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title)
 
 
 hndls.htx.String = figure_title;
@@ -1001,7 +1001,7 @@ for lagind = laginds_to_plot
 
     end
 
-    fig2gif(hndls.hfg, framecount, fngif)
+    fig2gif(hndls.hfg, framecount, pthgif)
 
 end
 

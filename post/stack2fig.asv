@@ -17,8 +17,8 @@ arguments
     opt.axord char = 'rowmajor'
     opt.numcolorsgif = 128
     opt.framenumdims = 2; %how many dims to display on a each frame
-    opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
-    opt.display_range = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
+    opt.dimorder = [0 1]; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
+    opt.display_range = []; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.yinds = [];
     opt.xinds = [];
     opt.zinds = [];
@@ -41,9 +41,6 @@ else
 end
 
 if isempty(pthgif)
-    if isempty(pthsv)
-        error("global variable pthsv has not been set, and pthgif was not passed as argument; do one or the other")
-    end
     pthgif = [pthsv char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) '.gif'];
 end
 if isempty(dimorder)
@@ -273,7 +270,7 @@ if isempty(index_labels)
     end
 else
     if any(~cellfun(@isempty, index_labels_opt))
-        error("you specified index_labels and also passed name_value at least one name-value argument with name *inds; if you pass any *inds, do not pass index_labels")
+        error("you specified index_labels and also passed name_value at least one name-value argument with name *inds; if you use name-value indices, do not pass index_labels")
     end
 end
 

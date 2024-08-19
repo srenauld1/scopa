@@ -1,4 +1,4 @@
-function opt = input_params_carl(varargin)
+function opt = input_params_carl_eb(varargin)
 
 % struct 'opt' holds all input params
 % substructures within opt are mostly used within single functions called from a2p
@@ -28,7 +28,6 @@ else
 end
 
 opt.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.mn.regionex_all = {'eb' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 opt.mn.do_daq = 1; %process daq data 
@@ -98,7 +97,6 @@ opt.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not dis
 
 %%params for the manually drawn morphological rois
 opt.mroi.use_drawn_rois_str =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-opt.mroi.use_drawn_rois_str =  {'eb' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 opt.mroi.auto.num_mroi_auto_str = {'eb-256'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
@@ -194,7 +192,7 @@ opt.froi.norm.doplots = 0;
 % if opt.pf.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 % opt.pf.bump.fitm(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
-%this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
+%this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.eb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
 %the selected timeseries will be assigned to depv
 %selecting indv uses the same approach
 %depv and indv are matched at the outer cell level
@@ -288,7 +286,7 @@ opt.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
 opt.pltexp(1).varnms.ts2{1} = {['']};
 opt.pltexp(1).varnms.ts3{1} = {['']};
 opt.pltexp(1).varnms.ts4{1} = {['']};
-opt.pltexp(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.pltexp(1).varnms.ts5{1} = {['resp.eb.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
 opt.pltexp(1).varnms.ts6{1} = {['fool']}; %if empty, do will be set to false
 opt.pltexp(1).varnms.ts7{1} = {['']};
 opt.pltexp(1).varnms.ts8{1} = {['']};

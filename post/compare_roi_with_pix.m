@@ -2,7 +2,7 @@ function compare_roi_with_pix(respfit, stackcrop, pixinds_fit, pthgif_prefix)
 
 ncol = 256;
 
-fngif = [pthgif_prefix(1:end-4) '_pix_v_roi_.gif'];
+pthgif = [pthgif_prefix(1:end-4) '_pix_v_roi_.gif'];
 
 
 tindies = 1:1000;
@@ -32,7 +32,7 @@ for rfi = 1:size(respfit, 1)
         end
 
 
-        fig2gif(hfg, rf2i, fngif)
+        fig2gif(hfg, rf2i, pthgif)
 
     end
 end

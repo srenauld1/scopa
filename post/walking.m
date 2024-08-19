@@ -37,9 +37,9 @@ timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 parent_path = '~/walking/';
 pthprefix = [parent_path '**/walking' pthinsert '/FicTracData/**/'];
-fngif_paths = [parent_path 'paths_' timestr  '.gif'];
-fngif_stats = [parent_path 'stats_' timestr  '.gif'];
-fngif_hists = [parent_path 'hists_' timestr  '.gif'];
+pthgif_paths = [parent_path 'paths_' timestr  '.gif'];
+pthgif_stats = [parent_path 'stats_' timestr  '.gif'];
+pthgif_hists = [parent_path 'hists_' timestr  '.gif'];
 
 fnp = rdir([pthprefix '**' filesep '*dat']);
 for j = 1:numel(fnp)
@@ -254,7 +254,7 @@ if plotpaths
 
         end
         htx.String = strrep(fn{j}, '_', ' ');
-        fig2gif(hfg, j, fngif_paths)
+        fig2gif(hfg, j, pthgif_paths)
     end
 end
 %%
@@ -318,7 +318,7 @@ plot(spl, cumvelythresh2_sort);
 title("sum of side velocities > 5 +/- mm/s, sorted")
 ylm = ylim;
 patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-fig2gif(hfg, 1, fngif_stats)
+fig2gif(hfg, 1, pthgif_stats)
 
 
 
@@ -376,7 +376,7 @@ histogram(spl, cumvelythresh2_sort, nbin);
 histogram(spl, cumvelythresh2_sort_o, nbin);
 title("sum of side velocities > 5 +/- mm/s")
 
-fig2gif(hfg, 1, fngif_hists)
+fig2gif(hfg, 1, pthgif_hists)
 
 %%
 

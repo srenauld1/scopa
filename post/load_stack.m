@@ -142,7 +142,7 @@ if plot_stack_gif
     %     stdtmp = mean(std(single(stdtmp))); %std over time of "unlabeled" pixels 
     % end
 
-    fngif = [filename_prefix '.gif'];
+    pthgif = [filename_prefix '.gif'];
     cmap = gray(256);
     framenumdims = 3;
     dimorder = [1,2,3,4];
@@ -151,13 +151,13 @@ if plot_stack_gif
     index_labels{3} = plotinds.z;
     index_labels{4} = plotinds.t;
     gif_visibility = 'on';
-    stack2fig(stackplot, fngif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stackplot, pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
-    fngif = [filename_prefix 'meant_.gif'];
+    pthgif = [filename_prefix 'meant_.gif'];
     framenumdims = 2;
     dimorder = [1,2,3];
     index_labels = index_labels(1:3);
-    stack2fig(stackplot_mn, fngif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
+    stack2fig(stackplot_mn, pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, figtitle_prefix, index_labels, figsidelen)
 
     
 

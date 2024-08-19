@@ -1,4 +1,4 @@
-function plot_data(inp, opt, params, fngif, inp2, inp3, running, simultaneous)
+function plot_data(inp, opt, params, pthgif, inp2, inp3, running, simultaneous)
 
 if ~exist('running', 'var')
     running = 0;
@@ -147,7 +147,7 @@ if strcmp(opt, 'resp')
                 ylim(ylnew2)
             end
 
-            fig2gif(h3, min(svichoose{svi}), fngif)
+            fig2gif(h3, min(svichoose{svi}), pthgif)
 
             if running
                 hold(ax1, 'on')
@@ -162,7 +162,7 @@ if strcmp(opt, 'resp')
 
 elseif strcmp(opt, 'hist')
 
-    fngif = ['~/Documents/ambrose/filtergifs/' datestr(now,30) '_respsyn_.gif'];
+    pthgif = ['~/Documents/ambrose/filtergifs/' datestr(now,30) '_respsyn_.gif'];
     h = figure; hold on;
     if exist('inp2', 'var')
         h1 = histogram(vec(inp2));
@@ -172,7 +172,7 @@ elseif strcmp(opt, 'hist')
         h2 = histogram(inp{svi}(:));
         h2.FaceColor = 'r';
 
-        fig2gif(h, svi, fngif)
+        fig2gif(h, svi, pthgif)
         
         delete(h2);
     end

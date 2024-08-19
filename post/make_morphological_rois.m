@@ -210,7 +210,6 @@ roiinfo.roipixvals_edges = [];
 roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipixind)
 
 
-
 %% plots
 
 
@@ -255,10 +254,10 @@ if do_other_plots %all these are at imaging resolution
     set(gca,'CameraViewAngle',8)
     rotinc = 30;
     views = -180:rotinc:180;
-    fngif = [pth_mroi_prefix 'huerois_3dspin_.gif'];
+    pthgif = [pth_mroi_prefix 'huerois_3dspin_.gif'];
     for framecount = 1:length(views) - 1
         view(views(framecount)+2, 20)
-        fig2gif(hfg, framecount, fngif)
+        fig2gif(hfg, framecount, pthgif)
     end
 
 

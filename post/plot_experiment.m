@@ -1,7 +1,7 @@
 function plot_experiment(letui, stack, stack_mnt, vars, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, ...
-    plotinds, display_range, fngif_prefix_short, fngif_prefix, ftv, ...
+    plotinds, display_range, pthgif_prefix_short, pthgif_prefix, ftv, ...
     pth_mroi_interactive, normopt, xwid, zwid)
 
 "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL" 
@@ -166,9 +166,9 @@ while plotloop %loop is turned off if no user input
                 yaxis_true_lims = find_yaxis_true_lims(lrscale, lims_use);
                 varsp = rescale_to_range(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
 
-                fngif = make_filename(labsp, gif_scope, epochstring, fngif_prefix_short, timestr_use); %gif_scope determines whether fngif gets updated
+                pthgif = make_filename(labsp, gif_scope, epochstring, pthgif_prefix_short, timestr_use); %gif_scope determines whether pthgif gets updated
                 [roiindp, roi_index_str] = find_roi_index(labsp);
-                figure_title = make_figure_title(fngif_prefix_short, epochstring, dtmni, roi_index_str);
+                figure_title = make_figure_title(pthgif_prefix_short, epochstring, dtmni, roi_index_str);
                 labsp = process_labels(labsp, roiindp);
 
                 roipixindp = cell(numel(roiindp),1);
@@ -223,7 +223,7 @@ while plotloop %loop is turned off if no user input
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
-                    roialpha, roipixindp, fngif, figure_title, varsz, letui, ...
+                    roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
                     ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd);
 
@@ -325,28 +325,28 @@ epochstring_all.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'',
 end
 
 
-function fngif = make_filename(lab, gif_scope, epochstring, fngif_prefix, timestr)
+function pthgif = make_filename(lab, gif_scope, epochstring, pthgif_prefix, timestr)
 
 
 lab = strrep(strrep(lab, 'ts.', ''), '.', '-');
 
 if strcmp(gif_scope, 'allv_alle') %one gif for all variables, all epochinds
-    fngif_suffix = {'gifscopeall'};
+    pthgif_suffix = {'gifscopeall'};
 elseif strcmp(gif_scope, 'allv_eache') %different gif for each epochinds
-    fngif_suffix = {'gifscopeepoch', ['e' epochstring.short ]};
+    pthgif_suffix = {'gifscopeepoch', ['e' epochstring.short ]};
 elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
-    fngif_suffix = {['v_' strjoin(lab, '_')]; ['e' epochstring.short ]};
-    fngif_suffix = {'eachv_eache'};
+    pthgif_suffix = {['v_' strjoin(lab, '_')]; ['e' epochstring.short ]};
+    pthgif_suffix = {'eachv_eache'};
 end
 
-fngif = [fngif_prefix '_' strrep(strjoin(fngif_suffix), ' ', '_') '_' timestr '_.gif' ];
+pthgif = [pthgif_prefix '_' strrep(strjoin(pthgif_suffix), ' ', '_') '_' timestr '_.gif' ];
 
 end
 
 
-function figure_title = make_figure_title(fngif_prefix_short, epochstring, dtmni, roi_index_str)
+function figure_title = make_figure_title(pthgif_prefix_short, epochstring, dtmni, roi_index_str)
 
-stackidtmp = strsplit(fngif_prefix_short, filesep);
+stackidtmp = strsplit(pthgif_prefix_short, filesep);
 stackid = stackidtmp{end};
 sample_period_string = make_sample_period_string(dtmni);
 figure_title = [strrep(stackid, '_', ' ') ',   ' epochstring.parsed  ',   ' sample_period_string ' SAMPLES,    ROI #' roi_index_str];

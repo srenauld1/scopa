@@ -220,12 +220,12 @@ if doplots
     gif_visibility = 'on';
 
     title_prefix = 'pre resample';
-    fngif = [pth_vid(1:end-4) '.gif'];
-    stack2fig(ftvds(:,:,plotinds_t), fngif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
+    pthgif = [pth_vid(1:end-4) '.gif'];
+    stack2fig(ftvds(:,:,plotinds_t), pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
 
     title_prefix = 'post resample';
-    fngif = [pth_vid(1:end-4) 'RS_.gif'];
-    stack2fig(ftvdsrs(:,:,plotinds_t), fngif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
+    pthgif = [pth_vid(1:end-4) 'RS_.gif'];
+    stack2fig(ftvdsrs(:,:,plotinds_t), pthgif, gif_visibility, [], [], [], [], cmap, display_range, framenumdims, dimorder, title_prefix, index_labels, figsidelength, axord, gif_visibility)
 end
 
 save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')

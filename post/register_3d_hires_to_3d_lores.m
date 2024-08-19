@@ -96,8 +96,8 @@ if opts_hires.doplots
     for i = 1:size(stack_lores_mnt_us, 3)
         C(:,:,:,i) = imfuse(stack_lores_mnt_us(:,:,i),stack_hires_mnt_reg(:,:,i),"Scaling","none");
     end
-    fngif = [pth_hires_mat_matreg(1:end-4) 'regfusion.gif'];
-    plot_gif_rgb(C, fngif)
+    pthgif = [pth_hires_mat_matreg(1:end-4) 'regfusion.gif'];
+    plot_gif_rgb(C, pthgif)
 
 
     figure; imagesc(mean(stack_hires_mnt, 3)); axis image; title("hires stack before registration mean z, mean t");

@@ -1,7 +1,7 @@
 
 function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ...
     vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
-    fngif, figure_title, varsz, letui, timestr_ui, sampinc, ...
+    pthgif, figure_title, varsz, letui, timestr_ui, sampinc, ...
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd)
 
 
@@ -181,7 +181,7 @@ while tloop
         framecount = framecount + 1;
         drawnow
         if do_write_gif
-            fig2gif(hndls.hfg, framecount, fngif) %write to gif
+            fig2gif(hndls.hfg, framecount, pthgif) %write to gif
         end
 
 
@@ -205,8 +205,8 @@ while tloop
             tinds_use = cbflags.val.tinds(1):cbflags.val.sampinc:cbflags.val.tinds(end);
             cbflags.restart.t = [];
             framecount = 0;
-            fngif = erase(fngif, timestr_ui); %make sure timestr is not present, otherwise you'll accumulate with insertBefore
-            fngif = insertBefore(fngif, '.gif', timestr_ui);
+            pthgif = erase(pthgif, timestr_ui); %make sure timestr is not present, otherwise you'll accumulate with insertBefore
+            pthgif = insertBefore(pthgif, '.gif', timestr_ui);
             force_do_write_gif = 1; %when restarting with new tinds, write to gif the first time through
             pause(0.2)
             clear pltexp_process_callbacks
