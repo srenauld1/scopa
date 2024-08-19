@@ -212,7 +212,14 @@ else
         end
     end
     if numel(size(stack))>3
-        error("you passed roipixinds as argument; to plot roi overlay, pass stack xyz only; do not include any additional dimensions (t, p, or c)")
+        sprintf("you passed roipixinds as argument and a stack with numdims>3; \nautomatically averaging dimensions>3 to create 3d background image for roi overlay; \nyou can also pass 2d or 3d stack instead")
+        tmp = size(stack); 
+        tmp = num2cell(tmp(1:3)); 
+        stack = mean(reshape(stack, tmp{:}, []), 4);
+        dimorder = dimorder(1:3);
+    end
+    if ~all(diff(dimorder)==1)
+        error("dimorder must be consecutive integers to visualize rois (you passed roipixinds as argument)")
     end
     if isempty(roiinds)
         roiinds = 1:numel(roipixinds);

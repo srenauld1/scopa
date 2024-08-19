@@ -17,8 +17,8 @@ arguments
     opt.axord char = 'rowmajor'
     opt.numcolorsgif = 128
     opt.framenumdims = 2; %how many dims to display on a each frame
-    opt.dimorder = [0 1]; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
-    opt.display_range = []; %[low,high] for image property CLim (contrast); ignored if stack is RGB
+    opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
+    opt.display_range = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.yinds = [];
     opt.xinds = [];
     opt.zinds = [];
@@ -41,6 +41,9 @@ else
 end
 
 if isempty(pthgif)
+    if isempty(pthsv)
+        error("global variable pthsv has not been set, and pthgif was not passed as argument; do one or the other")
+    end
     pthgif = [pthsv char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) '.gif'];
 end
 if isempty(dimorder)
@@ -209,7 +212,14 @@ else
         end
     end
     if numel(size(stack))>3
-        error("you passed roipixinds as argument; to plot roi overlay, pass stack xyz only; do not include any additional dimensions (t, p, or c)")
+        sprintf("you passed roipixinds as argument and a stack with numdims>3 \nautomatically averaging all dimensions >3 to create background image for roi overlay; you can also pass 2d or 3d stack instead")
+        tmp = size(stack); 
+        tmp = num2cell(tmp(1:3)); 
+        stack = mean(reshape(stack, tmp{:}, []), 4);
+        dimorder = dimorder(1:3);
+    end
+    if ~all(diff(dimorder)==1)
+        error("dimorder must be consecutive integers to visualize rois (you passed roipixinds as argument)")
     end
     if isempty(roiinds)
         roiinds = 1:numel(roipixinds);
@@ -270,7 +280,7 @@ if isempty(index_labels)
     end
 else
     if any(~cellfun(@isempty, index_labels_opt))
-        error("you specified index_labels and also passed name_value at least one name-value argument with name *inds; if you use name-value indices, do not pass index_labels")
+        error("you specified index_labels and also passed name_value at least one name-value argument with name *inds; if you pass any *inds, do not pass index_labels")
     end
 end
 
