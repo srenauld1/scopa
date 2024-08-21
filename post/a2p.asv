@@ -28,7 +28,7 @@ function a2p(varargin)
 
 % display_todos()
 
-opt = input_params_carl(pthin=varargin);
+opt = uipars(pthin=varargin, rgn='fb');
 
 %% loop over recordings
 
