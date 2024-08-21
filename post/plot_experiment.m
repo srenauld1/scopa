@@ -28,7 +28,7 @@ ts_scope = 'full'; %how much of total possible timseries to show in long timesca
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
 lrscale = 'equal'; %whether left and right have relative scaling
-sampinc = 20; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
+sampinc = 5; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis

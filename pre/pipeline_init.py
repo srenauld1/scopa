@@ -22,14 +22,10 @@ else:
    print("pth_parsfile not passed as input (in interactive mode), using params from pipeline_init.py below")
    exec(open(currscriptdir + '/' + 'default_params_interactive.py').read())
 
-
 from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
-from z_stitch import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
-from z_separate import separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project
 from copy_files_scopa import copy_files_scopa
-
 
 if len(sys.argv)>1:
     
@@ -106,6 +102,10 @@ if not do_copyfiles:
 
   elif do_denoise:
      from denoise import denoise
+     from z_separate import separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project
+
+  elif do_stitch:
+     from z_stitch import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
     
   elif do_remove or do_analysis:
      import matlab.engine
@@ -143,12 +143,6 @@ for ri, _ in enumerate(pth_read_all):
           register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
-        if md['dims'][0]==75050 and md['dims'][1]==1:
-          md['dims'][0] = int(md['dims'][0]/19)
-          md['dims'][1] = 19
-        if md['dims'][0]==75045 and md['dims'][1]==1:
-          md['dims'][0] = int(md['dims'][0]/15)
-          md['dims'][1] = 15
         if carls_old_project_all[ri]:  
           separate_z_slices_for_denoising_carls_old_project(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume) 
         else:

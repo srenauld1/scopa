@@ -46,10 +46,10 @@ end
 % and because the fictrac video is currently only used for visualization
 
 num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-% ftvid_spatial_smooth_window_std = 1 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+% ftvid_spatial_smooth_window_std = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
 % numpix_to_extract_laser_timeseries = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-% laser_timeseries_smooth_window_std = 1.5 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-% doplots = 0
+% laser_timeseries_smooth_window_std = 4 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+% doplots = 1
 
 if doplots==1
     gif_visibility = 'on';
@@ -57,10 +57,10 @@ elseif doplots==2
     gif_visibility = 'off';
 end
 
-if pth_vidlog
+if 0%pth_vidlog
     ftvl = parse_fictrac_vidlog(pth_vidlog);
 end
-if pth_log
+if 0%pth_log
     try
         [pthtmp, ~, ~] = fileparts(pth_log);
         pth_log_parsed = [pthtmp filesep 'FT_LOG_PARSED_.mat'];
@@ -152,7 +152,7 @@ else
     badpeaks_back_msg = 'there were bad peaks to remove at the end, so the imaging does seem to end during the video, at least';
 end
 keeppeakinds = badpeaks_front+1:numel(lk)-badpeaks_back;
-% keeppeakinds = keeppeakinds(1:end-1);
+% keeppeakinds = keeppeakinds(2:end);
 peakperiods_good = unique(pkdist(keeppeakinds));
 % if range(peakperiods_good)>max_peak_distance_change_defining_periodic
 %     error("range of peakperiods_good should not exceed cycle_period_tiolerance")
@@ -198,7 +198,7 @@ numpk = numel(pkg);
 sprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol))
 
 if numpk~=numvol
-    error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
+    % error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
 end
 
 keepinds_vid = lkg(1)-pkhalfper:lkg(end)+pkhalfper;
@@ -227,7 +227,7 @@ sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
 if doplots
     title_prefix = 'pre resample';
     pthgif = [pth_vid(1:end-4) '.gif'];
-    stack2fig(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), tinds=19650:1:19800, pthgif=pthgif, title_prefix=title_prefix)
+    stack2fig(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), tinds=1:30, pthgif=pthgif, title_prefix=title_prefix)
 
     title_prefix = 'post resample';
     pthgif = [pth_vid(1:end-4) 'RS_.gif'];

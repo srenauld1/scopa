@@ -11,7 +11,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
     # we do this cpu-intensive part outside denoise.py, which is gpu-intensive, since requesting lots of gpu and cpu will delay job start
 
     print("\n\n\nseparating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
-
+        
     dims = md['dims']
 
     Y = imread(pth_tif_read)

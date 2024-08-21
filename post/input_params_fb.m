@@ -30,10 +30,10 @@ opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex fro
 opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 opt.mn.do_daq = 1; %process daq data 
-opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
-opt.mn.do_pltexp = 0; %plot experiment (opt.pltexp below)
+opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
 opt.mn.old_project = 0; %for carl
 
 
@@ -75,7 +75,7 @@ opt.ld.gif.display_range_in.cmrg_dcdn = [0,1];
 opt.ld.gif.display_range_in.bksb_cmrg_dcdn = [0,1];
 opt.ld.gif.display_range_in.bksb_cmrg_dcdn_nosn = [0,1];
 
-opt.ld.gif.plotinds.t = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+opt.ld.gif.plotinds.t = [10.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 opt.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
@@ -86,7 +86,7 @@ opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 opt.ftv.ftvid_spatial_smooth_window_std = 1; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
 opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
 opt.ftv.laser_timeseries_smooth_window_std = 2; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-opt.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
+opt.ftv.doplots = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display 
 
 
 %% MORPHOLOGICAL ROIS
