@@ -1,6 +1,9 @@
 function [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, pth_usefile_prefix)
 
-%% params
+
+%%set up filenames for a2p 
+
+
 
 
 valid_fnsuffixes = opt.mn.valid_fnsuffixes;
@@ -219,20 +222,6 @@ for i = 1:length(regionex_all)
 
 end
 
-
-%% do flags
-
-
-pffn = fieldnames(opt.pf);
-for pfi = 1:numel(pffn)
-    if all(cellfun(@isempty, [opt.pf.(pffn{pfi}).fitm.varnms.depvpre]))
-        opt.pf.(pffn{pfi}).do = 0;
-    end
-end
-
-if all(cellfun(@isempty, [opt.fitm.varnms.depvpre]))
-    opt.fitm.do_predict = 0;
-end
 
 %% gif in load_stacks
 

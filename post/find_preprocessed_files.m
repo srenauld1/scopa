@@ -3,6 +3,8 @@ function pth_prefix_all = find_preprocessed_files(parent_folder_path_local, pare
 %todo: there can be duplicate files if one is flyg raw patern and one is scopa raw pattern, but this is unlikely, fix soon
 %besides this, it will find duplicate filenames in different locations and will either error or continue with unique filenames only, depending on value of error_on_repeat_filenames
 
+
+
 error_on_repeat_filenames = 1;
 
 if ~exist('filespec_matching_style', 'var')
@@ -99,7 +101,9 @@ if ~isempty(regexp( envname, 'compute-', 'once' ))
         sprintf("O2 parent path not specified, using default path based on parent folder name")
         fldr_parent = strsplit(parent_folder_path_local, filesep);
         fldr_parent = fldr_parent{end};
-        [pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename);
+        % [pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename); %fails on matlabengine for python bc no java, tried various startup options
+        stk = dbstack('-completenames');
+        [pthenv, ~, ~] = fileparts(stk(1).file);
         spl = strsplit(pthenv, filesep);
         username = cell2mat(spl(find(contains(spl, 'home'))+1));
         if isempty(username)
