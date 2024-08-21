@@ -39,6 +39,8 @@ function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, 
 % again with the same inputs, but draw a different single 2d roi,
 % and assign the outputs of this function a different name (outside this function)
 
+%mask_roi_vec can be single when it's weighted, boolean otherwise
+
 %% params
 
 if exist('maskmanual', 'var') %if passing in a morph roi mask (interactive mode)
@@ -216,11 +218,10 @@ roiinfo.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for 
 if hsvopt.do %roi hsv map
     hsvopt = plots_setup_hsv(hsvopt);
     hue_feature = [1:num_mroi]';
-    hsvmap = plots_compute_hsv(hsvopt, hue_feature);
+    hsvmap = plots_compute_hsv(hsvopt, hueft=hue_feature);
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
     hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
 end
-
 
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];

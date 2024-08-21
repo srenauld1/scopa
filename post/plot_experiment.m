@@ -79,12 +79,15 @@ end
 
 
 stack = stack(:,:,plotinds.z,plotinds.t);
-ftv = ftv(:,:,plotinds.t);
 epochinds_ts_i = epochinds_ts_i(plotinds.t);
 
-
-if numel(size(ftv))==3
-    ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
+if ftv
+    ftv = ftv(:,:,plotinds.t);
+    if numel(size(ftv))==3
+        ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
+    end
+else
+    ftv = rand(10,10,numel(plotinds.t));
 end
 
 vars = struct2cell(vars);

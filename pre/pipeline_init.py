@@ -146,6 +146,9 @@ for ri, _ in enumerate(pth_read_all):
         if md['dims'][0]==75050 and md['dims'][1]==1:
           md['dims'][0] = int(md['dims'][0]/19)
           md['dims'][1] = 19
+        if md['dims'][0]==75045 and md['dims'][1]==1:
+          md['dims'][0] = int(md['dims'][0]/15)
+          md['dims'][1] = 15
         if carls_old_project_all[ri]:  
           separate_z_slices_for_denoising_carls_old_project(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume) 
         else:

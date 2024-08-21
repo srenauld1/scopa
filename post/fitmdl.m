@@ -1,4 +1,4 @@
-function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
+function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag, pltstr)
 
 % for docs, see file fitmdl_notes.m
 
@@ -8,6 +8,9 @@ function fitin = fitmdl(stack, fitin, roiinfo, md, opts, pixfitflag)
 
 %% check some inputs and prepare save path
 
+if ~exist('pltstr', 'var')
+    pltstr = {};
+end
 
 if isvector(fitin.vars.indvpre) & iscolumn(fitin.vars.indvpre)
     fitin.vars.indvpre = fitin.vars.indvpre(:)';
@@ -20,7 +23,7 @@ if fitin.num_samp_indvpre~=fitin.num_samp_depvpre | ndims(fitin.vars.depvpre)~=2
     error("incorrectly sized input(s)")
 end
 
-if ~exist('pixfitflag', 'var')
+if ~exist('pixfitflag', 'var') || isempty(pixfitflag)
     pixfitflag = 0;
     pixfitflagstr = '';
 else
@@ -60,5 +63,7 @@ for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv acco
     fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
 end
 
-% fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
+if ~isempty(pltstr)
+    fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix, pltstr)
+end
 

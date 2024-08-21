@@ -8,8 +8,8 @@ parent_folder_path_o2 = opt.mn.parent_folder_path_o2;
 regionex_all = opt.mn.regionex_all;
 tmp_folder_name = opt.mn.tmp_folder_name;
 use_caiman_on_hires = opt.hires.use_caiman_on_hires;
-display_range = opt.ld.gif.display_range;
-suffixes_plot = opt.ld.gif.suffixes_plot;
+display_range_in = opt.ld.gif.display_range_in;
+suffixes_plot_in = opt.ld.gif.suffixes_plot_in;
 use_hires = opt.mroi.auto.use_hires_str; %gets updated to numeric struct, fieldname use_hires
 use_drawn_rois = opt.mroi.use_drawn_rois_str; %gets updated to numeric struct, fieldname use_drawn_rois
 num_mroi_auto = opt.mroi.auto.num_mroi_auto_str; %gets updated to numeric struct, fieldname num_mroi_auto
@@ -236,38 +236,38 @@ end
 
 %% gif in load_stacks
 
-if isempty(suffixes_plot)
+if isempty(suffixes_plot_in)
     plot_stack_gif = 0;
 else
     plot_stack_gif = 1;
 end
 
-if ~ismember(suffix_analysis, suffixes_plot)
-    "suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW"
-    suffixes_plot{end+1} = suffix_analysis;
+if ~ismember(suffix_analysis, suffixes_plot_in)
+    "suffixes_plot_in DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot_in NOW"
+    suffixes_plot_in{end+1} = suffix_analysis;
 end
-suffixes_plot = unique(suffixes_plot, 'stable'); %make sure there aren't accidental repeats
-suffixes_plot = cat(2, setxor(suffix_analysis, suffixes_plot, 'stable'), suffix_analysis); %make suffix_analysis the last one so it can be output from load_stack with minimal memory
+suffixes_plot_in = unique(suffixes_plot_in, 'stable'); %make sure there aren't accidental repeats
+suffixes_plot_in = cat(2, setxor(suffix_analysis, suffixes_plot_in, 'stable'), suffix_analysis); %make suffix_analysis the last one so it can be output from load_stack with minimal memory
 
-[~, plot_stack_order] = sort(cellfun(@length, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
+[~, plot_stack_order] = sort(cellfun(@length, suffixes_plot_in)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
 
 
-pth_stacks_prefix = cell(length(suffixes_plot), 1);
-suffixes_plot_new = cell(length(suffixes_plot), 1);
-display_range_new = cell(length(suffixes_plot), 1);
-for spi = 1:length(suffixes_plot)
+pth_stacks_prefix = cell(length(suffixes_plot_in), 1);
+suffixes_plot_new = cell(length(suffixes_plot_in), 1);
+display_range_new = cell(length(suffixes_plot_in), 1);
+for spi = 1:length(suffixes_plot_in)
 
-    pth_tmp = find_preprocessed_files(pth_fldr, parent_folder_path_o2, valid_fnsuffixes, datenum, flynum, trialnum, suffixes_plot{spi});
+    pth_tmp = find_preprocessed_files(pth_fldr, parent_folder_path_o2, valid_fnsuffixes, datenum, flynum, trialnum, suffixes_plot_in{spi});
 
     if ~isempty(pth_tmp)
         if numel(pth_tmp)>1
-            error("multiple files found with same suffixes_plot")
+            error("multiple files found with same suffixes_plot_in")
         end
         pth_stacks_prefix{spi} = pth_tmp{1};
-        suffixes_plot_new{spi} = suffixes_plot{spi};
-        display_range_new{spi} = display_range.(suffixes_plot{spi});
+        suffixes_plot_new{spi} = suffixes_plot_in{spi};
+        display_range_new{spi} = display_range_in.(suffixes_plot_in{spi});
     else
-        fnspec = ['pth_fldr:' pth_fldr, 'recdate:' num2str(datenum), 'fly:' num2str(flynum), 'trial:' num2str(trialnum), 'suffix:' suffixes_plot{spi}];
+        fnspec = ['pth_fldr:' pth_fldr, 'recdate:' num2str(datenum), 'fly:' num2str(flynum), 'trial:' num2str(trialnum), 'suffix:' suffixes_plot_in{spi}];
         sprintf(['WARNING, NEITHER TIF NOR MAT FOUND FOR FILENAME SPECIFIERS:' newline fnspec newline 'SKIPPING IT FOR PLOT'])
     end
 

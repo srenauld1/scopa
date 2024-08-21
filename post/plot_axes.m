@@ -140,9 +140,11 @@ while tloop
             % end
 
             k = 1; %hack
-            hndls.sc.hax{1}.XLabel.String{1} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols_sc(k,:), ['X. ' labp_sc{k}]);
+            hndls.sc.hax{1}.XLabel.String{1} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols_sc(k,:), [labp_sc{k}]);
+            hndls.sc.hax{1}.XLabel.FontSize = 7;
             k = 2; %hack
-            hndls.sc.hax{1}.XLabel.String{2} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols_sc(k,:), ['Y. ' labp_sc{k}]);
+            hndls.sc.hax{1}.YLabel.String{2} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols_sc(k,:), [labp_sc{k}]);
+            hndls.sc.hax{1}.YLabel.FontSize = 7;
 
             % hndls.sc.hax{1}.ZLabel.String = labp_sc{3};
 

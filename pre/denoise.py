@@ -83,7 +83,7 @@ if torch.cuda.is_available():
     print('PyTorch version: ', torch.__version__)
 else:
     print('\033[1;31mNo GPU support. Please enable GPUs for the notebook:\033[0m')
-    print(' 1. Navigate to Edit Ã¢ÂÂ Notebook Settings')
+    print(' 1. Navigate to Edit ÃÂ¢ÃÂÃÂ Notebook Settings')
     print(' 2. Select GPU from the Hardware Accelerator drop-down')
 
 import os
@@ -154,6 +154,11 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
 
     patch_t2 = patch_t*2 #use patch_t2 since alternating frames are sent to either end of the Unet, so you actually need double patch size in t)
 
+    if patch_t2>stack_size_t/2 or patch_t>stack_size_t/2:
+        raise Exception("your patch_t_sec is probably too large")
+        # patch_t = int(stack_size_t/4)
+        # patch_t2 = patch_t*2 #use patch_t2 since alternating frames are sent to either end of the Unet, so you actually need double patch size in t)
+
     gap_x = np.floor(patch_x * (1 - overlap_factor)) 
     gap_y = np.floor(patch_y * (1 - overlap_factor)) 
     xnum = np.floor((stack_size_x - patch_x) / gap_x) + 1
@@ -166,6 +171,9 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
         train_datasets_size_adjust = train_datasets_size_adjust - 1
 
         tnum = np.ceil(train_datasets_size_adjust / xnum / ynum / numstacks_trained_simultaneously)
+        if tnum==1:
+            raise Exception("tnum==1, you probably set train_dataset_size too low")
+        
         gap_t = np.floor((stack_size_t - patch_t2) / (tnum - 1)) #patch_t times 2 since input and target are interleaved and both patch_t length in t; THE FLOOR IN THIS LINE CAUSES THE NUMBER OF TRAINING PATCHES TO DIFFER FROM THE NUMBER REQUESTED IN TRAIN_DATASET_SIZE (ie integer shifts attempting to equal TRAIN_DATASET_SIZE, given patch number in x and y)
 
         numpatch_y = np.floor((stack_size_y - patch_y + gap_y) / gap_y)

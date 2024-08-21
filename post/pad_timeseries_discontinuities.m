@@ -1,13 +1,15 @@
-% function pad_timeseries_discontinuities
+function plotvars = pad_timeseries_discontinuities(indv, depv, depvp, epochinds_pure_ts_m, sampinds_depvpre, ...
+    num_dim_indvpre, numroi_plot, max_tinds, timeseries_numsegments, numsampnan)
 
-numsampnan = 10;
 
+
+epochinds_pure_ts_m = epochinds_pure_ts_m.';
 
 %%pad discontinuities in depv and predicted depv variables for timeseries plots (not the other plots)
 
 %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
 tinds_cont = [];
-seg_endpoints = [0 find(diff(fitdata.sampinds_depvpre)~=1) length(fitdata.sampinds_depvpre)];
+seg_endpoints = [0; vec(find(diff(sampinds_depvpre)~=1)); numel(sampinds_depvpre)];
 for bei = 2:length(seg_endpoints)
     tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
 end
@@ -17,14 +19,15 @@ depvnan_cont = [];
 depvpnan_cont = [];
 pureepochnan_cont = [];
 tinds_cont_nan = [];
-nanpad_indv = nan(numsampnan, fitin.num_dim_indvpre);
-nanpad_depv = nan(numsampnan, fitin.num_dim_depvpre);
-nanpadvec = nanpad_depv(:,1);
+nanpad_indv = nan(num_dim_indvpre, numsampnan);
+% nanpad_depv = nan(num_dim_depvpre, numsampnan);
+nanpad_depv = nan(numroi_plot, numsampnan);
+nanpadvec = nanpad_depv(1,:);
 for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
-    indvnan_cont = cat(1, indvnan_cont,  nanpad_indv, indv( tinds_cont{tbi}, :));
-    depvnan_cont = cat(1, depvnan_cont,  nanpad_depv, depv_allrois( tinds_cont{tbi}, :));
-    depvpnan_cont = cat(1, depvpnan_cont,  nanpad_depv, fitdata.depvp( tinds_cont{tbi}, :));
-    pureepochnan_cont = cat(1, pureepochnan_cont,  nanpadvec, fitdata.epochinds_pure_ts_m( tinds_cont{tbi}));
+    indvnan_cont = cat(2, indvnan_cont, nanpad_indv, indv( :, tinds_cont{tbi}));
+    depvnan_cont = cat(2, depvnan_cont, nanpad_depv, depv(  :, tinds_cont{tbi}));
+    depvpnan_cont = cat(2, depvpnan_cont, nanpad_depv, depvp(  :, tinds_cont{tbi}));
+    pureepochnan_cont = cat(2, pureepochnan_cont,  nanpadvec, epochinds_pure_ts_m( tinds_cont{tbi}));
     if tbi==1
         tmpstart = 1;
     else
@@ -38,42 +41,52 @@ if ~isempty(find(diff(cell2mat(tinds_cont_nan(:)'))~=1))
 end
 
 %%%%%% NEXT SELECT SEGMENTS TO TRUNCATE THE PLOT (IN CASE TIMESERIES IS TOO LONG TO SEE EASILY) AND PAD THOSE DISCONTINUITIES WITH NAN ALSO, these have suffix *_seg
+numsamp_depvnan_cont = size(depvnan_cont, 2);
 tinds_seg = cell(1, timeseries_numsegments);
-if isempty(max_tinds) || max_tinds > size(depvnan_cont, 2)  %if too many samples to see, plot only the first max_tinds of them
-    tinds_seg{1} = 1:size(depvnan_cont, 2);
-    truncstr{epi} = '';
+if isempty(max_tinds) || max_tinds > numsamp_depvnan_cont  %if too many samples to see, plot only the first max_tinds of them
+    tinds_seg{1} = 1:numsamp_depvnan_cont;
+    truncstr = '';
 else
     if timeseries_numsegments>1
-        seglength{epi} = floor(max_tinds/timeseries_numsegments);
-        segspacing = floor(size(depvnan_cont, 2)/timeseries_numsegments);
+        seglength = floor(max_tinds/timeseries_numsegments);
+        segspacing = floor(numsamp_depvnan_cont/timeseries_numsegments);
         for tnsi = 1:timeseries_numsegments
-            tinds_seg{tnsi} = [1:seglength{epi}]+segspacing*(tnsi-1)+segspacing-seglength{epi};
+            tinds_seg{tnsi} = [1:seglength]+segspacing*(tnsi-1)+segspacing-seglength;
         end
     else
         tinds_seg{1} = 1:max_tinds;
     end
 end
-truncstr{epi} = ['TRUNC' num2str(timeseries_numsegments) 'SEG'];
+truncstr = ['TRUNC' num2str(timeseries_numsegments) 'SEG'];
 
 
-depvnan_seg{epi} = depvnan_cont( :, tinds_seg{1});
-depvpnan_seg{epi} = depvpnan_cont( :, tinds_seg{1});
-pureepochnan_seg{epi} = pureepochnan_cont( :, tinds_seg{1});
+depvnan_seg = depvnan_cont( :, tinds_seg{1});
+depvpnan_seg = depvpnan_cont( :, tinds_seg{1});
+pureepochnan_seg = pureepochnan_cont( :, tinds_seg{1});
 for tnsi = 2:timeseries_numsegments
-    depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad_depv, depvnan_cont( :, tinds_seg{tnsi}));
-    depvpnan_seg{epi} = cat(2, depvpnan_seg{epi}, nanpad_depv, depvpnan_cont( :, tinds_seg{tnsi}));
-    pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpadvec, pureepochnan_cont( :, tinds_seg{tnsi}));
+    depvnan_seg = cat(2, depvnan_seg, nanpad_depv, depvnan_cont( :, tinds_seg{tnsi}));
+    depvpnan_seg = cat(2, depvpnan_seg, nanpad_depv, depvpnan_cont( :, tinds_seg{tnsi}));
+    pureepochnan_seg = cat(2, pureepochnan_seg, nanpadvec, pureepochnan_cont( :, tinds_seg{tnsi}));
 end
 
 
+plotvars.tinds_cont = tinds_cont;
+plotvars.tinds_cont_nan = tinds_cont_nan;
+plotvars.tinds_cont_nan_nonan = tinds_cont_nan_nonan;
 
-minis =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
-maxis =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
+plotvars.nanpad_indv = nanpad_indv;
+plotvars.nanpad_depv = nanpad_depv;
 
-epochinds_str_all = strjoin(epochinds_str, ',,');
+plotvars.indvnan_cont = indvnan_cont;
+plotvars.depvnan_cont = depvnan_cont;
+plotvars.depvpnan_cont = depvpnan_cont;
+plotvars.pureepochnan_cont = pureepochnan_cont;
 
 
-for epi = 1:length(epochinds)
-    [indvsort{epi}, indvsortidx] = sort(indv{epi}(:,hackindvdim));
-    depvp_sort{epi} = depvp(:, indvsortidx);
-end
+plotvars.pureepochnan_seg = pureepochnan_seg;
+plotvars.depvpnan_seg = depvpnan_seg;
+plotvars.depvnan_seg = depvnan_seg;
+plotvars.seglength = seglength;
+plotvars.truncstr = truncstr;
+
+

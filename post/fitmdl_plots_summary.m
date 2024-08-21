@@ -1,6 +1,6 @@
 function fitmdl_plots_summary(fitin, opts, roiinfo, stackmean)
 
-plt = fitin.plt;
+plt = opts.plt;
 supp = fitin.opop.supp;
 
 mdl = fitin.opop.mdl;

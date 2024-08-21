@@ -142,6 +142,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
 end
 
+fitin.fits.(epochinds_str).epochinds = epochinds;
 fitin.fits.(epochinds_str).ft_mean_allval = mean(ft_mean_allval, ndims(ft_mean_allval), 'omitmissing');
 fitin.fits.(epochinds_str).gof_mean_allval = mean(gof_mean_allval, ndims(gof_mean_allval), 'omitmissing');
 fitin.fits.(epochinds_str).gof_val_mean_allval = mean(gof_val_mean_allval, ndims(gof_val_mean_allval), 'omitmissing');

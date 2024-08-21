@@ -28,9 +28,10 @@ function a2p(varargin)
 
 % display_todos()
 
-opt = input_params_carl(varargin);
+%opt = input_params_carl(varargin);
 %opt = input_params_carl_eb(varargin);
 %opt = input_params_carl_pb(varargin);
+opt = input_params_fb(varargin);
 
 %% loop over recordings
 
@@ -74,10 +75,14 @@ for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
         try
             load(pth.ft.vidrs, 'ftvdsrs')
         catch
-            ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
-                opt.ftv.ftvid_spatial_smooth_window_std, opt.ftv.numpix_to_extract_laser_timeseries, ...
-                opt.ftv.laser_timeseries_smooth_window_std, ...
-                opt.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
+            try
+                ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
+                    opt.ftv.ftvid_spatial_smooth_window_std, opt.ftv.numpix_to_extract_laser_timeseries, ...
+                    opt.ftv.laser_timeseries_smooth_window_std, ...
+                    opt.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
+            catch
+                ftvdsrs = [];
+            end
         end
     else
         ftvdsrs = [];

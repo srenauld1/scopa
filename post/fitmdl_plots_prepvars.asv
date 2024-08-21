@@ -36,11 +36,9 @@ switch plt.sort_method
         sortinds = [sortonetmp; sorttwotmp];
 end
 
-roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxnumroiplot))), 'stable'); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvpre
+roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvpre
 numroi_plot = numel(roiinds_plot);
-
 roipixinds = roiinfo.roipixinds(roiinds_plot);
-mask_roi_vec = roiinfo.mask_roi_vec(roiinds_plot);
 
 
 %% subsample indv, depv, depvp
@@ -185,9 +183,9 @@ for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualiz
 end
 depvp_hist = [];
 
-for ri = 1:numel(roiinds_plot)
+for ri = 1:numroi_plot
     if max_numfits_to_plot_ts>0
-        histxsave{ri} = cat(1, histxsave{ri}, fitdata.ft(roiinds_plot(ri),:)); %cat the final model to history
+        histxsave{ri} = cat(1, histxsave{ri}, fitdata.ft(ri,:)); %cat the final model to history
     else
         histxsave{ri} = fitdata.ft(ri,:); %assign the final model as only
     end
@@ -216,7 +214,6 @@ plotvars.sampinds_indvpreaug = fitdata.sampinds_indvpreaug;
 plotvars.sampinds_depvpre = fitdata.sampinds_depvpre;
 plotvars.numroi_plot = numroi_plot;
 plotvars.roiinds_plot = roiinds_plot;
-plotvars.mask_roi_vec = mask_roi_vec;
 plotvars.roipixinds = roipixinds;
 plotvars.depvp_sort = depvp_sort;
 plotvars.indvsort = indvsort;

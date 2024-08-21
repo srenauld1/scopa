@@ -14,6 +14,10 @@ if ~exist('mdlname', 'var') || isempty(mdlname)
     mdlname = '';
 end
 
+if startsWith(mdlname, 'fnet_')
+    mdlname = mdlname(6:end);
+end
+
 iif = @(varargin) varargin{2 * find([varargin{1:2:end}], 1, 'first')}(); %how to do "inline if" (iif)
 
 %% model-specific vars

@@ -1,5 +1,9 @@
 function parsout = default_hsv_opts(parsin)
 
+if ~exist('parsin', 'var') | isempty(parsin)
+    parsin = struct;
+end
+
 do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
 foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
 mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 

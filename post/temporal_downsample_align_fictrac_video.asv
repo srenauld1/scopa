@@ -80,27 +80,34 @@ load(pth_vid, 'ftvds') %ftvds is spatially downsampled, grayscale fictrac video,
 ftvds = permute(ftvds, [2 3 1]);
 szvd = size(ftvds);
 ftvds = reshape(ftvds, [], size(ftvds, 3));
-ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
-ftvid_meanframe = imgaussfilt(ftvid_meanframe,ftvid_spatial_smooth_window_std);
-[~,mxi] = sort(ftvid_meanframe(:), 'descend');
-
+% ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
+% ftvid_meanframe = imgaussfilt(ftvid_meanframe,ftvid_spatial_smooth_window_std);
+% [~,mxi] = sort(ftvid_meanframe(:), 'descend');
 ftvid_varframe = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
-ftvid_varframe(25:end,:) = 0; %hack
-ftvid_varframe = imgaussfilt(ftvid_varframe,ftvid_spatial_smooth_window_std);
-[~,mxi] = sort(ftvid_varframe(:), 'descend');
 
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% ftvid_varframe(25:end,:) = 0; %hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+% %hack%hack%hack%hack%hack%hack%hack%hack%hack
+
+% ftvid_varframe = imgaussfilt(ftvid_varframe,ftvid_spatial_smooth_window_std);
+[~,mxi] = sort(ftvid_varframe(:), 'descend');
 laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of oscillations in the brightest numbrightpix pixels in the spatially smoothed, mean-t image
 % laser_ts = laser_ts - mean(laser_ts);
 % laser_ts = rescale(laser_ts);
-
 num_vidframes = numel(laser_ts);
 ftvds = reshape(ftvds, szvd);
 
 if doplots
     hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
     hax = axes('Parent', hfg);
-    imagesc(hax, ftvid_meanframe); hold on;
-    % imagesc(hax, ftvid_varframe); hold on;
+    % imagesc(hax, ftvid_meanframe); hold on;
+    imagesc(hax, ftvid_varframe); hold on;
     [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpix_to_extract_laser_timeseries)); %plot with image to confirm these are good pixels for extracting laser timeseries
     scatter(mxc,mxr,5,'red','filled')
     pth_gif = [pth_vid '_mean_t_im_.gif'];

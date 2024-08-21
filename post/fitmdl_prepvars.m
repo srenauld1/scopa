@@ -50,10 +50,11 @@ end
 if ~strcmp(opts.normalize_indv, 'none')
     fitin.vars.indvpre = fitin.normmdlvar_indv(fitin.vars.indvpre, 'forward'); %normalize indv
 end
+
 if strcmp(opts.normalize_depv, 'zscore')
-    fitin.normmdlvar_depv = normalize_mdl_var_forward_and_reverse(opts.normalize_indv, depvpre_mean_eachdim, depvpre_std_eachdim, [], []); %save function handle to forward or reverse standardize later
+    fitin.normmdlvar_depv = normalize_mdl_var_forward_and_reverse(opts.normalize_depv, depvpre_mean_eachdim, depvpre_std_eachdim, [], []); %save function handle to forward or reverse standardize later
 elseif strcmp(opts.normalize_depv, 'minmax') || strcmp(opts.normalize_depv, 'minmaxcnt')
-    fitin.normmdlvar_depv = normalize_mdl_var_forward_and_reverse(opts.normalize_indv, [], [], depvpre_min_eachdim, depvpre_max_eachdim); %save function handle to forward or reverse standardize later
+    fitin.normmdlvar_depv = normalize_mdl_var_forward_and_reverse(opts.normalize_depv, [], [], depvpre_min_eachdim, depvpre_max_eachdim); %save function handle to forward or reverse standardize later
 end
 if ~strcmp(opts.normalize_depv, 'none')
     fitin.vars.depvpre = fitin.normmdlvar_depv(fitin.vars.depvpre, 'forward'); %normalize depv

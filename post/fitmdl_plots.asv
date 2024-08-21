@@ -1,5 +1,5 @@
 
-function fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix, pltstr)
+function fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
 
 
 "EVERYTHING IN fitmdl_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
@@ -45,7 +45,6 @@ function fitmdl_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix, pltstr)
 
 
 
-opts.plt.maxnumroiplot = 70;
 
 opts.plt.hackindvdim = 1;
 opts.plt.numrows_ts = 6; %how many rows you want to use to spread the timeseries out
@@ -100,8 +99,6 @@ end
 %% 
 
 
-opts.plt.sort_method = 'majoraxis';
-
 enm = fieldnames(fitin.fits);
 enm = enm(startsWith(enm, 'e_'));
 epochinds_str_all = strjoin(enm, ',,');
@@ -122,8 +119,8 @@ if strcmp(opts.plt.plot_class, 'epoch') & ~opts.plt.plot3d
 end
 
 
-% pltstr = {'sum', 'ts', 'fov', 'mdl', 'cmp'};
-
+frm = {'sum', 'ts', 'fov', 'mdl', 'cmp'};
+frm = {'fov'};
 
 %THIS IS STUPID, DON'T LOOP OVER EPOCH/VALIDATION SETS; NEED TO BE ABLE TO MAKE IT INNER LOOP TOO 
 
@@ -137,7 +134,7 @@ for ei = 1:numel(enm)
     vnm = fieldnames(fitin.fits.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
-        for fi = pltstr
+        for fi = frm
             switch fi{1}
                 case 'sum'
                     fitmdl_plots_summary(fitin, opts, roiinfo, stack_mnt)

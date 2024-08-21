@@ -28,7 +28,7 @@ ts_scope = 'full'; %how much of total possible timseries to show in long timesca
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
 lrscale = 'equal'; %whether left and right have relative scaling
-sampinc = 5; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
+sampinc = 20; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
@@ -37,7 +37,8 @@ numfr_gif_max = 2000; %throw error if there will be more
 timedim = 2;
 
 scinds = [1 5]; %indices of plot variables 
-scdimmin = 0;
+scdimmin = 0; %min
+scdimsd = 4; %seconds 
 lag_style = 'each'; %currently 'each' is only option; lags xy, then z for each xy; lag_style 'any' (soon available) will allow all combinations
 threshold_data = 0;
 blindspot = -pi/12; %nan to not draw blind spot
@@ -78,12 +79,15 @@ end
 
 
 stack = stack(:,:,plotinds.z,plotinds.t);
-ftv = ftv(:,:,plotinds.t);
 epochinds_ts_i = epochinds_ts_i(plotinds.t);
 
-
+if ftv
+ftv = ftv(:,:,plotinds.t);
 if numel(size(ftv))==3
     ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
+end
+else
+    ftv = nan(10,10,numel(plotinds.t));
 end
 
 vars = struct2cell(vars);
@@ -175,7 +179,7 @@ while plotloop %loop is turned off if no user input
 
                 vpmapflat_axid_use = flag_empty_timeseries(varsp, vpmapflat_axid, timedim);
 
-                [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot] = ...
+                [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
                     pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, varsp, labsp, cols, threshold_data, vpmapflat_axid_use, ...
                     plot_z_as_color, polarinds, numsamp_tslong_this_gif, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast);
 
@@ -223,8 +227,8 @@ while plotloop %loop is turned off if no user input
                 [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
-                    timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp, ...
-                    ccr, pval_norm, laginds_to_plot, cols_sc);
+                    timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
+                    ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd);
 
                 if cbflags.restart.v==1
                     plotloop = 1;

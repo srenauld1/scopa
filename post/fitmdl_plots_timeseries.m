@@ -1,33 +1,33 @@
-function fitmdl_plots_timeseries
-
-
-%% TIMESERIES PLOTS ONLY
+function fitmdl_plots_timeseries(indv, depv, mdl, varst, plt, supp, pth_fitdata_prefix, epochinds_str_all)
 
 %use *_cont rather than *_seg, since the timeseries only plot does not truncate for space
 
+fn = fieldnames(varst);
+for fi = 1:numel(fn)
+    eval([fn{fi} '= varst.(fn{fi});' ]);
+end
+varst = [];
+fn = fieldnames(plt);
+for fi = 1:numel(fn)
+    eval([fn{fi} '= plt.(fn{fi});' ]);
+end
+plt = [];
+fn = fieldnames(supp);
+for fi = 1:numel(fn)
+    eval([fn{fi} '= supp.(fn{fi});' ]);
+end
+plt = [];
 
-plot_indv = 1;
-use_best_global = 1;
-include_best_fit = 1;
-num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochinds))), so same color is associated weith same epoch across different fits
-max_num_indv_to_plot = 2;
-num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
-epoch_patch_face_alpha = 0.05;
-ylim_track_pred = 0;
-depv_alpha = 1;
-depvp_alpha = 0.7;
-
-numrows_ts = 6; %no functional significance, just how many rows you want to spread the timeseries out
-numcolumns_ts = 1;
-margins_fig = 0.04;
-margins_subplot = 0.02;
+indv = indv(:,sampinds_indvpreaug);
+indv = indv.';
+depv = depv(roiinds_plot,sampinds_depvpre);
 
 title_add_each = 'TIMESERIES';
 figext = '.gif';
 filename_save = [pth_fitdata_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
 
 max_numrois_to_plot_fithist = 5;
-if size(depvnan_cont{epi}, 1)>1
+if size(depvnan_cont, 1)>1
     max_numfits_to_plot_par = 0;
     max_numfits_to_plot_ts = 0;
 else
@@ -35,10 +35,10 @@ else
     max_numfits_to_plot_ts = 50;
 end
 
-if size(depvnan_cont{epi}, 1)>max_numrois_to_plot_fithist
-    rois_to_plot_fithist = round(linspace(1, size(depvnan_cont{epi}, 1), max_numrois_to_plot_fithist));
+if size(depvnan_cont, 1)>max_numrois_to_plot_fithist
+    rois_to_plot_fithist = round(linspace(1, size(depvnan_cont, 1), max_numrois_to_plot_fithist));
 else
-    rois_to_plot_fithist = 1:size(depvnan_cont{epi}, 1);
+    rois_to_plot_fithist = 1:size(depvnan_cont, 1);
 end
 
 num_total_subplots = numrows_ts+supp.num_total_model_functions;
@@ -47,42 +47,16 @@ num_total_subplots = numrows_ts+supp.num_total_model_functions;
 hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
 hfg.Position = [0 0.2 0.8 0.6];
 bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-[axx, axy, axw, axh] = arrange_subplots(numrows_ts, numcolumns_ts, margins_fig, margins_subplot);
-leftfrac = 0.6;
-axw = axw*leftfrac;
 
-numrows_ts2 = supp.num_total_model_functions/supp.max_num_fun_per_unit; 
-numcolumns_ts2 = supp.max_num_fun_per_unit;
-[axx2, axy2, axw2, axh2] = arrange_subplots(numrows_ts2, numcolumns_ts2, margins_fig, margins_subplot);
 
-axw2 = axw2*(1-leftfrac)-margins_subplot;
-for axxi = 1:numel(axx2)
-    onecolumn_lefside_hack = 1;
-    axx2(axxi) = axx(onecolumn_lefside_hack)+axw(onecolumn_lefside_hack)+axw2(axxi)*((ceil(axxi/numrows_ts2))-1)+margins_subplot;
-    if axh2>axh(1)
-        axh2(:) = axh(onecolumn_lefside_hack);
-    end
-end
 
-axx = cat(1, axx, axx2);
-axy = cat(1, axy, axy2);
-axw = cat(1, axw, axw2);
-axh = cat(1, axh, axh2);
+ax = arrange_subplots({[numrows_ts, numcolumns_ts], [numrows_ts2, numcolumns_ts2]}, margins_subplot, margins_fig, splitdim, splitfrac);
 
 %title string
 htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
 tittmp = strsplit(filename_save(1:end-4), '/');
 htx.String = strrep(tittmp{end}, '_', ' ');
 
-%mins and maxes constant scale across gif
-minis_indv =  min(cell2mat(cellfun(@(x) min(x(:)),  indv,  'UniformOutput',  false))); %min depv across all epochs
-maxis_indv =  max(cell2mat(cellfun(@(x) max(x(:)),  indv,  'UniformOutput',  false))); %max depv across all epochs
-minis_depv =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
-maxis_depv =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
-minis_depvp =  min(cell2mat(cellfun(@(x) min(x(:)),  depvp,  'UniformOutput',  false))); %min pred depv across all epochs
-maxis_depvp =  max(cell2mat(cellfun(@(x) max(x(:)),  depvp,  'UniformOutput',  false))); %max pred depv across all epochs
-minis_all = min(minis_depv, minis_depvp);
-maxis_all = max(maxis_depv, maxis_depvp);
 
 %colormaps
 
@@ -90,8 +64,7 @@ num_indv_to_plot = supp.num_dim_indvpre;
 if num_indv_to_plot>max_num_indv_to_plot
     num_indv_to_plot = max_num_indv_to_plot;
 end
-cmap_patch = distinguishable_colors(num_total_possible_epochs+max_num_indv_to_plot+num_depv_to_plot);
-cmap_patch = cmap_patch(max_num_indv_to_plot+num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
+
 indv_base_color = [0 0 1];
 cmap_indv = repmat(indv_base_color, [num_indv_to_plot 1]);
 cmap_indv(:,2) = linspace(1, 0, num_indv_to_plot);
@@ -108,8 +81,10 @@ end
 
 
 %plotting loop
+
 hax = cell(1, num_total_subplots);
 
+framecount = 0;
 for ri = 1:numroi_plot %for each unit
 
     for fhi = 1:size(depvprow{ri,1}, 1) + toggle_depvp_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
@@ -126,7 +101,8 @@ for ri = 1:numroi_plot %for each unit
 
             if framecount==1 %if on the first frame
 
-                hax{nsi} = axes( 'Parent', hfg, 'Position', [axx(nsi), axy(nsi), axw(nsi), axh(nsi)] ); %make the subplot
+                sectorind = 1;
+                hax{nsi} = axes( 'Parent', hfg, 'Position', [ax(sectorind).rowmajor.xp(nsi), ax(sectorind).rowmajor.yp(nsi), ax(sectorind).xe(1), ax(sectorind).ye(1)] ); %make the subplot
                 hold(hax{nsi}, 'on')
                 % yyaxis left
                 hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
@@ -211,14 +187,16 @@ for ri = 1:numroi_plot %for each unit
 
         supp.starting_hax = numrows_ts;
         if framecount==1
+            sectorind = 2;
             for tffi = 1:supp.num_total_model_functions
                 tffi2 = tffi + supp.starting_hax;
-                hax{tffi2} = axes( 'Parent', hfg, 'Position', [axx(tffi2), axy(tffi2), axw(tffi2), axh(tffi2)] ); %make the subplot
+                hax{tffi2} = axes( 'Parent', hfg, 'Position', [ax(sectorind).rowmajor.xp(tffi), ax(sectorind).rowmajor.yp(tffi), ax(sectorind).xe(1), ax(sectorind).ye(1)] ); %make the subplot
             end
         end
         supp.framecount = framecount;
         if plot_depvp
-            [~, hax, binmns] = mdl(histxsave{ri}(fhi,:), indv{epi}, supp, hax); %plot the model components
+            [~, hax, binmns] = mdl(histxsave{ri}(fhi,:), indv, supp, hax); %plot the model components
+            hax{supp.starting_hax+1:end}.YLim = [0 1];
         end
 
         fig2gif(hfg, framecount, filename_save)

@@ -1,16 +1,22 @@
 
-function hsvmap = plots_compute_hsv( plt, hueft, satft, valft, hueft2, huelimnat, huelimnat2, mdlname)
+function hsvmap = plots_compute_hsv(plt, opt)
 
 arguments
     plt struct %struct holding plotting options (required input)
-    hueft double %feature assigned to hue (required input)
-    satft double = 1 %feature assigned to saturation
-    valft double = 1 %feature assigned to value
-    hueft2 double = hueft %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname 
-    huelimnat double = [min(hueft(:)) max(hueft(:))] %native full range from which hue feature is drawn, used to normalize hue, (e.g. if hue is an "x" param from fit model, huelimnat would be independent variable min and max)
-    huelimnat2 double = [min(hueft(:)) max(hueft(:))] %an alternative to huelimnat, used for some mdlname defaults, assigned in plots_setup_hsv (e.g. if hue is a "y" param from fit model, huelimnat would be dependent variable min and max)
-    mdlname char = '' %can be used to switch among different plotting defaults
+    opt.hueft double %feature assigned to hue (required input)
+    opt.satft double = 1 %feature assigned to saturation
+    opt.valft double = 1 %feature assigned to value
+    opt.hueft2 double = hueft %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname 
+    opt.huelimnat double = [min(hueft(:)) max(hueft(:))] %native full range from which hue feature is drawn, used to normalize hue, (e.g. if hue is an "x" param from fit model, huelimnat would be independent variable min and max)
+    opt.huelimnat2 double = [min(hueft(:)) max(hueft(:))] %an alternative to huelimnat, used for some mdlname defaults, assigned in plots_setup_hsv (e.g. if hue is a "y" param from fit model, huelimnat would be dependent variable min and max)
+    opt.mdlname char = '' %can be used to switch among different plotting defaults
 end
+
+fn = fieldnames(opt);
+for fi = 1:numel(fn)
+    eval([fn{fi} '= opt.(fn{fi});' ]);
+end
+
 
 if strcmp(plt.huenorm, 'native')
     disp("WARNING, requested huenorm 'native', but no huelimnat argument passed, switching to huenorm 'relative'")
