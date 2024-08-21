@@ -155,9 +155,9 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     patch_t2 = patch_t*2 #use patch_t2 since alternating frames are sent to either end of the Unet, so you actually need double patch size in t)
 
     if patch_t2>stack_size_t/2 or patch_t>stack_size_t/2:
-        raise Exception("your patch_t_sec is probably too large")
-        # patch_t = int(stack_size_t/4)
-        # patch_t2 = patch_t*2 #use patch_t2 since alternating frames are sent to either end of the Unet, so you actually need double patch size in t)
+        #raise Exception("your patch_t_sec is probably too large")
+        patch_t = int(stack_size_t/4)
+        patch_t2 = patch_t*2 #use patch_t2 since alternating frames are sent to either end of the Unet, so you actually need double patch size in t)
 
     gap_x = np.floor(patch_x * (1 - overlap_factor)) 
     gap_y = np.floor(patch_y * (1 - overlap_factor)) 
