@@ -22,9 +22,9 @@ if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here
     fnspec_trial = {'1'}; %cell array of char, can use wildcards
     fnspec_suffix_analysis = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-    opt.mn.pth_usefile_prefix_all = find_preprocessed_files(opt.mn.parent_folder_path_local, opt.mn.parent_folder_path_o2, opt.mn.valid_fnsuffixes, fnspec_recdate, fnspec_fly, fnspec_trial, fnspec_suffix_analysis, fnspec_matching_style);
+    opt.mn.pthin = find_preprocessed_files(opt.mn.parent_folder_path_local, opt.mn.parent_folder_path_o2, opt.mn.valid_fnsuffixes, fnspec_recdate, fnspec_fly, fnspec_trial, fnspec_suffix_analysis, fnspec_matching_style);
 else
-    opt.mn.pth_usefile_prefix_all = varargin{1};
+    opt.mn.pthin = varargin{1};
 end
 
 opt.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)

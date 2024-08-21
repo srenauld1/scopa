@@ -31,18 +31,18 @@ function a2p(varargin)
 %opt = input_params_carl(varargin);
 %opt = input_params_carl_eb(varargin);
 %opt = input_params_carl_pb(varargin);
-opt = input_params_fb(varargin);
+opt = input_params(pthin=varargin);
 %opt = input_params_carl_eb(varargin);
 
 %% loop over recordings
 
 
-for pai = 1:length(opt.mn.pth_usefile_prefix_all) %for each recording
+for pai = 1:length(opt.mn.pthin) %for each recording
 
 
     %% assign filenames
 
-    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, opt.mn.pth_usefile_prefix_all{pai});
+    [opt, pth, croplim_all, parstr, ids] = filenames_a2p(opt, opt.mn.pthin{pai});
 
     clear global
     global pthsv

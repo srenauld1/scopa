@@ -223,8 +223,8 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             else:
                 carls_old_project = 1
             
-            if fname[-3:]=='mat' and do_copyfiles==0:
-                mat_file_shape = mat2tif_scopa(pth_readfile)
+            if fname[-3:]=='mat' and do_copyfiles==0 and not do_analysis:
+                mat_file_shape = mat2tif_scopa(pth_readfile, carls_old_project)
 
 
             ######### READ & WRITE SCANIMAGE METADATA #########

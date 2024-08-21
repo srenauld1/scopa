@@ -19,10 +19,10 @@ if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here
     opt.mn.fly = '4'; %can use wildcards
     opt.mn.trial = '1'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
-    [opt.mn.pth_usefile_prefix_all, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
+    [opt.mn.pthin, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
 else
-    opt.mn.pth_usefile_prefix_all = varargin{1};
-    [pthin, ~, ~] = fileparts(opt.mn.pth_usefile_prefix_all);
+    opt.mn.pthin = varargin{1};
+    [pthin, ~, ~] = fileparts(opt.mn.pthin);
     pthin = strsplit(pthin, filesep);
     opt.mn.pth_grandparent = [strjoin(pthin(1:end-2), filesep) filesep];
 end
