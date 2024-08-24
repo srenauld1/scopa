@@ -1,75 +1,65 @@
-function opt = input_params_carl(varargin)
+function ui = input_params_carl(pthstacks)
 
-% struct 'opt' holds all input params
-% substructures within opt are mostly used within single functions called from a2p
-
-%some params below have suffix '_str'; these are string inputs (for user input convenience) that are mapped later to numeric variables
+% struct 'ui' holds all input params
+% substructures within ui are mostly used within single functions called from a2p
 
 %% MAIN
 
 %params for main pipeline control in file a2p
 
-opt.mn.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
-opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.mn.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
-opt.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
+ui.mn.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
+ui.mn.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as ui.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
+ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
+ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
-if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240602'}; %cell array of char, can use wildcards
-    fnspec_fly = {'4'}; %cell array of char, can use wildcards
-    fnspec_trial = {'1'}; %cell array of char, can use wildcards
-    fnspec_suffix_analysis = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
+if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
+    fnspec_recdate = {'202406*'}; %cell array of char, can use wildcards
+    fnspec_fly = {'*'}; %cell array of char, can use wildcards
+    fnspec_trial = {'*'}; %cell array of char, can use wildcards
+    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-    opt.mn.pthin = find_preprocessed_files(opt.mn.parent_folder_path_local, opt.mn.parent_folder_path_o2, opt.mn.valid_fnsuffixes, fnspec_recdate, fnspec_fly, fnspec_trial, fnspec_suffix_analysis, fnspec_matching_style);
+    ui.mn.pthstacks = find_preprocessed_files(ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
-    opt.mn.pthin = varargin{1};
+    ui.mn.pthstacks = pthstacks;
 end
 
-opt.mn.regionex_all = {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.mn.regionex_all = {'fullfov' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
+ui.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+ui.mn.regionex_all = {'fullfov'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
-opt.mn.do_daq = 1; %process daq data 
-opt.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
-opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_fit = 0; %model fitting (opt.fitm below)
-opt.mn.do_scatter = 1; %scatterplots (opt.scat below)
-opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
-opt.mn.old_project = 0; %for carl
+ui.mn.do_daq = 1; %process daq data 
+ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
+ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+ui.mn.do_pltexp = 0; %plot experiment (ui.pltexp below)
+ui.mn.old_project = 0; %for carl
 
 
-%% DAQ (i.e. FICTRAC/STIMULUS)
+%% DAQ
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
-opt.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
-opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
-opt.daq.slopelen_sec = 0.4; %window length used to fit slope
-opt.daq.use_carls_epochs = 1; %0 for everybody else
-opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
+ui.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
+ui.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
+ui.daq.slopeorder = 2; %order of polynomial used to fit local slope
+ui.daq.slopelen_sec = 0.4; %window length used to fit slope
+ui.daq.use_carls_epochs = 1; %0 for everybody else
+ui.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
-%% TEMPORALLY DOWNSAMPLE AND ALIGN FICTRAC VIDEO WITH IMAGING 
+%% LOAD/VISUALIZE STACK 
 
-opt.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-opt.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-opt.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-opt.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
+%ui.ld holds params used in load_stack
+ui.ld.crop_flyback = 1; %crop flyback frames from each volume 
+ui.ld.zero_stack = 1; %subtract min to make min zero 
+ui.ld.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+ui.ld.croptback = 0; % how many samples to remove from end of stack
+ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless 
 
-%% LOAD STACK AND PLOT AS GIF
-
-%opt.ld holds params used in load_stack
-opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
-opt.ld.zero_stack = 1; %subtract min to make min zero 
-opt.ld.numsamp_crop_t_front = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.ld.numsamp_crop_t_back = 0; % how many samples to remove from end of stack
-opt.ld.plot_stack_stats = 0; %turns on/off plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless 
-
-%opt.ld.gif holds params for making gif of imaging movies in function load_stack; opt.ld.gif params not affect stack for analysis (stack with suffix opt.mn.suffix_analysis) 
-opt.ld.gif.suffixes_plot = { 
+%ui.ld.gif holds params for making gif of imaging movies in function load_stack; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
+ui.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
-    %'bksb_cmrg_dcdn', ...
+    'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 
@@ -77,64 +67,74 @@ opt.ld.gif.suffixes_plot = {
 % stack values that are proportionally within display_range are linearly mapped to image intensity; less than or equal to display_range(1) is mapped to image min (black); greater than or equal to display_range(2) is mapped to image max (white); 
 % for example, [0,1] will be full contrast, [0, 0.5] will map upper half of stack intensities to white; 
 % if stack doesn't exist its display_range is ignored
-opt.ld.gif.display_range.raw = [0,1]; 
-opt.ld.gif.display_range.cmrg = [0,1];
-opt.ld.gif.display_range.cmrg_dcdn = [0,1];
-opt.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
-opt.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
+ui.ld.gif.display_range.raw = [0,1]; 
+ui.ld.gif.display_range.cmrg = [0,1];
+ui.ld.gif.display_range.cmrg_dcdn = [0,1];
+ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
+ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-opt.ld.gif.plotinds.t = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
-opt.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+ui.ld.gif.it = [5.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
-opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+ui.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+
+
+%% TEMPORALLY DOWNSAMPLE AND ALIGN FICTRAC VIDEO WITH IMAGING (if it isn't already on daq)
+
+ui.ftv.num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+ui.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+ui.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
+ui.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
+
 
 %% MORPHOLOGICAL ROIS
 
 % params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
-% for opt.mroi.auto.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
+% for ui.mroi.auto.use_hires, ui.mroi.use_drawn_rois, and ui.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in ui.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-opt.mroi.use_drawn_rois_str =  {'pb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-opt.mroi.use_drawn_rois_str =  {'fullfov' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+ui.mroi.use_drawn_rois =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+ui.mroi.use_drawn_rois =  {'eb'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-opt.mroi.auto.num_mroi_auto_str = {'fullfov-128'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-opt.mroi.auto.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-opt.mroi.auto.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
-opt.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.auto.num_mroi_auto_str must be power of 2
-opt.mroi.auto.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
-opt.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
-opt.mroi.auto.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
-opt.mroi.auto.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
+ui.mroi.auto.num_mroi_auto.eb = 256; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+ui.mroi.auto.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
+ui.mroi.auto.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
+ui.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
+ui.mroi.auto.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
+ui.mroi.auto.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
-opt.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
+ui.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
-opt.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
-opt.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
-opt.mroi.olayopt.roi_color = [1 0 0]; %color for roi overlay
-opt.mroi.olayopt.roialpha = 0.3; %transparency for roi overlay
+ui.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
+ui.mroi.olayopt.foreground_plot_style = 'overlay'; %'boundary'; %options to show individual rois are 'boundary' and 'overlay'
+ui.mroi.olayopt.roi_color = [1 0 0]; %color for roi overlay
+ui.mroi.olayopt.roialpha = 0.3; %transparency for roi overlay
 
 %params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
-opt.mroi.hsvopt.do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
-opt.mroi.hsvopt.foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
-opt.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 
-opt.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty 
-opt.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in opt.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set opt.mroi.hsvopt.hrange_in_manual it will switch to 'relative'      
-opt.mroi.hsvopt.satnorm = 'relative'; %sat normalization method, same logic as huenorm
-opt.mroi.hsvopt.valnorm = 'relative';%val normalization method, same logic as huenorm
-opt.mroi.hsvopt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-opt.mroi.hsvopt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-opt.mroi.hsvopt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-opt.mroi.hsvopt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see plots_compute_hsv
-opt.mroi.hsvopt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see plots_compute_hsv
-opt.mroi.hsvopt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see plots_compute_hsv
-opt.mroi.hsvopt.hueshift = 0; %0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see plots_compute_hsv, this works for periodic or non-periodic features assigned to hue
-opt.mroi.hsvopt.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
-opt.mroi.hsvopt.ignoresat = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
-opt.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+ui.mroi.hsvopt.do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
+ui.mroi.hsvopt.foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
+ui.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 
+ui.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty 
+ui.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in ui.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set ui.mroi.hsvopt.hrange_in_manual it will switch to 'relative'      
+ui.mroi.hsvopt.satnorm = 'relative'; %sat normalization method, same logic as huenorm
+ui.mroi.hsvopt.valnorm = 'relative';%val normalization method, same logic as huenorm
+ui.mroi.hsvopt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
+ui.mroi.hsvopt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
+ui.mroi.hsvopt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
+ui.mroi.hsvopt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see plots_compute_hsv
+ui.mroi.hsvopt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see plots_compute_hsv
+ui.mroi.hsvopt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see plots_compute_hsv
+ui.mroi.hsvopt.hueshift = 0; %0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see plots_compute_hsv, this works for periodic or non-periodic features assigned to hue
+ui.mroi.hsvopt.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+ui.mroi.hsvopt.ignoresat = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+ui.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 
-% params for response extraction/normalization of morphological roi responses (opt.mroi.norm)
+% params for response extraction/normalization of morphological roi responses (ui.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
 % postcluster normalization is applied after clustering
 % clustering means averaging data for all pixels or caiman rois within a morphological roi
@@ -150,47 +150,47 @@ opt.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', whic
 % 'nn' % nonnegative (subtract min)
 % 'box'... % box-cox
 
-opt.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
-opt.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
-opt.mroi.norm.doplots = 0;
+ui.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
+ui.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
+ui.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS
 
 %params for loading/selecting/viewing functional rois (applied in process_functional_rois)
-opt.froi.caiman_lr_str = {'2_1_*_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
-opt.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
-opt.froi.min_roi_size = 5;%pixels, roi selection criterion
-opt.froi.max_roi_size = 300; %pixels
-opt.froi.max_regions_per_roi = 4; %for discontiguous rois
-opt.froi.within_mask_threshold = 0.5; %discard roi if more than within_mask_threshold is outside morphological mask (morph mask is all ones if you don't make one)
-opt.froi.numbins = 20; %num hist bins for rval and snr caiman output
-opt.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
-opt.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-opt.froi.doplot = 0; %plot roi overlay
-opt.froi.numrois_for_gif = 0; %how many roi to put in gif, big number to plot all, 0 to skip gif
-opt.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
-opt.froi.do_other_plots = 0; %do the other plots
-opt.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
-opt.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
+ui.froi.caiman_lr_str = {'2_1_*_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
+ui.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
+ui.froi.min_roi_size = 5;%pixels, roi selection criterion
+ui.froi.max_roi_size = 300; %pixels
+ui.froi.max_regions_per_roi = 4; %for discontiguous rois
+ui.froi.within_mask_threshold = 0.5; %discard roi if more than within_mask_threshold is outside morphological mask (morph mask is all ones if you don't make one)
+ui.froi.numbins = 20; %num hist bins for rval and snr caiman output
+ui.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
+ui.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
+ui.froi.doplot = 0; %plot roi overlay
+ui.froi.numrois_for_gif = 0; %how many roi to put in gif, big number to plot all, 0 to skip gif
+ui.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
+ui.froi.do_other_plots = 0; %do the other plots
+ui.froi.saturation_factor_background = 0.4; %for gif, above this fraction of data is sent to max
+ui.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is sent to max
 
-% params for response extraction/normalization of functional roi responses (opt.froi.norm), same convention as above for opt.mroi.norm)
+% params for response extraction/normalization of functional roi responses (ui.froi.norm), same convention as above for ui.mroi.norm)
 
-opt.froi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
-opt.froi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
-opt.froi.norm.doplots = 0;
+ui.froi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
+ui.froi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
+ui.froi.norm.doplots = 0;
 
 %% BUMP
 
-% opt.pf holds params for computing population features, each substructure beneath opt.pf is for a different population feature, below, for example, is opt.pf.bump
+% ui.pf holds params for computing population features, each substructure beneath ui.pf is for a different population feature, below, for example, is ui.pf.bump
 
 % params for bump in compute_bump function
-% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from opt.pf.bump.fitm.varnms.depvpre) and all matches from opt.pf.bump.fitm.varnms.indvpre
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from ui.pf.bump.fitm.varnms.depvpre) and all matches from ui.pf.bump.fitm.varnms.indvpre
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if opt.pf.bump.domain_methodis 'functional', these preferred headings are used as the angle, and opt.pf.bump.fitm.varnms.depvpre as the magnitude, in computing pva
-% if the regionex in opt.pf.bump.fitm.varnms.depvpre is in opt.pf.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
-% if opt.pf.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
+% if ui.pf.bump.domain_methodis 'functional', these preferred headings are used as the angle, and ui.pf.bump.fitm.varnms.depvpre as the magnitude, in computing pva
+% if the regionex in ui.pf.bump.fitm.varnms.depvpre is in ui.pf.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if ui.pf.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
-% opt.pf.bump.fitm(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
+% ui.pf.bump.fitm(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
 %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
 %the selected timeseries will be assigned to depv
 %selecting indv uses the same approach
@@ -200,52 +200,51 @@ opt.froi.norm.doplots = 0;
 %depv and indv are composed of all timeseries matching fieldspecs
 %if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries
 %if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
-% opt.pf.bump.fitm(1).indv{1} = {['vis, angsd']};
+% ui.pf.bump.fitm(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
-opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
-opt.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
-opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-opt.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fitm.varnms.depvpre  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
-opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
-opt.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
-opt.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
-opt.pf.bump.doplots = 0;
+ui.pf.bump.bump_method = 'pva'; %'pva' for vector average
+ui.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+ui.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
+ui.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+ui.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+ui.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
+ui.pf.bump.numcluster_for_bump_domain_resample.eb = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to ui.pf.bump.fitm.varnms.depvpre  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+ui.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
+ui.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+ui.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
+ui.pf.bump.doplots = 0;
 
 %params for finding preferred heading using fitmdl
-% opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
-opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp.eb.mo*.in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
-opt.pf.bump.fitm(1).varnms.indvpre{1} = {['vis.yaw']};
+ui.pf.bump.fitm(1).varnms.depvpre{1} = {['resp.eb.mo*.in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty ui.pf.bump.fitm(1).depv{1} = {};
+ui.pf.bump.fitm(1).varnms.indvpre{1} = {['vis.yaw']};
 
-opt.pf.bump.fitm(1).normalize_indv = 'none';
-opt.pf.bump.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-opt.pf.bump.fitm(1).mdlname = 'fnet_v'; %'fnet_v';
-opt.pf.bump.fitm(1).epochinds = {[4]};
-opt.pf.bump.fitm(1).mdl_length_sec = 0;
-opt.pf.bump.fitm(1).hsv_background = 'rois';
-opt.pf.bump.fitm(1).sort_method = 'unbiased';
-opt.pf.bump.fitm(1).use_saved_model = 1;
-opt.pf.bump.fitm(1).doplots = 1;
+ui.pf.bump.fitm(1).normalize_indv = 'none';
+ui.pf.bump.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+ui.pf.bump.fitm(1).mdlname = 'fnet_v'; %'fnet_v';
+ui.pf.bump.fitm(1).epochinds = {[4]};
+ui.pf.bump.fitm(1).mdl_length_sec = 0;
+ui.pf.bump.fitm(1).hsv_background = 'rois';
+ui.pf.bump.fitm(1).sort_method = 'unbiased';
+ui.pf.bump.fitm(1).use_saved_model = 1;
+ui.pf.bump.fitm(1).doplots = 1;
 
-opt.pf.bump.fitm = fill_struct(opt.pf.bump.fitm);
-opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
+ui.pf.bump.fitm = fill_struct(ui.pf.bump.fitm);
+ui.pf.bump.fitm = default_fit_params(ui.pf.bump.fitm);
 
 %% FIT MODEL
 
 % params for modeling depv as function of indv in fitmdl function
 
-% to specify independent and dependent variables for model fitting, use opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre
-% format opt.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
-% format opt.fitm(i).varnms.indvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+% to specify independent and dependent variables for model fitting, use ui.fitm.varnms.indvpre and ui.fitm.varnms.depvpre
+% format ui.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+% format ui.fitm(i).varnms.indvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
 % where fieldspec is a pattern used to match the flattened struct fieldname, with wildcard (*) allowed anywhere 
 
 % fieldspec for ts.resp would follow the pattern ['tsclass.regionex.parsex.normex']
 % where tsclass is a field in the first level of struct 'ts'
-% regionex is region extraction string in opt.mn.regionex_all above,
+% regionex is region extraction string in ui.mn.regionex_all above,
 % parsex is extraction param string
 % normex is normalization param string
 
@@ -255,118 +254,98 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used (or a single * will match all timeseries in ts)
 % you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
 % any field defined for the first struct index but not subsequent will be copied from the first 
-% opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre are matched by index i in opt.fitm(i)
-% within a single opt.fitm(i).varnms.indvpre or opt.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single opt.fitm(i).indv{j} or opt.fitm(i).varnms.depvpre{j}
-% all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv at the outer cell level are used
+% ui.fitm.varnms.indvpre and ui.fitm.varnms.depvpre are matched by index i in ui.fitm(i)
+% within a single ui.fitm(i).varnms.indvpre or ui.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single ui.fitm(i).indv{j} or ui.fitm(i).varnms.depvpre{j}
+% all combinations of single ui.fitm(i).indv and single ui.fitm(i).depv at the outer cell level are used
 %for now, depv at single struct and outer cell level should come from single regionex
 
-opt.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
-opt.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
-opt.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
+ui.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+ui.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 
-opt.fitm(1).epochinds = {[2 3 4]};
-opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+ui.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
+ui.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
+ui.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
 
-% see notes_mdlname for notes about opt.fitm.mdlname syntax
+ui.fitm(1).epochinds = {[2 3 4]};
+ui.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
-opt.fitm(1).mdlname = 'fnet_A01_sh16';
-opt.fitm(1).plt.doplots = 100;
+ui.fitm(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about ui.fitm.mdlname syntax
+ui.fitm(1).plt.doplots = 100;
 
-opt.fitm = fill_struct(opt.fitm);
-opt.fitm = default_fit_params(opt.fitm);
+ui.fitm = fill_struct(ui.fitm);
+ui.fitm = default_fit_params(ui.fitm);
 
-
-%% SCATTERPLOTS
-
-% params for scatterplots
-%scatterplots come at the end so all variables computed in 'post' pipeline are available for scatterplots
-
-%if any of x, y, or z are polar, they are moved to theta on the scatterplots; two polar variables get layered in r
-opt.scat.varnms
-opt.scat(1).varnms.x{1} = {['ball.*'], ['vis.*']};
-opt.scat(1).varnms.y{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.scat(1).varnms.z{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind3*']};
-opt.scat(1).varnms.y{2} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
-opt.scat(1).varnms.y{3} = {['resp.fullfov.cm*.in_cmc_pc_f_cl_null_w_null']};
-% opt.scat(1).varnms.x{2} = {['ball, *for*'], ['ball, *yaw*'], ['vis, *']};
-opt.scat(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
-opt.scat(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
-opt.scat(1).lags_to_plot = 'zeroandbest'; % 'zero', 'best', 'zeroandbest', 'all'
-opt.scat(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
-opt.scat(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
-opt.scat(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
-
-opt.scat = fill_struct(opt.scat);
 
 %% PLOT EXPERIMENT
 
 % params for plot_experiment
-opt.pltexp(1).varnms.ts1{1} = {['']};
-opt.pltexp(1).varnms.ts2{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind28']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts3{1} = {['vis.*']};
-opt.pltexp(1).varnms.ts4{1} = {['ball.yawvel'], ['ball.sidevel']};
-opt.pltexp(1).varnms.ts5{1} = {['']};
-opt.pltexp(1).varnms.ts6{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind26']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.ts7{1} = {['']};
-opt.pltexp(1).varnms.ts8{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes.ind27']}; %if empty, do will be set to false
+% ui.pltexp.varnms follows the same pattern as ui.fitm.varnms above
 
-opt.pltexp(1).vpmap.left = [1 2 3 4];
-opt.pltexp(1).vpmap.right = [5 6 7 8];
+ui.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
+ui.pltexp(1).varnms.ts2{1} = {['']};
+ui.pltexp(1).varnms.ts3{1} = {['']};
+ui.pltexp(1).varnms.ts4{1} = {['']};
+ui.pltexp(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+ui.pltexp(1).varnms.ts6{1} = {['fool']}; %if empty, do will be set to false
+ui.pltexp(1).varnms.ts7{1} = {['']};
+ui.pltexp(1).varnms.ts8{1} = {['']};
 
-opt.pltexp(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
-opt.pltexp(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
-opt.pltexp(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
-opt.pltexp(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+ui.pltexp(1).vpmap.left = [1 2 3 4]; %map of indices of each varnms.ts above to plot positions (on left axis)
+ui.pltexp(1).vpmap.right = [5 6 7 8]; %map of indices of each varnms.ts above to plot positions (on right axis)
 
-opt.pltexp(1).ignore_missing_vars = 1; %set to 1 not error if any requested timeseries in vars above do not exist (let's you use more general wildcards)
-opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
+ui.pltexp(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
+ui.pltexp(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
+ui.pltexp(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
+ui.pltexp(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
 
-opt.pltexp(1).plotinds.t = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.pltexp(1).plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.pltexp(1).display_range = [0,1]; 
-opt.pltexp(1).letui = 1;
+ui.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
+ui.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
-opt.pltexp = fill_struct(opt.pltexp);
+ui.pltexp(1).it = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+ui.pltexp(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+ui.pltexp(1).display_range = [0,1]; 
+ui.pltexp(1).letui = 1;
+
+ui.pltexp = fill_struct(ui.pltexp);
 
 %% HIRES
 
 %params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set opt.mroi.auto.use_hires=1 to use
-%params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
-opt.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
-opt.hires.ld.zero_stack = 1; %subtract min to make min zero 
-opt.hires.ld.numsamp_crop_t_front = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.hires.ld.numsamp_crop_t_back = 0; % how many samples to remove from end of stack
-opt.hires.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
+%hires stack is only used in making morphological rois, set ui.mroi.auto.use_hires=1 to use
+%params below, in ui.hires, are for processing the hires stack, and visualization with gif in ui.hires.gif
+ui.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
+ui.hires.ld.zero_stack = 1; %subtract min to make min zero 
+ui.hires.ld.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+ui.hires.ld.croptback = 0; % how many samples to remove from end of stack
+ui.hires.ld.do_plot_stack_stats = 0; %function this uses is old and needs to be updated
 
-opt.hires.ld.gif.plotinds.t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.hires.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.hires.ld.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
-opt.hires.ld.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
-opt.hires.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
-opt.hires.ld.gif.plot_stack_gif = 1; %this one is not available in opt.ld.gif (it is automatically determined); haven't made this one automatic yet
+ui.hires.ld.gif.it = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+ui.hires.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+ui.hires.ld.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
+ui.hires.ld.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
+ui.hires.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
+ui.hires.ld.gif.plot_stack_gif = 1; %this one is not available in ui.ld.gif (it is automatically determined); haven't made this one automatic yet
 
-opt.hires.do_reg_plots = 1;
-opt.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
-opt.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
-opt.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
-opt.hires.caiman_hr_str = '*'; %empty to skip
+ui.hires.do_reg_plots = 1;
+ui.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
+ui.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
+ui.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
+ui.hires.caiman_hr_str = '*'; %empty to skip
 
 %% CARL'S OLD PROJECT
 
 %overwrite some params for carl's old project
-% if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override some settings for old project
-%     opt.mn.old_project = 1;
-%     opt.md.numsamp_crop_t_front = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-%     opt.md.numsamp_crop_t_front = 2; % how many samples to remove from end of stack
-%     opt.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
-%     opt.fitm.mdl_length_sec = 1.25;
+% if ~strcmp(ui.mn.recdate, '*') && strcmp(ui.mn.recdate(1:2), '22') %override some settings for old project
+%     ui.mn.old_project = 1;
+%     ui.md.croptfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+%     ui.md.croptfront = 2; % how many samples to remove from end of stack
+%     ui.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
+%     ui.fitm.mdl_length_sec = 1.25;
 % end
 
 %% order fields
 
-opt = orderfields_recursive(opt);
+ui = orderfields_recursive(ui);
+
+ui = transform_user_input_a2p(ui);
+

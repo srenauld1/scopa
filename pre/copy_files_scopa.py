@@ -6,19 +6,19 @@ import os
 
 
 def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop, do_analysis, 
-                     pth_read, pth_md, pth_daq, pth_ftvid, pth_croplim, pth_hires, pth_fldr_copydest_prefix, pth_fldr, 
+                     pth_read, pth_md, pth_daq, pth_ftvid, pth_croplim, pth_hires, pth_fldr_copydest_prefix, fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
-    pp = Path(pth_fldr).parts #split path
+    pp = Path(fldr).parts #split path
     split_index = pp.index(folder_with_all_recordings_on_storage_and_compute_filesystems) + 1
     pth_dest_suffix = os.path.join(*pp[split_index:]) #join to make suffix
 
     pth_fldr_copydest = pth_fldr_copydest_prefix + pth_dest_suffix
     if pth_fldr_copydest[-1] == '/': 
         pth_fldr_copydest = pth_fldr_copydest[:-1]
-    if pth_fldr[-1] != '/': 
-        pth_fldr = pth_fldr + '/'
+    if fldr[-1] != '/': 
+        fldr = fldr + '/'
 
     if do_copyfiles==1: #copy from storage server to O2 (unless do_denoise, since that only uses files in O2 denoising folder, whcih is not copied in or out of O2)
         
@@ -73,10 +73,10 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
         if do_denoise:
             print("\n\n\nnot copying anything out because do_denoise is true, and they use files in denoising folder")
         else:
-            print("\n\n\ncopying anything new from the O2 folder: \n" + pth_fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
+            print("\n\n\ncopying anything new from the O2 folder: \n" + fldr + "\ninto the storage server folder: \n" + pth_fldr_copydest)
 
-            fldr_name = os.path.basename(os.path.abspath(pth_fldr))
-            for pth_src_tmp in Path(pth_fldr).glob('**/*'):  #this will copy hidden files too
+            fldr_name = os.path.basename(os.path.abspath(fldr))
+            for pth_src_tmp in Path(fldr).glob('**/*'):  #this will copy hidden files too
                 pth_src = str(pth_src_tmp)
                 if os.path.isfile(pth_src): #only files, no directories (will create parent dirs if necessary below)
                     pp = Path(pth_src).parts #split path

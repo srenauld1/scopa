@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain(imin, pth_fldr, doplots)
+function imout = filter_movie_frequency_domain(imin, fldr, doplots)
 
 
 %remove pmt ripple noise in 2p images
@@ -26,13 +26,13 @@ swapdim = 1; %recommend 1 if plotting gif of multiple z slices through time
 %imin = permute(imin, [1 2 4 3]);
 imin = reshape(imin, size(imin, 1), size(imin, 2), []);  %collapse z and t because we believe dominant structure is through true time (not volume time)
 
-%stack2fig(rescale(imin(:,:,plotindz)), pthgif=[pth_fldr '/imin.gif'])
+%stack2fig(rescale(imin(:,:,plotindz)), pthgif=[fldr '/imin.gif'])
 
 imf = fftshift(fftn(imin)); %forward transform (take image into freq domain), then shift
 
 imfm = single(abs(imf)); %keep magnitude discard phase
 
-%stack2fig(rescale(log(imfm(:,:,plotindz))), pthgif=[pth_fldr '/imfm_log.gif'])
+%stack2fig(rescale(log(imfm(:,:,plotindz))), pthgif=[fldr '/imfm_log.gif'])
 
 
 %% create background frames
@@ -44,7 +44,7 @@ thr_bg = histx(thrbinbg);
 foregroundinds = background_mag>=thr_bg;
 background_mag(foregroundinds) = 0;
 
-%stack2fig(rescale(background_mag(:,:,plotindz)), pthgif=[pth_fldr '/freqfilt_smooththresh.gif'])
+%stack2fig(rescale(background_mag(:,:,plotindz)), pthgif=[fldr '/freqfilt_smooththresh.gif'])
 clear background_mag
 
 numframes_bg = floor(size(imin, 3)/50);
@@ -63,7 +63,7 @@ if spectrum_smooth_window
     imfms = smoothdata(imfm, 3, 'gaussian', spectrum_smooth_window); %smooth spectrum through time because noise spectrum is noisy in time but not space
 end
 
-%stack2fig(rescale(log(imfm(:,:,plotindz))), pthgif=[pth_fldr '/imfm_logsmooth.gif'])
+%stack2fig(rescale(log(imfm(:,:,plotindz))), pthgif=[fldr '/imfm_logsmooth.gif'])
 
 
 %%apply std filters (horiz. and vert.) to extract spectrum lines (lines have small std in long axis and relatively large std in ortho axis)
@@ -105,9 +105,9 @@ end
 
 %clear imfm
 %freqfilt = imgaussfilt3(freqfilt(:,:,plotindz), [2 2 2]); %smooth again before threshold to remove some isolated hotspots
-%stack2fig(rescale(freqfilt), pthgif=[pth_fldr '/freqfilt.gif'])
+%stack2fig(rescale(freqfilt), pthgif=[fldr '/freqfilt.gif'])
 
-%stack2fig(rescale(freqfilt(:,:,plotindz)), pthgif=[pth_fldr '/freqfilt.gif'])
+%stack2fig(rescale(freqfilt(:,:,plotindz)), pthgif=[fldr '/freqfilt.gif'])
 
 %%smooth then threshold extracted "line image"
 
@@ -126,7 +126,7 @@ for i = 1:size(freqfilt, 3)
     freqfilt(:,:,i) = bwmorph(freqfilt(:,:,i), 'bridge', Inf);
 end
 
-%stack2fig(rescale(freqfilt(:,:,plotindz)), pthgif=[pth_fldr '/freqfilt_smooththresh.gif'])
+%stack2fig(rescale(freqfilt(:,:,plotindz)), pthgif=[fldr '/freqfilt_smooththresh.gif'])
 
 
 %%apply filter by replacing corresponding values in spectrum
@@ -135,13 +135,13 @@ end
 %freqfilt = double(reshape(freqfilt, size(imf)));
 %
 % freqfilt2 = abs(freqfilt - max(freqfilt(:)));
-% %stack2fig(rescale(freqfilt2(:,:,plotindz)), pthgif=[pth_fldr '/freqfilt_smooththresh.gif'])
+% %stack2fig(rescale(freqfilt2(:,:,plotindz)), pthgif=[fldr '/freqfilt_smooththresh.gif'])
 %
 % imff = imf .* freqfilt2; %apply frequency filter (which has been designed in the "shifted space")
 % logabs = log(abs(imff));
 % logabs(isinf(logabs)) = min(logabs(isfinite(logabs)));
 % logabs(isinf(logabs)) = max(logabs(isfinite(logabs)));
-% stack2fig(rescale(logabs), pthgif=[pth_fldr '/imout.gif'])
+% stack2fig(rescale(logabs), pthgif=[fldr '/imout.gif'])
 %% 
 
 freqfilt = zeros(size(imfm), 'single');
@@ -169,7 +169,7 @@ for i = 1:size(imf, 3)
 
 end
 
-stack2fig(rescale(log(abs(imff(:,:,plotindz)))), pthgif=[pth_fldr '/fftfilt.gif'])
+stack2fig(rescale(log(abs(imff(:,:,plotindz)))), pthgif=[fldr '/fftfilt.gif'])
 
 
 %% return to spatial domain
@@ -177,7 +177,7 @@ stack2fig(rescale(log(abs(imff(:,:,plotindz)))), pthgif=[pth_fldr '/fftfilt.gif'
 %clear imf
 imout = single(real(ifftn(ifftshift(imff)))); %inverse shift then inverse transform (to go back to spatial domain), then real component to remove residual imaginary components remaining because of floating point error
 
-stack2fig(rescale(imout(:,:,plotindz)), pthgif=[pth_fldr '/imout.gif'])
+stack2fig(rescale(imout(:,:,plotindz)), pthgif=[fldr '/imout.gif'])
 
 %% plots
 
@@ -190,6 +190,6 @@ if doplots
         rescale(log(abs(imff(:,:,plotindz)))), ...
         rescale(imout(:,:,plotindz)));
 
-    stack2fig( catstack, pthgif=[pth_fldr '/finalcat.gif'])
+    stack2fig( catstack, pthgif=[fldr '/finalcat.gif'])
 
 end

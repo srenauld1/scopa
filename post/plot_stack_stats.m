@@ -1,38 +1,69 @@
 
-function plots_imdata(inp, mask, sindz, tindz, tindz_sub, szo, filename_prefix)
+function plot_stack_stats(stack, opt)
 
-disp("this function is very old and needs to be updated")
+arguments
+    stack {mustBeNumeric}
+    opt.mask = []
+    opt.iz = 1:size(stack,3)
+    opt.it = 1:size(stack,4)
+    opt.pthsv_prefix = []
+end
 
-filename_prefix = filename_prefix(1:end-4);
+sprintf("this function is very old and needs to be updated")
+
+mask = opt.mask;
+iz = opt.iz;
+it = opt.it;
+pthsv_prefix = opt.pthsv_prefix;
+
+
+if ~isa(stack, 'single')
+    sprintf("stack is not single in function 'plot_stack_stats', converting to single for 'plot_stack_stats'")
+    stack = single(stack);
+end
+
+
+if isempty(pthsv_prefix)
+    pthsv_prefix = globals_a2p('pthfldr');
+    if isempty(pthsv_prefix)
+        error("global variable pthfldr has not been set, and pthsv_prefix was not passed as argument; do one or the other")
+    end
+end
+
 
 numbin = 100;
 
 % could try median + k x MAD x 1.482
 
-inpsub = inp(:,:,:,tindz_sub);
+szo = size(stack);
+szy = size(stack, 1); %do it this way in case singleton
+szx = size(stack, 2); %do it this way in case singleton
+szz = size(stack, 3); %do it this way in case singleton
+szt = size(stack, 4); %do it this way in case singleton
 
-sz = size(inp);
+inpsub = stack(:,:,:,it);
+
 szsub = size(inpsub);
 ncol = 128;
 
-sindz_str = regexprep( mat2str(sindz), {'\[', '\]', '\s+'}, {'', '', '-'});
+sindz_str = regexprep( mat2str(iz), {'\[', '\]', '\s+'}, {'', '', '-'});
 
 if isempty(mask)
     masked = 0;
     maskstring = 'withoutmask';
-    mask = boolean(ones(size(inp, 1), size(inp, 2), size(inp, 3)));
+    mask = boolean(ones(szy,szx,szz));
 else
     masked = 1;
     maskstring = 'withmask';
     mask = boolean(sum(mask, 4));
 end
 
-inp = inp .* mask;
+stack = stack .* mask;
 inpsub = inpsub .* mask;
 
 [masky, maskx, maskz] = ind2sub(size(mask), find(mask));
 
-maskrept = repmat(mask, [1 1 1 sz(4)]);
+maskrept = repmat(mask, [1 1 1 szo(4)]);
 [maskrepty, maskreptx, maskreptz, maskreptt] = ind2sub(size(maskrept), find(maskrept));
 
 maskreptsub = repmat(mask, [1 1 1 szsub(4)]);
@@ -41,22 +72,22 @@ maskreptsub = repmat(mask, [1 1 1 szsub(4)]);
 %%  single slice 
 
 numpixmask_max = 0;
-for sli = sindz
+for sli = iz
     subcond = find(maskreptz==sli);
     numpixmask_max = max([numpixmask_max length(subcond)]);
 end
-histinp = nan(numpixmask_max, 1, length(sindz));
-for sli = sindz
+histinp = nan(numpixmask_max, 1, length(iz));
+for sli = iz
     subcond = find(maskreptz==sli);
     maskvecinds = sub2ind(size(maskrept), maskrepty(subcond),maskreptx(subcond),maskreptz(subcond),maskreptt(subcond));
-    histinp(1:length(maskvecinds),1,sli) = inp(maskvecinds);
+    histinp(1:length(maskvecinds),1,sli) = stack(maskvecinds);
     if masked 
         tlev(sli) = multithresh(histinp(~isnan(histinp)));
     end
 end
 
 title_hist = {['pixel intensities for slices ' sindz_str]; ['all frames of ' num2str(szo(4)) ' total']; maskstring};
-filename_hist_gif = [filename_prefix '_slicehistallframe_' maskstring '_.gif'];
+filename_hist_gif = [pthsv_prefix '_slicehistallframe_' maskstring '_.gif'];
 
 plot_histogram_gif(histinp, numbin, title_hist, filename_hist_gif)
 
@@ -64,14 +95,14 @@ plot_histogram_gif(histinp, numbin, title_hist, filename_hist_gif)
 %% single frame histograms
 
 numpixmask_max = 0;
-for sli = sindz
+for sli = iz
     for i = 1:szsub(4)
         subcond = find(maskreptsubz==sli & maskreptsubt==i);
         numpixmask_max = max([numpixmask_max length(subcond)]);
     end
 end
-histinp = nan(numpixmask_max, length(sindz), szsub(4));
-for sli = sindz
+histinp = nan(numpixmask_max, length(iz), szsub(4));
+for sli = iz
     for i = 1:szsub(4)
         subcond = find(maskreptsubz==sli & maskreptsubt==i);
         maskvecinds = sub2ind(size(maskreptsub), maskreptsuby(subcond),maskreptsubx(subcond),maskreptsubz(subcond),maskreptsubt(subcond));
@@ -82,22 +113,22 @@ for sli = sindz
     end
 end
 
-title_hist = {['pixel intensities for slices ' sindz_str]; [num2str(length(tindz_sub)) ' equidistant frames from ' num2str(tindz(tindz_sub(1))) ' to ' num2str(tindz(tindz_sub(end))) ' of ' num2str(szo(4)) ' total']; maskstring};
-filename_hist_gif = [filename_prefix '_framehist_' maskstring '_.gif'];
+title_hist = {['pixel intensities for slices ' sindz_str]; [num2str(length(it)) ' equidistant frames from ' num2str(it(1)) ' to ' num2str(it(end)) ' of ' num2str(szo(4)) ' total']; maskstring};
+filename_hist_gif = [pthsv_prefix '_framehist_' maskstring '_.gif'];
 
 plot_histogram_gif(histinp, numbin, title_hist, filename_hist_gif)
 
 %% mean frame histogram
 
-meanframe_3d = mean(inp, 4);
+meanframe_3d = mean(stack, 4);
 
 numpixmask_max = 0;
-for sli = sindz
+for sli = iz
     subcond = find(maskz==sli);
     numpixmask_max = max([numpixmask_max length(subcond)]);
 end
-histinp = nan(numpixmask_max, length(sindz));
-for sli = sindz
+histinp = nan(numpixmask_max, length(iz));
+for sli = iz
     subcond = find(maskz==sli);
     maskvecinds = sub2ind(size(mask), masky(subcond),maskx(subcond),maskz(subcond));
     histinp(1:length(maskvecinds),sli) = meanframe_3d(maskvecinds);
@@ -106,8 +137,8 @@ for sli = sindz
     end
 end
 
-title_hist = {['pixel intensities for slices ' sindz_str]; ['mean frame of ' num2str(length(tindz)) ' equidistant frames from ' num2str(tindz(1)) ' to ' num2str(tindz(end)) ' of ' num2str(szo(4)) ' total']; maskstring};
-filename_hist_gif = [filename_prefix '_meanframehist_' maskstring '_.gif'];
+title_hist = {['pixel intensities for slices ' sindz_str]; ['mean frame of ' num2str(numel(it)) ' equidistant frames from ' num2str(it(1)) ' to ' num2str(it(end)) ' of ' num2str(szo(4)) ' total']; maskstring};
+filename_hist_gif = [pthsv_prefix '_meanframehist_' maskstring '_.gif'];
 
 plot_histogram_gif(histinp, numbin, title_hist, filename_hist_gif)
 
@@ -141,29 +172,29 @@ for iiii = ctopvec
     end
 end
 
-stack2fig(outall, pthgif=[filename_prefix '_mov_' maskstring '_.gif'])
+stack2fig(outall, pthgif=[pthsv_prefix '_mov_' maskstring '_.gif'])
 
 
 %% plot image with the brightest pixel
 
-[maxval, maxind] = max(inp(:));
-[maxy, maxx, maxz, maxt] = ind2sub(size(inp), maxind);
+[maxval, maxind] = max(stack(:));
+[maxy, maxx, maxz, maxt] = ind2sub(szo, maxind);
 
 h = figure;
-imagesc(inp(:,:, maxz, maxt));
-title({['brightest pixel is ' num2str(maxval) ' at xyzt position ' num2str([maxy maxx maxz tindz(maxt)])]; maskstring})
-filename_gif = [filename_prefix '_brightestpixim_' maskstring '_.gif'];
+imagesc(stack(:,:, maxz, maxt));
+title({['brightest pixel is ' num2str(maxval) ' at xyzt position ' num2str([maxy maxx maxz it(maxt)])]; maskstring})
+filename_gif = [pthsv_prefix '_brightestpixim_' maskstring '_.gif'];
 plot_gif_singleframe(h, ncol, filename_gif)
 
 %% pixel percentiles
 
-colord = distinguishable_colors(length(sindz));
+colord = distinguishable_colors(length(iz));
 edge_pix_to_crop = 4;
 pixinc = 6;
 avgwin = [30 30];
 prcnts = [70 80 90];
-rp1 = edge_pix_to_crop:pixinc:sz(1)-(edge_pix_to_crop-1);
-rp2 = edge_pix_to_crop:pixinc:sz(2)-(edge_pix_to_crop-1);
+rp1 = edge_pix_to_crop:pixinc:szo(1)-(edge_pix_to_crop-1);
+rp2 = edge_pix_to_crop:pixinc:szo(2)-(edge_pix_to_crop-1);
 maskcroptmp = boolean(zeros(size(mask, 1), size(mask, 2)));
 maskcroptmp(rp1, rp2) = 1;
 
@@ -174,34 +205,34 @@ maskreptcrop = boolean(maskrept.*maskcroptmp);
 [maskreptcropy, maskreptcropx, maskreptcropz, maskreptcropt] = ind2sub(size(maskreptcrop), find(maskreptcrop));
 
 if masked
-    inpcrop_allslice = inp.*maskreptcrop;
-    pix_timeseries_all = reshape(inpcrop_allslice(find(maskreptcrop)), [], sz(4));
+    inpcrop_allslice = stack.*maskreptcrop;
+    pix_timeseries_all = reshape(inpcrop_allslice(find(maskreptcrop)), [], szo(4));
 else
-    inpcrop_allslice = inp(rp1, rp2, :, :);
-    pix_timeseries_all = reshape(inpcrop_allslice, [], sz(4));
+    inpcrop_allslice = stack(rp1, rp2, :, :);
+    pix_timeseries_all = reshape(inpcrop_allslice, [], szo(4));
 end
 
-%stack2fig(rescale(inpcrop_allslice(:,:,:,round(linspace(1, sz(4), 10)))), pthgif=[filename_prefix '_movcrop_' maskstring '_.gif'])
+%stack2fig(rescale(inpcrop_allslice(:,:,:,round(linspace(1, szo(4), 10)))), pthgif=[pthsv_prefix '_movcrop_' maskstring '_.gif'])
 
 pix_mean_all = mean(pix_timeseries_all, 2);
 ylnew = [min(pix_mean_all(:)) max(pix_mean_all(:))];
 
 numpixmask_max = 0;
-for sli = sindz
+for sli = iz
     subcond = find(maskcropz==sli);
     numpixmask_max = max([numpixmask_max length(subcond)]);
 end
 
-pix_timeseries_allslice = nan(numpixmask_max, length(sindz), sz(4));
-pix_mean_sort_inds_allslice = nan(numpixmask_max, length(sindz));
+pix_timeseries_allslice = nan(numpixmask_max, length(iz), szo(4));
+pix_mean_sort_inds_allslice = nan(numpixmask_max, length(iz));
 
 h = figure(30);
-for sli = sindz
+for sli = iz
 
     subcond = find(maskreptcropz==sli);
     maskvecinds = sub2ind(size(maskreptcrop), maskreptcropy(subcond),maskreptcropx(subcond),maskreptcropz(subcond),maskreptcropt(subcond));
-    inpcrop = inp(maskvecinds);
-    pix_timeseries = reshape(inpcrop, [], sz(4));
+    inpcrop = stack(maskvecinds);
+    pix_timeseries = reshape(inpcrop, [], szo(4));
     pix_timeseries_allslice(1:size(pix_timeseries,1),sli,:) = pix_timeseries;
     
     [pix_mean_sorted, pix_mean_sort_inds] = sort(mean(pix_timeseries, 2));
@@ -226,8 +257,8 @@ for sli = sindz
     plot(centile, 'k')
     scatter(kneeidx_of_kneeidx(sli), centile(kneeidx_of_kneeidx(sli)), 'k', 'filled');
 
-    if sli==sindz(end)
-        filename_plot_gif = [filename_prefix '_intsthreshthresh_allslice_' maskstring '_.gif'];
+    if sli==iz(end)
+        filename_plot_gif = [pthsv_prefix '_intsthreshthresh_allslice_' maskstring '_.gif'];
         plot_gif_singleframe(h, ncol, filename_plot_gif)
     end
 
@@ -241,7 +272,7 @@ for sli = sindz
             scatter(kneeidx_each, pix_timeseries_sorted(pii, kneeidx_each), 'k', 'filled');        
         end
     end
-    filename_plot_gif = [filename_prefix '_intsthreshed_slice' num2str(sli) '_' maskstring '_.gif'];
+    filename_plot_gif = [pthsv_prefix '_intsthreshed_slice' num2str(sli) '_' maskstring '_.gif'];
     plot_gif_singleframe(h2, ncol, filename_plot_gif)
 
 %     figure(31); hold on

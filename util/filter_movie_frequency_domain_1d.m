@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain_1d(imin, pth_fldr, doplots)
+function imout = filter_movie_frequency_domain_1d(imin, fldr, doplots)
 
 numfreqtozero = 50;
 
@@ -86,7 +86,7 @@ if 0
 
         swapdim = 1;
         ncol = 128;
-        pthgif = [pth_fldr '/imout.gif'];
+        pthgif = [fldr '/imout.gif'];
         hfg = figure;
         for mmi = 1:300
             plot(imfm_log(:,mmi))
@@ -94,7 +94,7 @@ if 0
         end
         %%
 
-        stack2fig(rescale(imin(:,1:30)), pthgif=[pth_fldr '/imout.gif'])
+        stack2fig(rescale(imin(:,1:30)), pthgif=[fldr '/imout.gif'])
 
 
         catstack = cat(1, ...
@@ -103,7 +103,7 @@ if 0
             rescale(log(abs(imff(:,:,plotindz)))), ...
             rescale(imout(:,:,plotindz)));
 
-        stack2fig( catstack, pthgif=[pth_fldr '/finalcat.gif'])
+        stack2fig( catstack, pthgif=[fldr '/finalcat.gif'])
 
     end
 end

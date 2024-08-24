@@ -1,12 +1,19 @@
-function [inds, inds_str] = make_plot_inds(indsall, indsin, label_prefix, max_num_inds_to_print, strdelim)
+function [inds, indslab] = make_plot_inds(indsin, opt)
+
 
 arguments
-    indsall {mustBeNumeric}
     indsin {mustBeNumeric} = []
-    label_prefix char = ''
-    max_num_inds_to_print = 20
-    strdelim = '-';
+    opt.indsall {mustBeNumeric} = []
+    opt.label_prefix char = ''
+    opt.strdelim char = '-';
+    opt.printmax = 20
 end
+
+indsall = opt.indsall;
+printmax = opt.printmax;
+label_prefix = opt.label_prefix;
+strdelim = opt.strdelim;
+
 
 if isscalar(indsall)
     indsall = 1:indsall;
@@ -15,14 +22,17 @@ end
 if any(indsin<0) & numel(indsin)>1
     error("negative inds must be scalar")
 end
+if isempty(indsall) && ( isempty(indsin) || indsin<0 || mod(indsin, 1)~=0 )
+    error("for empty, negative, or fractional inds, you must pass indsall (inds' superset) as a reference")
+end
 
 fractional_indsin = 0;
 
 if isempty(indsin)
-    inds_str = ['1to' num2str(numel(indsall))];
+    indslab = ['1to' num2str(numel(indsall))];
     inds = 1:numel(indsall);
 elseif indsin<0
-    inds_str = ['neg' num2str(indsin)];
+    indslab = ['neg' num2str(indsin)];
     if mod(indsin, 1)~=0
         error("negative inds must be integer")
     end
@@ -43,12 +53,12 @@ elseif mod(indsin, 1)~=0
     segspacing = floor(numel(indsall)/numseg);
     inds = [1:seglength]+segspacing*([1:numseg]'-1)+segspacing-seglength;
     for j = 1:size(inds,1)
-        inds_str{j} = [num2str(inds(j,1)) 'to' num2str(inds(j,end))];
+        indslab{j} = [num2str(inds(j,1)) 'to' num2str(inds(j,end))];
     end
-    inds_str = strjoin(inds_str, '-');
+    indslab = strjoin(indslab, '-');
     inds = vec(inds.');
     if numel(inds)>numel(indsall) | any(inds<0)
-        disp("warning, seglength*numseg exceeds num inds, plotting all inds")
+        sprintf("seglength*numseg exceeds num inds, plotting all inds")
         inds = 1:numel(indsall);
     end
 else
@@ -59,22 +69,22 @@ inds = inds(:)';
 
 %regardless of what happens above, apply this as an additional step
 if isequal(inds, min(inds):max(inds))
-    inds_str = [num2str(min(inds)) 'to' num2str(max(inds))];
+    indslab = [num2str(min(inds)) 'to' num2str(max(inds))];
 elseif isequal(sort(inds), min(inds):max(inds))
-    inds_str = [num2str(min(inds)) 'to' num2str(max(inds)) 'unsorted'];
+    indslab = [num2str(min(inds)) 'to' num2str(max(inds)) 'unsorted'];
 else
     if ~fractional_indsin
-        if numel(inds)<max_num_inds_to_print
-            inds_str = regexprep( mat2str(inds), {'\[', '\]', '\s+'}, {'', '', strdelim});
+        if numel(inds)<printmax
+            indslab = regexprep( mat2str(inds), {'\[', '\]', '\s+'}, {'', '', strdelim});
         else
-            inds_str = 'noprint';
+            indslab = 'noprint';
         end
     end
 end
 
-if~isempty(label_prefix)
-    inds_str = [label_prefix strdelim inds_str];
+if ~isempty(label_prefix)
+    indslab = [label_prefix strdelim indslab];
 end
 
-
 end
+

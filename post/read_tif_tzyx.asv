@@ -1,13 +1,5 @@
 function out = read_tif_tzyx(filename_tif, opt)
 
-
-%scanimage writes as tzyx, and so does scopa python pipeline
-%custom function TIFFStack (not mine) can read this dim order
-%option to just read a subset of z and t indices to save time (inds_z_read_from, inds_t_read_from)
-%size_z_read_from and size_t_read_from must match z and t dimensions of tif
-%tifs from scopa can be 3d or 4d and can be read here without issue
-
-
 arguments
     filename_tif char
     opt.size_read_to = []
@@ -18,18 +10,24 @@ arguments
 end
 
 size_read_to = opt.size_read_to;
+if numel(fieldnames(opt))>1
+    if ~any(sum(isfield(opt, {'size_f_read_from', 'size_tfread_from', 'fnds_z_read_from', 'indsft_read_from'}))==[0 6])
+        error("you must pass all or none of these arguments: 'size_z_read_from', 'size_t_read_from', 'inds_z_read_from', 'inds_t_read_from' ")
+    end
+    stack_size_is_known = 1;
+end
 size_z_read_from = opt.size_z_read_from;
 size_t_read_from = opt.size_t_read_from;
 inds_z_read_from = opt.inds_z_read_from;
 inds_t_read_from = opt.inds_t_read_from;
 
-if sum(~structfun(@isempty, opt))==5
-    stack_size_is_known = 1;
-elseif sum(~structfun(@isempty, opt))==0
-    stack_size_is_known = 0;
-else
-    error("you must pass all or none of these arguments: 'size_read_to', 'size_z_read_from', 'size_t_read_from', 'inds_z_read_from', 'inds_t_read_from' ")
-end
+
+
+%scanimage writes as tzyx, and so does scopa python pipeline
+%custom function TIFFStack (not mine) can read this dim order
+%option to just read a subset of z and t indices to save time (inds_z_read_from, inds_t_read_from)
+%size_z_read_from and size_t_read_from must match z and t dimensions of tif
+%tifs from scopa can be 3d or 4d and can be read here without issue
 
 tsStack = TIFFStack(filename_tif); % Construct a TIFF stack associated with a file, this doesn't read the stack into memory
 

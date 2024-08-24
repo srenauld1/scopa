@@ -1,29 +1,21 @@
-function [pth, parstr] = filenames_a2p(ui, ids, pthstack)
+function [opt, pth, parstr, ids] = filenames_a2p(opt, pthstack)
 
 
 %%set up filenames for a2p 
 
 
-recdatenum = ids.recdatenum; 
-flynum = ids.flynum; 
-trialnum = ids.trialnum; 
-suffix = ids.suffix; 
-recid = ids.recid;
-datefly_hyphen = ids.datefly_hyphen;
-
-
-regionex_all = ui.mn.regionex_all;
-tmp_folder_name = ui.mn.tmp_folder_name;
-use_caiman_on_hires = ui.hires.use_caiman_on_hires;
-use_hires = ui.mroi.auto.use_hires; %gets updated to numeric struct, fieldname use_hires
-use_drawn_rois = ui.mroi.use_drawn_rois; %gets updated to numeric struct, fieldname use_drawn_rois
-num_mroi_auto = ui.mroi.auto.num_mroi_auto; %gets updated to numeric struct, fieldname num_mroi_auto
-caiman_lr_str = ui.froi.caiman_lr_str;
-numcluster_for_bump_domain_resample = ui.pf.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
-caiman_hr_str = ui.hires.caiman_hr_str;
+valid_fnsuffixes = opt.mn.valid_fnsuffixes;
+regionex_all = opt.mn.regionex_all;
+tmp_folder_name = opt.mn.tmp_folder_name;
+use_caiman_on_hires = opt.hires.use_caiman_on_hires;
+use_hires = opt.mroi.auto.use_hires; %gets updated to numeric struct, fieldname use_hires
+use_drawn_rois = opt.mroi.use_drawn_rois; %gets updated to numeric struct, fieldname use_drawn_rois
+num_mroi_auto = opt.mroi.auto.num_mroi_auto; %gets updated to numeric struct, fieldname num_mroi_auto
+caiman_lr_str = opt.froi.caiman_lr_str;
+numcluster_for_bump_domain_resample = opt.pf.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
+caiman_hr_str = opt.hires.caiman_hr_str;
 
 %% variables for all regionex
-
 
 [fldr, ~, ~] = fileparts(pthstack);
 fldr = [fldr filesep];
@@ -125,7 +117,7 @@ for k = 1:numregions
 
     pth_froi_all_tmp = [];
     for csi = 1:length(caiman_lr_str)
-        pth_froi_pat = [fldr recid '_' suffix '_' regionex_nounderscore '_*_cmex_' caiman_lr_str{csi} '_rois_.mat'];
+        pth_froi_pat = [fldr recid '_' suffix_analysis '_' regionex_nounderscore '_*_cmex_' caiman_lr_str{csi} '_rois_.mat'];
         tmp = rdir(pth_froi_pat);
         pth_froi_all_tmp = cat(1, pth_froi_all_tmp, tmp);
     end
@@ -167,7 +159,7 @@ for k = 1:numregions
     %     end
     % end
 
-    pth_savedata_oneregion.(regionex) = [fldr recid '_' suffix '_' paramstr '_' regionex '_savedata_.mat'];
+    pth_savedata_oneregion.(regionex) = [fldr recid '_' suffix_analysis '_' paramstr '_' regionex '_savedata_.mat'];
 
     pth_caimanfails = [fldr recid '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
     pth_caimanfails2 = [fldr recid '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];
@@ -203,7 +195,7 @@ else
     pth_froi_hires = [];
 end
 
-pffn = fieldnames(ui.pf);
+pffn = fieldnames(opt.pf);
 for pfi = 1:numel(pffn)
     pth.tsuse_nms_prefix.(pffn{pfi}) = [fldr 'tsuse_' pffn{pfi}];
 end
@@ -214,11 +206,16 @@ pth.tsuse_nms_prefix.pltexp = [fldr 'tsuse_finpltexp_'];
 
 %% assign to struct
 
-
+ids.recdatenum = recdatenum;
+ids.flynum = flynum;
+ids.trialnum = trialnum;
+ids.recid = recid;
+ids.datefly_hyphen = datefly_hyphen; %for some flyg files
+ids.suffix = suffix_analysis;
 
 pth.prefix = pth_prefix;
 pth.fldr = fldr;
-pth.stack = pthstack;
+pth.pthstack = pthstack;
 pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
 pth.froi_hires = pth_froi_hires;
@@ -242,8 +239,6 @@ pth.ft.vidrs = pth_ftvidrs;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.tmpfiles = pth_tmpfiles;
-
-pth = orderfields_recursive(pth);
 
 
 

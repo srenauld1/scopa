@@ -1,10 +1,10 @@
 function [md, stim] = load_stim(md, ids, doplots)
 
-datenum = ids.datenum;
+recdatenum = ids.recdatenum;
 flynum = ids.flynum;
 trialnum = ids.trialnum;
 
-recid = [num2str(datenum) num2str(flynum)];
+recid = [num2str(recdatenum) num2str(flynum)];
 
 plot_stim = 0;
 

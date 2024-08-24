@@ -73,21 +73,19 @@ end
 
 %% prep vars
 
+[iz, izstr] = make_plot_inds(iz, indsall=size(stack, 3), label_prefix='z', strdelim='-', printmax=20);
+[it, itstr] = make_plot_inds(it, indsall=size(stack, 4), label_prefix='t', strdelim='-', printmax=20);
 
-[plotinds.z, plotinds.z_str] = make_plot_inds(size(stack, 3), plotinds.z, 'z');
-[plotinds.t, plotinds.t_str] = make_plot_inds(size(stack, 4), plotinds.t, 't');
-
-
-stack = stack(:,:,plotinds.z,plotinds.t);
-epochinds_ts_i = epochinds_ts_i(plotinds.t);
+stack = stack(:,:,iz,it);
+epochinds_ts_i = epochinds_ts_i(it);
 
 if ftv
-    ftv = ftv(:,:,plotinds.t);
+    ftv = ftv(:,:,it);
     if numel(size(ftv))==3
         ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    ftv = rand(10,10,numel(plotinds.t));
+    ftv = rand(10,10,numel(it));
 end
 
 vars = struct2cell(vars);

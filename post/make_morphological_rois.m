@@ -53,8 +53,9 @@ if exist('maskmanual', 'var') %if passing in a morph roi mask (interactive mode)
     do_other_plots = 0;
 else
     maskinput = 0;
-    use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
-    num_mroi_auto = opts_mroi.auto.num_mroi_auto.(regionex);
+    error
+    use_drawn_rois = opts_mroi.use_drawn_rois;
+    num_mroi_auto = opts_mroi.auto.num_mroi_auto;
     autoopts = opts_mroi.auto;
     normopts = opts_mroi.norm;
     hsvopt = opts_mroi.hsvopt;
@@ -63,6 +64,7 @@ else
 end
 
 pth_mroi_prefix = pth_mroi(1:end-4);
+
 
 %% draw rois (polygons/polyhedra)
 

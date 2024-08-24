@@ -8,9 +8,9 @@ clc
 % how do you shift an exponential filter in time (onset begins at t-t0), without interpolation??
 
 
-pth_fldr = [filesep 'Users' filesep 'wienecke' filesep];
+fldr = [filesep 'Users' filesep 'wienecke' filesep];
 
-filename_save = [pth_fldr datestr(now, 30) '00wavelettest.gif'];
+filename_save = [fldr datestr(now, 30) '00wavelettest.gif'];
 hfg = figure;
 hax = axes('Parent', hfg);
 dt = 0.2; %sample period

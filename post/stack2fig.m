@@ -19,19 +19,17 @@ arguments
     opt.framenumdims = 2; %how many dims to display on a each frame
     opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
     opt.display_range = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
-    opt.yinds = [];
-    opt.xinds = [];
-    opt.zinds = [];
-    opt.tinds = [];
-    opt.pinds = []; %pmt indices (red or green channel
-    opt.cinds = []; %rgb color channel indices 
+    opt.iy = [];
+    opt.ix = [];
+    opt.iz = [];
+    opt.it = [];
+    opt.ip = []; %pmt indices (red or green channel
+    opt.ic = []; %rgb color channel indices 
 end
-
-global pthsv
 
 fn = fieldnames(opt);
 for fi = 1:numel(fn)
-    eval([fn{fi} '= opt.(fn{fi});' ]);
+    eval([fn{fi} '= opt.(fn{fi});' ]);%transform 'opt' fields into local variables
 end
 
 if iscell(stack)
@@ -41,10 +39,11 @@ else
 end
 
 if isempty(pthgif)
-    if isempty(pthsv)
-        error("global variable pthsv has not been set, and pthgif was not passed as argument; do one or the other")
+    pthfldr = globals_a2p('pthfldr');
+    if isempty(pthfldr)
+        error("global variable pthfldr has not been set, and pthgif was not passed as argument; do one or the other")
     end
-    pthgif = [pthsv char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) '.gif'];
+    pthgif = [pthfldr char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) '.gif'];
 end
 if isempty(dimorder)
     dimorder = 1:numel(szin); %for now only one dim order allowed, so just take from first cell if stack is a cell 
@@ -52,65 +51,65 @@ end
 
 
 index_labels_opt = cell(1,6);
-if ~isempty(opt.yinds)
-    opt.yinds = make_plot_inds(szin(1), opt.yinds);
+if ~isempty(opt.iy)
+    opt.iy = make_plot_inds(opt.iy, indsall=szin(1));
     if iscell(stack)
-        stack = cellfun(@(x) x(opt.yinds,:,:,:,:,:), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(opt.iy,:,:,:,:,:), stack, 'UniformOutput', false);
     else
-        stack = stack(opt.yinds,:,:,:,:,:);
+        stack = stack(opt.iy,:,:,:,:,:);
     end
-    index_labels_opt{1} = opt.yinds;
+    index_labels_opt{1} = opt.iy;
 end
-if ~isempty(opt.xinds)
-    opt.xinds = make_plot_inds(szin(2), opt.xinds);
+if ~isempty(opt.ix)
+    opt.ix = make_plot_inds(opt.ix, indsall=szin(2));
     if iscell(stack)
-        stack = cellfun(@(x) x(:,opt.xinds,:,:,:,:), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(:,opt.ix,:,:,:,:), stack, 'UniformOutput', false);
     else
-        stack = stack(:,opt.xinds,:,:,:,:);
+        stack = stack(:,opt.ix,:,:,:,:);
     end
-    index_labels_opt{2} = opt.xinds;
+    index_labels_opt{2} = opt.ix;
 end
-if ~isempty(opt.zinds)
-    opt.zinds = make_plot_inds(szin(3), opt.zinds);
+if ~isempty(opt.iz)
+    opt.iz = make_plot_inds(opt.iz, indsall=szin(3));
     if iscell(stack)
-        stack = cellfun(@(x) x(:,:,opt.zinds,:,:,:), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(:,:,opt.iz,:,:,:), stack, 'UniformOutput', false);
     else
-        stack = stack(:,:,opt.zinds,:,:,:);
+        stack = stack(:,:,opt.iz,:,:,:);
     end
-    index_labels_opt{3} = opt.zinds;
+    index_labels_opt{3} = opt.iz;
 end
-if ~isempty(opt.tinds)
-    opt.tinds = make_plot_inds(szin(4), opt.tinds);
+if ~isempty(opt.it)
+    opt.it = make_plot_inds(opt.it, indsall=szin(4));
     if iscell(stack)
-        stack = cellfun(@(x) x(:,:,:,opt.tinds,:,:), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(:,:,:,opt.it,:,:), stack, 'UniformOutput', false);
     else
-        stack = stack(:,:,:,opt.tinds,:,:);
+        stack = stack(:,:,:,opt.it,:,:);
     end
-    index_labels_opt{4} = opt.tinds;
+    index_labels_opt{4} = opt.it;
 end
-if ~isempty(opt.pinds)
+if ~isempty(opt.ip)
     if numel(szin)<5
-        error("you requested pinds but stack is less than 5d")
+        error("you requested ip but stack is less than 5d")
     end
-    opt.pinds = make_plot_inds(szin(5), opt.pinds);
+    opt.ip = make_plot_inds(opt.ip, indsall=szin(5));
     if iscell(stack)
-        stack = cellfun(@(x) x(:,:,:,:,opt.pinds,:), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(:,:,:,:,opt.ip,:), stack, 'UniformOutput', false);
     else
-        stack = stack(:,:,:,:,opt.pinds,:);
+        stack = stack(:,:,:,:,opt.ip,:);
     end
-    index_labels_opt{5} = opt.pinds;
+    index_labels_opt{5} = opt.ip;
 end
-if ~isempty(opt.cinds)
+if ~isempty(opt.ic)
     if numel(szin)<6
-        error("you requested cinds but stack is less than 5d")
+        error("you requested ic but stack is less than 5d")
     end
-    opt.cinds = make_plot_inds(szin(6), opt.cinds);
+    opt.ic = make_plot_inds(opt.ic, indsall=szin(6));
     if iscell(stack)
-        stack = cellfun(@(x) x(:,:,:,:,:,opt.cinds), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(:,:,:,:,:,opt.ic), stack, 'UniformOutput', false);
     else
-        stack = stack(:,:,:,:,:,opt.cinds);
+        stack = stack(:,:,:,:,:,opt.ic);
     end
-    index_labels_opt{6} = opt.cinds;
+    index_labels_opt{6} = opt.ic;
 end
 
 
@@ -236,16 +235,16 @@ end
 
 numdims = ndims(stack);
 
-if numel(opt.zinds)==1 && size(stack,3)==1 && numdims<=2 %if z became singleton because of zinds argument
+if numel(opt.iz)==1 && size(stack,3)==1 && numdims<=2 %if z became singleton because of iz argument
     numdims = numdims+1;
 end
-if numel(opt.tinds)==1 && size(stack,4)==1 && numdims<=3 %if t became singleton because of tinds argument
+if numel(opt.it)==1 && size(stack,4)==1 && numdims<=3 %if t became singleton because of it argument
     numdims = numdims+1;
 end
-if numel(opt.pinds)==1 && size(stack,5)==1 && numdims<=4 %if p became singleton because of pinds argument
+if numel(opt.ip)==1 && size(stack,5)==1 && numdims<=4 %if p became singleton because of ip argument
     numdims = numdims+1;
 end
-if numel(opt.cinds)==1 && size(stack,6)==1 && numdims<=5 %if c became singleton because of cinds argument
+if numel(opt.ic)==1 && size(stack,6)==1 && numdims<=5 %if c became singleton because of ic argument
     numdims = numdims+1;
 end
 
@@ -329,7 +328,7 @@ dr_str = ['dr-' strjoin(dr_str, ' AND ')];
 lab_framestable = {dr_str};
 index_labels_tmp = index_labels(1:framenumdims); %labels that are the same on every frame
 for li = 1:numel(index_labels_tmp)
-    [~, index_labels_tmp{li}] = make_plot_inds(index_labels_tmp{li}, index_labels_tmp{li}, dimlabels{li}, max_num_inds_to_print);
+    [~, index_labels_tmp{li}] = make_plot_inds(index_labels_tmp{li}, indsall=index_labels_tmp{li}, label_prefix=dimlabels{li}, printmax=max_num_inds_to_print);
 end
 lab_framestable = cat(1, lab_framestable, index_labels_tmp);
 dims_changing_across_frames = framenumdims+1:maxnumdims;

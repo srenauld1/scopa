@@ -1,5 +1,5 @@
 
-function [croplim, croplimstr] = make_croplim(stack, sz_t, pth_fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore)
+function [croplim, croplimstr] = make_croplim(stack, sz_t, fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore)
 
 
 clip_prctile = [0 100]; %[0 100] does not change contrast
@@ -60,7 +60,7 @@ end
 tinds = 1:sz_t;
 croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
 croplimstr = [num2str(croplim(7)) '_' num2str(croplim(8)) '_' num2str(croplim(3)) '_' num2str(croplim(4)) '_' num2str(croplim(1)) '_' num2str(croplim(2)) '_' num2str(croplim(5)) '_' num2str(croplim(6))];
-pth_croplim = [pth_fldr recid '_' regionex_nounderscore '_' croplimstr '_croplim_.mat'];
+pth_croplim = [fldr recid '_' regionex_nounderscore '_' croplimstr '_croplim_.mat'];
 save(pth_croplim, 'yinds', 'xinds', 'zinds', 'tinds', '-v7.3', '-mat')
 
 

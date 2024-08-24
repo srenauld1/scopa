@@ -161,7 +161,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
             print("\n\n\nPREPARING FILE: \n" + pth_readfile)
 
-            pth_fldr = ('/').join(pth_readfile.split('/')[:-1]) + '/'
+            fldr = ('/').join(pth_readfile.split('/')[:-1]) + '/'
             fname = pth_readfile.split('/')[-1]
 
             if re.search('trial', fname):                       
@@ -170,7 +170,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 fn_prefix = '_'.join(fname.split('_')[:3])
             fn_prefix_flyg = '-'.join(fname.split('_')[:2])
 
-            pth_prefix = pth_fldr + fn_prefix
+            pth_prefix = fldr + fn_prefix
             datestr_found = fn_prefix.split('_')[0]
             flystr_found = fn_prefix.split('_')[1]
             trialstr_found = fn_prefix.split('_')[2]
@@ -180,13 +180,13 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_md = pth_prefix + '_metadatanew_.npy'
             pth_md_mat = pth_md[:-4] + '.mat'  
 
-            # fn_pattern_md_flyg = pth_fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
+            # fn_pattern_md_flyg = fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
             # pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
             # pth_md_flyg = pth_md_flyg[0] #flyg metadata file only exists if you register in flyg
             # if pth_md_flyg:
             #     pth_md_flyg = pth_md_flyg[0]
 
-            fn_pattern_daq = pth_fldr + fn_prefix_flyg + '_daqData_*_trial_' + trialstr_found.zfill(3) + '.mat'
+            fn_pattern_daq = fldr + fn_prefix_flyg + '_daqData_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_daq = glob.glob(fn_pattern_daq, recursive=True)
             if pth_daq:
                 pth_daq = pth_daq[0]
@@ -198,15 +198,15 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_croplim = pth_croplim_npy + pth_croplim_mat
             
 
-            pth_pattern_hires = pth_fldr + datestr_found + '?' + flystr_found + '_' + trialstr_found + '_hires_.tif'
+            pth_pattern_hires = fldr + datestr_found + '?' + flystr_found + '_' + trialstr_found + '_hires_.tif'
             pth_hires = glob.glob(pth_pattern_hires)
             if not pth_hires: #alternative pattern, if first doesn't exist
-                pth_pattern_hires = pth_fldr + datestr_found + '?' + flystr_found + '_hires_.tif'
+                pth_pattern_hires = fldr + datestr_found + '?' + flystr_found + '_hires_.tif'
                 pth_hires = glob.glob(pth_pattern_hires)
             if pth_hires:
                 pth_hires = pth_hires[0]
                 
-            fn_pattern_ftvid = pth_fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
+            fn_pattern_ftvid = fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
             pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
             if pth_ftvid:
                 pth_ftvid = pth_ftvid[0]
@@ -215,7 +215,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname) or re.search('stackraw', fname) or pth_hires: #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
-                    [pth_readfile, fname, pth_hires] = rename_files(pth_readfile, fname, fn_prefix, pth_fldr, pth_hires)
+                    [pth_readfile, fname, pth_hires] = rename_files(pth_readfile, fname, fn_prefix, fldr, pth_hires)
             
             mat_file_shape = None
             if int(datestr_found)>20230101:
@@ -243,7 +243,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             ######### PUT IN LISTS #########
 
             pth_read_all.append(pth_readfile)
-            pth_fldr_all.append(pth_fldr)
+            pth_fldr_all.append(fldr)
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
             pth_md_all.append(pth_md)

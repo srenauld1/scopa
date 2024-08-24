@@ -10,8 +10,8 @@ function opt = input_params_alt(varargin)
 %% MAIN
 
 %params for main pipeline control in file a2p
-opt.mn.parent_folder_path_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
-opt.mn.parent_folder_path_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.mn.parent_folder_path_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
+opt.mn.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
+opt.mn.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in scratch with same parent folder name as opt.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 opt.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 
 if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here 
@@ -19,12 +19,12 @@ if isempty(varargin{1}) %if not running a2p from cxp, set filename specs here
     opt.mn.fly = '4'; %can use wildcards
     opt.mn.trial = '1'; %can use wildcards
     opt.mn.suffix_analysis = 'cmrg_dcdn'; %scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline
-    [opt.mn.pthin, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
+    [opt.mn.pthstack, opt.mn.pth_grandparent] = find_preprocessed_files(opt.mn);
 else
-    opt.mn.pthin = varargin{1};
-    [pthin, ~, ~] = fileparts(opt.mn.pthin);
-    pthin = strsplit(pthin, filesep);
-    opt.mn.pth_grandparent = [strjoin(pthin(1:end-2), filesep) filesep];
+    opt.mn.pthstack = varargin{1};
+    [pthstack, ~, ~] = fileparts(opt.mn.pthstack);
+    pthstack = strsplit(pthstack, filesep);
+    opt.mn.pth_grandparent = [strjoin(pthstack(1:end-2), filesep) filesep];
 end
 
 
@@ -67,9 +67,9 @@ opt.ftv.doplots = 0; %0 skips plots, 1 plots and saves, 2 saves but does not dis
 %opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
 opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.ld.zero_stack = 1; %subtract min to make min zero 
-opt.ld.numsamp_crop_t_front = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.ld.numsamp_crop_t_back = 0; % how many samples to remove from end of stack
-opt.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.ld.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.ld.croptback = 0; % how many samples to remove from end of stack
+opt.ld.do_plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 opt.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
@@ -78,8 +78,8 @@ opt.ld.gif.suffixes_plot = {
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
-opt.ld.gif.plotinds.t = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.ld.gif.it = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.ld.gif.rescale_each_stack = 0; %1 to rescale 0-1 before combining into single plot; 
 opt.ld.gif.display_range = [0,1]; %2-element vector, [low,high], where anything below low in 0-1 normalized image is displayed as black, and anything above high is displayed as white, 
 opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
@@ -91,11 +91,11 @@ opt.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 % for opt.mroi.auto.use_hires, opt.mroi.use_drawn_rois, and opt.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in opt.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-opt.mroi.use_drawn_rois_str =  {'ebfb_eb', 'ebfb_fb'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+opt.mroi.use_drawn_rois =  {'ebfb_eb', 'ebfb_fb'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 opt.mroi.auto.num_mroi_auto_str = {'ebfb_eb-32', 'ebfb_fb-32'}; %each string is format regionex-integer, e.g. {'eb-12, 'pb-16'}, use 3d edge detection to define a 3d super-roi, then partition that super-roi into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-opt.mroi.auto.use_hires_str = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
+opt.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 opt.mroi.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 opt.mroi.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', opt.mroi.auto.num_mroi_auto_str must be power of 2
 opt.mroi.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
@@ -332,8 +332,8 @@ opt.pltexp(1).ignore_missing_vars = 0; %set to 1 not error if any requested time
 opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
-opt.pltexp(1).plotinds.t = [];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.pltexp(1).plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.pltexp(1).it = [];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.pltexp(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.pltexp(1).display_range = [0,1]; 
 
 
@@ -345,12 +345,12 @@ opt.pltexp(1).display_range = [0,1];
 %params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
 opt.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.hires.ld.zero_stack = 1; %subtract min to make min zero 
-opt.hires.ld.numsamp_crop_t_front = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.hires.ld.numsamp_crop_t_back = 0; % how many samples to remove from end of stack
-opt.hires.ld.plot_stack_stats = 0; %function this uses is old and needs to be updated
+opt.hires.ld.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.hires.ld.croptback = 0; % how many samples to remove from end of stack
+opt.hires.ld.do_plot_stack_stats = 0; %function this uses is old and needs to be updated
 
-opt.hires.ld.gif.plotinds.t = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.hires.ld.gif.plotinds.z = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.hires.ld.gif.it = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.hires.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 opt.hires.ld.gif.rescale_each_stack = 1; %rescale each subplot to same range 0-1 before combining
 opt.hires.ld.gif.display_range = [0 1]; %combined ploto rescale arguments, [lower, upper]
 opt.hires.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
@@ -368,8 +368,8 @@ opt.hires.caiman_hr_str = '*'; %empty to skip
 %overwrite some params for carl's old project
 % if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override some settings for old project
 %     opt.mn.old_project = 1;
-%     opt.md.numsamp_crop_t_front = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-%     opt.md.numsamp_crop_t_front = 2; % how many samples to remove from end of stack
+%     opt.md.croptfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+%     opt.md.croptfront = 2; % how many samples to remove from end of stack
 %     opt.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
 %     opt.fitm.mdl_length_sec = 1.25;
 % end

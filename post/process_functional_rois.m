@@ -18,8 +18,8 @@ do_other_plots = opts.do_other_plots;
 
 normopts = opts.norm;
 
-numsamp_crop_t_front = md.numsamp_crop_t_front;
-numsamp_crop_t_back = md.numsamp_crop_t_back;
+croptfront = md.croptfront;
+croptback = md.croptback;
 dtmni = md.dtmni;
 
 cnt_mroi = roiinfo.centroids_roi;
@@ -96,9 +96,9 @@ if ndims(cma)~=4
     error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
 end
 
-if numsamp_crop_t_front || numsamp_crop_t_back
-    cmc = cmc(:,numsamp_crop_t_front+1:end-numsamp_crop_t_back);
-    cms = cms(:,numsamp_crop_t_front+1:end-numsamp_crop_t_back);
+if croptfront || croptback
+    cmc = cmc(:,croptfront+1:end-croptback);
+    cms = cms(:,croptfront+1:end-croptback);
 end
 
 numrois = size(cma, 4);

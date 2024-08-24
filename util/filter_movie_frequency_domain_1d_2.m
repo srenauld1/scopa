@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain_1d_2(imin, keepfreq, pth_fldr, doplots)
+function imout = filter_movie_frequency_domain_1d_2(imin, keepfreq, fldr, doplots)
 
 imin = double(imin);
 

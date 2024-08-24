@@ -1,13 +1,13 @@
 function ftvdsrs = temporal_downsample_align_fictrac_video(pth_vid, pth_vidrs, numvol, imrate, ...
-    ftvid_spatial_smooth_window_std, numpix_to_extract_laser_timeseries, ...
-    laser_timeseries_smooth_window_std, ...
-    doplots, pth_dat, pth_vidlog, pth_log)
+    num_periodic_peaks_defining_laser_oscillations, ftvid_spatial_smooth_window_std, ...
+    numpix_to_extract_laser_timeseries, laser_timeseries_smooth_window_std, doplots, pth_dat, pth_vidlog, pth_log)
 
 arguments
     pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
     pth_vidrs char %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
     numvol double %number of imaging volumes
     imrate double %imaging rate (average,approximate)
+    num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
     ftvid_spatial_smooth_window_std double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
     laser_timeseries_smooth_window_std double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
@@ -45,22 +45,16 @@ end
 % error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data, 
 % and because the fictrac video is currently only used for visualization
 
-num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-% ftvid_spatial_smooth_window_std = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-% numpix_to_extract_laser_timeseries = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-% laser_timeseries_smooth_window_std = 4 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-% doplots = 1
-
 if doplots==1
     gif_visibility = 'on';
 elseif doplots==2
     gif_visibility = 'off';
 end
 
-if 0%pth_vidlog
+if pth_vidlog
     ftvl = parse_fictrac_vidlog(pth_vidlog);
 end
-if 0%pth_log
+if pth_log
     try
         [pthtmp, ~, ~] = fileparts(pth_log);
         pth_log_parsed = [pthtmp filesep 'FT_LOG_PARSED_.mat'];

@@ -1,8 +1,8 @@
-function epochs = define_stim_epoch_indices(ft_misoffset_sec, ti, datenum)
+function epochs = define_stim_epoch_indices(ft_misoffset_sec, ti, recdatenum)
 
 
 
-if datenum<20231119
+if recdatenum<20231119
 
     num_cycles = 3;
     closed_final_dark_duration = 60; %final seconds
@@ -17,7 +17,7 @@ if datenum<20231119
     boutinds_onecycle.dark = [];
     boutinds_onecycle.closedfinaldark = [];
 
-elseif datenum>=20231119 && datenum<20231231
+elseif recdatenum>=20231119 && recdatenum<20231231
 
     num_cycles = 6;
     closed_final_dark_duration = 0; %final seconds

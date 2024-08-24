@@ -9,8 +9,8 @@ sprintf("\n\n\nENTERING remove_scan_noise")
 makeplots = 1;
 stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
 
-plotinds.t = 50.4; %t indices to plot, blank for all, negative for that number equidistant from all available
-plotinds.z = []; %z indices to plot, blank for all, negative for that number equidistant from all available
+it = 50.4; %t indices to plot, blank for all, negative for that number equidistant from all available
+iz = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 
 zero_stack = 1; %subtract min to make min zero 
 
@@ -20,7 +20,7 @@ dimorder = [1,2,3,4];%for plotting, if makeplots
 
 display(['processing : ' pth_stack_tif] )
 
-[pth_fldr, filnam, ~] = fileparts(pth_stack_tif);
+[fldr, filnam, ~] = fileparts(pth_stack_tif);
 
 if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(regexp(filnam, regexptranslate('wildcard', '_trial')))
     error(sprintf("ERROR, \nTHIS FUNCTION IS NOT WRITTEN FOR STACKS WITH FLYBACK " + ...
@@ -30,11 +30,11 @@ if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(reg
         "TO MAKE THEM AS THEY APPEAR IN load_stack.m"))
 end
 
-pth_fldr = [pth_fldr filesep];
+fldr = [fldr filesep];
 spl = strjoin(strsplit(filnam, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
 spl = strsplit(spl, '_'); %then separate by underscore
 
-datenum = str2double(spl{1});
+recdatenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});
 suffix_analysis = strjoin(spl(4:end), '_');
@@ -42,11 +42,11 @@ if strcmp(suffix_analysis(end), '_')
     suffix_analysis = suffix_analysis(1:end-1);
 end
 
-recid = [num2str(datenum) '_' num2str(flynum) '_' num2str(trialnum)];
+recid = [num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
 pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
 pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
-pth_md = [pth_fldr recid '_metadatanew_.mat'];
+pth_md = [fldr recid '_metadatanew_.mat'];
 
 md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
 md = md{1};
@@ -56,14 +56,10 @@ dtmni = 1/md.volrate;
 
 crop_flyback = 0;
 numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
-keepinds_t = 1:sz(4);
 
+[it, itstr] = make_plot_inds(it, indsall=sz(4), label_prefix='t');
+[iz, izstr] = make_plot_inds(it, indsall=sz(3), label_prefix='z');
 
-label_prefix = 't';
-[plotinds.t, plotinds.t_str] = make_plot_inds(keepinds_t, plotinds.t, label_prefix);
-
-label_prefix = 'z';
-[plotinds.z, plotinds.z_str] = make_plot_inds(sz(3), plotinds.z, label_prefix);
 
 if isequal(display_range, [0,1])
     dr_str = 'DRfull';
@@ -80,7 +76,7 @@ else
 end
 
 figtitle_prefix = [recid '_' suffix_analysis '_' dr_str '_' smooth_str];
-filename_prefix = [pth_fldr figtitle_prefix '_' plotinds.z_str '_' plotinds.t_str ];
+filename_prefix = [fldr figtitle_prefix '_' izstr '_' itstr ];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
@@ -93,7 +89,7 @@ try
     stack = struct2cell(load(pth_stack_mat));
     stack = stack{1};
 catch
-    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, zero_stack, keepinds_t);
+    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, zero_stack, sz(4));
 end
 
 
@@ -114,11 +110,11 @@ end
 if makeplots
     
     index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
-    index_labels{3} = plotinds.z;
-    index_labels{4} = plotinds.t;
+    index_labels{3} = iz;
+    index_labels{4} = it;
     gif_visibility = 'on';
 
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), pthgif=fn_gif_prefilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 
 end
 
@@ -133,7 +129,7 @@ stack = fft_filter_1d(stack, stopband);
 %% plot after filtering
 
 if makeplots
-    stack2fig(stack(:,:,plotinds.z, plotinds.t), pthgif=fn_gif_postfilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 end
 
 %% save

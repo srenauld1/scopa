@@ -99,21 +99,24 @@ stackplot_mn = cell(numel(pth_stacks), 1); %make it cell column so first dim is 
 for spi = 1:numel(pth_stacks)
     
     if endsWith(pth_stacks{spi}, '.mat')
-        stack = struct2cell(load(pth_stacks{spi})); %make sure loaded stack is named 'stack'
+        stack = struct2cell(load(pth_stack_mat));
         stack = stack{1};
     elseif endsWith(pth_stacks{spi}, '.tif')
-        stack = tif2mat(pth_stacks{spi}, numslice_withflyback, sz, opts.crop_flyback, opts.zero_stack, keepinds_t);
+        stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, opts.crop_flyback, opts.zero_stack, keepinds_t);
     else
         error("pth_stacks must end with tif or mat");
     end
 
     if do_plot_stack_stats
-        plot_stack_stats(stack, ...
-            mask=[], ...
-            iz=1:size(stack,3), ...
-            it=round(linspace(1, size(stack,4), 100)), ... %1: size(stack,4)
-            pthsv_prefix=pth_stacks{spi}(1:end-4))
+        sindz = 1:size(stack, 3);
+        tindz = 1:numel(keepinds_t);
+        numframes_subset_statsplots = 100;
+        tindz_sub = round(linspace(1, numel(keepinds_t), numframes_subset_statsplots));
+        plots_imdata(single(stack(:,:,:,tindz)), [], sindz, tindz, tindz_sub, size(stack), pth_stacks{spi}(1:end-4))
+        plots_imdata(single(stack(:,:,:,tindz)), mask=[], sindz]siz, tindz, tindz_sub, szo, pthsv_prefix)
     end
+
+
 
     if plot_stack_gif
 
@@ -125,8 +128,8 @@ for spi = 1:numel(pth_stacks)
             stacktmp = stack; %this does not require memory another stack's worth of memory, it just creates a reference to the data
         end
 
-        [iz, izstr] = make_plot_inds(iz, indsall=size(stack,3), label_prefix='z', strdelim='-', printmax=20);
-        [it, itstr] = make_plot_inds(it, indsall=size(stack,4), label_prefix='t', strdelim='-', printmax=20);
+        [iz, izstr] = make_plot_inds(iz, indsall=sz(3), label_prefix='z', strdelim='-', printmax=20);
+        [it, itstr] = make_plot_inds(it, indsall=keepinds_t, label_prefix='t', strdelim='-', printmax=20);
 
         stacktmp = single(stacktmp(:,:,iz,it));
 

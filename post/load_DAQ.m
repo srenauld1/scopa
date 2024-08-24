@@ -1,9 +1,9 @@
-function daqrs = load_DAQ(datenum, flynum, trialnum, numvol, numslice_withflyback, ...
+function daqrs = load_DAQ(recdatenum, flynum, trialnum, numvol, numslice_withflyback, ...
     dtmni, pth_daq, pth_daqrs, pth_daqinds, ball_diameter, slopelen_sec, slopeorder, ...
     fast_version, doplots)
 
 arguments
-    datenum double
+    recdatenum double
     flynum double
     trialnum double
     numvol double
@@ -99,7 +99,7 @@ daqrs = table();
 for si = 1:num_resamples
 
     newrow = table();
-    newrow.datenum = {datenum};
+    newrow.recdatenum = {recdatenum};
     newrow.flynum = {flynum};
     newrow.trialnum = {trialnum};
     if isempty(daqinds)

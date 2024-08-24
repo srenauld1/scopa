@@ -23,7 +23,7 @@ size_read_to = [numel(inds_t_read_from), numel(inds_z_read_from) sz(1) sz(2)]; %
 
 
 stack = read_tif_tzyx(pth_stack_tif, ...
-    size_read_to = size_read_to);
+    size_read_to = size_read_to,2);
 
 
 stack = read_tif_tzyx(pth_stack_tif, ...

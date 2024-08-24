@@ -1,4 +1,4 @@
-function [tsuse, dochoose] = choose_timeseries(varnms, ts, ti, pth_tsuse_nms_prefix, pth_stack_analysis, choosecount, dochoose)
+function [tsuse, dochoose] = choose_timeseries(varnms, ts, ti, pth_tsuse_nms_prefix, pth_stack, choosecount, dochoose)
 
 % select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern,
 % output variables, their names, and some info in struct 'tsuse'
@@ -125,14 +125,14 @@ for fi = 1:numel(fn)
             regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
             if numel(unique(regionex_cat))~=1
                 error("tsuse cannot yet use multiple regionex across input vars; in future crop_stack will just have to loop over them and cat the regionex stacks in xy")
-                % tsuse.regionex = 'backupdefault';
+                % tsuse.regionex = 'default';
             end
         end
     end
 end
 
 if ~isfield(tsuse, 'regionex')
-    tsuse.regionex = 'backupdefault';
+    tsuse.regionex = 'default';
     tsuse.parsex = 'noparsex';
     tsuse.parsnorm = 'noparsnorm';
 end
@@ -141,8 +141,8 @@ end
 %%% SET PATHS, ORDER FIELDS, AND STOP dochoose WHILE LOOP IF AT END %%%
 
 tsuse.choosecount = choosecount;
-tsuse.fn_save_prefix = [pth_stack_analysis(1:end-4) tsuse.regionex '_' tsuse.parsex '_' tsuse.parsnorm '_fit' num2str(tsuse.choosecount)];
-tsuse.fn_save_prefix_short = [pth_stack_analysis(1:end-4) '_fit' num2str(tsuse.choosecount)];
+tsuse.fn_save_prefix = [pth_stack(1:end-4) tsuse.regionex '_' tsuse.parsex '_' tsuse.parsnorm '_fit' num2str(tsuse.choosecount)];
+tsuse.fn_save_prefix_short = [pth_stack(1:end-4) '_fit' num2str(tsuse.choosecount)];
 
 
 tsuse = orderfields_recursive(tsuse);
