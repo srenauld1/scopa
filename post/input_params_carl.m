@@ -28,7 +28,7 @@ ui.mn.regionex_all = {'fullfov'}; %cell array of strings matching regionex from 
 ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 ui.mn.do_daq = 1; %process daq data
-ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
 ui.mn.do_fit = 0; %model fitting (ui.fitm below)
 ui.mn.do_pltexp = 0; %plot experiment (ui.pltexp below)
@@ -39,7 +39,7 @@ ui.mn.old_project = 0; %for carl
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 ui.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-ui.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
+ui.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
 ui.daq.slopeorder = 2; %order of polynomial used to fit local slope
 ui.daq.slopelen_sec = 0.4; %window length used to fit slope
 ui.daq.use_carls_epochs = 1; %0 for everybody else
@@ -56,9 +56,9 @@ ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/i
 
 %ui.ld.gif holds params for making gif of imaging movies in function load_stack; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
-    %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'raw', ... %comment if you don't want to plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -73,7 +73,7 @@ ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-ui.ld.gif.it = [5.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.it = [100.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 ui.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
