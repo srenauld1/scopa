@@ -170,7 +170,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.addpath(eng.genpath(pth_scopa))
         mtlout = io.StringIO()
         mtlerr = io.StringIO()
-        eng.a2p(pthstack=pth_read_all[ri], stdout=mtlout, stderr=mtlerr, nargout=0)
+        eng.a2p(pthstacks=pth_read_all[ri], stdout=mtlout, stderr=mtlerr, nargout=0)
           
          
 
