@@ -20,39 +20,39 @@ function out = read_tif_tzyx(filename_tif, opt)
 
 arguments
     filename_tif char
-    opt.sz = []
+    opt.size_read_to = []
     opt.inds_y_read_from = []
     opt.inds_x_read_from = []
     opt.inds_z_read_from = []
     opt.inds_t_read_from = []
 end
 
-sz = opt.sz;
+size_read_to = opt.size_read_to;
 inds_y_read_from = opt.inds_y_read_from;
 inds_x_read_from = opt.inds_x_read_from;
 inds_z_read_from = opt.inds_z_read_from;
 inds_t_read_from = opt.inds_t_read_from;
 
-fullsize_z_read_from = sz(3);
-fullsize_t_read_from = sz(4);
+fullsize_z_read_from = size_read_to(3);
+fullsize_t_read_from = size_read_to(4);
 
-if ~isempty(sz) %put these warnings before call to TIFFStack because it can be slow, good to know in advance (if you know sz)
-    if ~all(inds_y_read_from >= 1 & inds_y_read_from <= sz(1))
+if ~isempty(size_read_to) %put these warnings before call to TIFFStack because it can be slow, good to know in advance (if you know size_read_to)
+    if ~all(inds_y_read_from >= 1 & inds_y_read_from <= size_read_to(1))
         error("REQUESTED inds_x_reaa2d_from are not subset of available stack")
     end
-    if ~all(inds_x_read_from >= 1 & inds_x_read_from <= sz(2))
+    if ~all(inds_x_read_from >= 1 & inds_x_read_from <= size_read_to(2))
         error("REQUESTED inds_x_read_from are not subset of available stack")
     end
-    if ~all(inds_z_read_from >= 1 & inds_z_read_from <= sz(3))
+    if ~all(inds_z_read_from >= 1 & inds_z_read_from <= size_read_to(3))
         error("REQUESTED inds_x_read_from are not subset of available stack")
     end
-    if ~all(inds_t_read_from >= 1 & inds_t_read_from <= sz(4))
+    if ~all(inds_t_read_from >= 1 & inds_t_read_from <= size_read_to(4))
         error("REQUESTED inds_x_read_from are not subset of available stack")
     end
 end
 
 
-if isempty(sz)
+if isempty(size_read_to)
     stack_size_is_known = 0;
     if ~isempty(inds_z_read_from) || ~isempty(inds_t_read_from)
         error("you must know z and t fullsize to pass nonempty inds_z_read_from or inds_t_read_from")
@@ -60,10 +60,10 @@ if isempty(sz)
 else
     stack_size_is_known = 1;
     if isempty(inds_z_read_from)
-        inds_z_read_from = 1:sz(3); %this default can only be assigned if stack_size_is_known==1
+        inds_z_read_from = 1:size_read_to(3); %this default can only be assigned if stack_size_is_known==1
     end
     if isempty(inds_t_read_from)
-        inds_t_read_from = 1:sz(4); %this default can only be assigned if stack_size_is_known==1
+        inds_t_read_from = 1:size_read_to(4); %this default can only be assigned if stack_size_is_known==1
     end
 end
 

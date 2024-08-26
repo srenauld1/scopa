@@ -20,8 +20,8 @@ function stack = load_stack(sz, numslice_withflyback, pth, mn, opts, ids)
 %
 %     opts.crop_flyback = 1; %crop flyback frames from each volume
 %     opts.zero_stack = 1; %subtract min to make min zero
-%     opts.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-%     opts.croptback = 0; % how many samples to remove from end of stack
+%     opts.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+%     opts.tcropback = 0; % how many samples to remove from end of stack
 %     opts.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 %
 %     pth_stack = opt.pthstack;
@@ -51,9 +51,6 @@ suffixes_plot = opts.gif.suffixes_plot;
 
 
 suffix_analysis = ids.suffix;
-
-keepinds_t = opts.croptfront+1:sz(4)-opts.croptback; %same as all t inds (1:sz(4)) if croptfront and croptback are both 0
-
 
 if isempty(suffixes_plot)
     plot_stack_gif = 0;
@@ -107,17 +104,17 @@ for spi = 1:numel(pth_stacks)
     elseif endsWith(pth_stacks{spi}, '.tif')
         stack = tif2mat(pth_stacks{spi}, ...
             numslice_withflyback=numslice_withflyback, ...
-            sz=sz, ...
+            sz_yxzt=sz, ...
             crop_flyback=crop_flyback, ...
+            tcropfront=opt.tcropfront, ...
+            tcropback=opt.tcropback, ...
             zero_stack=1, ...
             output_datatype='uint16');
     else
         error("pth_stacks must end with tif or mat");
     end
 
-    if ~isequal(keepinds_t, 1:size(stack,4))
-        stack = stack(:,:,:,keepinds_t);
-    end
+
 
     if do_plot_stack_stats
         plot_stack_stats(stack, ...

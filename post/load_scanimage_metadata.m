@@ -5,10 +5,10 @@ md = md{1};
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optld.croptfront - optld.croptback;
+md.numvol_crop = md.numvol_o - optld.tcropfront - optld.tcropback;
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
-md.croptfront = optld.croptfront; %copy from struct ld
-md.croptback = optld.croptfront;%copy from struct ld
+md.tcropfront = optld.tcropfront; %copy from struct ld
+md.tcropback = optld.tcropfront;%copy from struct ld
 md.crop_flyback = optld.crop_flyback;%copy from struct ld
 md.zero_stack = optld.zero_stack;%copy from struct ld
 
@@ -19,8 +19,8 @@ end
 
 if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
-    md.md_hires.croptfront = 0;
-    md.md_hires.croptback = 0;
+    md.md_hires.tcropfront = 0;
+    md.md_hires.tcropback = 0;
     md.md_hires.crop_flyback = optld_hires.crop_flyback;
     md.md_hires.zero_stack = optld_hires.zero_stack;
     hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
@@ -35,7 +35,7 @@ md.xwid = md.xfov / md.xpix; %do this after conversion to double
 
 md.dtmni = 1/md.volrate;
 
-md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.croptfront' and 'md.croptback'";
+md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcropfront' and 'md.tcropback'";
 
 md = orderfields_recursive(md);
 

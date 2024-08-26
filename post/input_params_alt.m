@@ -67,8 +67,8 @@ opt.ftv.doplots = 0; %0 skips plots, 1 plots and saves, 2 saves but does not dis
 %opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
 opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.ld.zero_stack = 1; %subtract min to make min zero 
-opt.ld.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.ld.croptback = 0; % how many samples to remove from end of stack
+opt.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.ld.tcropback = 0; % how many samples to remove from end of stack
 opt.ld.do_plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 opt.ld.gif.suffixes_plot = { 
@@ -345,8 +345,8 @@ opt.pltexp(1).display_range = [0,1];
 %params below, in opt.hires, are for processing the hires stack, and visualization with gif in opt.hires.gif
 opt.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.hires.ld.zero_stack = 1; %subtract min to make min zero 
-opt.hires.ld.croptfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-opt.hires.ld.croptback = 0; % how many samples to remove from end of stack
+opt.hires.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+opt.hires.ld.tcropback = 0; % how many samples to remove from end of stack
 opt.hires.ld.do_plot_stack_stats = 0; %function this uses is old and needs to be updated
 
 opt.hires.ld.gif.it = [1]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
@@ -368,8 +368,8 @@ opt.hires.caiman_hr_str = '*'; %empty to skip
 %overwrite some params for carl's old project
 % if ~strcmp(opt.mn.recdate, '*') && strcmp(opt.mn.recdate(1:2), '22') %override some settings for old project
 %     opt.mn.old_project = 1;
-%     opt.md.croptfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-%     opt.md.croptfront = 2; % how many samples to remove from end of stack
+%     opt.md.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+%     opt.md.tcropfront = 2; % how many samples to remove from end of stack
 %     opt.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
 %     opt.fitm.mdl_length_sec = 1.25;
 % end

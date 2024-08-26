@@ -24,15 +24,6 @@ fnspec_matching_style = opt.fnspec_matching_style;
 
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass prioritize_mat as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
-if ~isempty(fullfile_sibling)
-    if isfile(fullfile_sibling)
-        [pthparent_local, ~, ~] = fileparts(fullfile_sibling);
-        [~, recdate, fly, trial, ~] = get_ids_a2p(fullfile_sibling);
-    else
-        error(sprintf("the following fullfile_sibling is not a file: " + newline + fullfile_sibling))
-    end
-end
-
 if isempty(valid_fnsuffixes)
     valid_fnsuffixes = globals_a2p('valid_fnsuffixes');
     if isempty(valid_fnsuffixes)
@@ -41,9 +32,20 @@ if isempty(valid_fnsuffixes)
 end
 
 
-fnspec = expand_fn_specifiers(fnspec_matching_style, recdate, fly, trial, suffix);
+if isempty(fullfile_sibling)
+    pth_parent = find_parent_path(pthparent_local, pthparent_o2);
+else
+    if isfile(fullfile_sibling)
+        [pth_parent, ~, ~] = fileparts(fullfile_sibling);
+        pth_parent = [pth_parent filesep];
+        [~, recdate, fly, trial, ~] = get_ids_a2p(fullfile_sibling);
+    else
+        error(sprintf("the following fullfile_sibling is not a file: " + newline + fullfile_sibling))
+    end
+end
 
-pth_parent = find_parent_path(pthparent_local, pthparent_o2);
+
+fnspec = expand_fn_specifiers(fnspec_matching_style, recdate, fly, trial, suffix);
 
 pth_prefix_all = [];
 for j = 1:numel(fnspec.recdate)
@@ -122,8 +124,8 @@ envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
     if isempty(pthparent_o2)
         sprintf("O2 parent path not specified, using default path based on parent folder name")
-        fldr_parent = strsplit(pthparent_local, filesep);
-        fldr_parent = fldr_parent{end};
+        tmp = strsplit(pthparent_local, filesep);
+        fldr_parent = tmp{end};
         % [pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename); %fails on matlabengine for python bc no java, tried various startup options
         stk = dbstack('-completenames');
         [pthenv, ~, ~] = fileparts(stk(1).file);
