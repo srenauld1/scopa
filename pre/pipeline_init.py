@@ -137,7 +137,7 @@ for ri, _ in enumerate(pth_read_all):
 
       if do_register:
           try: #spatial_downsample_fictrac_video is not essential, so put it in a try block
-            spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+            hspatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           except Exception as err:
             print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
           register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots)

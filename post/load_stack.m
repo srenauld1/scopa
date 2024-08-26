@@ -40,7 +40,8 @@ function stack = load_stack(sz, numslice_withflyback, pth, mn, opts, ids)
 % end
 
 
-
+crop_flyback = opts.crop_flyback;
+zero_stack = opts.zero_stack;
 it = opts.gif.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opts.gif.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 smooth_window_temporal = opts.gif.smooth_window_temporal; %smooth the stack in time, 0 to skip
@@ -48,8 +49,8 @@ do_plot_stack_stats = opts.do_plot_stack_stats;
 display_range = opts.gif.display_range;
 suffixes_plot = opts.gif.suffixes_plot;
 
-suffix_analysis = ids.suffix;
 
+suffix_analysis = ids.suffix;
 
 keepinds_t = opts.croptfront+1:sz(4)-opts.croptback; %same as all t inds (1:sz(4)) if croptfront and croptback are both 0
 
@@ -65,7 +66,9 @@ if ~ismember(suffix_analysis, suffixes_plot)
     suffixes_plot{end+1} = suffix_analysis;
 end
 suffixes_plot = unique(suffixes_plot, 'stable'); %make sure there aren't accidental repeats
-suffixes_plot = cat(1, setxor(suffix_analysis, suffixes_plot(:), 'stable'), suffix_analysis); % make suffix_analysis last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from load_stack without having to hold plot stacks in memory)
+if numel(suffixes_plot)~=1
+    suffixes_plot = cat(1, setxor(suffix_analysis, suffixes_plot(:), 'stable'), suffix_analysis); % make suffix_analysis last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from load_stack without having to hold plot stacks in memory)
+end
 
 [~, plot_stack_order] = sort(cellfun(@numel, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
 
@@ -102,9 +105,18 @@ for spi = 1:numel(pth_stacks)
         stack = struct2cell(load(pth_stacks{spi})); %make sure loaded stack is named 'stack'
         stack = stack{1};
     elseif endsWith(pth_stacks{spi}, '.tif')
-        stack = tif2mat(pth_stacks{spi}, numslice_withflyback, sz, opts.crop_flyback, opts.zero_stack, keepinds_t);
+        stack = tif2mat(pth_stacks{spi}, ...
+            numslice_withflyback=numslice_withflyback, ...
+            sz=sz, ...
+            crop_flyback=crop_flyback, ...
+            zero_stack=1, ...
+            output_datatype='uint16');
     else
         error("pth_stacks must end with tif or mat");
+    end
+
+    if ~isequal(keepinds_t, 1:size(stack,4))
+        stack = stack(:,:,:,keepinds_t);
     end
 
     if do_plot_stack_stats

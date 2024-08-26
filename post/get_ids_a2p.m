@@ -11,7 +11,7 @@ recdate = spl{1};
 fly = spl{2};
 
 if contains(pthstack, 'trial_') && contains(pthstack, '-') %if it's a flyg-pattern raw file, trialnum and suffix need to be read differently
-    trial = spl(find(strcmp(spl, 'trial'))+1);
+    trial = num2str(str2double(spl{find(strcmp(spl, 'trial'))+1}));
     suffix = 'raw';
 else
     trial = spl{3}; 

@@ -13,21 +13,21 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'202406*'}; %cell array of char, can use wildcards
-    fnspec_fly = {'*'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'2024060'}; %cell array of char, can use wildcards
+    fnspec_fly = {'3'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
-    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
+    fnspec_suffix = {'raw'}; %cell array of char can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg)
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-    ui.mn.pthstacks = find_preprocessed_files(ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
+    ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
-    ui.mn.pthstacks = pthstacks;
+    ui.mn.pthstacks = keep_existant_input_files(pthstacks);
 end
 
 ui.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 ui.mn.regionex_all = {'fullfov'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
-ui.mn.do_daq = 1; %process daq data 
+ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
 ui.mn.do_fit = 0; %model fitting (ui.fitm below)
@@ -57,9 +57,9 @@ ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/i
 %ui.ld.gif holds params for making gif of imaging movies in function load_stack; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
     %'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
-    'bksb_cmrg_dcdn', ...
+    %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 
@@ -348,4 +348,34 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 ui = orderfields_recursive(ui);
 
 ui = transform_user_input_a2p(ui);
+
+
+
+end
+
+
+function pthstacks_keep = keep_existant_input_files(pthstacks_input)
+
+if ~iscell(pthstacks_input)
+    pthstacks_input = {pthstacks_input};
+end
+
+cnt = 0;
+if any(isfile(pthstacks_input))
+    for k = 1:numel(pthstacks_input)
+        if isfile(pthstacks_input{k})
+            cnt = cnt+1;
+            pthstacks_keep{cnt} = pthstacks_input{k};
+        else
+            sprintf("WARNING, THE FOLLOWING FULLFILE INPUT TO a2p DOES NOT EXIST:" + newline + pthstacks_input{k} + newline + "IT HAS BEEN REMOVED AS INPUT")
+        end
+    end
+else
+    error("NONE OF THE FULLFILE INPUT TO a2p EXIST")
+end
+
+
+end
+
+
 

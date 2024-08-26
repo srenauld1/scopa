@@ -54,7 +54,7 @@ end
 
 if isempty(pth_prefix_all)
     fnspecstr = sprintf("pth_parent: " + pth_parent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix);
-    sprintf("WARNING, NO FILES FOUND WITH fnspec_matching_style '" + fnspec_matching_style + "' AND FILENAME SPECIFIERS:" + newline + fnspecstr + newline + "SKIPPING IT FOR PLOT")
+    sprintf("WARNING, NO FILES FOUND WITH fnspec_matching_style '" + fnspec_matching_style + "' AND FILENAME SPECIFIERS:" + newline + fnspecstr)
     pth_all = [];
 else
     pth_all = prioritize_mat(pth_prefix_all);
