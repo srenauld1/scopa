@@ -93,8 +93,8 @@ end
 if stack_size_is_known
 
     inds_t_read_from_all = repelem(inds_t_read_from,numel(inds_c_read_from)*numel(inds_z_read_from));
-    inds_z_read_from_all = repmat(repelem(inds_z_read_from,numel(inds_c_read_from)), [1 numel(inds_t_read_from)]);
-    inds_c_read_from_all = repmat(inds_c_read_from, [1 numel(inds_t_read_from)]);
+    inds_z_read_from_all = repmat(inds_z_read_from, [1 numel(inds_t_read_from)]);
+    inds_c_read_from_all = repmat(inds_z_read_from, [1 numel(inds_t_read_from)]);
     inds_zt_read_from = sub2ind([fullsize_c_read_from, fullsize_z_read_from, fullsize_t_read_from], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
 
     out = tsStack(inds_y_read_from, inds_x_read_from, inds_zt_read_from); %this reads into memory; out = tsStack just copies the tsStack object so cant do that

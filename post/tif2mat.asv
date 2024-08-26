@@ -1,6 +1,8 @@
 function stack = tif2mat(pth_stack_tif, opt)
 
-% convert tif to mat and save mat with op 
+% convert tif to mat and save mat
+% options to 
+
 arguments
     pth_stack_tif
     opt.numslice_withflyback = []
@@ -33,18 +35,20 @@ end
 if crop_flyback
     inds_z_read_from = 1:sz_yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:sz_yxzt(3) will skip flyback frames for raw and hires, while 1:size_z_read_from will read flyback frames;
 else
-    inds_z_read_from = 1:fullsize_read_from(3); %read all frames of not crop_flyback
+    inds_z_read_from = 1:fullsize_read_from(4); %read all frames of not crop_flyback
 end
 
 inds_y_read_from = 1:fullsize_read_from(1); %can choose any subset of y, can be discontiguous;
 inds_x_read_from = 1:fullsize_read_from(2); %can choose any subset of x, can be discontiguous;
-inds_t_read_from = 1:fullsize_read_from(4); %can choose any subset of t, can be discontiguous
+inds_c_read_from = 1:fullsize_read_from(3); %can choose any subset of t, can be discontiguous
+inds_t_read_from = 1:fullsize_read_from(5); %can choose any subset of t, can be discontiguous
 
 
 stack = read_tif_tzyx(pth_stack_tif, ...
-    sz_yxzt=fullsize_read_from, ...
+    size_read_to=fullsize_read_from, ...
     inds_y_read_from = inds_y_read_from, ...
     inds_x_read_from = inds_x_read_from, ...
+    inds_c_read_from = inds_c_read_from, ...
     inds_z_read_from = inds_z_read_from, ...
     inds_t_read_from = inds_t_read_from);
 
