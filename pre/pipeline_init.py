@@ -154,10 +154,7 @@ for ri, _ in enumerate(pth_read_all):
         denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_primary)
         if chanstr_secondary:
            denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)
-
            
-
-
       if do_stitch:
         if carls_old_project_all[ri]: 
             stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix_all[ri], pth_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
