@@ -23,10 +23,10 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     nonneg_movie = True #true because i make it nonnegative before registration
     min_mov = min_mov
 
-    niter_rig = 1 #default 1, number registration iterations (regardles of pw_rigid, or is3d)
+    niter_rig = 2 #default 1, number registration iterations (regardles of pw_rigid, or is3d)
     max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
     shifts_opencv = False #automatically false if is3D_mc==true, or if pw_rigid = True . . . so true only works for rigid 2d registration . . . true uses intercubic interp (faster but smoother), false uses fourier
-    upsample_factor_grid = 12 #default 4, use for merging patches if pw_rigid==True
+    upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 
     if register_in_2d:
