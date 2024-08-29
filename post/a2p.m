@@ -21,9 +21,6 @@ end
 
 clear globals_a2p
 
-"DONT FORGET 2 CHANNEL"
-
-
 ui = input_params_carl(pthstacks); % params
 
 for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
