@@ -7,9 +7,9 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary_when_two
     chan_secondary = None
     chanstr_primary = '' 
     chanstr_secondary = ''
-    if 'channelSave' in md: #older runs of do_register will not have this field in md, if you want it, delete metadatanew and rerun
-        if not isinstance(md['channelSave'], int):
-            if len(md['channelSave'])==2:
+    if 'channel_save' in md: #older runs of do_register will not have this field in md, if you want it, delete metadatanew and rerun
+        if not isinstance(md['channel_save'], int):
+            if len(md['channel_save'])==2:
                 if discard_channel is not None:
                     keepchan = np.setxor1d([1,2], discard_channel)
                     # chanstr_primary = '_chn' + str(keepchan) #channel id is saved in metadata, we only want chn* infix if two_channel_reg

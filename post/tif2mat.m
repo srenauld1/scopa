@@ -48,6 +48,22 @@ inds_c_read_from = 1:size_read_from(3); %can choose any subset of t, can be disc
 inds_t_read_from = 1:size_read_from(5); %can choose any subset of t, can be discontiguous
 
 
+if isempty(inds_y_read_from)
+    inds_y_read_from = 1:size(tsStack,1); %this default can be assigned even if stack_size_is_known==0
+end
+if isempty(inds_x_read_from)
+    inds_x_read_from = 1:size(tsStack,2); %this default can be assigned even if stack_size_is_known==0
+end
+if isempty(inds_c_read_from)
+    inds_c_read_from = 1:fullsize_c_read_from; %this default can only be assigned if stack_size_is_known==1
+end
+if isempty(inds_z_read_from)
+    inds_z_read_from = 1:fullsize_z_read_from; %this default can only be assigned if stack_size_is_known==1
+end
+if isempty(inds_t_read_from)
+    inds_t_read_from = 1:fullsize_t_read_from; %this default can only be assigned if stack_size_is_known==1
+end
+
 stack = read_tif_tzyx(pth_stack_tif, ...
     size_read_from = size_read_from, ...
     inds_y_read_from = inds_y_read_from, ...

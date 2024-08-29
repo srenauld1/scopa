@@ -16,6 +16,8 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
 
             if pth_hires:
                 meta_hires = ScanImageTiffReader(pth_hires).metadata()
+                mdt['channel_save_hires'] = literal_eval(re.findall( 'channelSave = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
+                mdt['channel_active_hires'] = literal_eval(re.findall( 'channelsActive = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
                 mdt['numvol_hires'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
                 mdt['numslice_withflyback_hires'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
                 mdt['numslice_hires'] = int(re.findall( 'actualNumSlices = (.*)', meta_hires)[0])
@@ -35,8 +37,8 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
 
             meta = ScanImageTiffReader(pth_readfile).metadata()    #tiffile might be able to read metadata
             
-            mdt['channelSave'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
-            mdt['channelsActive'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))
+            mdt['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
+            mdt['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
             mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
             mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
@@ -62,8 +64,8 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
         else:
 
             mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is hard coded as 1 because old project is not volumetric 
-            mdt['channelSave'] = 1
-            mdt['channelsActive'] = 1
+            mdt['channel_save'] = 1
+            mdt['channel_active'] = 1
             mdt['framerate'] = 20
             mdt['volrate'] = 20
             mdt['xpix'] = 256
@@ -95,7 +97,9 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
             'zstartpos': mdt['zstartpos'],
             'zfov': mdt['zfov'],
             'framerate': mdt['framerate'],
-            'volrate': mdt['volrate']}
+            'volrate': mdt['volrate'], 
+            'channel_save': mdt['channel_save'],
+            'channel_active': mdt['channel_active']}
     
     if pth_hires:
         md_hires = {'numvol': mdt['numvol_hires'],
@@ -110,11 +114,20 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
                     'zstartpos': mdt['zstartpos_hires'],
                     'zfov': mdt['zfov_hires'],
                     'framerate': mdt['framerate_hires'],
-                    'volrate': mdt['volrate_hires']}
+                    'volrate': mdt['volrate_hires'], 
+                    'channel_save': mdt['channel_save_hires'],
+                    'channel_active': mdt['channel_active_hires']}
         md['md_hires'] = md_hires
     
-        
+    
+    if not np.isin(md['channel_save'], md['channel_active']).any():
+        print("channel_save is not a subset in channel_active")
+        if len(md['channel_save'])>len(md['channel_active']):
+            print("channel_save has more channels than channel_active; you may have accidentally redcorded an empty channel; setting naking channel_save equal to channel_active, which will disregard the presumably empty saved channel")
+            md['channel_save'] = md['channel_active']
+            raise Exception("STILL NEED TO MAKE A COUPLE SMALL CHANGES TO MAKE THIS WORK; DELETE EXTRA CHANNEL IN REGISTER.PY/separate_channels_when_two.PY")
 
+    
     sio.savemat(pth_md_mat, {'md': md}) #save for matlab part of pipeline 
     
     with open(pth_md, 'wb') as fnmd: #and save as npy file for rest of python pipeline

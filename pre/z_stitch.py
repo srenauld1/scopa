@@ -56,9 +56,9 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     #stitch together denoised slices (tyx) into original size (tzyx)
 
     two_chan_stitch = 0
-    if 'channelSave' in md: #older runs of do_register will not have this field in md, if you want it, delete metadatanew and rerun
-        if not isinstance(md['channelSave'], int):
-            if len(md['channelSave'])==2:
+    if 'channel_save' in md: #older runs of do_register will not have this field in md, if you want it, delete metadatanew and rerun
+        if not isinstance(md['channel_save'], int):
+            if len(md['channel_save'])==2:
                 two_chan_stitch = 1
 
 
