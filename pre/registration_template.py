@@ -16,7 +16,7 @@ from im_montage import im_montage
 from plot_gif import plot_gif
 
 
-def find_registration_template(Y, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, movie_is_4d, makeplots):
+def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, stack_has_multiple_z_slices, makeplots):
 
     # make or load registration template; sleep until it's available, if necessary (error after waiting 5 min)
 
@@ -61,9 +61,9 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
             if os.path.isfile(pth_regtemplate):
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
-                opts_dict, _, _ = configs(register_in_2d = register_in_2d, min_mov = np.min(Y).astype('float32'), md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+                opts_dict, _, _ = configs(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
-                regtemplate = make_registration_template(Y, md['dims'], register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
+                regtemplate = make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
         else: #load template if this recording is not meant to be the template, or it is and the template has already been made  
         
@@ -103,16 +103,14 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
                 raise ValueError("%s isn't a file!" % pth_regtemplate)
         
         if makeplots:
-            mnmv = np.min(regtemplate)
-            mxmv = np.max(regtemplate)
-            im_montage(regtemplate, vmin=mnmv, vmax=mxmv)
+            im_montage(regtemplate, vmin=np.min(regtemplate), vmax=np.max(regtemplate))
             filename_gif = pth_prefix + '_regtemplate_couldBeFromOtherRecording.gif'
             plot_gif(regtemplate, filename_gif) 
 
         print("\n\n\nUSING REGISTRATION TEMPLATE, TEMPLATE FILE IS: \n" + pth_regtemplate + "\n\n\n")
 
 
-        if movie_is_4d:     
+        if stack_has_multiple_z_slices:     
             if not np.array_equal(regtemplate.shape, md['dims'][1:]):
                 raise Exception ("\n\n\nERROR, REGTEMPLATE SIZE DOES NOT MATCH SIZE OF RECORDING IT IS BEING USED FOR ")
             regtemplate = np.transpose(regtemplate, (2, 1, 0))
@@ -133,7 +131,7 @@ def find_registration_template(Y, md, registration_template_group_id_all, pth_al
 
 
 
-def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shifts, indices=(slice(None), slice(None)), subidx=slice(None, None, 1), gSig_filt=None):
+def make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, max_shifts, indices=(slice(None), slice(None)), subidx=slice(None, None, 1), gSig_filt=None):
 
     # takes subset of frames across entire stack, take mean over small windows of that subset, then take median
     # by default in 4d if stack is 4d, in 3d if stack is 3d
@@ -144,15 +142,10 @@ def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shi
     register_regtemplate = 0 #WILSONLAB, CFRW, 240218, SWITCH OFF regtemplate REGISTER, IT CAN MAKE A BAD regtemplate FOR A NOISY MOVIE 
     use_different_number_frames_in_2d_and_3d_regtemplates = 0 #WILSONLAB, CFRW, 240218, 0 TO MAKE 2D AND 3D HAVE SAME regtemplate NUM FRAMES (SET TO 1 FOR ORIGINAL)
 
-    if Y.ndim==4:
-        movie_is_4d = 1
-    elif Y.ndim==3:
-        movie_is_4d = 0
-        
-    Ts = Y.shape[0]
+    Ts = stack.shape[0]
     # Ts = np.arange(T)[subidx].shape[0]
     
-    if use_different_number_frames_in_2d_and_3d_regtemplates and movie_is_4d:
+    if use_different_number_frames_in_2d_and_3d_regtemplates and stack_has_multiple_z_slices:
         goal_frames_in_regtemplate = 10
     else: 
         goal_frames_in_regtemplate = 50
@@ -161,29 +154,29 @@ def make_registration_template(Y, dims, register_in_2d, pth_regtemplate, max_shi
     
     time_slicer = slice(subidx.start, subidx.stop, step + 1)
 
-    if register_in_2d or not movie_is_4d: #indices to take subset of FOV, set in configs (default does not use these)
-        if movie_is_4d:
-            Y = Y[time_slicer, indices[0], indices[1], :]
+    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in configs (default does not use these)
+        if stack_has_multiple_z_slices:
+            stack = stack[time_slicer, indices[0], indices[1], :]
         else:
-            Y = Y[time_slicer, indices[0], indices[1]]
+            stack = stack[time_slicer, indices[0], indices[1]]
     else:
-        Y = Y[time_slicer, indices[0], indices[1], indices[2]]
+        stack = stack[time_slicer, indices[0], indices[1], indices[2]]
 
 
-    Y = Y.astype('float32') #convert to float after subsampling
+    stack = stack.astype('float32') #convert to float after subsampling
 
     if gSig_filt is not None:
-        # Y = cm.movie(np.array([high_pass_filter_space(m_, gSig_filt) for m_ in Y]))
+        # stack = cm.movie(np.array([high_pass_filter_space(m_, gSig_filt) for m_ in stack]))
         raise Exception("exception intended for 1p data")
     
-    if movie_is_4d: #previously was if is3D:     
-        regtemplate = cm.motion_correction.bin_median_3d(Y) # motion_correct_3d has not been implemented in 'movies' yet - instead initialize to just median image
+    if stack_has_multiple_z_slices: #previously was if is3D:     
+        regtemplate = cm.motion_correction.bin_median_3d(stack) # motion_correct_3d has not been implemented in 'movies' yet - instead initialize to just median image
         regtemplate = np.transpose(regtemplate, (2, 1, 0))
     else:
         if register_regtemplate:
-            regtemplate = cm.motion_correction.bin_median(Y.motion_correct(max_shifts[1], max_shifts[0], regtemplate=None)[0])
+            regtemplate = cm.motion_correction.bin_median(stack.motion_correct(max_shifts[1], max_shifts[0], regtemplate=None)[0])
         else:
-            regtemplate = cm.motion_correction.bin_median(Y)
+            regtemplate = cm.motion_correction.bin_median(stack)
         regtemplate = np.transpose(regtemplate, (1, 0))
 
 

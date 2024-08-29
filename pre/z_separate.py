@@ -14,19 +14,19 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
         
     dims = md['dims']
 
-    Y = imread(pth_tif_read)
-    Y = Y.reshape(dims)
-    Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
-    if Y.dtype!='uint16':
+    stack = imread(pth_tif_read)
+    stack = stack.reshape(dims)
+    stack = np.transpose(stack, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
+    if stack.dtype!='uint16':
         raise Exception("dtype should be uint16 (arbitrary choice for this pipeline)")
     zind_all_dn = np.arange(dims[1])
 
     for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if denoise_volume=1, ie train on all slices) or separate folders (if denoise_volume=0, ie train on z subset)
 
-        Ynew = Y[:,:,:,zii]
-        Lt, Ly, Lx = Ynew.shape
-        denoise_input_dtype = Ynew.dtype
-        if Ynew.shape != (dims[0], dims[2], dims[3]):
+        stacknew = stack[:,:,:,zii]
+        Lt, Ly, Lx = stacknew.shape
+        denoise_input_dtype = stacknew.dtype
+        if stacknew.shape != (dims[0], dims[2], dims[3]):
             raise Exception("dims changed")
 
         if denoise_volume:
@@ -42,7 +42,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
             shutil.rmtree(pth_trainset) #REMOVE any existing training folder before training, to ensure models don't get mixed (until "resume training" functionality is written)
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
-        imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack' ) #put the tif in the folder deepcad looks to for training data
+        imwrite(pth_tif_write, stacknew, bigtiff=True, photometric='minisblack' ) #put the tif in the folder deepcad looks to for training data
 
 
 
@@ -56,19 +56,19 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
 
     dims = md['dims']
     
-    Y = imread(pth_tif_read)
-    Y = Y.reshape(dims)
-    Y = np.transpose(Y, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
-    if Y.dtype!='uint16':
+    stack = imread(pth_tif_read)
+    stack = stack.reshape(dims)
+    stack = np.transpose(stack, (0, 2, 3, 1)) #put in order t y x z (not t x y z)
+    if stack.dtype!='uint16':
         raise Exception("dtype should be uint16 (arbitrary choice for this pipeline)")
     zind_all_dn = np.arange(dims[1])
 
     for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if denoise_volume=1, ie train on all slices) or separate folders (if denoise_volume=0, ie train on z subset)
 
-        Ynew = Y[:,:,:,zii]
-        Lt, Ly, Lx = Ynew.shape
-        denoise_input_dtype = Ynew.dtype
-        if Ynew.shape != (dims[0], dims[2], dims[3]):
+        stacknew = stack[:,:,:,zii]
+        Lt, Ly, Lx = stacknew.shape
+        denoise_input_dtype = stacknew.dtype
+        if stacknew.shape != (dims[0], dims[2], dims[3]):
             raise Exception("dims changed")
 
         if denoise_volume:
@@ -91,5 +91,5 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
         
         if not os.path.exists(pth_trainset): #don't make this "else" connected to "if" above because you have to evaluate it
             os.mkdir(pth_trainset)
-        imwrite(pth_tif_write, Ynew, bigtiff=True, photometric='minisblack') #put the tif in the folder deepcad looks to for training data
+        imwrite(pth_tif_write, stacknew, bigtiff=True, photometric='minisblack') #put the tif in the folder deepcad looks to for training data
 

@@ -56,30 +56,30 @@ def mat2tif_scopa(pth_readfile, carls_old_project):
     mat = mat73.loadmat(pth_readfile)
     
     if carls_old_project:
-        Y = mat['stackRaw_pmc'] # Y = mat['stackRaw_mc']
+        stack = mat['stackRaw_pmc'] # stack = mat['stackRaw_mc']
     else:
-        Y = mat['stack'] 
+        stack = mat['stack'] 
 
-    Y = Y.astype('float32')
-    mnmv = np.min(Y).astype('float32')
-    Y -= mnmv #make movie nonnegative (not sure this is necessary)
+    stack = stack.astype('float32')
+    mnmv = np.min(stack).astype('float32')
+    stack -= mnmv #make movie nonnegative (not sure this is necessary)
     print("MIN OF MAT FILE " + str(mnmv))
-    if np.max(Y) > 65535:
+    if np.max(stack) > 65535:
         raise Exception("clipping will occur when converting to uint16")
-    Y = Y.astype('uint16')
-    Yshape = Y.shape
+    stack = stack.astype('uint16')
+    Yshape = stack.shape
     print(Yshape)
     
-    if len(Yshape)==3:# or Y.shape[3]==1: #transpose into tzyx, collapse t and z (if z exists) 
+    if len(Yshape)==3:# or stack.shape[3]==1: #transpose into tzyx, collapse t and z (if z exists) 
         if carls_old_project:
-            Y = np.transpose(Y, (2, 0, 1)) # from yxt to tzyx . . . for carls_old_project, stackraw_mc may be flipped relative to stackraw pmc, so may be xyt, which would need np.transpose(Y, (2, 1, 0))
+            stack = np.transpose(stack, (2, 0, 1)) # from yxt to tzyx . . . for carls_old_project, stackraw_mc may be flipped relative to stackraw pmc, so may be xyt, which would need np.transpose(stack, (2, 1, 0))
         else:
-            Y = np.transpose(Y, (2, 0, 1)) #from yxt to tzyx
+            stack = np.transpose(stack, (2, 0, 1)) #from yxt to tzyx
     else:
-        Y = np.transpose(Y, (3, 2, 0, 1)).reshape(Yshape[3] * Yshape[2], Yshape[0], Yshape[1]) #from yxzt to tzyx 
+        stack = np.transpose(stack, (3, 2, 0, 1)).reshape(Yshape[3] * Yshape[2], Yshape[0], Yshape[1]) #from yxzt to tzyx 
     
-    imwrite(pth_tif_write, Y, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-    mat_file_shape = Y.shape
+    imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
+    mat_file_shape = stack.shape
     
     return mat_file_shape
             

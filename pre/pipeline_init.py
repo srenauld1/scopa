@@ -63,6 +63,10 @@ else:
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range) . . . IS THIS STILL TRUE?")
 
+if len_window_smooth_t_mcp_sec and not register_presmoothed:
+    register_presmoothed = 0
+    print("register_presmoothed IS TRUE BUT len_window_smooth_t_mcp_sec IS 0, SETTING register_presmoothed TO FALSE")
+
 if not do_copyfiles:
 
   import numpy as np
@@ -117,17 +121,17 @@ if not do_copyfiles:
 
 
 
-[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
+[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
   choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed,
-                 folder_with_all_recordings_on_storage_and_compute_filesystems)
+                 folder_with_all_recordings_on_storage_and_compute_filesystems, chan_dn, chan_ex)
 
 
 for ri, _ in enumerate(pth_read_all):
     
     if do_copyfiles!=0: #copy data (from storage to compute filesystem, or vice versa)
        
-       copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+       copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop, do_analysis, pth_read_all[ri], pth_md_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
         
     elif do_copyfiles==0: #analyze data 
       
@@ -136,11 +140,11 @@ for ri, _ in enumerate(pth_read_all):
       md = np.load(pth_md_all[ri], allow_pickle='TRUE').item()
 
       if do_register:
-          try: #spatial_downsample_fictrac_video is not essential, so put it in a try block
+          try: #spatial_downsample_fictrac_video is not essential, so putting in a try block
             hspatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           except Exception as err:
             print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, cluster_backend, use_cluster, makeplots)
+          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, discard_channel, chan_primary_when_two, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
         if carls_old_project_all[ri]:  

@@ -21,16 +21,16 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
 
-    Y = imread(pth_tif_read).astype('float32')
-    Y = Y.reshape(md['dims'])
-    Y = np.transpose(Y, (0, 3, 2, 1)) #put in order t x y z 
-    print(Y.shape)
+    stack = imread(pth_tif_read).astype('float32')
+    stack = stack.reshape(md['dims'])
+    stack = np.transpose(stack, (0, 3, 2, 1)) #put in order t x y z 
+    print(stack.shape)
 
     for rx in regionex:
         
         print("ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
-        Ycrop, limits_str = crop_fov(Y, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+        Ycrop, limits_str = crop_fov(stack, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
 
         print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(Ycrop.shape))
 
@@ -76,9 +76,8 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop, e
 
                         cnm = None
                         cnm2 = None
-
-                        # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME - IT DOESN'T HURT ANYTHING, IT'S JUST SLIGHTLY INEFFICIENT 
-                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex) #param set for extraction
+                       
+                        opts_dict, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex) # FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if extract_in_2d: #for planar extraction take on z slice at a time

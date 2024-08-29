@@ -26,7 +26,7 @@ tcropback = opt.tcropback;
 
 pth_stack_mat = [pth_stack_tif(1:end-4) '.mat'];
 
-if contains(filnam, 'trial_') && contains(filnam, '-') || contains(filnam, 'hires')
+if contains(filnam, 'trial_') && contains(filnam, '-') || contains(filnam, 'raw') || contains(filnam, 'hires')
     if contains(filnam, '20240825')
         size_read_from = [sz_yxczt(1), sz_yxczt(2), 2, numslice_withflyback, sz_yxczt(4)]; %z dimension of size_read_from includes flyback frames for raw and hires stacks
     else
@@ -49,12 +49,14 @@ inds_t_read_from = 1:size_read_from(5); %can choose any subset of t, can be disc
 
 
 stack = read_tif_tzyx(pth_stack_tif, ...
-    size_read_from=size_read_from, ...
+    size_read_from = size_read_from, ...
     inds_y_read_from = inds_y_read_from, ...
     inds_x_read_from = inds_x_read_from, ...
     inds_c_read_from = inds_c_read_from, ...
     inds_z_read_from = inds_z_read_from, ...
     inds_t_read_from = inds_t_read_from);
+
+stack = squeeze(stack(:,:,1,:,:));
 
 if isa(stack, 'int8') || isa(stack, 'uint8')
     error("a2p currently does not support int8 or uint8 stacks, although could with a few minor changes")

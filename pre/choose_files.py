@@ -13,7 +13,19 @@ import ast
 
 def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
-                 folder_with_all_recordings_on_storage_and_compute_filesystems):
+                 folder_with_all_recordings_on_storage_and_compute_filesystems, chan_dn, chan_ex):
+
+    ######### SET UP chanopt, A FILE SPECIFIER #########
+
+    chanopt = [''] #channels are only separated as temporary files between registration and denoising since denoising is the only part where they are totally independent (so we want the option to run denoising for each channel in parallel) (separated files are deleted after denoising, while registered version with both channels is saved permanently)
+    if do_denoise:
+        if chan_dn=='all':
+            chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
+        else:
+            chanopt = ['_chn' + str(chan_dn)]
+    if do_stitch:
+        chanopt = ['_chn*'] #stitch always grabs all *chn*dcdn*tif files 
+
 
 
     ######### FORMAT FILE SPECIFIERS, BASED ON INPUT #########
@@ -28,20 +40,22 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 filepatspec_all.append(ast.literal_eval(line))
     else:
         if file_matching_style=='any': #find all possible combinations 
-            filepatspec_all = list(product(recdate, fly, trial, folder_substring)) 
+            filepatspec_all = list(product(recdate, fly, trial, chanopt, folder_substring)) 
         elif file_matching_style=='each': #else corresponding elements 
-            maxspec = np.max((len(recdate), len(fly), len(trial), len(folder_substring)))
+            maxspec = np.max((len(recdate), len(fly), len(trial), len(chanopt), len(folder_substring)))
             if len(recdate)==1:
                 recdate = recdate*maxspec
             if len(fly)==1:
                 fly = fly*maxspec
             if len(trial)==1:
                 trial = trial*maxspec
+            if len(chanopt)==1:
+                chanopt = chanopt*maxspec
             if len(folder_substring)==1:
                 folder_substring = folder_substring*maxspec
-            if not(len(recdate) == len(fly) == len(trial) == len(folder_substring)):
+            if not(len(recdate) == len(fly) == len(trial) == len(chanopt) == len(folder_substring)):
                 raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
-            filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdate, fly, trial, folder_substring)] 
+            filepatspec_all = [(w, x, y, z, c) for w, x, y, z, c in zip(recdate, fly, trial, chanopt, folder_substring)] 
 
     ######### FIND FILES #########
 
@@ -52,7 +66,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
         if do_denoise or do_stitch or do_extract or do_crop or do_remove or do_analysis:
             fn_suffix_scopa = '_cmrg'
             if use_background_subtracted:
-                fn_suffix_scopa =  '_bksb' + fn_suffix_scopa
+                fn_suffix_scopa = '_bksb' + fn_suffix_scopa
             if use_denoised and (do_extract or do_crop or do_remove or do_analysis):
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
             if use_scannoise_removed and (do_extract or do_crop or do_analysis):
@@ -61,11 +75,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             fn_suffix_scopa = fn_suffix_scopa + '_.mat'  #this is the only time only a mat is available when a tif is required (besides carls_old_project)
         else:
             fn_suffix_scopa = fn_suffix_scopa + '_.tif'
-        fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa
-        pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa, recursive=True)
+        fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + filepatspec[3] + fn_suffix_scopa #filepatspec[3] includes underscore if nonempty to allow no-channel filenames
+        pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[4] + '*/' + fn_pattern_scopa, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine with empty (functionally pointless here, just for readability/symmetry with pattern below
 
-        if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern
+        if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern (which doens't include chanopt since channels are separated in register.py)
             
             if filepatspec[2]=='*':
                 fn_suffix_flyg = '_*_trial_*_*.tif'
@@ -73,19 +87,19 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 fn_suffix_flyg = '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_*.tif'  #this suffix actually includes a filepatspec for trial, oh well
             fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + fn_suffix_flyg
             # pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
-            pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_flyg, recursive=True)
+            pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[4] + '*/' + fn_pattern_flyg, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since multiple patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
             fn_pattern_carlold = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + '_' + fn_suffix_carlold 
             # pth_allfiles_carlold = glob.glob(pth_allrec + '**/' + fn_pattern_carlold, recursive=True)
-            pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_carlold, recursive=True)
+            pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[4] + '*/' + fn_pattern_carlold, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since multiple patterns are valid as input
 
         if do_remove or do_analysis: #these jobs use mat files (or convert tif to mat) so check if mat exists too
             fn_suffix_scopa_mat = fn_suffix_scopa[:-5] + '_.mat'
-            fn_pattern_scopa_mat = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa_mat
-            pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa_mat, recursive=True)
+            fn_pattern_scopa_mat = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + filepatspec[3] + fn_suffix_scopa_mat
+            pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[4] + '*/' + fn_pattern_scopa_mat, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_scopa_mat #combine, since multiple patterns are valid as input
 
 
@@ -137,7 +151,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING (ZERO-INDEXED) INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
 
     print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
-          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
+          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, chanopt, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
             "AND HAVING ANY OF THE THE FOLLOWING SUFFIXES: \n" + '%s' % '\n'.join(map(str, fn_suffixes_all)) + '\n' + \
                 search_result_string + '\n' + recindstr)
 
@@ -151,13 +165,14 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     pth_md_all = []
     pth_daq_all = []
     pth_ftvid_all = []
+    pth_ftdat_all = []
     pth_croplim_all = []
     pth_hires_all = []
     carls_old_project_all = []
     countz = 0
     for pth_readfile in pth_allfiles: #loop over all found files
             
-        if not first_job or (first_job and ( recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file matching recording_index, if not first_job, don't apply this selection
+        if not first_job or (first_job and ( recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in recording_index; but if not first_job (always first_job in interactive mode, but only on first run in batch mode), don't apply this selection
 
             print("\n\n\nPREPARING FILE: \n" + pth_readfile)
 
@@ -211,6 +226,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             if pth_ftvid:
                 pth_ftvid = pth_ftvid[0]
             
+            fn_pattern_ftdat = fldr + 'FicTracData/fictrac-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.dat'
+            pth_ftdat = glob.glob(fn_pattern_ftdat, recursive=True)
+            if pth_ftdat:
+                pth_ftdat = pth_ftdat[0]
+            
             ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
@@ -249,6 +269,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_md_all.append(pth_md)
             pth_daq_all.append(pth_daq)
             pth_ftvid_all.append(pth_ftvid)
+            pth_ftdat_all.append(pth_ftdat)
             pth_croplim_all.append(pth_croplim)
             pth_hires_all.append(pth_hires)
             carls_old_project_all.append(carls_old_project)
@@ -281,4 +302,4 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 

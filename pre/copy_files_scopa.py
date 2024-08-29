@@ -6,7 +6,7 @@ import os
 
 
 def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop, do_analysis, 
-                     pth_read, pth_md, pth_daq, pth_ftvid, pth_croplim, pth_hires, pth_fldr_copydest_prefix, fldr, 
+                     pth_read, pth_md, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_hires, pth_fldr_copydest_prefix, fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -34,10 +34,17 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
                 time.sleep(5) 
 
             if pth_ftvid and do_register or do_analysis: #do at beginning (or end)
-                pth_fldr_copydest_ftv = pth_fldr_copydest + '/FicTracData' #this one requires a subfolder
-                Path(pth_fldr_copydest_ftv).mkdir(parents=True, exist_ok=True)
-                print("\n\n\ncopying this file: \n" + pth_ftvid + "\ninto this directory: \n" + pth_fldr_copydest_ftv)
-                shutil.copy2(pth_ftvid, pth_fldr_copydest_ftv)
+                pth_fldr_copydest_ft = pth_fldr_copydest + '/FicTracData' #this one requires a subfolder
+                Path(pth_fldr_copydest_ft).mkdir(parents=True, exist_ok=True)
+                print("\n\n\ncopying this file: \n" + pth_ftvid + "\ninto this directory: \n" + pth_fldr_copydest_ft)
+                shutil.copy2(pth_ftvid, pth_fldr_copydest_ft)
+                time.sleep(5) 
+
+            if pth_ftdat and do_analysis: #do at beginning (or end)
+                pth_fldr_copydest_ft = pth_fldr_copydest + '/FicTracData' #this one requires a subfolder
+                Path(pth_fldr_copydest_ft).mkdir(parents=True, exist_ok=True)
+                print("\n\n\ncopying this file: \n" + pth_ftdat + "\ninto this directory: \n" + pth_fldr_copydest_ft)
+                shutil.copy2(pth_ftdat, pth_fldr_copydest_ft)
                 time.sleep(5) 
 
             if pth_hires and do_analysis:

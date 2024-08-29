@@ -16,6 +16,31 @@ from scipy import signal
 
 ##########################################################################################################################################
 
+def subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, zindall):
+            
+    print("DOING LINE-BY-LINE BACKGROUND SUBTRACTION")
+    stack = stack.astype('float32') #needs to be float because subtraction can cause negatives       
+
+    for zind in zindall: #for every z slice 
+
+        dimorder = 'txy' 
+        pth_bgplots_save = pth_prefix + '_' + str(zind)
+        br = bgremover(stack[:,:,:,zind], pth_bgplots_save, patchhalfwidth=halfwidth_window_bgsub, dimorder=dimorder)
+        br.draw_patches()
+        br.remove_bg()
+        if makeplots:
+            br.make_plots()
+        stack[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
+            
+    mnmv = np.min(stack).astype('float32')
+    stack -= mnmv #make movie nonnegative (not sure this is necessary)
+    stack = stack.astype('uint16')
+    print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
+
+    return stack
+                    
+   
+
 class bgremover:
 
     def __init__(self, img, pth_save_prefix, patchhalfwidth=24, dimorder='tyx'):

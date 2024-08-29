@@ -37,8 +37,6 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
             
             mdt['channelSave'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['channelsActive'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))
-            print("\n\n\nchannelSave: \n" + str(mdt['channelSave']))
-            print("\n\n\nchannelsActive: \n" + str(mdt['channelsActive']))
             mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
             mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
             mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
@@ -63,7 +61,9 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
         
         else:
 
-            mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is 1 because old project is not volumetric 
+            mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is hard coded as 1 because old project is not volumetric 
+            mdt['channelSave'] = 1
+            mdt['channelsActive'] = 1
             mdt['framerate'] = 20
             mdt['volrate'] = 20
             mdt['xpix'] = 256

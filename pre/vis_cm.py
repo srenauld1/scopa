@@ -100,8 +100,8 @@ def compute_correlations(fname, dims):
     
     dview = None 
 
-    Y = cm.load(fname)
-    Cn = cm.local_correlations(Y, swap_dim=False)
+    stack = cm.load(fname)
+    Cn = cm.local_correlations(stack, swap_dim=False)
     d1, d2, d3 = dims
     x, y = (int(1.2 * (d1 + d3)), int(1.2 * (d2 + d3)))
     scale = 6/x

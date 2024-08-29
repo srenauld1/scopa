@@ -38,7 +38,7 @@ def select_fov_xy(img):
 
 
 
-def crop_fov(Y, regionex, pth_prefix, dims):
+def crop_fov(stack, regionex, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
     
@@ -59,7 +59,7 @@ def crop_fov(Y, regionex, pth_prefix, dims):
        
         else:
        
-            Ymt = np.mean(Y, axis = 0)
+            Ymt = np.mean(stack, axis = 0)
             if Ymt.shape[-1]==1: #only do z slice selection if the movie is volumetric 4d
                 zlimits = (1,1)
                 Ymtz = np.mean(Ymt, axis = 2)
@@ -87,6 +87,6 @@ def crop_fov(Y, regionex, pth_prefix, dims):
     sly = slice(croplim[4]-1, croplim[5], 1) 
     slz = slice(croplim[6]-1, croplim[7], 1) 
     indices_crop = [slt, slx, sly, slz]
-    Y = Y[tuple(indices_crop)]
+    stack = stack[tuple(indices_crop)]
 
-    return Y, limits_str
+    return stack, limits_str

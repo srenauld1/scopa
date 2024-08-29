@@ -18,28 +18,28 @@ def stitch_registered_slices(pth_tif_reg, dims):
 
     pth_tif_all = natsorted(glob.glob(pth_tif_reg[:-4] + '*_z_.tif'))
 
-    Y = np.zeros(dims, dtype='float32') #t z y x 
+    stack = np.zeros(dims, dtype='float32') #t z y x 
 
     countz = 0
     for f in pth_tif_all:
         countz = countz + 1
         print(f)
         sliceind = int(f.split('_')[-3])
-        Ynew = imread(f)
-        print(Ynew.dtype)
+        stacknew = imread(f)
+        print(stacknew.dtype)
         print(sliceind)
-        print("some (or probably all) slice min should be nonzero at this stage, this slice min is:" + str(np.min(Ynew)))
-        Y[:,sliceind,:,:] = Ynew # was Y[:,:,:,sliceind] = Ynew
+        print("some (or probably all) slice min should be nonzero at this stage, this slice min is:" + str(np.min(stacknew)))
+        stack[:,sliceind,:,:] = stacknew # was stack[:,:,:,sliceind] = stacknew
 
     if countz != dims[1]:
         raise Exception("incorrect number of registered files present")
 
-    Y = np.transpose(Y, (0,3,2,1)) #transpose to txyz, to match caiman output
+    stack = np.transpose(stack, (0,3,2,1)) #transpose to txyz, to match caiman output
 
     for f in pth_tif_all:
         os.remove(f)
     
-    return Y 
+    return stack 
 
 
 
@@ -59,7 +59,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_*/')))
         pth_trainset_all = list(set(pth_trainset_all) - set(natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + '_al*/'))))) #exclude the "all" folders when denoise_volume==1
 
-    Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1]), dtype='float32') #t y x z
+    stack = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], dims_pre_denoise[1]), dtype='float32') #t y x z
 
     if np.isscalar(epoch_choose_denoise) or len(epoch_choose_denoise)==1:
         print("\n\n\nuser passed only one epoch_choose_denoise, which is epoch #" + str(epoch_choose_denoise) + ", so using that to stitch together denoising stack")
@@ -93,31 +93,31 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
                     countz = countz + 1
                     print(f)
                     sliceind = int(f.split('/')[-1].split('_')[3])
-                    Ynew = imread(f)
-                    if Ynew.dtype!='uint16':
-                        print("warning, converting type from " + str(Ynew.dtype))
-                        if np.min(Ynew)<0 or np.max(Ynew) > 65535:
+                    stacknew = imread(f)
+                    if stacknew.dtype!='uint16':
+                        print("warning, converting type from " + str(stacknew.dtype))
+                        if np.min(stacknew)<0 or np.max(stacknew) > 65535:
                             raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
-                        Ynew = Ynew.astype('uint16')
-                    print(Ynew.dtype)
+                        stacknew = stacknew.astype('uint16')
+                    print(stacknew.dtype)
                     print(sliceind)
-                    Y[:,:,:,sliceind] = Ynew
+                    stack[:,:,:,sliceind] = stacknew
 
     if countz != dims_pre_denoise[1]:
         raise Exception("not all slices present")
 
-    mnmv = np.min(Y).astype('float32')
-    Y -= mnmv #make nonnegative before writing to uint16
+    mnmv = np.min(stack).astype('float32')
+    stack -= mnmv #make nonnegative before writing to uint16
     print("MIN AFTER DENOISING " + str(mnmv))
 
-    Y = Y.astype('uint16')
+    stack = stack.astype('uint16')
 
-    Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
-    print(Y.shape)
-    Y = Y.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
-    print(Y.shape)
-    #imwrite(pth_tif_write, Y.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
-    imwrite(pth_tif_write, Y, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
+    stack = np.transpose(stack, (0, 3, 1, 2)) #tzyx
+    print(stack.shape)
+    stack = stack.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
+    print(stack.shape)
+    #imwrite(pth_tif_write, stack.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
+    imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
 
@@ -168,7 +168,7 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                 if fnmatch.fnmatch(fldr_outtiff.split('/')[-1], 'E_' + "{:02d}".format(epoch_choose_denoise) + '_Iter_*'):
                     pth_denoised_singles = natsorted(glob.glob(os.path.join(fldr_outtiff, '*output.tif')))
 
-                    Y = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], actual_z_size), dtype='float32') #t y x z
+                    stack = np.zeros((dims_pre_denoise[0], dims_pre_denoise[2], dims_pre_denoise[3], actual_z_size), dtype='float32') #t y x z
                     print(dims_pre_denoise[1])
                     for fni,f in enumerate(pth_denoised_singles): #loop over each denoised z slice and reassemble into array matching shape of original 4d volume
                         if denoise_volume == 1:
@@ -180,27 +180,27 @@ def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_r
                             countz = countz + 1
                             print(f)
                             sliceind = 0 #always zero for these non-volumetric old recordings 
-                            Ynew = imread(f)
-                            if Ynew.dtype!='uint16':
-                                print("warning, converting type from " + str(Ynew.dtype))
-                                if np.min(Ynew)<0 or np.max(Ynew) > 65535:
+                            stacknew = imread(f)
+                            if stacknew.dtype!='uint16':
+                                print("warning, converting type from " + str(stacknew.dtype))
+                                if np.min(stacknew)<0 or np.max(stacknew) > 65535:
                                     raise Exception("denoising have operated on uint16 for this pipeline, or adjust it")
-                                Ynew = Ynew.astype('uint16')
-                            print(Ynew.dtype)
+                                stacknew = stacknew.astype('uint16')
+                            print(stacknew.dtype)
                             print(sliceind)
-                            Y[:,:,:,sliceind] = Ynew
+                            stack[:,:,:,sliceind] = stacknew
 
-                            mnmv = np.min(Y).astype('float32')
-                            Y -= mnmv #make nonnegative before writing to uint16
+                            mnmv = np.min(stack).astype('float32')
+                            stack -= mnmv #make nonnegative before writing to uint16
                             print("MIN AFTER DENOISING " + str(mnmv))
                                 
-                            Y = Y.astype('uint16')
+                            stack = stack.astype('uint16')
                             
-                            Y = np.transpose(Y, (0, 3, 1, 2)) #tzyx
-                            print(Y.shape)
-                            Y = Y.reshape(dims_pre_denoise[0] * actual_z_size, dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
-                            print(Y.shape)
-                            imwrite(pth_tif_write, Y.squeeze(), bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
+                            stack = np.transpose(stack, (0, 3, 1, 2)) #tzyx
+                            print(stack.shape)
+                            stack = stack.reshape(dims_pre_denoise[0] * actual_z_size, dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
+                            print(stack.shape)
+                            imwrite(pth_tif_write, stack.squeeze(), bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
                     if countz != dims_pre_denoise[1]:

@@ -29,7 +29,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
 
 
-    if md['dims'][1]==1 or register_in_2d:
+    if register_in_2d:
         is3D_mc = False #if not 3d, register each slice . . . 
         indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
@@ -290,7 +290,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
 
     # # for reference here are the initialization defs for 3 methods, sparse_nmf apparently "has problems" according to gitter
 
-    # # greedyROI(Y, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
+    # # greedyROI(stack, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
     #           rolling_sum=False, rolling_length=100, seed_method='auto')
 
     # for graphnmf all these are tunable in cnmf params except remove_baseline, truncate, tol, and SC_kernel whose defaults are below
