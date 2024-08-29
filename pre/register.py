@@ -9,6 +9,7 @@ from configs import configs
 from helpers import tracefunc 
 from z_stitch import stitch_registered_slices 
 from registration_template import choose_registration_template
+from separate_channels_when_two import separate_channels_when_two
 from subtract_background import subtract_background
 from scipy.ndimage import gaussian_filter as smooth_movie
 from im_montage import im_montage
@@ -42,13 +43,16 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             register_in_2d = 1
             print("stack does not have multiple slices but register_in_2d is set to false, changing register_in_2d to true now")
 
-    stack, stack_secondary, two_channel_reg, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel, chan_primary_when_two, register_presmoothed)
+    stack, stack_secondary, two_channel_reg, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel, chan_primary_when_two)
 
+    if two_channel_reg and register_presmoothed:
+        raise Exception("two_channel_reg and register_presmoothed cannot both be true; since you have a 2-channel stack, you can set discard_channel to 1 or 2, or set register_presmoothed to 0")
+        
     if halfwidth_window_bgsub:
         pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in choose_files (make this more reliable)
     else:
         pth_tif_write = pth_prefix + chanstr_primary + '_cmrg_.tif'#match pattern in choose_files (make this more reliable)
-    pth_tif_write_allchan = pth_tif_write.replace(chanstr_primary, '') #only used if two_channel_reg==1 (ie if there are two channels and discard_channel=None)
+    pth_tif_write_allchan = pth_tif_write.replace(chanstr_primary, '') #this is same as pth_tif_write if two_channel_reg==0
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
     if two_channel_reg:
@@ -112,6 +116,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     else:
         sliceindz = [zindall] #all slices in one list (not planar)
 
+    stack_shape = stack.shape
     countz = 0
     for si in sliceindz: #for each slice (or all slices if extract_in_2d = false)
 
@@ -155,21 +160,23 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             memmap2stackwrite(si, input_for_save_memmap_secondary, pth_tif_write_secondary, register_in_2d, mc, dview)
 
         if (register_in_2d and si==sliceindz[-1]) or not register_in_2d: #on final slice, if register_in_2d, or if 3d register
-            stack = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
-            # write_registered_stack(stack, pth_tif_write)
-            if makeplots:
-                #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack)) #view montage to check registration
-                plot_gif(stack, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+
+            stack_shape = stack.shape
+            stack_dtype = 'uint16' #stack.dtype
+            stack = None
             if two_channel_reg: #OVERWRITE STACK TO SAVE MEMORY SINCE WE'RE AT THE END, AND ONLY PLOTTING IS LEFT
-                stack_secondary = stitch_registered_slices(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
-                # write_registered_stack(stack_secondary, pth_tif_write_secondary)
-                stack_combined = np.zeros((stack.shape[0], stack.shape[1], 2, stack.shape[2], stack.shape[3]), dtype=stack.dtype)
-                stack_combined[:,:,chan_primary_when_two-1,:,:] = stack
-                stack_combined[:,:,chan_secondary-1,:,:] = stack_secondary
-                write_registered_stack(stack_combined, pth_tif_write_allchan)
+                stack_allchan = np.zeros((stack_shape[0], stack_shape[1], stack_shape[2], stack_shape[3], 2), dtype=stack_dtype)
+                stack_allchan[:,:,:,:,chan_primary_when_two-1] = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_secondary-1] = stitch_registered_slices(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
                 if makeplots:
-                    #im_montage(stack_secondary[10,:,:,:], vmin=mnmv, vmax=np.max(stack_secondary)) #view montage to check registration
-                    plot_gif(stack_secondary, pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan[:,:,:,:,chan_primary_when_two-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+            else:
+                stack_allchan = stitch_registered_slices(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
+                if makeplots:
+                    plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+            
+            write_registered_stack(stack_allchan, pth_tif_write_allchan)
 
         countz = countz + 1
 
@@ -200,39 +207,6 @@ def stack_reshape_transpose_zero_type(stack, dims, flyback):
 
 
 
-def separate_channels_when_two(stack, md, discard_channel, chan_primary_when_two, register_presmoothed):
-    
-    two_channel_reg = 0
-    stack_secondary = None
-    chan_secondary = None
-    chanstr_primary = 'chn1' #default 
-    chanstr_secondary = ''
-    if 'channelSave' in md: #older runs of do_register will not have this field in md, if you want it, delete metadatanew and rerun
-        if not isinstance(md['channelSave'], int):
-            if len(md['channelSave'])==2:
-                if discard_channel is not None:
-                    keepchan = np.setxor1d([1,2], discard_channel)
-                    chanstr_primary = '_chn' + str(keepchan)
-                    stack = stack[:,keepchan[0]-1,:,:].squeeze()
-                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(keepchan))
-                else:
-                    two_channel_reg = 1
-                    chan_secondary = np.setxor1d([1,2], chan_primary_when_two)
-                    chan_secondary = chan_secondary[0]
-                    chanstr_primary = '_chn' + str(chan_primary_when_two)
-                    chanstr_secondary = '_chn' + str(chan_secondary)
-                    stack_secondary = stack[:,chan_secondary-1,:,:].squeeze()
-                    stack = stack[:,chan_primary_when_two-1,:,:].squeeze()
-                    print("STACK HAS 2 CHANNELS, WILL REGISTER CHANNEL " + str(chan_primary_when_two) + ", THEN WILL REGISTER CHANNEL " + str(chan_secondary) + " USING SHIFTS FROM CHANNEL " + str(chan_primary_when_two) )
-            else:
-                raise Exception("there is a channels problem")
-        
-
-    if two_channel_reg and register_presmoothed:
-        raise Exception("two_channel_reg and register_presmoothed cannot both be true; since you have a 2-channel stack, you can set discard_channel to 1 or 2, or set register_presmoothed to 0")
-            
-    return stack, stack_secondary, two_channel_reg, chan_secondary, chanstr_primary, chanstr_secondary
-    
 
 def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
       
@@ -268,18 +242,14 @@ def write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, registe
 
 def write_registered_stack(stack, pth_tif_write):
 
-    mnmv = np.min(stack).astype('float32')
-    stack -= mnmv #make nonnegative before converting to uint16
-    if np.max(stack) > 65535:
-        raise Exception("clipping will occur when converting to uint16")
-    print("MIN AFTER REGISTRATION " + str(mnmv))
-    stack = stack.astype('uint16')
     stack_shape = stack.shape
     print(stack_shape)
     if len(stack.shape)==3: #transpose into tzyx, collapse t and z (if z exists) 
         stack = np.transpose(stack, (0, 2, 1)).reshape(stack_shape[0], stack_shape[2], stack_shape[1])
-    else:
+    elif len(stack.shape)==4:
         stack = np.transpose(stack, (0, 3, 2, 1)).reshape(stack_shape[0] * stack_shape[3], stack_shape[2], stack_shape[1])
+    elif len(stack.shape)==5:
+        stack = np.transpose(stack, (0, 3, 4, 2, 1)).reshape(stack_shape[0] * stack_shape[3] * stack_shape[4], stack_shape[2], stack_shape[1])
     imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 

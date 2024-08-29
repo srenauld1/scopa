@@ -12,6 +12,7 @@ import shutil
 from denoising_score import denoising_score
 
 
+
 def stitch_registered_slices(pth_tif_reg, dims):
 
     print("\n\n\nstitching together separately registered z slices, and writing as one tif")
@@ -34,10 +35,17 @@ def stitch_registered_slices(pth_tif_reg, dims):
     if countz != dims[1]:
         raise Exception("incorrect number of registered files present")
 
-    stack = np.transpose(stack, (0,3,2,1)) #transpose to txyz, to match caiman output
-
     for f in pth_tif_all:
         os.remove(f)
+        
+    stack = np.transpose(stack, (0,3,2,1)) #transpose to txyz, to match caiman output
+
+    mnmv = np.min(stack).astype('float32')
+    stack -= mnmv #make nonnegative before converting to uint16
+    if np.max(stack) > 65535:
+        raise Exception("clipping will occur when converting to uint16")
+    print("MIN AFTER REGISTRATION " + str(mnmv))
+    stack = stack.astype('uint16')
     
     return stack 
 

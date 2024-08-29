@@ -21,7 +21,7 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 
 registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 discard_channel = None #none, 1, or 2
 chan_primary_when_two = 2 #one indexed; channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; if data has one channel this is ignored
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
@@ -30,6 +30,7 @@ len_window_smooth_t_mcp_sec = 0.4 #smoothing window length, uses 1d gaussian wit
 register_presmoothed = 0 # if 1, and if len_window_smooth_t_mcp_sec!=0, register the presmoothed stack to the smoothed stack and discard the smoothed stack, if 0 and if len_window_smooth_t_mcp_sec!=0, just register the smoothed stack and use that going formward  
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+chan_dn = 'all' #'all', '1', or '2'; 2 can fail to run if no *chn2_cmrg*.tif exists; 'all' works for one or two channel
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all' (all z slices) or selected integer strings . . . which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 num_epochs_denoise = 10 #how many denoising epochs to run, by defult saves model after each epoch 

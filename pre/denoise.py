@@ -2,7 +2,7 @@
 
 
 ##########################################################################################################################################
-# using deepcad to denoise 
+# deepcad denoising  
 
 # deepcad wants 3d data, and rather than reshaping the 4d array into 3d (denoising on all z slices at once), this script either
 # operates on each z slice independently (if denoise_volume = 0), or all z slices (if denoise_volume = 1) . . . currently not set up to do anything in between 
@@ -97,7 +97,7 @@ from deepcad.train_collection import training_class
 from deepcad.test_collection import testing_class
 
 
-def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project, pth_tif_read, epoch_choose_denoise):
+def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project, chan_str_insert):
 
 
     ##########################   DEEPCAD DENOISING   ##########################
@@ -119,8 +119,9 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     if carls_old_project: #if it's not my old grad school project 
         if denoise_volume:
             pretend_trial = '1' # pretend they all come from same trial
+            print("DNFOLDER GETS OVERWRITTEN BELOW - CAN WE DELETE THIS?")
             dnfolder = fn_prefix.split('_')[0] + '_' + fn_prefix.split('_')[1] + '_' + pretend_trial + '_all' #for these non-volumetric grad recordings, if do_volume == 1, rename all trials "1", and each trial a different z slice
-            numstacks_all_refers_to = len(glob.glob(pth_denoising + '/' + dnfolder + '/*tif')) #and 'all' means all stacks in dnfolder (which is really all trials)
+            numstacks_all_refers_to = len(glob.glob(pth_denoising + dnfolder + '/*tif')) #and 'all' means all stacks in dnfolder (which is really all trials)
         else: #if not denoise_volume, all is just one stack 
             numstacks_all_refers_to = 1
     else:
@@ -210,16 +211,16 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     for zii in zind_all_dn: #deepcad wants 3d data, so organize slices into separate tif files, and put in one folder (if denoise_volume=1, ie train on all slices) or separate folders (if denoise_volume=0, ie train on z subset)
 
         if denoise_volume:
-            dnfolder_insert = 'all'
+            slice_str_insert = 'all'
             countz = 0 #constant 0 because every slice goes to the same directory
         else:
-            dnfolder_insert = str(zii)
+            slice_str_insert = str(zii)
             countz = countz + 1
 
-        dnfolder = fn_prefix + '_' + dnfolder_insert
+        dnfolder = fn_prefix + chan_str_insert + '_' + slice_str_insert
         tifname = fn_prefix + '_' + str(zii) + '*_.tif'
 
-        pth_trainset_all[countz] = pth_denoising + '/' + dnfolder #dir containing all tif files for training
+        pth_trainset_all[countz] = pth_denoising + dnfolder #dir containing all tif files for training
         pth_testset_all[countz] = pth_trainset_all[countz] + '/' + dnfolder + '_*' #dir containing all models (.pth files) for test
 
         oldfldrs = glob.glob(pth_testset_all[countz]) #delete folders from old runs until you have resume training functionality written
@@ -348,10 +349,3 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
 
             tc = testing_class(test_dict)
             tc.run()
-
-    # moved stitch to its own job because it can require more memory than the denoising, but only takes a minute
-    # if carls_old_project: 
-    #     stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
-    # else:
-    #     stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise) 
-

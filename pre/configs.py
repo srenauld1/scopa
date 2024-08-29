@@ -26,7 +26,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     niter_rig = 1 #default 1, number registration iterations (regardles of pw_rigid, or is3d)
     max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
     shifts_opencv = False #automatically false if is3D_mc==true, or if pw_rigid = True . . . so true only works for rigid 2d registration . . . true uses intercubic interp (faster but smoother), false uses fourier
-    upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True
+    upsample_factor_grid = 12 #default 4, use for merging patches if pw_rigid==True
 
 
     if register_in_2d:
@@ -40,7 +40,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
         indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
         strides_mc = (24, 24, 6) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
         overlaps_mc = (12, 12, 3)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
-        max_shifts_mc = (8, 8, 2)#max allowed shifts (in patch if piecewise, or whole fov if not) 
+        max_shifts_mc = (4, 4, 4) #max allowed shifts (in patch if piecewise, or whole fov if not) 
 
 
     ### roi extraction params ###

@@ -19,7 +19,7 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 
 registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 discard_channel = None #None, 1, or 2
 chan_primary_when_two = 2 #one indexed; channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; if data has one channel this is ignored
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
@@ -36,7 +36,7 @@ num_epochs_denoise = 10 #how many denoising epochs to run, by defult saves model
 do_stitch = 0 
 
 use_background_subtracted = 0 #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
-use_denoised = 0  #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
+use_denoised = 1  #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
 epoch_choose_denoise = range(1,num_epochs_denoise+1) #one-indexed, which denoising epoch to grab and stitch into single tif and move into data folder  (must exist, ie must be one of epochs_choose in denoise.py); if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py)
 
 do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)

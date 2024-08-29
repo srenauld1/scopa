@@ -18,13 +18,13 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     ######### SET UP chanopt, A FILE SPECIFIER #########
 
     chanopt = [''] #channels are only separated as temporary files between registration and denoising since denoising is the only part where they are totally independent (so we want the option to run denoising for each channel in parallel) (separated files are deleted after denoising, while registered version with both channels is saved permanently)
-    if do_denoise:
-        if chan_dn=='all':
-            chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
-        else:
-            chanopt = ['_chn' + str(chan_dn)]
-    if do_stitch:
-        chanopt = ['_chn*'] #stitch always grabs all *chn*dcdn*tif files 
+    # if do_denoise:
+    #     if chan_dn=='all':
+    #         chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
+    #     else:
+    #         chanopt = ['_chn' + str(chan_dn)]
+    # if do_stitch:
+    #     chanopt = ['_chn*'] #stitch always grabs all *chn*dcdn*tif files 
 
 
 
