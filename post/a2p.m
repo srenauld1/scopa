@@ -83,7 +83,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     %% load/visualize stack (and optional hires stack)
 
-    stack = load_stack(md.sz_o, md.numslice_withflyback, pth, ui.mn, ui.ld, ids);
+    stack = load_stack(md.sz_o, md.numslice_withflyback, md.channel_save, pth, ui.mn, ui.ld, ids);
 
     if any(cell2mat(struct2cell(ui.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, ui.hires);

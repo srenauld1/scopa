@@ -37,11 +37,14 @@ inds_c_read_from = opt.inds_c_read_from;
 inds_z_read_from = opt.inds_z_read_from;
 inds_t_read_from = opt.inds_t_read_from;
 
-fullsize_c_read_from = size_read_from(3);
-fullsize_z_read_from = size_read_from(4);
-fullsize_t_read_from = size_read_from(5);
+if isempty(size_read_from) %put these warnings before call to TIFFStack because it can be slow, good to know in advance (if you know size_read_from)
+    stack_size_is_known = 0;
+else
+    stack_size_is_known = 1;
+end
 
-if ~isempty(size_read_from) %put these warnings before call to TIFFStack because it can be slow, good to know in advance (if you know size_read_from)
+if stack_size_is_known %put these warnings before call to TIFFStack because it can be slow, good to know in advance (if you know size_read_from)
+    
     if ~all(inds_y_read_from >= 1 & inds_y_read_from <= size_read_from(1))
         error("REQUESTED inds_x_reaa2d_from are not subset of available stack")
     end
@@ -57,17 +60,10 @@ if ~isempty(size_read_from) %put these warnings before call to TIFFStack because
     if ~all(inds_t_read_from >= 1 & inds_t_read_from <= size_read_from(5))
         error("REQUESTED inds_x_read_from are not subset of available stack")
     end
-end
-
-
-
-if isempty(size_read_from)
-    stack_size_is_known = 0;
-    if ~isempty(inds_c_read_from) || ~isempty(inds_z_read_from) || ~isempty(inds_t_read_from)
-        error("you must know z and t fullsize to pass nonempty inds_z_read_from or inds_t_read_from")
-    end
-else
-    stack_size_is_known = 1;
+        
+    fullsize_c_read_from = size_read_from(3);
+    fullsize_z_read_from = size_read_from(4);
+    fullsize_t_read_from = size_read_from(5);
     if isempty(inds_c_read_from)
         inds_c_read_from = 1:fullsize_c_read_from; %this default can only be assigned if stack_size_is_known==1
     end
@@ -77,7 +73,13 @@ else
     if isempty(inds_t_read_from)
         inds_t_read_from = 1:fullsize_t_read_from; %this default can only be assigned if stack_size_is_known==1
     end
+
+else
+    if ~isempty(inds_c_read_from) || ~isempty(inds_z_read_from) || ~isempty(inds_t_read_from)
+        error("you must know stack size to pass nonempty inds_z_read_from or inds_t_read_from or inds_c_read_from")
+    end
 end
+
 
 
 tsStack = TIFFStack(filename_tif); % Construct a TIFF stack associated with a file, this doesn't read the stack into memory

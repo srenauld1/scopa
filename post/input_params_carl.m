@@ -16,7 +16,7 @@ if isempty(pthstacks) %if not running a2p from cxp, set filename specs here
     fnspec_recdate = {'20240825'}; %cell array of char, can use wildcards
     fnspec_fly = {'*'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
-    fnspec_suffix = {'raw'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
+    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
@@ -56,8 +56,8 @@ ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/i
 
 %ui.ld.gif holds params for making gif of imaging movies in function load_stack; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
-    %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'raw', ... %comment if you don't want to plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
     'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'

@@ -16,6 +16,12 @@ if ~isfield(md,'zstartpos')
     tmp = 0:md.zwid:md.zfov;
     md.zstartpos = tmp(1:end-1);
 end
+if ~isfield(md,'channel_save')
+    md.channel_save = 1;
+end
+if ~isfield(md,'channel_active')
+    md.channel_active = 1;
+end
 
 if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
