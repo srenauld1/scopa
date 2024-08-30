@@ -1,8 +1,9 @@
-function [ids, recdate, fly, trial, suffix, recdatenum, flynum, trialnum, recid, datefly_hyphen] = get_ids_a2p(pthstack)
+function [ids, recdate, fly, trial, suffix, recdatenum, flynum, trialnum, recid, datefly_hyphen, fldr] = get_ids_a2p(pthstack)
 
 %for portability, also outputs ids, a struct collecting all other outputs
 
-[~, fnin, ~] = fileparts(pthstack);
+[fldr, fnin, ~] = fileparts(pthstack);
+fldr = [fldr filesep]; 
 
 spl = strjoin(strsplit(fnin, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
 spl = strsplit(spl, '_'); %then separate by underscore

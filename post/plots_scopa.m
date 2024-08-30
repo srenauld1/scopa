@@ -1,7 +1,7 @@
 
 function plots_scopa(filename_sd)
 
-error("plots_scopa is deprecated")
+error("plots_scopa is deprecated; very old and bad")
 
 %% set params
 

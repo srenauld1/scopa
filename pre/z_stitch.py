@@ -62,7 +62,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
                 two_chan_stitch = 1
 
 
-    pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif'
+    pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif' #forcing this suffix since stitch is specificaly for denoising (rather than letting it have use_denoised determine)
     
     if os.path.isfile(pth_tif_write):
         print("\n\n\nWARNING, STITCHED DENOISED STACK ALREADY EXISTS - OVERWRITING IT NOW")

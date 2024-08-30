@@ -9,48 +9,43 @@
 % all scopa output stacks should be uint16, but if not they are converted to uint16
 
 
-function stack = load_stack(sz, numslice_withflyback, channel_save, pth, mn, opts, ids)
+function stack = load_stack(pth_stack, opt)
 
 
-% sz, numslice_withflyback, pth, mn, opts, ids
-% arguments
-%
-% sz = opt.sz;
-%
-%
-%     opts.crop_flyback = 1; %crop flyback frames from each volume
-%     opts.zero_stack = 1; %subtract min to make min zero
-%     opts.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-%     opts.tcropback = 0; % how many samples to remove from end of stack
-%     opts.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
-%
-%     pth_stack = opt.pthstack;
-%     display_range = opts.gif.display_range
-%     opts.gif.it
-%     opts.gif.iz
-%     opts.gif.smooth_window_temporal
-%     suffixes_plot = opts.gif.suffixes_plot;
-%     suffix_analysis = opts.suffix;
-%     opts.recdatenum
-%     opts.flynum
-%     opts.trialnum
-%     mn.pthparent_o2
-%     mn.valid_fnsuffixes
-%
-% end
+arguments
+    pth_stack
+    opt.suffixes_plot = {}
+    opt.sz = []
+    opt.stack_make_datatype = 'uint16'
+    opt.numslice_withflyback = []
+    opt.channel_save = []
+    opt.tcropfront = 0
+    opt.tcropback = 0
+    opt.crop_flyback = 0
+    opt.zero_stack = 0
+    opt.it = -50;
+    opt.iz = []
+    opt.smooth_window_temporal = []
+    opt.do_plot_stack_stats = 0
+    opt.display_range = []
+end
 
+suffixes_plot = opt.suffixes_plot;
+sz = opt.sz;
+stack_make_datatype = opt.stack_make_datatype;
+numslice_withflyback = opt.numslice_withflyback;
+channel_save = opt.channel_save;
+tcropfront = opt.tcropfront;
+tcropback = opt.tcropback;
+crop_flyback = opt.crop_flyback;
+zero_stack = opt.zero_stack;
+it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
+smooth_window_temporal = opt.smooth_window_temporal; %smooth the stack in time, 0 to skip
+do_plot_stack_stats = opt.do_plot_stack_stats;
+display_range = opt.display_range;
 
-crop_flyback = opts.crop_flyback;
-zero_stack = opts.zero_stack;
-it = opts.gif.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-iz = opts.gif.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
-smooth_window_temporal = opts.gif.smooth_window_temporal; %smooth the stack in time, 0 to skip
-do_plot_stack_stats = opts.do_plot_stack_stats;
-display_range = opts.gif.display_range;
-suffixes_plot = opts.gif.suffixes_plot;
-
-
-suffix_analysis = ids.suffix;
+[~,~,~,~,suffix_analysis,~,~,~,recid,~,pth_fldr] = get_ids_a2p(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to 
 
 if isempty(suffixes_plot)
     plot_stack_gif = 0;
@@ -58,6 +53,8 @@ else
     plot_stack_gif = 1;
 end
 
+[~, plot_stack_order] = sort(cellfun(@numel, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
+suffixes_plot = suffixes_plot(plot_stack_order);
 if ~ismember(suffix_analysis, suffixes_plot)
     sprintf("suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW")
     suffixes_plot{end+1} = suffix_analysis;
@@ -67,18 +64,20 @@ if numel(suffixes_plot)~=1
     suffixes_plot = cat(1, setxor(suffix_analysis, suffixes_plot(:), 'stable'), suffix_analysis); % make suffix_analysis last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from load_stack without having to hold plot stacks in memory)
 end
 
-[~, plot_stack_order] = sort(cellfun(@numel, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
-
 cnt = 0;
 for spi = 1:numel(suffixes_plot)
-    pthtmp = find_preprocessed_files(fullfile_sibling=pth.stack, suffix=suffixes_plot{spi});
+    pthtmp = find_preprocessed_files(fullfile_sibling=pth_stack, suffix=suffixes_plot{spi});
     if ~isempty(pthtmp)
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;
-        display_range_cell{cnt} = display_range.(suffixes_plot{spi});
+        if isempty(display_range)
+            display_range_cell{cnt} = [0, 1];
+        else
+            display_range_cell{cnt} = display_range.(suffixes_plot{spi});
+        end
         suffixes_plot_keep{cnt} = suffixes_plot{spi};
     else
-        sprintf("WARNING, NO FILE FOUND WITH SUFFIX: " + suffixes_plot{spi} + " WITH SAME folder, recdate, fly, and trial as sibling file " + pth.stack +  newline + "SKIPPING IT FOR PLOT")
+        sprintf("WARNING, NO FILE FOUND WITH SUFFIX: " + suffixes_plot{spi} + " WITH SAME folder, recdate, fly, and trial as sibling file " + pth_stack +  newline + "SKIPPING IT FOR PLOT")
     end
 end
 
@@ -97,23 +96,23 @@ stackplot_mn = cell(numel(pth_stacks), 1); %make it cell column so first dim is 
 
 
 for spi = 1:numel(pth_stacks)
-    
+
     if endsWith(pth_stacks{spi}, '.mat')
         stack = struct2cell(load(pth_stacks{spi})); %make sure loaded stack is named 'stack'
         stack = stack{1};
     elseif endsWith(pth_stacks{spi}, '.tif')
         stack = tif2mat(pth_stacks{spi}, ...
+            sz_yxzt=sz, ...
             numslice_withflyback=numslice_withflyback, ...
-            sz_yxczt=sz, ...
+            channel_save=channel_save,...
             crop_flyback=crop_flyback, ...
-            tcropfront=opts.tcropfront, ...
-            tcropback=opts.tcropback, ...
-            zero_stack=1, ...
-            output_datatype='uint16');
+            tcropfront=tcropfront, ...
+            tcropback=tcropback, ...
+            zero_stack=zero_stack, ...
+            output_datatype=stack_make_datatype);
     else
         error("pth_stacks must end with tif or mat");
     end
-
 
 
     if do_plot_stack_stats
@@ -139,16 +138,15 @@ for spi = 1:numel(pth_stacks)
 
         stacktmp = single(stacktmp(:,:,iz,it));
 
-        if ~strcmp(pth.stack, pth_stacks{spi}) %if it's the stack for analysis outside this function
+        if ~strcmp(pth_stack, pth_stacks{spi}) %if it's the stack for analysis outside this function
             stack = [];
         end
 
         stackplot{spi} = stacktmp;
         stackplot_mn{spi} = stacktmp_mn;
 
-        clear stacktmp*
-        [~,filnam,~]=fileparts(pth_stacks{spi});
-        fn_suffix_insert{spi} = erase(filnam, suffixes_plot{spi});
+        clear stacktmp stacktmp_mn
+
     end
 end
 
@@ -157,15 +155,10 @@ end
 
 if plot_stack_gif
 
-    stackplot = stackplot(plot_stack_order);
-    stackplot = stackplot(~cellfun( @isempty, stackplot ));
-    stackplot_mn = stackplot_mn(plot_stack_order);
-    stackplot_mn = stackplot_mn(~cellfun( @isempty, stackplot_mn ));
+    fn_suffix_insert = strjoin(suffixes_plot_keep, '_AND_');
 
-    fn_suffix_insert = strjoin(fn_suffix_insert(~cellfun( @isempty, fn_suffix_insert )), '_AND_');
-
-    figtitle_prefix = [ids.recid '_' fn_suffix_insert dr_str];
-    filename_prefix = [pth.fldr figtitle_prefix '_' izstr '_' itstr ];
+    figtitle_prefix = [recid '_' fn_suffix_insert];
+    filename_prefix = [pth_fldr figtitle_prefix '_' dr_str '_' izstr '_' itstr ];
 
     % testing RGB arguments to stack2fig
     % for spp = 1:size(stackplot{1}, 3)
@@ -213,7 +206,7 @@ if plot_stack_gif
         pthgif=[filename_prefix 'meant_.gif'], ...
         display_range=display_range_cell, ...
         framenumdims=2, ...
-        dimorder=[1,2,3], ...
+        dimorder=[1:ndims(stackplot_mn)], ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels(1:3) ...
         )

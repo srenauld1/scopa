@@ -162,7 +162,7 @@ if strcmp(opt, 'resp')
 
 elseif strcmp(opt, 'hist')
 
-    pthgif = ['~/Documents/ambrose/filtergifs/' datestr(now,30) '_respsyn_.gif'];
+    pthgif = ['~/~/ambrose/filtergifs/' datestr(now,30) '_respsyn_.gif'];
     h = figure; hold on;
     if exist('inp2', 'var')
         h1 = histogram(vec(inp2));

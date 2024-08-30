@@ -22,8 +22,8 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
 
     if do_copyfiles==1: #copy from storage server to O2 (unless do_denoise, since that only uses files in O2 denoising folder, whcih is not copied in or out of O2)
         
-        if 0:#do_denoise:
-            print("\n\n\nnot copying anything because do_denoise is true, and they use files in denoising folder")
+        if do_stitch: #do_denoise now includes separate_z so you do need to copy registered for that 
+            print("\n\n\nnot copying anything because do_stitch is true, and do_stitch uses files in denoising folder, which is not on the server")
         else:
 
             Path(pth_fldr_copydest).mkdir(parents=True, exist_ok=True)

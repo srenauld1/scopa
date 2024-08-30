@@ -4,7 +4,7 @@ clear all
 close all
 clc
 
-allcaiman = rdir('~/Documents/ambrose/leprechaunMat/20230627-2_D05_syt7f_018_syt7f/*3dex_rois_.mat');
+allcaiman = rdir('~/~/ambrose/leprechaunMat/20230627-2_D05_syt7f_018_syt7f/*3dex_rois_.mat');
 
 for aci = 1:length(allcaiman)
 

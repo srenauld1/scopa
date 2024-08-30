@@ -51,10 +51,10 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
         if do_denoise or do_stitch or do_extract or do_crop or do_remove or do_analysis:
-            fn_suffix_scopa = '_cmrg'
+            fn_suffix_scopa = '_cmrg' 
             if use_background_subtracted:
                 fn_suffix_scopa = '_bksb' + fn_suffix_scopa
-            if use_denoised and (do_extract or do_crop or do_remove or do_analysis):
+            if use_denoised and (do_extract or do_crop or do_remove or do_analysis): #don't let this affect do_stitch since it must have dcdn if it's run
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
             if use_scannoise_removed and (do_extract or do_crop or do_analysis):
                 fn_suffix_scopa = fn_suffix_scopa + '_nosn'

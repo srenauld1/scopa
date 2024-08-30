@@ -13,7 +13,7 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240825'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
     fnspec_fly = {'*'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
@@ -32,7 +32,6 @@ ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
 ui.mn.do_fit = 0; %model fitting (ui.fitm below)
 ui.mn.do_pltexp = 0; %plot experiment (ui.pltexp below)
-ui.mn.old_project = 0; %for carl
 
 
 %% DAQ
@@ -52,13 +51,14 @@ ui.ld.crop_flyback = 1; %crop flyback frames from each volume
 ui.ld.zero_stack = 1; %subtract min to make min zero 
 ui.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 ui.ld.tcropback = 0; % how many samples to remove from end of stack
+ui.ld.stack_make_datatype = 'uint16';
 ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless 
 
 %ui.ld.gif holds params for making gif of imaging movies in function load_stack; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
-    'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'raw', ... %comment if you don't want to plot (can comment all too)
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -73,7 +73,7 @@ ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-ui.ld.gif.it = [100.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.it = [20.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 ui.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
@@ -335,13 +335,19 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 %% CARL'S OLD PROJECT
 
 %overwrite some params for carl's old project
-% if ~strcmp(ui.mn.recdate, '*') && strcmp(ui.mn.recdate(1:2), '22') %override some settings for old project
-%     ui.mn.old_project = 1;
-%     ui.md.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-%     ui.md.tcropfront = 2; % how many samples to remove from end of stack
-%     ui.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
-%     ui.fitm.mdl_length_sec = 1.25;
-% end
+if ~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
+    if numel(fnspec_recdate)>1
+        error("right now old project is one file at a time")
+    end
+    ui.mn.old_project = 1;
+    ui.ld.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+    ui.ld.tcropback = 2; % how many samples to remove from end of stack
+    ui.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
+    ui.fitm.mdl_length_sec = 1.25;
+    ui.mn.do_daq = 0; %process daq data
+    ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+    ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
+end
 
 %% order fields
 

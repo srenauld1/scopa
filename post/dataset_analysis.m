@@ -8,8 +8,8 @@ clc
 %%
 
 gif_visibility = 'on';
-pth_allrec = '~/Documents/ambrose/allrec/morphmaskno/';
-pth_allrec = '~/Documents/ambrose/allrec/trans2/';
+pth_allrec = '~/~/ambrose/allrec/morphmaskno/';
+pth_allrec = '~/~/ambrose/allrec/trans2/';
 epochindstmp = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]};
 epochindstmp = {[5]; [4]; [3]; [2]; [1]};
 % epochindstmp = {[1 4]};

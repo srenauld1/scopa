@@ -97,12 +97,16 @@ stack = read_tif_tzyx(pth_stack_tif, ...
 % TEMPORARY HACK TO TAKE FIRST CHANNEL
 % TEMPORARY HACK TO TAKE FIRST CHANNEL
 % TEMPORARY HACK TO TAKE FIRST CHANNEL
-% TEMPORARY HACK TO TAKE FIRST CHANNEL
-% TEMPORARY HACK TO TAKE FIRST CHANNEL
-% TEMPORARY HACK TO TAKE FIRST CHANNEL
-% TEMPORARY HACK TO TAKE FIRST CHANNEL
 
-stack = squeeze(stack(:,:,1,:,:));
+stack = squeeze(stack(:,:,1,:,:)); %get rid of channel dim
+if ndims(stack)==3 %put z back in if singleton
+    stack = reshape(stack, size(stack, 1), size(stack, 2), 1, size(stack, 3));
+end
+
+% END HACK
+% END HACK
+% END HACK
+
 
 if isa(stack, 'int8') || isa(stack, 'uint8')
     error("a2p currently does not support int8 or uint8 stacks, although could with a few minor changes")
