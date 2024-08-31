@@ -1,5 +1,5 @@
 function [stack, zstartpos_crop, stack_mnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
-    crop_stacks(stack, croplim, zstartpos, recid, regionex, fldr, pth_tmpfiles, sz_crop, ...
+    crop_stacks(stack, regionex, zstartpos, recid, fldr, pth_tmpfiles, sz_crop, ...
     use_hires, stack_hires_mnt, map_hires_lores, pth_mroi )
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
@@ -10,26 +10,23 @@ if ~exist('use_hires', 'var')
     use_hires = 0;
 end
 
-if strcmp(croplim, name_noregionex)
+if strcmp(regionex, name_noregionex) %strcmp(croplim, name_noregionex)
 
     croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4)];
     stack = single(stack);
 
 else
 
+    spl = strsplit(regionex, '_');
+    regionex_nounderscore = spl{1};
+
+    [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore ); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
+    
     if isempty(croplim)
-
-        spl = strsplit(regionex, '_');
-        regionex_nounderscore = spl{1};
-
-        [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore ); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
-        if isempty(croplim)
-            [croplim, croplimstr] = make_croplim(stack, sz_crop(4), fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore);
-        end
-        pth_mroi = strrep(pth_mroi, 'nocroplimhold', croplimstr);
-
+        [croplim, croplimstr_new] = make_croplim(stack, sz_crop(4), fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore);
+        pth_mroi = strrep(pth_mroi, croplimstr, croplimstr_new);
     end
-
+    
     stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8))); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single
 
 end

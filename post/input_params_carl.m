@@ -14,13 +14,13 @@ ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dc
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
     fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
-    fnspec_fly = {'*'}; %cell array of char, can use wildcards
+    fnspec_fly = {'0'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
-    ui.mn.pthstacks = keep_existant_input_files(pthstacks);
+    ui.mn.pthstacks = remove_missing_input_files(pthstacks);
 end
 
 ui.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -31,7 +31,7 @@ ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
 ui.mn.do_fit = 0; %model fitting (ui.fitm below)
-ui.mn.do_pltexp = 0; %plot experiment (ui.pltexp below)
+ui.mn.do_pltexp = 0; %plot experiment (ui.pltx below)
 
 
 %% DAQ
@@ -279,34 +279,34 @@ ui.fitm = default_fit_params(ui.fitm);
 %% PLOT EXPERIMENT
 
 % params for plot_experiment
-% ui.pltexp.varnms follows the same pattern as ui.fitm.varnms above
+% ui.pltx.varnms follows the same pattern as ui.fitm.varnms above
 
-ui.pltexp(1).varnms.ts1{1} = {['ball.forvel']};
-ui.pltexp(1).varnms.ts2{1} = {['']};
-ui.pltexp(1).varnms.ts3{1} = {['']};
-ui.pltexp(1).varnms.ts4{1} = {['']};
-ui.pltexp(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-ui.pltexp(1).varnms.ts6{1} = {['fool']}; %if empty, do will be set to false
-ui.pltexp(1).varnms.ts7{1} = {['']};
-ui.pltexp(1).varnms.ts8{1} = {['']};
+ui.pltx(1).varnms.ts1{1} = {['vis.CON51']};
+ui.pltx(1).varnms.ts2{1} = {['']};
+ui.pltx(1).varnms.ts3{1} = {['']};
+ui.pltx(1).varnms.ts4{1} = {['']};
+ui.pltx(1).varnms.ts5{1} = {['resp.pre1.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts7{1} = {['']};
+ui.pltx(1).varnms.ts8{1} = {['']};
 
-ui.pltexp(1).vpmap.left = [1 2 3 4]; %map of indices of each varnms.ts above to plot positions (on left axis)
-ui.pltexp(1).vpmap.right = [5 6 7 8]; %map of indices of each varnms.ts above to plot positions (on right axis)
+ui.pltx(1).vpmap.left = [1 2 3 4]; %map of indices of each varnms.ts above to plot positions (on left axis)
+ui.pltx(1).vpmap.right = [5 6 7 8]; %map of indices of each varnms.ts above to plot positions (on right axis)
 
-ui.pltexp(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
-ui.pltexp(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
-ui.pltexp(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
-ui.pltexp(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+ui.pltx(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
+ui.pltx(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
+ui.pltx(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
+ui.pltx(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
 
-ui.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-ui.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
+ui.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
+ui.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
-ui.pltexp(1).it = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-ui.pltexp(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-ui.pltexp(1).display_range = [0,1]; 
-ui.pltexp(1).letui = 1;
+ui.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+ui.pltx(1).it = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+ui.pltx(1).display_range = [0,1]; 
+ui.pltx(1).letui = 1;
 
-ui.pltexp = fill_struct(ui.pltexp);
+ui.pltx = fill_struct(ui.pltx);
 
 %% HIRES
 
@@ -347,6 +347,12 @@ if ~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override
     ui.mn.do_daq = 0; %process daq data
     ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
     ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
+    ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+    ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
+    ui.mn.regionex_all = {'fullfov2'};
+    ui.mroi.use_drawn_rois =  {'fullfov2'};
+    ui.pltx(1).varnms.ts1{1} = {['vis.CON51.ind1']};
+    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov2.mo*.in_rawf_*rsc*']}; %if empty, do will be set to false
 end
 
 %% order fields
@@ -360,7 +366,7 @@ ui = transform_user_input_a2p(ui);
 end
 
 
-function pthstacks_keep = keep_existant_input_files(pthstacks_input)
+function pthstacks_keep = remove_missing_input_files(pthstacks_input)
 
 if ~iscell(pthstacks_input)
     pthstacks_input = {pthstacks_input};

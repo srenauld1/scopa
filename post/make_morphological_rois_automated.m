@@ -1,7 +1,7 @@
 
 function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
     make_morphological_rois_automated(stack_mnt, maskmanual, ...
-    num_mroi_auto_initial, xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
+    num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
     regionex, hsvopt, do_plots, opts)
 
 %this function has several partially overlapping control features,
@@ -77,7 +77,11 @@ if num_mroi_auto_initial > 1
 
         else  %else make a hi-z-res stack_mnt from the lo-z-res stack_mnt
 
-            upsamp = zwid / xwid; %upsample factor makes cube voxels z pixel width same as xy
+            if xwid~=ywid
+                error("this is currently only written for square pixels")
+            end
+
+            upsamp = zwid / xwid; %upsamp factor makes cube voxels
             numslices_upsamp = round((size(stackmean_masked,3)) * upsamp);
 
             F = griddedInterpolant(stackmean_masked, 'linear');
@@ -120,7 +124,7 @@ switch create_mask_method
                 mask_allroi_approx(:,:,tui) = edge(premask(:,:,tui), 'canny', edgethresh, edgesig(1));
             end
         end
-        mask_allroi_approx = imclose(mask_allroi_approx, strel('disk',closing_element_size)); %this is a 2d closing element so works in 2d or 3d basically the same, 2d keeps this section of code shorter, 
+        mask_allroi_approx = imclose(mask_allroi_approx, strel('disk',closing_element_size)); %this is a 2d closing element so works in 2d or 3d basically the same, 2d keeps this section of code shorter,
 
     case 'outlier' %mask is outlier
 
@@ -210,11 +214,11 @@ else
         case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into num_mroi_auto_initial groups
 
             if extract_morph_rois_in_3d
-                
+
                 [tmp, centmp, bin_prctiles] = probability_bin([masky, maskx, maskz], num_mroi_auto_initial, 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
-            
+
             else %else split into roughly equal area rois on each slice in mask, rounding number rois for each slice to nearest power of 2 proportional to number of voxels relative to total (typically lots of inaccuracy there)
-               
+
                 uz = unique(maskz);
                 for uzi = 1:numel(uz)
                     zinds_each{uzi} = find(maskz==uz(uzi));
@@ -357,7 +361,7 @@ if do_plots
 
     if ~isempty(sliceinds_hires) %if interp to hi z res to help segmentation, plot those hi z res versions here, imaging sampling version of these (which are the used variables) are plotted in make_morphological_rois
 
-        %mask overlay 
+        %mask overlay
         overlayarray = rescale(0.2*rescale(mask_allroi_approx_upsamp) + rescale(premask, 0, 1));
         stack2fig( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
 
@@ -417,7 +421,7 @@ if do_plots
         hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, roipixind_upsamp, mask_roi_vec_upsamp, filename_hsv);
 
 
-        %3d scatter plot 
+        %3d scatter plot
         figure; hold on;
         plot3(maskx, masky, maskz, '.m', 'MarkerSize', 0.1);
         if exist('midx', 'var')

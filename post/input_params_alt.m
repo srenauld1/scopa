@@ -36,7 +36,7 @@ opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample to mat
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
 opt.mn.do_fit = 0; %model fitting (opt.fitm below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
-opt.mn.do_pltexp = 1; %plot experiment (opt.pltexp below)
+opt.mn.do_pltexp = 1; %plot experiment (opt.pltx below)
 opt.mn.old_project = 0; %for carl
 
 
@@ -322,19 +322,19 @@ opt.scat(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 % params for plot_experiment
 
-opt.pltexp(1).varnms.x{1} = {['ball, *forv*']};
-% opt.pltexp(1).varnms.x{1} = {['ball, *for*'], ['vis, *']};
-opt.pltexp(1).varnms.y{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-opt.pltexp(1).varnms.z{1} = {['']};
-% opt.pltexp(1).varnms.y{2} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
-opt.pltexp(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
-opt.pltexp(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
-opt.pltexp(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
-opt.pltexp(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
+opt.pltx(1).varnms.x{1} = {['ball, *forv*']};
+% opt.pltx(1).varnms.x{1} = {['ball, *for*'], ['vis, *']};
+opt.pltx(1).varnms.y{1} = {['resp, fullfov, mo*, in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+opt.pltx(1).varnms.z{1} = {['']};
+% opt.pltx(1).varnms.y{2} = {['resp, fullfov, cm*, in_cmc_pc_f_cl_null_w_null']};
+opt.pltx(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
+opt.pltx(1).ignore_missing_vars = 0; %set to 1 not error if any requested timeseries in vars above do not exist
+opt.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
+opt.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
-opt.pltexp(1).it = [];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-opt.pltexp(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-opt.pltexp(1).display_range = [0,1]; 
+opt.pltx(1).it = [];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+opt.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+opt.pltx(1).display_range = [0,1]; 
 
 
 

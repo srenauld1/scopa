@@ -210,7 +210,7 @@ end
 
 pth.tsuse_nms_prefix.fitm = [fldr 'tsuse_finfits_'];
 pth.tsuse_nms_prefix.scat = [fldr 'tsuse_finscatter_'];
-pth.tsuse_nms_prefix.pltexp = [fldr 'tsuse_finpltexp_'];
+pth.tsuse_nms_prefix.pltx = [fldr 'tsuse_finpltexp_'];
 
 %% assign to struct
 

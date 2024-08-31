@@ -1,8 +1,43 @@
-function plot_experiment(letui, stack, stack_mnt, vars, labs, vpmap, ...
+function pltx(stack, vars, letui, stack_mnt, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roiinfo, ti, dtmni, zstartpos, epochinds_ts_i, gif_visibility, ...
-    plotinds, display_range, pthgif_prefix_short, pthgif_prefix, ftv, ...
-    pth_mroi_interactive, normopt, xwid, zwid)
+    iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
+    pth_mroi_interactive, normopt, xwid, ywid, zwid, opt)
+
+
+arguments 
+    stack = []
+    vars = []
+    letui = []
+    stack_mnt = []
+    labs = []
+    vpmap = []
+    epochinds_all = []
+    lagsxy_sec = []
+    lagsz_sec = []
+    lags_to_plot = []
+    plot_z_as_color = []
+    roiinfo = []
+    ti = []
+    dtmni = []
+    zstartpos = []
+    epochinds_ts_i = []
+    gif_visibility = []
+    iz = []
+    it = []
+    display_range = []
+    pthgif_prefix_short = []
+    pthgif_prefix = []
+    pth_mroi_interactive = []
+    normopt = []
+    xwid = []
+    ywid = []
+    zwid = []
+    opt.vid = []
+end
+
+vid = opt.vid;
+
 
 "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL" 
 "TODO: MENU, FULL DRAWROIS, MERGE ALL A2P PLOTTING (MODULAR SUBPLOTS FOR SPECIALIZATION)"
@@ -32,7 +67,7 @@ sampinc = 5; %sample increment per gif frame; sampinc~=1 will include lower boun
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 1; %leave this as 1, skip nanes when rescaling to plot timeseries on same axis
-newroirad = 2.5; %num pixels radius for user input rois
+newroirad = xwid*3; %radius (microns) for user input rois
 numfr_gif_max = 2000; %throw error if there will be more
 timedim = 2;
 
@@ -59,7 +94,7 @@ clear pltexp_scat_prepvars %clear persistent variable within
 
 subplot_layout = {[4,4], stack};
 margins_subplot = [0.05,0.005];
-margins_fig = [0.07,0.01];
+margins_fig = [0.07,0.05];
 splitdim = 'y';
 splitfrac = 0.5;
 ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
@@ -79,13 +114,15 @@ end
 stack = stack(:,:,iz,it);
 epochinds_ts_i = epochinds_ts_i(it);
 
-if ftv
-    ftv = ftv(:,:,it);
-    if numel(size(ftv))==3
-        ftv = reshape(ftv, size(ftv,1), size(ftv,2), 1, size(ftv,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
+if ~isempty(vid)
+    if ndims(vid)==2
+        vid = vid(:,it);
+    elseif ndims(vid)==3
+        vid = vid(:,:,it);
+        vid = reshape(vid, size(vid,1), size(vid,2), 1, size(vid,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    ftv = rand(10,10,numel(it));
+    vid = rand(10,10,numel(it));
 end
 
 vars = struct2cell(vars);
@@ -128,7 +165,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cbflags)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cbflags, vars_use, labs_use, roipixind_use, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cbflags, vars_use, labs_use, roipixind_use, stack, stack_mnt, dtmni, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -205,10 +242,10 @@ while plotloop %loop is turned off if no user input
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
-                    display_range_ftv = [0 1];
-                    letui_ftv = 0;
-                    txtvar_ftv = [];
-                    hndls.ftv = init_axes_stack(hndls.hfg, ax, letui_ftv, ftv, cmap, txtvar_ftv, display_range_ftv, sector_ind, subplot_ind, widfac, htfac);
+                    display_range_vid = [0 1];
+                    letui_vid = 0;
+                    txtvar_vid = [];
+                    hndls.vid = init_axes_stack(hndls.hfg, ax, letui_vid, vid, cmap, txtvar_vid, display_range_vid, sector_ind, subplot_ind, widfac, htfac);
 
                 end
 
@@ -222,7 +259,7 @@ while plotloop %loop is turned off if no user input
 
 
                 %%%% PLOT AXES %%%%
-                [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, ...
+                [hndls, framecount, cbflags] = plot_axes(hndls, stack, vid, ...
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...

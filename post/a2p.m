@@ -14,10 +14,13 @@
 
 function a2p(pthstacks)
 
-
 arguments
     pthstacks = [] %optional cell array of full paths to recordings
 end
+
+"DEAL WITH NO REGIONEX OPTION"
+"DEAL WITH DIFFERENT MROI OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS"
+
 
 clear globals_a2p
 
@@ -114,12 +117,12 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         %%crop movie to regionex cuboid
         [stackcrop, zstartpos_crop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
-            crop_stacks(stack, croplim_all.(regionex), md.zstartpos, ids.recid, regionex, pth.fldr, pth.tmpfiles, ...
+            crop_stacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
             md.sz_crop, ui.mroi.auto.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            make_morphological_rois(stackcrop, stack_mnt.(regionex), ui.mroi, md.dtmni, md.xwid, md.zwid, ...
+            make_morphological_rois(stackcrop, stack_mnt.(regionex), ui.mroi, md.dtmni, md.xwid, md.ywid, md.zwid, ...
             pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
         %%load/select functional (caiman) roi responses
@@ -136,7 +139,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     if ui.mn.do_popfeat
         pffn = fieldnames(ui.pf);
         for pfi = 1:numel(pffn)
-            ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, ui.pf.(pffn{pfi}), md, pth);
+            ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, ui.pf.(pffn{pfi}), md, pth, ids.recid);
         end
     end
 
@@ -150,7 +153,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(ui.fitm(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.fitm, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
-                stackcrop = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack based on regionex of the depv (stack for plots, not model)
+                stackcrop = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 ui.fitm.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
                 ui.fitm.mdlname = 'fnet_A01_s_A02_s_B_h16';
@@ -166,27 +169,26 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     %% plot experiment
 
     if ui.mn.do_pltexp
-        for si = 1:numel(ui.pltexp)
+        for si = 1:numel(ui.pltx)
             dochoose = 1;
             choosecount = 0;
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(ui.pltexp(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.pltexp, pth.stack, choosecount, dochoose);
-                [stackcrop, zstartpos_crop, stack_mnt] = crop_stacks(stack, croplim_all.(fitin.regionex), md.zstartpos); %crop stack for plotting fov/rois
+                [fitin, dochoose] = choose_timeseries(ui.pltx(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.pltx, pth.stack, choosecount, dochoose);
+                [stackcrop, zstartpos_crop, stack_mnt] = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
 
-                plot_experiment(ui.pltexp(si).letui, stackcrop, stack_mnt, fitin.vars, ...
-                    fitin.varnms, ui.pltexp(si).vpmap, ui.pltexp(si).epochinds, ...
-                    ui.pltexp(si).lagsxy_sec, ui.pltexp(si).lagsz_sec, ui.pltexp(si).lags_to_plot, ...
-                    ui.pltexp(si).plot_z_as_color, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
-                    md.epochs.epochinds_ts_i, ui.pltexp(si).gif_visibility, ui.pltexp(si).plotinds, ...
-                    ui.pltexp(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ftvdsrs, ...
-                    pth.mroi_interactive.(regionex), ui.mroi.norm, md.xwid, md.zwid)
+                pltx(stackcrop, fitin.vars, ui.pltx(si).letui, stack_mnt,  ...
+                    fitin.varnms, ui.pltx(si).vpmap, ui.pltx(si).epochinds, ...
+                    ui.pltx(si).lagsxy_sec, ui.pltx(si).lagsz_sec, ui.pltx(si).lags_to_plot, ...
+                    ui.pltx(si).plot_z_as_color, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.dtmni, zstartpos_crop, ...
+                    md.epochs.epochinds_ts_i, ui.pltx(si).gif_visibility, ui.pltx(si).iz, ui.pltx(si).it, ...
+                    ui.pltx(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
+                    pth.mroi_interactive.(regionex), ui.mroi.norm, md.xwid, md.ywid, md.zwid, vid=ts.vis.CON51)
 
             end
         end
     end
-
 
 end
 

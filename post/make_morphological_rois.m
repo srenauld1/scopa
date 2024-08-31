@@ -1,5 +1,5 @@
 function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ...
-    dtmni, xwid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
+    dtmni, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
     regionex, parstr_mroi, maskmanual)
 
 
@@ -53,15 +53,15 @@ if exist('maskmanual', 'var') %if passing in a morph roi mask (interactive mode)
     do_other_plots = 0;
 else
     maskinput = 0;
-    error
-    use_drawn_rois = opts_mroi.use_drawn_rois;
-    num_mroi_auto = opts_mroi.auto.num_mroi_auto;
+    use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
+    num_mroi_auto = opts_mroi.auto.num_mroi_auto.(regionex);
     autoopts = opts_mroi.auto;
     normopts = opts_mroi.norm;
     hsvopt = opts_mroi.hsvopt;
     olayopt = opts_mroi.olayopt;
     do_other_plots = opts_mroi.do_other_plots;
 end
+
 
 pth_mroi_prefix = pth_mroi(1:end-4);
 
@@ -134,7 +134,7 @@ catch
 
         [mask_roi_vec, centroids_roi, num_mroi] = ...
             make_morphological_rois_automated(stack_mnt, maskmanual, num_mroi_auto, ...
-            xwid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
+            xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
             regionex, hsvopt, do_other_plots, autoopts);
 
     end

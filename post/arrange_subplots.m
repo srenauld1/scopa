@@ -19,7 +19,7 @@ function ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, spl
 
 arguments
     subplot_layout %cell array of vectors; cell element n (vector n), if length 2, denotes number of rows and columns, respectively, for sector n; if length
-    margins_subplot double = 0.03 %scalar or vector; element n denotes x and y margins between subplots in sector n; if scalar, while numrows and numcolumns are vector, will apply scalar to all sectors
+    margins_subplot double = 0.03 %scalar or vector; element n denotes x and y margins between subplots in sector n; if scalar, while numrows and numcolumns are vector, will apply scalar to all sectors; no effect if there is only one plot
     margins_fig double = 0.03 %scalar; margins of entire figure (not sectors)
     splitdim char = 'x' %'x', or 'y', denoting whether sector(s) created by split along x or y axis
     splitfrac double = []  %scalar or vector denoting each sector's fraction of splitdim extent; if num_sectors==1, default is 1; if num_sectors>1, default if is even split among num_sectors

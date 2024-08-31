@@ -1,6 +1,6 @@
 function [imroi, imalpha] = make_roi_overlay(imbg, roipixinds, roi_color, roialpha)
 
-% make overlay for roi set defined by roipixinds, background is imbg; 
+% make overlay for roi set defined by roipixinds, background is imbg;
 % overlapping rois are averaged in color and transparency/alpha
 % uses persistent variables because typically called in plotting loop
 
@@ -48,6 +48,10 @@ for ri = 1:numel(roipixinds)
             imalpha(~overlaps) = imalpha(~overlaps)+imalpha_oneroi(~overlaps);
         end
     end
+end
+
+if ndims(imroi)==3
+    imroi = reshape(imroi, size(imroi, 1), size(imroi, 2), 1, size(imroi, 3)); %include singleton z
 end
 
 end
