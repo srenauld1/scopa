@@ -51,7 +51,7 @@ pth_md = [fldr recid '_metadatanew_.mat'];
 md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
 md = md{1};
 sz = single([md.ypix md.xpix md.numslice md.numvol]);
-dtmni = 1/md.volrate;
+imper = 1/md.volrate;
 
 
 crop_flyback = 0;
@@ -69,7 +69,7 @@ end
 
 if len_window_smooth_t_rsc_sec
     smooth_str = [strrep(num2str(len_window_smooth_t_rsc_sec), '.', 'p') 'secSmooth'];
-    len_window_smooth_t_rsc_samp = len_window_smooth_t_rsc_sec / dtmni; %does not need to be rounded for smoothdata
+    len_window_smooth_t_rsc_samp = len_window_smooth_t_rsc_sec / imper; %does not need to be rounded for smoothdata
 else
     smooth_str = 'nosmooth';
     len_window_smooth_t_rsc_samp = 0;

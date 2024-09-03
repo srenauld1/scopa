@@ -1,5 +1,5 @@
 function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ...
-    dtmni, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
+    imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
     regionex, parstr_mroi, maskmanual)
 
 
@@ -192,7 +192,7 @@ pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 try
     load(pth_morphroiresp, 'resp')
 catch
-    resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, dtmni);
+    resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, imper);
     if ~maskinput
         save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
     end

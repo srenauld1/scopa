@@ -7,7 +7,7 @@ num_samp_indvpre = fitin.num_samp_indvpre;
 num_dim_depvpre = fitin.num_dim_depvpre;
 num_samp_depvpre = fitin.num_samp_depvpre;
 epochinds_ts_i = md.epochs.epochinds_ts_i;
-dtmni = md.dtmni;
+imper = md.imper;
 
 time_dimension = find(size(fitin.vars.indvpre)==num_samp_indvpre);
 
@@ -63,11 +63,11 @@ end
 %% recorganize indv into size [dimensions, samples]
 
 
-num_samp_mdl = round(opts.mdl_length_sec/dtmni);
+num_samp_mdl = round(opts.mdl_length_sec/imper);
 if num_samp_mdl==0
     num_samp_mdl = 1; %a convenience, so user can pass opts.mdl_length_sec=0 if they don't know volume rate
 end
-num_samp_lag = round(opts.mdl_lag_sec/dtmni);
+num_samp_lag = round(opts.mdl_lag_sec/imper);
 if num_samp_lag==0
     num_samp_lag = 1; %a convenience, so user can pass opts.mdl_lag_sec=0 if they don't know volume rate
 end

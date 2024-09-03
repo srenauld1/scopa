@@ -8,7 +8,7 @@ ignore_zeros = 1; %don't include zeros in percentile for contrast adjustment
 numdim_out = 3; %number of dimensions of output image
 filename_gif = []; %filename to save image, empty to skip
 
-stack_mnt = process_stack_for_roi_selection(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+stack_mnt = prep_stack_for_roi_selection(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
 
 %% first define z limits
 

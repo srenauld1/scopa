@@ -215,8 +215,8 @@ def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
 
         dimtmp_presmooth = stack.shape
         numsigma_smooth_prereg = 5.0 #truncate gaussian filter after this many stds
-        dtmni = 1/volrate
-        len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / dtmni #smooth might require int, cant remember 
+        imper = 1/volrate
+        len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / imper #smooth might require int, cant remember 
         sigma_smooth_prereg = (len_window_smooth_t_mcp_samp - 1) / numsigma_smooth_prereg / 2
         stack = smooth_movie(stack.reshape(length_t, -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
         stack = stack.reshape(dimtmp_presmooth)

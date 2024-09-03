@@ -351,8 +351,12 @@ if ~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override
     ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
     ui.mn.regionex_all = {'fullfov2'};
     ui.mroi.use_drawn_rois =  {'fullfov2'};
-    ui.pltx(1).varnms.ts1{1} = {['vis.CON51.ind1']};
+    ui.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
     ui.pltx(1).varnms.ts5{1} = {['resp.fullfov2.mo*.in_rawf_*rsc*']}; %if empty, do will be set to false
+    ui.carl.stimtype = 'drone';
+    ui.carl.feat = 'CON_51';
+    ui.carl.pthparent_feat = fullfile('~', 'ds', 'data', 'rec');
+    ui.carl.pth_template = fullfile('~', 'ds', 'data', 'stimuli');
 end
 
 %% order fields

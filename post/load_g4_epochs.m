@@ -1,4 +1,4 @@
-function [epochs, vis] = load_stim_epochs(trialtime, pth_epochinfo, vis, fldr, ids, dtmni, daqrs, use_carls_epochs)
+function [epochs, vis] = load_g4_epochs(trialtime, pth_epochinfo, vis, fldr, ids, imper, daqrs, use_carls_epochs)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial) 
 % if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
@@ -41,7 +41,7 @@ catch
             maxshiftsec = 0;
         end
 
-        ft_misoffset_sec_all = minshiftsec : dtmni*0.45 : maxshiftsec;
+        ft_misoffset_sec_all = minshiftsec : imper*0.45 : maxshiftsec;
 
         hfg = figure;
         hax = axes('Parent', hfg);
@@ -55,7 +55,7 @@ catch
                 figframes = figframes+1;
 
                 ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
-                epochs = define_stim_epoch_indices(ft_misoffset_sec, trialtime, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+                epochs = define_g4_epoch_indices(ft_misoffset_sec, trialtime, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
                 fu = daqrs.g4panels{1}(epochs.epochinds_ts_i==testepochind);
                 if testepochind==2 || testepochind==3
@@ -75,7 +75,7 @@ catch
                 fig2gif(hfg, figframes, [fldr 'misoffset_.gif'])
 
                 if fmsai==numel(ft_misoffset_sec_all)
-                    critd = movingslope(criter, 20, 2, dtmni);
+                    critd = movingslope(criter, 20, 2, imper);
                     if ~(min(critd)<0 && max(critd)>0)
                         error("error is monotonic, expand search range")
                     end
@@ -90,7 +90,7 @@ catch
         else
             ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
         end
-        epochs = define_stim_epoch_indices(ft_misoffset_sec, trialtime, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+        epochs = define_g4_epoch_indices(ft_misoffset_sec, trialtime, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
 
         figframes = 0;

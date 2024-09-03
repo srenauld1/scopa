@@ -1,0 +1,54 @@
+function cmap = colormap_custom(opt)
+
+arguments
+    opt.method = '1d'
+    opt.ncol_each = [128]
+    opt.colstart = [1 0 0]
+    opt.colend = [1 1 1]
+    opt.satfac = 1
+end
+method = opt.method;
+ncol_each = opt.ncol_each;
+colstart = opt.colstart;
+colend = opt.colend;
+satfac = opt.satfac;
+
+assert(numel(ncol_each)~=size(colstart,1)~=size(colend,1)~=numel(satfac))
+
+numnodes = numel(ncol_each);
+
+switch method
+    case '1d' %1d interp (linspace) makes straight line from start to end for each color, with ncol steps
+
+        cmap = [];
+        for k = 1:numnodes
+            if mod(k,2)==0
+                ncol_sat = ncol_each(k)+1;
+            else
+                ncol_sat = ncol_each(k);
+            end
+            cmaptmp = repmat(colend(k,:), [ncol_adj 1]);
+            ncol_sat = round(ncol_each(k)*satfac(k));
+            r = linspace(colstart(k,1),colend(k,1),ncol_sat);
+            g = linspace(colstart(k,2),colend(k,2),ncol_sat);
+            b = linspace(colstart(k,3),colend(k,3),ncol_sat);
+            cmaptmp(1:length(r),:) = [r(:), g(:), b(:)];
+            cmap = [cmaptmp(1:end-1,:); cmap];
+        end
+
+    case '2d' %2d interp makes straight line through 2d colorwheel from one color to next
+
+        if numnodes>2
+            error("2d not written for >2 nodes yet")
+        end
+
+        ncol_each = ncol_each*2;
+        cmap(1,:) = [1 0 0];
+        cmap(2,:) = [1 1 1];
+        cmap(3,:) = [0 0 1];
+
+        [xx,yy] = meshgrid([1:3],[1:ncol_each]);
+
+        cmap = interp2(xx([1,ceil(ncol_each/2),ncol_each],:),yy([1,ceil(ncol_each/2),ncol_each],:),cmap,xx,yy);
+
+end

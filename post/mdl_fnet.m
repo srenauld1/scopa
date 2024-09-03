@@ -118,7 +118,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
 
                     xlm = hax{sfi}.XLim;
                     hax{sfi}.XAxis.TickValues = linspace(0, numel(out2), 3); %linspace(0, supp.num_samp_mdl, 3);
-                    hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.dtmni, 2);
+                    hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.imper, 2);
 
                 else
                     hax{sfi}.Children.YData = out2;
@@ -126,7 +126,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
 
                 if ~strcmp(fnetunit.funstr{fi}, 'f')
                     pars_plot = pars_curr_fun;
-                    pars_plot(2) = pars_plot(2) * supp.dtmni;
+                    pars_plot(2) = pars_plot(2) * supp.imper;
                 end
 
             else

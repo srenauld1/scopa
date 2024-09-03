@@ -29,7 +29,7 @@ md.md_hires = hires_struct_tmp;
 md.xwid = md.xfov / md.xpix; %do this after conversion to double
 % md.zwid = md.zfov / md.numslice; %do this after conversion to double
 
-md.dtmni = 1/md.volrate;
+md.imper = 1/md.volrate;
 
 md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcropfront' and 'md.tcropback'";
 

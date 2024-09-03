@@ -24,11 +24,9 @@ end
 
 
 if isempty(pthsv_prefix)
-    pthsv_prefix = globals_a2p('pthfldr');
-    if isempty(pthsv_prefix)
-        error("global variable pthfldr has not been set, and pthsv_prefix was not passed as argument; do one or the other")
-    end
+    pthsv_prefix = pthauto(pthsv_prefix, suffix='', usetime=1);
 end
+
 
 
 numbin = 100;

@@ -1,43 +1,58 @@
-function cmap = colormap_custom(method, ncol_each, ...
-    startcol1, endcol1, saturation_factor1, ...
-    startcol2, endcol2, saturation_factor2)
+function cmap = colormap_custom(opt)
+
+arguments
+    opt.ncol_each = 128
+    opt.colnodes = [0 0 0; 1 1 1]
+    opt.satfac = 1
+    opt.method = '1d'
+end
+method = opt.method;
+ncol_each = opt.ncol_each;
+colnodes = opt.colnodes;
+satfac = opt.satfac;
+
+assert(isequal(numel(ncol_each), size(colnodes,1)-1, numel(satfac)))
+
+numnodes = size(colnodes,1);
 
 switch method
-    case '1d'
-        
-        %1d interp (linspace) makes straight line from first color
-        % to center of 2d colorwheel (white), then to next color
-        cmap1 = repmat(endcol1, [ncol_each 1]);
-        ncol_adj_bg = round(ncol_each*saturation_factor1);
-        rr = linspace(startcol1(1),endcol1(1),ncol_adj_bg);
-        gg = linspace(startcol1(2),endcol1(2),ncol_adj_bg);
-        bb = linspace(startcol1(3),endcol1(3),ncol_adj_bg);
-        cmap1(1:length(rr),:) = [rr(:), gg(:), bb(:)];
+    case '1d' %1d interp (linspace) makes straight line from start to end for each color, with ncol steps
 
-        if exist('startcol2', 'var') & exist('endcol2', 'var')
-            cmap2 = repmat(endcol2, [ncol_each 1]);
-            ncol_adj_roi = round(ncol_each*saturation_factor2);
-            rr = linspace(startcol2(1),endcol2(1),ncol_adj_roi);
-            gg = linspace(startcol2(2),endcol2(2),ncol_adj_roi);
-            bb = linspace(startcol2(3),endcol2(3),ncol_adj_roi);
-            cmap2(1:length(rr),:) = [rr(:), gg(:), bb(:)];
-
-            cmap = [cmap1; cmap2];
-        else
-            cmap = cmap1;
+        cmap = [];
+        for k = 2:numnodes
+            if mod(k-1,2)==0
+                ncol_adj = ncol_each(k-1)+1; %for overlapping nodes
+            else
+                ncol_adj = ncol_each(k-1); %for overlapping nodes
+            end
+            colstart = colnodes(k-1,:);
+            colend = colnodes(k,:);
+            cmaptmp = repmat(colend, [ncol_adj 1]);
+            ncol_sat = round(ncol_adj*satfac(k-1));
+            r = linspace(colstart(1),colend(1),ncol_sat);
+            g = linspace(colstart(2),colend(2),ncol_sat);
+            b = linspace(colstart(3),colend(3),ncol_sat);
+            cmaptmp(1:numel(r),:) = [r(:), g(:), b(:)];
+            if mod(k-1,2)==0
+                cmap = [cmap; cmaptmp]; %for overlapping nodes
+            else
+                cmap = [cmap; cmaptmp(1:end-1,:)]; %for overlapping nodes
+            end
         end
 
-    case '2d'
-        
-        %%2d interp makes straight line through 2d colorwheel from one color to next
+    case '2d' %2d interp makes straight line through 2d colorwheel from one color to next
 
-        ncol = ncol_each*2;
+        if numnodes>2
+            error("2d not written for >2 nodes yet")
+        end
+
+        ncol_each = ncol_each*2;
         cmap(1,:) = [1 0 0];
         cmap(2,:) = [1 1 1];
         cmap(3,:) = [0 0 1];
 
-        [xx,yy] = meshgrid([1:3],[1:ncol]);
+        [xx,yy] = meshgrid([1:3],[1:ncol_each]);
 
-        cmap = interp2(xx([1,ceil(ncol/2),ncol],:),yy([1,ceil(ncol/2),ncol],:),cmap,xx,yy);
+        cmap = interp2(xx([1,ceil(ncol_each/2),ncol_each],:),yy([1,ceil(ncol_each/2),ncol_each],:),cmap,xx,yy);
 
 end

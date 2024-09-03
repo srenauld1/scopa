@@ -1,6 +1,6 @@
 
 function resp = extract_roi_responses(respin, mask_roi_vec, ...
-    pth_save_prefix, normopts, dtmni, resp)
+    pth_save_prefix, normopts, imper, resp)
 
 
 %if resp is passed as input, this function's output resp is appended to it
@@ -32,7 +32,7 @@ for fnini = 1:length(fnin)
 
     resp1.f = respin.(fnin{fnini}); %assign the no-normalization default
 
-    resp1 = normalize_response(resp1.f, normopts.precluster, dtmni);
+    resp1 = normalize_response(resp1.f, normopts.precluster, imper);
 
     fn1 = fieldnames(resp1);
 
@@ -60,7 +60,7 @@ for fnini = 1:length(fnin)
             resp2.f = nan;
         end
 
-        resp2 = normalize_response(resp2.f, normopts.postcluster, dtmni);
+        resp2 = normalize_response(resp2.f, normopts.postcluster, imper);
 
         fn2 = fieldnames(resp2);
 

@@ -1,4 +1,4 @@
-function epochs = define_stim_epoch_indices(ft_misoffset_sec, ti, recdatenum)
+function epochs = define_g4_epoch_indices(ft_misoffset_sec, ti, recdatenum)
 
 
 

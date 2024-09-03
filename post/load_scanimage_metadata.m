@@ -69,7 +69,7 @@ if ~isfield(md,'zstartpos')%do this after conversion to double
     end
 end
 
-md.dtmni = 1/md.volrate;
+md.imper = 1/md.volrate;
 
 md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcropfront' and 'md.tcropback'";
 

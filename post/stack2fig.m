@@ -39,16 +39,12 @@ else
 end
 
 if isempty(pthgif)
-    pthfldr = globals_a2p('pthfldr');
-    if isempty(pthfldr)
-        error("global variable pthfldr has not been set, and pthgif was not passed as argument; do one or the other")
-    end
-    pthgif = [pthfldr char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) '.gif'];
+    pthgif = pthauto(pthgif, suffix='.gif', usetime=1);
 end
+  
 if isempty(dimorder)
     dimorder = 1:numel(szin); %for now only one dim order allowed, so just take from first cell if stack is a cell 
 end
-
 
 index_labels_opt = cell(1,6);
 if ~isempty(opt.iy)

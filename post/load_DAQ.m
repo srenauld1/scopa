@@ -1,5 +1,5 @@
 function daqrs = load_DAQ(recdatenum, flynum, trialnum, numvol, numslice_withflyback, ...
-    dtmni, pth_daq, pth_daqrs, pth_daqinds, ball_diameter, slopelen_sec, slopeorder, ...
+    imper, pth_daq, pth_daqrs, pth_daqinds, ball_diameter, slopelen_sec, slopeorder, ...
     fast_version, doplots)
 
 arguments
@@ -8,7 +8,7 @@ arguments
     trialnum double
     numvol double
     numslice_withflyback double
-    dtmni double %imaging frame period (1/volrate)
+    imper double %imaging frame period (1/volrate)
     pth_daq char
     pth_daqrs char
     pth_daqinds char
@@ -123,7 +123,7 @@ for si = 1:num_resamples
             if ~strcmp(trialData.Properties.VariableNames, daqvarname)
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
-                [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, dtmni, maxvolt, slopelen_sec, slopeorder, pth_daqrs, doplots);
+                [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, maxvolt, slopelen_sec, slopeorder, pth_daqrs, doplots);
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, daqvars_to_unwrap))
                     tmp = unwrap(tmp); %convert to mm (not for tmp_diff)
                 end
@@ -135,7 +135,7 @@ for si = 1:num_resamples
                     tmp_diff = tmp_diff*ball_diameter/2; %convert to mm
                 end
                 if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_diff'
-                    tmp_diff = tmp_diff / dtmni; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
+                    tmp_diff = tmp_diff / imper; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
                 end
                 newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes
                 newrow.([daqvarname '_diff']) = {tmp_diff}; %put in cell, then table, for variable sizes

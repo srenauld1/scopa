@@ -1,4 +1,4 @@
-function stackout = process_stack_for_roi_selection(stackin, numdim_out, clip_prctile, scalefac, ignore_zeros, pth_stack)
+function stackout = prep_stack_for_roi_selection(stackin, numdim_out, clip_prctile, scalefac, ignore_zeros, pth_stack)
 
 % average stack, clip outliers, rescale, 
 % can ignore zeros

@@ -25,14 +25,14 @@ caiman_hr_str = ui.hires.caiman_hr_str;
 %% variables for all regionex
 
 
-[fldr, ~, ~] = fileparts(pthstack);
-fldr = [fldr filesep];
+[pth_fldr, ~, ~] = fileparts(pthstack);
+pth_fldr = [pth_fldr filesep];
 
-pth_prefix = [fldr recid '_'];
+pth_prefix = [pth_fldr recid '_'];
 
 
-pth_md = [fldr recid '_metadatanew_.mat'];
-pth_flyg_md_pat = [fldr datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pth_md = [pth_fldr recid '_metadatanew_.mat'];
+pth_flyg_md_pat = [pth_fldr datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
 pth_flyg_md = rdir(pth_flyg_md_pat);
 if isempty(pth_flyg_md)
     pth_flyg_md = [];
@@ -40,7 +40,7 @@ else
     pth_flyg_md = pth_flyg_md.name;
 end
 
-pth_daq_pat = [fldr datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pth_daq_pat = [pth_fldr datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
 pth_daq = rdir(pth_daq_pat);
 if isempty(pth_daq)
     pth_daq = [];
@@ -48,11 +48,11 @@ else
     pth_daq = pth_daq.name;
 end
 
-pth_daqrs = [fldr recid '_daqrs_.mat']; %keep hyphen for compatibility with flyg
-pth_daqinds = [fldr recid '_daqinds_.mat'];
+pth_daqrs = [pth_fldr recid '_daqrs_.mat']; %keep hyphen for compatibility with flyg
+pth_daqinds = [pth_fldr recid '_daqinds_.mat'];
 
-% pth_ftvid_pat = [fldr 'FicTracData' filesep 'fictrac-raw-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video
-pth_ftdat_pat = [fldr 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.dat']; %
+% pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video
+pth_ftdat_pat = [pth_fldr 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.dat']; %
 pth_ftdat = rdir(pth_ftdat_pat);
 if isempty(pth_ftdat)
     pth_ftdat = [];
@@ -60,7 +60,7 @@ else
     pth_ftdat = pth_ftdat.name;
 end
 
-pth_ftlog_pat = [fldr 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.log']; %
+pth_ftlog_pat = [pth_fldr 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.log']; %
 pth_ftlog = rdir(pth_ftlog_pat);
 if isempty(pth_ftlog)
     pth_ftlog = [];
@@ -69,7 +69,7 @@ else
 end
 
 
-pth_ftvidlog_pat = [fldr 'FicTracData' filesep 'fictrac-vidLogFrames-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.txt']; %
+pth_ftvidlog_pat = [pth_fldr 'FicTracData' filesep 'fictrac-vidLogFrames-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.txt']; %
 pth_ftvidlog = rdir(pth_ftvidlog_pat);
 if isempty(pth_ftvidlog)
     pth_ftvidlog = [];
@@ -77,7 +77,7 @@ else
     pth_ftvidlog = pth_ftvidlog.name;
 end
 
-pth_ftvid_pat = [fldr recid '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
+pth_ftvid_pat = [pth_fldr recid '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
 pth_ftvid = rdir(pth_ftvid_pat);
 if isempty(pth_ftvid)
     pth_ftvid = [];
@@ -87,10 +87,10 @@ else
     pth_ftvidrs = [pth_ftvid(1:end-4) 'RS_.mat'];
 end
 
-pth_epochinds = [fldr recid '_epochinds_.bin'];
-pth_epochinfo = [fldr recid '_epochinfo_.mat'];
+pth_epochinds = [pth_fldr recid '_epochinds_.bin'];
+pth_epochinfo = [pth_fldr recid '_epochinfo_.mat'];
 
-pth_grandparent = strsplit(fldr, filesep); %in case trailing filesep, or not
+pth_grandparent = strsplit(pth_fldr, filesep); %in case trailing filesep, or not
 pth_grandparent = [strjoin(pth_grandparent(1:end-2), filesep) filesep];
 
 pth_tmpfiles = [pth_grandparent tmp_folder_name filesep];
@@ -114,7 +114,7 @@ for k = 1:numregions
     spl = strsplit(regionex, '_');
     regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionex cuboid from python preprocessing
 
-    [~, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore ); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
+    [~, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
 
     paramstr = ['moex_' num2str(use_hires.(regionex)) '_' num2str(use_drawn_rois.(regionex)) '_' num2str(num_mroi_auto.(regionex))];
     parstr.mroi.(regionex) = paramstr;
@@ -125,7 +125,7 @@ for k = 1:numregions
 
     pth_froi_all_tmp = [];
     for csi = 1:length(caiman_lr_str)
-        pth_froi_pat = [fldr recid '_' suffix '_' regionex_nounderscore '_*_cmex_' caiman_lr_str{csi} '_rois_.mat'];
+        pth_froi_pat = [pth_fldr recid '_' suffix '_' regionex_nounderscore '_*_cmex_' caiman_lr_str{csi} '_rois_.mat'];
         tmp = rdir(pth_froi_pat);
         pth_froi_all_tmp = cat(1, pth_froi_all_tmp, tmp);
     end
@@ -167,25 +167,25 @@ for k = 1:numregions
     %     end
     % end
 
-    pth_savedata_oneregion.(regionex) = [fldr recid '_' suffix '_' paramstr '_' regionex '_savedata_.mat'];
+    pth_savedata_oneregion.(regionex) = [pth_fldr recid '_' suffix '_' paramstr '_' regionex '_savedata_.mat'];
 
-    pth_caimanfails = [fldr recid '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
-    pth_caimanfails2 = [fldr recid '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];
-    delete_caiman_fails(pth_caimanfails, fldr, regionex_nounderscore)
-    delete_caiman_fails(pth_caimanfails2, fldr, regionex_nounderscore)
+    pth_caimanfails = [pth_fldr recid '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
+    pth_caimanfails2 = [pth_fldr recid '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];
+    delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_nounderscore)
+    delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_nounderscore)
 
 end
 
 
 %% hires
 
-pthpat = [fldr recid  '_hires_.tif'];
+pthpat = [pth_fldr recid  '_hires_.tif'];
 pth_tmp = rdir(pthpat);
 if isempty(pth_tmp)
     pthpat = [pthpat(1:end-4) '.mat'];
     pth_tmp = rdir(pthpat);
     if isempty(pth_tmp)
-        pthpat = [fldr num2str(recdatenum) '_' num2str(flynum) '_hires_.tif']; %sometimes hires has no trial in filename (one hires for all trials)
+        pthpat = [pth_fldr num2str(recdatenum) '_' num2str(flynum) '_hires_.tif']; %sometimes hires has no trial in filename (one hires for all trials)
         pth_tmp = rdir(pthpat);
         if isempty(pth_tmp)
             pthpat = [pthpat(1:end-4) '.mat'];
@@ -205,19 +205,25 @@ end
 
 pffn = fieldnames(ui.pf);
 for pfi = 1:numel(pffn)
-    pth.tsuse_nms_prefix.(pffn{pfi}) = [fldr 'tsuse_' pffn{pfi}];
+    pth.tsuse_nms_prefix.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi}];
 end
 
-pth.tsuse_nms_prefix.fitm = [fldr 'tsuse_finfits_'];
-pth.tsuse_nms_prefix.scat = [fldr 'tsuse_finscatter_'];
-pth.tsuse_nms_prefix.pltx = [fldr 'tsuse_finpltexp_'];
+pth.tsuse_nms_prefix.fitm = [pth_fldr 'tsuse_finfits_'];
+pth.tsuse_nms_prefix.scat = [pth_fldr 'tsuse_finscatter_'];
+pth.tsuse_nms_prefix.pltx = [pth_fldr 'tsuse_finpltexp_'];
+
+%% carl's old project 
+
+pth_feat_save = [pth_fldr ui.carl.feat '_lin_ds_.mat'];
+pthparent_feat = ui.carl.pthparent_feat;
+pth_template = ui.carl.pth_template;
 
 %% assign to struct
 
 
 
 pth.prefix = pth_prefix;
-pth.fldr = fldr;
+pth.fldr = pth_fldr;
 pth.stack = pthstack;
 pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
@@ -242,6 +248,9 @@ pth.ft.vidrs = pth_ftvidrs;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.tmpfiles = pth_tmpfiles;
+pth.featsave = pth_feat_save;
+pth.parent_feat = pthparent_feat;
+pth.template = pth_template;
 
 pth = orderfields_recursive(pth);
 

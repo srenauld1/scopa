@@ -1,4 +1,4 @@
-function [mdl, optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, dtmni, num_dim_indvpre, inputvar_stats)
+function [mdl, optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvpre, inputvar_stats)
 
 padlen_sec = 4;
 
@@ -25,7 +25,7 @@ freeformflag = 0;
 for ui = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
 
     [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflagtmp] = ...
-        fitmdl_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, dtmni, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
+        fitmdl_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, imper, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
 
     lbnd = [lbnd lbnd_tmp];
     ubnd = [ubnd ubnd_tmp];
