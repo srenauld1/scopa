@@ -19,6 +19,7 @@ arguments
     doplots logical
 end
 
+
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
 % includes volume and frame flyback samples (reason below)
 % then uses mod to convert to daqinds.slice
@@ -48,6 +49,7 @@ end
 % the slow version will take about 10 minutes the first time you run it (but subsequent runs on the same daqdata will just take seconds)
 
 
+disp("CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS SLOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING ")
 
 %% set daq variables to read, according to variable type
 

@@ -13,14 +13,14 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
-    fnspec_fly = {'*'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'24'}; %cell array of char, can use wildcards
+    fnspec_fly = {'0'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
-    ui.mn.pthstacks = keep_existant_input_files(pthstacks);
+    ui.mn.pthstacks = remove_missing_input_files(pthstacks);
 end
 
 ui.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
@@ -51,13 +51,14 @@ ui.ld.crop_flyback = 1; %crop flyback frames from each volume
 ui.ld.zero_stack = 1; %subtract min to make min zero 
 ui.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 ui.ld.tcropback = 0; % how many samples to remove from end of stack
+ui.ld.stack_make_datatype = 'uint16';
 ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless 
 
 %ui.ld.gif holds params for making gif of imaging movies in function load_stack; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
-    'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'raw', ... %comment if you don't want to plot (can comment all too)
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -72,7 +73,7 @@ ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-ui.ld.gif.it = [100.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.it = [20.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 ui.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
@@ -280,12 +281,12 @@ ui.fitm = default_fit_params(ui.fitm);
 % params for plot_experiment
 % ui.pltx.varnms follows the same pattern as ui.fitm.varnms above
 
-ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
+ui.pltx(1).varnms.ts1{1} = {['vis.CON51']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
-ui.pltx(1).varnms.ts6{1} = {['fool']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.pre1.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};
 
@@ -300,8 +301,8 @@ ui.pltx(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplo
 ui.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 ui.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
-ui.pltx(1).it = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 ui.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
+ui.pltx(1).it = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 ui.pltx(1).display_range = [0,1]; 
 ui.pltx(1).letui = 1;
 
@@ -336,14 +337,26 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 %overwrite some params for carl's old project
 if ~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
     if numel(fnspec_recdate)>1
-        error("right now old project is one file at aui.mn.old_project = 1;
-    ui.md.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-    ui.md.tcropfront = 2; % how many samples to remove from end of stack
+        error("right now old project is one file at a time")
+    end
+    ui.mn.old_project = 1;
+    ui.ld.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+    ui.ld.tcropback = 2; % how many samples to remove from end of stack
     ui.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
     ui.fitm.mdl_length_sec = 1.25;
     ui.mn.do_daq = 0; %process daq data
     ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
     ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
+    ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+    ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
+    ui.mn.regionex_all = {'fullfov2'};
+    ui.mroi.use_drawn_rois =  {'fullfov2'};
+    ui.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
+    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov2.mo*.in_rawf_*rsc*']}; %if empty, do will be set to false
+    ui.carl.stimtype = 'drone';
+    ui.carl.feat = 'CON_51';
+    ui.carl.pthparent_feat = fullfile('~', 'ds', 'data', 'rec');
+    ui.carl.pth_template = fullfile('~', 'ds', 'data', 'stimuli');
 end
 
 %% order fields
@@ -357,7 +370,7 @@ ui = transform_user_input_a2p(ui);
 end
 
 
-function pthstacks_keep = keep_existant_input_files(pthstacks_input)
+function pthstacks_keep = remove_missing_input_files(pthstacks_input)
 
 if ~iscell(pthstacks_input)
     pthstacks_input = {pthstacks_input};
