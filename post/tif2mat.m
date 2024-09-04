@@ -98,7 +98,8 @@ stack = read_tif_tzyx(pth_stack_tif, ...
 % TEMPORARY HACK TO TAKE FIRST CHANNEL
 % TEMPORARY HACK TO TAKE FIRST CHANNEL
 
-stack = squeeze(stack(:,:,1,:,:)); %get rid of channel dim
+keepchannel = 2;
+stack = squeeze(stack(:,:,keepchannel,:,:)); %get rid of channel dim
 if ndims(stack)==3 %put z back in if singleton
     stack = reshape(stack, size(stack, 1), size(stack, 2), 1, size(stack, 3));
 end

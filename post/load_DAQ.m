@@ -55,7 +55,7 @@ disp("CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK 
 
 daqvars_bytype.normal = {'Time', 'heat', 'virmenIteration'}; %virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
 daqvars_bytype.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'};
-daqvars_bytype.categorical = {''};
+daqvars_bytype.categorical = {'ftcam'};
 
 daqvars_to_scale_by_ball_diameter = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be rescaled from radians to mm
 daqvars_to_unwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which of the above need to be unwrapped

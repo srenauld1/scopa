@@ -48,40 +48,40 @@ end
 maskmanual_allrois = logical(sum(maskmanual, 4)); %if there's a 4th dim, it's rois co collapse it
 stackmean_masked = stack_mnt.*maskmanual_allrois; %don't change this variable because you need it below
 
-%%
 
-if ~(num_mroi_auto_initial > 1 && extract_morph_rois_in_3d) %if not multiple auto rois, and not 3d, otherwise premask defined below
-    premask = stackmean_masked; %define stack_mnt used to define mask
-end
 
 %% create hi-z-res premask if num_mroi_auto_initial > 1 and extract_morph_rois_in_3d
 
 sliceinds_hires = [];
-if num_mroi_auto_initial > 1
-    if extract_morph_rois_in_3d
+if num_mroi_auto_initial > 1 && extract_morph_rois_in_3d
 
-        if ~isempty(stack_hires) %if using a hi-z-res stack_mnt to help make the 3d mask
+    if ~isempty(stack_hires) %if using a hi-z-res stack_mnt to help make the 3d mask
 
-            F = griddedInterpolant(single(maskmanual_allrois), 'linear');
-            upsampind = linspace(1, size(maskmanual_allrois,3), size(stack_hires, 3) + 1);
-            upsampind = upsampind(1:end-1);
-            maskmanual_allrois_upsamp = F({ 1:size(maskmanual_allrois,1), 1:size(maskmanual_allrois,2), upsampind }); %upsample the manual mask to apply to hires
-            maskmanual_allrois_upsamp = logical(maskmanual_allrois_upsamp);
+        F = griddedInterpolant(single(maskmanual_allrois), 'linear');
+        upsampind = linspace(1, size(maskmanual_allrois,3), size(stack_hires, 3) + 1);
+        upsampind = upsampind(1:end-1);
+        maskmanual_allrois_upsamp = F({ 1:size(maskmanual_allrois,1), 1:size(maskmanual_allrois,2), upsampind }); %upsample the manual mask to apply to hires
+        maskmanual_allrois_upsamp = logical(maskmanual_allrois_upsamp);
 
-            premask = stack_hires.*maskmanual_allrois_upsamp;
-            if ~isequal(unique(premask), [0;1]) && ~all(unique(premask)==1)  %in case stack_hires is a binary mask, don't rescale
-                idxnz = premask~=0; %find nonzero indices
-                premask(idxnz) = rescale(premask(idxnz));
-            end
-            sliceinds_hires = [0 find(diff(map_hires_lores))] + 1; %map_hires_lores may not be uniform hi-z-res sampling of lo-z-res, causing some imprecision (design acquisition zfov and zwid to avoid this)
+        premask = stack_hires.*maskmanual_allrois_upsamp;
+        if ~isequal(unique(premask), [0;1]) && ~all(unique(premask)==1)  %in case stack_hires is a binary mask, don't rescale
+            idxnz = premask~=0; %find nonzero indices
+            premask(idxnz) = rescale(premask(idxnz));
+        end
+        sliceinds_hires = [0 find(diff(map_hires_lores))] + 1; %map_hires_lores may not be uniform hi-z-res sampling of lo-z-res, causing some imprecision (design acquisition zfov and zwid to avoid this)
 
-        else  %else make a hi-z-res stack_mnt from the lo-z-res stack_mnt
+    else  %else make a hi-z-res stack_mnt from the lo-z-res stack_mnt
 
-            if xwid~=ywid
+        if round(zwid/xwid)==1 %if it's not already "hires"
+            premask = stackmean_masked; %define stack_mnt used to define mask
+        else
+
+            if xwid-ywid>1e-6
                 error("this is currently only written for square pixels")
             end
 
             upsamp = zwid / xwid; %upsamp factor makes cube voxels
+
             numslices_upsamp = round((size(stackmean_masked,3)) * upsamp);
 
             F = griddedInterpolant(stackmean_masked, 'linear');
@@ -93,10 +93,14 @@ if num_mroi_auto_initial > 1
             sliceinds_hires = linspace(1, size(premask,3), size(stack_mnt, 3)+1);
             sliceinds_hires = sliceinds_hires(1:end-1);
             sliceinds_hires = round(sliceinds_hires); %this z rounding is one source of imprecision in the mapping
-
         end
 
     end
+
+else
+
+    premask = stackmean_masked; %define stack_mnt used to define mask
+
 end
 
 %% threshold premask to create mask

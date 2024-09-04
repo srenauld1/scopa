@@ -1,6 +1,6 @@
 function ui = transform_user_input_a2p(ui)
 
-% some params are in user-friendly format and need to be transformed into automation-friendly format to simplify the code downstream
+% some params are set in user-input-friendly format and need to be transformed into format that simplifies the downstream code
 
 if ~iscell(ui.mn.pthstacks)
     ui.mn.pthstacks = {ui.mn.pthstacks};
@@ -12,6 +12,8 @@ for k = 1:numel(ui.mn.regionex_all)
 
     if ~isfield(ui.mroi.auto.num_mroi_auto, regionex)
         num_mroi_auto_tmp.(regionex) = 0;
+    else
+        num_mroi_auto_tmp.(regionex) =  ui.mroi.auto.num_mroi_auto.(regionex);
     end
     if any(strcmp(ui.mroi.use_drawn_rois, regionex))
         use_drawn_rois_tmp.(regionex) = 1;
@@ -25,6 +27,8 @@ for k = 1:numel(ui.mn.regionex_all)
     end
     if ~isfield(ui.pf.bump.numcluster_for_bump_domain_resample, regionex)
         numcluster_for_bump_domain_resample_tmp.(regionex) = 0;
+    else
+        numcluster_for_bump_domain_resample_tmp.(regionex) = ui.pf.bump.numcluster_for_bump_domain_resample.(regionex);    
     end
 
 end

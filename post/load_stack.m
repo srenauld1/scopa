@@ -25,6 +25,7 @@ arguments
     opt.zero_stack = 0
     opt.it = -50;
     opt.iz = []
+    opt.smsdspace
     opt.smooth_window_temporal = []
     opt.do_plot_stack_stats = 0
     opt.display_range = []
@@ -41,6 +42,7 @@ crop_flyback = opt.crop_flyback;
 zero_stack = opt.zero_stack;
 it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
+smsdspace = opt.smsdspace;
 smooth_window_temporal = opt.smooth_window_temporal; %smooth the stack in time, 0 to skip
 do_plot_stack_stats = opt.do_plot_stack_stats;
 display_range = opt.display_range;
@@ -55,10 +57,10 @@ end
 
 [~, plot_stack_order] = sort(cellfun(@numel, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
 suffixes_plot = suffixes_plot(plot_stack_order);
-if ~ismember(suffix_analysis, suffixes_plot)
-    sprintf("suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW")
-    suffixes_plot{end+1} = suffix_analysis;
-end
+% if ~ismember(suffix_analysis, suffixes_plot)
+%     sprintf("suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW")
+%     suffixes_plot{end+1} = suffix_analysis;
+% end
 suffixes_plot = unique(suffixes_plot, 'stable'); %make sure there aren't accidental repeats
 if numel(suffixes_plot)~=1
     suffixes_plot = cat(1, setxor(suffix_analysis, suffixes_plot(:), 'stable'), suffix_analysis); % make suffix_analysis last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from load_stack without having to hold plot stacks in memory)
@@ -123,6 +125,14 @@ for spi = 1:numel(pth_stacks)
             pthsv_prefix=pth_stacks{spi}(1:end-4))
     end
 
+    if smsdspace && contains(pth_stacks{spi}, {'raw_.', 'cmrg_.'})
+        for tind = 1:size(stack,4)
+            for zind = 1:size(stack,3)
+                stack(:,:,zind,tind) = imgaussfilt(stack(:,:,zind,tind), smsdspace);
+            end
+        end
+    end
+
     if plot_stack_gif
 
         stacktmp_mn = single(mean(stack, 4));
@@ -130,7 +140,7 @@ for spi = 1:numel(pth_stacks)
         if smooth_window_temporal
             stacktmp = single(smoothdata(stack, 4, 'gaussian', smooth_window_temporal)); %smoothdata will output double so that could be huge and slow
         else
-            stacktmp = stack; %this does not require memory another stack's worth of memory, it just creates a reference to the data
+            stacktmp = stack; %this does not require another stack of memory, it just creates a tiny reference to the data
         end
 
         [iz, izstr] = make_plot_inds(iz, indsall=size(stack,3), label_prefix='z', strdelim='-', printmax=20);
@@ -200,15 +210,28 @@ if plot_stack_gif
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
         )
+    
+
+    % index_labels{1} = []; %make it empty since you're passing iy 
+    % stack2fig( ...
+    %     stackplot, ...
+    %     pthgif=[filename_prefix 'side.gif'], ...
+    %     display_range=display_range_cell, ...
+    %     framenumdims=3, ...
+    %     dimorder=[3,2,1,4], ...
+    %     iy=round(linspace(1,size(stackplot{1},1), 8)),...
+    %     title_prefix=figtitle_prefix, ...
+    %     index_labels=index_labels ...
+    %     )
 
     stack2fig( ...
         stackplot_mn, ...
         pthgif=[filename_prefix 'meant_.gif'], ...
         display_range=display_range_cell, ...
         framenumdims=2, ...
-        dimorder=[1:ndims(stackplot_mn)], ...
+        dimorder=[1:ndims(stackplot_mn{1})], ...
         title_prefix=figtitle_prefix, ...
-        index_labels=index_labels([1:ndims(stackplot_mn)]) ...
+        index_labels=index_labels([1:ndims(stackplot_mn{1})]) ...
         )
 
 end

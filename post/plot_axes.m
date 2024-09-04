@@ -1,8 +1,9 @@
 
-function [hndls, framecount, cbflags] = plot_axes(hndls, stack, ftv, framecount, varsp, ...
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, vid, framecount, varsp, ...
     vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
     pthgif, figure_title, varsz, letui, timestr_ui, sampinc, ...
-    varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd)
+    varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
+    cols_sc, scdimmin, scdimsd)
 
 
 cbflags = default_cbflags([], 'all'); %set all flags to default
@@ -92,8 +93,6 @@ while tloop
 
         lagind = laginds_to_plot;
         if isprop(hndls.sc.hpl{1}, 'ThetaData')
-
-
             if polar_index==1
                 hndls.sc.hpl{1}.ThetaData = varsp_sc(1, lagind,:);
                 hndls.sc.hpl{1}.RData = varsp_sc(2, lagind,:);
@@ -127,9 +126,7 @@ while tloop
             %     hndls.sc.hln{1}.LineStyle = '-';
             % end
 
-
         else
-
 
             hndls.sc.hpl{1}.XData = varsp_sc(1,lagind,:);
             hndls.sc.hpl{1}.YData = varsp_sc(2,lagind,:);
@@ -178,7 +175,7 @@ while tloop
 
 
         %%%% FICTRAC VIDEO %%%%
-        hndls.ftv.hpl{1}.CData = ftv(:,:,tinds_use(fr)); %fictrac video
+        hndls.vid.hpl{1}.CData = vid(:,:,tinds_use(fr)); %fictrac video
 
 
         %%%% WRITE TO GIF %%%%

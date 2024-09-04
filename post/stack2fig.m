@@ -244,7 +244,6 @@ if numel(opt.ic)==1 && size(stack,6)==1 && numdims<=5 %if c became singleton bec
     numdims = numdims+1;
 end
 
-szo = size(stack);
 num_missing_dims = maxnumdims-numdims;
 
 if numdims>maxnumdims
@@ -263,24 +262,17 @@ if ~isequal(sort(dimorder), 1:numdims)
 end
 
 
-if isempty(index_labels)
-    index_labels_default = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
-    if any(~cellfun(@isempty, index_labels_opt)) %include any optional ind arguments in index_labels, the rest make default
-        nmitmp = ~cellfun(@isempty, index_labels_default);
-        nmitmp2 = cellfun(@isempty, index_labels_opt);
-        index_labels_opt(nmitmp2(nmitmp)) = index_labels_default(nmitmp2(nmitmp));
-        index_labels = index_labels_opt(~cellfun(@isempty, index_labels_opt));
-    else
-        index_labels = index_labels_default;
-    end
+if ~isempty(intersect(find(~cellfun(@isempty, index_labels)), find(~cellfun(@isempty, index_labels_opt)))) % any(~cellfun(@isempty, index_labels_opt))
+    error("for at least one stack dimension you defined index_labels and passed an *inds name-value argument; if you pass an *inds name-value argument, do not pass index_labels for the same dimension")
 else
-    if any(~cellfun(@isempty, index_labels_opt))
-        error("you specified index_labels and also passed name_value at least one name-value argument with name *inds; if you pass any *inds, do not pass index_labels")
-    end
-end
-
-if numel(index_labels)~=numdims
-    error("index_label length must match numdims")
+    index_labels_default = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
+    missing_dims = numel(index_labels_default)+1:numel(index_labels_opt);
+    index_labels_default(missing_dims) = {nan};
+    nmitmp = ~cellfun(@isempty, index_labels);
+    index_labels_opt(nmitmp) = index_labels(nmitmp); %for each dimension, if opt is empty, assign index_label input (opt will always be length 6)
+    nmitmp = cellfun(@isempty, index_labels_opt);
+    index_labels_opt(nmitmp) = index_labels_default(nmitmp); %for each dimension, assign default if there is no index_label input and no *inds input  (ie if still empty after above)
+    index_labels = index_labels_opt;
 end
 
 
@@ -289,8 +281,8 @@ end
 dimorder = [dimorder [1:num_missing_dims]+numel(dimorder)];
 stack = permute(stack, dimorder);
 dimlabels = dimlabels(dimorder);
-index_labels = cat(1, index_labels(:), repelem({[nan]}, num_missing_dims, 1));
 index_labels = index_labels(dimorder);
+index_labels = index_labels';
 sztmp = size(stack);
 if framenumdims>numel(sztmp)
     framenumdims = numel(sztmp);

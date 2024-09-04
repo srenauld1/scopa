@@ -31,7 +31,7 @@ for j = 1:size(inp, dim)
     if dim==1
         dfsg2 = cat(2, zeros(1, (spacing-1)+1), dfsg);
     elseif dim==2
-        dfsg2 = cat(1, zeros(1, (spacing-1)+1, 1), dfsg);
+        dfsg2 = cat(1, zeros((spacing-1)+1, 1), dfsg);
     end
 
     excludeinds = abs(dfsg2)>diffthresh;

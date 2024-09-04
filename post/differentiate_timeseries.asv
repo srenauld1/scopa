@@ -33,6 +33,7 @@ elseif strcmp(vartypein, 'categorical')
     filt = [zeros(1,slopelen-1), 1, zeros(1,slopelen-1), -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
     differ = conv(inp, filt, 'full');
     differ = differ((numel(filt) - 1)+1:end-(numel(filt) - (1 + (slopelen-1))));
-    differ = cat(1, zeros((slopelen-1)+1, 1), differ);
+    differ = cat(1, zeros(1, (slopelen-1)+1, 1), differ);
+
 
 end

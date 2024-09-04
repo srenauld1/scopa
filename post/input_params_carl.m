@@ -13,8 +13,8 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240601'}; %cell array of char, can use wildcards
-    fnspec_fly = {'1'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'20240901'}; %cell array of char, can use wildcards
+    fnspec_fly = {'2'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
@@ -38,7 +38,7 @@ ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 ui.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-ui.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
+ui.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
 ui.daq.slopeorder = 2; %order of polynomial used to fit local slope
 ui.daq.slopelen_sec = 0.4; %window length used to fit slope
 ui.daq.use_carls_epochs = 1; %0 for everybody else
@@ -73,9 +73,10 @@ ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-ui.ld.gif.it = [20.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.it = [1:50];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
+ui.ld.smsdspace = 1.25; %smooth the stack in time, 0 to skip
 ui.ld.gif.smooth_window_temporal = 0; %smooth the stack in time, 0 to skip
 
 
@@ -95,10 +96,10 @@ ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not disp
 
 %%params for the manually drawn morphological rois
 ui.mroi.use_drawn_rois =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-ui.mroi.use_drawn_rois =  {'eb'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+ui.mroi.use_drawn_rois =  {'fullfov'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
-ui.mroi.auto.num_mroi_auto.eb = 256; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fullfov = 256; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 ui.mroi.auto.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
@@ -281,11 +282,11 @@ ui.fitm = default_fit_params(ui.fitm);
 % params for plot_experiment
 % ui.pltx.varnms follows the same pattern as ui.fitm.varnms above
 
-ui.pltx(1).varnms.ts1{1} = {['vis.CON51']};
+ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.pre1.mo*.in_rawf_pc_f_cl_f_w_yes']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};
@@ -335,6 +336,7 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 %% CARL'S OLD PROJECT
 
 %overwrite some params for carl's old project
+ui.mn.old_project = 0;
 if ~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
     if numel(fnspec_recdate)>1
         error("right now old project is one file at a time")

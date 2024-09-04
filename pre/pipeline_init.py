@@ -13,6 +13,7 @@ import os
 currscriptdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(currscriptdir))
 
+print("\n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??")
 print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
 
 if '--pth_parsfile' in sys.argv:
@@ -141,7 +142,7 @@ for ri, _ in enumerate(pth_read_all):
 
       if do_register:
           try: #spatial_downsample_fictrac_video is not essential, so putting in a try block
-            hspatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+            spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           except Exception as err:
             print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
           register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, discard_channel, chan_primary_when_two, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots)

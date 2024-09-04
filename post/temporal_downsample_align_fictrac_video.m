@@ -192,7 +192,7 @@ numpk = numel(pkg);
 sprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol))
 
 if numpk~=numvol
-    % error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
+    error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
 end
 
 keepinds_vid = lkg(1)-pkhalfper:lkg(end)+pkhalfper;
@@ -221,11 +221,11 @@ sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
 if doplots
     title_prefix = 'pre resample';
     pthgif = [pth_vid(1:end-4) '.gif'];
-    stack2fig(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), tinds=1:30, pthgif=pthgif, title_prefix=title_prefix)
+    stack2fig(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
 
     title_prefix = 'post resample';
     pthgif = [pth_vid(1:end-4) 'RS_.gif'];
-    stack2fig(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), tinds=1:300, pthgif=pthgif, title_prefix=title_prefix)
+    stack2fig(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
 end
 
 save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
