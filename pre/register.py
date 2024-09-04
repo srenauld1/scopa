@@ -68,8 +68,8 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     stack = crop_flyback(stack, md['dims'], md['flyback'])
 
-    phoff = bidiphase_compute(stack) #correct any bidirectional phase offset
-    stack = bidiphase_shift(stack, phoff) #correct any bidirectional phase offset
+    phoff = bidiphase_compute(stack) #correct any bidirectional phase offset, nothing happens if zero
+    stack = bidiphase_shift(stack, phoff) #correct any bidirectional phase offset, nothing happens if zero
 
     stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     if two_channel_reg:
