@@ -39,7 +39,7 @@ def compute(frames: np.ndarray) -> int:
     return bidiphase
 
 
-def shift(frames: np.ndarray, bidiphase: int) -> np.ndarray: #None
+def shift(frames: np.ndarray, bidiphase: int) -> None: 
     """
     Shift last axis of "frames" by bidirectional phase offset in-place, bidiphase.
 
@@ -51,6 +51,6 @@ def shift(frames: np.ndarray, bidiphase: int) -> np.ndarray: #None
     """
     if bidiphase > 0:
         frames[:, 1::2, bidiphase:] = frames[:, 1::2, :-bidiphase]
-    elif bidiphase < 0:
+    else:
         frames[:, 1::2, :bidiphase] = frames[:, 1::2, -bidiphase:]
     return frames
