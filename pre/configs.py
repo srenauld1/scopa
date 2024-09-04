@@ -19,7 +19,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
    
     ### motion correction configs ###
 
-    pw_rigid = False #rigid or non, for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
+    pw_rigid = True #rigid or non, for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
     nonneg_movie = True #true because i make it nonnegative before registration
     min_mov = min_mov
 
@@ -38,9 +38,9 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     else:
         is3D_mc = True
         indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
-        strides_mc = (24, 24, 6) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
-        overlaps_mc = (12, 12, 3)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
-        max_shifts_mc = (4, 4, 4) #max allowed shifts (in patch if piecewise, or whole fov if not) 
+        strides_mc = (12, 12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
+        overlaps_mc = (8, 8, 8)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
+        max_shifts_mc = (5, 5, 5) #max allowed shifts (in patch if piecewise, or whole fov if not) 
 
 
     ### roi extraction params ###

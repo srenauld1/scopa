@@ -73,7 +73,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     else
         if ui.mn.do_daq
             try
-                bhjload(pth.daqrs, 'daqrs')
+                load(pth.daqrs, 'daqrs')
             catch
                 daqrs = load_DAQ(ids.recdatenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, md.imper, ...
                     pth.daq, pth.daqrs, pth.daqinds, ui.daq.ball_diameter, ui.daq.slopelen_sec, ui.daq.slopeorder, ui.daq.fast_version, ui.daq.doplots);

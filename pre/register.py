@@ -14,6 +14,8 @@ from subtract_background import subtract_background
 from scipy.ndimage import gaussian_filter as smooth_movie
 from im_montage import im_montage
 from plot_gif import plot_gif
+from bidiphase import compute as bidiphase_compute
+from bidiphase import shift as bidiphase_shift
 
 
 def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, discard_channel, chan_primary_when_two, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots):
@@ -31,7 +33,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
-    stack = imread(pth_tif_read).astype('float32') ##  is float necessary?? (tz)yx, or if multiple channels, (tz)cyx; 
+    stack = imread(pth_tif_read)#.astype('float32') ##  is float necessary?? caiman has it this way; (tz)yx, or if multiple channels, (tz)cyx; 
         
     if md['dims'][1]>1:
         stack_has_multiple_z_slices = 1
@@ -64,9 +66,16 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             pth_tif_write_secondary_tmp_prefix = pth_tif_write[:-4] + '_presmoothed_tmp'
 
 
-    stack = stack_reshape_transpose_zero_type(stack, md['dims'], md['flyback'])
+    stack = crop_flyback(stack, md['dims'], md['flyback'])
+
+    phoff = bidiphase_compute(stack) #correct any bidirectional phase offset
+    stack = bidiphase_shift(stack, phoff) #correct any bidirectional phase offset
+
+    stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     if two_channel_reg:
-        stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'], md['flyback'])
+        phoff = bidiphase_compute(stack_secondary)
+        stack_secondary = bidiphase_shift(stack_secondary, phoff)
+        stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'])
 
     if makeplots:
         #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack))
@@ -192,13 +201,19 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 ########################################################################################################################################################
 ########################################################################################################################################################
 
-def stack_reshape_transpose_zero_type(stack, dims, flyback):
 
+def crop_flyback(stack, dims, flyback):
     stack = stack.reshape(dims[0], dims[1]+flyback, dims[2], dims[3])
     if flyback!=0:    
         stack = stack[:,:-flyback,:,:] #crop flyback frames
+    stack = stack.reshape(dims[0]*dims[1], dims[2], dims[3])
+    return stack
+
+def stack_reshape_transpose_zero_type(stack, dims):
+
+    stack = stack.reshape(dims[0], dims[1], dims[2], dims[3])
     stack = np.transpose(stack, (0, 3, 2, 1)) #put in order t x y z 
-    mnmv = np.min(stack).astype('float32') 
+    mnmv = np.min(stack)
     stack -= mnmv #make movie nonnegative then convert to uint16 (not sure this matters for caiman, but useful further ahead)
     stack = stack.astype('uint16')
     print("MIN BEFORE MOTION CORRECTION " + str(mnmv))

@@ -15,7 +15,7 @@ arguments
     ball_diameter double
     slopelen_sec double
     slopeorder double
-    fast_version logical %fast_version takes seconds, but less accurate, slow version takes minutes on first run (subsequent runs takes seconds)
+    fast_version logical %fast_version takes seconds, but (slightly) less accurate, slow version takes minutes on first run (subsequent runs takes seconds) (if you're resampling every frame offset rather than just every volume, it can take 1-3 hours on the first run)
     doplots logical
 end
 
