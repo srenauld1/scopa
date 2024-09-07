@@ -106,7 +106,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     %% load/visualize stack (and optional hires stack)
 
-    stack = load_stack(pth.stack, ...   %can just pass pth.stack if it's mat; if tif need to also pass sz to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim; 
+    stack = stackld(pth.stack, ...   %can just pass pth.stack if it's mat; if tif need to also pass sz to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim; 
         suffixes_plot=ui.ld.gif.suffixes_plot, ... %pass nonempty suffixes_plot and it will plot whichever suffixes are in same folder as pth.stack, along with pth.stack 
         sz = md.sz_o, ... 
         numslice_withflyback = md.numslice_withflyback, ...
@@ -123,6 +123,8 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         smsdspace=ui.ld.smsdspace, ...
         smooth_window_temporal = ui.ld.gif.smooth_window_temporal, ...
         display_range = ui.ld.gif.display_range);
+
+    % stackreg = register_stack_new(stack);
 
     if any(cell2mat(struct2cell(ui.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, ui.hires);

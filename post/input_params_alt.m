@@ -63,8 +63,8 @@ opt.ftv.doplots = 0; %0 skips plots, 1 plots and saves, 2 saves but does not dis
 
 %% STACK VISUALIZATION (GIF)
 
-%opt.ld holds params used in load_stack
-%opt.ld.gif holds params for making gif of imaging movies in function load_stack; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
+%opt.ld holds params used in stackld
+%opt.ld.gif holds params for making gif of imaging movies in function stackld; these options do not affect stack for analysis (opt.mn.suffix_analysis) 
 opt.ld.crop_flyback = 1; %crop flyback frames from each volume 
 opt.ld.zero_stack = 1; %subtract min to make min zero 
 opt.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)

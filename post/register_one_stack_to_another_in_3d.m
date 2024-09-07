@@ -22,7 +22,7 @@ switch disttype
         optimizer.MaximumIterations = 2000; %300 bigger helped
 end
 
-if any(size(fixed)<16)
+if 0 % any(size(fixed)<16) %can't remember why this is set to 16
     tform = imregtform(moving, fixed, regtype, optimizer, metric, PyramidLevels=2);
 else
     tform = imregtform(moving, fixed, regtype, optimizer, metric);

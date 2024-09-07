@@ -16,7 +16,7 @@ arguments
     opt.figsidelength = 0.75 %figure size as proportion of your available screen small dimension (cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
     opt.axord char = 'rowmajor'
     opt.numcolorsgif = 128
-    opt.framenumdims = 2; %how many dims to display on a each frame
+    opt.fdimnum = 2; %how many dims to display on a each frame
     opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
     opt.display_range = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.iy = [];
@@ -254,8 +254,8 @@ if strcmp(cmap, 'rgb') && size(stack, numdims)~=3
     error("last dimension must be length 3 if cmap argument is 'rgb'")
 end
 
-if framenumdims>numdims
-    error("framenumdims must not exceed numdims")
+if fdimnum>numdims
+    error("fdimnum must not exceed numdims")
 end
 if ~isequal(sort(dimorder), 1:numdims)
     error("dimorder must contain all integers 1 to numdims")
@@ -284,16 +284,16 @@ dimlabels = dimlabels(dimorder);
 index_labels = index_labels(dimorder);
 index_labels = index_labels';
 sztmp = size(stack);
-if framenumdims>numel(sztmp)
-    framenumdims = numel(sztmp);
+if fdimnum>numel(sztmp)
+    fdimnum = numel(sztmp);
 end
-sz_framedims = sztmp(1:framenumdims);
-sz_framedims = num2cell([sz_framedims(1:2) prod(sz_framedims(3:framenumdims))]);
-stack = reshape(stack, sz_framedims{:}, []); %collapse framenumdims into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
+sz_framedims = sztmp(1:fdimnum);
+sz_framedims = num2cell([sz_framedims(1:2) prod(sz_framedims(3:fdimnum))]);
+stack = reshape(stack, sz_framedims{:}, []); %collapse fdimnum into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
 
 numxpix = size(stack,2);
 numypix = size(stack,1);
-numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
+numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
 numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
 dummyim = nan(numypix, numxpix);
 dummyim_rgb = nan(numypix, numxpix, 3);
@@ -314,12 +314,12 @@ dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), 
 dr_str = ['dr-' strjoin(dr_str, ' AND ')];
 
 lab_framestable = {dr_str};
-index_labels_tmp = index_labels(1:framenumdims); %labels that are the same on every frame
+index_labels_tmp = index_labels(1:fdimnum); %labels that are the same on every frame
 for li = 1:numel(index_labels_tmp)
     [~, index_labels_tmp{li}] = make_plot_inds(index_labels_tmp{li}, indsall=index_labels_tmp{li}, label_prefix=dimlabels{li}, printmax=max_num_inds_to_print);
 end
 lab_framestable = cat(1, lab_framestable, index_labels_tmp);
-dims_changing_across_frames = framenumdims+1:maxnumdims;
+dims_changing_across_frames = fdimnum+1:maxnumdims;
 lab_framechange = index_labels(dims_changing_across_frames); %labels that can change on each frame
 lab_framechange_numel = cellfun(@numel, lab_framechange);
 
@@ -394,9 +394,9 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipixinds)
         [imroi, imalpha] = make_roi_overlay(stack, roipixinds{roiinds(ri)}, roi_colors(ri,:), roialpha); %make an overlay for one roi
     end
-    for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after framenumdims
+    for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after fdimnum
         framecount = framecount+1;
-        for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if framenumdims==2)
+        for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
 
             hpl{j}.CData = stack(:,:,j,k);
             if ~isempty(roipixinds) %&& k==1 %if there are roi variables

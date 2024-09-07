@@ -97,7 +97,7 @@ stack = read_tif_tzcyx(pth_stack_tif, ...
 
 channel_use = intersect(channel_save, channel_use); %ignore requested channels that don't exist
 stack = squeeze(stack(:,:,channel_use,:,:)); %get rid of channel dim
-if ndims(stack)==3 %put z back in if singleton
+if numel(channel_use)==1 && ndims(stack)==3 %put z back in if singleton
     stack = reshape(stack, size(stack, 1), size(stack, 2), 1, size(stack, 3));
 end
 

@@ -15,7 +15,7 @@ iz = []; %z indices to plot, blank for all, negative for that number equidistant
 zero_stack = 1; %subtract min to make min zero 
 
 display_range = [0,1]; %for plotting, if makeplots
-framenumdims = 3;%for plotting, if makeplots
+fdimnum = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
 
 display(['processing : ' pth_stack_tif] )
@@ -27,7 +27,7 @@ if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(reg
         "('raw' or 'trial' in filename), \n" + ...
         "IF YOU WANT TO PASS THOSE STACKS TO THIS FUNCTION, \n" + ...
         "YOU NEED TO ADJUST size_z_read_from AND inds_z_read_from \n" + ...
-        "TO MAKE THEM AS THEY APPEAR IN load_stack.m"))
+        "TO MAKE THEM AS THEY APPEAR IN stackld.m"))
 end
 
 fldr = [fldr filesep];
@@ -114,7 +114,7 @@ if makeplots
     index_labels{4} = it;
     gif_visibility = 'on';
 
-    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gif_visibility=gif_visibility, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 
 end
 
@@ -129,7 +129,7 @@ stack = fft_filter_1d(stack, stopband);
 %% plot after filtering
 
 if makeplots
-    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gif_visibility=gif_visibility, display_range=display_range, framenumdims=framenumdims, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gif_visibility=gif_visibility, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 end
 
 %% save

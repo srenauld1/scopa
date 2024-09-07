@@ -74,12 +74,13 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     if two_channel_reg:
         stack_secondary = crop_flyback(stack_secondary, md['dims'], md['flyback'])
         phoff = bidiphase_compute(stack_secondary)
-        stack_secondary = bidiphase_shift(stack_secondary, phoff)
+        if phoff:
+            bidiphase_shift(stack_secondary, phoff)
         stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'])
 
     if makeplots:
         #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack))
-        plot_gif(stack, pth_tif_read[:-4] + '.gif', indsz = slice(3,4,1), indst = slice(0, 20, 1))  #view stack before registration, can pass xyzt indices, otherwise will do all indices for each 
+        plot_gif(stack, pth_tif_read[:-4] + 'raw.gif', indsz = slice(4,5,1), indst = slice(0, 100, 1))  #view stack before registration, can pass xyzt indices, otherwise will do all indices for each 
         if two_channel_reg:
             #im_montage(stack_secondary[10,:,:,:], vmin=mnmv, vmax=np.max(stack)) #view montage to check registration
             plot_gif(stack_secondary, pth_tif_read[:-4] + chanstr_secondary + '.gif', indsz = slice(3,4,1), indst = slice(0, 100, 1))  #view stack before registration, can pass xyzt indices, otherwise will do all indices for each 
@@ -184,6 +185,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
                 stack_allchan = stitch_registered_slices(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
                 if makeplots:
                     plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    #plot_gif(smooth_movie(stack_allchan, sigma=(1.2,1.2), axes=(1,2)), '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
             
             write_registered_stack(stack_allchan, pth_tif_write_allchan)
 
@@ -233,8 +235,13 @@ def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
         imper = 1/volrate
         len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / imper #smooth might require int, cant remember 
         sigma_smooth_prereg = (len_window_smooth_t_mcp_samp - 1) / numsigma_smooth_prereg / 2
-        stack = smooth_movie(stack.reshape(length_t, -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
-        stack = stack.reshape(dimtmp_presmooth)
+        if len(stack.shape)==3:
+            stack = smooth_movie(stack, sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=(1,2))
+        elif len(stack.shape)==4:
+            stack = smooth_movie(stack, sigma=(0.0,0.5,0.5,0.5), mode='reflect', truncate=numsigma_smooth_prereg, axes=(0,1,2,3))
+        #plot_gif(stack, '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
+        # stack = smooth_movie(stack.reshape(length_t, -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
+        # stack = stack.reshape(dimtmp_presmooth)
 
         return stack
 
