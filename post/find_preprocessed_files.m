@@ -120,13 +120,17 @@ end
 
 function pth_parent = find_parent_path(pthparent_local, pthparent_o2)
 
+pthparent_local = strrep(pthparent_local, '/', filesep);
+pthparent_local = strrep(pthparent_local, '\', filesep);
+if endsWith(pthparent_local, filesep)
+    pthparent_local = pthparent_local(1:end-1);
+end
+[~, fldr_parent_local, ~] = fileparts(pthparent_local);
+
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
     if isempty(pthparent_o2)
         sprintf("O2 parent path not specified, using default path based on parent folder name")
-        tmp = strsplit(pthparent_local, filesep);
-        fldr_parent = tmp{end};
-        % [pthenv, ~, ~] = fileparts(matlab.desktop.editor.getActiveFilename); %fails on matlabengine for python bc no java, tried various startup options
         stk = dbstack('-completenames');
         [pthenv, ~, ~] = fileparts(stk(1).file);
         spl = strsplit(pthenv, filesep);
@@ -134,30 +138,20 @@ if ~isempty(regexp( envname, 'compute-', 'once' ))
         if isempty(username)
             error("scopa may not be in your O2 home folder, make sure to git clone scopa into your O2 home folder")
         end
-        pth_parent = ['/n/scratch/users/'  username(1) filesep username filesep fldr_parent filesep];
+        pth_parent = fullfile('/', 'n', 'scratch', 'users', username(1), username, fldr_parent_local);
     else
-        pth_parent = strsplit(pthparent_o2, filesep); %in case trailing filesep, or not
-        if isempty(pth_parent{end})
-            pth_parent = [strjoin(pth_parent(1:end-1), filesep) filesep];
-        else
-            pth_parent = [strjoin(pth_parent, filesep) filesep];
+        if endsWith(pthparent_o2, filesep)
+            pth_parent = pthparent_o2(1:end-1);
         end
     end
-    if ~isfolder(pth_parent)
-        error(sprintf("pthparent_o2 " + pth_parent + " DOES NOT EXIST"))
-    end
 else
-    pth_parent = strsplit(pthparent_local, filesep); %in case trailing filesep, or not
-    if isempty(pth_parent{end})
-        pth_parent = [strjoin(pth_parent(1:end-1), filesep) filesep];
-    else
-        pth_parent = [strjoin(pth_parent, filesep) filesep];
-    end
-    if ~isfolder(pth_parent)
-        error(sprintf("pth_parent_local '" + pth_parent + "' DOES NOT EXIST"))
-    end
+    pth_parent = pthparent_local;
 end
 
+pth_parent = [pth_parent filesep];
+if ~isfolder(pth_parent)
+    error(sprintf("pth_parent '" + pth_parent + "' DOES NOT EXIST"))
+end
 
 
 end

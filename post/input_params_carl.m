@@ -13,10 +13,10 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240901'}; %cell array of char, can use wildcards
-    fnspec_fly = {'2'}; %cell array of char, can use wildcards
-    fnspec_trial = {'*'}; %cell array of char, can use wildcards
-    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
+    fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
+    fnspec_fly = {'0'}; %cell array of char, can use wildcards
+    fnspec_trial = {'1'}; %cell array of char, can use wildcards
+    fnspec_suffix = {'raw'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
@@ -31,7 +31,7 @@ ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
 ui.mn.do_fit = 0; %model fitting (ui.fitm below)
-ui.mn.do_pltexp = 0; %plot experiment (ui.pltx below)
+ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 
 %% DAQ
@@ -47,7 +47,7 @@ ui.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same f
 %% LOAD/VISUALIZE STACK 
 
 %ui.ld holds params used in stackld
-ui.ld.channel_use = 2; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
+ui.ld.channel_use = [1 2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
 ui.ld.crop_flyback = 1; %crop flyback frames from each volume 
 ui.ld.zero_stack = 1; %subtract min to make min zero 
 ui.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
@@ -57,9 +57,9 @@ ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/i
 
 %ui.ld.gif holds params for making gif of imaging movies in function stackld; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
-    'raw', ... %comment if you don't want to plot (can comment all too)
-    'cmrg', ...%comment if you don't want to plot (can comment all too)
-    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    %'raw', ... %comment if you don't want to plot (can comment all too)
+    %'cmrg', ...%comment if you don't want to plot (can comment all too)
+    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -74,7 +74,7 @@ ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-ui.ld.gif.it = [1:50];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.it = [20.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 ui.ld.smsdspace = 0; %smooth the stack in time, 0 to skip
@@ -338,7 +338,8 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 
 %overwrite some params for carl's old project
 ui.mn.old_project = 0;
-if ~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
+if all(contains(ui.mn.pthstacks, 'fn1g_syt')) %~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
+    ui.mn.old_project = 1;
     if numel(fnspec_recdate)>1
         error("right now old project is one file at a time")
     end

@@ -23,10 +23,12 @@ arguments
     opt.ix = [];
     opt.iz = [];
     opt.it = [];
-    opt.ip = []; %pmt indices (red or green channel
-    opt.ic = []; %rgb color channel indices 
+    opt.ic = []; %pmt indices (red or green channel
+    opt.ik = []; %rgb color channel indices 
 end
 
+
+%NEED TO REMOVE THIS, LIST INPUTS INSTEAD
 fn = fieldnames(opt);
 for fi = 1:numel(fn)
     eval([fn{fi} '= opt.(fn{fi});' ]);%transform 'opt' fields into local variables
@@ -83,29 +85,29 @@ if ~isempty(opt.it)
     end
     index_labels_opt{4} = opt.it;
 end
-if ~isempty(opt.ip)
-    if numel(szin)<5
-        error("you requested ip but stack is less than 5d")
-    end
-    opt.ip = make_plot_inds(opt.ip, indsall=szin(5));
-    if iscell(stack)
-        stack = cellfun(@(x) x(:,:,:,:,opt.ip,:), stack, 'UniformOutput', false);
-    else
-        stack = stack(:,:,:,:,opt.ip,:);
-    end
-    index_labels_opt{5} = opt.ip;
-end
 if ~isempty(opt.ic)
-    if numel(szin)<6
+    if numel(szin)<5
         error("you requested ic but stack is less than 5d")
     end
-    opt.ic = make_plot_inds(opt.ic, indsall=szin(6));
+    opt.ic = make_plot_inds(opt.ic, indsall=szin(5));
     if iscell(stack)
-        stack = cellfun(@(x) x(:,:,:,:,:,opt.ic), stack, 'UniformOutput', false);
+        stack = cellfun(@(x) x(:,:,:,:,opt.ic,:), stack, 'UniformOutput', false);
     else
-        stack = stack(:,:,:,:,:,opt.ic);
+        stack = stack(:,:,:,:,opt.ic,:);
     end
-    index_labels_opt{6} = opt.ic;
+    index_labels_opt{5} = opt.ic;
+end
+if ~isempty(opt.ik)
+    if numel(szin)<6
+        error("you requested ik but stack is less than 5d")
+    end
+    opt.ik = make_plot_inds(opt.ik, indsall=szin(6));
+    if iscell(stack)
+        stack = cellfun(@(x) x(:,:,:,:,:,opt.ik), stack, 'UniformOutput', false);
+    else
+        stack = stack(:,:,:,:,:,opt.ik);
+    end
+    index_labels_opt{6} = opt.ik;
 end
 
 
@@ -176,7 +178,8 @@ if iscell(stack)
     end
 
     clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled 
-    stack = cell2mat(stack(:)); %convert to mat and cat multiple stacks along first dim
+    stack = cell2mat(stack); %convert to mat and cat stacks 
+
 else %if there's only one stack, don't rescale it, just assign display_range to CLim 
     if numel(display_range)~=1
         error("display_range length must be 1 if one stack is passed as argument")
@@ -237,10 +240,10 @@ end
 if numel(opt.it)==1 && size(stack,4)==1 && numdims<=3 %if t became singleton because of it argument
     numdims = numdims+1;
 end
-if numel(opt.ip)==1 && size(stack,5)==1 && numdims<=4 %if p became singleton because of ip argument
+if numel(opt.ic)==1 && size(stack,5)==1 && numdims<=4 %if c became singleton because of ic argument
     numdims = numdims+1;
 end
-if numel(opt.ic)==1 && size(stack,6)==1 && numdims<=5 %if c became singleton because of ic argument
+if numel(opt.ik)==1 && size(stack,6)==1 && numdims<=5 %if k became singleton because of ik argument
     numdims = numdims+1;
 end
 
@@ -310,7 +313,7 @@ end
 
 dr_str = vec(cellfun(@num2str, display_range, 'UniformOutput', false))';
 dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'to'}, numel(dr_str)), 'UniformOutput', false);
-dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
+dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'c'}, numel(dr_str)), 'UniformOutput', false);
 dr_str = ['dr-' strjoin(dr_str, ' AND ')];
 
 lab_framestable = {dr_str};

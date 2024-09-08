@@ -20,24 +20,24 @@ stack = stack - min(stack(:));
 
 stack = stack(:,:,:,1:100);
 
-template = single(template);
-stack = single(stack);
+% template = single(template);
+% stack = single(stack);
+% 
+% dopad = 0;
+% if dopad
+%     template = padarray(template, [0 0 1], 0, 'both');
+%     stack = padarray(stack, [0 0 1], 0, 'both');
+% end
+% 
+% template(template~=0) = rescale(template(template~=0));
+% stack(stack~=0) = rescale(stack(stack~=0)); %only rescale nonzeros in case of mask
 
-dopad = 0;
-if dopad
-    template = padarray(template, [0 0 1], 0, 'both');
-    stack = padarray(stack, [0 0 1], 0, 'both');
-end
-
-template(template~=0) = rescale(template(template~=0));
-stack(stack~=0) = rescale(stack(stack~=0)); %only rescale nonzeros in case of mask
 
 
-
-smsdspace = 5;
+smsdspace = 0.5;
 if smsdspace
     for tind = 1:size(stack,4)
-        stack(:,:,:,tind) = smooth3(stack(:,:,:,tind), 'gaussian', smsdspace);
+        stack(:,:,:,tind) = smooth3(stack(:,:,:,tind), 'gaussian', [3 3 3], 0.65);
     end
 end
 

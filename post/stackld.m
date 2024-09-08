@@ -149,7 +149,7 @@ for spi = 1:numel(pth_stacks)
         [iz, izstr] = make_plot_inds(iz, indsall=size(stack,3), label_prefix='z', strdelim='-', printmax=20);
         [it, itstr] = make_plot_inds(it, indsall=size(stack,4), label_prefix='t', strdelim='-', printmax=20);
 
-        stacktmp = single(stacktmp(:,:,iz,it));
+        stacktmp = single(stacktmp(:,:,iz,it,:));
 
         if ~strcmp(pth_stack, pth_stacks{spi}) %if it's the stack for analysis outside this function
             stack = [];
@@ -239,9 +239,5 @@ if plot_stack_gif
 
 end
 
-
-if ndims(stack)~=4
-    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack TO BE 4D (xyzt), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
-end
 
 

@@ -1,0 +1,34 @@
+function stack = stacktype_change(stack, output_datatype)
+
+if ~isa(stack, output_datatype)
+    stackmin = min(stack(:));
+    if stackmin < 0 && startsWith(output_datatype, 'u')
+        stack = stack - double(stackmin);
+        sprintf("STACK MIN IS NEGATIVE; SUBTRACTING MIN TO ZERO STACK BEFORE CONVERTING TO output_datatype " + output_datatype + " TO PREVENT LOWER CLIPPING")
+    end
+    stackmax = max(stack(:)); %find max after possible zeroing
+    if stackmax > intmax(output_datatype)
+        error("ERROR, CONVERTING TO output_datatype " + output_datatype + " WILL CAUSE UPPER CLIPPING, CHANGE output_datatype")
+    end
+    switch output_datatype
+        case 'uint16'
+            stack = uint16(stack);
+        case 'uint32'
+            stack = uint32(stack);
+        case 'uint64'
+            stack = uint64(stack);
+        case 'int16'
+            stack = int16(stack);
+        case 'int32'
+            stack = int32(stack);
+        case 'int64'
+            stack = int64(stack);
+        case 'single'
+            stack = single(stack);
+        case 'double'
+            stack = double(stack);
+    end
+
+end
+
+end

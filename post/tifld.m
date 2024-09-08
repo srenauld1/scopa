@@ -1,6 +1,7 @@
-function out = read_tif_tzcyx(filename_tif, opt)
+function out = tifld(filename_tif, opt)
 
-% read tzcyx, output yxczt 
+% tzcyx --> yxczt 
+% read tif that was written as tzcyx; array is read as yxczt 
 
 % scanimage, and scopa 'pre' pipeline (everything output by pipeline_init.py) write stacks as 3d tifs,
 % with dim order tzcyx, where t and z and c dimensions are collapsed into one

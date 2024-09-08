@@ -1,6 +1,6 @@
 function stack = tif2mat(pth_stack_tif, opt)
 
-% convert tif to mat and save
+% convert tif to mat (yxczt) and save
 % set up to take full stack if you pass sz_yxzt, or subset if you pass inds*
 
 arguments
@@ -87,7 +87,7 @@ else
 end
 
 
-stack = read_tif_tzcyx(pth_stack_tif, ...
+stack = tifld(pth_stack_tif, ...
     size_read_from = size_read_from, ...
     inds_y_read_from = inds_y_read_from, ...
     inds_x_read_from = inds_x_read_from, ...
@@ -95,68 +95,37 @@ stack = read_tif_tzcyx(pth_stack_tif, ...
     inds_z_read_from = inds_z_read_from, ...
     inds_t_read_from = inds_t_read_from);
 
-channel_use = intersect(channel_save, channel_use); %ignore requested channels that don't exist
-stack = squeeze(stack(:,:,channel_use,:,:)); %get rid of channel dim
-if numel(channel_use)==1 && ndims(stack)==3 %put z back in if singleton
-    stack = reshape(stack, size(stack, 1), size(stack, 2), 1, size(stack, 3));
+if ndims(stack)==3
+    
+    sprintf("WARNING, ignoring tcropback, tcropfront, and channel_use because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
+
+else
+
+    keepinds_t = tcropfront+1:sz_yxzt(4)-tcropback;
+    if ~isequal(keepinds_t, 1:size(stack,4)) && ~isempty(keepinds_t)
+        stack = stack(:,:,:,:,keepinds_t);
+    end
+
+    channel_use = intersect(channel_save, channel_use); %ignore requested channels that don't exist
+    stack = stack(:,:,channel_use,:,:);
+
 end
 
+stackmin = min(stack(:));
 
-if isa(stack, 'int8') || isa(stack, 'uint8')
-    error("a2p currently does not support int8 or uint8 stacks, although could with a few minor changes")
-end
-
-datmin = min(stack(:));
-
-if zero_stack==0 && datmin<0 && ( strcmp(output_datatype, 'uint16') || strcmp(output_datatype, 'uint32') || strcmp(output_datatype, 'uint64') )
-    sprintf("WARNING, zero_stack==0, BUT stack min is less than zero, and output_datatype is " + output_datatype + ", forcing zero_stack to be true to prevent lower clipping of unsigned integer output datatype")
+if zero_stack==0 && stackmin<0 && ( strcmp(output_datatype, 'uint16') || strcmp(output_datatype, 'uint32') || strcmp(output_datatype, 'uint64') )
+    sprintf("WARNING, zero_stack==0, but stack min is less than zero, and output_datatype is " + output_datatype + "; forcing zero_stack to be true to prevent lower clipping of unsigned integer output datatype")
     zero_stack = 1;
 end
 
 if zero_stack
-    sprintf("CONVERTING STACK TO SINGLE PRECISION PRIOR TO SUBTRACTING MIN SINCE MIN IS NEGATIVE AND STACK DATATYPE IS SIGNED INTEGER")
-    if datmin<0 && ( isa(stack, 'int16') || isa(stack, 'int32') || isa(stack, 'int64') )
-        stack = single(stack); %convert to single before subtracting min since there are negatives
-    end
-    stack = stack - double(datmin);
+    stack = stack - stackmin;
 end
 
-if ~isa(stack, output_datatype)
-    datmax = max(stack(:));
-    if datmax > intmax(output_datatype)
-        error("ERROR, CONVERTING TO output_datatype " + output_datatype + " WILL CAUSE UPPER CLIPPING, CHANGE output_datatype")
-    end
-    switch output_datatype
-        case 'uint16'
-            stack = uint16(stack);
-        case 'uint32'
-            stack = uint32(stack);
-        case 'uint64'
-            stack = uint64(stack);
-        case 'int16'
-            stack = int16(stack);
-        case 'int32'
-            stack = int32(stack);
-        case 'int64'
-            stack = int64(stack);
-        case 'single'
-            stack = single(stack);
-        case 'double'
-            stack = double(stack);
-    end
+stack = stacktype_change(stack, output_datatype);
 
-end
-
-if isempty(tcropfront)
-    tcropfront = 0;
-end
-if isempty(tcropback)
-    tcropback = 0;
-end
-
-keepinds_t = tcropfront+1:sz_yxzt(4)-tcropback; 
-if ~isequal(keepinds_t, 1:size(stack,4))
-    stack = stack(:,:,:,keepinds_t);
+if ndims(stack)~=3 %do this after type conversion in case stack is large
+    stack = permute(stack, [1 2 4 5 3]);
 end
 
 save(pth_stack_mat, 'stack', '-v7.3', '-mat')

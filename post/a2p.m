@@ -49,28 +49,21 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     %% load and process daq
 
     if ui.mn.old_project
+        
         try
             load(pth.featsave, 'ts')
         catch
             ts.vis.(ui.carl.feat) = load_feat(ids.recdate, ids.fly, ids.trial, ui.carl.stimtype, ui.carl.feat, ...
-                pthparent_feat = pth.parent_feat, ...
-                rep = 1, ...
-                feat2 = [], ...
-                pthsv_plot = [], ...
-                doplt = 1, ...
-                getgrid = 1, ...
-                vistype = 'plane', ...
-                it = [1:3:250], ...
-                gridres = 256, ...
-                flipped = 0, ...
-                downsample_template = 1, ...
-                crop_edges = 1, ...
-                pth_template = pth.template);
+                pthparent_feat=pth.parent_feat, rep=1, feat2=[], pthsv_plot=[], doplt=1, ...
+                getgrid=1, vistype='plane', it=[1:3:250], gridres=256, flipped=0, downsample_template=1, ...
+                crop_edges=1, pth_template=pth.template);
             save(pth.featsave, 'ts', '-v7.3', '-mat')
-            md.ti = md.imper * [1:md.sz_crop(4)];
-            md.epochs.epochinds_ts_i = ones(numel(md.ti), 1);
         end
+        md.ti = md.imper * [1:md.sz_crop(4)];
+        md.epochs.epochinds_ts_i = ones(numel(md.ti), 1);
+    
     else
+        
         if ui.mn.do_daq
             try
                 load(pth.daqrs, 'daqrs')
@@ -81,34 +74,33 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             [ts.ball, ts.vis, md.ti] = rename_daq_timeseries(daqrs);
             [md.epochs, ts.vis] = load_g4_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.imper, daqrs, ui.daq.use_carls_epochs);
         end
-    end
 
-
-    %% temporally downsample fictrac video and align with imaging timeseries
-
-    if ui.mn.do_temporal_downsample_align_fictrac_video
-        try
-            load(pth.ft.vidrs, 'ftvdsrs')
-        catch
+        if ui.mn.do_temporal_downsample_align_fictrac_video
             try
-                ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
-                    ui.ftv.num_periodic_peaks_defining_laser_oscillations, ui.ftv.ftvid_spatial_smooth_window_std, ui.ftv.numpix_to_extract_laser_timeseries, ...
-                    ui.ftv.laser_timeseries_smooth_window_std, ...
-                    ui.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
-            catch ME
-                sprintf(ME.message)
-                ftvdsrs = [];
+                load(pth.ft.vidrs, 'ftvdsrs')
+            catch
+                try
+                    ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
+                        ui.ftv.num_periodic_peaks_defining_laser_oscillations, ui.ftv.ftvid_spatial_smooth_window_std, ui.ftv.numpix_to_extract_laser_timeseries, ...
+                        ui.ftv.laser_timeseries_smooth_window_std, ...
+                        ui.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
+                catch ME
+                    sprintf(ME.message)
+                    ftvdsrs = [];
+                end
             end
+        else
+            ftvdsrs = [];
         end
-    else
-        ftvdsrs = [];
+
     end
+
 
     %% load/visualize stack (and optional hires stack)
 
-    stack = stackld(pth.stack, ...   %can just pass pth.stack if it's mat; if tif need to also pass sz to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim; 
-        suffixes_plot=ui.ld.gif.suffixes_plot, ... %pass nonempty suffixes_plot and it will plot whichever suffixes are in same folder as pth.stack, along with pth.stack 
-        sz = md.sz_o, ... 
+    stack = stackld(pth.stack, ...   %can just pass pth.stack if it's mat; if tif need to also pass sz to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim;
+        suffixes_plot=ui.ld.gif.suffixes_plot, ... %pass nonempty suffixes_plot and it will plot whichever suffixes are in same folder as pth.stack, along with pth.stack
+        sz = md.sz_o, ...
         numslice_withflyback = md.numslice_withflyback, ...
         channel_save = md.channel_save, ...
         channel_use = ui.ld.channel_use, ...
@@ -124,7 +116,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         smooth_window_temporal = ui.ld.gif.smooth_window_temporal, ...
         display_range = ui.ld.gif.display_range);
 
-    % stackreg = register_stack_new(stack);
+    % stackreg = register_stack_new(stack(:,:,:,:,1));
 
     if any(cell2mat(struct2cell(ui.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, ui.hires);
