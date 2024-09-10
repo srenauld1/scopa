@@ -1,5 +1,5 @@
 
-
+            
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity
