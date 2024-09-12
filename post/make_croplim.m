@@ -58,10 +58,11 @@ end
 %% save
 
 tinds = 1:sz_t;
-croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end)];
-croplimstr = [num2str(croplim(7)) '_' num2str(croplim(8)) '_' num2str(croplim(3)) '_' num2str(croplim(4)) '_' num2str(croplim(1)) '_' num2str(croplim(2)) '_' num2str(croplim(5)) '_' num2str(croplim(6))];
+cinds = 1:size(stack,5);
+croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end), cinds(1), cinds(end)]; 
+croplimstr = [num2str(croplim(7)) '_' num2str(croplim(8)) '_' num2str(croplim(3)) '_' num2str(croplim(4)) '_' num2str(croplim(1)) '_' num2str(croplim(2)) '_' num2str(croplim(5)) '_' num2str(croplim(6)) '_' num2str(croplim(9)) '_' num2str(croplim(10))]; %txyz
 pth_croplim = [fldr recid '_' regionex_nounderscore '_' croplimstr '_croplim_.mat'];
-save(pth_croplim, 'yinds', 'xinds', 'zinds', 'tinds', '-v7.3', '-mat')
+save(pth_croplim, 'yinds', 'xinds', 'zinds', 'tinds', 'cinds', '-v7.3', '-mat')
 
 
 

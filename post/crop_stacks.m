@@ -12,7 +12,7 @@ end
 
 if strcmp(regionex, name_noregionex) %strcmp(croplim, name_noregionex)
 
-    croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4)];
+    croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4), 1, size(stack, 5)];
     stack = single(stack);
 
 else
@@ -27,12 +27,12 @@ else
         pth_mroi = strrep(pth_mroi, croplimstr, croplimstr_new);
     end
     
-    stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8))); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single
+    stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10))); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single
 
 end
 
 zstartpos_crop = zstartpos(croplim(5):croplim(6));
-stack_mnt = mean(stack, 4);
+stack_mnt = squeeze(mean(stack, 4));
 
 if use_hires
     if contains(regionex, '_')

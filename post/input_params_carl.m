@@ -13,10 +13,10 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
-    fnspec_fly = {'0'}; %cell array of char, can use wildcards
-    fnspec_trial = {'1'}; %cell array of char, can use wildcards
-    fnspec_suffix = {'raw'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
+    fnspec_recdate = {'20240907'}; %cell array of char, can use wildcards
+    fnspec_fly = {'*'}; %cell array of char, can use wildcards
+    fnspec_trial = {'*'}; %cell array of char, can use wildcards
+    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
@@ -74,7 +74,7 @@ ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn_nosn = [0,1];
 
-ui.ld.gif.it = [20.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+ui.ld.gif.it = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 ui.ld.gif.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 
 ui.ld.smsdspace = 0; %smooth the stack in time, 0 to skip
@@ -338,7 +338,7 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 
 %overwrite some params for carl's old project
 ui.mn.old_project = 0;
-if all(contains(ui.mn.pthstacks, 'fn1g_syt')) %~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
+if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(contains(ui.mn.pthstacks, 'fn1g_syt')) %~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
     ui.mn.old_project = 1;
     if numel(fnspec_recdate)>1
         error("right now old project is one file at a time")
@@ -370,6 +370,9 @@ ui = orderfields_recursive(ui);
 ui = transform_user_input_a2p(ui);
 
 
+if isempty(ui.mn.pthstacks) || isempty(cell2mat(ui.mn.pthstacks))
+    error("no stacks found")
+end
 
 end
 

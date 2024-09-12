@@ -1,5 +1,5 @@
 
-
+            
 %%%%%%% scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
 
 % variables are organized into structs to reduce complexity
@@ -54,7 +54,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             load(pth.featsave, 'ts')
         catch
             ts.vis.(ui.carl.feat) = load_feat(ids.recdate, ids.fly, ids.trial, ui.carl.stimtype, ui.carl.feat, ...
-                pthparent_feat=sw pth.parent_feat, rep=1, feat2=[], pthsv_plot=[], doplt=1, ...
+                pthparent_feat=pth.parent_feat, rep=1, feat2=[], pthsv_plot=[], doplt=1, ...
                 getgrid=1, vistype='plane', it=[1:3:250], gridres=256, flipped=0, downsample_template=1, ...
                 crop_edges=1, pth_template=pth.template);
             save(pth.featsave, 'ts', '-v7.3', '-mat')
@@ -135,6 +135,10 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         [stackcrop, zstartpos_crop, stack_mnt.(regionex), map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
             crop_stacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
             md.sz_crop, ui.mroi.auto.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
+
+        "HACK USING ONE CHANNEL FOR ROI FOR NOW"
+        stackcrop = stackcrop(:,:,:,:,1);
+        stack_mnt.(regionex) = stack_mnt.(regionex)(:,:,:,1);
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...

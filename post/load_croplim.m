@@ -13,9 +13,9 @@ elseif length(pthcroplimall)==1
     [~, fncr, ~] = fileparts(pthcroplimall.name);
     spl = strsplit(fncr, '_');
     insloc = find(strcmp(spl, regionex_nounderscore));
-    croplimstr = strjoin(spl(insloc+1:insloc+8), '_');
+    croplimstr = strjoin(spl(insloc+1:insloc+10), '_');
     croplimtmp = str2double(strsplit(croplimstr, '_'));
-    croplim = croplimtmp(vec([1:2]'+2*([3 2 4 1]-1)));
+    croplim = croplimtmp(vec([1:2]'+2*([3 2 4 1 5]-1)));
 end
 
 end

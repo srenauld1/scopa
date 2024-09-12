@@ -34,12 +34,12 @@ stack = stack(:,:,:,1:100);
 
 
 
-smsdspace = 0.5;
-if smsdspace
-    for tind = 1:size(stack,4)
-        stack(:,:,:,tind) = smooth3(stack(:,:,:,tind), 'gaussian', [3 3 3], 0.65);
-    end
-end
+% smsdspace = 0.5;
+% if smsdspace
+%     for tind = 1:size(stack,4)
+%         stack(:,:,:,tind) = smooth3(stack(:,:,:,tind), 'gaussian', [3 3 3], 0.65);
+%     end
+% end
 
 vwr = viewer3d();
 vsh(1) = volshow(stack(:,:,:,1), Parent=vwr);
@@ -55,7 +55,7 @@ vsh(1).RenderingStyle="Isosurface";
 vsh(1).OverlayRenderingStyle="GradientOverlay";
 vsh(1).GradientOpacityValue=0.1;
 vsh(1).GradientOpacityValue=0.1;
-vsh(1).IsosurfaceValue = 0.4; 
+vsh(1).IsosurfaceValue = 0.5; 
 vsh(1).Colormap=[1 0 1];
 vsh(1).Alphamap=0.1;
 
