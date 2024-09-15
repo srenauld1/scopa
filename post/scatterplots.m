@@ -384,7 +384,7 @@ end
 
 
 
-function varargout = nanpadvec(numsamp_max, varargin)
+function varargout = nanpadvar_loc(numsamp_max, varargin)
 
 for j = 1:numel(varargin)
     if ~isvector(varargin{j})
@@ -853,7 +853,7 @@ for lagind = 1:numlags
             [ccr(lagind) ccpv(lagind)] = circ_corrcc(plotx{lagind}, ploty{lagind}); %circ-circ
     end
 
-    [plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind}] = nanpadvec(numsamp_max, plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind});
+    [plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind}] = nanpadvar_loc(numsamp_max, plotx{lagind}, ploty{lagind}, plotz{lagind}, r_dummy1{lagind}, r_dummy2{lagind});
 
 end
 

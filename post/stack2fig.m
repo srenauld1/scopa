@@ -395,7 +395,7 @@ end
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipixinds)
-        [imroi, imalpha] = make_roi_overlay(stack, roipixinds{roiinds(ri)}, roi_colors(ri,:), roialpha); %make an overlay for one roi
+        [imroi, imalpha] = make_roi_overlay(stack, roipixinds{roiinds(ri)}, col=roi_colors(ri,:), alp=roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after fdimnum
         framecount = framecount+1;

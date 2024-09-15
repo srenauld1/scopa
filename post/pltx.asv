@@ -465,7 +465,7 @@ stmp = cellfun(@size, vars, 'UniformOutput', false);
 dtmp = cellfun(@ndims, vars, 'UniformOutput', false);
 maxsz = 3; %max(cell2mat(dtmp));
 minsz = min(cell2mat(dtmp));
-if minsz==2 %add channel size as third element for each var
+if minsz==2
     repidx = cell2mat(cellfun(@(x) x~=maxsz, dtmp, 'UniformOutput', false));
     stmp(repidx) = cellfun(@(x) cat(2,x,1), stmp(repidx), 'UniformOutput', false);
 else

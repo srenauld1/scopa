@@ -54,7 +54,7 @@ else
 end
 polarinds_prev = polarinds;
 
-vars = vars(scinds, :);
+vars = vars(scinds, :, :);
 labsp_sc = labs(scinds);
 cols_sc = cols(scinds,:);
 numvars = size(vars,1);
@@ -178,13 +178,13 @@ switch num2str(find(polarinds(1:2)))
 end
 
 
-varsp_sc(1,:) = nanpadvec(plotx, numsamp_max, 2);
-varsp_sc(2,:) = nanpadvec(ploty, numsamp_max, 2);
+varsp_sc(1,:) = nanpadvar(plotx, numsamp_max, vecdim=2);
+varsp_sc(2,:) = nanpadvar(ploty, numsamp_max, vecdim=2);
 if ~z_is_empty
-    varsp_sc(3,:) = nanpadvec(plotz, numsamp_max, 2);
+    varsp_sc(3,:) = nanpadvar(plotz, numsamp_max, vecdim=2);
 end
-rdummies(1,:) = nanpadvec(r_dummy1, numsamp_max, 2);
-rdummies(2,:) = nanpadvec(r_dummy2, numsamp_max, 2);
+rdummies(1,:) = nanpadvar(r_dummy1, numsamp_max, vecdim=2);
+rdummies(2,:) = nanpadvar(r_dummy2, numsamp_max, vecdim=2);
 
 end
 

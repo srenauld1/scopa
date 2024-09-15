@@ -1,20 +1,31 @@
 
-function [hndls, framecount, cbflags] = plot_axes(hndls, stack, vid, framecount, varsp, ...
+function [hndls, framecount, cbflags] = plot_axes(hndls, stack, stackp, vid, framecount, varsp, ...
     vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
     pthgif, figure_title, varsz, letui, timestr_ui, sampinc, ...
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
     cols_sc, scdimmin, scdimsd)
 
+clear make_roi_overlay pltexp_process_callbacks
 
 cbflags = default_cbflags([], 'all'); %set all flags to default
+
+numchan = size(varsp, 3);
+numplane = numel(hndls.st.hax);
+
+imchan2rgb = {[2], [1 3]};
+if numchan==1
+    blink_on_inc = 1; %roi shown for all frames (ie not blinking)
+elseif numchan==2
+    blink_on_inc = 5; %roi shown every blink_on_inc frames
+    roialpha = 1; %for 2 channel (magenta/green image), rois blink and are saturated, since colors are hard to see
+end
 
 if all(cellfun(@isempty,roipixindp))
     do_overlay = 0;
 else
     do_overlay = 1;
     stack_oneframe = stack(:,:,:,1);
-    clear make_roi_overlay pltexp_process_callbacks %clear persistent variables
-    [imroi, imalpha] = make_roi_overlay(stack_oneframe, roipixindp, cols, roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+    [imroi, roialphamask] = make_roi_overlay(stack_oneframe, roipixindp, col=cols, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 end
 
 tinds_use = tinds;
@@ -26,15 +37,15 @@ tloop = 1;
 vpmap_nonempty = find(vpmapflat_axid);
 roiplotinds = find(~cellfun(@isempty, roipixindp));
 
-
 hndls.httl.String{1} = figure_title;
-
 
 while tloop
 
     force_do_write_gif = 0;
-    ctmp = ones(numel(hndls.ts.hax),size(varsz, 1));
-    change_overlay_alpha = 0;
+    varalpha_tmp = ones(numel(hndls.ts.hax),size(varsz, 1),numchan);
+    imchanalpha_tmp = ones(numplane,numchan);
+    change_roialphamask = 0;
+    imchanalpha_ever_changed = zeros(1,numchan);
 
     for fr = 1:numel(tinds_use) %for each sample in chosen subset
 
@@ -45,12 +56,21 @@ while tloop
             for fi = 1:numel(hndls.ts.hpl{j}) %for each axis side
                 for k = 1:numel(hndls.ts.hpl{j}{fi}) %for each variable
                     cnt = cnt+1;
-                    if fr==1 %only on first frame
-                        hndls.ts.hpl{j}{fi}{k}.YData = varsp(vpmap_nonempty(cnt),:);
-                    end
-                    if ~isempty(cbflags.quick.linealpha) && cbflags.quick.linealpha{vpmap_nonempty(cnt)}
-                        ctmp(j,vpmap_nonempty(cnt)) = change_alpha_ts(ctmp(j,vpmap_nonempty(cnt)), cbflags.quick.linealpha{vpmap_nonempty(cnt)});
-                        hndls.ts.hpl{j}{fi}{k}.Color(4) = ctmp(j,vpmap_nonempty(cnt));
+                    for c = 1:numel(hndls.ts.hpl{j}{fi}{k}) %for each channel
+                        if fr==1 %only on first frame
+                            hndls.ts.hpl{j}{fi}{k}{c}.YData = varsp(vpmap_nonempty(cnt),:,c);
+                        end
+                        linealphadt = -inf;
+                        if ~isempty(cbflags.quick.varalpha) && cbflags.quick.varalpha{vpmap_nonempty(cnt)} && ismember(c, cbflags.val.varchan)  %only if varalpha or imchanalpha callback engaged
+                            linealphadt = cbflags.quick.varalpha{vpmap_nonempty(cnt)};
+                        end
+                        if ~isempty(cbflags.quick.imchanalpha) && ismember(vpmap_nonempty(cnt), roiplotinds) && ismember(c, cbflags.val.imchan) && ( isempty(linealphadt) || abs(cbflags.quick.imchanalpha) > abs(linealphadt) )
+                            linealphadt = cbflags.quick.imchanalpha;
+                        end
+                        if isfinite(linealphadt)
+                            varalpha_tmp(j,vpmap_nonempty(cnt),c) = alphachange(varalpha_tmp(j,vpmap_nonempty(cnt),c), linealphadt);
+                            hndls.ts.hpl{j}{fi}{k}{c}.Color(4) = varalpha_tmp(j,vpmap_nonempty(cnt),c); %it seems 4th element of color can't be saved, or even queried, just written
+                        end
                     end
                 end
             end
@@ -65,24 +85,59 @@ while tloop
 
         %%%% STACK %%%%
 
-        if ~isempty(cbflags.quick.linealpha) && do_overlay && fr>1
-            alpha_changes_for_rois = cell2mat(cbflags.quick.linealpha(roiplotinds));
-            if any(alpha_changes_for_rois) %if any alpha changes apply to roi variables
+        if ~isempty(cbflags.quick.imchanalpha) && fr>1
+            imchanalpha_ever_changed = 1;
+        end
+
+        if ~isempty(cbflags.quick.varalpha) && do_overlay && fr>1
+            alpha_changes_for_rois = cell2mat(cbflags.quick.varalpha(roiplotinds));
+            if any(alpha_changes_for_rois) %if any alpha changes apply to roi variables (they won't necessarily . . . could be fictrac variables for example)
                 roiinds_for_alphachange = roiplotinds(find(alpha_changes_for_rois));
-                imalpha = change_alpha_st(imalpha, roipixindp(roiinds_for_alphachange), cbflags.quick.linealpha(roiinds_for_alphachange), roialpha);
-                change_overlay_alpha = 1;
+                independent_image_alpha = 0; %for now not using this
+                if independent_image_alpha
+                    imroialpha_frac = cbflags.quick.varalpha(roiinds_for_alphachange);
+                else
+                    hack_taking_first_subplot = 1;
+                    imroialpha_frac = max(varalpha_tmp(hack_taking_first_subplot, roiinds_for_alphachange,:), [], 3); %the max alpha change across all channels
+                end
+                for k = 1:numel(roiinds_for_alphachange)
+                    roialphamask(roipixindp{roiinds_for_alphachange(k)}) = roialpha*imroialpha_frac(k);  %imroialpha(imroialpha<0) = 0 and imroialpha(imroialpha>roialpha) = roialpha not needed (as long as imroialpha_frac comes from varalpha_tmp, since varalpha_tmp is clipped 0-1; also unfortunately regions where rois overlap get changed for either roi they belong to 
+                end
+                change_roialphamask = 1;
             end
         end
 
-        for j = 1:numel(hndls.st.hax) %for each z slice
 
-            hndls.st.hpl{j}.CData = stack(:,:,j,tinds_use(fr));
+        for j = 1:numplane %for each z slice
+
+            if ~isempty(stackp) %isa(stack, 'uint8') && size(stack, ndims(stack))==3
+                if any(imchanalpha_ever_changed, 'all') %after changing once, must enter for all frames
+                    for c = 1:numchan
+                        if ismember(j, cbflags.val.implane) && ismember(c, cbflags.val.imchan) %if it's a plane and channel whose alpha has ever been changed
+                            if ~isempty(cbflags.quick.imchanalpha)
+                                imchanalpha_tmp(j,c) = alphachange(imchanalpha_tmp(j,c), cbflags.quick.imchanalpha);
+                            end
+                            if imchanalpha_ever_changed(j,c)
+                                hndls.st.hpl{j}.CData(:,:,imchan2rgb{c}) = squeeze(stackp(:,:,j,tinds_use(fr),imchan2rgb{c})).*imchanalpha_tmp(j,c); %scanimage channel 1 gets green adjustment (b in rgb channel 2)
+                            else
+                                hndls.st.hpl{j}.CData(:,:,imchan2rgb{c}) = squeeze(stackp(:,:,j,tinds_use(fr),imchan2rgb{c})); %squeeze to make it 3d (2d plus color channel)
+                            end
+                        end
+                    end
+                else
+                    hndls.st.hpl{j}.CData = squeeze(stackp(:,:,j,tinds_use(fr),:)); %squeeze to make it 3d (2d plus color channel)
+                end
+            else
+                hndls.st.hpl{j}.CData = stack(:,:,j,tinds_use(fr));
+            end
             if do_overlay %if there are roi variables
                 if fr==1
                     hndls.st.hol{j}.CData = squeeze(imroi(:,:,j,:)); %squeeze to make it 3d (2d plus color channel)
                 end
-                if fr==1 || change_overlay_alpha==1
-                    hndls.st.hol{j}.AlphaData = imalpha(:,:,j);
+                if fr==1 || change_roialphamask==1 || (numchan==2 && mod(fr, blink_on_inc)==0)
+                    hndls.st.hol{j}.AlphaData = roialphamask(:,:,j);
+                elseif numchan==2 && mod(fr, blink_on_inc)==1 %if it's the first "blink off" frame of a blink cycle, which only exists if numchan==2 (don't do every blink off frame to save time updating imroialpha)
+                    hndls.st.hol{j}.AlphaData(:) = 0;
                 end
             end
 
@@ -152,7 +207,7 @@ while tloop
         % if fr==1
         %     hndls.sc.hpl{1}.CData = repmat(cmp{lagind}, size(varsp_sc,3), 1);
         % end
-        scdimmu = ti(tinds_use(fr)); 
+        scdimmu = ti(tinds_use(fr));
         scdimmax = 1;
         scdimmin = 0.02;
         scdimsd = 20;
@@ -189,7 +244,8 @@ while tloop
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
             cbflags = default_cbflags(cbflags, 'quick'); %set all 'quick' flags to default
-            change_overlay_alpha = 0;
+            change_roialphamask = 0;
+            % imchanalpha_changed = 0; %don't reset since, unlike alpha for roimask or timeseries, we don't know max of each frame
             [cbflags, hndls.httl.String{2}] = pltexp_process_callbacks(cbflags, hndls, varsz, varsp, roipixindp, ti, tinds_use, sampinc);
             tloop = 1;
         else
@@ -235,30 +291,18 @@ end
 
 
 
-function ctmp = change_alpha_ts(ctmp, dalpha)
+function varalpha_tmp = alphachange(varalpha_tmp, dalpha)
 
-ctmp = ctmp + dalpha;
-if ctmp<0
-    ctmp = 0;
+varalpha_tmp = varalpha_tmp + dalpha;
+if varalpha_tmp<0
+    varalpha_tmp = 0;
 end
-if ctmp>1
-    ctmp = 1;
-end
-
-end
-
-
-function imalpha = change_alpha_st(imalpha, roipixindp, dalpha, roialpha)
-
-%overlapping rois will get changed multiple times, oh well
-
-for j = 1:numel(roipixindp)
-    imalpha(roipixindp{j}) = imalpha(roipixindp{j}) + roialpha*dalpha{j};
-    imalpha(imalpha<0) = 0;
-    imalpha(imalpha>roialpha) = roialpha;
+if varalpha_tmp>1
+    varalpha_tmp = 1;
 end
 
 end
+
 
 
 

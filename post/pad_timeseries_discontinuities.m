@@ -22,12 +22,12 @@ tinds_cont_nan = [];
 nanpad_indv = nan(num_dim_indvpre, numsampnan);
 % nanpad_depv = nan(num_dim_depvpre, numsampnan);
 nanpad_depv = nan(numroi_plot, numsampnan);
-nanpadvec = nanpad_depv(1,:);
+nanpad = nanpad_depv(1,:);
 for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
     indvnan_cont = cat(2, indvnan_cont, nanpad_indv, indv( :, tinds_cont{tbi}));
     depvnan_cont = cat(2, depvnan_cont, nanpad_depv, depv(  :, tinds_cont{tbi}));
     depvpnan_cont = cat(2, depvpnan_cont, nanpad_depv, depvp(  :, tinds_cont{tbi}));
-    pureepochnan_cont = cat(2, pureepochnan_cont,  nanpadvec, epochinds_pure_ts_m( tinds_cont{tbi}));
+    pureepochnan_cont = cat(2, pureepochnan_cont,  nanpad, epochinds_pure_ts_m( tinds_cont{tbi}));
     if tbi==1
         tmpstart = 1;
     else
@@ -66,7 +66,7 @@ pureepochnan_seg = pureepochnan_cont( :, tinds_seg{1});
 for tnsi = 2:timeseries_numsegments
     depvnan_seg = cat(2, depvnan_seg, nanpad_depv, depvnan_cont( :, tinds_seg{tnsi}));
     depvpnan_seg = cat(2, depvpnan_seg, nanpad_depv, depvpnan_cont( :, tinds_seg{tnsi}));
-    pureepochnan_seg = cat(2, pureepochnan_seg, nanpadvec, pureepochnan_cont( :, tinds_seg{tnsi}));
+    pureepochnan_seg = cat(2, pureepochnan_seg, nanpad, pureepochnan_cont( :, tinds_seg{tnsi}));
 end
 
 

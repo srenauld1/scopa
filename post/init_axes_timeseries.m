@@ -20,6 +20,7 @@ arguments
     axorder char = 'rowmajor'
 end
 
+numchan = max(cell2mat(cellfun(@(x) size(x,3), ticklab, 'UniformOutput', false)));
 numxtick = 20;
 
 numsubplot = numel(subplot_ind);
@@ -69,9 +70,15 @@ for j = 1:numsubplot
 
             cnt(fi) = cnt(fi)+1; %count of nonempty variables for each axis side index
 
-            hpl{j}{fi}{cnt(fi)} = plot(hax{j}, ti, dummyvec);
-            hpl{j}{fi}{cnt(fi)}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
-            hpl{j}{fi}{cnt(fi)}.LineStyle = '-';
+            for c = 1:numchan
+                hpl{j}{fi}{cnt(fi)}{c} = plot(hax{j}, ti, dummyvec);
+                hpl{j}{fi}{cnt(fi)}{c}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
+                if c==1
+                    hpl{j}{fi}{cnt(fi)}{c}.LineStyle = '-';
+                else
+                    hpl{j}{fi}{cnt(fi)}{c}.LineStyle = '--';
+                end
+            end
 
             if j==1
                 hax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
@@ -83,8 +90,8 @@ for j = 1:numsubplot
                 formspec{vpmapflat_axid(k)} = [formspec{vpmapflat_axid(k)} '%s\n'];
             end
 
-            for tti = 1:numel(ticklab{k})
-                ticktmp{vpmapflat_axid(k)}{cnt(fi),tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), num2str(ticklab{k}(tti), 4));
+            for tti = 1:size(ticklab{k},2)
+                ticktmp{vpmapflat_axid(k)}{cnt(fi),tti} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), regexprep(num2str(ticklab{k}(1,tti,:), 4), ' +', '/')); %in case there's two channels, replace spaces from num2str with slash
             end
 
         end
@@ -97,8 +104,8 @@ for j = 1:numsubplot
         hax{j}.YAxis(fi).FontWeight = 'bold';
 
         if rescale_timeseries
-            hax{j}.YAxis(fi).Limits = lims{k}.rescale_xtra;
-            hax{j}.YAxis(fi).TickValues = lims{k}.rescale;
+            hax{j}.YAxis(fi).Limits = lims{k}.rescale_xtra(:,:,1);
+            hax{j}.YAxis(fi).TickValues = lims{k}.rescale(:,:,1);
         else
             error("rescale_timeseries is currently required")
         end

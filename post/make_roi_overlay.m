@@ -1,15 +1,22 @@
-function [imroi, imalpha] = make_roi_overlay(imbg, roipixinds, roi_color, roialpha)
+function [imroi, imalpha] = make_roi_overlay(imbg, roipixinds, opt)
 
 % make overlay for roi set defined by roipixinds, background is imbg;
+% roipixinds is cell array of roi pixel linear indices into imbg
+% imbg is the grayscale image stack, used as background
+% imroi is rgb stack matching size of imgb, but with color representing rois 
 % overlapping rois are averaged in color and transparency/alpha
+% imalpha is a grayscale stack matching size of imgb, with value representing transparency 
 % uses persistent variables because typically called in plotting loop
 
 arguments
     imbg
     roipixinds
-    roi_color = [1 0 0]
-    roialpha = 0.3
+    opt.col = [1 0 0] 
+    opt.alp = 0.3
 end
+col = opt.col;
+alp = opt.alp;
+
 persistent imalpha_oneroi
 persistent imroi_oneroi
 
@@ -25,16 +32,22 @@ if ~iscell(roipixinds)
         error("roipixinds must be cell, or vector")
     end
 end
-if size(roi_color, 1)==1
-    roi_color = repmat(roi_color, [numel(roipixinds) 1]);
+numroi = numel(roipixinds); %do after possible conversion to cell 
+if size(col, 1)==1
+    col = repmat(col, [numroi 1]);
 end
+if numel(alp)==1
+    alp = repelem(alp, numroi);
+end
+
+assert(isequal(numroi,size(col,1),numel(alp)))
 
 
 rcnt = 0;
 for ri = 1:numel(roipixinds)
     if ~isempty(roipixinds{ri})
         rcnt = rcnt+1;
-        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipixinds{ri}, imroi_oneroi, imalpha_oneroi, roi_color(ri,:), roialpha); %make an overlay for one roi
+        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipixinds{ri}, imroi_oneroi, imalpha_oneroi, col(ri,:), alp(ri)); %make an overlay for one roi
         if rcnt==1
             imroi = imroi_oneroi;
             imalpha = imalpha_oneroi;
@@ -57,14 +70,14 @@ end
 end
 
 
-function [imroi, imalpha] = make_roi_overlay_oneroi(pixind_oneroi, imroi, imalpha, roi_color, roialpha)
+function [imroi, imalpha] = make_roi_overlay_oneroi(pixind_oneroi, imroi, imalpha, col, alp)
 
 imroi(:) = 0;
 imalpha(:) = 0;
 pixind_oneroi_rgb = pixind_oneroi(:)+numel(imalpha)*([1:3]-1);
-imroi(pixind_oneroi_rgb(:,1)) = roi_color(1);
-imroi(pixind_oneroi_rgb(:,2)) = roi_color(2);
-imroi(pixind_oneroi_rgb(:,3)) = roi_color(3);
-imalpha(pixind_oneroi) = roialpha;
+imroi(pixind_oneroi_rgb(:,1)) = col(1);
+imroi(pixind_oneroi_rgb(:,2)) = col(2);
+imroi(pixind_oneroi_rgb(:,3)) = col(3);
+imalpha(pixind_oneroi) = alp;
 
 end

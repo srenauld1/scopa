@@ -1,6 +1,8 @@
 
 function [vars, labs, lims, roipixinds, varcombos] = apply_user_input(cbflags, vars, labs, roipixinds, stack, stack_mnt, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
 
+"WARNING USING CHANNEL LOOP IN APPLY USER INPUT - FIX THIS"
+
 try
 
     if ~isempty(cell2mat(cbflags.val.roicen))
@@ -98,7 +100,13 @@ else
         end
     end
 
-    [roiinfo_new, resp_new] = make_morphological_rois(stack, stack_mnt, normopt, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], maskmanual);
+    for k = 1:size(stack,5)
+        [roiinfo_new, resp_new_tmp] = make_morphological_rois(stack(:,:,:,:,k), stack_mnt(:,:,:,k), normopt, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], maskmanual);
+        fn = fieldnames(resp_new_tmp);
+        for fi = 1:numel(fn)
+            resp_new.(fn{fi})(:,:,k) = resp_new_tmp.(fn{fi});
+        end
+    end
 
     roipixinds = roiinfo_new.roipixinds;
     vars = resp_new.in_rawf_pc_f_cl_f_w_no;

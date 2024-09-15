@@ -190,7 +190,7 @@ elseif strcmpi(eventkey, 'uparrow')
     fid = fopen([pth_tmpfiles 'tmp_scaleshift_.bin'], 'w');
     fwrite(fid, scaleshift, 'int8')
 
-elseif isstrprop(eventkey, 'digit')
+elseif all(isstrprop(eventkey, 'digit'))
     fid = fopen([pth_tmpfiles 'tmp_zchoose_.bin'], 'w');
     fwrite(fid, eventkey, 'uchar')
 

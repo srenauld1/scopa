@@ -18,10 +18,15 @@ if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
     cbflags.val.vdel = [];
     cbflags.val.tinds = [];
     cbflags.val.sampinc = [];
+    cbflags.val.varchan = [];
+    cbflags.val.imchan = [];
+    cbflags.val.implane = [];
+    cbflags.val.imcen = [];
 end
 
 if any(strcmp('quick', varargin)) || any(strcmp('all', varargin))
-    cbflags.quick.linealpha = [];
+    cbflags.quick.varalpha = [];
+    cbflags.quick.imchanalpha = [];
 end
 
 if any(strcmp('labs', varargin)) || any(strcmp('all', varargin))

@@ -15,7 +15,7 @@ context_buttons = {'hyphen', 's'};
 
 ttl = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
 
-if isstrprop(user_input, 'digit') || isnumeric(user_input)
+if all(isstrprop(user_input, 'digit')) || isnumeric(user_input)
 
     if get_tend
         if strcmp(subsequence_type, 'keyboard')

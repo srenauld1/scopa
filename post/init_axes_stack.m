@@ -1,10 +1,11 @@
-function hgroup = init_axes_stack(hfg, ax, letui, stack, cmap, txtvar, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hgroup = init_axes_stack(hfg, ax, letui, stack, stackp, cmap, txtvar, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hfg
     ax struct
     letui
     stack
+    stackp = []
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
     txtvar = []
     display_range = [0,1]
@@ -14,6 +15,11 @@ arguments
     htfac = 1
     fontsz = [6 11 15]
     axorder char = 'rowmajor'
+end
+
+if ~isempty(stackp)
+    stack = stackp;
+    stackp = [];
 end
 
 numsubplot = numel(subplot_ind);
@@ -38,7 +44,11 @@ stackrange = stackmax-stackmin;
 for j = 1:numsubplot
 
     hax{j} = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
+    try
+        hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
+    catch
+        fuk=2
+    end
     hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac);
     hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac);
@@ -72,10 +82,11 @@ for j = 1:numsubplot
     hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');
     hlny{j} = yline(hax{j}, nan, 'w', 'LineStyle', 'none');
     if ~isempty(txtvar)
-        htx{j} = text(hax{j}, size(stack, 2), size(stack, 1), num2str(txtvar(j)), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
+        htx{j} = text(hax{j}, size(stack, 2), size(stack, 1), num2str(txtvar(j), 4), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
     else
         htx{j} = [];
     end
+    htx{j}.PickableParts = 'none'; %so you can capture click on image beneath the text 
     htx{j}.HorizontalAlignment = 'right';
     htx{j}.VerticalAlignment = 'bottom';
 

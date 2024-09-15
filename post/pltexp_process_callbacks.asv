@@ -74,6 +74,7 @@ if isempty(user_input)
     end
 end
 
+numvar = size(varsz,1);
 numplane = numel(hndls.st.hol);
 numchan = max(varsz(:, 3));
 

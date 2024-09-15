@@ -22,7 +22,19 @@ if size(target, 1)~=size(inp,1)
     target = target';
 end
 if iscell(source)
-    source = cell2mat(source);
+    stmp = cellfun(@size, source, 'UniformOutput', false);
+    maxsz = max(cell2mat(cellfun(@numel, stmp, 'UniformOutput', false)));
+    if ~isequal(stmp{:})
+        if maxsz==3 && min(cell2mat(cellfun(@numel, stmp, 'UniformOutput', false)))==2
+            repidx = cell2mat(cellfun(@numel, stmp, 'UniformOutput', false))~=maxsz;
+            source(repidx) = cellfun(@(x) repmat(x, [1 1 2]), source(repidx), 'UniformOutput', false);
+            source = cell2mat(source);
+        else
+            error("source size mistmatch")
+        end
+    else
+        source = cell2mat(source);
+    end
 end
 if iscell(target)
     target = cell2mat(target);
@@ -65,11 +77,11 @@ for j = 1:size(inp, dim)
         tmax = max(tgttmp, [], 'all');
     end
     if skipnan
-        smin = min(srctmp, [], 'all', 'omitmissing');
-        smax = max(srctmp, [], 'all', 'omitmissing');
+        smin = min(srctmp, [], [1 2], 'omitmissing');
+        smax = max(srctmp, [], [1 2], 'omitmissing');
     else
-        smin = min(srctmp, [], 'all');
-        smax = max(srctmp, [], 'all');
+        smin = min(srctmp, [], [1 2]);
+        smax = max(srctmp, [], [1 2]);
     end
 
     inptmp = tmin + [(inptmp-smin)./(smax-smin)].*(tmax-tmin);
