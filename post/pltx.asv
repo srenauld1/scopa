@@ -158,13 +158,13 @@ numfr_gif = check_gif_frame_number(gif_scope, tinds_all, varcombos, numfr_gif_ma
 revert_vars = 0; %revert to input variables after user input changes
 timestr_ui = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')); %insert timestring when interactive to record each change in user input
 newroicen_all = cell(numts, 1);
-cbflags = struct;
+cb = struct;
 plotloop = 1;
 while plotloop %loop is turned off if no user input
 
-    if ~all(structfun(@isempty, cbflags)) && ~revert_vars
+    if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cbflags, vars_use, labs_use, roipixind_use, stack, stack_mnt, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stack_mnt, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -270,13 +270,13 @@ while plotloop %loop is turned off if no user input
 
 
                 %%%% PLOT AXES %%%%
-                [hndls, framecount, cbflags] = plot_axes(hndls, stack, stackp, vid, ...
+                [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, ...
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
                     ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd);
 
-                if cbflags.restart.v==1
+                if cb.restart.v==1
                     plotloop = 1;
                     break;
                 else

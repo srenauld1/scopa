@@ -1,45 +1,45 @@
-function cbflags = default_cbflags(varargin)
+function cb = default_cbflags(varargin)
 
 if any(strcmp('all', varargin))
 
     if any(strcmp('restart', varargin))
-        cbflags.restart.v = [];
-        cbflags.restart.t = [];
+        cb.restart.v = [];
+        cb.restart.t = [];
     end
 
     if any(strcmp('get', varargin))
-        cbflags.get.v = [];
-        cbflags.get.i = [];
-        cbflags.get.tstart = [];
-        cbflags.get.tend = [];
+        cb.get.v = [];
+        cb.get.i = [];
+        cb.get.tstart = [];
+        cb.get.tend = [];
     end
 
     if any(strcmp('tmp', varargin))
-        cbflags.tmp.v = [];
-        cbflags.tmp.i = [];
-        cbflags.tmp.tinds = [];
-        cbflags.tmp.roicen = [];
+        cb.tmp.v = [];
+        cb.tmp.i = [];
+        cb.tmp.tinds = [];
+        cb.tmp.roicen = [];
     end
     
     if any(strcmp('val', varargin))
-        cbflags.val.v = [];
-        cbflags.tmp.v = [];
-        cbflags.val.i = [];
-        cbflags.tmp.i = [];
-        cbflags.val.tinds = [];
-        cbflags.tmp.tinds = [];
-        cbflags.tmp.tstart = [];
-        cbflags.tmp.tend = [];
-        cbflags.val.roicen = [];
-        cbflags.tmp.roicen = [];
+        cb.val.v = [];
+        cb.tmp.v = [];
+        cb.val.i = [];
+        cb.tmp.i = [];
+        cb.val.tinds = [];
+        cb.tmp.tinds = [];
+        cb.tmp.tstart = [];
+        cb.tmp.tend = [];
+        cb.val.roicen = [];
+        cb.tmp.roicen = [];
     end
 
     if any(strcmp('delete', varargin))
-        cbflags.delete.roicen = [];
-        cbflags.changed.t = [];
+        cb.delete.roicen = [];
+        cb.changed.t = [];
     end
 
-    cbflags.lab.title = [];
+    cb.lab.title = [];
 
 end
 

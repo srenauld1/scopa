@@ -1,11 +1,12 @@
 
-function [ttl, val_v_out, val_i_out, val_roicen_out, val_vdel_out, val_varalpha_out, val_varchan_out] = pltexp_sequence_v(user_input, save_buttons, roipixindp, varsz, numvar, numchan)
+function [ttl, val_v_out, val_i_out, val_roicen_out, val_vdel_out, val_varalpha] = pltexp_sequence_v(user_input, save_buttons, roipixindp_plane, varsz, numvar, val_varalpha)
 
 persistent get_i
 persistent get_c
 persistent tmp_v
 persistent tmp_i
 persistent tmp_c
+persistent tmp_varchan
 persistent tmp_roicen
 persistent require_channel_reentry
 persistent changed_roicen
@@ -14,14 +15,9 @@ persistent val_v_out_tmp
 persistent val_i_out_tmp
 persistent val_roicen_out_tmp
 persistent val_vdel_out_tmp
-persistent val_varalpha_out_tmp
-persistent varalpha_zeros_array
-persistent val_varchan_out_tmp
 
 varalpha_inc = 0.05;
-if isempty(varalpha_zeros_array)
-    varalpha_zeros_array = zeros(1, numvar, numchan);
-end
+
 
 context_buttons = {'i', 'c'};
 quick_buttons = {'uparrow', 'downarrow', 'leftarrow', 'rightarrow'};
@@ -49,11 +45,11 @@ if ~isempty(val_v_out_tmp) %don't do elseif here because val_v_out_tmp gets set 
 
     if ~isempty(get_i) && all(isstrprop(user_input, 'digit'))
 
-        [tmp_i, ttl] = get_subsequence_digit(tmp_i, user_input);
+        [tmp_i, ttl] = get_digit_subsequence(tmp_i, user_input);
 
     elseif ~isempty(get_c) && all(isstrprop(user_input, 'digit'))
 
-        [tmp_c, ttl] = get_subsequence_digit(tmp_c, user_input);
+        [tmp_c, ttl] = get_digit_subsequence(tmp_c, user_input);
 
     elseif isnumeric(user_input) %&& isempty(subsequence_type)
 
@@ -79,15 +75,15 @@ if ~isempty(val_v_out_tmp) %don't do elseif here because val_v_out_tmp gets set 
             ttl = ['CHANNEL #' num2str(tmp_c) ' DOES NOT EXIST FOR PLOT VARIABLE #' num2str(val_v_out_tmp) '; PRESS c AGAIN AND ENTER DIGIT TO MODIFY ONE CHANNEL, OR ENTER NO DIGIT TO MODIFY ALL AVAILABLE CHANNELS'];
             require_channel_reentry = 1;
         else
-            if ~isequal(require_channel_reentry, 1) %require_channel_reentry~=1 doesn't work . . . without this, empty val_varchan_out_tmp will be read as all channels and arrows can have effect, after the first loop where tmp_c is set to empty; we don't want arrows to work for invalid channel
-                if isempty(val_varchan_out_tmp) || ~isempty(tmp_c) || isequal(require_channel_reentry,0) %these 3 or expressions allows you to use v-arrow or v-c-arrow or c-arrow (after setting v) to change all channels, and v-c-number-arrow and c-number-arrow to change one channel 
-                    val_varchan_out_tmp = tmp_c;
+            if ~isequal(require_channel_reentry, 1) %require_channel_reentry~=1 doesn't work . . . without this, empty tmp_varchan will be read as all channels and arrows can have effect, after the first loop where tmp_c is set to empty; we don't want arrows to work for invalid channel
+                if isempty(tmp_varchan) || ~isempty(tmp_c) || isequal(require_channel_reentry,0) %these 3 or expressions allows you to use v-arrow or v-c-arrow or c-arrow (after setting v) to change all channels, and v-c-number-arrow and c-number-arrow to change one channel 
+                    tmp_varchan = tmp_c;
                 end
-                [val_varalpha_out_tmp, ttl] = arrow_subsequence(val_v_out_tmp, user_input, varalpha_zeros_array, varalpha_inc);
-                if isempty(val_varchan_out_tmp) %if it's still empty after being assigned tmp_c, it gets all channels
-                    val_varchan_out_tmp = 1:varsz(val_v_out_tmp, 3);
+                if isempty(tmp_varchan) %if it's still empty after being assigned tmp_c, it gets all channels
+                    tmp_varchan = 1:varsz(val_v_out_tmp, 3);
                 end
-                ttl = [ttl ', CHANNEL #' regexprep(num2str(val_varchan_out_tmp), ' +', ' and ')]; %in case multiple channels
+                [val_varalpha, ttl] = arrow_subsequence(val_varalpha, val_v_out_tmp, user_input, varalpha_inc);
+                ttl = [ttl ', CHANNEL #' regexprep(num2str(tmp_varchan), ' +', ' and ')]; %in case multiple channels
             end
         end
         get_c = [];
@@ -125,8 +121,8 @@ if ~isempty(val_v_out_tmp) %don't do elseif here because val_v_out_tmp gets set 
             elseif strcmpi(user_input, 'a')
                 ttl = ['PRESSED "a", ADDING TO EXISTING PLOT VARIABLE #' num2str(val_v_out_tmp) ', MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES'];
                 if isempty(changed_roicen)
-                    val_roicen_out_tmp = roipixindp;
-                    error("roipixindp contains roi pixels not roi centroid; insert find_centroid function")
+                    val_roicen_out_tmp = roipixindp_plane;
+                    error("roipixindp_plane contains roi pixels not roi centroid; insert find_centroid function")
                 end
             end
             val_roicen_out_tmp = unique( cat(1, val_roicen_out_tmp, tmp_roicen), 'rows');
@@ -149,32 +145,29 @@ val_v_out = val_v_out_tmp;
 val_i_out = val_i_out_tmp;
 val_roicen_out = val_roicen_out_tmp;
 val_vdel_out = val_vdel_out_tmp;
-val_varalpha_out = val_varalpha_out_tmp;
-val_varchan_out = val_varchan_out_tmp;
 
 end
 
 
-function [out, ttl] = arrow_subsequence(val_v_out_tmp, user_input, outtmp, inc)
+function [varalpha, ttl] = arrow_subsequence(varalpha, val_v_out_tmp, user_input, inc)
 if strcmpi(user_input, 'uparrow')
     ttl = ['PRESSED "uparrow", RAISING LINE ALPHA FOR PLOT VARIABLE #' num2str(val_v_out_tmp)];
-    outtmp(val_v_out_tmp) = inc;
+    varalpha(val_v_out_tmp) = varalpha(val_v_out_tmp)+inc;
 elseif strcmpi(user_input, 'downarrow')
     ttl = ['PRESSED "downarrow", LOWERING LINE ALPHA FOR PLOT VARIABLE #' num2str(val_v_out_tmp)];
-    outtmp(val_v_out_tmp) = -inc;
+    varalpha(val_v_out_tmp) = varalpha(val_v_out_tmp)-inc;
 elseif strcmpi(user_input, 'rightarrow')
     ttl = ['PRESSED "rightarrow", RAISING LINE ALPHA FOR ALL PLOT VARIABLES EXCEPT #' num2str(val_v_out_tmp)];
-    outtmp = outtmp+inc;
-    outtmp(val_v_out_tmp) = 0;
+    varalpha(1:end~=val_v_out_tmp) = varalpha(1:end~=val_v_out_tmp)+inc;
 elseif strcmpi(user_input, 'leftarrow')
     ttl = ['PRESSED "leftarrow", LOWERING LINE ALPHA FOR ALL PLOT VARIABLES EXCEPT #' num2str(val_v_out_tmp)];
-    outtmp = outtmp-inc;
-    outtmp(val_v_out_tmp) = 0;
+    varalpha(1:end~=val_v_out_tmp) = varalpha(1:end~=val_v_out_tmp)-inc;
 end
-out = num2cell(outtmp);
+varalpha(varalpha<0) = 0;
+varalpha(varalpha>1) = 1;
 end
 
-function [tmp, ttl] = get_subsequence_digit(tmp, user_input)
+function [tmp, ttl] = get_digit_subsequence(tmp, user_input)
 tmp = [tmp str2double(user_input)];
 tmp = str2double(strrep(num2str(tmp), ' ', ''));
 ttl = ['PRESSED ' num2str(tmp) ', CONTINUE ENTERING DIGITS, OR PRESS NON-DIGIT TO USE ' num2str(tmp)];

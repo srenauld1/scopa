@@ -136,10 +136,6 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             crop_stacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
             md.sz_crop, ui.mroi.auto.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
-        "HACK USING ONE CHANNEL FOR ROI FOR NOW"
-        stackcrop = stackcrop(:,:,:,:,1);
-        stack_mnt.(regionex) = stack_mnt.(regionex)(:,:,:,1);
-
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
             make_morphological_rois(stackcrop, stack_mnt.(regionex), ui.mroi, md.imper, md.xwid, md.ywid, md.zwid, ...

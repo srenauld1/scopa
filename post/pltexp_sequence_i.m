@@ -1,5 +1,5 @@
 
-function [ttl, val_imcen_out, val_chanalpha_out, val_imchan_out, val_implane_out] = pltexp_sequence_i(user_input, save_buttons, roipixindp, numchan, numplane)
+function [ttl, val_imcen_out, val_imchan_out, val_implane_out, val_imalpha] = pltexp_sequence_i(user_input, save_buttons, roipixindp_plane, numchan, numplane, val_imalpha)
 
 persistent get_c
 persistent get_p
@@ -11,11 +11,10 @@ persistent require_plane_reentry
 persistent changed_imcen
 persistent subsequence_type
 persistent val_imcen_out_tmp
-persistent val_chanalpha_out_tmp
 persistent val_imchan_out_tmp
 persistent val_implane_out_tmp
 
-chanalpha_inc = 0.05;
+imalpha_inc = 0.05;
 
 context_buttons = {'c'};
 quick_buttons = {'uparrow', 'downarrow'};
@@ -25,11 +24,11 @@ ttl = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %
 
 if ~isempty(get_c) && all(isstrprop(user_input, 'digit'))
 
-    [tmp_c, ttl] = get_subsequence_digit(tmp_c, user_input);
+    [tmp_c, ttl] = get_digit_subsequence(tmp_c, user_input);
 
 elseif ~isempty(get_p) && all(isstrprop(user_input, 'digit'))
 
-    [tmp_p, ttl] = get_subsequence_digit(tmp_p, user_input);
+    [tmp_p, ttl] = get_digit_subsequence(tmp_p, user_input);
 
 elseif isnumeric(user_input) %&& isempty(subsequence_type)
 
@@ -64,13 +63,13 @@ elseif any(strcmpi(user_input, quick_buttons)) % && isempty(subsequence_type)
                 val_imchan_out_tmp = tmp_c;
                 val_implane_out_tmp = tmp_p;
             end
-            [val_chanalpha_out_tmp, ttl] = arrow_subsequence(user_input, chanalpha_inc);
             if isempty(val_imchan_out_tmp) %if it's still empty after being assigned tmp_c, it gets all channels
                 val_imchan_out_tmp = 1:numchan;
             end
             if isempty(val_implane_out_tmp) %if it's still empty after being assigned tmp_c, it gets all channels
                 val_implane_out_tmp = 1:numplane;
             end
+            [val_imalpha, ttl] = arrow_subsequence(val_imalpha, val_implane_out_tmp, val_imchan_out_tmp, user_input, imalpha_inc);
             ttl = [ttl ', PLANE #' regexprep(num2str(val_implane_out_tmp), ' +', ',')]; %in case multiple channels
             ttl = [ttl ', CHANNEL #' regexprep(num2str(val_imchan_out_tmp), ' +', ' and ')]; %in case multiple channels
         end
@@ -103,7 +102,6 @@ end
 
 
 val_imcen_out = val_imcen_out_tmp;
-val_chanalpha_out = val_chanalpha_out_tmp;
 val_imchan_out = val_imchan_out_tmp;
 val_implane_out = val_implane_out_tmp;
 
@@ -111,18 +109,20 @@ val_implane_out = val_implane_out_tmp;
 end
 
 
-
-function [out, ttl] = arrow_subsequence(user_input, inc)
+function [imalpha, ttl] = arrow_subsequence(imalpha, implane, imchan, user_input, inc)
 if strcmpi(user_input, 'uparrow')
-    ttl = ['PRESSED "uparrow", RAISING ALPHA '];
-    out = inc;
+    ttl = ['PRESSED "uparrow", RAISING IMAGE ALPHA '];
+    imalpha(implane, imchan) = imalpha(implane, imchan)+inc;
 elseif strcmpi(user_input, 'downarrow')
-    ttl = ['PRESSED "downarrow", LOWERING ALPHA '];
-    out = -inc;
+    ttl = ['PRESSED "downarrow", LOWERING IMAGE ALPHA '];
+    imalpha(implane, imchan) = imalpha(implane, imchan)-inc;
 end
+imalpha(imalpha<0) = 0;
+imalpha(imalpha>1) = 1;
 end
 
-function [tmp, ttl] = get_subsequence_digit(tmp, user_input)
+
+function [tmp, ttl] = get_digit_subsequence(tmp, user_input)
 tmp = [tmp str2double(user_input)];
 tmp = str2double(strrep(num2str(tmp), ' ', ''));
 ttl = ['PRESSED ' num2str(tmp) ', CONTINUE ENTERING DIGITS, OR PRESS NON-DIGIT TO USE ' num2str(tmp)];
