@@ -11,8 +11,7 @@ arguments
 end
 
 if isstruct(respin)
-    fn = fieldnames(respin);
-    chanused = [any(endsWith(fn, 'chn1')) any(endsWith(fn, 'chn2'))];
+    chanused = [any(cell2mat(regexp(fieldnames(respin), 'chn1$'))) any(cell2mat(regexp(fieldnames(respin), 'chn2$')))];
     if sum(chanused)==0
         chanused = [1 0];
     end
@@ -28,11 +27,12 @@ for c = 1:numel(chanused)
             chanpat = '';
         end
         if isstruct(respin)
+            fn = fieldnames(respin);
             respin_onechan = struct2cell(respin);
             kp = endsWith(fn, chanpat);
             respin_onechan = respin_onechan(kp);
-            fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
-            respin_onechan = cell2struct(respin_onechan, fntmp);
+            fn = erase(fn(kp), chanpat);
+            respin_onechan = cell2struct(respin_onechan, fn);
             resp = extract_roi_responses_onechan(respin_onechan, mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp);
         else
             resp = extract_roi_responses_onechan(respin(:,:,:,:,c), mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp);

@@ -114,10 +114,11 @@ for j = 1:num_sectors
         if strcmp(stack_justify, 'center')
             justfac = 2;
         elseif strcmp(stack_justify, 'minimize')
-            justfac = 1;
+            justfac = 2;
         end
-        ax(j).xp = ax(j).xp + (ax(j).xp(1)+(maxpos.x-ax(j).xp(1))/justfac) - (ax(j).xp(1)+ax(j).xe(end)/justfac); %actual x center plus goal x center minus actual x center
-        ax(j).yp = ax(j).yp + (ax(j).yp(1)+(maxpos.y-ax(j).yp(1))/justfac) - (ax(j).yp(1)+ax(j).ye(end)/justfac); %actual y center plus goal y center minus actual y center
+
+        ax(j).xp = ax(j).xp + (ax(j).xp(1)+(maxpos.x-ax(j).xp(1))/justfac) - (ax(j).xp(1)+ax(j).xe/justfac); %actual x center plus goal x center minus actual x center
+        ax(j).yp = ax(j).yp + (ax(j).yp+(maxpos.y-ax(j).yp)/justfac) - (ax(j).yp+ax(j).ye/justfac); %actual y center plus goal y center minus actual y center
     end
 
     startpos.(splitdim) = maxpos.(splitdim);

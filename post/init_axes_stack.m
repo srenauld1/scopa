@@ -44,11 +44,7 @@ stackrange = stackmax-stackmin;
 for j = 1:numsubplot
 
     hax{j} = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    try
-        hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
-    catch
-        fuk=2
-    end
+    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
     hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
     hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac);
     hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac);

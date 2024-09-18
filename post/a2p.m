@@ -18,9 +18,9 @@ arguments
     pthstacks = [] %optional cell array of full paths to recordings
 end
 
-"DEAL WITH NO REGIONEX OPTION"
-"DEAL WITH DIFFERENT MROI OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS"
-
+"FIX NO REGIONEX OPTION"
+"FIX DIFFERENT MROI OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS"
+"CAN STACK REMAIN INT16??"
 
 clear globals_a2p
 
@@ -138,7 +138,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            make_morphological_rois(stackcrop, stack_mnt.(regionex), ui.mroi, md.imper, md.xwid, md.ywid, md.zwid, ...
+            make_morphological_rois(stackcrop, stack_mnt.(regionex), ui.mroi, md.ti, md.imper, md.xwid, md.ywid, md.zwid, ...
             pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
         %%load/select functional (caiman) roi responses

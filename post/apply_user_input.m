@@ -1,7 +1,7 @@
 
-function [vars, labs, lims, roipixinds, varcombos] = apply_user_input(cb, vars, labs, roipixinds, stack, stack_mnt, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipixinds, varcombos] = apply_user_input(cb, vars, labs, roipixinds, stack, stack_mnt, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
 
-"WARNING USING CHANNEL LOOP IN APPLY USER INPUT - FIX THIS"
+"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN apply_user_input "
 
 try
 
@@ -24,7 +24,7 @@ try
                     error("v must match cnt")
                 end
 
-                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, imper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
+                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, ti, imper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
                 roipixinds = cat(1, roipixinds, roipixind_new);
                 disp("warning, hard coding ui parsex and parsnorm, fix this now")
                 labs{j} = {['resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of choose_timeseries
@@ -75,7 +75,7 @@ varcombos = make_varcombos(vars);
 end
 
 
-function [roipixinds, vars] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, imper, pth_mroi_interactive)
+function [roipixinds, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, maskmanual, umy, umx, umz, newroirad, stack, stack_mnt, normopt, ti, imper, pth_mroi_interactive)
 
 if ~isempty(roicen)
     if zwid==0
@@ -100,16 +100,18 @@ else
         end
     end
 
-    for k = 1:size(stack,5)
-        [roiinfo_new, resp_new_tmp] = make_morphological_rois(stack(:,:,:,:,k), stack_mnt(:,:,:,k), normopt, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], maskmanual);
-        fn = fieldnames(resp_new_tmp);
-        for fi = 1:numel(fn)
-            resp_new.(fn{fi})(:,:,k) = resp_new_tmp.(fn{fi});
-        end
-    end
+    opts_mroi.chandraw = [];
+    opts_mroi.chanproject = [1];
+    opts_mroi.channorm = [];
+    opts_mroi.auto.chan = [1];
+    opts_mroi.norm = normopt;
 
-    roipixinds = roiinfo_new.roipixinds;
-    vars = resp_new.in_rawf_pc_f_cl_f_w_no;
+    [roiinfo_new, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], maskmanual);
+    hardcodechan = 1;
+    hardcodenorm = 'in_rawf_pc_f_cl_f_w_no';
+    resp = channel_combine_struct(resp);
+    resp = resp.(hardcodenorm);
+    roipixinds = roiinfo_new(hardcodechan).roipixinds;
 
 end
 

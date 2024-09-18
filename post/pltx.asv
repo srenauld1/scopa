@@ -164,7 +164,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stack_mnt, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stack_mnt, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -222,7 +222,7 @@ while plotloop %loop is turned off if no user input
 
                 if size(stack, 5)==2
                     dmt = size(stack);
-                    stackp = fusecw(vec(stack(:,:,:,:,1)), vec(stack(:,:,:,:,2)));
+                    stackp = chanfuseim(vec(stack(:,:,:,:,1)), vec(stack(:,:,:,:,2)));
                     stackp = reshape(stackp, [dmt(1:end-1) 3]);
                 else
                     stackp = [];
@@ -465,7 +465,7 @@ stmp = cellfun(@size, vars, 'UniformOutput', false);
 dtmp = cellfun(@ndims, vars, 'UniformOutput', false);
 maxsz = 3; %max(cell2mat(dtmp));
 minsz = min(cell2mat(dtmp));
-if minsz==2
+if minsz==2 %add channel size as third element for each var
     repidx = cell2mat(cellfun(@(x) x~=maxsz, dtmp, 'UniformOutput', false));
     stmp(repidx) = cellfun(@(x) cat(2,x,1), stmp(repidx), 'UniformOutput', false);
 else
@@ -572,7 +572,7 @@ end
 
 
 
-function result = fusecw(A, B)
+function result = chanfuseim(A, B)
 
 scaling = 'independent';
 channels = [2 1 2];

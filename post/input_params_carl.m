@@ -13,7 +13,7 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240907'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'20240901'}; %cell array of char, can use wildcards
     fnspec_fly = {'*'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
@@ -30,7 +30,7 @@ ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssS
 ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
-ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+ui.mn.do_fit = 1; %model fitting (ui.fitm below)
 ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 
@@ -57,9 +57,9 @@ ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/i
 
 %ui.ld.gif holds params for making gif of imaging movies in function stackld; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
 ui.ld.gif.suffixes_plot = { 
-    %'raw', ... %comment if you don't want to plot (can comment all too)
-    %'cmrg', ...%comment if you don't want to plot (can comment all too)
-    %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
+    'raw', ... %comment if you don't want to plot (can comment all too)
+    'cmrg', ...%comment if you don't want to plot (can comment all too)
+    'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
     %'bksb_cmrg_dcdn', ...
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
@@ -99,17 +99,18 @@ ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not disp
 ui.mroi.use_drawn_rois =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 ui.mroi.use_drawn_rois =  {'fullfov'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
-ui.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum 
+ui.mroi.chandraw = []; %which channel(s) to use as background for roi drawing; 'both' will draw on sum 
 ui.mroi.chanproject = [1]; %which channel(s') rois to project onto the other (concatenated with any other rois on that channel, ie does not overwrite)
+ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
 ui.mroi.auto.num_mroi_auto.fullfov = 256; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-ui.mroi.auto.create_mask_method = 'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+ui.mroi.auto.create_mask_method = 'edge'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
 ui.mroi.auto.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
-ui.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2 ]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
+ui.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 ui.mroi.auto.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
 ui.mroi.auto.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
@@ -342,7 +343,7 @@ ui.hires.caiman_hr_str = '*'; %empty to skip
 
 %overwrite some params for carl's old project
 ui.mn.old_project = 0;
-if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(contains(ui.mn.pthstacks, 'fn1g_syt')) %~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
+if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(contains(ui.mn.pthstacks, 'f91g_syt')) %~strcmp(fnspec_recdate, '*') && startsWith(fnspec_recdate{1}, '22') %override some settings for old project
     ui.mn.old_project = 1;
     if numel(fnspec_recdate)>1
         error("right now old project is one file at a time")

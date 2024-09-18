@@ -1,15 +1,22 @@
-function fig2gif(hfg, framecount_gif, filename_save, ncolgif)
+function fig2gif(hfg, framecount, pthgif, ncol)
 
-if ~exist('ncolgif', 'var')
-    ncolgif = 128;
+arguments
+    hfg
+    framecount
+    pthgif = '';
+    ncol = 128
+end
+
+if isempty(pthgif)
+    pthgif = pthauto(pthgif, suffix='.gif', usetime=1);
 end
 
 frame = getframe(hfg);
 im = frame2im(frame);
-[imind, cm] = rgb2ind(im, ncolgif);
+[imind, cm] = rgb2ind(im, ncol);
 
-if framecount_gif==1
-    imwrite(imind, cm, filename_save, 'DelayTime', 0, 'Loopcount', inf);
+if framecount==1
+    imwrite(imind, cm, pthgif, 'DelayTime', 0, 'Loopcount', inf);
 else
-    imwrite(imind, cm, filename_save,'DelayTime', 0, 'WriteMode', 'append');
+    imwrite(imind, cm, pthgif,'DelayTime', 0, 'WriteMode', 'append');
 end
