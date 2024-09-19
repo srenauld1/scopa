@@ -71,7 +71,11 @@ for vpfi = 1:size(tmp3,2)
                     sflat_tmp = vertcat(sflat{kpp});
                 else
                     fnflat_tmp = cellfun( @(x,y) x(y), fnflatex, repelem({kpp}, size(sflat,1), 1), 'UniformOutput', false);
-                    sflat_tmp = cell2mat(cellfun( @(x,y) x(y,:), sflat, repelem({kpp}, size(sflat,1), 1), 'UniformOutput', false)); %if it's empty do this to make empty arrays with size matching nonempty in time dimension
+                    try
+                        sflat_tmp = cell2mat(cellfun( @(x,y) x(y,:), sflat, repelem({kpp}, size(sflat,1), 1), 'UniformOutput', false)); %if it's empty do this to make empty arrays with size matching nonempty in time dimension
+                    catch
+                    hh=2;
+                    end
                 end
             else
                 sflat_tmp = cell2mat(cellfun( @(x,y) x(y,:), sflat, kpp, 'UniformOutput', false));

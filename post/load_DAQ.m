@@ -139,6 +139,9 @@ for si = 1:num_resamples
                 if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_diff'
                     tmp_diff = tmp_diff / imper; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
                 end
+                if isrow(tmp) %each daq var must be column; will be for fast_version, will be row for slow version 
+                    tmp = tmp';
+                end
                 newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes
                 newrow.([daqvarname '_diff']) = {tmp_diff}; %put in cell, then table, for variable sizes
             end

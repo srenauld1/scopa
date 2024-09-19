@@ -67,6 +67,9 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
 
     stack = crop_flyback(stack, md['dims'], md['flyback'])
+
+    bidiphase_frame_increment = 8 #use subset of frames because bidiphase_compute uses complex doubles, increasing size of array 8 times, also bidiphase should be constant throughout recording
+    phoff = bidiphase_compute(stack[::bidiphase_frame_increment,...]) 
     phoff = bidiphase_compute(stack) #compute bidirectional phase offset, can be zero
     if phoff:
         bidiphase_shift(stack, phoff) #correct any bidirectional phase offset if nonzero

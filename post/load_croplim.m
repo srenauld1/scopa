@@ -1,4 +1,9 @@
-function [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore )
+function [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore, numchan )
+
+if ~exist('numchan', 'var') || isempty(numchan)
+    numchan = 1;
+end
+
 
 pthcroplimall = rdir([fldr recid '_' regionex_nounderscore '_*_croplim_.*']); %croplim file can be mat of npy, just need to read filename for croplim info 
 
@@ -20,8 +25,8 @@ elseif length(pthcroplimall)==1
         croplimstr = strjoin(spl(insloc+1:insloc+8), '_');
         croplimtmp = str2double(strsplit(croplimstr, '_'));
         croplim = croplimtmp(vec([1:2]'+2*([3 2 4 1]-1)));
-        croplimstr = [croplimstr '_1_1'];
-        croplim = [croplim 1 1];
+        croplimstr = [croplimstr '_1_' num2str(numchan)];
+        croplim = [croplim 1 numchan];
     end
 end
 

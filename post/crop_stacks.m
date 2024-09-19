@@ -19,8 +19,9 @@ else
 
     spl = strsplit(regionex, '_');
     regionex_nounderscore = spl{1};
+    numchan = size(stack,5);
 
-    [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore ); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
+    [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore, numchan); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     
     if isempty(croplim)
         [croplim, croplimstr_new] = make_croplim(stack, sz_crop(4), fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore);

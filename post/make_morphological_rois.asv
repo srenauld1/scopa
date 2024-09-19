@@ -220,7 +220,8 @@ catch
 end
 
 if channorm
-    norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no(128,:,:), ti, pth_mroi_prefix)
+    rni = 12;
+    norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1(rni,:), resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2(rni,:), ti, pth_mroi_prefix)
 end
 
 

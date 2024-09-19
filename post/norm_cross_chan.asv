@@ -1,20 +1,7 @@
 
-function norm_cross_chan(resp1, resp2, opt)
+function norm_cross_chan(resp1, resp2, t, fngif_prefix)
 
-arguments
-    resp1
-    resp2
-    opt.t = 1:numel(resp1)
-    opt.it = 1:numel(resp1)
-    opt.pthgifpre = ''
-    opt.numseg = 10;
-end
-
-t = opt.t;
-it = opt.it;
-pthgifpre = opt.pthgifpre;
-numseg = opt.numseg;
-
+numseg = 10;
 titlein = '';
 constant_ylim = 1;
 ylim_padfac = 0.1;
@@ -22,30 +9,32 @@ ls1 = '-k';
 ls2 = '-r';
 match_ylim = 0;
 
-numvoiceperoctave = 12;
-mincoh = 0.7;
-plotstring = 'seconds';
+plotcropsec = 10;
+dur = max(t);
+sampinds = find(t<=dur);
+resp1 = resp1(sampinds);
+resp2 = resp2(sampinds);
+t = t(sampinds);
 
-
-resp1 = resp1(it);
-resp2 = resp2(it);
-t = t(it);
-
+plotinds = find(t>=t(1)+plotcropsec & t<=t(end)-plotcropsec);
 lev = floor(log2(numel));
-fngif = [pthgifpre(1:end-4) 'resp_mra_.gif'];
+fngif = [fngif_prefix(1:end-4) 'resp_mra_.gif'];
 
 %%
 
+sampinds = 1:100
 imdt = median(diff(t));
 
 [wcoh,wcs,P,coi,wtx,wty] = wcoherence(resp1, resp2, seconds(imdt), 'numscales', 16);
-
+numvoiceperoctave = 12;
+mincoh = 0.7;
+plotstring = 'seconds';
 plotcoherenceperiod(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
 plotwt(wcoh, t, P, coi)
 th = angle(wcs);
-badco = wcoh > mincoh;
-badco = wcoh > mincoh & (abs(th) < pi/16 | abs(th) < pi/16); %motion should be in phase or antiphase 
-wtx(badco) = 0;
+% wtx(wcoh > mincoh & abs(th) < pi/16) = 0;
+figure; imagesc(abs(wtx))
+wtx(wcoh > mincoh) = 0;
 respnew = icwt(wtx,SignalMean=mean(resp1));
 
 figure; plot(resp1(testinds)); hold on; plot(respnew(testinds))
@@ -75,8 +64,8 @@ for m = 1:size(mra,1)
         hpl1 = plot(hax, t, resp1, 'k-');
         hpl2 = plot(hax, t, respnew, 'r-');
         yyaxis right
-        hpl3 = plot(hax, t, mra(m,:), 'b-');
-        hpl4 = plot(hax, t, mra(m,:)+mean(mra(m,:)), 'c-');
+        hpl3 = plot(hax, t, mra(m,plotinds), 'b-');
+        hpl4 = plot(hax, t, mra(m,plotinds)+mean(mra(m,plotinds)), 'c-');
         hold(hax, 'off')
         hax.YAxis(1).Color = 'k';
         hax.YAxis(2).Color = 'b';
@@ -86,17 +75,17 @@ for m = 1:size(mra,1)
         % hpl21 = plot(hax2, t, resp1, 'k-');
         % hpl22 = plot(hax2, t, resp2, 'r-');
         yyaxis right
-        hpl23 = plot(hax2, t, w(m,:), 'b-');
-        hpl24 = plot(hax2, t, w2(m,:), 'c-');
+        hpl23 = plot(hax2, t, w(m,plotinds), 'b-');
+        hpl24 = plot(hax2, t, w2(m,plotinds), 'c-');
         hold(hax2, 'off')
         hax2.YAxis(1).Color = 'k';
         hax2.YAxis(2).Color = 'b';
     else
         hpl2.YData = respnew;
-        % hpl3.YData = mra(m,:);
-        % hpl4.YData = mra(m,:)+mean(mra(m,:)); %don't apply plotinds when computing the mean
-        hpl23.YData = w(m,:);
-        hpl24.YData = w2(m,:);
+        % hpl3.YData = mra(m,plotinds);
+        % hpl4.YData = mra(m,plotinds)+mean(mra(m,:)); %don't apply plotinds when computing the mean
+        hpl23.YData = w(m,plotinds);
+        hpl24.YData = w2(m,plotinds);
     end
     hax.Title.String = ['lev ' num2str(lev) ', mra ' num2str(m) ', chan 1 sig (black) & recon (red), approx blue, approx cent. cyan)'];
     hax2.Title.String = ['lev ' num2str(lev) ', mra ' num2str(m) ', chan 1 & 2 coeffs blue & cyan'];
@@ -107,10 +96,10 @@ for m = 1:size(mra,1)
     numseg = ceil((log2(size(mra,1)-m)+1).^1.9);
     numseg = numsegall(m);
 
-    % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
-    % plot_multi_timeseries(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+    % fngif2 = [fngif_prefix(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
+    % plot_multi_timeseries(w(m,plotinds), w2(m,plotinds), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
 
-    fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
+    fngif3 = [fngif_prefix(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
     plot_multi_timeseries(resp1, respnew, fngif3, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
 
 
