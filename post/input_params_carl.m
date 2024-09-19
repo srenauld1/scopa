@@ -99,13 +99,13 @@ ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not disp
 ui.mroi.use_drawn_rois =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 ui.mroi.use_drawn_rois =  {'fullfov'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
-ui.mroi.chandraw = []; %which channel(s) to use as background for roi drawing; 'both' will draw on sum 
+ui.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum 
 ui.mroi.chanproject = [1]; %which channel(s') rois to project onto the other (concatenated with any other rois on that channel, ie does not overwrite)
 ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
-ui.mroi.auto.num_mroi_auto.fullfov = 256; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fullfov = 0; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 ui.mroi.auto.create_mask_method = 'edge'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2

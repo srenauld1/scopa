@@ -1,19 +1,30 @@
 
-function norm_cross_chan(resp1, resp2, opt)
+function resp1 = norm_cross_chan(resp1, resp2, opt)
 
 arguments
     resp1
     resp2
-    opt.t = 1:numel(resp1)
-    opt.it = 1:numel(resp1)
+    opt.t = 1:size(resp1,2)
+    opt.it = 1:size(resp1,2)
+    opt.roiind = 1:size(resp1,1)
     opt.pthgifpre = ''
-    opt.numseg = 10;
+    opt.mincoh = 0.7
 end
 
 t = opt.t;
 it = opt.it;
+roiind = opt.roiind;
 pthgifpre = opt.pthgifpre;
-numseg = opt.numseg;
+mincoh = opt.mincoh;
+
+for ri = 1:numel(roiind)
+    resp1(ri,it) = normcrosschan_oneroi(resp1(roiind,it),resp2(roiind,it),t(it),pthgifpre,mincoh);
+end
+
+
+end
+
+function respnew = normcrosschan_oneroi(resp1,resp2,t,pthgifpre,mincoh)
 
 titlein = '';
 constant_ylim = 1;
@@ -21,34 +32,88 @@ ylim_padfac = 0.1;
 ls1 = '-k';
 ls2 = '-r';
 match_ylim = 0;
+maxseg = 128;
 
 numvoiceperoctave = 12;
-mincoh = 0.7;
 plotstring = 'seconds';
 
+numsamp = numel(resp1);
+imdt = median(diff(t));
 
-resp1 = resp1(it);
-resp2 = resp2(it);
-t = t(it);
-
-lev = floor(log2(numel));
+lev = floor(log2(numsamp));
 fngif = [pthgifpre(1:end-4) 'resp_mra_.gif'];
+
+if ~isa(resp1, 'double')
+    resp1 = double(resp1);
+end
+if ~isa(resp2, 'double')
+    resp2 = double(resp2);
+end
 
 %%
 
-imdt = median(diff(t));
+nv = 12; %12 default in wcoherence
+numoct = floor(log2(numsamp))-1;
+wname = 'amor'; %'amor' default in wcoherence and wsst
 
-[wcoh,wcs,P,coi,wtx,wty] = wcoherence(resp1, resp2, seconds(imdt), 'numscales', 16);
+[~,minperiod] = cwtfreqbounds(numsamp,seconds(imdt),'Wavelet',wname,'VoicesPerOctave',nv);
+maxperiod = minperiod*(2^numoct);
+plim = [minperiod maxperiod];
 
-plotcoherenceperiod(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
-plotwt(wcoh, t, P, coi)
+fb = cwtfilterbank(SignalLength=numel(resp1), Wavelet='amor', VoicesPerOctave=nv, SamplingPeriod=seconds(imdt), PeriodLimits=plim, Boundary='reflection');
+
+[wcoh,wcs,P,coi,wtx,wty] = wcoherence(resp1, resp2, seconds(imdt));
+plot_coh_period(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
+
+[wcoh_man, wcs_man] = wcoherence_cw(wtx, wty, fb.Scales, fb.VoicesPerOctave);
+
+
+% [wtx1, pcwt] = cwt(resp1, seconds(imdt));
+
+[wsstx, ~] = wsst(resp1, imdt);
+[wssty, wsstp] = wsst(resp2, imdt);
+
+[wcoh, wcs] = wcoherence_cw(wsstx, wssty, fb.Scales, fb.VoicesPerOctave);
+
+plot_coh_period(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
+
+
+figure;
+cwt(resp1, FilterBank=fb);
+
+[sst,sstF] = wsst(resp1,imdt,ExtendSignal=true);
+pcolor(t,sstF,abs(sst))
+shading interp
+colorbar
+title("WSST Magnitude")
+xlabel("Time (s)")
+ylabel("Frequency (Hz)")
+
+cfb = cwtfilterbank(fbparams);
+[cfs,cfsF] = cwt(resp1,FilterBank=cfb);
+pcolor(t,cfsF,abs(cfs))
+colorbar
+shading interp
+title("Scalogram")
+xlabel("Time (s)")
+ylabel("Frequency (Hz)")
+
+
+plot_coh_period(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
+plot_wt_period(wtx, t, seconds(P), seconds(coi))
 th = angle(wcs);
-badco = wcoh > mincoh;
-badco = wcoh > mincoh & (abs(th) < pi/16 | abs(th) < pi/16); %motion should be in phase or antiphase 
-wtx(badco) = 0;
+% badco = wcoh > mincoh;
+badco = wcoh > mincoh & (abs(th) < pi/16 | abs(th) < pi/16); %motion affecting both channels should be in-phase or antiphase (one channel gets brighter, another gets brighter or darker at similar rate and time) 
+% wtx(badco) = 0;
 respnew = icwt(wtx,SignalMean=mean(resp1));
+prange = seconds([P(1) P(end)]);
+respnew = icwt(wtx, [], P, prange, SignalMean=mean(resp1));
 
-figure; plot(resp1(testinds)); hold on; plot(respnew(testinds))
+plotinds = 1:100;
+figure; hold on; 
+plot(resp1(plotinds), 'k'); ylim([0 1])
+plot(respnew(plotinds), 'b'); 
+yyaxis right; hplr = plot(resp2(plotinds), 'r'); ylim([0 1]); hplr.Parent.YAxis(2).Color =  'r';
 
 %%
 
@@ -58,7 +123,6 @@ mra = modwtmra(w); %multiresolution analysis
 w2 = modwt(resp2,lev); %decompose into lev(k) subbands
 mra2 = modwtmra(w2); %multiresolution analysis
 
-numsegall = [150, 75, 37, 18, 9, 6, 4, 1, 1, 1, 1, 1, 1];
 
 for m = 1:size(mra,1)
 
@@ -104,8 +168,10 @@ for m = 1:size(mra,1)
 
     fig2gif(hfg,m,fngif)
 
-    numseg = ceil((log2(size(mra,1)-m)+1).^1.9);
-    numseg = numsegall(m);
+
+    wlen = ceil(numsamp./2.^(size(mra,1)-m));
+    numseg = ceil(numsamp/wlen);
+    numseg(numseg>maxseg) = maxseg;
 
     % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
     % plot_multi_timeseries(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
@@ -119,30 +185,28 @@ end
 end
 
 
-function plotwt(wcoh, t, period, coi)
+function plot_wt_period(wt, t, period, coi)
 
 figure;
-period = seconds(period);
-coi = seconds(coi);
-h = pcolor(t,log2(period),wcoh);
+h = pcolor(t,log2(period),abs(wt));
 h.EdgeColor = "none";
 ax = gca;
 ytick=round(pow2(ax.YTick),3);
 ax.YTickLabel=ytick;
 ax.XLabel.String="Time";
-ax.YLabel.String="Period";
-ax.Title.String = "Wavelet Coherence";
+ax.YLabel.String="Period (seconds)";
+ax.Title.String = "cwt";
 hcol = colorbar;
-hcol.Label.String = "Magnitude-Squared Coherence";
+hcol.Label.String = "Magnitude";
 hold on
 plot(ax,t,log2(coi),"w--",linewidth=2)
 hold off
 
 end
 
-function plotcoherenceperiod(wcoh,wcs,period,t,coitmp,nov,mc,plotstring)
+function plot_coh_period(wcoh,wcs,period,t,coitmp,nov,mc,plotstring)
 
-figure
+figure;
 minPeriod = min(period);
 maxPeriod = max(period);
 
@@ -217,8 +281,6 @@ set(hzoom,'ActionPostCallback',cbzoom);
 % Set NextPlot property to 'replace'
 f.NextPlot = 'replace';
 end
-
-
 
 function plotPhaseVectors(axhandle,theta,tax,pax,tspace,pspace)
 if ~isempty(findobj(axhandle,'type','patch'))
