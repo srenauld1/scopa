@@ -50,8 +50,6 @@ hndls.httl.String{1} = figure_title;
 while tloop
 
     force_do_write_gif = 0;
-    imchanalpha_tmp = ones(numplane,numchan);
-    change_roialphamask = 0;
 
     for fr = 1:numel(tinds_use) %for each sample in chosen subset
 
@@ -88,12 +86,12 @@ while tloop
             if isempty(stackp)
                 hndls.st.hpl{j}.CData = stack(:,:,j,tinds_use(fr));
             else
-                if ~isempty(cb.quick.imalpha) && all(cb.quick.imalpha(j,:)==1) %if either channel alpha is not 1, must define each separately, and must do so for every frame like this, since alpha is fraction of every element 
+                if ~isempty(cb.quick.imalpha) && any(cb.quick.imalpha(j,:)~=1) %if either channel alpha is not 1, must define each separately, and must do so for every frame like this, since alpha is fraction of every element 
                     for c = 1:numchan
-                        if cb.changed.imalpha(j,c) %this will not be empty since cb.quick.imalpha is not empty 
+                        if cb.quick.imalpha(j,c)~=1 %if imalpha is not 1 for this channel, multiply imalpha by the image; cb.quick.imalpha will not be empty since cb.quick.imalpha is not empty 
                             hndls.st.hpl{j}.CData(:,:,imchan2rgb{c}) = squeeze(stackp(:,:,j,tinds_use(fr),imchan2rgb{c})).*cb.quick.imalpha(j,c); %scanimage channel 1 gets green adjustment (b in rgb channel 2)
                         else
-                            hndls.st.hpl{j}.CData(:,:,imchan2rgb{c}) = squeeze(stackp(:,:,j,tinds_use(fr),imchan2rgb{c})); %squeeze to make it 3d (2d plus color channel)
+                            hndls.st.hpl{j}.CData(:,:,imchan2rgb{c}) = squeeze(stackp(:,:,j,tinds_use(fr),imchan2rgb{c})); 
                         end
                     end
                 else
@@ -218,9 +216,7 @@ while tloop
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
             % cb = default_cbflags(cb, 'quick'); %set all 'quick' flags to default
-            change_roialphamask = 0;
-            % imchanalpha_changed = 0; %don't reset since, unlike alpha for roimask or timeseries, we don't know max of each frame
-            [cb, hndls.httl.String{2}] = pltexp_process_callbacks(cb, hndls, varsz, varsp, roipixindp_plane, ti, tinds_use, sampinc);
+            [cb, hndls.httl.String{2}] = pltexp_process_callbacks(cb, hndls, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_use, sampinc);
             tloop = 1;
         else
             tloop = 0;
@@ -243,6 +239,11 @@ while tloop
             clear pltexp_process_callbacks
             break; %exit the t for loop and restart with different t, but same variables
         end
+
+        if numel(tinds_use)==1
+            tloop = 0;
+        end
+
 
     end
 

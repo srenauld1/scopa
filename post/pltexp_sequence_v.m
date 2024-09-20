@@ -82,7 +82,7 @@ if ~isempty(val_v_out_tmp) %don't do elseif here because val_v_out_tmp gets set 
                 if isempty(tmp_varchan) %if it's still empty after being assigned tmp_c, it gets all channels
                     tmp_varchan = 1:varsz(val_v_out_tmp, 3);
                 end
-                [val_varalpha, ttl] = arrow_subsequence(val_varalpha, val_v_out_tmp, user_input, varalpha_inc);
+                [val_varalpha, ttl] = arrow_subsequence(val_varalpha, val_v_out_tmp, tmp_varchan, user_input, varalpha_inc);
                 ttl = [ttl ', CHANNEL #' regexprep(num2str(tmp_varchan), ' +', ' and ')]; %in case multiple channels
             end
         end
@@ -149,19 +149,21 @@ val_vdel_out = val_vdel_out_tmp;
 end
 
 
-function [varalpha, ttl] = arrow_subsequence(varalpha, val_v_out_tmp, user_input, inc)
+function [varalpha, ttl] = arrow_subsequence(varalpha, val_v_out_tmp, tmp_varchan, user_input, inc)
+not_val_v_out_tmp = setxor(1:size(varalpha,1), val_v_out_tmp);
+not_tmp_varchan = setxor(1:size(varalpha,2), tmp_varchan);
 if strcmpi(user_input, 'uparrow')
     ttl = ['PRESSED "uparrow", RAISING LINE ALPHA FOR PLOT VARIABLE #' num2str(val_v_out_tmp)];
-    varalpha(val_v_out_tmp) = varalpha(val_v_out_tmp)+inc;
+    varalpha(val_v_out_tmp,tmp_varchan) = varalpha(val_v_out_tmp,tmp_varchan)+inc;
 elseif strcmpi(user_input, 'downarrow')
     ttl = ['PRESSED "downarrow", LOWERING LINE ALPHA FOR PLOT VARIABLE #' num2str(val_v_out_tmp)];
-    varalpha(val_v_out_tmp) = varalpha(val_v_out_tmp)-inc;
+    varalpha(val_v_out_tmp,tmp_varchan) = varalpha(val_v_out_tmp,tmp_varchan)-inc;
 elseif strcmpi(user_input, 'rightarrow')
     ttl = ['PRESSED "rightarrow", RAISING LINE ALPHA FOR ALL PLOT VARIABLES EXCEPT #' num2str(val_v_out_tmp)];
-    varalpha(1:end~=val_v_out_tmp) = varalpha(1:end~=val_v_out_tmp)+inc;
+    varalpha(not_val_v_out_tmp,not_tmp_varchan) = varalpha(not_val_v_out_tmp,not_tmp_varchan)+inc;
 elseif strcmpi(user_input, 'leftarrow')
     ttl = ['PRESSED "leftarrow", LOWERING LINE ALPHA FOR ALL PLOT VARIABLES EXCEPT #' num2str(val_v_out_tmp)];
-    varalpha(1:end~=val_v_out_tmp) = varalpha(1:end~=val_v_out_tmp)-inc;
+    varalpha(not_val_v_out_tmp,not_tmp_varchan) = varalpha(not_val_v_out_tmp,not_tmp_varchan)-inc;
 end
 varalpha(varalpha<0) = 0;
 varalpha(varalpha>1) = 1;

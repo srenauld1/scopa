@@ -211,16 +211,21 @@ end
 
 pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 try
-    load(pth_morphroiresp, 'resp')
+    fload(pth_morphroiresp, 'resp')
 catch
     resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, imper);
+    do_wavelet_denoise = 1;
+    if do_wavelet_denoise
+        % resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1 = wavelet_denoise(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, t=ti, it=1:numel(ti), pthgifpre=''); %pth_mroi_prefix
+        resp.in_rawf_pc_f_cl_f_w_no_chn1 = wavelet_denoise(resp.in_rawf_pc_f_cl_f_w_no_chn1, t=ti, it=1:numel(ti), pthgifpre=''); %pth_mroi_prefix
+    end
     if ~maskinput && c==numchan
         save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
     end
 end
 
 if channorm
-    norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=ti, roiind=1, it=1:numel(ti), pthgifpre=pth_mroi_prefix, mincoh=0.5)
+    norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=ti, roiind=1, it=1:numel(ti), pthgifpre=pth_mroi_prefix, mincoh=0.3);
 end
 
 

@@ -16,10 +16,12 @@ numplane = numel(hndls.st.hax);
 imchan2rgb = {[2], [1 3]};
 if numchan==1
     blink_on_inc = 1; %roi shown for all frames (ie not blinking)
+    roialpha = 1;
 elseif numchan==2
     blink_on_inc = 5; %roi shown every blink_on_inc frames
     roialpha = 1; %for 2 channel (magenta/green image), rois blink and are saturated, since colors are hard to see
 end
+
 
 if all(cellfun(@isempty,roipixindp))
     do_overlay = 0;
@@ -50,8 +52,6 @@ hndls.httl.String{1} = figure_title;
 while tloop
 
     force_do_write_gif = 0;
-    imchanalpha_tmp = ones(numplane,numchan);
-    change_roialphamask = 0;
 
     for fr = 1:numel(tinds_use) %for each sample in chosen subset
 
@@ -66,6 +66,9 @@ while tloop
                         if fr==1 %only on first frame
                             hndls.ts.hpl{j}{fi}{k}{c}.YData = varsp(vpmap_nonempty(cnt),:,c);
                         end
+                        if cnt==1
+                            hndls.ts.hpl{j}{fi}{k}{c}.Color(4) = 0.2;
+                        end
                         if ~isempty(cb.changed.varalpha) && cb.changed.varalpha(vpmap_nonempty(cnt),c)
                             hndls.ts.hpl{j}{fi}{k}{c}.Color(4) = cb.quick.varalpha(vpmap_nonempty(cnt),c); %it seems 4th element of color can't be saved, or even queried, just written
                         end
@@ -73,7 +76,8 @@ while tloop
                 end
             end
             if j==2
-                hndls.ts.hax{j}.XAxis.Limits = [ti(tinds_use(fr))-6, ti(tinds_use(fr))+6];
+                zoom_margin_sec = 15;
+                hndls.ts.hax{j}.XAxis.Limits = [ti(tinds_use(fr))-zoom_margin_sec, ti(tinds_use(fr))+zoom_margin_sec];
                 hndls.ts.hax{j}.XTick = ti(tinds_use(fr));
                 hndls.ts.hax{j}.XAxis.TickLabels = [num2str(hndls.ts.hax{j}.XTick, 4) ' sec (+/- 6 sec)']; %same as hndls.ts.hax{j}.XTickLabel??
             end
@@ -184,7 +188,7 @@ while tloop
         scdimmu = ti(tinds_use(fr));
         scdimmax = 1;
         scdimmin = 0.02;
-        scdimsd = 20;
+        scdimsd = 20000;
         dimout = exp(-(((ti-scdimmu).^2)/(2*scdimsd.^2))); %gaussian profile for dimming markers
         dimout = rescale(dimout, scdimmin, scdimmax ); %  plot(ti, dimout);
         hndls.sc.hpl{1}.CData(:,1) = 1-dimout;
@@ -218,8 +222,6 @@ while tloop
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if letui
             % cb = default_cbflags(cb, 'quick'); %set all 'quick' flags to default
-            change_roialphamask = 0;
-            % imchanalpha_changed = 0; %don't reset since, unlike alpha for roimask or timeseries, we don't know max of each frame
             [cb, hndls.httl.String{2}] = pltexp_process_callbacks(cb, hndls, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_use, sampinc);
             tloop = 1;
         else
@@ -243,6 +245,11 @@ while tloop
             clear pltexp_process_callbacks
             break; %exit the t for loop and restart with different t, but same variables
         end
+
+        if numel(tinds_use)==1
+            tloop = 0;
+        end
+
 
     end
 

@@ -22,7 +22,7 @@ else
 end
 
 
-if isfield(supp, 'pind_Lfree') || isfield(supp, 'pind_vonmises')
+if isfield(supp, 'pind_Lfree') && ~isempty(supp.pind_Lfree) || isfield(supp, 'pind_vonmises') && ~isempty(supp.pind_vonmises)
     opop.optimp.nonlcon = @nlcon_fnet;
 end
 
@@ -41,7 +41,12 @@ end
 
 depvp = zeros(num_samp_total, 1, 'single');
 
-[depvp(sampinds_indvdepv_train), gof_train] = fitmdl_predict(ft, indv, depv, opop.mdl, supp);
+if startsWith(mdlname, 'svd')
+    depvp(sampinds_indvdepv_train) = indv*ft;
+    gof_train = mse(depv, depvp(sampinds_indvdepv_train));
+else
+    [depvp(sampinds_indvdepv_train), gof_train] = fitmdl_predict(ft, indv, depv, opop.mdl, supp);
+end
 
 if validation_fold %if doing validation
     [depvp(sampinds_indvdepv_val), gof_val] = fitmdl_predict(ft, indv_val, depv_val, opop.mdl, supp);

@@ -67,8 +67,12 @@ maxvolt = 10; %daq voltage max, need to find this in metadata
 
 %% load daqdata
 
-load(pth_daq, 'trialData')
+load(pth_daq, 'trialData', 'outputData')
 trialData = timetable2table(trialData);
+if outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
+    "TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ"
+    trialData = trialData(find(trialData.frameClock, 1, 'first') : find(trialData.frameClock, 1, 'last'), :);
+end
 
 %% define inds for downsampling
 

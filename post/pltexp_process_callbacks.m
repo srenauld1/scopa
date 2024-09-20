@@ -47,7 +47,7 @@ persistent val_imalpha_in
 
 
 plot_buttons = {'return'};
-init_buttons = {'v', 'i',  't'};
+init_buttons = {'v', 'm',  't'};
 save_buttons = {'n', 'a', 'c', 'd'};
 
 if ~isempty( hndls.hfg.UserData) && ~isempty(hndls.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), hndls.st.hol))
@@ -137,7 +137,7 @@ if ~isempty(user_input)
             cb.val.vdel{cb.val.v(end)} = val_vdel;
         end
 
-    elseif strcmp(sequence_init, 'i')
+    elseif strcmp(sequence_init, 'm')
 
         [ttl_tmp, cb.val.imcen, cb.val.imchan, cb.val.implane, val_imalpha] = pltexp_sequence_i(user_input, save_buttons, roipixindp_plane, numchan, numplane, val_imalpha);
 
@@ -152,6 +152,8 @@ end
 imalpha_affects_varalpha = 1;
 if imalpha_affects_varalpha && ~isempty(cb.val.imchan)
     cb.quick.varalpha(roiplotinds, cb.val.imchan) = val_varalpha(roiplotinds, cb.val.imchan)*max(val_imalpha(:,cb.val.imchan)); %by default, imalpha change (max across all planes) has proportional effect on varalpha (for roi variables)
+    not_roiplotinds = setxor(1:size(cb.quick.varalpha,1), roiplotinds);
+    cb.quick.varalpha(not_roiplotinds, :) = val_varalpha(not_roiplotinds, :); %non-roi variables, if anything changed, apply to both columns if there's two 
 else
     cb.quick.varalpha = val_varalpha; %by default imalpha change has proportional effect on varalpha
 end

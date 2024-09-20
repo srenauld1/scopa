@@ -13,10 +13,10 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240901'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'20240907'}; %cell array of char, can use wildcards
     fnspec_fly = {'*'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
-    fnspec_suffix = {'raw'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
+    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
@@ -38,7 +38,7 @@ ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 ui.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-ui.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
+ui.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
 ui.daq.slopeorder = 2; %order of polynomial used to fit local slope
 ui.daq.slopelen_sec = 0.4; %window length used to fit slope
 ui.daq.use_carls_epochs = 1; %0 for everybody else
@@ -105,9 +105,9 @@ ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-f
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
-ui.mroi.auto.num_mroi_auto.fullfov = 0; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fullfov = 1024; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
-ui.mroi.auto.create_mask_method = 'edge'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+ui.mroi.auto.create_mask_method = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
 ui.mroi.auto.edgethresh = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 ui.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
@@ -159,6 +159,7 @@ ui.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which
 
 ui.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
+ui.mroi.norm.postcluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS
@@ -265,18 +266,24 @@ ui.pf.bump.fitm = default_fit_params(ui.pf.bump.fitm);
 % within a single ui.fitm(i).varnms.indvpre or ui.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single ui.fitm(i).indv{j} or ui.fitm(i).varnms.depvpre{j}
 % all combinations of single ui.fitm(i).indv and single ui.fitm(i).depv at the outer cell level are used
 %for now, depv at single struct and outer cell level should come from single regionex
+% 
+% ui.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+% ui.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+% 
+% ui.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
+% ui.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
+% ui.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
+% ui.fitm(1).epochinds = {[2 3 4]};
+% ui.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+% ui.fitm(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about ui.fitm.mdlname syntax
+% ui.fitm(1).plt.doplots = 100;
 
-ui.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-ui.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 
-ui.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
-ui.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
-ui.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
-
-ui.fitm(1).epochinds = {[2 3 4]};
-ui.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-
-ui.fitm(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about ui.fitm.mdlname syntax
+ui.fitm(1).varnms.depvpre{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1']}; %if empty, do will be set to false
+ui.fitm(1).varnms.indvpre{1} = {['ball.forvel']};
+ui.fitm(1).epochinds = {[1]};
+ui.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+ui.fitm(1).mdlname = 'fnet_A01_s'; % see notes_mdlname for notes about ui.fitm.mdlname syntax
 ui.fitm(1).plt.doplots = 100;
 
 ui.fitm = fill_struct(ui.fitm);
@@ -292,7 +299,7 @@ ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};
@@ -309,7 +316,7 @@ ui.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (
 ui.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 ui.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-ui.pltx(1).it = []; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+ui.pltx(1).it = [3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 ui.pltx(1).display_range = [0,1]; 
 ui.pltx(1).letui = 1;
 

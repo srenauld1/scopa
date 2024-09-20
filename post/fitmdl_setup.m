@@ -20,7 +20,7 @@ if strcmp(mdlclass, 'svd')
 
     opop.mdl = @objective_svd;
 
-    supp.num_model_functions = 1;
+    supp.num_total_model_functions = 1;
     supp.pvar = sscanf(mdlname, 'svd_%d'); %numeric suffix is pvar
 
 elseif strcmp(mdlclass, 'fnet')
@@ -51,7 +51,7 @@ end
 
 %% specify some nondefault optimization options (eventually, this will be moved above to be sometimes modetype dependent) 
 
-if strcmp(mdlname, 'fnet_v') || strcmp(mdlname, 'fnet_s')
+if 1%strcmp(mdlname, 'fnet_v') || strcmp(mdlname, 'fnet_s')
     opop.max_iter_local = 999;  %will be assigned to opop.optiml.MaxIterations
     opop.max_iter_global = 3; %this will not be assigned to globalsearch object optimg; instead is used in output function for optimization problem, to stop optimization
     opop.optimg.NumTrialPoints = 1000;

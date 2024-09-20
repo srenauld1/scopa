@@ -57,7 +57,7 @@ vid = opt.vid;
 %if a var doens't exist at a plot position, nothing is plotted there, but the plot positions of other variables do not change
 % currently, stack must not be subset in x,y, or z, otherwise interactive roi indices will be wrong
 
-gif_scope = 'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
+gif_scope = 'allv_eache'; %'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
@@ -99,6 +99,7 @@ splitfrac = 0.55;
 ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
 cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
+cols(1,:) = cols(4,:);
 
 if any(ismember(cols, [0 0 0], 'rows'))
     error("cannot use black for plotting until there is code to prevent it from being assigned to rois (since black roi overlay will cause error")
@@ -110,18 +111,20 @@ end
 [iz, izstr] = make_plot_inds(iz, indsall=size(stack, 3), label_prefix='z', strdelim='-', printmax=20);
 [it, itstr] = make_plot_inds(it, indsall=size(stack, 4), label_prefix='t', strdelim='-', printmax=20);
 
-stack = stack(:,:,iz,it,:);
-epochinds_ts_i = epochinds_ts_i(it);
+% stack = stack(:,:,iz,it,:);
+kpepidx = setxor(1:numel(epochinds_ts_i), it);
+epochinds_ts_i(kpepidx) = 0;
 
 if ~isempty(vid)
     if ndims(vid)==2
-        vid = vid(:,it);
+        % vid = vid(:,it);
     elseif ndims(vid)==3
-        vid = vid(:,:,it);
+        % vid = vid(:,:,it);
         vid = reshape(vid, size(vid,1), size(vid,2), 1, size(vid,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    vid = rand(10,10,numel(it));
+    % vid = rand(10,10,numel(it));
+    vid = rand(10,10,size(stack, 4));
 end
 
 vars = struct2cell(vars);

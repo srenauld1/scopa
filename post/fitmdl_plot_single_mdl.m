@@ -91,7 +91,11 @@ hp2{3}.YData = ftsyn;
 
 supp.starting_hax = 3;
 supp.framecount = 1;
-[~, hax, ~] = mdl(ft, indv, supp, hax); %update existing axes with plots of model components
+if strcmp(supp.mdlclass, 'svd')
+
+else
+    [~, hax, ~] = mdl(ft, indv, supp, hax); %update existing axes with plots of model components
+end
 if ~isempty(ftsyn)
     [~, hax, ~] = mdl(ftsyn, indv, supp, hax);
 end

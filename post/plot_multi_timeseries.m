@@ -1,4 +1,4 @@
-function plot_multi_timeseries(ts1, ts2, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
+function plot_multi_timeseries(ts1, ts2, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
 
 % plot two timeseries on one figure, using different x and y axes
 % if showing multiple xlim segments, the entire timeseries are only plotted once
@@ -17,6 +17,8 @@ arguments
     ls2 char = '-'
     match_ylim = 0
     gif_visibility char = 'on'
+    hfg = []
+    axpos = [0.1300 0.1100 0.7750 0.8150];
 end
 
 if isempty(ls1)
@@ -46,11 +48,13 @@ if size(xlim_segments, 1)==2 %this will fail to fix transposed (2,2) xlim_segmen
     xlim_segments = xlim_segments';
 end
 
-hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+if isempty(hfg)
+    hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+end
 
-ax1 = axes('Parent', hfg);
+ax1 = axes('Parent', hfg, 'Position', axpos);
 hpl1 = plot(ax1,dummyvec1,dummyvec1);
-ax2 = axes('Parent', hfg);
+ax2 = axes('Parent', hfg, 'Position', axpos);
 hpl2 = plot(ax2,dummyvec1,dummyvec1);
 
 for fi = 1:size(xlim_segments, 1)

@@ -17,7 +17,7 @@ if opts.smoothdepv
     error("insert switch for circular")
     fitin.vars.depvpre = smoothdata(fitin.vars.depvpre, time_dimension, 'gaussian', opts.smoothdepv);
 end
-if opts.smoothdepv
+if opts.smoothindv
     error("insert switch for circular")
     for i = 1:num_dim_indvpre
         fitin.vars.indvpre(i,:) = smoothdata(fitin.vars.indvpre(i,:), time_dimension, 'gaussian', opts.smoothindv);
@@ -60,7 +60,7 @@ if ~strcmp(opts.normalize_depv, 'none')
     fitin.vars.depvpre = fitin.normmdlvar_depv(fitin.vars.depvpre, 'forward'); %normalize depv
 end
 
-%% recorganize indv into size [dimensions, samples]
+%% reorganize indv into size [dimensions, samples]
 
 
 num_samp_mdl = round(opts.mdl_length_sec/imper);

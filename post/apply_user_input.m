@@ -41,7 +41,7 @@ try
                     error("v must match cnt")
                 end
 
-                vars{j} = mean(vars{j}(cb.val.i{j},:));
+                vars{j} = mean(vars{j}(cb.val.i{j},:), 1);
                 labs{j} = labs{vind}(cb.val.i{j});
             end
         end

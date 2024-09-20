@@ -169,12 +169,13 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(ui.fitm(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.fitm, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
-                stackcrop = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
+                [stackcrop, ~, stack_mnt] = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 ui.fitm.mdlname = 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
                 ui.fitm.mdlname = 'fnet_A01_s_A02_s_B_h16';
-                ui.fitm.mdlname = 'fnet_A_xsie';
-                ui.fitm.validation_fold = 0; ui.fitm.use_saved_model = 1; ui.fitm.mdl_length_sec = 2; ui.fitm.num_synthetic_depv = 0; ui.fitm.epochinds = {[2 3 4]};
+                ui.fitm.mdlname = 'fnet_A_s';
+                ui.fitm.mdlname = 'fnet_d';
+                ui.fitm.validation_fold = 0; ui.fitm.use_saved_model = 0; ui.fitm.mdl_length_sec = 0.4; ui.fitm.num_synthetic_depv = 0; ui.fitm.epochinds = {[1]};
                 fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
 
             end
@@ -190,6 +191,8 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             choosecount = 0;
             while dochoose
 
+                ts.ball.forvel = envelope(ts.ball.forvel);
+                
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(ui.pltx(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.pltx, pth.stack, choosecount, dochoose);
                 [stackcrop, zstartpos_crop, stack_mnt] = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
@@ -201,6 +204,23 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                     md.epochs.epochinds_ts_i, ui.pltx(si).gif_visibility, ui.pltx(si).iz, ui.pltx(si).it, ...
                     ui.pltx(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
                     pth.mroi_interactive.(regionex), ui.mroi.norm, md.xwid, md.ywid, md.zwid, vid=ftvdsrs)
+
+
+                ts.ball.forvel = wavelet_denoise(ts.ball.forvel, t=md.ti, pthgifpre='~/stacks/20240907-1_60312gal4_2_syt8mcyrfp_vk5/mm.gif'); %pth_mroi_prefix
+
+
+                numseg = 8;
+                constant_ylim = 1;
+                ylim_padfac = 0.1;
+                ls1 = '-k';
+                ls2 = '-r';
+                match_ylim = 0;
+                for rinds = 1:10:128
+                    fngif2 = [fitin.fn_save_prefix_short num2str(rinds) '.gif'];
+                    titlein = num2str(rinds);
+                    resp1 = ts.resp.fullfov.moex_0_1_128.in_rawf_pc_f_cl_f_w_no_chn1(rinds,:);
+                    plot_multi_timeseries(resp1, ts.ball.forvel, fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+                end
 
             end
         end

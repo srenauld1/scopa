@@ -34,14 +34,7 @@ ls2 = '-r';
 match_ylim = 0;
 maxseg = 128;
 
-numvoiceperoctave = 12;
-plotstring = 'seconds';
-
-numsamp = numel(resp1);
-imdt = median(diff(t));
-
-lev = floor(log2(numsamp));
-fngif = [pthgifpre(1:end-4) 'resp_mra_.gif'];
+plotstring = 'hertz';
 
 if ~isa(resp1, 'double')
     resp1 = double(resp1);
@@ -49,65 +42,81 @@ end
 if ~isa(resp2, 'double')
     resp2 = double(resp2);
 end
+if ~isa(t, 'double')
+    t = double(t);
+end
 
-%%
+numsamp = numel(resp1);
+fs = 1/median(diff(t));
+lev = floor(log2(numsamp));
 
-nv = 12; %12 default in wcoherence
+fngif = [pthgifpre(1:end-4) 'resp_mra_.gif'];
+
+%% set up wavelet filters using the default used in wsst, but not wcoherence
+
+num_voices_per_octave = 32; %12 default in wcoherence, 32 default in wsst
 numoct = floor(log2(numsamp))-1;
 wname = 'amor'; %'amor' default in wcoherence and wsst
+normalizedfreq = 0;
 
-[~,minperiod] = cwtfreqbounds(numsamp,seconds(imdt),'Wavelet',wname,'VoicesPerOctave',nv);
-maxperiod = minperiod*(2^numoct);
-plim = [minperiod maxperiod];
+[~,maxf] = cwtfreqbounds(numsamp,fs,'Wavelet',wname,'VoicesPerOctave',num_voices_per_octave);
+minf = 2^(-numoct)*maxf;
+flim = [minf maxf];
 
-fb = cwtfilterbank(SignalLength=numel(resp1), Wavelet='amor', VoicesPerOctave=nv, SamplingPeriod=seconds(imdt), PeriodLimits=plim, Boundary='reflection');
+fb = cwtfilterbank(SignalLength=numel(resp1), Wavelet='amor', VoicesPerOctave=num_voices_per_octave, SamplingFrequency=fs, FrequencyLimits=flim, Boundary='reflection');
+[FourierFactor,sigmaT] = wavCFandSD_cw(fb.Wavelet);
 
-[wcoh,wcs,P,coi,wtx,wty] = wcoherence(resp1, resp2, seconds(imdt));
-plot_coh_period(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
+%% filter using wavelet coherence from wsst 
 
-[wcoh_man, wcs_man] = wcoherence_cw(wtx, wty, fb.Scales, fb.VoicesPerOctave);
+%default doesn't use same filterbank as wsst and wcoherence_cw, so will be a little dfferent 
+[wcoh,wcs,wf,coi,wtx,wty] = wcoherence(resp1, resp2, fs);
+plot_coh_freq(wcoh,wcs,FourierFactor,sigmaT,wf,t,num_voices_per_octave,mincoh,normalizedfreq); %plot should look like figure; wcoherence(resp1, resp2, fs);
+% plot_coh_period(wcoh,wcs,wf,t,coi,num_voices_per_octave,mincoh,plotstring)
 
-
-% [wtx1, pcwt] = cwt(resp1, seconds(imdt));
-
-[wsstx, ~] = wsst(resp1, imdt);
-[wssty, wsstp] = wsst(resp2, imdt);
-
-[wcoh, wcs] = wcoherence_cw(wsstx, wssty, fb.Scales, fb.VoicesPerOctave);
-
-plot_coh_period(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
-
-
-figure;
-cwt(resp1, FilterBank=fb);
-
-[sst,sstF] = wsst(resp1,imdt,ExtendSignal=true);
-pcolor(t,sstF,abs(sst))
-shading interp
-colorbar
-title("WSST Magnitude")
-xlabel("Time (s)")
-ylabel("Frequency (Hz)")
-
-cfb = cwtfilterbank(fbparams);
-[cfs,cfsF] = cwt(resp1,FilterBank=cfb);
-pcolor(t,cfsF,abs(cfs))
-colorbar
-shading interp
-title("Scalogram")
-xlabel("Time (s)")
-ylabel("Frequency (Hz)")
+%%why is cwt manual version failing??
+% [wtx2, cwtf] = cwt(resp1, FilterBank=fb);
+% plot_wt_freq(wtx2, t, cwtf, coi) %should look like figure;cwt(resp1, FilterBank=fb);
+% 
+% [wty2, ~] = cwt(resp2, FilterBank=fb);
+% plot_wt_freq(wtx2, t, cwtf, coi) %should look like figure;cwt(resp1, FilterBank=fb);
+% 
+% [wcoh_man, wcs_man] = wcoherence_cw(wtx2, wty2, fb.Scales, fb.VoicesPerOctave);
+% plot_coh_freq(wcoh_man,wcs_man,FourierFactor,sigmaT,fb.Scales,t,num_voices_per_octave,mincoh,normalizedfreq); %plot should look like figure; wcoherence(resp1, resp2, fs);
+% subind = 270:numel(fb.Scales);subindt = 1:100; plot_coh_freq(wcoh_man(subind,subindt),wcs_man(subind,subindt),FourierFactor,sigmaT,fb.Scales(subind),t(subindt),num_voices_per_octave,mincoh,normalizedfreq); %plot should look like figure; wcoherence(resp1, resp2, fs);
+% % plot_coh_period(wcoh_man,wcs_man,wf,t,coi,num_voices_per_octave,mincoh,plotstring)
 
 
-plot_coh_period(wcoh,wcs,seconds(P),t,seconds(coi),numvoiceperoctave,mincoh,plotstring)
-plot_wt_period(wtx, t, seconds(P), seconds(coi))
-th = angle(wcs);
+[wsstx, wsstf] = wsst(resp1, fs); %try ExtendSignal=true
+[wssty, ~] = wsst(resp2, fs);
+
+plot_wt_freq(wsstx, t, wsstf) %no coi output from wsst; should look like figure;cwt(resp1, FilterBank=fb); does except frequency scale is log
+
+[wsstcoh_man, wsstcs_man] = wcoherence_cw(wsstx, wssty, wsstf, fb.VoicesPerOctave);
+plot_coh_freq(wsstcoh_man,wsstcs_man,FourierFactor,sigmaT,wsstf,t,num_voices_per_octave,mincoh,normalizedfreq); %plot should look like figure; wcoherence(resp1, resp2, fs);
+
+th = angle(wsstcs_man);
+
+ffrng = [1 2.5];
+badf = wsstf<ffrng(2) & wsstf>ffrng(1);
+badco = wsstcoh_man > mincoh;
+badang = abs(th) < pi/16;
+badcf = repmat(badf', [1 numsamp]) & badco & badang;
+subindt = 1:100; 
+plot_coh_freq(wsstcoh_man(badf,subindt),wsstcs_man(badf,subindt),FourierFactor,sigmaT,wsstf(badf),t(subindt),num_voices_per_octave,mincoh,normalizedfreq); %plot should look like figure; wcoherence(resp1, resp2, fs);
+% plot_coh_period(wsstcoh_man,wsstcs_man,seconds(wf),t,seconds(coi),num_voices_per_octave,mincoh,plotstring)
+
+figure; imagesc(badco(badf,subindt))
+figure; imagesc(badang(badf,subindt))
+figure; imagesc(badcf(badf,subindt))
+
+wsstx(badcf) = 0;
+respnew = iwsst(wsstx)+mean(resp1);
+
 % badco = wcoh > mincoh;
-badco = wcoh > mincoh & (abs(th) < pi/16 | abs(th) < pi/16); %motion affecting both channels should be in-phase or antiphase (one channel gets brighter, another gets brighter or darker at similar rate and time) 
-% wtx(badco) = 0;
-respnew = icwt(wtx,SignalMean=mean(resp1));
-prange = seconds([P(1) P(end)]);
-respnew = icwt(wtx, [], P, prange, SignalMean=mean(resp1));
+% badco = wcoh > mincoh & (abs(th) < pi/16 | abs(th) < pi/16); %motion affecting both channels should be in-phase or antiphase (one channel gets brighter, another gets brighter or darker at similar rate and time) 
+% respnew = icwt(wtx,SignalMean=mean(resp1));
+% prange = seconds([wf(1) wf(end)]);
+% respnew = icwt(wtx, [], wf, prange, SignalMean=mean(resp1));
 
 plotinds = 1:100;
 figure; hold on; 
@@ -115,72 +124,72 @@ plot(resp1(plotinds), 'k'); ylim([0 1])
 plot(respnew(plotinds), 'b'); 
 yyaxis right; hplr = plot(resp2(plotinds), 'r'); ylim([0 1]); hplr.Parent.YAxis(2).Color =  'r';
 
-%%
+%% modwt
 
-w = modwt(resp1,lev); %decompose into lev(k) subbands
-mra = modwtmra(w); %multiresolution analysis
-
-w2 = modwt(resp2,lev); %decompose into lev(k) subbands
-mra2 = modwtmra(w2); %multiresolution analysis
-
-
-for m = 1:size(mra,1)
-
-    cfs = w;
-    rem = [1 5:13];
-    cfs(rem,:) = 0; %set approximation coefficients for level lev to zero
-    respnew2 = imodwt(cfs); % inverse modwt with zeroed coeffs to remove trend
-
-    if m==1
-        hfg = figure( 'Units', 'Normalized');
-        hax = axes('Parent', hfg, 'Units', 'Normalized', 'Position',[0.1 0.6 0.85 0.35]);
-        hold(hax, 'on')
-        yyaxis left
-        hpl1 = plot(hax, t, resp1, 'k-');
-        hpl2 = plot(hax, t, respnew, 'r-');
-        yyaxis right
-        hpl3 = plot(hax, t, mra(m,:), 'b-');
-        hpl4 = plot(hax, t, mra(m,:)+mean(mra(m,:)), 'c-');
-        hold(hax, 'off')
-        hax.YAxis(1).Color = 'k';
-        hax.YAxis(2).Color = 'b';
-        hax2 = axes('Parent', hfg, 'Units', 'Normalized', 'Position',[0.1 0.1 0.85 0.35]);
-        hold(hax2, 'on')
-        yyaxis left
-        % hpl21 = plot(hax2, t, resp1, 'k-');
-        % hpl22 = plot(hax2, t, resp2, 'r-');
-        yyaxis right
-        hpl23 = plot(hax2, t, w(m,:), 'b-');
-        hpl24 = plot(hax2, t, w2(m,:), 'c-');
-        hold(hax2, 'off')
-        hax2.YAxis(1).Color = 'k';
-        hax2.YAxis(2).Color = 'b';
-    else
-        hpl2.YData = respnew;
-        % hpl3.YData = mra(m,:);
-        % hpl4.YData = mra(m,:)+mean(mra(m,:)); %don't apply plotinds when computing the mean
-        hpl23.YData = w(m,:);
-        hpl24.YData = w2(m,:);
-    end
-    hax.Title.String = ['lev ' num2str(lev) ', mra ' num2str(m) ', chan 1 sig (black) & recon (red), approx blue, approx cent. cyan)'];
-    hax2.Title.String = ['lev ' num2str(lev) ', mra ' num2str(m) ', chan 1 & 2 coeffs blue & cyan'];
-    % hax2.Title.String = ['chan 1 (black) & 2(red), lev ' num2str(lev) ', mra ' num2str(m) ', coeffs blue & cyan'];
-
-    fig2gif(hfg,m,fngif)
-
-
-    wlen = ceil(numsamp./2.^(size(mra,1)-m));
-    numseg = ceil(numsamp/wlen);
-    numseg(numseg>maxseg) = maxseg;
-
-    % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
-    % plot_multi_timeseries(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
-
-    fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
-    plot_multi_timeseries(resp1, respnew, fngif3, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
-
-
-end
+% w = modwt(resp1,lev); %decompose into lev(k) subbands
+% mra = modwtmra(w); %multiresolution analysis
+% 
+% w2 = modwt(resp2,lev); %decompose into lev(k) subbands
+% mra2 = modwtmra(w2); %multiresolution analysis
+% 
+% 
+% for m = 1:size(mra,1)
+% 
+%     cfs = w;
+%     rem = [1 5:13];
+%     cfs(rem,:) = 0; %set approximation coefficients for level lev to zero
+%     respnew2 = imodwt(cfs); % inverse modwt with zeroed coeffs to remove trend
+% 
+%     if m==1
+%         hfg = figure( 'Units', 'Normalized');
+%         hax = axes('Parent', hfg, 'Units', 'Normalized', 'Position',[0.1 0.6 0.85 0.35]);
+%         hold(hax, 'on')
+%         yyaxis left
+%         hpl1 = plot(hax, t, resp1, 'k-');
+%         hpl2 = plot(hax, t, respnew, 'r-');
+%         yyaxis right
+%         hpl3 = plot(hax, t, mra(m,:), 'b-');
+%         hpl4 = plot(hax, t, mra(m,:)+mean(mra(m,:)), 'c-');
+%         hold(hax, 'off')
+%         hax.YAxis(1).Color = 'k';
+%         hax.YAxis(2).Color = 'b';
+%         hax2 = axes('Parent', hfg, 'Units', 'Normalized', 'Position',[0.1 0.1 0.85 0.35]);
+%         hold(hax2, 'on')
+%         yyaxis left
+%         % hpl21 = plot(hax2, t, resp1, 'k-');
+%         % hpl22 = plot(hax2, t, resp2, 'r-');
+%         yyaxis right
+%         hpl23 = plot(hax2, t, w(m,:), 'b-');
+%         hpl24 = plot(hax2, t, w2(m,:), 'c-');
+%         hold(hax2, 'off')
+%         hax2.YAxis(1).Color = 'k';
+%         hax2.YAxis(2).Color = 'b';
+%     else
+%         hpl2.YData = respnew;
+%         % hpl3.YData = mra(m,:);
+%         % hpl4.YData = mra(m,:)+mean(mra(m,:)); %don't apply plotinds when computing the mean
+%         hpl23.YData = w(m,:);
+%         hpl24.YData = w2(m,:);
+%     end
+%     hax.Title.String = ['lev ' num2str(lev) ', mra ' num2str(m) ', chan 1 sig (black) & recon (red), approx blue, approx cent. cyan)'];
+%     hax2.Title.String = ['lev ' num2str(lev) ', mra ' num2str(m) ', chan 1 & 2 coeffs blue & cyan'];
+%     % hax2.Title.String = ['chan 1 (black) & 2(red), lev ' num2str(lev) ', mra ' num2str(m) ', coeffs blue & cyan'];
+% 
+%     fig2gif(hfg,m,fngif)
+% 
+% 
+%     wlen = ceil(numsamp./2.^(size(mra,1)-m));
+%     numseg = ceil(numsamp/wlen);
+%     numseg(numseg>maxseg) = maxseg;
+% 
+%     % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
+%     % plot_multi_timeseries(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+% 
+%     fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
+%     plot_multi_timeseries(resp1, respnew, fngif3, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+% 
+% 
+% end
 
 end
 
@@ -191,7 +200,8 @@ figure;
 h = pcolor(t,log2(period),abs(wt));
 h.EdgeColor = "none";
 ax = gca;
-ytick=round(pow2(ax.YTick),3);
+% ytick=round(pow2(ax.YTick),3);
+ytick=round(ax.YTick,3);
 ax.YTickLabel=ytick;
 ax.XLabel.String="Time";
 ax.YLabel.String="Period (seconds)";
@@ -204,144 +214,26 @@ hold off
 
 end
 
-function plot_coh_period(wcoh,wcs,period,t,coitmp,nov,mc,plotstring)
+
+
+function plot_wt_freq(wt, t, f, coi)
 
 figure;
-minPeriod = min(period);
-maxPeriod = max(period);
-
-switch plotstring
-    case 'years'
-        Yticks = 2.^(round(log2(minPeriod)):round(log2(maxPeriod)));
-        logYticks = log2(Yticks(:));
-        YtickLabels = num2str(sprintf('%g\n',Yticks));
-    case 'days'
-        Yticks = 2.^(round(log2(minPeriod)):round(log2(maxPeriod)));
-        logYticks = log2(Yticks(:));
-        YtickLabels = num2str(sprintf('%g\n',Yticks));
-    case 'hours'
-        Yticks = 2.^(round(log2(minPeriod)):round(log2(maxPeriod)));
-        logYticks = log2(Yticks(:));
-        YtickLabels = num2str(sprintf('%g\n',Yticks));
-    case 'minutes'
-        Yticks = 2.^(round(log2(minPeriod),1):round(log2(maxPeriod),1));
-        logYticks = log2(Yticks(:));
-        YtickLabels = num2str(sprintf('%g\n',Yticks));
-    case 'seconds'
-        Yticks = 2.^(round(log2(minPeriod),2):round(log2(maxPeriod),2));
-        logYticks = log2(Yticks(:));
-        YtickLabels = num2str(sprintf('%g\n',Yticks));
-end
-%
-AX = newplot;
-f = ancestor(AX,'figure');
-setappdata(AX,'evstruct',[]);
-cla(AX,'reset');
-imagesc(t,log2(period),wcoh);
-
-AX.CLim = [0 1];
-AX.YLim = log2([minPeriod, maxPeriod]);
-AX.YTick = logYticks;
-AX.YDir = 'normal';
-set(AX,'YLim',log2([minPeriod,maxPeriod]), ...
-    'layer','top', ...
-    'YTick',logYticks, ...
-    'YTickLabel',YtickLabels, ...
-    'layer','top');
-ylabel([getString(message('Wavelet:wcoherence:Period')) ' (' plotstring ') ']);
-xlabel([getString(message('Wavelet:wcoherence:Time'))  ' (' plotstring ')']);
-title(getString(message('Wavelet:wcoherence:CoherenceTitle')));
-hold(AX,'on');
+h = pcolor(t,f,abs(wt));
+shading interp
+h.EdgeColor = "none";
+ax = gca;
+ytick=round(pow2(ax.YTick),3);
+ax.YTickLabel=ytick;
+ax.XLabel.String="Time";
+ax.YLabel.String="frequency (Hz)";
+ax.Title.String = "cwt";
 hcol = colorbar;
-hcol.Label.String = 'Magnitude-Squared Coherence';
-
-plot(AX,t,log2(coitmp),'w--','linewidth',2);
-theta = angle(wcs);
-theta(wcoh< mc) = NaN;
-if all(isnan(theta))
-    return;
+hcol.Label.String = "Magnitude";
+hold on
+if exist('coi', 'var') && ~isempty(coi)
+    plot(ax,t,log2(coi),"w--",linewidth=2)
 end
+hold off
 
-% Create mesh grid for phase plot
-tspace = ceil(size(theta,2)/40);
-pspace = round(2^log2(size(theta,1)/nov/2));
-tax = t(1:tspace:size(theta,2));
-pax = period(1:pspace:size(theta,1));
-plotPhaseVectors(AX,theta,tax,pax,tspace,pspace);
-hzoom = zoom(f);
-cbzoom = @(~,evd)zoomArrows(evd,theta,tax,pax,tspace,pspace);
-cbfig = @(hobject,evd)ResizeFig(hobject,evd,theta,tax,pax,tspace,pspace);
-evstruct.sclistener = event.listener(f,'SizeChanged',cbfig);
-evstruct.ylimlistener = event.proplistener(AX,AX.findprop('YLim'),...
-    'PostSet',cbfig);
-evstruct.xlimlistener = event.proplistener(AX,AX.findprop('XLim'),...
-    'PostSet',cbfig);
-setappdata(AX,'evstruct',evstruct);
-set(hzoom,'ActionPostCallback',cbzoom);
-% Set NextPlot property to 'replace'
-f.NextPlot = 'replace';
-end
-
-function plotPhaseVectors(axhandle,theta,tax,pax,tspace,pspace)
-if ~isempty(findobj(axhandle,'type','patch'))
-    delete(findobj(axhandle, 'type', 'patch'));
-end
-
-[tgrid,pgrid]=meshgrid(tax,log2(pax));
-theta = theta(1:pspace:size(theta,1),1:tspace:size(theta,2));
-
-idx = find(~any(isnan([tgrid(:) pgrid(:) theta(:)]),2));
-
-tgrid = tgrid(idx);
-pgrid = pgrid(idx);
-theta = theta(idx);
-
-% Determine extent of phase arrows in plot
-[dx,dy] = determinearrowextent(axhandle);
-%
-
-% Create the arrow patch object for plotting the phase
-arrowpatch = [-1 0 0 1 0 0 -1; 0.1 0.1 0.5 0 -0.5 -0.1 -0.1]';
-
-for ii=numel(tgrid):-1:1
-    % Multiply each arrow by the rotation matrix for the given theta
-    rotarrow = arrowpatch*[cos(theta(ii)) sin(theta(ii));...
-        -sin(theta(ii)) cos(theta(ii))];
-    patch(tgrid(ii)+rotarrow(:,1)*dx,pgrid(ii)+rotarrow(:,2)*dy,[0 0 0],...
-        'edgecolor','none' ,'Parent',axhandle);
-end
-end
-
-function [dx,dy] = determinearrowextent(axhandle)
-% Get the data aspect ratio of the y and x axis
-dataaspectratio = get(axhandle,'DataAspectRatio');
-axesposition = get(axhandle,'position');
-widthheight = axesposition(3:4);
-ar = widthheight./dataaspectratio(1:2);
-
-ar(2)=ar(1)/ar(2);
-ar(1)=1;
-
-xlim = axhandle.XLim;
-dxlim = xlim(2)-xlim(1);
-
-dx=ar(1).*0.02*dxlim;
-dy=ar(2).*0.02*dxlim;
-end
-
-function ResizeFig(source,evd,theta,tax,pax,tspace,pspace)
-if strcmpi(class(evd),'event.PropertyEvent')
-    AX = evd.AffectedObject;
-elseif strcmpi(class(source),'matlab.ui.Figure')
-    AX = gca;
-end
-
-plotPhaseVectors(AX,theta,tax,pax,tspace,pspace);
-end
-
-function zoomArrows(evd,theta,tax,pax,tspace,pspace)
-% resizes arrows in event of zoom
-
-AX = evd.Axes;
-plotPhaseVectors(AX,theta,tax,pax,tspace,pspace);
 end
