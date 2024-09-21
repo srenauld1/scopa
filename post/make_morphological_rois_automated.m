@@ -1,15 +1,15 @@
 
 function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
-    make_morphological_rois_automated(stack_mnt, maskmanual, ...
+    make_morphological_rois_automated(stackmnt, maskmanual, ...
     num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
     regionex, hsvopt, do_plots, opts)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
 %creating new subsample_mask_method and inserting in switch statement)
-%stack_mnt must be 3d (xyz), although 3rd dim (z) can be singleton
-%maskmanual must match dimensionality of stack_mnt, or be lower dimensional
-%stack_hires is optional, must be 3d xyz, and match xy size of stack_mnt
+%stackmnt must be 3d (xyz), although 3rd dim (z) can be singleton
+%maskmanual must match dimensionality of stackmnt, or be lower dimensional
+%stack_hires is optional, must be 3d xyz, and match xy size of stackmnt
 
 create_mask_method = opts.create_mask_method;
 subsample_mask_method = opts.subsample_mask_method;
@@ -19,34 +19,34 @@ closing_element_size = opts.closing_element_size;
 extract_morph_rois_in_3d = opts.extract_morph_rois_in_3d;
 
 
-%% preprocess stack_mnt, make mean stack_mnt
+%% preprocess stackmnt, make mean stackmnt
 
-if ~isa(stack_mnt, 'single')
-    stack_mnt = single(stack_mnt);
+if ~isa(stackmnt, 'single')
+    stackmnt = single(stackmnt);
 end
 
 if ~exist('maskmanual', 'var') || isempty(maskmanual)
     maskmanual = 1;
 end
 
-stack_mnt = rescale(stack_mnt); %if there's a 4th dim, it's time so collapse it  . . . instead of mean could try zscore, or max, prctile, etc converts to double, also don't change this variable because you need it below
-numel_stackmnt = numel(stack_mnt);
+stackmnt = rescale(stackmnt); %if there's a 4th dim, it's time so collapse it  . . . instead of mean could try zscore, or max, prctile, etc converts to double, also don't change this variable because you need it below
+numel_stackmnt = numel(stackmnt);
 
-if extract_morph_rois_in_3d==1 && size(stack_mnt, 3)==1 %if z dim is singleton
-    fprintf('WARNING, cannot make requested 3d mask because stack_mnt is 2d, making 2d mask instead')
+if extract_morph_rois_in_3d==1 && size(stackmnt, 3)==1 %if z dim is singleton
+    fprintf('WARNING, cannot make requested 3d mask because stackmnt is 2d, making 2d mask instead')
     pause(2)
-    extract_morph_rois_in_3d = 0; %override if stack_mnt is only 2d
+    extract_morph_rois_in_3d = 0; %override if stackmnt is only 2d
 end
 
-% if extract_morph_rois_in_3d==0 && size(stack_mnt, 3)>1
-%     stack_mnt = rescale(mean(stack_mnt, 3));
+% if extract_morph_rois_in_3d==0 && size(stackmnt, 3)>1
+%     stackmnt = rescale(mean(stackmnt, 3));
 % end
 
 
-%% mask mean stack_mnt with any available manual mask (if none was made, maskmanual is all ones, ie has no effect)
+%% mask mean stackmnt with any available manual mask (if none was made, maskmanual is all ones, ie has no effect)
 
 maskmanual_allrois = logical(sum(maskmanual, 4)); %if there's a 4th dim, it's rois co collapse it
-stackmean_masked = stack_mnt.*maskmanual_allrois; %don't change this variable because you need it below
+stackmean_masked = stackmnt.*maskmanual_allrois; %don't change this variable because you need it below
 
 
 
@@ -55,7 +55,7 @@ stackmean_masked = stack_mnt.*maskmanual_allrois; %don't change this variable be
 sliceinds_hires = [];
 if num_mroi_auto_initial > 1 && extract_morph_rois_in_3d
 
-    if ~isempty(stack_hires) %if using a hi-z-res stack_mnt to help make the 3d mask
+    if ~isempty(stack_hires) %if using a hi-z-res stackmnt to help make the 3d mask
 
         F = griddedInterpolant(single(maskmanual_allrois), 'linear');
         upsampind = linspace(1, size(maskmanual_allrois,3), size(stack_hires, 3) + 1);
@@ -70,10 +70,10 @@ if num_mroi_auto_initial > 1 && extract_morph_rois_in_3d
         end
         sliceinds_hires = [0 find(diff(map_hires_lores))] + 1; %map_hires_lores may not be uniform hi-z-res sampling of lo-z-res, causing some imprecision (design acquisition zfov and zwid to avoid this)
 
-    else  %else make a hi-z-res stack_mnt from the lo-z-res stack_mnt
+    else  %else make a hi-z-res stackmnt from the lo-z-res stackmnt
 
         if round(zwid/xwid)==1 %if it's not already "hires"
-            premask = stackmean_masked; %define stack_mnt used to define mask
+            premask = stackmean_masked; %define stackmnt used to define mask
         else
 
             if xwid-ywid>1e-6
@@ -90,7 +90,7 @@ if num_mroi_auto_initial > 1 && extract_morph_rois_in_3d
             premask = F({ 1:size(stackmean_masked,1), 1:size(stackmean_masked,2), upsampind });
             premask = rescale(premask);  %rescale after interpolation
 
-            sliceinds_hires = linspace(1, size(premask,3), size(stack_mnt, 3)+1);
+            sliceinds_hires = linspace(1, size(premask,3), size(stackmnt, 3)+1);
             sliceinds_hires = sliceinds_hires(1:end-1);
             sliceinds_hires = round(sliceinds_hires); %this z rounding is one source of imprecision in the mapping
         end
@@ -99,7 +99,7 @@ if num_mroi_auto_initial > 1 && extract_morph_rois_in_3d
 
 else
 
-    premask = stackmean_masked; %define stack_mnt used to define mask
+    premask = stackmean_masked; %define stackmnt used to define mask
 
 end
 
@@ -351,7 +351,7 @@ else % else downsample the 3 output variables from hires to lores
     %%downsample z component of each subroi of each mophological roi centroid
     for rci = 1:num_mroi_auto_final %loop over rois
         for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois (discontiguous subregions of single roi)
-            centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stack_mnt, 3)], centroids_roi{rci}(rci2,3));
+            centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmnt, 3)], centroids_roi{rci}(rci2,3));
         end
     end
 

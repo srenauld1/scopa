@@ -1,5 +1,9 @@
 function img = plots_hsvfov(plt, stackmean, hsvmap, roipixinds, mask_roi_vec, filename_save)
 
+if ~exist('filename_save', 'var')
+    filename_save = [];
+end
+
 num_grayscales_bg = 256; %arbitrary
 
 cmapgray = colormap(gray(num_grayscales_bg));
@@ -66,35 +70,44 @@ switch plt.foreground
 
 end
 
+imgnew = zeros(size(img), 'uint8');
+for k = 1:size(img,3)
+    imgnew(:,:,k,:) = im2uint8(img(:,:,k,:));
+end
+img = imgnew;
 
-tittmp = strsplit(filename_save(1:end-4), '/');
-figure_title = {strrep(tittmp{end}, '_', ' ')};
+if ~isempty(filename_save)
+    
+    tittmp = strsplit(filename_save(1:end-4), '/');
+    figure_title = {strrep(tittmp{end}, '_', ' ')};
 
 
-hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
+    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen') ;
 
-framecount = 0;
-for ri = 1:size(img, 5)
-    for zi = 1:size(img, 3)
-        framecount = framecount+1;
+    framecount = 0;
+    for ri = 1:size(img, 5)
+        for zi = 1:size(img, 3)
+            framecount = framecount+1;
 
-        if zi<size(img, 3)+1
-            hat{zi} = axes( 'Parent', hfg, 'Position', [0 0 1 1] );
-            hold(hat{zi}, 'on');
-            switch plt.foreground
-                case 'pixels'
-                    hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:)));
-                case {'eachroi', 'allrois'}
-                    hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:,ri)));
+            if zi<size(img, 3)+1
+                hat{zi} = axes( 'Parent', hfg, 'Position', [0 0 1 1] );
+                hold(hat{zi}, 'on');
+                switch plt.foreground
+                    case 'pixels'
+                        hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:)));
+                    case {'eachroi', 'allrois'}
+                        hp1t{zi} = image(hat{zi}, squeeze(img(:,:,zi,:,ri)));
+                end
+                axis image % should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
+                axis off
+                axis ij
             end
-            axis image % should not have to call axis image because of how subfig width/height were calculated to maintain aspect ratio above
-            axis off
-            axis ij
+
+            fig2gif(hfg, framecount, filename_save)
+
         end
-
-        fig2gif(hfg, framecount, filename_save)
-
     end
+
 end
 
 

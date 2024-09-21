@@ -8,7 +8,7 @@ ignore_zeros = 1; %don't include zeros in percentile for contrast adjustment
 numdim_out = 3; %number of dimensions of output image
 filename_gif = []; %filename to save image, empty to skip
 
-stack_mnt = prep_stack_for_roi_selection(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+stackmnt = prep_stack_for_roi_selection(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
 
 %% first define z limits
 
@@ -18,12 +18,12 @@ commandwindow();
 define_z_lim = input(sprintf(prompt));
 
 if define_z_lim
-    [zinds, stack_mnt] = croplim_z(stack_mnt, pth_tmpfiles, regionex_nounderscore);
+    [zinds, stackmnt] = croplim_z(stackmnt, pth_tmpfiles, regionex_nounderscore);
 else
-    zinds = 1:size(stack_mnt, 3);
+    zinds = 1:size(stackmnt, 3);
 end
 
-stack_mntz = mean(stack_mnt, 3);
+stackmntz = mean(stackmnt, 3);
 
 %% then xy limits
 
@@ -40,7 +40,7 @@ if define_xy_lim
     flag_croplim = 1;
     flag_one_image = 1;
     flag_limit_one_manual_roi = 1;
-    roi_cropxy = drawrois_oneimage(stack_mntz, pth_tmpfiles, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
+    roi_cropxy = drawrois_oneimage(stackmntz, pth_tmpfiles, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end

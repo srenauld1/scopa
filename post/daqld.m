@@ -1,6 +1,6 @@
-function daqrs = load_DAQ(recdatenum, flynum, trialnum, numvol, numslice_withflyback, ...
+function daqrs = daqld(recdatenum, flynum, trialnum, numvol, numslice_withflyback, ...
     imper, pth_daq, pth_daqrs, pth_daqinds, ball_diameter, slopelen_sec, slopeorder, ...
-    fast_version, doplots)
+    fast_version, doplots, idxreg)
 
 arguments
     recdatenum double
@@ -17,6 +17,7 @@ arguments
     slopeorder double
     fast_version logical %fast_version takes seconds, but (slightly) less accurate, slow version takes minutes on first run (subsequent runs takes seconds) (if you're resampling every frame offset rather than just every volume, it can take 1-3 hours on the first run)
     doplots logical
+    idxreg char = 'start' %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center
 end
 
 
@@ -69,9 +70,21 @@ maxvolt = 10; %daq voltage max, need to find this in metadata
 
 load(pth_daq, 'trialData', 'outputData')
 trialData = timetable2table(trialData);
+
 if outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
     "TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ"
-    trialData = trialData(find(trialData.frameClock, 1, 'first') : find(trialData.frameClock, 1, 'last'), :);
+    firstsamp = find(trialData.frameClock, 1, 'first');
+    lastsamp = find(trialData.frameClock, 1, 'last');
+    if strcmp(idxreg, 'start')
+        starttime = trialData.Time(firstsamp); 
+    elseif strcmp(idxreg, 'end')
+        starttime = trialData.Time(firstsamp-1); 
+    elseif strcmp(idxreg, 'center')
+        starttime = (trialData.Time(firstsamp) - trialData.Time(firstsamp-1) ) / 2; 
+    end
+    trialData = trialData(firstsamp:lastsamp, :);
+else
+    starttime = trialData.Time(1);
 end
 
 %% define inds for downsampling
@@ -126,6 +139,9 @@ for si = 1:num_resamples
         daqvartype = fn{fni};
         for ii = 1:numel(daqvars_bytype.(daqvartype))
             daqvarname = daqvars_bytype.(daqvartype){ii};
+            if strcmp(daqvarname, 'Time') %we don't care to create 'Time_diff'
+                trialData.(daqvarname) = trialData.(daqvarname)-starttime; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
+            end
             if ~strcmp(trialData.Properties.VariableNames, daqvarname)
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
@@ -143,7 +159,11 @@ for si = 1:num_resamples
                 if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_diff'
                     tmp_diff = tmp_diff / imper; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
                 end
-                if isrow(tmp) %each daq var must be column; will be for fast_version, will be row for slow version 
+                if strcmp(daqvarname, 'Time') && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for fast_version=1, it is artifactually slightly above zero
+                    tmp(1) = 0; 
+                    tmp_diff(1) = tmp(2) - tmp(1); %also update first diff, not that it matters
+                end
+                if isrow(tmp) %each daq var must be column; will be for fast_version, will be row for slow version
                     tmp = tmp';
                 end
                 newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes

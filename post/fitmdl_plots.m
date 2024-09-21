@@ -116,9 +116,9 @@ for ei = 1:numel(enm)
 end
 
 
-stack_mnt = mean(stack, 4);
+stackmnt = mean(stack, 4);
 if strcmp(opts.plt.plot_class, 'epoch') & ~opts.plt.plot3d
-    stack_mnt = mean(stack_mnt, 3);
+    stackmnt = mean(stackmnt, 3);
 end
 
 
@@ -140,11 +140,11 @@ for ei = 1:numel(enm)
         for fi = pltstr
             switch fi{1}
                 case 'sum'
-                    fitmdl_plots_summary(fitin, opts, roiinfo, stack_mnt)
+                    fitmdl_plots_summary(fitin, opts, roiinfo, stackmnt)
                 case 'ts'
                     fitmdl_plots_timeseries(indv, depv, fitin.opop.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.opop.supp, pth_fitdata_prefix, epochinds_str_all)
                 case 'fov'
-                    plots_hsvfov(opts.plt, stack_mnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roiinfo.roipixinds, roiinfo.mask_roi_vec, hsv_filename);
+                    plots_hsvfov(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roiinfo.roipixinds, roiinfo.mask_roi_vec, hsv_filename);
                 case 'mdl'
                     if isequal(mdlfcn, @fit_svd)
                         % plot_svd(ft{epi})

@@ -12,7 +12,7 @@ else
 end
 marginsz = 2;
 numimrows = ceil(size(stack3d, 3) / numimcolumns);
-stack_mnt_flat = ones((size(stack3d, 1)+marginsz)*numimrows, (size(stack3d, 2)+marginsz)*numimcolumns);
+stackmnt_flat = ones((size(stack3d, 1)+marginsz)*numimrows, (size(stack3d, 2)+marginsz)*numimcolumns);
 marginx = ones(marginsz, size(stack3d, 2), size(stack3d, 3));
 stack_mar = cat(1, marginx, stack3d);
 marginy = ones(size(stack_mar, 1), marginsz, size(stack_mar, 3));
@@ -21,11 +21,11 @@ for tti = 1:num_z_slice_original %make a montage this way for portability (since
     [cltmp, rwtmp] = ind2sub([numimcolumns, numimrows], tti); %invert output of ind2sub since this is subplot layout
     rwinds = [1:size(stack_mar, 1)] + size(stack_mar, 1)*(rwtmp-1);
     clinds = [1:size(stack_mar, 2)] + size(stack_mar, 2)*(cltmp-1);
-    stack_mnt_flat(rwinds,clinds) = stack_mar(:,:,tti);
+    stackmnt_flat(rwinds,clinds) = stack_mar(:,:,tti);
 end
 
-stack_mnt_flat_rsc = stack_mnt_flat;
-indnz = stack_mnt_flat~=0;
+stackmnt_flat_rsc = stackmnt_flat;
+indnz = stackmnt_flat~=0;
 
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
@@ -36,7 +36,7 @@ end
 
 set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pth_tmpfiles));
 
-him = imshow(stack_mnt_flat, 'InitialMagnification', 'fit');
+him = imshow(stackmnt_flat, 'InitialMagnification', 'fit');
 axis image
 
 
@@ -76,8 +76,8 @@ while true
         if scalefac<0
             scalefac = 0;
         end
-        stack_mnt_flat_rsc(indnz) = rescale(stack_mnt_flat(indnz), 0, scalefac);
-        him.CData = stack_mnt_flat_rsc;
+        stackmnt_flat_rsc(indnz) = rescale(stackmnt_flat(indnz), 0, scalefac);
+        him.CData = stackmnt_flat_rsc;
         him.Parent.XLabel.String{1} = ['RESCALED ORIGINAL CONTRAST BY ' num2str(round((scalefac - 1)*100)) ' PERCENT'];
     end
 

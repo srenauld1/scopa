@@ -1,0 +1,302 @@
+function lincor(stim, resp, opt)
+
+arguments
+    stim
+    resp
+    opt.t = []
+    opt.it = 1:numel(stim)
+    opt.ir = 1:size(resp,1)
+    opt.lagsec = linspace(-1, 1, 1e4);
+    opt.stackmnt = []
+    opt.roipixinds = []
+    opt.mask_roi_vec = []
+    opt.centroids_roi = []
+    opt.sortstyle = 'none'
+    opt.alignzero = 0
+    opt.chan = 1
+    opt.hsvopt = []
+    opt.pthgif = []
+end
+t = opt.t;
+it = opt.it;
+ir = opt.ir;
+lagsec = opt.lagsec;
+stackmnt = opt.stackmnt;
+roipixinds = opt.roipixinds;
+mask_roi_vec = opt.mask_roi_vec;
+centroids_roi = opt.centroids_roi;
+sortstyle = opt.sortstyle;
+alignzero = opt.alignzero;
+chan = opt.chan;
+hsvopt = opt.hsvopt;
+pthgif = opt.pthgif;
+
+gif_visibility = 'on';
+fontmedium = 10;
+axord = 'rowmajor';
+crosshair_width = 3;
+xtralimfac = 0.03;
+numtickx = 4;
+numticky = 2;
+
+assert(isvector(stim))
+assert(ndims(resp)==2)
+
+tsub = t(it);
+roipixinds = roipixinds(ir);
+mask_roi_vec = mask_roi_vec(ir,:);
+centroids_roi = centroids_roi(ir);
+
+if isempty(pthgif)
+    pthgif = pthauto(pthgif, suffix='.gif', usetime=1, usefun=1);
+end
+
+if ~isempty(stackmnt) && ~isempty(roipixinds)
+    stackmnt = stackmnt(:,:,:,chan);
+    if isempty(mask_roi_vec)
+        mask_roi_vec = zeros(numel(roipixinds), numel(stackmnt), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+        for k = 1:numel(roipixinds)
+            [maskytmp, maskxtmp, maskztmp] = ind2sub(size(stackmnt), roipixinds{k});
+            mask_roi_vec(k, sub2ind(size(stackmnt), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+        end
+    end
+    if isempty(centroids_roi)
+        crosshair = cellfun(@(x) x(ceil(end/2)), roipixinds, 'UniformOutput', false); %will this take it out of bounds? should not
+    else
+        crosshair = cellfun(@round, centroids_roi, 'UniformOutput', false); %will this take it out of bounds? should not
+    end
+    if isempty(hsvopt)
+        hsvopt = default_hsv_opts();
+    end
+    hsvopt = plots_setup_hsv(hsvopt);
+end
+
+
+[lagsec_actual, lagsamp, zero_lag_index, numlags] = compute_lags(t, lagsec); %actual lags depend on epoch (samples you're using)
+
+
+
+stim = double(stim);
+resp = double(resp);
+
+nanvec = nan(1, size(resp,2));
+nanvec2 = nan(1, size(resp,2));
+
+numxpix = size(stackmnt,2);
+numypix = size(stackmnt,1);
+
+stimmaxall = max(stim(:));
+stimminall = min(stim(:));
+stimxtremeall = max(abs(stim(:)));
+stimrngall = range(stim(:));
+respmaxall = max(resp(:));
+respminall = min(resp(:));
+respxtremeall = max(abs(resp(:)));
+resprngall = range(resp(:));
+
+for k = 1:numel(ir)
+    [~, ~, ~, ~, R, ~] = laggim(resp(ir(k),:), stim, lagsamp, nanvec, nanvec2);
+    rall(k) = R;
+end
+
+switch sortstyle
+    case 'corr'
+        [~, sinds] = sort(rall);
+    case 'xyz'
+    case 'none'
+        sinds = 1:numel(rall);
+end
+
+
+hsvmap = plots_compute_hsv(hsvopt, hueft=rall);
+imhsv = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipixinds, mask_roi_vec);
+
+
+subplot_layout = {[2,4], imhsv};
+margins_subplot = [0.05,0.005];
+margins_fig = [0.07,0.05];
+splitdim = 'y';
+splitfrac = 0.55;
+ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+
+
+hfg = figure;
+aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
+close(hfg)
+
+figsidelength = 0.75;
+hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility, 'Position', [0, 0, 1, 1]);
+if aspect_screen>1
+    hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
+else
+    hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
+end
+
+haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
+htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
+
+
+sectorind = 2;
+for j = 1:size(imhsv, 3)
+
+    st.hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    st.hax{j}.InnerPosition(1) = ax(sectorind).(axord).xp(j);
+    st.hax{j}.InnerPosition(2) = ax(sectorind).(axord).yp(j);
+    st.hax{j}.InnerPosition(3) = ax(sectorind).xe(1);
+    st.hax{j}.InnerPosition(4) = ax(sectorind).ye(1);
+    st.hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
+    st.hax{j}.XLim = [1 numxpix];
+    st.hax{j}.YLim = [1 numypix];
+
+    st.hlnx{j} = xline(st.hax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
+    st.hlny{j} = yline(st.hax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
+
+    hold(st.hax{j}, 'on')
+    st.hpl{j} = image(st.hax{j}, 'CData', squeeze(imhsv(:,:,j,:))); 
+    axis off
+    axis ij
+    hold(st.hax{j}, 'off')
+
+end
+
+sectorind = 1; spi = 1; widthfac = 4; heightfac = 1;
+ts.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+ts.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
+ts.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
+ts.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
+ts.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+[ts.hax] = makeaxis(ts.hax, t, stimminall, stimmaxall, stimxtremeall, stimrngall, respminall, respmaxall, respxtremeall, resprngall, xtralimfac);
+hold(ts.hax, 'on');
+yyaxis left;
+ts.hpl = plot(ts.hax, t, nanvec);
+yyaxis right;
+ts.hpl2 = plot(ts.hax, t, nanvec);
+hold(ts.hax, 'off');
+ts.hax.xln = xline(0, Alpha=0.3, Color=[0 0 0]);
+
+sectorind = 1; spi = 5; widthfac = 1;
+sc.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+sc.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
+sc.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
+sc.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
+sc.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+sc.hpl = scatter(sc.hax, nanvec, nanvec, 2.5, 'filled');
+sc.hax.PlotBoxAspectRatio = [1 1 1];
+
+sectorind = 1; spi = 6; widthfac = 3; heightfac = 1;
+ts2.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+ts2.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
+ts2.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
+ts2.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
+ts2.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+
+ir = ir(sinds);
+
+for k = 1:numel(ir)
+
+    for j = 1:size(imhsv, 3)
+        if j==crosshair{k}(3)
+            st.hlny{j}.Value = crosshair{k}(1);
+            st.hlnx{j}.Value = crosshair{k}(2);
+            st.hlny{j}.LineStyle = '-';
+            st.hlnx{j}.LineStyle = '-';
+        else
+            st.hlny{j}.LineStyle = 'none';
+            st.hlnx{j}.LineStyle = 'none';
+        end
+    end
+
+    [nanresp, nanstim, blag, P, R, ccR] = laggim(resp(ir(k),:), stim, lagsamp, nanvec, nanvec2);
+
+    sc.hpl.XData = nanstim;
+    sc.hpl.YData = nanresp;
+    ts.hpl.YData = nanstim;
+    ts.hpl2.YData = nanresp;
+    ts2.hpl.YData = nanstim(it);
+    ts2.hpl2.YData = nanresp(it);
+    htx.String = ['roi: ' num2str(ir(k)) ', lag: ' num2str(blag) ', r: ' num2str(R) ', p: ' num2str(P)];
+    fig2gif(hfg, k, pthgif)
+end
+
+
+end
+
+
+
+
+function [lagsec_actual, lagsamp, zero_lag_index, numlags] = compute_lags(t, lags_sec)
+
+ticumdiff = t - t(1);
+if isequal(lags_sec, 0)
+    lagsamp = 0;
+    lagsec_actual = 0;
+else
+    ticumdiff = ticumdiff(:); %make sure it's a column vector
+    lags_sec = lags_sec(:)';  %make sure it's a row vector
+    lags_sec_neg = abs(lags_sec(lags_sec<0));
+    [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
+    lags_sec_pos = lags_sec(lags_sec>=0);
+    [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
+    lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    lagsamp = unique(lagsamp);
+    lagsec_actual = [vec(-ticumdiff(abs(lagsamp(lagsamp<0))+1)); vec(ticumdiff(lagsamp(lagsamp>=0)+1))];
+    lagsec_actual = unique(lagsec_actual);
+end
+
+
+zero_lag_index = find(lagsamp==0);
+numlags = numel(lagsamp);
+
+end
+
+
+function [nanresp, nanstim, blag, P, R, ccR] = laggim(resp, stim, lagsamp, nanresp, nanstim)
+
+% [ccR, ccP] = xcorr(resp, stim, mlag, 'normalized');
+% [mrr, mpp] = max(abs(ccR));
+% blag = mpp-(mlag+1);
+
+for k = 1:numel(lagsamp)
+    [resplag, stimlag] = lagvars(resp, stim, lagsamp(k));
+    [ccR(k), ccP] = corr(resplag, stimlag);
+end
+[mrr, mpp] = max(abs(ccR));
+blag = lagsamp(mpp);
+
+[resplag, stimlag] = lagvars(resp, stim, blag);
+[R, P] = corr(resplag, stimlag);
+
+nanresp(1:numel(resplag)) = resplag;
+nanstim(1:numel(stimlag)) = stimlag;
+
+end
+
+function [x, y] = lagvars(x, y, lag)
+if lag>0 %positive lag, first variable follows second (first var shifted left)
+    x = vec(x(1+abs(lag):end));
+    y = vec(y(1:end-abs(lag)));
+else %negative lag first variable precedes second (first var shifted right)
+    x = vec(x(1:end-abs(lag)));
+    y = vec(y(1+abs(lag):end));
+end
+end
+
+function [hax] = makeaxis(hax, x, stimminall, stimmaxall, stimxtremeall, stimrngall, respminall, respmaxall, respxtremeall, resprngall, xtralimfac, numtickx)
+hax.XLim = [min(x)-range(x)*xtralimfac max(x)+range(x)*xtralimfac];
+hax.XTick = round(linspace(min(x),max(x), numtickx)); 
+hax.XTickLabels = round(linspace(min(x),max(x), numtickx)); 
+hax.XLabel.String = 'seconds';
+if alignzero
+    hax.YAxis(1).Limits = [-stimxtremeall-stimrngall*xtralimfac stimxtremeall+stimrngall*xtralimfac];
+    hax.YAxis(2).Limits = [-respxtremeall-resprngall*xtralimfac respxtremeall+resprngall*xtralimfac];
+else
+    hax.YAxis(1).Limits = [stimminall-stimrngall*xtralimfac stimmaxall+stimrngall*xtralimfac];
+    hax.YAxis(2).Limits = [respminall-resprngall*xtralimfac respmaxall+resprngall*xtralimfac];
+end
+hax.YAxis(1).TickValues = hax.YAxis(1).Limits; 
+hax.YAxis(1).TickLabels = num2str(hax.YAxis(1).Limits, 2); 
+hax.YAxis(1).Label.String = 'stim';
+hax.YAxis(2).TickValues = hax.YAxis(2).Limits; 
+hax.YAxis(2).TickLabels = num2str(hax.YAxis(2).Limits, 2); 
+hax.YAxis(2).Label.String = 'resp';
+end

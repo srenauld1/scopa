@@ -1,4 +1,4 @@
-function [roiinfo, resp] = make_morphological_rois(stack, stack_mnt, opts_mroi, ...
+function [roiinfo, resp] = make_morphological_rois(stack, stackmnt, opts_mroi, ...
     ti, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
     regionex, parstr_mroi, maskmanual2)
 
@@ -115,7 +115,7 @@ for c = 1:numchan
     if ismember(c,autoopts.chan)
 
         maskmanual = maskmanual2{c};
-        stack_mnt_tmp = stack_mnt(:,:,:,c);
+        stackmnt_tmp = stackmnt(:,:,:,c);
         num_mroi_manual = size(maskmanual, 4);
         pth_morphroidata = [pth_mroi_prefix 'chn' num2str(c) '_morphroidata_.mat'];
 
@@ -152,7 +152,7 @@ for c = 1:numchan
             else
 
                 [mask_roi_vec, centroids_roi, num_mroi] = ...
-                    make_morphological_rois_automated(stack_mnt_tmp, maskmanual, num_mroi_auto, ...
+                    make_morphological_rois_automated(stackmnt_tmp, maskmanual, num_mroi_auto, ...
                     xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
                     regionex, hsvopt, do_other_plots, autoopts);
 
@@ -211,7 +211,7 @@ end
 
 pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 try
-    fload(pth_morphroiresp, 'resp')
+    load(pth_morphroiresp, 'resp')
 catch
     resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, imper);
     do_wavelet_denoise = 1;
@@ -259,13 +259,13 @@ if hsvopt.do %roi hsv map
     hue_feature = [1:num_mroi]';
     hsvmap = plots_compute_hsv(hsvopt, hueft=hue_feature);
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg_as_rgb = plots_hsvfov(hsvopt, stack_mnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
+    hsvimg_as_rgb = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
 end
 
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
     gif_visibility = 'on';
-    stack2fig(stack_mnt, pthgif=filename_olay, gif_visibility=gif_visibility, roipixinds=roipixinds, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipixinds as argument to plot roi overlay
+    stack2fig(stackmnt, pthgif=filename_olay, gif_visibility=gif_visibility, roipixinds=roipixinds, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipixinds as argument to plot roi overlay
 end
 
 

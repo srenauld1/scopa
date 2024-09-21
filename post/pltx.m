@@ -1,4 +1,4 @@
-function pltx(stack, vars, letui, stack_mnt, labs, vpmap, ...
+function pltx(stack, vars, letui, stackmnt, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roiinfo, ti, imper, zstartpos, epochinds_ts_i, gif_visibility, ...
     iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
@@ -8,7 +8,7 @@ arguments
     stack = []
     vars = []
     letui = []
-    stack_mnt = []
+    stackmnt = []
     labs = []
     vpmap = []
     epochinds_all = []
@@ -167,7 +167,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stack_mnt, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stackmnt, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;

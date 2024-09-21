@@ -1,4 +1,4 @@
-function [stack, zstartpos_crop, stack_mnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
+function [stack, zstartpos_crop, stackmnt, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
     crop_stacks(stack, regionex, zstartpos, recid, fldr, pth_tmpfiles, sz_crop, ...
     use_hires, stack_hires_mnt, map_hires_lores, pth_mroi )
 
@@ -33,7 +33,7 @@ else
 end
 
 zstartpos_crop = zstartpos(croplim(5):croplim(6));
-stack_mnt = squeeze(mean(stack, 4));
+stackmnt = squeeze(mean(stack, 4));
 
 if use_hires
     if contains(regionex, '_')

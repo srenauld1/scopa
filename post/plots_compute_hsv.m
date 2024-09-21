@@ -20,6 +20,19 @@ huelimnat = opt.huelimnat;
 huelimnat2 = opt.huelimnat2;
 mdlname = opt.mdlname;
 
+if isrow(hueft)
+    hueft = hueft'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
+end
+if isrow(satft)
+    satft = satft'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
+end
+if isrow(valft)
+    valft = valft'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
+end
+if isrow(hueft2)
+    hueft2 = hueft2'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
+end
+
 if isempty(hueft2)
     hueft2 = hueft; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
 end

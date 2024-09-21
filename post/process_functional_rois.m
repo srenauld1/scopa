@@ -1,4 +1,4 @@
-function [roiinfo, resp] = process_functional_rois(stack_mnt, roiinfo, pth_froi, regionex, md, opts)
+function [roiinfo, resp] = process_functional_rois(stackmnt, roiinfo, pth_froi, regionex, md, opts)
 
 
 %% params
@@ -89,8 +89,8 @@ if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
 
 end
 
-if ~isequal( [size(cma, 1), size(cma, 2)], [size(stack_mnt, 1), size(stack_mnt, 2)] ) %make sure roimask and stack_mnt sizes match
-    error("roimask and stack_mnt sizes do not match")
+if ~isequal( [size(cma, 1), size(cma, 2)], [size(stackmnt, 1), size(stackmnt, 2)] ) %make sure roimask and stackmnt sizes match
+    error("roimask and stackmnt sizes do not match")
 end
 if ndims(cma)~=4
     error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
@@ -337,7 +337,7 @@ if doplot
 
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     gif_visibility = 'on';
-    stack2fig(stack_mnt, pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixinds, roiinds=roi_plot_inds_good) %include roipixinds as argument to plot roi overlay
+    stack2fig(stackmnt, pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixinds, roiinds=roi_plot_inds_good) %include roipixinds as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -346,7 +346,7 @@ if doplot
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    stack2fig(stack_mnt, pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipixinds as argument to plot roi overlay
+    stack2fig(stackmnt, pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipixinds as argument to plot roi overlay
 
     figure; imagesc(mask_roi_vec); title("which caiman rois are closest to which morph roi")
 
