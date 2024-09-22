@@ -33,7 +33,7 @@ if outflag
     if numel(outsz)>1
         error("unequal dimensionality across bins")
     end
-    outmeanstmp = cellfun(@mean, outvals, 'UniformOutput', false);
+    outmeanstmp = cellfun(@(x) mean(x,1), outvals, 'UniformOutput', false);
     for omi = 1:outsz
         outmeans(omi,:) = cell2mat(cellfun(@(x) x(omi), outmeanstmp, 'UniformOutput', false));
     end

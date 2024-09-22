@@ -1,7 +1,8 @@
 
 function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
     make_morphological_rois_automated(stackmnt, maskmanual, ...
-    num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
+    num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, ...
+    map_hires_lores, pth_mroi_prefix, ...
     regionex, hsvopt, do_plots, opts)
 
 %this function has several partially overlapping control features,
@@ -244,6 +245,9 @@ else
                 rndsprev = 0;
                 for uzi = 1:numel(rnds)
                     [tmp_xy, centmp_xy, bin_prctiles_xy] = probability_bin([masky(zinds_each{uzi}), maskx(zinds_each{uzi})], rnds(uzi), 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+                    kpinds = ~isnan(sum(centmp_xy));
+                    centmp_xy = centmp_xy(:,kpinds);
+                    bin_prctiles_xy = bin_prctiles_xy(kpinds);
                     currslice = uz(uzi);
                     tmp(zinds_each{uzi},:) = tmp_xy+rndsprev;
                     rndsprev = max(vec(tmp));

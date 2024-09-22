@@ -178,5 +178,5 @@ xPos = (cumsum(xChangePos) - xChangePos(1))*mmPerDeg;
 yChangePos = (fwdAngVel(1:end-1)*time_bin)*cos(zeroedH(1:end-1)) + (sideV(1:end-1)*time_bin)*cos(zeroedH(1:end-1)+pi/4);
 yPos = (cumsum(yChangePos) - yChangePos(1))*mmPerDeg;
 xPos_padded = cat(1, xPos, xPos(end));
-yPos_padded = cat(1, yPos, yPos(end)); 
+yPos_padded = cat(1, yPos, yPos(end));
 end
