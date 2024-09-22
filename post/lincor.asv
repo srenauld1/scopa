@@ -40,7 +40,7 @@ pthgif = opt.pthgif;
 doplots = opt.doplots;
 
 gif_visibility = 'on';
-fontmedium = 10;
+fontmedium = 12;
 axord = 'rowmajor';
 crosshair_width = 3;
 xtralimfac = 0.03;
@@ -136,11 +136,12 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     end
     hsvopt = plots_setup_hsv(hsvopt);
 
-    tsub = t(it);
-
     roipixinds = roipixinds(ir);
     crosshair = crosshair(ir);
     mask_roi_vec = mask_roi_vec(ir,:);
+
+    hsvmap = plots_compute_hsv(hsvopt, hueft=ruse);
+    imhsv = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipixinds, mask_roi_vec);
 
     nanresp = nan(1, size(resp,2));
     nanstim = nan(1, size(resp,2));
@@ -148,8 +149,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     numxpix = size(stackmnt,2);
     numypix = size(stackmnt,1);
 
-    hsvmap = plots_compute_hsv(hsvopt, hueft=ruse);
-    imhsv = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipixinds, mask_roi_vec);
+    tsub = t(it);
 
     switch sortstyle
         case 'corr' %by correlation
@@ -160,8 +160,6 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
             sinds = 1:numel(ir);
     end
 
-    ir = ir(sinds);
-    crosshair = crosshair(sinds);
 
     %%%%%%%%%%% SETUP AXES %%%%%%%%%%%
 
@@ -249,9 +247,12 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     pt.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
     pt.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
     pt.hpl = patch(pt.hax, nanresp, nanresp, nanresp, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
+    pt.hpl.XData = [flypos.x(1:end-1) nan]; %need the nan to make patch work
+    pt.hpl.YData = [flypos.x(1:end-1) nan]; %need the nan to make patch work
+    pt.hpl.CData = [1:numel(nanresp)-1 nan]; %need the nan to make patch work
     pt.hax.PlotBoxAspectRatio = [1 1 1];
     pt.hax.Box = 'on';
-    [pt.hax.XAxis] = axismod(pt.hax.XAxis, flypos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (20 mm square)',  labeltightfac=0.7, noticks=1);
+    [pt.hax.XAxis] = axismod(pt.hax.XAxis, flypos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (6 m square)',  labeltightfac=0.7, noticks=1);
     [pt.hax.YAxis(1)] = axismod(pt.hax.YAxis(1), flypos.y, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='',  labeltightfac=0.7, noticks=1);
 
 
@@ -275,12 +276,14 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
 
     %%%%%%%%%%% PLOT %%%%%%%%%%%
 
-    for k = 1:numel(ir)
+    for k = 1:numel(sinds)
+
+        rind = sinds(k);
 
         for j = 1:size(imhsv, 3)
-            if j==crosshair{k}(3)
-                st.hlny{j}.Value = crosshair{k}(1);
-                st.hlnx{j}.Value = crosshair{k}(2);
+            if j==crosshair{rind}(3)
+                st.hlny{j}.Value = crosshair{rind}(1);
+                st.hlnx{j}.Value = crosshair{rind}(2);
                 st.hlny{j}.LineStyle = '-';
                 st.hlnx{j}.LineStyle = '-';
             else
@@ -289,7 +292,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
             end
         end
 
-        [resplag, stimlag] = lagvars(resp(ir(k),:), stim, lagsamp_use(k));
+        [resplag, stimlag] = lagvars(resp(rind,:), stim, lagsamp_use(rind));
         nanresp(:) = nan;
         nanstim(:) = nan;
         nanresp(1:numel(resplag)) = resplag;
@@ -302,8 +305,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
         ts2.hpl.YData = nanresp(it);
         ts2.hpl2.YData = nanstim(it);
 
-
-        htx.String = ['roi: ' num2str(ir(k)) ', lag (sec): ' num2str(lagsec_actual_use(k)) ', r: ' num2str(ruse(k)) ', p: ' num2str(puse(k))];
+        htx.String = ['roi: ' num2str(ir(rind)) ', lag (sec): ' num2str(lagsec_actual_use(rind)) ', r: ' num2str(ruse(rind)) ', p: ' num2str(puse(rind))];
 
         fig2gif(hfg, k, pthgif)
 
