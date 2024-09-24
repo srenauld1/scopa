@@ -4,14 +4,14 @@ arguments
     stim
     resp
     opt.t = []
-    opt.it = 1:size(resp,2)
-    opt.ir = []
-    opt.plotinds = []
+    opt.it = 1:size(resp,2) %which t indices to show in the zoom timeseries
+    opt.ir = [] %which rois to fit 
+    opt.plotinds = [] %which rois to plot from the fit set 
     opt.corrtype = 'pearson' %'pearson', 'kendall', 'spearman'
     opt.lagsec = linspace(-1, 1, 1e4); %lag in seconds, rounded to nearest sample, duplicates are removed so to lag every sample within a range just use a larger number of lag samples than data samples
-    opt.lagstyle = 'bestall' %zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
-    opt.minpval = 0.05; %
-    opt.stack = [] %yxztc stack for plot
+    opt.lagstyle = 'bestall' %which lags to plot; zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
+    opt.minpval = 0.05; %minimum p value to consider significant; saturation in hsvmap set to 0 if p value>minpval
+    opt.stack = [] %yxztc image stack for plot
     opt.roipixinds = [] %cell array, length number of rois, each cell has linear indices of each roi
     opt.mask_roi_vec = [] %size [total number rois, total number voxels in yxz stack]; each column represents linear index of voxel in yxz stack; each element in row n is true if voxel is present in roi n, 0 otherwise
     opt.centroids_roi = [] %cell array, length number of rois; cell n is yxz centroid for roi n;
