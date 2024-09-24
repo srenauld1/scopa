@@ -1,6 +1,8 @@
 
 function hsvmap = plots_compute_hsv(plt, opt)
 
+% hue is 0 red , 0.2 yellow, 0.4 green, 0.6 blue, 0.8 magenta
+
 arguments
     plt struct %struct holding plotting options (required input)
     opt.hueft double = 1 %feature assigned to hue (required input)
@@ -19,6 +21,7 @@ hueft2 = opt.hueft2;
 huelimnat = opt.huelimnat;
 huelimnat2 = opt.huelimnat2;
 mdlname = opt.mdlname;
+
 
 if isrow(hueft)
     hueft = hueft'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
@@ -111,16 +114,16 @@ else
     hrange_out = plt.hrange_out_manual;
 end
 
-if ~exist( 'srange_out_manual', 'var' ) || isempty( srange_out_manual )
+if ~isfield( plt, 'srange_out_manual' ) || isempty( plt.srange_out_manual )
     srange_out = [0 1];
 else
-    srange_out = srange_out_manual;
+    srange_out = plt.srange_out_manual;
 end
 
-if ~exist( 'vrange_out_manual', 'var' ) || isempty( vrange_out_manual )
+if ~isfield( plt, 'vrange_out_manual' ) || isempty( plt.vrange_out_manual )
     vrange_out = [0 1];
 else
-    vrange_out = vrange_out_manual;
+    vrange_out = plt.vrange_out_manual;
 end
 
 hsvmap = zeros( [length(hdata) 3] );
@@ -131,7 +134,8 @@ else
     if plt.hue_is_periodic
         hdata = mod(hdata, 2*pi);
     end
-    hdata = scale_range( hdata, hrange_in, hrange_out );
+    hdata(hdata>0) = scale_range( hdata(hdata>0), [0 hrange_in(2)], [0.3 0.6] );
+    hdata(hdata<0) = scale_range( hdata(hdata<0), [hrange_in(1) 0], [0.3 0] );
     hdata = clip_to_range( hdata, hrange_out );
     if isfield( plt, 'hueshift' ) & ~isempty(plt.hueshift)
         hdata = mod( hdata + plt.hueshift, 1 ); %shift hue circularly around circle (fine even if hrange_out is not [0 1])

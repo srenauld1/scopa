@@ -22,6 +22,7 @@ if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
     cb.val.imchan = [];
     cb.val.implane = [];
     cb.val.imcen = [];
+    cb.val.vidcen = [];
 end
 
 if any(strcmp('quick', varargin)) || any(strcmp('all', varargin))

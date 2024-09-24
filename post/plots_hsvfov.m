@@ -1,5 +1,8 @@
 function img = plots_hsvfov(plt, stackmean, hsvmap, roipixinds, mask_roi_vec, filename_save)
 
+
+% hue is 0 red , 0.2 yellow, 0.4 green, 0.6 blue, 0.8 magenta
+
 if ~exist('filename_save', 'var')
     filename_save = [];
 end

@@ -1,7 +1,8 @@
-function [roiinfo, resp] = process_functional_rois(stackmnt, roiinfo, pth_froi, regionex, md, opts)
+function [roiinfo, resp] = process_functional_rois(stack, roiinfo, pth_froi, regionex, md, opts)
 
 
 %% params
+
 
 
 min_pixels_per_region = opts.min_pixels_per_region;
@@ -25,6 +26,8 @@ imper = md.imper;
 cnt_mroi = roiinfo.centroids_roi;
 mask_mroi_all = roiinfo.mask_allroi;
 
+
+stackmnt = mean(stack, 4, 'native');
 
 
 %% prepare vars
@@ -337,7 +340,8 @@ if doplot
 
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     gif_visibility = 'on';
-    stack2fig(stackmnt, pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixinds, roiinds=roi_plot_inds_good) %include roipixinds as argument to plot roi overlay
+    plotchannel = 1;
+    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixinds, roiinds=roi_plot_inds_good) %include roipixinds as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -346,7 +350,7 @@ if doplot
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    stack2fig(stackmnt, pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipixinds as argument to plot roi overlay
+    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gif_visibility=gif_visibility, roipixinds=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipixinds as argument to plot roi overlay
 
     figure; imagesc(mask_roi_vec); title("which caiman rois are closest to which morph roi")
 

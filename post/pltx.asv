@@ -1,4 +1,4 @@
-function pltx(stack, vars, letui, stackmnt, labs, vpmap, ...
+function pltx(stack, vars, letui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roiinfo, ti, imper, zstartpos, epochinds_ts_i, gif_visibility, ...
     iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
@@ -8,7 +8,6 @@ arguments
     stack = []
     vars = []
     letui = []
-    stackmnt = []
     labs = []
     vpmap = []
     epochinds_all = []
@@ -33,9 +32,11 @@ arguments
     ywid = []
     zwid = []
     opt.vid = []
+    opt.stimvid = []
 end
 
 vid = opt.vid;
+stimvid = opt.stimvid;
 
 
 "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
@@ -99,6 +100,7 @@ splitfrac = 0.55;
 ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
 cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
+cols(1,:) = cols(4,:);
 
 if any(ismember(cols, [0 0 0], 'rows'))
     error("cannot use black for plotting until there is code to prevent it from being assigned to rois (since black roi overlay will cause error")
@@ -114,6 +116,11 @@ end
 kpepidx = setxor(1:numel(epochinds_ts_i), it);
 epochinds_ts_i(kpepidx) = 0;
 
+if ~isempty(stimvid)
+    vid = stimvid;
+    clear stimvid
+end
+
 if ~isempty(vid)
     if ndims(vid)==2
         % vid = vid(:,it);
@@ -122,7 +129,8 @@ if ~isempty(vid)
         vid = reshape(vid, size(vid,1), size(vid,2), 1, size(vid,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    vid = rand(10,10,numel(it));
+    % vid = rand(10,10,numel(it));
+    vid = rand(10,10,size(stack, 4));
 end
 
 vars = struct2cell(vars);
@@ -165,7 +173,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stackmnt, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -255,7 +263,7 @@ while plotloop %loop is turned off if no user input
                     htfac = 2;
                     cmap = gray(256);
                     display_range_vid = [0 1];
-                    letui_vid = 0;
+                    letui_vid = 1;
                     txtvar_vid = [];
                     hndls.vid = init_axes_stack(hndls.hfg, ax, letui_vid, vid, [], cmap, txtvar_vid, display_range_vid, sector_ind, subplot_ind, widfac, htfac);
 
@@ -410,6 +418,7 @@ function lab = process_labels(lab, roiind)
 
 lab = strrep(lab, 'ts.', '');
 lab = strrep(lab, '.', ' ');
+lab = strrep(lab, '_', ' ');
 lab = strrep(lab, 'vis', 'cue');
 
 for ri = 1:numel(roiind)

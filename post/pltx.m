@@ -1,4 +1,4 @@
-function pltx(stack, vars, letui, stackmnt, labs, vpmap, ...
+function pltx(stack, vars, letui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roiinfo, ti, imper, zstartpos, epochinds_ts_i, gif_visibility, ...
     iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
@@ -8,7 +8,6 @@ arguments
     stack = []
     vars = []
     letui = []
-    stackmnt = []
     labs = []
     vpmap = []
     epochinds_all = []
@@ -33,9 +32,11 @@ arguments
     ywid = []
     zwid = []
     opt.vid = []
+    opt.stimvid = []
 end
 
 vid = opt.vid;
+stimvid = opt.stimvid;
 
 
 "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
@@ -66,7 +67,7 @@ sampinc = 10; %sample increment per gif frame; sampinc~=1 will include lower bou
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 0; %making 0 makes missing channel nan, which is good i think . . . previously thought leave this as 1, skip nanes when rescaling to plot timeseries on same axis
-newroirad = xwid*1.7; %radius (microns) for user input rois
+newroirad = 3*xwid; %radius (microns) for user input rois
 numfr_gif_max = 2000; %throw error if there will be more
 timedim = 2;
 
@@ -91,7 +92,7 @@ clear pltexp_scat_prepvars %clear persistent variable within
 
 %% arrange figure, choose colors
 
-subplot_layout = {[4,4], squeeze(stack(:,:,:,:,1))};
+subplot_layout = {[4,4], stack(:,:,:,:,1)};
 margins_subplot = [0.05,0.005];
 margins_fig = [0.07,0.05];
 splitdim = 'y';
@@ -114,6 +115,14 @@ end
 % stack = stack(:,:,iz,it,:);
 kpepidx = setxor(1:numel(epochinds_ts_i), it);
 epochinds_ts_i(kpepidx) = 0;
+
+if ~isempty(stimvid)
+    vid = stimvid;
+    vidrot = -90;
+    clear stimvid
+else
+    vidrot = 0;
+end
 
 if ~isempty(vid)
     if ndims(vid)==2
@@ -167,7 +176,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, stackmnt, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = apply_user_input(cb, vars_use, labs_use, roipixind_use, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -241,23 +250,28 @@ while plotloop %loop is turned off if no user input
 
                     hndls = init_fig(hndls, letui, gif_visibility);
 
+                    sector_ind = 2;
+                    cmap = gray(256);
+                    hndls.st = init_axes_stack(hndls.hfg, ax, letui, stack, stackp, cmap, zstartpos, display_range, sector_ind);
+
+
+
                     sector_ind = 1;
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
                     hndls.ts = init_axes_timeseries(hndls.hfg, ax, letui, numsamp_tslong_this_gif, vpmapflat_axid_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
-                    sector_ind = 2;
-                    cmap = gray(256);
-                    hndls.st = init_axes_stack(hndls.hfg, ax, letui, stack, stackp, cmap, zstartpos, display_range, sector_ind);
+
+   
 
                     sector_ind = 1;
-                    subplot_ind = 16; %subplot_ind=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
+                    subplot_ind = 15; %subplot_ind=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
                     display_range_vid = [0 1];
-                    letui_vid = 0;
+                    letui_vid = 1;
                     txtvar_vid = [];
                     hndls.vid = init_axes_stack(hndls.hfg, ax, letui_vid, vid, [], cmap, txtvar_vid, display_range_vid, sector_ind, subplot_ind, widfac, htfac);
 
@@ -277,7 +291,7 @@ while plotloop %loop is turned off if no user input
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
-                    ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd);
+                    ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd, vidrot);
 
                 if cb.restart.v==1
                     plotloop = 1;
@@ -409,16 +423,17 @@ end
 
 function lab = process_labels(lab, roiind)
 
+for ri = 1:numel(roiind)
+    if ~isempty(roiind{ri})
+        lab(ri) = regexprep(lab(ri), 'resp.*.[ind\d+]?$', ['ROI #' num2str(roiind{ri}) ' (F)']);
+    end
+end
 
 lab = strrep(lab, 'ts.', '');
 lab = strrep(lab, '.', ' ');
+lab = strrep(lab, '_', ' ');
 lab = strrep(lab, 'vis', 'cue');
 
-for ri = 1:numel(roiind)
-    if ~isempty(roiind{ri})
-        lab(ri) = regexprep(lab(ri), 'resp.*ind\d+$', ['ROI #' num2str(roiind{ri}) ' (F)']);
-    end
-end
 
 for j = 1:numel(lab)
     if contains(lab{j}, 'intfor') || contains(lab{j}, 'intside') || endsWith(lab{j}, 'yaw') || endsWith(lab{j}, 'ang')

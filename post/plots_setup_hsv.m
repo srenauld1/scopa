@@ -2,6 +2,7 @@ function plt = plots_setup_hsv(plt, mdlname)
 
 %would be nice to make this more general, but currently switches by mdlname
 %some of these anonymous functions are just lookups, but kept this way for possible future expansion
+% hue is 0 red , 0.2 yellow, 0.4 green, 0.6 blue, 0.8 magenta
 
 huestr = plt.huestr;
 hrange_out_manual = plt.hrange_out_manual;
@@ -124,7 +125,7 @@ end
 
 %% plotting vars
 
-getsat = @(gof) 1/gof;
+getsat = @(gof) gof;
 getval = @(depvstd) depvstd;
 
 gethr_relative = @(ft) iif( ...

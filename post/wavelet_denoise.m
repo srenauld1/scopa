@@ -64,21 +64,29 @@ fngif = [pthgifpre 'resp_mra_.gif'];
 %% transform
 
 dodetrend = 1;
+dowav = 1;
+
+frng = [nan nan];
+prng = [nan nan];
+
 
 if dodetrend
+    pdeg = 2; %polynomial degree
+    resp1 = detrend(resp1, pdeg);
+end
 
-    frng = [nan nan];
-    prng = [nan nan];
-
-else
-
+if dowav
     % [wt, wtf, coi] = cwt(resp1, FilterBank=fb);
     [wt, wtf, coi] = cwt(resp1, fs);
 
     pmin = linspace(1/wtf(1), 1/wtf(1), 3);
     pmin = 1/wtf(1);
     pmax = linspace(8, 8, 1);
-    pmax = 1/wtf(end-1);
+    pmax = 1/wtf(end);
+    pmin = 0.3;
+    pmax = 50;
+
+   
     [ff,gg]=meshgrid(pmin, pmax);
     prng=[ff(:) gg(:)];
 
@@ -90,12 +98,11 @@ end
 
 for m = 1:size(frng,1)
 
-    if dodetrend
-        pdeg = 2; %polynomial degree
-        respnew = detrend(resp1, pdeg);
-    else
+    if dowav
         respnew = icwt(wt, wname, wtf, [frng(m,2) frng(m,1)]) + mean(resp1);
         respnew = rescale(respnew);
+    else
+        respnew = resp1;
     end
 
     if ~isempty(pthgifpre)

@@ -3,7 +3,7 @@ function [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, framecou
     vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
     pthgif, figure_title, varsz, letui, timestr_ui, sampinc, ...
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
-    cols_sc, scdimmin, scdimsd)
+    cols_sc, scdimmin, scdimsd, vidrot)
 
 clear make_roi_overlay pltexp_process_callbacks
 
@@ -16,7 +16,6 @@ numplane = numel(hndls.st.hax);
 imchan2rgb = {[2], [1 3]};
 if numchan==1
     blink_on_inc = 1; %roi shown for all frames (ie not blinking)
-    roialpha = 1;
 elseif numchan==2
     blink_on_inc = 5; %roi shown every blink_on_inc frames
     roialpha = 1; %for 2 channel (magenta/green image), rois blink and are saturated, since colors are hard to see
@@ -66,9 +65,9 @@ while tloop
                         if fr==1 %only on first frame
                             hndls.ts.hpl{j}{fi}{k}{c}.YData = varsp(vpmap_nonempty(cnt),:,c);
                         end
-                        if cnt==1
-                            hndls.ts.hpl{j}{fi}{k}{c}.Color(4) = 0.2;
-                        end
+                        % if cnt==1
+                        %     hndls.ts.hpl{j}{fi}{k}{c}.Color(4) = 0.2;
+                        % end
                         if ~isempty(cb.changed.varalpha) && cb.changed.varalpha(vpmap_nonempty(cnt),c)
                             hndls.ts.hpl{j}{fi}{k}{c}.Color(4) = cb.quick.varalpha(vpmap_nonempty(cnt),c); %it seems 4th element of color can't be saved, or even queried, just written
                         end
@@ -188,7 +187,7 @@ while tloop
         scdimmu = ti(tinds_use(fr));
         scdimmax = 1;
         scdimmin = 0.02;
-        scdimsd = 20000;
+        scdimsd = 20;
         dimout = exp(-(((ti-scdimmu).^2)/(2*scdimsd.^2))); %gaussian profile for dimming markers
         dimout = rescale(dimout, scdimmin, scdimmax ); %  plot(ti, dimout);
         hndls.sc.hpl{1}.CData(:,1) = 1-dimout;
@@ -208,7 +207,10 @@ while tloop
 
 
         %%%% FICTRAC VIDEO %%%%
-        hndls.vid.hpl{1}.CData = vid(:,:,tinds_use(fr)); %fictrac video
+        hndls.vid.hpl{1}.CData = vid(:,:,:,tinds_use(fr)); %fictrac video
+        if fr==1 
+            hndls.vid.hax{1}.View(1) = vidrot;
+        end
 
 
         %%%% WRITE TO GIF %%%%
@@ -236,6 +238,9 @@ while tloop
         if cb.restart.t==1
             tloop = 1;
             tinds_use = cb.val.tinds(1):cb.val.sampinc:cb.val.tinds(end);
+            if ~isempty(cb.val.vidcen)
+                varsp(cb.val.v,:) = vid(cb.val.vidcen{cb.val.v}(1),cb.val.vidcen{cb.val.v}(2),:,:);
+            end
             cb.restart.t = [];
             framecount = 0;
             pthgif = erase(pthgif, timestr_ui); %make sure timestr is not present, otherwise you'll accumulate with insertBefore

@@ -105,7 +105,7 @@ ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-f
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
-ui.mroi.auto.num_mroi_auto.fullfov = 512; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fullfov = 1024; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 ui.mroi.auto.create_mask_method = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
@@ -123,23 +123,9 @@ ui.mroi.olayopt.roi_color = [1 0 0]; %color for roi overlay
 ui.mroi.olayopt.roialpha = 0.3; %transparency for roi overlay
 
 %params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
-ui.mroi.hsvopt.do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
-ui.mroi.hsvopt.foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
-ui.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 
-ui.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty 
-ui.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in ui.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set ui.mroi.hsvopt.hrange_in_manual it will switch to 'relative'      
-ui.mroi.hsvopt.satnorm = 'relative'; %sat normalization method, same logic as huenorm
-ui.mroi.hsvopt.valnorm = 'relative';%val normalization method, same logic as huenorm
-ui.mroi.hsvopt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-ui.mroi.hsvopt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-ui.mroi.hsvopt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-ui.mroi.hsvopt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see plots_compute_hsv
-ui.mroi.hsvopt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see plots_compute_hsv
-ui.mroi.hsvopt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see plots_compute_hsv
-ui.mroi.hsvopt.hueshift = 0; %0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see plots_compute_hsv, this works for periodic or non-periodic features assigned to hue
-ui.mroi.hsvopt.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 ui.mroi.hsvopt.ignoresat = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 ui.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+ui.mroi.hsvopt = default_hsv_opts(ui.mroi.hsvopt);
 
 % params for response extraction/normalization of morphological roi responses (ui.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
@@ -299,7 +285,7 @@ ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1.ind1']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};
@@ -316,7 +302,7 @@ ui.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (
 ui.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 ui.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-ui.pltx(1).it = [3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+ui.pltx(1).it = []; %[3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 ui.pltx(1).display_range = [0,1]; 
 ui.pltx(1).letui = 1;
 
@@ -365,10 +351,10 @@ if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(con
     ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
     ui.mn.do_fit = 0; %model fitting (ui.fitm below)
     ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
-    ui.mn.regionex_all = {'fullfov2'};
-    ui.mroi.use_drawn_rois =  {'fullfov2'};
+    ui.mn.regionex_all = {'fullfov3'};
+    ui.mroi.use_drawn_rois =  {'fullfov3'};
     ui.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
-    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov2.mo*.in_rawf_*rsc*']}; %if empty, do will be set to false
+    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov3.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
 end
 ui.carl.stimtype = 'drone';
 ui.carl.feat = 'CON_51';

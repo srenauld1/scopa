@@ -123,6 +123,7 @@ if draw_manual
 
 else
 
+    draw_on_meanzt = 0;
     maskmanual_all_roi_all_z = ones(size(stack,1), size(stack,2), 'logical'); %otherwise just ones
 
 end

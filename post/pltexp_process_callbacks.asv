@@ -46,9 +46,6 @@ persistent val_varalpha_in
 persistent val_imalpha_in
 persistent vidflag
 
-if isempty(vidflag)
-    vidflag = 0;
-end
 
 plot_buttons = {'return'};
 init_buttons = {'v', 'm',  't'};
@@ -77,13 +74,14 @@ if isempty(user_input)
         hndls.st.hol{j}.UserData = [];
         if ~isempty(user_input)
             user_input = [user_input j];
-            vidflag = 0;
             break
         end
     end
 end
 
-
+if isempty(vidflag)
+vidflag = 0;
+end
 
 if isempty(user_input)
     user_input = hndls.vid.hol{1}.UserData;
@@ -147,7 +145,7 @@ if ~isempty(user_input)
 
         [ttl_tmp, val_v, val_i, val_roicen, val_vdel, val_varalpha] = pltexp_sequence_v(user_input, save_buttons, roipixindp_plane, varsz, numvar, val_varalpha);
         if ~isempty(val_v)
-            cb.val.v = unique([cb.val.v val_v], 'stable');
+            cb.val.v = [cb.val.v val_v];
             cb.val.i{cb.val.v(end)} = val_i;
             if vidflag
                 cb.val.vidcen{cb.val.v(end)} = val_roicen;

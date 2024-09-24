@@ -1,15 +1,14 @@
-function [posx, posy] = ficpath(velfor, velside, yaw, t, balldia)
+function [posx, posy] = ficpath(vf, vs, yw, t, balld)
 
-yawAngPos = rad2deg(yaw);
-fwdAngVel = rad2deg(velfor / (balldia/2));
-slideAngVel = rad2deg(velside / (balldia/2));
-mmPerDeg = balldia * pi / 360; % mm per degree of ball
-zeroedYawAngPos = yawAngPos - yawAngPos(1);
-sampRate = median(diff(t));
-xChangePos = (fwdAngVel ./ sampRate) .* sind(zeroedYawAngPos) + (slideAngVel ./ sampRate) .* sind(zeroedYawAngPos + 90);
-posx = (cumsum(xChangePos) - xChangePos(1)) .* mmPerDeg;
-yChangePos = (fwdAngVel ./ sampRate) .* cosd(zeroedYawAngPos) + (slideAngVel ./ sampRate) .* cosd(zeroedYawAngPos + 90);
-posy = (cumsum(yChangePos) - yChangePos(1)) .* mmPerDeg;
+vangf = vf / (balld/2);
+vangs = vs / (balld/2);
+mmpd = balld * pi / 360; 
+ywz = yw - yw(1);
+rt = median(diff(t));
+dtx = (vangf ./ rt) .* sin(ywz) + (vangs ./ rt) .* sin(ywz + pi/2);
+posx = (cumsum(dtx) - dtx(1)) .* mmpd;
+dty = (vangf ./ rt) .* cos(ywz) + (vangs ./ rt) .* cos(ywz + pi/2);
+posy = (cumsum(dty) - dty(1)) .* mmpd;
 
 end
 

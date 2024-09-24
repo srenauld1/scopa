@@ -1,4 +1,4 @@
-function [roiinfo, resp] = make_morphological_rois(stack, stackmnt, opts_mroi, ...
+function [roiinfo, resp] = make_morphological_rois(stack, opts_mroi, ...
     ti, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
     regionex, parstr_mroi, maskmanual2)
 
@@ -70,6 +70,8 @@ autoopts = opts_mroi.auto;
 pth_mroi_prefix = pth_mroi(1:end-4);
 numchan = size(stack,5);
 
+stackmnt = mean(stack, 4, 'native');
+
 %% draw rois (polygons/polyhedra)
 
 if ~maskinput
@@ -115,7 +117,7 @@ for c = 1:numchan
     if ismember(c,autoopts.chan)
 
         maskmanual = maskmanual2{c};
-        stackmnt_tmp = stackmnt(:,:,:,c);
+        stackmnt_tmp = stackmnt(:,:,:,:,c);
         num_mroi_manual = size(maskmanual, 4);
         pth_morphroidata = [pth_mroi_prefix 'chn' num2str(c) '_morphroidata_.mat'];
 
@@ -259,13 +261,15 @@ if hsvopt.do %roi hsv map
     hue_feature = [1:num_mroi]';
     hsvmap = plots_compute_hsv(hsvopt, hueft=hue_feature);
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
-    hsvimg_as_rgb = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipixinds, mask_roi_vec, hsv_filename);
+    plotchannel = 1;
+    hsvimg_as_rgb = plots_hsvfov(hsvopt, stackmnt(:,:,:,:,plotchannel), hsvmap, roipixinds, mask_roi_vec, hsv_filename);
 end
 
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
     gif_visibility = 'on';
-    stack2fig(stackmnt, pthgif=filename_olay, gif_visibility=gif_visibility, roipixinds=roipixinds, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipixinds as argument to plot roi overlay
+    plotchannel = 1;
+    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_olay, gif_visibility=gif_visibility, roipixinds=roipixinds, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipixinds as argument to plot roi overlay
 end
 
 

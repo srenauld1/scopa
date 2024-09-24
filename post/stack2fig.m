@@ -3,7 +3,7 @@ function stack2fig(stack, opt)
 %alphamapping is not yet an option
 
 arguments
-    stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,pmtchannel,colorchannel); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
+    stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
     opt.pthgif char = ''
     opt.gif_visibility char = 'on'
     opt.roipixinds = []
