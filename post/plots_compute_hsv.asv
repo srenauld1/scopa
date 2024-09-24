@@ -134,14 +134,8 @@ else
     if plt.hue_is_periodic
         hdata = mod(hdata, 2*pi);
     end
-    dosplit = 1;
-    if dosplit
-        hrange_in_xtreme = max(abs(hrange_in));
-        hdata(hdata>0) = scale_range( hdata(hdata>0), [0 hrange_in_xtreme], [0.3 0.6] );
-        hdata(hdata<0) = scale_range( hdata(hdata<0), [-hrange_in_xtreme 0], [0 0.3] );
-    else
-        hdata = scale_range( hdata, hrange_in, hrange_out );
-    end
+    hdata(hdata>0) = scale_range( hdata(hdata>0), [0 hrange_in(2)], [0.3 0.6] );
+    hdata(hdata<0) = scale_range( hdata(hdata<0), [hrange_in(1) 0], [0.3 0] );
     hdata = clip_to_range( hdata, hrange_out );
     if isfield( plt, 'hueshift' ) & ~isempty(plt.hueshift)
         hdata = mod( hdata + plt.hueshift, 1 ); %shift hue circularly around circle (fine even if hrange_out is not [0 1])
@@ -165,11 +159,11 @@ else
     hsvmap(:,3) = vdata;
 end
 
-    % 
-    % [susesort,suessortinds]=sort(hdata);
-    % suseneg = find(susesort<0.3);
-    % muk=sdata(suessortinds);
-    % figure; plot(muk); hold on; plot(1:numel(suseneg), muk(suseneg))
+
+    [susesort,suessortinds]=sort(hdata);
+    suseneg = find(susesort<0.3);
+    muk=sdata(suessortinds);
+    figure; plot(muk); hold on; plot(1:numel(suseneg), muk(suseneg))
 
 end
 

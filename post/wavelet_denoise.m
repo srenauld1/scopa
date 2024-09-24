@@ -63,7 +63,7 @@ fngif = [pthgifpre 'resp_mra_.gif'];
 
 %% transform
 
-dodetrend = 1;
+dodetrend = 0;
 dowav = 1;
 
 frng = [nan nan];
@@ -76,6 +76,7 @@ if dodetrend
 end
 
 if dowav
+    
     % [wt, wtf, coi] = cwt(resp1, FilterBank=fb);
     [wt, wtf, coi] = cwt(resp1, fs);
 
@@ -83,8 +84,8 @@ if dowav
     pmin = 1/wtf(1);
     pmax = linspace(8, 8, 1);
     pmax = 1/wtf(end);
-    pmin = 0.3;
-    pmax = 50;
+    pmin = 0.3; %min period in seconds
+    pmax = 50; %max period in seconds
 
    
     [ff,gg]=meshgrid(pmin, pmax);
@@ -100,7 +101,7 @@ for m = 1:size(frng,1)
 
     if dowav
         respnew = icwt(wt, wname, wtf, [frng(m,2) frng(m,1)]) + mean(resp1);
-        respnew = rescale(respnew);
+        % respnew = rescale(respnew);
     else
         respnew = resp1;
     end

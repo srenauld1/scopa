@@ -137,7 +137,7 @@ ui.mroi.hsvopt = default_hsv_opts(ui.mroi.hsvopt);
 % below xxx, yyy, zzz, and www, are 3-character strings converted to integers, string range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
 % all normalizations are applied to individual pixel or roi timeseries
 % normalization strings are:
-% 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, uuu as sliding window length in seconds, if uuu is 000 then f0 is computed across the entire timeseries, not a sliding window
+% 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries, not a sliding window
 % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
 % 'z' % zscore
 % 'nn' % nonnegative (subtract min)
@@ -145,7 +145,7 @@ ui.mroi.hsvopt = default_hsv_opts(ui.mroi.hsvopt);
 
 ui.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
-ui.mroi.norm.postcluster = {'f'}; %must have at least one string, compsed of syllables above
+ui.mroi.norm.postcluster = {'dff015000'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS

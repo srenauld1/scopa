@@ -13,9 +13,9 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'20240907'}; %cell array of char, can use wildcards
     fnspec_fly = {'*'}; %cell array of char, can use wildcards
-    fnspec_trial = {'1'}; %cell array of char, can use wildcards
+    fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
@@ -123,23 +123,9 @@ ui.mroi.olayopt.roi_color = [1 0 0]; %color for roi overlay
 ui.mroi.olayopt.roialpha = 0.3; %transparency for roi overlay
 
 %params for hsv plot of morophological rois (make a gif showing each z slice of mean t stack with hsv encoding of rois)
-ui.mroi.hsvopt.do = 0; %1 to plot/save, 0 to just compute hsv image but skip plot/save  
-ui.mroi.hsvopt.foreground = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
-ui.mroi.hsvopt.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set 
-ui.mroi.hsvopt.huestr = ''; %deprecated variable, leave empty 
-ui.mroi.hsvopt.huenorm = 'native'; %hue normalization method, 'native' normalizes to a preset range (hard coded in plots_setup_hsv) according to 'mdlname', 'relative' normalizes to the data range assigned to hue, 'manual' normalizes to the range set below in ui.mroi.hsv.hrange_in_manual; if you request 'native' but don't pass huelimnat to plots_compute_hsv it will switch to 'relative'; if you request 'manual' but don't set ui.mroi.hsvopt.hrange_in_manual it will switch to 'relative'      
-ui.mroi.hsvopt.satnorm = 'relative'; %sat normalization method, same logic as huenorm
-ui.mroi.hsvopt.valnorm = 'relative';%val normalization method, same logic as huenorm
-ui.mroi.hsvopt.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-ui.mroi.hsvopt.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-ui.mroi.hsvopt.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see plots_compute_hsv
-ui.mroi.hsvopt.hrange_out_manual = [0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see plots_compute_hsv
-ui.mroi.hsvopt.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see plots_compute_hsv
-ui.mroi.hsvopt.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see plots_compute_hsv
-ui.mroi.hsvopt.hueshift = 0; %0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see plots_compute_hsv, this works for periodic or non-periodic features assigned to hue
-ui.mroi.hsvopt.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 ui.mroi.hsvopt.ignoresat = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 ui.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+ui.mroi.hsvopt = default_hsv_opts(ui.mroi.hsvopt);
 
 % params for response extraction/normalization of morphological roi responses (ui.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization for timeseries of every pixel or caiman roi within a larger roi)
@@ -151,7 +137,7 @@ ui.mroi.hsvopt.ignoreval = 1;  %when creating and plotting variable 'img', which
 % below xxx, yyy, zzz, and www, are 3-character strings converted to integers, string range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
 % all normalizations are applied to individual pixel or roi timeseries
 % normalization strings are:
-% 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, uuu as sliding window length in seconds, if uuu is 000 then f0 is computed across the entire timeseries, not a sliding window
+% 'dffuuuvvv' % sliding window dff, uuu as percentile to compute f0 for each window, uuu as sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries, not a sliding window
 % 'rscxxxyyy' % rescale, sending xxx percentile to 0, yyy percentile to 1,
 % 'z' % zscore
 % 'nn' % nonnegative (subtract min)
@@ -299,7 +285,7 @@ ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1.ind1']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};
@@ -316,7 +302,7 @@ ui.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (
 ui.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 ui.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
-ui.pltx(1).it = [3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+ui.pltx(1).it = []; %[3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 ui.pltx(1).display_range = [0,1]; 
 ui.pltx(1).letui = 1;
 
@@ -368,7 +354,7 @@ if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(con
     ui.mn.regionex_all = {'fullfov3'};
     ui.mroi.use_drawn_rois =  {'fullfov3'};
     ui.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
-    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov2.mo*.in_rawf_*rsc*']}; %if empty, do will be set to false
+    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov3.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
 end
 ui.carl.stimtype = 'drone';
 ui.carl.feat = 'CON_51';

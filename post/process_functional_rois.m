@@ -22,6 +22,7 @@ normopts = opts.norm;
 tcropfront = md.tcropfront;
 tcropback = md.tcropback;
 imper = md.imper;
+ti = md.ti;
 
 cnt_mroi = roiinfo.centroids_roi;
 mask_mroi_all = roiinfo.mask_allroi;
@@ -320,9 +321,11 @@ end
 %% compute functional (caiman) responses averaged by which morphological roi they belong to (while also saving the original caiman responses too)
 
 resptmp.cmc = cmc; %put into struct before passing to extract_roi_responses
-resp = extract_roi_responses(resptmp, mask_roi_vec, pth_froi, normopts, imper); %this version not weighted by area by passing mask_roi_vec
 
-% resp = extract_roi_responses(resp_froi, mask_roi_vec_wt, pth_froi, normopts, imper, resp);  %this version weighted by area by passing mask_roi_vec_wt, appends output resp to input resp, so the nonweighted version is retained
+dowav = 0;
+resp = extract_roi_responses(resptmp, mask_roi_vec, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing mask_roi_vec
+
+% resp = extract_roi_responses(resp_froi, mask_roi_vec_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing mask_roi_vec_wt, appends output resp to input resp, so the nonweighted version is retained
 
 
 

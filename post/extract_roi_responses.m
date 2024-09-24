@@ -1,5 +1,5 @@
 
-function resp = extract_roi_responses(respin, mask_roi_vec, pth_save_prefix, normopts, imper, resp)
+function resp = extract_roi_responses(respin, mask_roi_vec, pth_save_prefix, normopts, imper, opt)
 
 arguments
     respin
@@ -7,7 +7,16 @@ arguments
     pth_save_prefix
     normopts
     imper
-    resp = [] %if resp is passed as input, this function's output resp is appended to it
+    opt.resp = struct %if resp is passed as input, this function's output resp is appended to it
+    opt.dowav = 0
+    opt.ti = []
+end
+resp = opt.resp;
+dowav = opt.dowav;
+ti = opt.ti;
+
+if isempty(resp)
+    resp = struct;
 end
 
 if isstruct(respin)
@@ -33,9 +42,9 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = extract_roi_responses_onechan(respin_onechan, mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp);
+            resp = extract_roi_responses_onechan(respin_onechan, mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         else
-            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp);
+            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         end
     end
 end
@@ -43,7 +52,7 @@ end
 end
 
 
-function resp = extract_roi_responses_onechan(respin, mask_roi_vec, pth_save_prefix, normopts, imper, fnchan, resp)
+function resp = extract_roi_responses_onechan(respin, mask_roi_vec, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
 
 arguments
     respin
@@ -52,8 +61,11 @@ arguments
     normopts
     imper
     fnchan
-    resp = [] %if resp is passed as input, this function's output resp is appended to it
+    resp
+    dowav
+    ti
 end
+
 
 
 if isequal(unique(mask_roi_vec(:)), [0 1]') | unique(mask_roi_vec)==1
@@ -104,6 +116,10 @@ for fnini = 1:length(fnin)
             resp2.f = roiinds_new * tmp2d ./ sum(roiinds_new,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
         else
             resp2.f = nan;
+        end
+
+        if dowav
+            resp2.f = wavelet_denoise(resp2.f, t=ti, it=1:numel(ti), pthgifpre=''); %pth_mroi_prefix
         end
 
         resp2 = normalize_response(resp2.f, normopts.postcluster, imper);
