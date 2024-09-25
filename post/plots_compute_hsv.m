@@ -134,13 +134,17 @@ else
     if plt.hue_is_periodic
         hdata = mod(hdata, 2*pi);
     end
-    dosplit = 1;
-    if dosplit
-        hrange_in_xtreme = max(abs(hrange_in));
-        hdata(hdata>0) = scale_range( hdata(hdata>0), [0 hrange_in_xtreme], [0.3 0.6] );
-        hdata(hdata<0) = scale_range( hdata(hdata<0), [-hrange_in_xtreme 0], [0 0.3] );
-    else
-        hdata = scale_range( hdata, hrange_in, hrange_out );
+    huesplit = 'ind';
+    switch huesplit
+        case 'ind'
+            hdata(hdata>0) = scale_range( hdata(hdata>0), [0 hrange_in(2)], [0.3 0.6] );
+            hdata(hdata<0) = scale_range( hdata(hdata<0), [hrange_in(1) 0], [0 0.3] );
+        case 'dep'
+            hrange_in_xtreme = max(abs(hrange_in));
+            hdata(hdata>0) = scale_range( hdata(hdata>0), [0 hrange_in_xtreme], [0.3 0.6] );
+            hdata(hdata<0) = scale_range( hdata(hdata<0), [-hrange_in_xtreme 0], [0 0.3] );
+        case 'none'
+            hdata = scale_range( hdata, hrange_in, hrange_out );
     end
     hdata = clip_to_range( hdata, hrange_out );
     if isfield( plt, 'hueshift' ) & ~isempty(plt.hueshift)

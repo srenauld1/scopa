@@ -5,6 +5,9 @@ function [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, framecou
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
     cols_sc, scdimmin, scdimsd, vidrot)
 
+cdfool = repmat(reshape([1 0 0], 1, 1, 3), [128 256 1]);
+afool = repmat(0.4, [128 256 1]);
+vidcenflag = 0;
 clear make_roi_overlay pltexp_process_callbacks
 
 cb = default_cbflags([], 'all'); %set all flags to default
@@ -74,6 +77,7 @@ while tloop
                     end
                 end
             end
+
             if j==2
                 zoom_margin_sec = 15;
                 hndls.ts.hax{j}.XAxis.Limits = [ti(tinds_use(fr))-zoom_margin_sec, ti(tinds_use(fr))+zoom_margin_sec];
@@ -208,7 +212,14 @@ while tloop
 
         %%%% FICTRAC VIDEO %%%%
         hndls.vid.hpl{1}.CData = vid(:,:,:,tinds_use(fr)); %fictrac video
-        if fr==1 
+        if vidcenflag
+            nc1 = cb.val.vidcen{vidcenv}(1);
+            nc2 = cb.val.vidcen{vidcenv}(2);
+            newinc = 2;
+            hndls.vid.hol{j}.CData(nc1-newinc:nc1+newinc, nc2-newinc:nc2+newinc,:) = cdfool(nc1-2:nc1+2, nc2-2:nc2+2,:); %squeeze to make it 3d (2d plus color channel)
+            hndls.vid.hol{j}.AlphaData(nc1-newinc:nc1+newinc, nc2-newinc:nc2+newinc) = afool(nc1-2:nc1+2, nc2-2:nc2+2);
+        end
+        if fr==1
             hndls.vid.hax{1}.View(1) = vidrot;
         end
 
@@ -231,6 +242,7 @@ while tloop
         end
 
         if cb.restart.v==1
+            vidcenflag = 0;
             pause(0.2)
             tloop = 0;
             break; %exit the t for loop
@@ -239,7 +251,9 @@ while tloop
             tloop = 1;
             tinds_use = cb.val.tinds(1):cb.val.sampinc:cb.val.tinds(end);
             if ~isempty(cb.val.vidcen)
-                varsp(cb.val.v,:) = vid(cb.val.vidcen{cb.val.v}(1),cb.val.vidcen{cb.val.v}(2),:,:);
+                vidcenflag = 1;
+                varsp(cb.val.v,:) = rescale(vid(cb.val.vidcen{cb.val.v}(1),cb.val.vidcen{cb.val.v}(2),:,:), 0, 1);
+                vidcenv = cb.val.v;
             end
             cb.restart.t = [];
             framecount = 0;

@@ -54,7 +54,7 @@ doplots = opt.doplots;
 gif_visibility = 'on';
 fontmedium = 12;
 axord = 'rowmajor';
-crosshair_width = 3;
+crosshair_width = 2;
 xtralimfac = 0.03;
 numtickx = 4;
 numticky = 2;
@@ -321,7 +321,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     % hold(ts2.hax, 'off');
     % ts1.xln = yline(0, Color=[0 0 0], Alpha=0.3);
     [ts1.hax.XAxis] = axismod(ts1.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
-    [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(df/f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+    [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
     % [ts1.hax.YAxis(2)] = axismod(ts1.hax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
 
 
@@ -340,7 +340,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     ts2.xln = yline(0, Color=[0 0 0], Alpha=0.3);
     [ts2.hax.XAxis] = axismod(ts2.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
     % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. vel.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
+    [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
 
 
     sectorind = 1; spi = 9; widthfac = 4; heightfac = 1;
@@ -375,8 +375,8 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     hold(ts4.hax, 'off');
     ts4.xln = yline(0, Color=[0 0 0], Alpha=0.3);
     [ts4.hax.XAxis] = axismod(ts4.hax.XAxis, tsub, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0, roundprec=0);
-    [ts4.hax.YAxis(1)] = axismod(ts4.hax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'resp.'; '(df/f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
-    [ts4.hax.YAxis(2)] = axismod(ts4.hax.YAxis(2), stim1(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. vel.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
+    [ts4.hax.YAxis(1)] = axismod(ts4.hax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+    [ts4.hax.YAxis(2)] = axismod(ts4.hax.YAxis(2), stim1(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
 
     sectorind = 1; spi = 15; widthfac = 1; heightfac = 1;
     pt.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
@@ -403,8 +403,8 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     sc.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
     sc.hpl = scatter(sc.hax, stim1, nanresp, 2.5, 'filled');
     sc.hax.PlotBoxAspectRatio = [1 1 1];
-    [sc.hax.XAxis] = axismod(sc.hax.XAxis, stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. vel.'; '(mm/s)'},  labeltightfac=0);
-    [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'resp.'; '(df/f)'},  labeltightfac=0); %specify axis(1) otherwise to overwrite entire axis
+    [sc.hax.XAxis] = axismod(sc.hax.XAxis, stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0);
+    [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'resp.'; '(f)'},  labeltightfac=0); %specify axis(1) otherwise to overwrite entire axis
 
 
 
@@ -447,10 +447,10 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
             end
 
             if ~yconstant
-                [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(df/f)'},  labeltightfac=0);
+                [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0);
                 % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
-                [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(df/f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
-                [ts4.hax.YAxis(1)] = axismod(ts4.hax.YAxis(1), resp(k,it), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(df/f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+                [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+                [ts4.hax.YAxis(1)] = axismod(ts4.hax.YAxis(1), resp(k,it), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
             end
 
 

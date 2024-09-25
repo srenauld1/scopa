@@ -146,6 +146,7 @@ ui.mroi.hsvopt = default_hsv_opts(ui.mroi.hsvopt);
 ui.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.postcluster = {'dff015000'}; %must have at least one string, compsed of syllables above
+ui.mroi.norm.postcluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS
@@ -351,10 +352,10 @@ if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(con
     ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
     ui.mn.do_fit = 0; %model fitting (ui.fitm below)
     ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
-    ui.mn.regionex_all = {'fullfov3'};
-    ui.mroi.use_drawn_rois =  {'fullfov3'};
+    ui.mn.regionex_all = {'fullfov4'};
+    ui.mroi.use_drawn_rois =  {'fullfov4'};
     ui.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
-    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov3.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
+    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov4.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
 end
 ui.carl.stimtype = 'drone';
 ui.carl.feat = 'CON_51';

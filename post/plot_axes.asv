@@ -208,7 +208,9 @@ while tloop
 
         %%%% FICTRAC VIDEO %%%%
         hndls.vid.hpl{1}.CData = vid(:,:,:,tinds_use(fr)); %fictrac video
-        if fr==1 
+        hndls.st.hol{j}.CData(cb.val.vidcen{cb.val.v}(1),cb.val.vidcen{cb.val.v}(2)) = [1 0 0]; %squeeze to make it 3d (2d plus color channel)
+        hndls.st.hol{j}.AlphaData = roialphamask(:,:,j);
+        if fr==1
             hndls.vid.hax{1}.View(1) = vidrot;
         end
 
@@ -239,7 +241,7 @@ while tloop
             tloop = 1;
             tinds_use = cb.val.tinds(1):cb.val.sampinc:cb.val.tinds(end);
             if ~isempty(cb.val.vidcen)
-                varsp{cb.val.v} = vid(cb.val.vidcen(1),cb.val.vidcen(2),:,:);
+                varsp(cb.val.v,:) = vid(cb.val.vidcen{cb.val.v}(1),cb.val.vidcen{cb.val.v}(2),:,:);
             end
             cb.restart.t = [];
             framecount = 0;
