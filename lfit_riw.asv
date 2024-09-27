@@ -96,9 +96,6 @@ if pixfit
     resp = stack;
     clear stack
     resp = reshape(resp, [], size(resp,4));
-    numroi = size(resp,1);
-    ir = 1:numroi;
-
 
     hsvopt.foreground = 'pixels';
     mask_roi_vec = [];
@@ -214,7 +211,6 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     respstd = std(resp, 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
 
     r2use(puse>minpval) = min(r2use(:))/2;
-    suse(puse>minpval) = min(suse(:))/2;
 
     % [histdt, histx] = hist(respstd(:), 1000);
     % thrbin_tri = triangle_threshold(histdt, 'R', 1);
@@ -224,7 +220,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     % vrangenew = [rnk 1];
     % hsvopt.vrange_out_manual = [1-rnk 1];
 
-     
+    % 
     % [susesort,suessortinds]=sort(suse);
     % suseneg = find(susesort<0);
     % muk=r2use(suessortinds);
@@ -234,9 +230,6 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     % suseneg = find(susesort<0);
     % muk=respstd(suessortinds);
     % figure; plot(muk); hold on; plot(1:numel(suseneg), muk(suseneg))
-
-    % figure; plot(r2use(laguse==1)); yline(mean(r2use(laguse==1)), 'b'); hold on; plot(r2use(laguse==2)); yline(mean(r2use(laguse==2)), 'r'); hold on; plot(r2use(laguse==3)); yline(mean(r2use(laguse==3)), 'y');
-
     
     hsvmap = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use, valft=respstd);
     if ~hsvopt.ignoresat
@@ -421,15 +414,14 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
         k = sinds(k2);
         if ismember(k2, plotinds)
 
-            % rind = ir(k);
-            rind = 1;
+            rind = ir(k);
 
             for j = 1:size(imhsv, 3)
                 if j==crosshair{k}(3)
                     st.hlny{j}.Value = crosshair{k}(1);
                     st.hlnx{j}.Value = crosshair{k}(2);
-                    st.hlny{j}.LineStyle = '-';
-                    st.hlnx{j}.LineStyle = '-';
+                    st.hlny{j}.LineStyle = 'none';
+                    st.hlnx{j}.LineStyle = 'none';
                 else
                     st.hlny{j}.LineStyle = 'none';
                     st.hlnx{j}.LineStyle = 'none';

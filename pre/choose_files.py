@@ -1,8 +1,8 @@
 import os
 import glob
 import numpy as np
-from read_save_metadata import read_save_metadata
-from helpers import rename_files, mat2tif_scopa, ordinal
+from read_save_metadata import read_save_metadata, convert_md_file
+from helpers import rename_files, mat2tif, ordinal
 from natsort import natsorted
 import re
 from itertools import product
@@ -12,8 +12,8 @@ import ast
 
 
 def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
-                 folder_with_all_recordings_on_storage_and_compute_filesystems, chan_dn, chan_ex):
+                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
+                 folder_with_all_recordings_on_storage_and_compute_filesystems):
 
     # chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
 
@@ -50,13 +50,13 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
-        if do_denoise or do_stitch or do_extract or do_crop or do_remove or do_analysis:
+        if do_denoise or do_stitch or do_extract or do_crop_only or do_remove or do_analysis:
             fn_suffix_scopa = '_cmrg' 
             if use_background_subtracted:
                 fn_suffix_scopa = '_bksb' + fn_suffix_scopa
-            if use_denoised and (do_extract or do_crop or do_remove or do_analysis): #don't let this affect do_stitch since it must have dcdn if it's run
+            if use_denoised and (do_extract or do_crop_only or do_remove or do_analysis): #don't let this affect do_stitch since it must have dcdn if it's run
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
-            if use_scannoise_removed and (do_extract or do_crop or do_analysis):
+            if use_scannoise_removed and (do_extract or do_crop_only or do_analysis):
                 fn_suffix_scopa = fn_suffix_scopa + '_nosn'
         if use_scannoise_removed and do_extract:
             fn_suffix_scopa = fn_suffix_scopa + '_.mat'  #this is the only time only a mat is available when a tif is required (besides carls_old_project)
@@ -179,8 +179,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
             ######### FIND SOME ADDITIONAL OPTIONAL FILES #########
 
-            pth_md = pth_prefix + '_metadatanew_.npy'
-            pth_md_mat = pth_md[:-4] + '.mat'  
+            pth_md = pth_prefix + '_mdsi_.txt'
 
             # fn_pattern_md_flyg = fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
             # pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
@@ -231,21 +230,31 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
                 carls_old_project = 1
             
             if fname[-3:]=='mat' and do_copyfiles==0 and not do_analysis:
-                mat_file_shape = mat2tif_scopa(pth_readfile, carls_old_project)
+                mat_file_shape = mat2tif(pth_readfile, carls_old_project)
 
 
             ######### READ & WRITE SCANIMAGE METADATA #########
 
-            if not os.path.isfile(pth_md) or not os.path.isfile(pth_md_mat): #if either npy or mat version is not present, remake both 
-                if do_register:
+            pth_md_old = pth_prefix + '_metadatanew_.npy'
+            pth_md_mat_old = pth_md_old[:-4] + '.mat'  
+            if not os.path.isfile(pth_md): #if scanimage metadata file (mdsi.txt) is not present, make it
+                if do_register: #if doing registration, or if the either of the old metadata files are present, make mdsi.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
-                        read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_shape = mat_file_shape)
+                        read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
                         pth_md = []
-                        pth_md_mat = []
                     elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
-                        raise Exception("metadatanew.npy and/or metadatanew.mat are not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or do_register to create them")
-                
+                        raise Exception("mdsi.txt is not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or run do_register to create them")
+                else:
+                    if os.path.isfile(pth_md_old):
+                        convert_md_file(pth_md, pth_md_old, pth_md_mat_old)
+                    else:
+                        raise Exception("mdsi.txt is not found, and neither is old metadata file 'metadatanew.npy, and you're not running do_register; can only be created from scanimage metadata in raw tif (the tif file used in do_register), so make sure you haven't moved those metadata files, or run do_register to create them")
+            if os.path.isfile(pth_md_old): 
+                os.remove(pth_md_old)
+            if os.path.isfile(pth_md_mat_old): 
+                os.remove(pth_md_mat_old)
+                            
             
             ######### PUT IN LISTS #########
 

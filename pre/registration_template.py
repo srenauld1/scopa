@@ -61,7 +61,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
             if os.path.isfile(pth_regtemplate):
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
-                opts_dict, _, _ = configs(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+                opts_dict, _, _, _ = configs(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
                 regtemplate = make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
@@ -126,8 +126,6 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
 
 
     return regtemplate
-
-
 
 
 

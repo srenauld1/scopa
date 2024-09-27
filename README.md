@@ -262,9 +262,9 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 
 ############################## CROPPING SESSION ######################################
 
- do_crop = True will skip everything but this interactive FOV selection for all entries in regionex (and all recordings), but must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, to provide input files for cropping  
+ do_crop_only = True will skip everything but this interactive FOV selection for all entries in regionex (and all recordings), but must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, to provide input files for cropping  
 
- do_crop = True is convenient to cycle through many recordings that have been motion corrected (and optionally denoised), but have not been extracted, and you want to run the extraction on all of them without interruption in a separate job after the cropping session 
+ do_crop_only = True is convenient to cycle through many recordings that have been motion corrected (and optionally denoised), but have not been extracted, and you want to run the extraction on all of them without interruption in a separate job after the cropping session 
  
 
 ############################## POST SUB-PIPELINE ######################################

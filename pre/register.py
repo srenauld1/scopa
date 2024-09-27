@@ -6,7 +6,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from configs import configs
-from helpers import tracefunc 
+from helpers import tracefunc, stack_reshape_transpose_zero_type 
 from z_stitch import stitch_registered_slices 
 from registration_template import choose_registration_template
 from separate_channels_when_two import separate_channels_when_two
@@ -18,13 +18,13 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, discard_channel, chan_primary_when_two, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots):
    
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
     ########################## LOAD / PREP STACK ##########################
 
-    print("\n\n\nENTERING REGISTRATION FUNCTION")
+    print("\n\n\nENTERING register.py")
 
     if use_cluster:
         if 'dview' in locals(): cm.stop_server(dview=dview)
@@ -33,22 +33,22 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
-    stack = imread(pth_tif_read)#.astype('float32') ##  is float necessary?? caiman has it this way; (tz)yx, or if multiple channels, (tz)cyx; 
+    stack = imread(pth_tif_read) #(tz)yx, or if multiple channels, (tz)cyx; use to include .astype('float32') but float is not actually necessary as far as i can tell, although caiman has it this way i think O2 resource savings are worth the loss in precision 
         
     if md['dims'][1]>1:
         stack_has_multiple_z_slices = 1
-        zindall = np.arange(md['dims'][1])
+        indzall = np.arange(md['dims'][1])
     else:
         stack_has_multiple_z_slices = 0
-        zindall = [0]
+        indzall = [0]
         if not register_in_2d:
             register_in_2d = 1
             print("stack does not have multiple slices but register_in_2d is set to false, changing register_in_2d to true now")
 
-    stack, stack_secondary, two_channel_reg, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel, chan_primary_when_two)
+    stack, stack_secondary, two_channel_reg, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
 
     if two_channel_reg and register_presmoothed:
-        raise Exception("two_channel_reg and register_presmoothed cannot both be true; since you have a 2-channel stack, you can set discard_channel to 1 or 2, or set register_presmoothed to 0")
+        raise Exception("two_channel_reg and register_presmoothed cannot both be true; since you have a 2-channel stack, you can set discard_channel_reg to 1 or 2, or set register_presmoothed to 0")
         
     if halfwidth_window_bgsub:
         pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in choose_files (make this more reliable)
@@ -58,7 +58,8 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
     if two_channel_reg:
-        pth_tif_write_secondary = pth_tif_write.replace(chanstr_primary, chanstr_secondary) #only used if two_channel_reg==1 (ie if there are two channels and discard_channel=None)
+        print("SINCE STACK HAS 2 CHANNELS AND chan_primary IS SET TO " + str(chan_primary_when_two_reg) + ", WILL REGISTER CHANNEL " + str(chan_secondary) + " USING SHIFTS FROM CHANNEL " + str(chan_primary_when_two_reg) )
+        pth_tif_write_secondary = pth_tif_write.replace(chanstr_primary, chanstr_secondary) #only used if two_channel_reg==1 (ie if there are two channels and discard_channel_reg=None)
         pth_tif_write_secondary_tmp_prefix = pth_tif_write_secondary[:-4] + 'tmp'
     else:
         pth_tif_write_secondary = []  
@@ -75,7 +76,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     if two_channel_reg:
         stack_secondary = crop_flyback(stack_secondary, md['dims'], md['flyback'])
-        phoff = bidiphase_compute(stack_secondary)
+        phoff = bidiphase_compute(stack_secondary[::bidiphase_frame_increment,...])
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
         stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'])
@@ -91,16 +92,16 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     ########################## BACKGROUND SUBTRACTION ##########################
 
     if halfwidth_window_bgsub:
-        stack = subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, zindall)
+        stack = subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, indzall)
         if two_channel_reg:
-            stack_secondary = subtract_background(stack_secondary, halfwidth_window_bgsub, pth_prefix, makeplots, zindall)
+            stack_secondary = subtract_background(stack_secondary, halfwidth_window_bgsub, pth_prefix, makeplots, indzall)
 
 
     ########################## WRITE SECONDARY TMP STACK IF register_presmoothed ##########################
 
     if register_presmoothed: #write secondary stack (presmoothed movie in this case) to be registered to primary stack 
         msgstr = 'PRESMOOTHED STACK'
-        pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, zindall, msgstr)
+        pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr)
 
     ########################## TEMPORAL SMOOTHING ##########################
 
@@ -113,7 +114,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     if two_channel_reg: #write secondary stack (secondary channel in this case) to be registered to primary stack (this after smoothing, in case secondary channel needs it)
         msgstr = 'STACK CHANNEL ' + str(chan_secondary)
-        pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack_secondary, pth_tif_write_secondary_tmp_prefix, register_in_2d, zindall, msgstr)
+        pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack_secondary, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr)
 
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 
@@ -124,34 +125,34 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     min_mov = np.min(stack).astype('float32') #do this here, not in loop below
 
     if register_in_2d: 
-        sliceindz = zindall #each slice 
+        indz = indzall #each slice 
     else:
-        sliceindz = [zindall] #all slices in one list (not planar)
+        indz = [indzall] #all slices in one list (not 2d)
 
     stack_shape = stack.shape
     countz = 0
-    for si in sliceindz: #for each slice (or all slices if extract_in_2d = false)
+    for iz in indz: #for each slice (or all slices if register_in_2d = false)
 
         mc = None #reset caiman motion correction object
-        if register_in_2d and stack_has_multiple_z_slices: #for planar extraction take on z slice at a time
-            stack_sub = stack[:,:,:,si]
-            print("DOING PLANAR registration FOR SLICE " + str(si))
-        else: # for 3d extraction keep all z slices (for now, until implement z ranges)
+        if register_in_2d and stack_has_multiple_z_slices: #for 2d registration take on z slice at a time
+            stack_sub = stack[:,:,:,iz]
+            print("DOING 2d registration FOR SLICE " + str(iz))
+        else: # for 3d registration keep all z slices (for now, until implement z ranges)
             stack_sub = stack #can't .copy() for some reason (but that's fine as long as you don't modify stack_sub)
             if stack_has_multiple_z_slices:
                 print("DOING 3D REGISTRATION FOR ALL SLICES")
             else:
-                print("DOING PLANAR REGISTRATION FOR THE ONLY SLICE IN THE STACK")
+                print("DOING 2d REGISTRATION FOR THE ONLY SLICE IN THE STACK")
 
         if register_in_2d and stack_has_multiple_z_slices and regtemplate is not None:
-            regtemplate_sub = regtemplate[:,:,si]
+            regtemplate_sub = regtemplate[:,:,iz]
         else:
             regtemplate_sub = regtemplate
 
             
         imwrite(pth_tif_write_tmp, stack_sub.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
-        opts_dict, _, _ = configs(register_in_2d = register_in_2d, fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) ## FOR SOME REASON CALLING configs OUTSIDE si LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
+        opts_dict, _, _, _ = configs(register_in_2d = register_in_2d, fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) ## FOR SOME REASON CALLING configs OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
@@ -166,22 +167,22 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
                 input_for_save_memmap_primary = [tmp] #update name so presmoothed gets saved but not presmoothed 
 
         os.remove(pth_tif_write_tmp)        
-        memmap2stackwrite(si, input_for_save_memmap_primary, pth_tif_write, register_in_2d, mc, dview)
+        memmap2stackwrite(iz, input_for_save_memmap_primary, pth_tif_write, register_in_2d, mc, dview)
         os.remove(mc.mmap_file[0]) #remove the mmap file in F order 
         if two_channel_reg:
-            memmap2stackwrite(si, input_for_save_memmap_secondary, pth_tif_write_secondary, register_in_2d, mc, dview)
+            memmap2stackwrite(iz, input_for_save_memmap_secondary, pth_tif_write_secondary, register_in_2d, mc, dview)
 
-        if (register_in_2d and si==sliceindz[-1]) or not register_in_2d: #on final slice, if register_in_2d, or if 3d register
+        if (register_in_2d and iz==indz[-1]) or not register_in_2d: #on final slice, if register_in_2d, or if 3d register
 
             stack_shape = stack.shape
             stack_dtype = 'uint16' #stack.dtype
             stack = None
             if two_channel_reg: #OVERWRITE STACK TO SAVE MEMORY SINCE WE'RE AT THE END, AND ONLY PLOTTING IS LEFT
                 stack_allchan = np.zeros((stack_shape[0], stack_shape[1], stack_shape[2], stack_shape[3], 2), dtype=stack_dtype)
-                stack_allchan[:,:,:,:,chan_primary_when_two-1] = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_primary_when_two_reg-1] = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
                 stack_allchan[:,:,:,:,chan_secondary-1] = stitch_registered_slices(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
                 if makeplots:
-                    plot_gif(stack_allchan[:,:,:,:,chan_primary_when_two-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan[:,:,:,:,chan_primary_when_two_reg-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
                     plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
             else:
                 stack_allchan = stitch_registered_slices(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
@@ -213,18 +214,6 @@ def crop_flyback(stack, dims, flyback):
     stack = stack.reshape(dims[0]*dims[1], dims[2], dims[3])
     return stack
 
-def stack_reshape_transpose_zero_type(stack, dims):
-
-    stack = stack.reshape(dims[0], dims[1], dims[2], dims[3])
-    stack = np.transpose(stack, (0, 3, 2, 1)) #put in order t x y z 
-    mnmv = np.min(stack)
-    stack -= mnmv #make movie nonnegative then convert to uint16 (not sure this matters for caiman, but useful further ahead)
-    stack = stack.astype('uint16')
-    print("MIN BEFORE MOTION CORRECTION " + str(mnmv))
-    
-    return stack
-
-
 
 
 def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
@@ -248,11 +237,11 @@ def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
         return stack
 
 
-def write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, zindall, msgstr):
+def write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr):
 
-    if register_in_2d: #for planar extraction write one secondary stack z at a time
-        pth_tif_write_secondary_tmp = ['']*len(zindall)
-        for zind in zindall: #for every z slice 
+    if register_in_2d: #for 2d registration write one secondary stack z at a time
+        pth_tif_write_secondary_tmp = ['']*len(indzall)
+        for zind in indzall: #for every z slice 
             print("WRITING " + msgstr + " SLICE " + str(zind) + " FOR SECONDARY REGISTRATION AFTER PRIMARY REGISTRATION")
             pth_tif_write_secondary_tmp[zind] = pth_tif_write_secondary_tmp_prefix + '_' + str(zind) + '_.tif'
             imwrite(pth_tif_write_secondary_tmp[zind], stack[:,:,:,zind].squeeze(), bigtiff=True, photometric='minisblack') 
@@ -277,7 +266,7 @@ def write_registered_stack(stack, pth_tif_write):
     imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 
 
-def memmap2stackwrite(si, input_for_save_memmap, pth_tif_write, register_in_2d, mc, dview):
+def memmap2stackwrite(iz, input_for_save_memmap, pth_tif_write, register_in_2d, mc, dview):
 
         border_to_0 = 0 if mc.border_nan == 'copy' else mc.border_to_0 
         basename_memap = pth_tif_write.split('/')[-1][:-4]
@@ -287,7 +276,7 @@ def memmap2stackwrite(si, input_for_save_memmap, pth_tif_write, register_in_2d, 
         stack = np.reshape(stack.T, [dim_time_rg] + list(dims_spatial_rg), order='F') 
 
         if register_in_2d:
-            pth_write_single = pth_tif_write[:-4] + str(si) + '_z_.tif'
+            pth_write_single = pth_tif_write[:-4] + str(iz) + '_z_.tif'
             imwrite(pth_write_single, np.transpose(stack, (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
         else:
             for si2 in np.arange(stack.shape[3]): #write 3d registered, each slice, bc reading them back makes caiman output stack mutable, without doubling ram by simply copying stack (takes more storage but less ram, on O2 this is preferable), also writing one big float32 4d array takes forever on local, each slice does better 

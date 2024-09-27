@@ -145,7 +145,9 @@ for si = 1:num_resamples
             if ~strcmp(trialData.Properties.VariableNames, daqvarname)
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
+                
                 [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, maxvolt, slopelen_sec, slopeorder, pth_daqrs, doplots);
+                
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, daqvars_to_unwrap))
                     tmp = unwrap(tmp); %convert to mm (not for tmp_diff)
                 end

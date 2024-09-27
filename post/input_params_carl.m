@@ -13,8 +13,8 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240907'}; %cell array of char, can use wildcards
-    fnspec_fly = {'*'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'20240601'}; %cell array of char, can use wildcards
+    fnspec_fly = {'4'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
@@ -30,7 +30,7 @@ ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssS
 ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
-ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+ui.mn.do_fit = 1; %model fitting (ui.fitm below)
 ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 

@@ -1,5 +1,5 @@
 
-function hsvmap = plots_compute_hsv(plt, opt)
+function hsvmap = hsvcmpt(plt, opt)
 
 % hue is 0 red , 0.2 yellow, 0.4 green, 0.6 blue, 0.8 magenta
 
@@ -137,7 +137,6 @@ else
     huesplit = 'ind';
     switch huesplit
         case 'ind'
-            splitval = 0;
             hdata(hdata>splitval) = scale_range( hdata(hdata>splitval), [splitval hrange_in(2)], [hrange_out(2)/2 hrange_out(2)] );
             hdata(hdata<splitval) = scale_range( hdata(hdata<splitval), [hrange_in(1) splitval], [hrange_out(1) hrange_out(2)/2] );
         case 'dep'

@@ -2,7 +2,7 @@
 function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc_sec)
 
 
-sprintf("\n\n\nENTERING remove_scan_noise")
+sprintf("\n\n\nENTERING remove_scan_noise.m")
 
 %pth_stack_tif is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
 
@@ -46,7 +46,7 @@ recid = [num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
 pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
 pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
-pth_md = [fldr recid '_metadatanew_.mat'];
+pth_md = [fldr recid '_mdsi_.txt'];
 
 md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
 md = md{1};

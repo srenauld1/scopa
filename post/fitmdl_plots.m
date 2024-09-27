@@ -152,7 +152,7 @@ for ei = 1:numel(enm)
                         mdlfcn(fitin.fits.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pth_fitdata_prefix);
                     end
                 case 'comp'
-                    compare_roi_with_pix(depv_allrois{epi}, stack, roipixinds, pth_fitdata_prefix) %make gif showing roi against each of its pixels
+                    roivpix(depv_allrois{epi}, stack, roipixinds, pth_fitdata_prefix) %make gif showing roi against each of its pixels
             end
         end
     end

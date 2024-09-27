@@ -13,7 +13,7 @@ ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stor
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
 if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'22*'}; %cell array of char, can use wildcards
+    fnspec_recdate = {'2024'}; %cell array of char, can use wildcards
     fnspec_fly = {'*'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
     fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
@@ -30,7 +30,7 @@ ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssS
 ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
-ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+ui.mn.do_fit = 1; %model fitting (ui.fitm below)
 ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 
@@ -105,7 +105,7 @@ ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-f
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
-ui.mroi.auto.num_mroi_auto.fullfov = 100; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fullfov = 1024; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 ui.mroi.auto.create_mask_method = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
@@ -352,10 +352,10 @@ if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(con
     ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
     ui.mn.do_fit = 0; %model fitting (ui.fitm below)
     ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
-    ui.mn.regionex_all = {'fullfov3'};
-    ui.mroi.use_drawn_rois =  {'fullfov3'};
+    ui.mn.regionex_all = {'fullfov4'};
+    ui.mroi.use_drawn_rois =  {'fullfov4'};
     ui.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
-    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov3.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
+    ui.pltx(1).varnms.ts5{1} = {['resp.fullfov4.mo*.in_rawf_pc_f_cl_f_w_*']}; %if empty, do will be set to false
 end
 ui.carl.stimtype = 'drone';
 ui.carl.feat = 'CON_51';

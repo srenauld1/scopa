@@ -7,6 +7,19 @@ from tifffile.tifffile import imwrite, imread
 import mat73
 
 
+
+def stack_reshape_transpose_zero_type(stack, dims):
+
+    stack = stack.reshape(dims[0], dims[1], dims[2], dims[3])
+    stack = np.transpose(stack, (0, 3, 2, 1)) #put in order t x y z 
+    mnmv = np.min(stack)
+    stack -= mnmv #make movie nonnegative then convert to uint16 (not sure this matters for caiman, but useful further ahead)
+    stack = stack.astype('uint16')
+    print("MIN BEFORE MOTION CORRECTION " + str(mnmv))
+    
+    return stack
+
+
 def rename_files(pth_readfile, fname, fn_prefix, fldr, pth_hires):
 
     if re.search('trial', fname) or re.search('stackraw', fname):
@@ -45,7 +58,7 @@ def rename_files(pth_readfile, fname, fn_prefix, fldr, pth_hires):
     return (pth_readfile, fname, pth_hires)
 
 
-def mat2tif_scopa(pth_readfile, carls_old_project):
+def mat2tif(pth_readfile, carls_old_project):
 
     print("converting mat to tif for carls old project, if you're not carl there's a problem")
     

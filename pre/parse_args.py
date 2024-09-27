@@ -36,7 +36,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
-                      do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
                       do_analysis, first_job):
     
     CLI=argparse.ArgumentParser()
@@ -168,10 +168,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[len_window_smooth_t_rsc_sec],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--do_crop",  # name on the CLI - drop the `--` for positional/required parameters
+        "--do_crop_only",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[do_crop],  # default if nothing is provided
+        default=[do_crop_only],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_extract",  # name on the CLI - drop the `--` for positional/required parameters
@@ -358,7 +358,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     
     do_remove = int(args.do_remove[0])
     len_window_smooth_t_rsc_sec = float(args.len_window_smooth_t_rsc_sec[0])
-    do_crop = int(args.do_crop[0])
+    do_crop_only = int(args.do_crop_only[0])
     do_extract = int(args.do_extract[0])
     extract_in_2d = int(args.extract_in_2d[0])
 
@@ -389,7 +389,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
-                      do_crop, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
                       do_analysis, first_job)
 
 

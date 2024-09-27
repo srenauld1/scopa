@@ -86,8 +86,9 @@ if ~maskinput
                 pth_maskmanual = [pth_mroi_manual_prefix 'chn' num2str(c) '_maskmanual_.mat'];
                 try
                     load(pth_maskmanual, 'maskmanual');
-                    if all(maskmanual(:)==1)
-                        sprintf(['WARNING, MASK MANUAL CHANNEL' num2str(c) ' IS ALL ONES FOR REGION: ' regionex])
+                    msktrv = find(cellfun(@(x) all(x(:)==1), maskmanual));
+                    if ~isempty(msktrv)
+                        sprintf(['WARNING, MASK MANUAL ' num2str(msktrv) ' IS ALL ONES FOR REGION: " regionex])
                     end
                 catch
                     flag_limit_one_manual_roi = 0;

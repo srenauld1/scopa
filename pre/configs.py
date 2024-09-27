@@ -12,10 +12,12 @@ from map2params import map2params
 ##########################################################################################################################################
 
 def configs(register_in_2d = True, index_extraction_param_set = 'default', fnames = None, min_mov = 0,
-            md = None, extract_in_2d = None, dims_spatial_ex = 0):
+            md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
     #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
 
+    # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
+    # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object (but which may still be used in caiman functions)
    
     ### motion correction configs ###
 
@@ -164,6 +166,12 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     else:
         do_patches = True
 
+
+    if two_channel_ex:
+        do_patches = False
+        only_init = False
+
+
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
 
     #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
@@ -195,6 +203,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
 
     if index_extraction_param_set=='cnmfe':
         k = None #override k above if cnmfe
+    
 
     p_patch = p
     nb_patch = nb
@@ -212,6 +221,18 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     se = np.ones((3,)*len(gSig), dtype=np.uint8)  #put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
     #medw = (3,)*len(gSig)
     
+
+    morph_se = se #structuring element; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_areamin = 2 #min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_holemin = 0 #holes with smaller area (in pixels) will be filled in; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_expandmthd = 'closing' #closing or dilation; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_gsig = int(np.mean(gSig)) #must be odd and greater than 1; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    if morph_gsig<3:
+        morph_gsig = 3
+    if not morph_gsig%2==1:
+        morph_gsig = morph_gsig+1
+
+
     fnadd = str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) \
         + '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
         + '_' + str(max_iter_snmf) + '_' + str(ITER) \
@@ -222,7 +243,8 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     else:
         print("index_extraction_param_set is " + str(index_extraction_param_set) + " with filename string " + fnadd)
 
-    opts_dict = {'strides': strides_mc,    # start a new patch for pw-rigid motion correction every x pixels
+    opts_dict = {
+                'strides': strides_mc,    # start a new patch for pw-rigid motion correction every x pixels
                 'overlaps': overlaps_mc,   # overlap between pathes (size of patch strides+overlaps)
                 'max_shifts': max_shifts_mc,   # maximum allowed rigid shifts (in pixels)
                 'max_deviation_rigid': max_deviation_rigid,  # maximum shifts deviation allowed for patch with respect to rigid shifts
@@ -289,7 +311,15 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
                 'nrgthr': nrgthr,
                 'fnames': fnames,
                 #'medw': medw,
-                'extract_cc': extract_cc}
+                'extract_cc': extract_cc} 
+
+    opts_dict_morph = {
+                'morph_se': morph_se, 
+                'morph_areamin': morph_areamin, 
+                'morph_holemin': morph_holemin, 
+                'morph_gsig': morph_gsig, 
+                'morph_expandmthd': morph_expandmthd 
+                }
 
 
     # # for reference here are the initialization defs for 3 methods, sparse_nmf apparently "has problems" according to gitter
@@ -310,6 +340,6 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     #           remove_baseline=True, perc_baseline=20, nb=1, truncate=2)
 
 
-    return opts_dict, indices_ex, fnadd
+    return opts_dict, opts_dict_morph, indices_ex, fnadd
 
 

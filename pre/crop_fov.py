@@ -8,8 +8,62 @@ from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
 
 
+def crop_fov(stack, regionex, pth_prefix, dims):
+    
+    #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
+    
+    try:
+        
+        pth_croplim_pat = pth_prefix + '_' + regionex + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        pth_croplim = glob.glob(pth_croplim_pat)
+        if len(pth_croplim) > 1:
+            raise Exception("too many crop files")
+        with open(pth_croplim[0], 'rb') as fnc:
+            croplim = np.load(fnc)
 
-def select_fov_xy(img):
+    except:
+        
+        if regionex == 'fullfov':
+       
+            croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
+       
+        else:
+       
+            stackmnt = np.mean(stack, axis = 0)
+            if stackmnt.shape[-1]==1: #only do z slice selection if the movie is volumetric 4d
+                zlimits = (1,1)
+                stackmntz = np.mean(stackmnt, axis = 2)
+            else:
+                im_montage(stackmnt) #pass whole stackmnt min and max as vmin and vmax if you don't want each slice normalized
+                print("WHAT Z SLICES DO YOU WANT TO KEEP FOR REGIONEX '" + regionex + "' \n" + \
+                    "EACH SLICE NORMALIZED TO RAISE CONTRAST FOR THIS PLOT \n" \
+                    "WARNING, EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION, \n" \
+                    "SO CHOOSE AT LEAST 3 Z SLICES FOR 3D EXTRACTION (IF extract_in_2d==0) \n" \
+                    "OR YOU MUST REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
+
+                zlimits = literal_eval(input ("CHOOSE Z LIMITS (ONE-INDEXED) FOR REGIONEX '" + regionex + "' AS TUPLE, i.e. USING FORMAT (FIRSTFRAME,LASTFRAME): "))
+                stackmntz = np.mean(stackmnt[:,:,zlimits[0]-1:zlimits[1]], axis = 2)
+            ylimits, xlimits = draw_rect_xy(stackmntz)
+            tlimits = (1, dims[0])
+            croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
+            
+    limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
+    pth_croplim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
+    with open(pth_croplim, 'wb') as fncrop:
+        np.save(fncrop, croplim) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
+
+    slt = slice(croplim[0]-1, croplim[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
+    slx = slice(croplim[2]-1, croplim[3], 1) 
+    sly = slice(croplim[4]-1, croplim[5], 1) 
+    slz = slice(croplim[6]-1, croplim[7], 1) 
+    indices_crop = [slt, slx, sly, slz]
+    stack = stack[tuple(indices_crop)]
+
+    return stack, limits_str
+
+
+
+def draw_rect_xy(img):
 
     fig, ax = plt.subplots()
 
@@ -36,57 +90,3 @@ def select_fov_xy(img):
     return ylimits, xlimits
 
 
-
-
-def crop_fov(stack, regionex, pth_prefix, dims):
-    
-    #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
-    
-    try:
-        
-        pth_croplim_pat = pth_prefix + '_' + regionex + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
-        pth_croplim = glob.glob(pth_croplim_pat)
-        if len(pth_croplim) > 1:
-            raise Exception("too many crop files")
-        with open(pth_croplim[0], 'rb') as fnc:
-            croplim = np.load(fnc)
-
-    except:
-        
-        if regionex == 'fullfov':
-       
-            croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
-       
-        else:
-       
-            Ymt = np.mean(stack, axis = 0)
-            if Ymt.shape[-1]==1: #only do z slice selection if the movie is volumetric 4d
-                zlimits = (1,1)
-                Ymtz = np.mean(Ymt, axis = 2)
-            else:
-                im_montage(Ymt) #pass whole Ymt min and max as vmin and vmax if you don't want each slice normalized
-                print("WHAT Z SLICES DO YOU WANT TO KEEP FOR REGIONEX '" + regionex + "' \n" + \
-                    "EACH SLICE NORMALIZED TO RAISE CONTRAST FOR THIS PLOT \n" \
-                    "WARNING, EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION, \n" \
-                    "SO CHOOSE AT LEAST 3 Z SLICES FOR 3D EXTRACTION (IF extract_in_2d==0) \n" \
-                    "OR YOU MUST REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
-
-                zlimits = literal_eval(input ("CHOOSE Z LIMITS (ONE-INDEXED) FOR REGIONEX '" + regionex + "' AS TUPLE, i.e. USING FORMAT (FIRSTFRAME,LASTFRAME): "))
-                Ymtz = np.mean(Ymt[:,:,zlimits[0]-1:zlimits[1]], axis = 2)
-            ylimits, xlimits = select_fov_xy(Ymtz)
-            tlimits = (1, dims[0])
-            croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
-            
-    limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-    pth_croplim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
-    with open(pth_croplim, 'wb') as fncrop:
-        np.save(fncrop, croplim) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
-
-    slt = slice(croplim[0]-1, croplim[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
-    slx = slice(croplim[2]-1, croplim[3], 1) 
-    sly = slice(croplim[4]-1, croplim[5], 1) 
-    slz = slice(croplim[6]-1, croplim[7], 1) 
-    indices_crop = [slt, slx, sly, slz]
-    stack = stack[tuple(indices_crop)]
-
-    return stack, limits_str

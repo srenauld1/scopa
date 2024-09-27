@@ -31,7 +31,7 @@ pth_fldr = [pth_fldr filesep];
 pth_prefix = [pth_fldr recid '_'];
 
 
-pth_md = [pth_fldr recid '_metadatanew_.mat'];
+pth_md = [pth_fldr recid '_mdsi_.txt'];
 pth_flyg_md_pat = [pth_fldr datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
 pth_flyg_md = rdir(pth_flyg_md_pat);
 if isempty(pth_flyg_md)

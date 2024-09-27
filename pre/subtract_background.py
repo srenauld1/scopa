@@ -18,7 +18,7 @@ from scipy import signal
 
 def subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, zindall):
             
-    print("DOING LINE-BY-LINE BACKGROUND SUBTRACTION")
+    print("STARTING LINE-BY-LINE BACKGROUND SUBTRACTION in subtract_background.py")
     stack = stack.astype('float32') #needs to be float because subtraction can cause negatives       
 
     for zind in zindall: #for every z slice 

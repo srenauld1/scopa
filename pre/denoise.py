@@ -102,7 +102,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
 
     ##########################   DEEPCAD DENOISING   ##########################
     
-    print("\n\n\nENTERING DENOISE FUNCTION")
+    print("\n\n\nENTERING denoise.py")
 
     patch_t_sec = 20 #20 seconds is just a guess 
     padinc = 5 #this is probably pointless and can probably be zero 

@@ -1,10 +1,12 @@
 from ScanImageTiffReader import ScanImageTiffReader
 from ast import literal_eval
 import re
-import scipy.io as sio
+import os
 import numpy as np
+import json
 
-def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_shape = None):
+
+def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
 
     mdt = {}
 
@@ -91,6 +93,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
             'xpix': mdt['xpix'],
             'ypix': mdt['ypix'],
             'flyback': mdt['flyback'],
+            'dims': mdt['dims'],
             'xfov': mdt['xfov'],
             'yfov': mdt['yfov'],
             'zwid': mdt['zwid'],
@@ -108,6 +111,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
                     'xpix': mdt['xpix'],
                     'ypix': mdt['ypix'],
                     'flyback': mdt['flyback'],
+                    'dims': mdt['dims'],
                     'xfov': mdt['xfov'],
                     'yfov': mdt['yfov'],
                     'zwid': mdt['zwid'],
@@ -123,13 +127,26 @@ def read_save_metadata(pth_readfile, pth_md, pth_md_mat, pth_hires, mat_file_sha
     if not np.isin(md['channel_save'], md['channel_active']).any():
         print("channel_save is not a subset in channel_active")
         if len(md['channel_save'])>len(md['channel_active']):
-            print("channel_save has more channels than channel_active; you may have accidentally redcorded an empty channel; setting naking channel_save equal to channel_active, which will disregard the presumably empty saved channel")
+            print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; MAKING CHANNEL_SAVE EQUAL TO CHANNEL_ACTIVE, WHICH WILL DISREGARD THE PRESUMABLY EMPTY SAVED CHANNEL")
             md['channel_save'] = md['channel_active']
-            raise Exception("STILL NEED TO MAKE A COUPLE SMALL CHANGES TO MAKE THIS WORK; DELETE EXTRA CHANNEL IN REGISTER.PY/separate_channels_when_two.PY")
 
-    
-    sio.savemat(pth_md_mat, {'md': md}) #save for matlab part of pipeline 
-    
-    with open(pth_md, 'wb') as fnmd: #and save as npy file for rest of python pipeline
-        np.save(fnmd, mdt)
+
+    with open(pth_md, 'w') as file: 
+        file.write(json.dumps(md))
+
+
+
+def convert_md_file(pth_md, pth_md_old, pth_md_mat_old): #convert old metadatafile to new and delete old 
+
+    md = np.load(pth_md_old, allow_pickle='TRUE').item()
+
+    if not 'channel_save' in md or not 'channel_active' in md:
+        raise Exception("your metadata file is old and does not have channel information, rerun registration so channel information can be saved in the new metadata file")
+
+    with open(pth_md, 'w') as file: 
+        file.write(json.dumps(md))
+
+    os.remove(pth_md_old)
+    # if os.path.isfile(pth_md_mat_old): 
+    #     os.remove(pth_md_mat_old)
 
