@@ -23,14 +23,14 @@ registration_template_group_id=('') #empty string to skip; list of strings, each
 
 do_register = 0 #caiman normCorre registration 
 discard_channel_reg = None #none, 1, or 2
-chan_primary_when_two_reg = 2 #one indexed; channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; if data has one channel this is ignored
+chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 halfwidth_window_bgsub = 0 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
 len_window_smooth_t_mcp_sec = 0.4 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp_sec - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp_sec = 0 skips smoothing)
 register_presmoothed = 0 # if 1, and if len_window_smooth_t_mcp_sec!=0, register the presmoothed stack to the smoothed stack and discard the smoothed stack, if 0 and if len_window_smooth_t_mcp_sec!=0, just register the smoothed stack and use that going formward  
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-chan_dn = 'all' #'all', '1', or '2'; 2 can fail to run if no *chn2_cmrg*.tif exists; 'all' works for one or two channel
+chan_dn = 'all' #'all', '1', or '2'; refers to the index in the output stack from registration (suffix *cmrg_.tif), so if you discarded channel 1 in registration the output cmrg will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_cmrg*.tif exists)
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all' (all z slices) or selected integer strings . . . which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 num_epochs_denoise = 10 #how many denoising epochs to run, by defult saves model after each epoch 
@@ -49,6 +49,8 @@ use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise remov
 do_crop_only = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
 do_extract = 0 #caiman source extraction 
+discard_channel_ex = None #None, 1, or 2
+chan_primary_when_two_ex = 2 #1, or 2; this is ignored if data has one channel or discard_channel_ex is not 'none'; 1 will seed extraction in channel 2 with morphological masks extracted from a channel 1 mean image; 2 will do the inverse; 1 and 2 only work for 2d extraction (if extract_in_2d=1)
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 regionex = ['fullfov'] ##DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 index_extraction_param_set = 'default' #one element, not in list, 'default' or string int or int, specifies the extraction param set (set is created in configs.py, which uses map2params.py to help create the param sets) 

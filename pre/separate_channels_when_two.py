@@ -13,9 +13,9 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
         if rmdr%1==0:
             rmdr = int(rmdr)
         else:
-            raise Exception("number of stack elements must be multiple of np.prod(dims) with or without flyback")
+            raise Exception("number of stack elements must be multiple of np.prod(dims), or np.prod(dims) with flyback")
 
-    do_two_channel = 0
+    use_two_channels = 0
     stack_secondary = None
     chan_secondary = None
     chanstr_primary = '' 
@@ -28,11 +28,12 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
         if not isinstance(md['channel_save'], int) and len(md['channel_save'])==2: #if two channels were saved
 
                 if discard_channel is not None:
-                    keepchan = np.setxor1d([1,2], discard_channel)
-                    stack = stack[:,:,keepchan[0]-1,:,:].squeeze()
-                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(keepchan))
+                    chan_primary = np.setxor1d([1,2], discard_channel)
+                    # chanstr_primary = '_chn' + str(chan_primary) #if you set chanstr_primary to nonempty when discard_channel is not none, later the index will be wrong since the output stack has only one channel  
+                    stack = stack[:,:,chan_primary[0]-1,:,:].squeeze()
+                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(chanstr_primary))
                 else:
-                    do_two_channel = 1
+                    use_two_channels = 1
                     chan_secondary = np.setxor1d([1,2], chan_primary)
                     chan_secondary = chan_secondary[0]
                     chanstr_primary = '_chn' + str(chan_primary)
@@ -50,5 +51,5 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
             print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN read_save_metadata.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
 
         
-    return stack, stack_secondary, do_two_channel, chan_secondary, chanstr_primary, chanstr_secondary
+    return stack, stack_secondary, use_two_channels, chan_secondary, chanstr_primary, chanstr_secondary
     

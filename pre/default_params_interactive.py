@@ -2,6 +2,7 @@
 
 ##default params for interactive mode (e.g. when pipeline_init.py is called directly, not from cxp.sh)
 ##these params can be changed, since these are the values that will be used in interactive mode
+##these params are roughly in order in which they appear in the pipeline (up to do_analysis at least)
 
 folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #folder holding all recordings you want this pipeline to operate on, if you're using do_copyfiles, this will refer to a folder on storage server and o2, tree on storage will be mirrored on o2; it is a separate variable (rather than end of pth_storage_prefix) to emphasize that it is separated off and mirrored on O2 
 pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, pth_storage_prefix+folder_with_all_recordings_on_storage_and_compute_filesystems is the path to the storage folder containing all recordings, data will be copied from here, into a folder on scratch with name (folder_with_all_recordings_on_storage_and_compute_filesystems) then analyzed, then copied back, ignored if do_copyfiles==0, 
@@ -19,7 +20,7 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 
 registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 discard_channel_reg = None #None, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
@@ -28,7 +29,7 @@ len_window_smooth_t_mcp_sec = 0 #0.8 #smoothing window length, uses 1d gaussian 
 register_presmoothed = 0 # if 1, and if len_window_smooth_t_mcp_sec!=0, register the presmoothed stack to the smoothed stack and discard the smoothed stack, if 0 and if len_window_smooth_t_mcp_sec!=0, just register the smoothed stack and use that going formward  
 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
-chan_dn = 'all' #'all', '1', or '2'; 2 can fail to run if no *chn2_cmrg*.tif exists
+chan_dn = 'all' #'all', '1', or '2'; refers to the index in the output stack from registration (suffix *cmrg_.tif), so if you discarded channel 1 in registration the output cmrg will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_cmrg*.tif exists)
 denoise_volume = 1 #for denoise_volume = 1, denoise_slice_index must be 'all', and this will train on all z slices together . . . if denoise_volume = 0, denoise_slice_index must be 'all', or single index, and will trains on each z slice separately
 denoise_slice_index = ['all'] #'all' or list of string ints or ints, either 'all' (all z slices) or selected integer strings . . . which z slices get denoised (not the same as which z slices are used to train model, although see above notes for denoise_volume) 
 num_epochs_denoise = 10 #how many denoising epochs to run, by defult saves model after each epoch 
@@ -46,7 +47,7 @@ use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise remov
 
 do_crop_only = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
-do_extract = 1 #caiman source extraction 
+do_extract = 0 #caiman source extraction 
 discard_channel_ex = None #None, 1, or 2
 chan_primary_when_two_ex = 2 #1, or 2; this is ignored if data has one channel or discard_channel_ex is not 'none'; 1 will seed extraction in channel 2 with morphological masks extracted from a channel 1 mean image; 2 will do the inverse; 1 and 2 only work for 2d extraction (if extract_in_2d=1)
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)

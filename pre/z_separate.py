@@ -19,7 +19,7 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
 
     stack = imread(pth_tif_read)
     
-    discard_channel_reg = None #this should be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)
+    discard_channel_reg = None #in this function, discard_channel_reg should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)
     if chan_dn == ['all'] or chan_dn=='all': #ignored if it's not a 2-channel recording according to metadata md
         chan_primary = 1 #can be any number from existing channels if chan_dn is 'all'; just sets which is denoised first
     else:
