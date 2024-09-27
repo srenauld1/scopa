@@ -43,11 +43,12 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
         print("STARTINNG ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
         stackcrop_tmp, limits_str = crop_fov(stack, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
-        print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
+        chanstr_ex = chanstr_secondary
         if two_channel_ex:
             stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
-            chanstr_ex = chanstr_secondary
             chanstr_seed = chanstr_primary
+
+        print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
@@ -84,7 +85,20 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         indz = [np.arange(stackcrop_ex.shape[3])] #all slices in one list (not 2D)
                         dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1], dims_spatial_ex[2])
 
-                    countz = 0
+                    cma_all = []
+                    cmb_all = []
+                    cmc_all = []
+                    cmyra_all = []
+                    cms_all = []
+                    cmdff_all = []
+                    cmdffr_all = []
+                    cmsnr_all = []
+                    cmrval_all = []
+                    numroi_slice_all = []
+                    numroi_b_slice_all = []
+                    numroi_max_slice_all = 0
+
+                    cnt = 0
                     for iz in indz: #for each slice (or all slices if extract_in_2d = false)
 
                         cnm = None
@@ -117,11 +131,6 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm = cnmf.CNMF(n_processes, params=opts, dview=dview, Ain=Ain)
                         cnm = cnm.fit(img, indices = indices_ex)
 
-                        if two_channel_ex: 
-                            max_possible_num_roi = cnm.estimates.A.shape[-1]*3 #THIS IS A BAD SOLUTION; NEEDS FIXING; WHEN IN two_channel_ex mode (seeding extraction with auto morph rois), the number of rois per slice is not known, so this just triples the number of rois from the first slice as a crap estimate of the number on each slice
-                        else:
-                            max_possible_num_roi = cnm.estimates.A.shape[-1]
-
                         cnm.estimates.evaluate_components(img, cnm.params, dview=dview)
                         print(('NUM GOOD ROIS ' + str(len(cnm.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm.estimates.idx_components_bad))))
                         
@@ -151,44 +160,61 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                             pth_results2 = pth_write_prefix + fnadd + '_' + str(iz) + '_OUT_FIT2.mov'
                             caiman_plots_all(cnm2, opts, img, dims_spatial_ex, extract_in_2d, pth_results2)
                         
-                
-                        if countz==0: #do this zero padding so multiple extractions can be put into one array/saved, remove trailing zeros in matlab 
-
-                            dims_roimask_stack = ( dims_roimask_spatial + (max_possible_num_roi, ) )
-                            dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
-                            dims_timeseries_stack = ( max_possible_num_roi, cnm2.estimates.C.shape[1] )
-
-                            cma = np.zeros(dims_roimask_stack + (len(indz), ) )
-                            cmb = np.zeros(dims_roimask_b_stack + (len(indz), ) )
-                            cmc = np.zeros(dims_timeseries_stack + (len(indz), ) )
-                            #cmyra = np.zeros(dims_timeseries_stack + (len(indz), ) )
-                            cms = np.zeros(dims_timeseries_stack + (len(indz), ) )
-                            cmdff = np.zeros(dims_timeseries_stack + (len(indz), ) )
-                            cmdffr = np.zeros(dims_timeseries_stack + (len(indz), ) )
-                            cmsnr = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
-                            cmrval = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
-                            #stack_idx = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
-                            #stack_idx_bad = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
 
                         numroi_slice = cnm2.estimates.A.shape[-1]
                         numroi_b_slice = cnm2.estimates.b.shape[-1]
                         dims_mask_slice = (dims_roimask_spatial + (numroi_slice, ) )
                         dims_mask_b_slice = (dims_roimask_spatial + (numroi_b_slice, ) )
                         
-                        cma[..., :numroi_slice, countz] = np.reshape(cnm2.estimates.A.toarray(), dims_mask_slice, order='F') 
-                        cmb[..., :numroi_b_slice, countz] = np.reshape(cnm2.estimates.b, dims_mask_b_slice, order='F') 
-                        cmc[:numroi_slice,:,countz] = cnm2.estimates.C 
-                        #cmyra[:numroi_slice,:,countz] = cnm2.estimates.YrA 
-                        cms[:numroi_slice,:,countz] = cnm2.estimates.S 
-                        cmdff[:numroi_slice,:,countz] = dff_residfalse
-                        cmdffr[:numroi_slice,:,countz] = dff_residtrue
-                        cmsnr[:numroi_slice,countz] = cnm2.estimates.SNR_comp 
-                        cmrval[:numroi_slice,countz] = cnm2.estimates.r_values 
-                        #stack_idx[:cnm2.estimates.idx_components.shape[0],countz] = cnm2.estimates.idx_components
-                        #if cnm2.estimates.idx_components_bad.shape==(1,):
-                        #    stack_idx_bad[:cnm2.estimates.idx_components_bad.shape[0],countz] = cnm2.estimates.idx_components_bad 
 
-                        countz = countz + 1
+                        cma_all.append( np.reshape(cnm2.estimates.A.toarray(), dims_mask_slice, order='F') )
+                        cmb_all.append( np.reshape(cnm2.estimates.b, dims_mask_b_slice, order='F') )
+                        cmc_all.append( cnm2.estimates.C )
+                        cmyra_all.append( cnm2.estimates.YrA )
+                        cms_all.append( cnm2.estimates.S )
+                        cmdff_all.append( dff_residfalse )
+                        cmdffr_all.append( dff_residtrue )
+                        cmsnr_all.append( cnm2.estimates.SNR_comp )
+                        cmrval_all.append( cnm2.estimates.r_values )
+                        numroi_slice_all.append( numroi_slice )
+                        numroi_b_slice_all.append( numroi_b_slice )
+
+                        numroi_max_slice_all = np.max((numroi_max_slice_all, numroi_slice))
+
+                        cnt = cnt + 1
+                    
+                    dims_roimask_stack = ( dims_roimask_spatial + (numroi_max_slice_all, ) )
+                    dims_roimask_b_stack = ( dims_roimask_spatial + (cnm2.estimates.b.shape[-1], ) )
+                    dims_timeseries_stack = ( numroi_max_slice_all, cnm2.estimates.C.shape[1] )
+
+                    cma = np.zeros(dims_roimask_stack + (len(indz), ) )
+                    cmb = np.zeros(dims_roimask_b_stack + (len(indz), ) )
+                    cmc = np.zeros(dims_timeseries_stack + (len(indz), ) )
+                    #cmyra = np.zeros(dims_timeseries_stack + (len(indz), ) )
+                    cms = np.zeros(dims_timeseries_stack + (len(indz), ) )
+                    cmdff = np.zeros(dims_timeseries_stack + (len(indz), ) )
+                    cmdffr = np.zeros(dims_timeseries_stack + (len(indz), ) )
+                    cmsnr = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
+                    cmrval = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
+                    #stack_idx = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
+                    #stack_idx_bad = np.zeros((dims_timeseries_stack[0], ) + (len(indz), ) )
+                    for cnt in np.arange(len(indz)):
+
+                        numroi_slice = numroi_slice_all[cnt]
+                        numroi_b_slice = numroi_b_slice_all[cnt]
+
+                        cma[..., :numroi_slice, cnt] = cma_all[cnt]
+                        cmb[..., :numroi_b_slice, cnt] = cmb_all[cnt]
+                        cmc[:numroi_slice,:,cnt] = cmc_all[cnt]
+                        #cmyra[:numroi_slice,:,cnt] = cmyra_all[cnt]
+                        cms[:numroi_slice,:,cnt] = cms_all[cnt]
+                        cmdff[:numroi_slice,:,cnt] = cmdff_all[cnt]
+                        cmdffr[:numroi_slice,:,cnt] = cmdffr_all[cnt]
+                        cmsnr[:numroi_slice,cnt] = cmsnr_all[cnt]
+                        cmrval[:numroi_slice,cnt] = cmrval_all[cnt]
+                        #stack_idx[:cnm2.estimates.idx_components.shape[0],cnt] = cnm2.estimates.idx_components
+                        #if cnm2.estimates.idx_components_bad.shape==(1,):
+                        #    stack_idx_bad[:cnm2.estimates.idx_components_bad.shape[0],cnt] = cnm2.estimates.idx_components_bad 
 
                     log_files = glob.glob('*_LOG_*')
                     for log_file in log_files:

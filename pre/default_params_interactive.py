@@ -47,7 +47,7 @@ use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise remov
 do_crop_only = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
 do_extract = 1 #caiman source extraction 
-discard_channel_ex = None #d #None, 1, or 2
+discard_channel_ex = None #None, 1, or 2
 chan_primary_when_two_ex = 2 #1, or 2; this is ignored if data has one channel or discard_channel_ex is not 'none'; 1 will seed extraction in channel 2 with morphological masks extracted from a channel 1 mean image; 2 will do the inverse; 1 and 2 only work for 2d extraction (if extract_in_2d=1)
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 regionex = ['pnew3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
