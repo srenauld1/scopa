@@ -46,20 +46,20 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
         print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
         if two_channel_ex:
             stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
-
+            chanstr_ex = chanstr_secondary
+            chanstr_seed = chanstr_primary
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
-            pth_write_prefix = pth_tif_read[:-4] + rx + '_' + limits_str + chanstr_primary + '_cmex'
+            pth_write_prefix = pth_tif_read[:-4] + rx + '_' + limits_str + chanstr_ex + '_cmex'
             pth_tif_write_tmp = pth_write_prefix + '_tmp_.tif'
-            stackcrop_ex, fn_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp, pth_tif_write_tmp, dview)
             if two_channel_ex: #stackcrop_tmp_secondary becomes stackcrop_ex and stackcrop_tmp becomes stackcrop_seed
-                stackcrop_ex, fn_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp_secondary, pth_tif_write_tmp, dview)
-                pth_tif_write_tmp_secondary = pth_tif_write_tmp.replace(chanstr_primary, chanstr_secondary) #only used if two_channel_ex==1 (ie if there are two channels and discard_channel_reg=None)
-                stackcrop_seed, _, _, _ = stack2memmap(stackcrop_tmp, pth_tif_write_tmp_secondary, dview)
+                stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp_secondary, pth_tif_write_tmp, dview)
+                pth_tif_write_tmp_secondary = pth_tif_write_tmp.replace(chanstr_ex, chanstr_seed) #only used if two_channel_ex==1 (ie if there are two channels and discard_channel_reg=None)
+                stackcrop_seed, pth_mmap_seed, _, _ = stack2memmap(stackcrop_tmp, pth_tif_write_tmp_secondary, dview)
                 stackcrop_tmp_secondary = None
             else:
-                pth_tif_write_tmp_secondary = []  
+                stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp, pth_tif_write_tmp, dview)
             stackcrop_tmp = None
             
        
@@ -91,7 +91,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm2 = None
                         Ain = None
                        
-                        opts_dict, opts_dict_morph, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = fn_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING configs OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
+                        opts_dict, opts_dict_morph, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING configs OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time
@@ -224,17 +224,21 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                 
                 sio.savemat(pth_mat_ex, mdict)
 
+                os.remove(pth_mmap_ex)
+                if two_channel_ex:
+                    os.remove(pth_mmap_seed)
+
                 if dview is not None: cm.stop_server(dview=dview)
 
 
 def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):
     imwrite(pth_tif_write_tmp, stackcrop_ex.squeeze(), bigtiff=True, photometric='minisblack') #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
     basename_memap = pth_tif_write_tmp.split('/')[-1][:-4]
-    fn_mmap_ex = cm.save_memmap([pth_tif_write_tmp], base_name=basename_memap, order='C', dview=dview) # exclude borders
+    pth_mmap_ex = cm.save_memmap([pth_tif_write_tmp], base_name=basename_memap, order='C', dview=dview) # exclude borders
     os.remove(pth_tif_write_tmp)
-    stackcrop_ex, dims_spatial_ex, dim_time_ex = cm.load_memmap(fn_mmap_ex) #if 3d mmap should be 3d, but stackcrop_ex gets singleton 4th dim (z) added below so the code is more readable
+    stackcrop_ex, dims_spatial_ex, dim_time_ex = cm.load_memmap(pth_mmap_ex) #if 3d mmap should be 3d, but stackcrop_ex gets singleton 4th dim (z) added below so the code is more readable
     stackcrop_ex = np.reshape(stackcrop_ex.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
     if stackcrop_ex.ndim==3: #if it's not volumetric
         stackcrop_ex = stackcrop_ex[...,np.newaxis] #add singleton 4th dim (z) to simplify code below
     print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION HAS SHAPE: \n" + str(stackcrop_ex.shape))
-    return stackcrop_ex, fn_mmap_ex, dims_spatial_ex, dim_time_ex
+    return stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex
