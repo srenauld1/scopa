@@ -1,4 +1,4 @@
-function bump = compute_bump(stack, fitin, roiinfo, opts, md, regionex, si)
+function bump = compute_bump(stack, fitin, roidat, opts, md, regionex, si)
 
 
 %% params
@@ -36,7 +36,7 @@ end
 
 if strcmp(domain_method, 'functional')
 
-    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roiinfo, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots);
+    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roidat, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots);
 
 elseif strcmp(domain_method, 'morphological') %morphological domain
 

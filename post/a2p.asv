@@ -7,7 +7,7 @@
 
 % struct 'ui' holds input params in various sub-structs; each substruct is (predominantly) used in one function below, although substruct fields are passed individually as arguments to make the function more portable
 % struct 'ts' holds timeseries (in various sub-structs) with temporal indices corresponding to md.ti (imaging frame timestamps)
-% struct 'roiinfo' holds roi info for morphological and functional rois
+% struct 'roidat' holds roi info for morphological and functional rois
 % struct 'md' holds metadata
 % struct 'pth' holds paths
 % numeric array 'stack' is the imaging movie chosen for analysis (using 'ui.mn.suffix_analysis')
@@ -70,13 +70,14 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         if ui.mn.do_daq
             try
-                foolload(pth.daqrs, 'daqrs')
+                load(pth.daqrs, 'daqrs')
             catch
                 daqrs = daqld(ids.recdatenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, md.imper, ...
                     pth.daq, pth.daqrs, pth.daqinds, ui.daq.ball_diameter, ui.daq.slopelen_sec, ui.daq.slopeorder, ui.daq.fast_version, ui.daq.doplots);
             end
             [ts.ball, ts.vis, md.ti] = rename_daq_timeseries(daqrs);
             [md.epochs, ts.vis] = load_g4_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.imper, daqrs, ui.daq.use_carls_epochs);
+            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, md.ti, ui.daq.ball_diameter);
         end
 
         if ui.mn.do_temporal_downsample_align_fictrac_video
@@ -93,8 +94,6 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                 end
             end
         end
-
-        [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, md.ti, ui.daq.ball_diameter);
 
     end
 
@@ -119,7 +118,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         smooth_window_temporal = ui.ld.gif.smooth_window_temporal, ...
         display_range = ui.ld.gif.display_range);
 
-    % stackreg = register_stack_new(stack(:,:,:,:,1));
+    % stackreg = register_stack_new(stack(:,:,:,:,1)); %this is just exploratory
 
     if any(cell2mat(struct2cell(ui.mroi.auto.use_hires)))
         [stack_hires_mnt, map_hires_lores] = load_hires_stack(ids.recid, pth, stack, md, ui.hires);
@@ -127,6 +126,8 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         stack_hires_mnt = [];
         map_hires_lores = [];
     end
+
+    % stack2fig(stack, it=20.3, fdimnum=3) %view stack in various ways
 
     %% create/load/select rois/responses for each regionex
 
@@ -140,20 +141,25 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             md.sz_crop, ui.mroi.auto.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
-        [roiinfo.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
+        [roidat.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
             make_morphological_rois(stackcrop, ui.mroi, md.ti, md.imper, md.xwid, md.ywid, md.zwid, ...
             pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
         %%load/select functional (caiman) roi responses
         for rfi = 1:numel(pth.froi_all.(regionex)) %for each caiman extraction run (each roi file)
-            [roiinfo.(regionex).(parstr.froi.(regionex){rfi}), ts.resp.(regionex).(parstr.froi.(regionex){rfi})] = ...
-                process_functional_rois(stackcrop, roiinfo.(regionex).(parstr.mroi.(regionex)), ...
+            [roidat.(regionex).(parstr.froi.(regionex){rfi}), ts.resp.(regionex).(parstr.froi.(regionex){rfi})] = ...
+                process_functional_rois(stackcrop, roidat.(regionex).(parstr.mroi.(regionex)), ...
                 pth.froi_all.(regionex){rfi}, regionex, md, ui.froi);
         end
 
-        %%
+    end
 
-        ui.lc.chanuse = 1;
+    %% linear fit and hsv map (work in progress, but it does work)
+
+
+    if ui.mn.do_lfit
+
+        ui.lc.chanuse = 2;
 
         rindy = 1;
         rsp = ts.resp.(regionex).(parstr.mroi.(regionex)).(['in_rawf_pc_f_cl_f_w_no_chn' num2str(ui.lc.chanuse)]);
@@ -169,7 +175,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         yvd = smoothdata(yvd, 'gaussian', 12, 'omitnan');
         %%yvd = differentiate_timeseries('normal', yvd, 0.4, 2, md.imper);
 
-        tinds = 3000:4000; 
+        tinds = 3000:4000;
         xtrem = max(abs([vec(fvd(tinds)); vec(ts.ball.forvel(tinds))]));
         xtrem = max(abs([vec(fvd(tinds))]));
         figure; plot(rescale(ts.ball.forvel(tinds), -xtrem/1, xtrem/1), Color=[0 0 1 0.1]); yyaxis right; plot(fvd(tinds)); ylim([-xtrem xtrem]); hold on; plot(rescale(rsp1(tinds), -xtrem/8, xtrem/8), 'm-')
@@ -179,13 +185,12 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         % roivpix( ...
         %     ts.resp.(regionex).(parstr.mroi.(regionex)).in_rawf_pc_f_cl_f_w_no_chn1, ...
         %     stackcrop, ...
-        %     roiinfo.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roipixinds, ...
+        %     roidat.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roipx, ...
         %     t=md.ti, ...
         %     ir=[1:50:1024], ...
         %     it=[1000:1500], ...
         %     yconstant=0 ...
         %     );
-%% 
 
         lfit_riw( ...
             stim, ..., ts.ball.forvel, ...
@@ -193,15 +198,15 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             t = md.ti, ...
             it = 3000:4000, ...
             ir = [], ...
-            plotinds = [1], ...
+            plotinds = [1:50 4040:4096], ...
             corrtype = 'pearson', ...
             lagsec = linspace(0.015, 0.015, 1e4), ...
             lagstyle = 'besteach', ...
             minpval = 0.05, ...
             stack = stackcrop, ...
-            roipixinds = roiinfo.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roipixinds, ...
-            mask_roi_vec = roiinfo.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).mask_roi_vec, ...
-            centroids_roi = roiinfo.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).centroids_roi, ...
+            roipx = roidat.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roipx, ...
+            roivec = roidat.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roivec, ...
+            roicen = roidat.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roicen, ...
             sortstyle = 'slope', ...
             alignzero = 1, ...
             yconstant = 0, ...
@@ -217,15 +222,12 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     end
 
-
-
-
     %% compute population features (e.g. bump), add them to ts
 
     if ui.mn.do_popfeat
         pffn = fieldnames(ui.pf);
         for pfi = 1:numel(pffn)
-            ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roiinfo, ui.pf.(pffn{pfi}), md, pth, ids.recid);
+            ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roidat, ui.pf.(pffn{pfi}), md, pth, ids.recid);
         end
     end
 
@@ -246,7 +248,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                 ui.fitm.mdlname = 'fnet_A_s';
                 ui.fitm.mdlname = 'fnet_d';
                 ui.fitm.validation_fold = 0; ui.fitm.use_saved_model = 0; ui.fitm.mdl_length_sec = 0.4; ui.fitm.num_synthetic_depv = 0; ui.fitm.epochinds = {[1]};
-                fitin = fitmdl(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
+                fitin = fitmdl(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
 
             end
         end
@@ -268,7 +270,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                 pltx(stackcrop, fitin.vars, ui.pltx(si).letui,  ...
                     fitin.varnms, ui.pltx(si).vpmap, ui.pltx(si).epochinds, ...
                     ui.pltx(si).lagsxy_sec, ui.pltx(si).lagsz_sec, ui.pltx(si).lags_to_plot, ...
-                    ui.pltx(si).plot_z_as_color, roiinfo.(fitin.regionex).(fitin.parsex), md.ti, md.imper, zstartpos_crop, ...
+                    ui.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), md.ti, md.imper, zstartpos_crop, ...
                     md.epochs.epochinds_ts_i, ui.pltx(si).gif_visibility, ui.pltx(si).iz, ui.pltx(si).it, ...
                     ui.pltx(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
                     pth.mroi_interactive.(fitin.regionex), ui.mroi.norm, md.xwid, md.ywid, md.zwid, vid=ftvdsrs, stim=stimvid)

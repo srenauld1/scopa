@@ -1,13 +1,13 @@
 
 function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
-    roiinfo, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots)
+    roidat, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots)
 
 
 numsamp = size(fitin.vars.depvpre, 1);
 numroi = size(fitin.vars.depvpre, 1);
 
 pltstr = {'ts', 'fov'};
-fitin = fitmdl(stack, fitin, roiinfo, md, fitopt, [], pltstr);
+fitin = fitmdl(stack, fitin, roidat, md, fitopt, [], pltstr);
 
 fn = fieldnames(fitin.fits);
 if numel(fn)>1

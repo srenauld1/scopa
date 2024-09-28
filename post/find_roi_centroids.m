@@ -15,7 +15,7 @@ for mi = 1:numrois
             if length(roiprops(rpi).WeightedCentroid)==3
                 roi_cen{mi}(rpi,:) = [centmp(2), centmp(1), centmp(3)]; %switch order for yxz
             else
-                roi_cen{mi}(rpi,:) = [centmp(2), centmp(1), 1]; %%switch order for yxz, and this z==1 is fine it will only occur if stack z dim is singleton since maskmanual xyz matches stack xyz size, so later when centroid is used 1 will map to 1
+                roi_cen{mi}(rpi,:) = [centmp(2), centmp(1), 1]; %%switch order for yxz, and this z==1 is fine it will only occur if stack z dim is singleton since roimaskman xyz matches stack xyz size, so later when centroid is used 1 will map to 1
             end
         end
     end

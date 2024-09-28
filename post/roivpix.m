@@ -1,9 +1,9 @@
-function roivpix(resproi, stack, roipixinds, opt)
+function roivpix(resproi, stack, roipx, opt)
 
 arguments
     resproi
     stack
-    roipixinds
+    roipx
     opt.t = []
     opt.it = []
     opt.ir = []
@@ -48,7 +48,7 @@ for r = 1:size(resproi, 1)
     if ismember(r, ir)
 
         resproitmp = resproi(r,it);
-        resppix = stack(roipixinds{r}, :);
+        resppix = stack(roipx{r}, :);
         snrr = snr(resproitmp);
         ymin = min([resproi(:); resppix(:)]);
         ymax = max([resproi(:); resppix(:)]);

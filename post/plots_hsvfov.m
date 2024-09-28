@@ -1,4 +1,4 @@
-function img = plots_hsvfov(plt, stackmean, hsvmap, roipixinds, mask_roi_vec, filename_save)
+function img = plots_hsvfov(plt, stackmean, hsvmap, roipx, roivec, filename_save)
 
 
 % hue is 0 red , 0.2 yellow, 0.4 green, 0.6 blue, 0.8 magenta
@@ -37,32 +37,32 @@ switch plt.foreground
     case 'pixels'
 
         imgtmptmp = imgtmp;
-        imgtmptmp(cell2mat(roipixinds), :) = hsv2rgb( hsvmap );
+        imgtmptmp(cell2mat(roipx), :) = hsv2rgb( hsvmap );
         img = reshape(imgtmptmp, size_imgnew);
         imgtmptmp = [];
 
     case 'eachroi'
 
-        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) length(roipixinds)]);
-        rgbmap = cell(1, length(roipixinds));
-        for ri = 1:length(roipixinds)
+        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) length(roipx)]);
+        rgbmap = cell(1, length(roipx));
+        for ri = 1:length(roipx)
             rgbmap{ri} = hsv2rgb( hsvmap(ri, :));
-            rgbmap{ri} = repmat(rgbmap{ri}, [numel(roipixinds{ri}) 1]);
-            imgtmp(roipixinds{ri}, :, ri) = rgbmap{ri};
+            rgbmap{ri} = repmat(rgbmap{ri}, [numel(roipx{ri}) 1]);
+            imgtmp(roipx{ri}, :, ri) = rgbmap{ri};
         end
         img = reshape(imgtmp, [size_imgnew, size(imgtmp, 3)]);
 
     case 'allrois'
 
-        mask_roi_vec_and_background = mask_roi_vec;
-        mask_roi_vec_and_background(end+1,:) = 1 - sum(mask_roi_vec); %last row is background (non-roi) contribution to each voxel's signal
-        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(roipixinds)+1]); %extra one for bg
+        roivec_and_background = roivec;
+        roivec_and_background(end+1,:) = 1 - sum(roivec); %last row is background (non-roi) contribution to each voxel's signal
+        imgtmp = repmat(imgtmp, [ones(1, ndims(imgtmp)) numel(roipx)+1]); %extra one for bg
         imgtmp = permute(imgtmp, [1 3 2]);
-        for ri = 1:numel(roipixinds)
-            imgtmp(roipixinds{ri}, ri, :) = repmat(hsvmap(ri, :), [numel(roipixinds{ri}) 1]);
+        for ri = 1:numel(roipx)
+            imgtmp(roipx{ri}, ri, :) = repmat(hsvmap(ri, :), [numel(roipx{ri}) 1]);
         end
         imgtmp = hsv2rgb(imgtmp);
-        img = sum(mask_roi_vec_and_background.'.*imgtmp, 2); %weighted mean
+        img = sum(roivec_and_background.'.*imgtmp, 2); %weighted mean
         img = permute(img, [1 3 2]);
         img = reshape(img, [size_imgnew, size(img, 3)]);
 

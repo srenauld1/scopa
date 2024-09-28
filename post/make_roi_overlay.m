@@ -1,7 +1,7 @@
-function [imroi, imalpha] = make_roi_overlay(imbg, roipixinds, opt)
+function [imroi, imalpha] = make_roi_overlay(imbg, roipx, opt)
 
-% make overlay for roi set defined by roipixinds, background is imbg;
-% roipixinds is cell array of roi pixel linear indices into imbg
+% make overlay for roi set defined by roipx, background is imbg;
+% roipx is cell array of roi pixel linear indices into imbg
 % imbg is the grayscale image stack, used as background
 % imroi is rgb stack matching size of imgb, but with color representing rois 
 % overlapping rois are averaged in color and transparency/alpha
@@ -10,7 +10,7 @@ function [imroi, imalpha] = make_roi_overlay(imbg, roipixinds, opt)
 
 arguments
     imbg
-    roipixinds
+    roipx
     opt.col = [1 0 0] 
     opt.alp = 0.3
 end
@@ -25,14 +25,14 @@ if isempty(imalpha_oneroi) && isempty(imroi_oneroi)
     imroi_oneroi = repmat(imalpha_oneroi, [ones(1, numel(size(imalpha_oneroi))) 3]);
 end
 
-if ~iscell(roipixinds)
-    if isvector(roipixinds)
-        roipixinds = {roipixinds};
+if ~iscell(roipx)
+    if isvector(roipx)
+        roipx = {roipx};
     else
-        error("roipixinds must be cell, or vector")
+        error("roipx must be cell, or vector")
     end
 end
-numroi = numel(roipixinds); %do after possible conversion to cell 
+numroi = numel(roipx); %do after possible conversion to cell 
 if size(col, 1)==1
     col = repmat(col, [numroi 1]);
 end
@@ -44,10 +44,10 @@ assert(isequal(numroi,size(col,1),numel(alp)))
 
 
 rcnt = 0;
-for ri = 1:numel(roipixinds)
-    if ~isempty(roipixinds{ri})
+for ri = 1:numel(roipx)
+    if ~isempty(roipx{ri})
         rcnt = rcnt+1;
-        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipixinds{ri}, imroi_oneroi, imalpha_oneroi, col(ri,:), alp(ri)); %make an overlay for one roi
+        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipx{ri}, imroi_oneroi, imalpha_oneroi, col(ri,:), alp(ri)); %make an overlay for one roi
         if rcnt==1
             imroi = imroi_oneroi;
             imalpha = imalpha_oneroi;

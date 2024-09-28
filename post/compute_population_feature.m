@@ -1,4 +1,4 @@
-function ts = compute_population_feature(fid, ts, stack, roiinfo, opts, md, pth, recid)
+function ts = compute_population_feature(fid, ts, stack, roidat, opts, md, pth, recid)
 
 switch fid
 
@@ -12,7 +12,7 @@ switch fid
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(opts.fitm(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.(fid), pth.stack, choosecount, dochoose);  %select indv/depv for fit using input params
                 stackcrop = crop_stacks(stack, fitin.regionex, md.zstartpos, recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
-                ts.(fid).(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = compute_bump(stackcrop, fitin, roiinfo.(fitin.regionex).(fitin.parsex), opts, md, fitin.regionex, si); %fit bump
+                ts.(fid).(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = compute_bump(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), opts, md, fitin.regionex, si); %fit bump
             end
         end
 

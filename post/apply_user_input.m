@@ -1,5 +1,5 @@
 
-function [vars, labs, lims, roipixinds, varcombos] = apply_user_input(cb, vars, labs, roipixinds, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = apply_user_input(cb, vars, labs, roipx, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
 
 "WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN apply_user_input "
 
@@ -7,14 +7,14 @@ try
 
     if ~isempty(cell2mat(cb.val.roicen))
 
-        max_index_available_rois = numel(roipixinds);
+        max_index_available_rois = numel(roipx);
 
-        maskmanual = zeros(size(stack,1), size(stack,2), size(stack,3), 'logical');
+        roimaskman = zeros(size(stack,1), size(stack,2), size(stack,3), 'logical');
         if zwid==0
-            [umx, umy] = meshgrid(0:xwid:xwid*(size(maskmanual,2)-1), 0:ywid:ywid*(size(maskmanual,1)-1));
+            [umx, umy] = meshgrid(0:xwid:xwid*(size(roimaskman,2)-1), 0:ywid:ywid*(size(roimaskman,1)-1));
             umz = [];
         else
-            [umx, umy, umz] = meshgrid(0:xwid:xwid*(size(maskmanual,2)-1), 0:ywid:ywid*(size(maskmanual,1)-1), 0:zwid:zwid*(size(maskmanual,3)-1));
+            [umx, umy, umz] = meshgrid(0:xwid:xwid*(size(roimaskman,2)-1), 0:ywid:ywid*(size(roimaskman,1)-1), 0:zwid:zwid*(size(roimaskman,3)-1));
         end
         cnt = 0;
         for j = 1:numel(cb.val.roicen)
@@ -24,8 +24,8 @@ try
                     error("v must match cnt")
                 end
 
-                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, maskmanual, umy, umx, umz, newroirad, stack, normopt, ti, imper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
-                roipixinds = cat(1, roipixinds, roipixind_new);
+                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, imper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
+                roipx = cat(1, roipx, roipixind_new);
                 disp("warning, hard coding ui parsex and parsnorm, fix this now")
                 labs{j} = {['resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of choose_timeseries
             end
@@ -75,7 +75,7 @@ varcombos = make_varcombos(vars);
 end
 
 
-function [roipixinds, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, maskmanual, umy, umx, umz, newroirad, stack, normopt, ti, imper, pth_mroi_interactive)
+function [roipx, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, imper, pth_mroi_interactive)
 
 if ~isempty(roicen)
     if zwid==0
@@ -94,24 +94,25 @@ else
     for j = 1:size(newroicen_all, 1)
         newroicen = newroicen_all(j,:);
         if zwid==0
-            maskmanual((umy - newroicen(1)).^2 + (umx - newroicen(2)).^2 <= newroirad.^2) = 1;
+            roimaskman((umy - newroicen(1)).^2 + (umx - newroicen(2)).^2 <= newroirad.^2) = 1;
         else
-            maskmanual((umy - newroicen(1)).^2 + (umx - newroicen(2)).^2 + (umz - newroicen(3)).^2 <= newroirad.^2) = 1;
+            roimaskman((umy - newroicen(1)).^2 + (umx - newroicen(2)).^2 + (umz - newroicen(3)).^2 <= newroirad.^2) = 1;
         end
     end
 
     opts_mroi.chandraw = [];
-    opts_mroi.chanproject = [1];
+    opts_mroi.chancopy = [1];
     opts_mroi.channorm = [];
     opts_mroi.auto.chan = [1];
+    opts_mroi.dowav = 1;
     opts_mroi.norm = normopt;
 
-    [roiinfo_new, resp] = make_morphological_rois(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], maskmanual);
+    [roidat_new, resp] = make_morphological_rois(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
     hardcodenorm = 'in_rawf_pc_f_cl_f_w_no';
     resp = channel_combine_struct(resp);
     resp = resp.(hardcodenorm);
-    roipixinds = roiinfo_new(hardcodechan).roipixinds;
+    roipx = roidat_new(hardcodechan).roipx;
 
 end
 

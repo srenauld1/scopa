@@ -1,5 +1,5 @@
-function [indv, depv_allrois, roiinfo, fitdata] = ...
-    model_plots_prepvars(fitin, plt, roiinfo, fitdata, mdlname, normalize_indv, normalize_depv)
+function [indv, depv_allrois, roidat, fitdata] = ...
+    model_plots_prepvars(fitin, plt, roidat, fitdata, mdlname, normalize_indv, normalize_depv)
 
 %% organize and normalize model data into hsv map
 
@@ -13,7 +13,7 @@ switch plt.sort_method
         sortinds = fliplr(1:fitin.num_dim_depvpre);
         sortinds = 1:fitin.num_dim_depvpre;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
-        [~, sortinds] = sort(roiinfo.idx_vox2roi,  'descend');
+        [~, sortinds] = sort(roidat.idx_vox2roi,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
         [~, sortinds] = sort(fitdata.gof, 'descend');
     case 'custom' %ad hoc sort method, checking for an error
@@ -34,7 +34,7 @@ depv_allrois = read_mdl_var(fitin.pth_depvpre_bin);
 depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvpre).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
 plotvars.depvp = fitdata.depvp(:, roiinds_plot);
-plotvars.roipixinds = roiinfo.roipixinds(roiinds_plot);
+plotvars.roipx = roidat.roipx(roiinds_plot);
 
 %% reverse standardization, if it occurred
 

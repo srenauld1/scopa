@@ -6,7 +6,7 @@ arguments
     stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
     opt.pthgif char = ''
     opt.gif_visibility char = 'on'
-    opt.roipixinds = []
+    opt.roipx = []
     opt.roiinds = []
     opt.roi_colors = [1 0 0]
     opt.roialpha = 0.3
@@ -147,7 +147,7 @@ if iscell(stack)
     if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
         error("all stacks (each cell element) must be same size")
     end
-    if numel(stack)~=1 && ~isempty(roipixinds)
+    if numel(stack)~=1 && ~isempty(roipx)
         error("cannot currently plot roi overlay on multi-stack image")
     end
     if numel(display_range)~=1 && numel(display_range)~=numel(stack)
@@ -194,7 +194,7 @@ else %if there's only one stack, don't rescale it, just assign display_range to 
 end
 
 
-if isempty(roipixinds)
+if isempty(roipx)
     roi_loop_size = 1;
     if isempty(roiinds)
         roi_message = ', roi-NaN';
@@ -202,26 +202,26 @@ if isempty(roipixinds)
         roi_message = ', roi-not plotting roi without pixinds roi argument';
     end
 else
-    if ~iscell(roipixinds)
-        if isvector(roipixinds)
-            roipixinds = {roipixinds};
+    if ~iscell(roipx)
+        if isvector(roipx)
+            roipx = {roipx};
         else
-            error("roipixinds must be cell, or vector")
+            error("roipx must be cell, or vector")
         end
     end
     if numel(size(stack))>3
-        sprintf("you passed roipixinds as argument and a stack with numdims>3; \nautomatically averaging dimensions>3 to create 3d background image for roi overlay; \nyou can also pass 2d or 3d stack instead")
+        sprintf("you passed roipx as argument and a stack with numdims>3; \nautomatically averaging dimensions>3 to create 3d background image for roi overlay; \nyou can also pass 2d or 3d stack instead")
         tmp = size(stack); 
         tmp = num2cell(tmp(1:3)); 
         stack = mean(reshape(stack, tmp{:}, []), 4);
         dimorder = dimorder(1:3);
     end
     if ~all(diff(dimorder)==1)
-        error("dimorder must be consecutive integers to visualize rois (you passed roipixinds as argument)")
+        error("dimorder must be consecutive integers to visualize rois (you passed roipx as argument)")
     end
     if isempty(roiinds)
-        roiinds = 1:numel(roipixinds);
-        roi_loop_size = numel(roipixinds);
+        roiinds = 1:numel(roipx);
+        roi_loop_size = numel(roipx);
     else
         roi_loop_size = numel(roiinds);
     end
@@ -328,7 +328,7 @@ lab_framechange_numel = cellfun(@numel, lab_framechange);
 
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
-    if isempty(roipixinds)
+    if isempty(roipx)
         roinum_title = roi_message;
     else
         roinum_title = [', roi-' num2str(roiinds(ri))];
@@ -394,15 +394,15 @@ end
 
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
-    if ~isempty(roipixinds)
-        [imroi, imalpha] = make_roi_overlay(stack, roipixinds{roiinds(ri)}, col=roi_colors(ri,:), alp=roialpha); %make an overlay for one roi
+    if ~isempty(roipx)
+        [imroi, imalpha] = make_roi_overlay(stack, roipx{roiinds(ri)}, col=roi_colors(ri,:), alp=roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after fdimnum
         framecount = framecount+1;
         for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
 
             hpl{j}.CData = stack(:,:,j,k);
-            if ~isempty(roipixinds) %&& k==1 %if there are roi variables
+            if ~isempty(roipx) %&& k==1 %if there are roi variables
                 hol{j}.CData = squeeze(imroi(:,:,j,k,:)); %squeeze to make it 3d (2d plus color channel)
                 hol{j}.AlphaData = imalpha(:,:,j,k);
             end

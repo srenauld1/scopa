@@ -12,9 +12,9 @@ arguments
     opt.lagstyle = 'bestall' %zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
     opt.minpval = 0.05; %
     opt.stack = [] %yxztc stack for plot
-    opt.roipixinds = [] %cell array, length number of rois, each cell has linear indices of each roi
-    opt.mask_roi_vec = [] %size [total number rois, total number voxels in yxz stack]; each column represents linear index of voxel in yxz stack; each element in row n is true if voxel is present in roi n, 0 otherwise
-    opt.centroids_roi = [] %cell array, length number of rois; cell n is yxz centroid for roi n;
+    opt.roipx = [] %cell array, length number of rois, each cell has linear indices of each roi
+    opt.roivec = [] %size [total number rois, total number voxels in yxz stack]; each column represents linear index of voxel in yxz stack; each element in row n is true if voxel is present in roi n, 0 otherwise
+    opt.roicen = [] %cell array, length number of rois; cell n is yxz centroid for roi n;
     opt.sortstyle = 'xyz' % 'none', 'corr', 'xyz', 'yxz', 'zyx', 'zxy', 'xzy', 'yzx' (all are ascending order); corr is ascending by correlation, negative to positive; for spatial sort styles (xyz and permutations) first dim changes fastest, last slowest, so xyz is like reading a book
     opt.alignzero = 0
     opt.yconstant = 0
@@ -36,9 +36,9 @@ lagsec = opt.lagsec;
 lagstyle = opt.lagstyle;
 minpval = opt.minpval;
 stack = opt.stack;
-roipixinds = opt.roipixinds;
-mask_roi_vec = opt.mask_roi_vec;
-centroids_roi = opt.centroids_roi;
+roipx = opt.roipx;
+roivec = opt.roivec;
+roicen = opt.roicen;
 sortstyle = opt.sortstyle;
 alignzero = opt.alignzero;
 yconstant = opt.yconstant;
@@ -95,9 +95,9 @@ if pixfit
     resp = reshape(resp, [], size(resp,4));
 
     hsvopt.foreground = 'pixels';
-    mask_roi_vec = [];
-    centroids_roi = [];
-    roipixinds = num2cell(1:numel(stackmnt));
+    roivec = [];
+    roicen = [];
+    roipx = num2cell(1:numel(stackmnt));
 end
 
 
@@ -162,7 +162,7 @@ end
 
 %% plotting
 
-if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
+if doplots && ~isempty(stackmnt) && ~isempty(roipx)
 
 
     %%%%%%%%%%% SETUP PLOT VARS %%%%%%%%%%%
@@ -173,21 +173,21 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     [~, fldr, ~] = fileparts(fileparts(pthgif));
     fldr_title = strrep(strrep(fldr, '-', ' '), '_', ' ');
 
-    if isempty(mask_roi_vec)
-        mask_roi_vec = zeros(numel(roipixinds), numel(stackmnt), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-        for k = 1:numel(roipixinds)
-            [maskytmp, maskxtmp, maskztmp] = ind2sub(size(stackmnt), roipixinds{k});
-            mask_roi_vec(k, sub2ind(size(stackmnt), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+    if isempty(roivec)
+        roivec = zeros(numel(roipx), numel(stackmnt), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+        for k = 1:numel(roipx)
+            [maskytmp, maskxtmp, maskztmp] = ind2sub(size(stackmnt), roipx{k});
+            roivec(k, sub2ind(size(stackmnt), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
         end
     end
 
-    if isempty(centroids_roi)
-        roipixinds = cellfun(@sort, roipixinds, 'UniformOutput', false); %should be sorted already, but just in case
-        chtmp = cellfun(@(x) x(ceil(end/2)), roipixinds, 'UniformOutput', false);  %middle element, in case centroids aren't provided
+    if isempty(roicen)
+        roipx = cellfun(@sort, roipx, 'UniformOutput', false); %should be sorted already, but just in case
+        chtmp = cellfun(@(x) x(ceil(end/2)), roipx, 'UniformOutput', false);  %middle element, in case centroids aren't provided
         [crosshair(:,1), crosshair(:,2), crosshair(:,3)] = ind2sub(size(stackmnt), cell2mat(chtmp));
         crosshair = num2cell(crosshair, 2)';
     else
-        crosshair = cellfun(@round, centroids_roi, 'UniformOutput', false); %will this take it out of bounds? should not
+        crosshair = cellfun(@round, roicen, 'UniformOutput', false); %will this take it out of bounds? should not
     end
 
     hsvopt = default_hsv_opts(hsvopt);
@@ -198,9 +198,9 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
         sprintf("pixfit is true so only plotting 100 rois in frames of gif, but all in hsvmap")
         ir = round(linspace(1, numroi, numroiplot_pixfit));
     else
-        roipixinds = roipixinds(ir);
+        roipx = roipx(ir);
         crosshair = crosshair(ir);
-        mask_roi_vec = mask_roi_vec(ir,:);
+        roivec = roivec(ir,:);
     end
 
     respstd = std(resp, 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
@@ -216,7 +216,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
     % hsvopt.vrange_out_manual = [1-rnk 1];
 
     hsvmap = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use, valft=respstd);
-    imhsv = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipixinds, mask_roi_vec);
+    imhsv = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipx, roivec);
 
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);

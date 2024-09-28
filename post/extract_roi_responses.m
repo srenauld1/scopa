@@ -1,9 +1,9 @@
 
-function resp = extract_roi_responses(respin, mask_roi_vec, pth_save_prefix, normopts, imper, opt)
+function resp = extract_roi_responses(respin, roivec, pth_save_prefix, normopts, imper, opt)
 
 arguments
     respin
-    mask_roi_vec
+    roivec
     pth_save_prefix
     normopts
     imper
@@ -42,9 +42,9 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = extract_roi_responses_onechan(respin_onechan, mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = extract_roi_responses_onechan(respin_onechan, roivec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         else
-            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), mask_roi_vec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), roivec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         end
     end
 end
@@ -52,11 +52,11 @@ end
 end
 
 
-function resp = extract_roi_responses_onechan(respin, mask_roi_vec, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
+function resp = extract_roi_responses_onechan(respin, roivec, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
 
 arguments
     respin
-    mask_roi_vec
+    roivec
     pth_save_prefix
     normopts
     imper
@@ -68,12 +68,12 @@ end
 
 
 
-if isequal(unique(mask_roi_vec(:)), [0 1]') | unique(mask_roi_vec)==1
-    weightingstr = 'no';
-elseif unique(mask_roi_vec)==0
+if isequal(unique(roivec(:)), [0 1]') | unique(roivec)==1
+    weightingstr = 'n';
+elseif unique(roivec)==0
     error("no pixel indices for any rois present")
 else
-    weightingstr = 'yes';
+    weightingstr = 'y';
 end
 
 if ~isstruct(respin) %if input is plain raw image f
@@ -110,7 +110,7 @@ for fnini = 1:length(fnin)
         end
 
         tmp2d = tmp2d(goodinds, :);
-        roiinds_new = mask_roi_vec(:, goodinds);
+        roiinds_new = roivec(:, goodinds);
 
         if ~isempty(tmp2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
             resp2.f = roiinds_new * tmp2d ./ sum(roiinds_new,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
@@ -127,7 +127,7 @@ for fnini = 1:length(fnin)
         fn2 = fieldnames(resp2);
 
         for fni2 = 1:length(fn2)
-            fieldname_tmp = ['in_' fnin{fnini} '_pc_' fn1{fn1i} '_cl_'  fn2{fni2} '_w_' weightingstr fnchan];
+            fieldname_tmp = [fnin{fnini} '_' fn1{fn1i} '_'  fn2{fni2} '_' weightingstr fnchan];
             resp.(fieldname_tmp) = resp2.(fn2{fni2});
         end
 
@@ -140,7 +140,7 @@ end
 %pc gets f, cl and w get null since there is no clustering for this field
 if ~raw_image_input
     for fnini = 1:length(fnin)
-        fieldname_tmp = ['in_' fnin{fnini} '_pc_f_cl_null_w_null'];
+        fieldname_tmp = [fnin{fnini} '_f_null_null'];
         resp.(fieldname_tmp) = respin.(fnin{fnini});
     end
 end

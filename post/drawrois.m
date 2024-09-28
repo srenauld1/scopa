@@ -1,4 +1,4 @@
-function maskmanual_all_roi_all_z = drawrois(stack, regionex, pth_tmpfiles, flag_limit_one_manual_roi)
+function roimaskman_all_roi_all_z = drawrois(stack, regionex, pth_tmpfiles, flag_limit_one_manual_roi)
 
 
 assert(ndims(stack)==4)
@@ -66,13 +66,13 @@ if draw_manual
     end
 
     numrois_estimated = 200; %just to preallocate, choose a big number you won't draw
-    maskmanual_all_roi_all_z = zeros(size(stackroidraw, 1), size(stackroidraw, 2), size(stackroidraw, 3), numrois_estimated, 'logical');
+    roimaskman_all_roi_all_z = zeros(size(stackroidraw, 1), size(stackroidraw, 2), size(stackroidraw, 3), numrois_estimated, 'logical');
 
     roicount = 1;
     flag_quit_all_rois = 0; %quit flag will stop drawing rois altogether
     while ~flag_quit_all_rois
 
-        maskmanual_tmp2 = zeros(size(stackroidraw, 1), size(stackroidraw, 2), size(stackroidraw, 3), 'logical');
+        roimaskman_tmp2 = zeros(size(stackroidraw, 1), size(stackroidraw, 2), size(stackroidraw, 3), 'logical');
         szi = 1;
         while szi <= size(stackroidraw, 3)
 
@@ -86,26 +86,26 @@ if draw_manual
                 end
             end
 
-            [maskmanual_tmp, flag_quit_one_roi, flag_quit_all_rois] = ...
+            [roimaskman_tmp, flag_quit_one_roi, flag_quit_all_rois] = ...
                 drawrois_oneimage(stackroidraw(:,:,szi), pth_tmpfiles, regionex_reformat, title_prefix, flag_one_image, flag_limit_one_manual_roi);
 
             if flag_one_image
-                maskmanual_tmp2 = maskmanual_tmp;
+                roimaskman_tmp2 = roimaskman_tmp;
             else
-                maskmanual_tmp2(:,:,szi) = maskmanual_tmp;
+                roimaskman_tmp2(:,:,szi) = roimaskman_tmp;
             end
 
             if szi == size(stackroidraw, 3) || flag_quit_one_roi || flag_quit_all_rois
 
                 if flag_one_image
-                    for roicount = 1:size(maskmanual_tmp, 3)
-                        maskmanual_all_roi_all_z(:,:,:,roicount) = maskmanual_tmp2(:,:,roicount);
+                    for roicount = 1:size(roimaskman_tmp, 3)
+                        roimaskman_all_roi_all_z(:,:,:,roicount) = roimaskman_tmp2(:,:,roicount);
                     end
                 else
-                    maskmanual_all_roi_all_z(:,:,:,roicount) = maskmanual_tmp2;
+                    roimaskman_all_roi_all_z(:,:,:,roicount) = roimaskman_tmp2;
                     roicount = roicount + 1;
                 end
-                maskmanual_tmp2(:) = 0;
+                roimaskman_tmp2(:) = 0;
                 
                 if flag_limit_one_manual_roi || flag_one_image %limited to one roi
                     flag_quit_all_rois = 1;
@@ -122,30 +122,30 @@ if draw_manual
 else
 
     draw_on_meanzt = 0;
-    maskmanual_all_roi_all_z = ones(size(stack,1), size(stack,2), 'logical'); %otherwise just ones
+    roimaskman_all_roi_all_z = ones(size(stack,1), size(stack,2), 'logical'); %otherwise just ones
 
 end
 
-if ~any(maskmanual_all_roi_all_z(:))
-    maskmanual_all_roi_all_z = ones(size(stack,1), size(stack,2), 'logical'); %otherwise just ones
+if ~any(roimaskman_all_roi_all_z(:))
+    roimaskman_all_roi_all_z = ones(size(stack,1), size(stack,2), 'logical'); %otherwise just ones
 end
 
 
 %% remove empty rois and save
 
-keepinds = find(any(reshape(maskmanual_all_roi_all_z, [], size(maskmanual_all_roi_all_z, 4))));%find nonempty rois, this works for 2d, 3d, 4d
-maskmanual_all_roi_all_z = maskmanual_all_roi_all_z(:,:,:,keepinds); %remove empty "rois", this works for 2d, 3d, 4d
+keepinds = find(any(reshape(roimaskman_all_roi_all_z, [], size(roimaskman_all_roi_all_z, 4))));%find nonempty rois, this works for 2d, 3d, 4d
+roimaskman_all_roi_all_z = roimaskman_all_roi_all_z(:,:,:,keepinds); %remove empty "rois", this works for 2d, 3d, 4d
 
 if draw_on_meanzt
-    maskmanual_all_roi_all_z = repmat(maskmanual_all_roi_all_z, [1 1 size(stack, 3) 1]); %this projects the 2d mask across all z
+    roimaskman_all_roi_all_z = repmat(roimaskman_all_roi_all_z, [1 1 size(stack, 3) 1]); %this projects the 2d mask across all z
 end
 
 
-if all(maskmanual_all_roi_all_z(:)==1) && ndims(maskmanual_all_roi_all_z)==2 && ndims(stack)>2
-    maskmanual_all_roi_all_z = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %insertiung this because i don't remember why the above creates 2d rather than 3d ones
+if all(roimaskman_all_roi_all_z(:)==1) && ndims(roimaskman_all_roi_all_z)==2 && ndims(stack)>2
+    roimaskman_all_roi_all_z = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %insertiung this because i don't remember why the above creates 2d rather than 3d ones
 end
 
-maskmanual = maskmanual_all_roi_all_z;
+roimaskman = roimaskman_all_roi_all_z;
 
 
 end

@@ -1,5 +1,5 @@
 
-function model_plots(fitin, roiinfo, stack, opts, pth_fitdata_prefix)
+function model_plots(fitin, roidat, stack, opts, pth_fitdata_prefix)
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as figsidelength does not exceed
@@ -48,7 +48,7 @@ end
 fitnames = fieldnames(fitin.fits);
 for ei = 1:numel(fitnames)
     fitin.fits.(fitnames{ei})
-    plotvars = model_plots_prepvars(fitin, fitin.plt, roiinfo, fitin.fits.(fitnames{ei}), opts.mdlname, opts.normalize_indv, opts.normalize_depv);
+    plotvars = model_plots_prepvars(fitin, fitin.plt, roidat, fitin.fits.(fitnames{ei}), opts.mdlname, opts.normalize_indv, opts.normalize_depv);
 end
 
 
@@ -76,7 +76,7 @@ end
 %% various plots
 
 if fitin.plt.doplots(1)
-    model_plots_summary(fitin, opts, roiinfo, stackmean)
+    model_plots_summary(fitin, opts, roidat, stackmean)
 end
 
 if doplots(1)
@@ -96,7 +96,7 @@ if doplots(4)
 end
 
 if doplots(5)
-    roivpix(depv_allrois{epi}, stack, roipixinds, pth_fitdata_prefix) %make gif showing roi against each of its pixels
+    roivpix(depv_allrois{epi}, stack, roipx, pth_fitdata_prefix) %make gif showing roi against each of its pixels
 end
 
 close all

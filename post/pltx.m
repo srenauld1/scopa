@@ -1,6 +1,6 @@
 function pltx(stack, vars, letui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    roiinfo, ti, imper, zstartpos, epochinds_ts_i, gif_visibility, ...
+    roidat, ti, imper, zstartpos, epochinds_ts_i, gif_visibility, ...
     iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
     pth_mroi_interactive, normopt, xwid, ywid, zwid, opt)
 
@@ -15,7 +15,7 @@ arguments
     lagsz_sec = []
     lags_to_plot = []
     plot_z_as_color = []
-    roiinfo = []
+    roidat = []
     ti = []
     imper = []
     zstartpos = []
@@ -182,7 +182,7 @@ while plotloop %loop is turned off if no user input
         vars_use = vars;
         labs_use = labs;
         lims_use = lims;
-        roipixind_use = roiinfo.roipixinds;
+        roipixind_use = roidat.roipx;
         varcombos_use = varcombos;
         timestr_use = '';
     end

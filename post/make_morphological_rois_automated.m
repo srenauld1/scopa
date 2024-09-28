@@ -1,6 +1,6 @@
 
-function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
-    make_morphological_rois_automated(stackmnt, maskmanual, ...
+function [roivec, roicen, num_mroi_auto_final] = ...
+    make_morphological_rois_automated(stackmnt, roimaskman, ...
     num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, ...
     map_hires_lores, pth_mroi_prefix, ...
     regionex, hsvopt, do_plots, opts)
@@ -9,7 +9,7 @@ function [mask_roi_vec, centroids_roi, num_mroi_auto_final] = ...
 %organization is meant to make it easy to add new methods (e.g. by
 %creating new subsample_mask_method and inserting in switch statement)
 %stackmnt must be 3d (xyz), although 3rd dim (z) can be singleton
-%maskmanual must match dimensionality of stackmnt, or be lower dimensional
+%roimaskman must match dimensionality of stackmnt, or be lower dimensional
 %stack_hires is optional, must be 3d xyz, and match xy size of stackmnt
 
 create_mask_method = opts.create_mask_method;
@@ -26,8 +26,8 @@ if ~isa(stackmnt, 'single')
     stackmnt = single(stackmnt);
 end
 
-if ~exist('maskmanual', 'var') || isempty(maskmanual)
-    maskmanual = 1;
+if ~exist('roimaskman', 'var') || isempty(roimaskman)
+    roimaskman = 1;
 end
 
 stackmnt = rescale(stackmnt); %if there's a 4th dim, it's time so collapse it  . . . instead of mean could try zscore, or max, prctile, etc converts to double, also don't change this variable because you need it below
@@ -44,10 +44,10 @@ end
 % end
 
 
-%% mask mean stackmnt with any available manual mask (if none was made, maskmanual is all ones, ie has no effect)
+%% mask mean stackmnt with any available manual mask (if none was made, roimaskman is all ones, ie has no effect)
 
-maskmanual_allrois = logical(sum(maskmanual, 4)); %if there's a 4th dim, it's rois co collapse it
-stackmean_masked = stackmnt.*maskmanual_allrois; %don't change this variable because you need it below
+roimaskman_allrois = logical(sum(roimaskman, 4)); %if there's a 4th dim, it's rois co collapse it
+stackmean_masked = stackmnt.*roimaskman_allrois; %don't change this variable because you need it below
 
 
 
@@ -58,13 +58,13 @@ if num_mroi_auto_initial > 1 && extract_morph_rois_in_3d
 
     if ~isempty(stack_hires) %if using a hi-z-res stackmnt to help make the 3d mask
 
-        F = griddedInterpolant(single(maskmanual_allrois), 'linear');
-        upsampind = linspace(1, size(maskmanual_allrois,3), size(stack_hires, 3) + 1);
+        F = griddedInterpolant(single(roimaskman_allrois), 'linear');
+        upsampind = linspace(1, size(roimaskman_allrois,3), size(stack_hires, 3) + 1);
         upsampind = upsampind(1:end-1);
-        maskmanual_allrois_upsamp = F({ 1:size(maskmanual_allrois,1), 1:size(maskmanual_allrois,2), upsampind }); %upsample the manual mask to apply to hires
-        maskmanual_allrois_upsamp = logical(maskmanual_allrois_upsamp);
+        roimaskman_allrois_upsamp = F({ 1:size(roimaskman_allrois,1), 1:size(roimaskman_allrois,2), upsampind }); %upsample the manual mask to apply to hires
+        roimaskman_allrois_upsamp = logical(roimaskman_allrois_upsamp);
 
-        premask = stack_hires.*maskmanual_allrois_upsamp;
+        premask = stack_hires.*roimaskman_allrois_upsamp;
         if ~isequal(unique(premask), [0;1]) && ~all(unique(premask)==1)  %in case stack_hires is a binary mask, don't rescale
             idxnz = premask~=0; %find nonzero indices
             premask(idxnz) = rescale(premask(idxnz));
@@ -167,7 +167,7 @@ num_mroi_auto_final = num_mroi_auto_initial; %as of 240605 these will match for 
 
 if num_mroi_auto_initial == 1 %for finding a single centroid
 
-    centroids_roi = find_roi_centroids(mask_allroi_approx);
+    roicen = find_roi_centroids(mask_allroi_approx);
 
 else
 
@@ -266,9 +266,9 @@ else
 
     end
 
-    centroids_roi = cell(1, size(centmp, 1));
+    roicen = cell(1, size(centmp, 1));
     for crmi = 1:size(centmp, 1)
-        centroids_roi{crmi} = centmp(crmi, :); %convert to cell, since centroids_roi is cell elsewhere (to support rois with varying number of discontiguous parts, even though that doesn't occur when using subsample_mask_method 'equidistant')
+        roicen{crmi} = centmp(crmi, :); %convert to cell, since roicen is cell elsewhere (to support rois with varying number of discontiguous parts, even though that doesn't occur when using subsample_mask_method 'equidistant')
     end
 
 end
@@ -276,27 +276,27 @@ end
 %% assign each voxel in the 3d mask to a morphological roi centroid
 
 if ~strcmp(subsample_mask_method, 'uniform') %method 'uniform' has already computed idx_vox2roi (with different algorithm), 'uniformp' recomputes it using pdist2 and its output centroids
-    cenmorphflat = cell2mat(centroids_roi(:));
-    flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(centroids_roi{idx},1),1), (1:size(centroids_roi{idx},1)).'], (1:numel(centroids_roi)).', 'uniform', 0));
+    cenmorphflat = cell2mat(roicen(:));
+    flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(roicen{idx},1),1), (1:size(roicen{idx},1)).'], (1:numel(roicen)).', 'uniform', 0));
     [~, maptmp] = pdist2(cenmorphflat, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
     idx_vox2roi = uint16(flatten_key(maptmp, 1)); %this records which cell the nearest morph centroid is from
 end
 
 %% find indices for each mophological roi
 
-mask_roi_vec = zeros(num_mroi_auto_final, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
+roivec = zeros(num_mroi_auto_final, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
 
 if isempty(sliceinds_hires) %isempty(stack_hires)
 
     for i = 1:num_mroi_auto_final
-        mask_roi_vec(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
+        roivec(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
     end
 
 else % else downsample the 3 output variables from hires to lores
 
     % map from hi-z-res to lo-z-res,
     % find voxel weighting that describes how hi-z-res rois occupy lo-z-res voxels
-    % mask_roi_vec encodes how each voxel contributes to a roi response
+    % roivec encodes how each voxel contributes to a roi response
     % each voxel's signal is weighted by the proportion of its hires voxels occupied by the roi
     % later the roi signal will be summed across voxels with these weights,
     % also, automated morphological rois created above are not overlapping at first,
@@ -327,12 +327,12 @@ else % else downsample the 3 output variables from hires to lores
             end
             num_interp_vox_in_this_vox_this_roi = numel(find(inds_this_vox));
             num_interp_vox_in_this_vox_total = numel(zrange{zind_lores_this_vox});
-            mask_roi_vec(i, sub2ind(size(stackmean_masked), coords_this_roi(voxind,1), coords_this_roi(voxind,2), coords_this_roi(voxind,3))) = num_interp_vox_in_this_vox_this_roi / num_interp_vox_in_this_vox_total;
+            roivec(i, sub2ind(size(stackmean_masked), coords_this_roi(voxind,1), coords_this_roi(voxind,2), coords_this_roi(voxind,3))) = num_interp_vox_in_this_vox_this_roi / num_interp_vox_in_this_vox_total;
         end
     end
 
-    if any(sum(mask_roi_vec)>1)
-        totals_with_rounding_error = sum(mask_roi_vec);
+    if any(sum(roivec)>1)
+        totals_with_rounding_error = sum(roivec);
         totals_with_rounding_error = totals_with_rounding_error(totals_with_rounding_error>1);
         nearly_equal_tol = 1e-6;
         for trei = 1:numel(totals_with_rounding_error)
@@ -342,8 +342,8 @@ else % else downsample the 3 output variables from hires to lores
             end
         end
     end
-    if any(isnan(mask_roi_vec(:)))
-        error("mask_roi_vec should not have any nans") %mask_roi_vec(isnan(mask_roi_vec)) = 0;
+    if any(isnan(roivec(:)))
+        error("roivec should not have any nans") %roivec(isnan(roivec)) = 0;
     end
 
     %%downsample 3d "allroi" mask for plotting (note this will not quite match union of all roi indices, so it is only used for plotting within this function and is not output)
@@ -354,8 +354,8 @@ else % else downsample the 3 output variables from hires to lores
 
     %%downsample z component of each subroi of each mophological roi centroid
     for rci = 1:num_mroi_auto_final %loop over rois
-        for rci2 = 1:size(centroids_roi{rci}, 1) %loop over any subrois (discontiguous subregions of single roi)
-            centroids_roi{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmnt, 3)], centroids_roi{rci}(rci2,3));
+        for rci2 = 1:size(roicen{rci}, 1) %loop over any subrois (discontiguous subregions of single roi)
+            roicen{rci}(rci2,3) = interp1([1, size(premask, 3)], [1, size(stackmnt, 3)], roicen{rci}(rci2,3));
         end
     end
 
@@ -375,7 +375,7 @@ if do_plots
 
 
         %colormap for each roi
-        cmap = distinguishable_colors(size(mask_roi_vec,1));
+        cmap = distinguishable_colors(size(roivec,1));
         double_colormap = 0;
         if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
             num_region_periods = 2; %for example, two halves of pb
@@ -391,7 +391,7 @@ if do_plots
             scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
         end
         %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
-        %scatter3(centroids_roi(:,2 ), centroids_roi(:,1), centroids_roi(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
+        %scatter3(roicen(:,2 ), roicen(:,1), roicen(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
         colormap(bone);
         axis image; axis off
         set(gca,'Visible','off')
@@ -406,19 +406,19 @@ if do_plots
 
 
         %data for upsamp overlay and hsv
-        mask_roi_vec_upsamp = zeros(num_mroi_auto_final, numel(mask_allroi_approx_upsamp), 'single');
+        roivec_upsamp = zeros(num_mroi_auto_final, numel(mask_allroi_approx_upsamp), 'single');
         for i = 1:num_mroi_auto_final
-            mask_roi_vec_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
+            roivec_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
         end
         roipixind_upsamp = cell(num_mroi_auto_final, 1);
         for ii = 1:numel(roipixind_upsamp)
-            roipixind_upsamp{ii} = find(vec(mask_roi_vec_upsamp(ii,:)));
+            roipixind_upsamp{ii} = find(vec(roivec_upsamp(ii,:)));
         end
 
         %roi overlay in upsampled res
         filename_olay = [pth_mroi_prefix 'roiolay_upsamp_.gif'];
         gif_visibility = 'on';
-        stack2fig(premask, pthgif=filename_olay, gif_visibility=gif_visibility, roipixinds=roipixind_upsamp) %include roipixinds as argument to plot roi overlay
+        stack2fig(premask, pthgif=filename_olay, gif_visibility=gif_visibility, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
 
 
         %hsv gif, each slice, each roi a different hue
@@ -426,7 +426,7 @@ if do_plots
         hue_feature = [1:num_mroi_auto_final]';
         hsvmap = plots_compute_hsv(hsvopt, hue_feature);
         filename_hsv = [pth_mroi_prefix 'hsvfov_upsamp_.gif'];
-        hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, roipixind_upsamp, mask_roi_vec_upsamp, filename_hsv);
+        hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, roipixind_upsamp, roivec_upsamp, filename_hsv);
 
 
         %3d scatter plot

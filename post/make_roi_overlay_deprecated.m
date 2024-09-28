@@ -1,4 +1,4 @@
-function roi_overlay = make_roi_overlay_deprecated(stack, roipixinds, ncol_each, ...
+function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol_each, ...
     foreground_plot_style, saturation_factor_background, ...
     saturation_factor_rois, filename_gif, doplot)
 
@@ -10,7 +10,7 @@ function roi_overlay = make_roi_overlay_deprecated(stack, roipixinds, ncol_each,
 
 arguments
     stack
-    roipixinds
+    roipx
     ncol_each = 128
     foreground_plot_style char = 'overlay'
     saturation_factor_background = 1
@@ -19,16 +19,16 @@ arguments
     doplot = 0
 end
 
-if ~iscell(roipixinds)
-    if isvector(roipixinds)
-        roipixinds = {roipixinds};
+if ~iscell(roipx)
+    if isvector(roipx)
+        roipx = {roipx};
     else
-        error("roipixinds must be cell, or vector")
+        error("roipx must be cell, or vector")
     end
 end
 
 
-numrois = numel(roipixinds);
+numrois = numel(roipx);
 
 stack_rs = rescale(stack, 1, ncol_each);
 
@@ -36,7 +36,7 @@ img = zeros([size(stack_rs, 1), size(stack_rs, 2), size(stack_rs, 3), numrois], 
 
 for ri = 1:numrois
 
-    roipixvals = stack(roipixinds{ri});
+    roipixvals = stack(roipx{ri});
 
     overlay_tmp = rescale(stack_rs, 1, ncol_each); %redefine for each roi
 
@@ -44,7 +44,7 @@ for ri = 1:numrois
 
         case 'overlay'
 
-            overlay_tmp(roipixinds{ri}) = rescale(roipixvals, ncol_each+1, ncol_each*2); %for overlay (filled roi), maintains intensity of original, but with different hue
+            overlay_tmp(roipx{ri}) = rescale(roipixvals, ncol_each+1, ncol_each*2); %for overlay (filled roi), maintains intensity of original, but with different hue
 
         case 'boundary'
 

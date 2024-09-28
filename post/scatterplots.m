@@ -1,5 +1,5 @@
 function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
-    epochinds_all, roiinfo, ti, imper, zstartpos, epochinds_ts_i, lagsxy_sec, ...
+    epochinds_all, roidat, ti, imper, zstartpos, epochinds_ts_i, lagsxy_sec, ...
     lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, pthgif_prefix_short, pthgif_prefix)
 
 
@@ -19,15 +19,15 @@ fontmedium = 11;
 ylim_constancy = 'eachvar';  %allvars, eachvar, none
 sample_period_string = [num2str(imper*1000, '%.2g') ' ms'];
 
-% stack = roiinfo.roi_overlay;
+% stack = roidat.roi_overlay;
 roi_type = 'rois';
 switch roi_type
     case 'pixels'
-        for roi_ind = 1:roiinfo.numroi
-            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roiinfo.mask_allroi), roiinfo.roipixinds{roi_ind});
+        for roi_ind = 1:roidat.numroi
+            [crosshair{roi_ind}(1), crosshair{roi_ind}(2), crosshair{roi_ind}(3)] = ind2sub(size(roidat.mask_allroi), roidat.roipx{roi_ind});
         end
     case 'rois'
-        crosshair = cellfun(@round, roiinfo.centroids_roi, 'UniformOutput', false); %will this take it out of bounds? should not
+        crosshair = cellfun(@round, roidat.roicen, 'UniformOutput', false); %will this take it out of bounds? should not
     case 'raw'
         error("raw doens't work yet")
 end

@@ -1,4 +1,4 @@
-function plotvars = fitmdl_plots_prepvars(indv, depv, fitin, plt, roiinfo, epochs_oneset, ...
+function plotvars = fitmdl_plots_prepvars(indv, depv, fitin, plt, roidat, epochs_oneset, ...
     fitdata, mdlname, normalize_depv, epochinds_str, pth_fitdata_prefix)
 
 hackindvdim = plt.hackindvdim;
@@ -26,7 +26,7 @@ switch plt.sort_method
         sortinds = fliplr(1:fitin.num_dim_depvpre);
         sortinds = 1:fitin.num_dim_depvpre;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
-        % [~, sortinds] = sort(roiinfo.idx_vox2roi,  'descend');
+        % [~, sortinds] = sort(roidat.idx_vox2roi,  'descend');
         [~, sortinds] = sort(fitdata.indvpref,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
         [~, sortinds] = sort(fitdata.gof, 'descend');
@@ -39,8 +39,8 @@ end
 roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxnumroiplot))), 'stable'); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvpre
 numroi_plot = numel(roiinds_plot);
 
-roipixinds = roiinfo.roipixinds(roiinds_plot);
-mask_roi_vec = roiinfo.mask_roi_vec(roiinds_plot);
+roipx = roidat.roipx(roiinds_plot);
+roivec = roidat.roivec(roiinds_plot);
 
 
 %% subsample indv, depv, depvp
@@ -216,8 +216,8 @@ plotvars.sampinds_indvpreaug = fitdata.sampinds_indvpreaug;
 plotvars.sampinds_depvpre = fitdata.sampinds_depvpre;
 plotvars.numroi_plot = numroi_plot;
 plotvars.roiinds_plot = roiinds_plot;
-plotvars.mask_roi_vec = mask_roi_vec;
-plotvars.roipixinds = roipixinds;
+plotvars.roivec = roivec;
+plotvars.roipx = roipx;
 plotvars.depvp_sort = depvp_sort;
 plotvars.indvsort = indvsort;
 
