@@ -1,6 +1,6 @@
 function [roiinfo, resp] = make_morphological_rois(stack, opts_mroi, ...
     ti, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
-    regionex, parstr_mroi, maskmanual2)
+    regionex, parstr_mroi, maskmanual_allchan)
 
 
 %if you want to automate rois from multiple drawn regions, use different
@@ -43,8 +43,8 @@ function [roiinfo, resp] = make_morphological_rois(stack, opts_mroi, ...
 
 %% params
 
-if exist('maskmanual2', 'var') %if passing in a morph roi mask (interactive mode)
-    maskmanual2 = {maskmanual2};
+if exist('maskmanual_allchan', 'var') %if passing in a morph roi mask (interactive mode)
+    maskmanual_allchan = {maskmanual_allchan};
     maskinput = 1;
     use_drawn_rois = 0;
     num_mroi_auto = 0;
@@ -65,7 +65,9 @@ end
 chandraw = opts_mroi.chandraw;
 chanproject = opts_mroi.chanproject;
 channorm = opts_mroi.channorm;
+dowav = opts_mroi.dowav;
 autoopts = opts_mroi.auto;
+
 
 pth_mroi_prefix = pth_mroi(1:end-4);
 numchan = size(stack,5);
@@ -75,12 +77,10 @@ stackmnt = mean(stack, 4, 'native');
 %% draw rois (polygons/polyhedra)
 
 if ~maskinput
-
+    maskmanual_allchan = repmat({ones(size(stack,1), size(stack,2), size(stack,3), 'logical')}, [1 1 1 numchan]);
     if use_drawn_rois
         for c = 1:numchan
-
             if ismember(c,chandraw)
-
                 pth_mroi_manual_prefix = erase(pth_mroi_prefix, ['_' parstr_mroi]); %different prefix since the parstr_mroi are irrelevant for manually drawn rois, allowing manually drawn to be used for different parstr_mroi
                 pth_mroi_manual_prefix = erase(pth_mroi_manual_prefix, ['_morph']); %string 'morph' is redundant here, since this has suffix manual
                 pth_maskmanual = [pth_mroi_manual_prefix 'chn' num2str(c) '_maskmanual_.mat'];
@@ -94,29 +94,36 @@ if ~maskinput
                     if num_mroi_auto>1
                         flag_limit_one_manual_roi = 1;
                     end
-                    maskmanual = drawrois(stack(:,:,:,:,c), regionex, pth_maskmanual, pth_tmpfiles, flag_limit_one_manual_roi);
+                    maskmanual = drawrois(stack(:,:,:,:,c), regionex, pth_tmpfiles, flag_limit_one_manual_roi);
+                    save(pth_maskmanual, 'maskmanual', '-v7.3', '-mat')
                 end
-
-            else
-                maskmanual = ones(size(stack,1), size(stack,2), size(stack,3), 'logical'); %otherwise just ones
+                maskmanual_allchan{c} = maskmanual;
             end
-
-            maskmanual2{c} = maskmanual;
-
         end
-    else
-        maskmanual2 = repmat({ones(size(stack,1), size(stack,2), size(stack,3), 'logical')}, [1 1 1 numchan]);
+        if chanproject && numchan==2
+            chanreceive = setxor(chanproject, [1,2]);
+            doproject = input(sprintf("chanproject is " + num2str(chanproject) + ", ARE YOU SURE YOU WANT TO PROJECT CHANNEL " + num2str(chanproject) + " ROI INFO (INCLUDING ANY DRAWN ROIS) ONTO CHANNEL " + num2str(chanreceive) + "? ENTER 1 FOR YES, 0 FOR NO: "));
+            if doproject && all(maskmanual_allchan{chanproject}==1, 'all') && ~all(maskmanual_allchan{chanreceive}==1, 'all')
+                doproject = input(sprintf("chanproject is " + num2str(chanproject) + ", BUT MASKMANUAL FOR CHANNEL " + num2str(chanproject) + " IS ALL ONES, BUT THAT IS NOT THE CASE FOR CHANNEL " + num2str(chanreceive) + "ARE YOU SURE YOU WANT TO PROJECT? ENTER 1 FOR YES, 0 FOR NO: "));
+            end
+            if doproject && chanproject==1
+                maskmanual_allchan(2) = maskmanual_allchan(1);
+            elseif doproject && chanproject==2
+                maskmanual_allchan(1) = maskmanual_allchan(2);
+            end
+        end
     end
 end
+
+
 
 %% make mask_3d (from manual mask plus automated mask, or just manual mask, or just automated mask)
 
 
 for c = 1:numchan
-
     if ismember(c,autoopts.chan)
 
-        maskmanual = maskmanual2{c};
+        maskmanual = maskmanual_allchan{c};
         stackmnt_tmp = stackmnt(:,:,:,:,c);
         num_mroi_manual = size(maskmanual, 4);
         pth_morphroidata = [pth_mroi_prefix 'chn' num2str(c) '_morphroidata_.mat'];
@@ -215,7 +222,6 @@ pth_morphroiresp = [pth_mroi_prefix 'resp_.mat'];
 try
     load(pth_morphroiresp, 'resp')
 catch
-    dowav = 1;
     resp = extract_roi_responses(stack, mask_roi_vec, pth_mroi_prefix, normopts, imper, resp=[], dowav=dowav, ti=ti);
     if ~maskinput && c==numchan
         save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
@@ -228,7 +234,9 @@ end
 
 
 %% put in struct 'roiinfo'
+
 "NEED TO PUT THIS IN ASSEMBLE ROI INFO FUNCTION WITH Compute some morphological roi data SECTION ABOVE, ONE FOR EACH REQUESTED CHANNEL, OR PROJECT"
+
 roiinfo.numroi = num_mroi;
 roiinfo.roipixinds = roipixinds;  %pixel indices of each roi, one roi per cell
 roiinfo.mask_roi_vec = mask_roi_vec; %boolean mask vector of each roi

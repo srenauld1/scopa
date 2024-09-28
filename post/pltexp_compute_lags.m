@@ -40,7 +40,13 @@ else
     [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
     lags_sec_pos = lags_sec(lags_sec>=0);
     [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
-    lags_samp = [-lags_samp_neg, 0, lags_samp_pos];
+    if isempty(lags_samp_neg)
+        lags_samp = lags_samp_pos;
+    elseif isempty(lags_samp_pos)
+        lags_samp = lags_samp_neg;
+    else
+        lags_samp = [-lags_samp_neg, 0, lags_samp_pos];
+    end
     lags_samp = unique(lags_samp);
     actual_lags_sec = [vec(-ticumdiff(abs(lags_samp(lags_samp<0))+1)); vec(ticumdiff(lags_samp(lags_samp>=0)+1))];
     actual_lags_sec = unique(actual_lags_sec);

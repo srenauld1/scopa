@@ -1,6 +1,5 @@
 function md = load_scanimage_metadata(pth_md, optld, optld_hires)
 
-
 md = readmdsi(pth_md); %function for converting scanimage metadata dict written to txt file by json in read_save_metadata.py 
 
 md.numvol_o = md.numvol;
@@ -88,6 +87,8 @@ if startsWith(str, '{') && endsWith(str, '}')
             error("only written for one nested dict/struct, which is for md_hires; if you want more nesting need to repeat above for each layer")
         end
         str = strsplit(str, '{');
+    else
+        str = {str};
     end
 end
 for m = 1:numel(str)

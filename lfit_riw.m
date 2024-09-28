@@ -20,7 +20,7 @@ arguments
     opt.yconstant = 0
     opt.plotlagged = 0 %plot the timeseries at the chosen lag
     opt.usesaved = 0
-    opt.chan = 1
+    opt.chanuse = 1
     opt.hsvopt = []
     opt.flypos = []
     opt.pixfit = []
@@ -44,7 +44,7 @@ alignzero = opt.alignzero;
 yconstant = opt.yconstant;
 plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
-chan = opt.chan;
+chanuse = opt.chanuse;
 hsvopt = opt.hsvopt;
 flypos = opt.flypos;
 pixfit = opt.pixfit;
@@ -83,7 +83,7 @@ matlab_dimorder_char = 'yxz';
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
 pthdat = pthauto('', suffix=savedatsuffix, usetime=0, usefun=0);
 
-stack = stack(:,:,:,:,chan);
+stack = stack(:,:,:,:,chanuse);
 stackmnt = mean(stack, 4, 'native');
 
 numxpix = size(stackmnt,2);
@@ -213,8 +213,10 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
 
     respstd = std(resp, 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
 
-    r2use(puse>minpval) = min(r2use(:))/2;
-    suse(puse>minpval) = min(suse(:))/2;
+    notsig = puse>minpval;
+    respstd(notsig) = min(respstd(:)); %;nan; %min(respstd(:))/2;
+    r2use(notsig) = min(r2use(:)); %nan %min(r2use(:))/2;
+    suse(notsig) = 0; %nan %min(suse(:))/2;
 
     % [histdt, histx] = hist(respstd(:), 1000);
     % thrbin_tri = triangle_threshold(histdt, 'R', 1);
@@ -428,8 +430,8 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
                 if j==crosshair{k}(3)
                     st.hlny{j}.Value = crosshair{k}(1);
                     st.hlnx{j}.Value = crosshair{k}(2);
-                    st.hlny{j}.LineStyle = '-';
-                    st.hlnx{j}.LineStyle = '-';
+                    st.hlny{j}.LineStyle = 'none';
+                    st.hlnx{j}.LineStyle = 'none';
                 else
                     st.hlny{j}.LineStyle = 'none';
                     st.hlnx{j}.LineStyle = 'none';
@@ -464,6 +466,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipixinds)
 
             htx.String = {['rec: ' fldr_title]; ['roi: ' num2str(rind) ', lag (sec): ' num2str(lagsec_actual_use(k)) ', slope: ' num2str(suse(k)) ', r-sq: ' num2str(r2use(k)) ', p: ' num2str(puse(k)), ', std: ' num2str(respstd(k))]};
 
+            %saveas(gca, [pthgif(1:end-3) '_' num2str(k2) '_.svg'], 'svg')
             fig2gif(hfg, k2, pthgif)
 
         end
@@ -489,7 +492,13 @@ else
     [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
     lags_sec_pos = lags_sec(lags_sec>=0);
     [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
-    lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    if isempty(lags_samp_neg)
+        lagsamp = lags_samp_pos;
+    elseif isempty(lags_samp_pos)
+        lagsamp = lags_samp_neg;
+    else
+        lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    end
     lagsamp = unique(lagsamp);
     lagsec_actual = [vec(-ticumdiff(abs(lagsamp(lagsamp<0))+1)); vec(ticumdiff(lagsamp(lagsamp>=0)+1))];
     lagsec_actual = unique(lagsec_actual);

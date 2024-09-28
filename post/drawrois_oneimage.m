@@ -213,11 +213,11 @@ while true
     if flag_exit_this_figure || ...
             flag_quit_one_roi || ...
             flag_quit_all_rois
-        him.Parent.Title.String = "QUITTING IN 3 SEC";
+        him.Parent.Title.String = "QUITTING IN 1 SEC";
         him.Parent.XLabel.String{1} = tmpone;
         him.Parent.XLabel.String{2} = '';
         him.Parent.XLabel.String{3} = '';
-        pause(3)
+        pause(1)
         break;
     end
 

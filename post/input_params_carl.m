@@ -7,16 +7,16 @@ function ui = input_params_carl(pthstacks)
 
 %params for main pipeline control in file a2p
 
-ui.mn.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders 
+ui.mn.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
 ui.mn.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as ui.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 ui.mn.tmp_folder_name = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 ui.mn.valid_fnsuffixes = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 
-if isempty(pthstacks) %if not running a2p from cxp, set filename specs here 
-    fnspec_recdate = {'20240601'}; %cell array of char, can use wildcards
-    fnspec_fly = {'4'}; %cell array of char, can use wildcards
+if isempty(pthstacks) %if not running a2p from cxp, set filename specs here
+    fnspec_recdate = {'20240907'}; %cell array of char, can use wildcards
+    fnspec_fly = {'*'}; %cell array of char, can use wildcards
     fnspec_trial = {'*'}; %cell array of char, can use wildcards
-    fnspec_suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
+    fnspec_suffix = {'cmrg'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in ui.mn.valid_fnsuffixes
     fnspec_matching_style = 'each'; %'any' for all combinations of recdate, fly, trial, suffix_analysis, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     ui.mn.pthstacks = find_preprocessed_files(pthparent_local=ui.mn.pthparent_local, pthparent_o2=ui.mn.pthparent_o2, valid_fnsuffixes=ui.mn.valid_fnsuffixes, recdate=fnspec_recdate, fly=fnspec_fly, trial=fnspec_trial, suffix=fnspec_suffix, fnspec_matching_style=fnspec_matching_style);
 else
@@ -24,14 +24,15 @@ else
 end
 
 ui.mn.regionex_all = {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
-ui.mn.regionex_all = {'fullfov'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+ui.mn.regionex_all = {'fb4096'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+ui.mn.do_lfit = 0;
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
-ui.mn.do_fit = 1; %model fitting (ui.fitm below)
-ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
+ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+ui.mn.do_pltexp = 0; %plot experiment (ui.pltx below)
 
 
 %% DAQ
@@ -44,19 +45,19 @@ ui.daq.slopelen_sec = 0.4; %window length used to fit slope
 ui.daq.use_carls_epochs = 1; %0 for everybody else
 ui.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
-%% LOAD/VISUALIZE STACK 
+%% LOAD/VISUALIZE STACK
 
 %ui.ld holds params used in stackld
 ui.ld.channel_use = [1 2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
-ui.ld.crop_flyback = 1; %crop flyback frames from each volume 
-ui.ld.zero_stack = 1; %subtract min to make min zero 
+ui.ld.crop_flyback = 1; %crop flyback frames from each volume
+ui.ld.zero_stack = 1; %subtract min to make min zero
 ui.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 ui.ld.tcropback = 0; % how many samples to remove from end of stack
 ui.ld.stack_make_datatype = 'uint16';
-ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless 
+ui.ld.do_plot_stack_stats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 
-%ui.ld.gif holds params for making gif of imaging movies in function stackld; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis) 
-ui.ld.gif.suffixes_plot = { 
+%ui.ld.gif holds params for making gif of imaging movies in function stackld; ui.ld.gif params not affect stack for analysis (stack with suffix ui.mn.suffix_analysis)
+ui.ld.gif.suffixes_plot = {
     %'raw', ... %comment if you don't want to plot (can comment all too)
     %'cmrg', ...%comment if you don't want to plot (can comment all too)
     %'cmrg_dcdn', ... %comment if you don't want to a plot (can comment all too)
@@ -64,11 +65,11 @@ ui.ld.gif.suffixes_plot = {
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 
-% display ranges for each suffixes_plot; applied in stack2fig; display_range represents proportion of full range, where [0,1] is full range; 
-% stack values that are proportionally within display_range are linearly mapped to image intensity; less than or equal to display_range(1) is mapped to image min (black); greater than or equal to display_range(2) is mapped to image max (white); 
-% for example, [0,1] will be full contrast, [0, 0.5] will map upper half of stack intensities to white; 
+% display ranges for each suffixes_plot; applied in stack2fig; display_range represents proportion of full range, where [0,1] is full range;
+% stack values that are proportionally within display_range are linearly mapped to image intensity; less than or equal to display_range(1) is mapped to image min (black); greater than or equal to display_range(2) is mapped to image max (white);
+% for example, [0,1] will be full contrast, [0, 0.5] will map upper half of stack intensities to white;
 % if stack doesn't exist its display_range is ignored
-ui.ld.gif.display_range.raw = [0,1]; 
+ui.ld.gif.display_range.raw = [0,1];
 ui.ld.gif.display_range.cmrg = [0,1];
 ui.ld.gif.display_range.cmrg_dcdn = [0,1];
 ui.ld.gif.display_range.bksb_cmrg_dcdn = [0,1];
@@ -87,7 +88,7 @@ ui.ftv.num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillatio
 ui.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
 ui.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
 ui.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display 
+ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display
 
 
 %% MORPHOLOGICAL ROIS
@@ -97,15 +98,16 @@ ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not disp
 
 %%params for the manually drawn morphological rois
 ui.mroi.use_drawn_rois =  {'eb', 'gal_d', 'gal_v', 'gar_d', 'gar_v', 'no_l', 'no_r' }; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
-ui.mroi.use_drawn_rois =  {'fullfov'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+ui.mroi.use_drawn_rois =  {'fb4096'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
-ui.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum 
+ui.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
 ui.mroi.chanproject = [1]; %which channel(s') rois to project onto the other (concatenated with any other rois on that channel, ie does not overwrite)
 ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
+ui.mroi.dowav = 1; %wavelet denoising
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
-ui.mroi.auto.num_mroi_auto.fullfov = 1024; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fb4096 = 4096; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 ui.mroi.auto.create_mask_method = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2
@@ -174,6 +176,10 @@ ui.froi.norm.precluster = {'f'}; %must have at least one string, compsed of syll
 ui.froi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
 ui.froi.norm.doplots = 0;
 
+%% LFIT
+
+ui.lc.chanuse = 1;
+
 %% BUMP
 
 % ui.pf holds params for computing population features, each substructure beneath ui.pf is for a different population feature, below, for example, is ui.pf.bump
@@ -235,7 +241,7 @@ ui.pf.bump.fitm = default_fit_params(ui.pf.bump.fitm);
 % format ui.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 % format ui.fitm(i).varnms.indvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
-% where fieldspec is a pattern used to match the flattened struct fieldname, with wildcard (*) allowed anywhere 
+% where fieldspec is a pattern used to match the flattened struct fieldname, with wildcard (*) allowed anywhere
 
 % fieldspec for ts.resp would follow the pattern ['tsclass.regionex.parsex.normex']
 % where tsclass is a field in the first level of struct 'ts'
@@ -248,15 +254,15 @@ ui.pf.bump.fitm = default_fit_params(ui.pf.bump.fitm);
 % ['tsclass, regionex, parsex, normex, bumpdomain, bumpparam']
 % for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used (or a single * will match all timeseries in ts)
 % you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
-% any field defined for the first struct index but not subsequent will be copied from the first 
+% any field defined for the first struct index but not subsequent will be copied from the first
 % ui.fitm.varnms.indvpre and ui.fitm.varnms.depvpre are matched by index i in ui.fitm(i)
 % within a single ui.fitm(i).varnms.indvpre or ui.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single ui.fitm(i).indv{j} or ui.fitm(i).varnms.depvpre{j}
 % all combinations of single ui.fitm(i).indv and single ui.fitm(i).depv at the outer cell level are used
 %for now, depv at single struct and outer cell level should come from single regionex
-% 
+%
 % ui.fitm(1).varnms.depvpre{1} = {['resp.no_l.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
 % ui.fitm(1).varnms.depvpre{2} = {['resp.no_r.mo*.in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-% 
+%
 % ui.fitm(1).varnms.indvpre{1} = {['ball.yawvel'], ['bump.eb.mo*.*.all.vel']};
 % ui.fitm(1).varnms.indvpre{2} = {['ball.yawvel'], ['resp.gal.mo*.in_rawf_pc_f_cl_f_w_no']};
 % ui.fitm(1).varnms.indvpre{3} = {['ball.yawvel']};
@@ -294,17 +300,17 @@ ui.pltx(1).varnms.ts8{1} = {['']};
 ui.pltx(1).vpmap.left = [1 2 3 4]; %map of indices of each varnms.ts above to plot positions (on left axis)
 ui.pltx(1).vpmap.right = [5 6 7 8]; %map of indices of each varnms.ts above to plot positions (on right axis)
 
-ui.pltx(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x; 
-ui.pltx(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable 
+ui.pltx(1).lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x;
+ui.pltx(1).lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable
 ui.pltx(1).lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
-ui.pltx(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color 
+ui.pltx(1).plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color
 
 ui.pltx(1).epochinds = {[1]}; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 ui.pltx(1).gif_visibility = 'on'; %0 will save but not plot, 1 will do both
 
 ui.pltx(1).iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 ui.pltx(1).it = []; %[3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-ui.pltx(1).display_range = [0,1]; 
+ui.pltx(1).display_range = [0,1];
 ui.pltx(1).letui = 1;
 
 ui.pltx = fill_struct(ui.pltx);
@@ -314,8 +320,8 @@ ui.pltx = fill_struct(ui.pltx);
 %params for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
 %hires stack is only used in making morphological rois, set ui.mroi.auto.use_hires=1 to use
 %params below, in ui.hires, are for processing the hires stack, and visualization with gif in ui.hires.gif
-ui.hires.ld.crop_flyback = 1; %crop flyback frames from each volume 
-ui.hires.ld.zero_stack = 1; %subtract min to make min zero 
+ui.hires.ld.crop_flyback = 1; %crop flyback frames from each volume
+ui.hires.ld.zero_stack = 1; %subtract min to make min zero
 ui.hires.ld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 ui.hires.ld.tcropback = 0; % how many samples to remove from end of stack
 ui.hires.ld.do_plot_stack_stats = 0; %function this uses is old and needs to be updated

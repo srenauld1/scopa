@@ -1,9 +1,7 @@
-function maskmanual_all_roi_all_z = drawrois(stack, regionex, pth_maskmanual, pth_tmpfiles, flag_limit_one_manual_roi)
+function maskmanual_all_roi_all_z = drawrois(stack, regionex, pth_tmpfiles, flag_limit_one_manual_roi)
 
 
-if ndims(stack)~=4
-    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack TO BE 4D, EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
-end
+assert(ndims(stack)==4)
 
 regionex_reformat = strrep(regionex, '_', ' ');
 
@@ -148,7 +146,7 @@ if all(maskmanual_all_roi_all_z(:)==1) && ndims(maskmanual_all_roi_all_z)==2 && 
 end
 
 maskmanual = maskmanual_all_roi_all_z;
-save(pth_maskmanual, 'maskmanual', '-v7.3', '-mat')
+
 
 end
 

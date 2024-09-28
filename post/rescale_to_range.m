@@ -22,19 +22,19 @@ if size(target, 1)~=size(inp,1)
     target = target';
 end
 if iscell(source)
-    stmp = cellfun(@size, source, 'UniformOutput', false);
-    maxsz = max(cell2mat(cellfun(@numel, stmp, 'UniformOutput', false)));
-    if ~isequal(stmp{:})
-        if maxsz==3 && min(cell2mat(cellfun(@numel, stmp, 'UniformOutput', false)))==2
-            repidx = cell2mat(cellfun(@numel, stmp, 'UniformOutput', false))~=maxsz;
-            source(repidx) = cellfun(@(x) repmat(x, [1 1 2]), source(repidx), 'UniformOutput', false);
-            source = cell2mat(source);
-        else
-            error("source size mistmatch")
+    if numel(source)~=1
+        stmp = cellfun(@size, source, 'UniformOutput', false);
+        maxsz = max(cell2mat(cellfun(@numel, stmp, 'UniformOutput', false)));
+        if ~isequal(stmp{:})
+            if maxsz==3 && min(cell2mat(cellfun(@numel, stmp, 'UniformOutput', false)))==2
+                repidx = cell2mat(cellfun(@numel, stmp, 'UniformOutput', false))~=maxsz;
+                source(repidx) = cellfun(@(x) repmat(x, [1 1 2]), source(repidx), 'UniformOutput', false);
+            else
+                error("source size mistmatch")
+            end
         end
-    else
-        source = cell2mat(source);
     end
+    source = cell2mat(source);
 end
 if iscell(target)
     target = cell2mat(target);

@@ -148,9 +148,9 @@ while true
 
     if quit_flag
         zinds_str = regexprep( mat2str(zinds), {'\[', '\]', '\s+'}, {'', '', '-'});
-        him.Parent.Title.String = {'QUITTING IN 3 SEC '; ['Z LIMITS ARE: [' zinds_str ']']};
+        him.Parent.Title.String = {'QUITTING IN 1 SEC '; ['Z LIMITS ARE: [' zinds_str ']']};
         him.Parent.XLabel.String = '';
-        pause(3)
+        pause(1)
         break;
     end
 
