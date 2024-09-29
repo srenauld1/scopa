@@ -1,4 +1,4 @@
-function fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix)
+function fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix)
 
 %don't unpack fitin.vars.indvpre and fitin.vars.depvpre from struct in case they're large (they can be updated below, which would double memory)
 
@@ -27,7 +27,7 @@ end
 %% exclude samples (optional)
 
 if ~isempty(opts.excludeopts)
-    fitin = fitmdl_exclude_samples(excludeopts, fitin);
+    fitin = mfit_exclude_samples(excludeopts, fitin);
 end
 
 %% standardize indv and depv (optional)

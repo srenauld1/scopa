@@ -1,4 +1,4 @@
-function fitmdl_plot_single_mdl(ri, mdl, supp, depv, depvp, ft, indv, ftsyn, normalize_depv, tinds)
+function mfit_plot_single_mdl(ri, mdl, supp, depv, depvp, ft, indv, ftsyn, normalize_depv, tinds)
 
 if exist('ftsyn', 'var') && ~isempty(ftsyn)
     ftsyn = ftsyn(ri,:);

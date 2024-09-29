@@ -1,4 +1,4 @@
-function out = fitmdl_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds)
+function out = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds)
 
 
 num_epochs = numel(epochinds);

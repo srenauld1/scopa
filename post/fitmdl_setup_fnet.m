@@ -1,10 +1,10 @@
-function [mdl, optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvpre, inputvar_stats)
+function [mdl, optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvpre, inputvar_stats)
 
 padlen_sec = 4;
 
 multi_time_in_layer_one_only = 1;
 
-fnetspec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only);
+fnetspec = mfit_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only);
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 
 lbnd = [];
@@ -25,7 +25,7 @@ freeformflag = 0;
 for ui = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
 
     [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflagtmp] = ...
-        fitmdl_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, imper, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
+        mfit_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, imper, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
 
     lbnd = [lbnd lbnd_tmp];
     ubnd = [ubnd ubnd_tmp];

@@ -1,4 +1,4 @@
-function spec = fitmdl_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only)
+function spec = mfit_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only)
 
 
 % soon remove this to increment layer, since won't require exact channel matching isequal(channel_onelayer, 1:num_unit_previous_layer) 

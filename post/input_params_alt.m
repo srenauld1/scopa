@@ -195,8 +195,8 @@ opt.froi.norm.doplots = 0;
 %at the inner cell level, there can be multiple field specifiers (fieldspec)
 %each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'
 %depv and indv are composed of all timeseries matching fieldspecs
-%if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries
-%if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
+%if multiple matches, depv is concatenated along second dim (time), since currently mfit fits single timeseries
+%if multiple matches, indv is concatenated along first dim (not time), since mfit can accept multidimensional independent variable
 % opt.pf.bump.fitm(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
@@ -212,7 +212,7 @@ opt.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each clus
 opt.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 opt.pf.bump.doplots = 0;
 
-%params for finding preferred heading using fitmdl
+%params for finding preferred heading using mfit
 % opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
 opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
 opt.pf.bump.fitm(1).varnms.indvpre{1} = {['vis, angsd']};
@@ -235,9 +235,9 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 %% FIT MODEL
 
 
-%params for fitting model using fitmdl
-% modeling depv in fitmdl function
-% fitmdl fits model describing how indv is transformed into depv
+%params for fitting model using mfit
+% modeling depv in mfit function
+% mfit fits model describing how indv is transformed into depv
 
 % opt.fitm.varnms.indvpre.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
@@ -245,8 +245,8 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
 % two-dimensional input, the first dimension being ball.yawvel, the second being bump.mu
 %the name of the innermost nested field must be a regionex that is listed in opt.fitm.regionpat_fit
-%since roi responses for all regionex are extracted and normalized before fitmdl, responses from all rois, in struct 'resp', are available as input to fitmdl
-%since the bump is computed before fitmdl, fields from structure 'bump' are available as input to fitmdl
+%since roi responses for all regionex are extracted and normalized before mfit, responses from all rois, in struct 'resp', are available as input to mfit
+%since the bump is computed before mfit, fields from structure 'bump' are available as input to mfit
 %subfield not listed, uses all, like wildcard
 
 % to specify independent and dependent variables for model fitting, use opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre

@@ -1,4 +1,4 @@
-function [depv_syn, numsyndepv, ftsyn] = fitmdl_synthesize_depv(pthspre, supp, mdl, depv, indv, doplots, numsyndepv, optimp, plot_syn_against_single_depv, tinds)
+function [depv_syn, numsyndepv, ftsyn] = mfit_synthesize_depv(pthspre, supp, mdl, depv, indv, doplots, numsyndepv, optimp, plot_syn_against_single_depv, tinds)
 
 %if plot_syn_against_single_depv==1 (default), arbitrarily plots synthetic depv against first roi of measured depv
 %if plot_syn_against_single_depv==0, arbitrarily plots synthetic data against first numsyndepv rois of measured depv, if numsyndepv>num depv rois, the final depv roi is repeated 

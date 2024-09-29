@@ -1,4 +1,4 @@
-function fitin = fitmdl_exclude_samples(excludeopts, fitin)
+function fitin = mfit_exclude_samples(excludeopts, fitin)
 
 if strcmp(excludeopts, 'indv_triangle') %triangle threshold on indv
     [histdt, histx] = hist(abs(fitin.vars.indvpre(:)), round(numel(fitin.vars.indvpre)/10));

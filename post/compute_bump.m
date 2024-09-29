@@ -102,7 +102,7 @@ for fi = 1:length(bump_subdomain)
 
         case 'vonmises'
 
-            disp("vonmises bump_method (fit vonmises to each timepoint using fitmdl) not written yet")
+            disp("vonmises bump_method (fit vonmises to each timepoint using mfit) not written yet")
 
     end
 

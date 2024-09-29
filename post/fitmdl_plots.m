@@ -1,8 +1,8 @@
 
-function fitmdl_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
+function mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
 
 
-"EVERYTHING IN fitmdl_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
+"EVERYTHING IN mfit_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as figsidelength does not exceed
@@ -109,7 +109,7 @@ for ei = 1:numel(enm)
     vnm = fieldnames(fitin.fits.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
-        plotvars.(enm{ei}).(vnm{vi}) = fitmdl_plots_prepvars(indv, depv, fitin, opts.plt, roidat, ...
+        plotvars.(enm{ei}).(vnm{vi}) = mfit_plots_prepvars(indv, depv, fitin, opts.plt, roidat, ...
             fitin.fits.(enm{ei}).epochinds, fitin.fits.(enm{ei}).(vnm{vi}), ...
             opts.mdlname, opts.normalize_depv, enm{ei}, pth_fitdata_prefix);
     end
@@ -140,9 +140,9 @@ for ei = 1:numel(enm)
         for fi = pltstr
             switch fi{1}
                 case 'sum'
-                    fitmdl_plots_summary(fitin, opts, roidat, stackmnt)
+                    mfit_plots_summary(fitin, opts, roidat, stackmnt)
                 case 'ts'
-                    fitmdl_plots_timeseries(indv, depv, fitin.opop.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.opop.supp, pth_fitdata_prefix, epochinds_str_all)
+                    mfit_plots_timeseries(indv, depv, fitin.opop.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.opop.supp, pth_fitdata_prefix, epochinds_str_all)
                 case 'fov'
                     plots_hsvfov(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roivec, hsv_filename);
                 case 'mdl'

@@ -30,7 +30,7 @@ ui.mn.do_daq = 1; %process daq data
 ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_lfit = 0;
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
-ui.mn.do_fit = 0; %model fitting (ui.fitm below)
+ui.mn.do_fit = 1; %model fitting (ui.fitm below)
 ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 
 
@@ -195,8 +195,8 @@ ui.lc.chanuse = 1;
 %at the inner cell level, there can be multiple field specifiers (fieldspec)
 %each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'
 %depv and indv are composed of all timeseries matching fieldspecs
-%if multiple matches, depv is concatenated along second dim (time), since currently fitmdl fits single timeseries
-%if multiple matches, indv is concatenated along first dim (not time), since fitmdl can accept multidimensional independent variable
+%if multiple matches, depv is concatenated along second dim (time), since currently mfit fits single timeseries
+%if multiple matches, indv is concatenated along first dim (not time), since mfit can accept multidimensional independent variable
 % ui.pf.bump.fitm(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
@@ -212,8 +212,8 @@ ui.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each clust
 ui.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 ui.pf.bump.doplots = 0;
 
-%params for finding preferred heading using fitmdl
-ui.pf.bump.fitm(1).varnms.depvpre{1} = {['resp.eb.mo*.in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty ui.pf.bump.fitm(1).depv{1} = {};
+%params for finding preferred heading using mfit
+ui.pf.bump.fitm(1).varnms.depvpre{1} = {['resp.eb.mo*.*rsc000100_*chn1']}; %will skip bump if empty ui.pf.bump.fitm(1).depv{1} = {};
 ui.pf.bump.fitm(1).varnms.indvpre{1} = {['vis.yaw']};
 
 ui.pf.bump.fitm(1).normalize_indv = 'none';
@@ -231,7 +231,7 @@ ui.pf.bump.fitm = default_fit_params(ui.pf.bump.fitm);
 
 %% FIT MODEL
 
-% params for modeling depv as function of indv in fitmdl function
+% params for modeling depv as function of indv in mfit function
 
 % to specify independent and dependent variables for model fitting, use ui.fitm.varnms.indvpre and ui.fitm.varnms.depvpre
 % format ui.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
@@ -267,7 +267,7 @@ ui.pf.bump.fitm = default_fit_params(ui.pf.bump.fitm);
 % ui.fitm(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about ui.fitm.mdlname syntax
 % ui.fitm(1).plt.doplots = 100;
 
-ui.fitm(1).varnms.depvpre{1} = {['resp.fullfov.mo*.in_rawf_pc_f_cl_f_w_*_chn1']}; %if empty, do will be set to false
+ui.fitm(1).varnms.depvpre{1} = {['resp.fb409666.mo*.*_chn1']}; %if empty, do will be set to false
 ui.fitm(1).varnms.indvpre{1} = {['ball.forvel']};
 ui.fitm(1).epochinds = {[1]};
 ui.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
@@ -287,7 +287,7 @@ ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.fb4096.mo*.in_rawf_pc_f_cl_f_w_*_chn1.ind1']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.fb409666.mo*.*chn1.ind1']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};

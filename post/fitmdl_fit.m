@@ -1,4 +1,4 @@
-function [ft, depvp, mse_train, mse_val] = fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
+function [ft, depvp, mse_train, mse_val] = mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
     validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, depvmin, depvmax, pth_fitdata)
 
 
@@ -45,11 +45,11 @@ if startsWith(mdlname, 'svd')
     depvp(sampinds_indvdepv_train) = indv*ft;
     mse_train = mse(depv, depvp(sampinds_indvdepv_train));
 else
-    [depvp(sampinds_indvdepv_train), mse_train] = fitmdl_predict(ft, indv, depv, opop.mdl, supp);
+    [depvp(sampinds_indvdepv_train), mse_train] = mfit_predict(ft, indv, depv, opop.mdl, supp);
 end
 
 if validation_fold %if doing validation
-    [depvp(sampinds_indvdepv_val), mse_val] = fitmdl_predict(ft, indv_val, depv_val, opop.mdl, supp);
+    [depvp(sampinds_indvdepv_val), mse_val] = mfit_predict(ft, indv_val, depv_val, opop.mdl, supp);
 else
     mse_val = nan;
 end

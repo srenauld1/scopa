@@ -1,4 +1,4 @@
-function fitmdl_plots_summary(fitin, opts, roidat, stackmean)
+function mfit_plots_summary(fitin, opts, roidat, stackmean)
 
 plt = opts.plt;
 supp = fitin.opop.supp;

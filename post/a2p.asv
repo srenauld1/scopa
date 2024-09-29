@@ -248,7 +248,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                 ui.fitm.mdlname = 'fnet_A_s';
                 ui.fitm.mdlname = 'fnet_d';
                 ui.fitm.validation_fold = 0; ui.fitm.use_saved_model = 0; ui.fitm.mdl_length_sec = 0.4; ui.fitm.num_synthetic_depv = 0; ui.fitm.epochinds = {[1]};
-                fitin = fitmdl(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
+                fitin = mfit(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
 
             end
         end

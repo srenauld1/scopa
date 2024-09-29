@@ -1,4 +1,4 @@
-function fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix)
+function fitin = mfit_epochs(fitin, opts, epi, pth_fitdata_prefix)
 
 epochinds = opts.epochinds{epi};
 validation_fold = opts.validation_fold;
@@ -26,7 +26,7 @@ end
 
 %% define indexing variables for taking subset of indv and depv (by epoch, and by train/validation set )
 
-fitin.fits.(epochinds_str) = fitmdl_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds);
+fitin.fits.(epochinds_str) = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds);
 
 %% loop over train/validation sets, for k-fold cross-validation
 
@@ -63,7 +63,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         dofit = 1; %always do fit if synthesizing data anew
         doplots_syn = 0; %plot synthetic vs real data
         plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
-        [depv_allrois, num_dim_depvpre, ftsyn] = fitmdl_synthesize_depv(supp.pthspre, supp, opop.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, opop.optimp, plot_syn_against_single_depv);
+        [depv_allrois, num_dim_depvpre, ftsyn] = mfit_synthesize_depv(supp.pthspre, supp, opop.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, opop.optimp, plot_syn_against_single_depv);
     end
 
     %% fit model
@@ -89,14 +89,14 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                 depv_val = double(depv_allrois_val(:, ri));
                 
                 [ ft(ri,:), depvp(:,ri), gof(ri), gof_val(ri) ] = ...
-                    fitmdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, ...
+                    mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, ...
                     mdlname, validation_fold, indv_val, depv_val, sampinds_indvdepv_train, ...
                     sampinds_indvdepv_val, num_samp_total, supp, opop, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
                 %% 
                 
                 tinds = 300:700;
-                fitmdl_plot_single_mdl(ri, opop.mdl, supp, depv, depvp(:, ri), ft(ri,:), indv, ftsyn, opts.normalize_depv, tinds) %this only works within for not parfor
+                mfit_plot_single_mdl(ri, opop.mdl, supp, depv, depvp(:, ri), ft(ri,:), indv, ftsyn, opts.normalize_depv, tinds) %this only works within for not parfor
             %% 
             
             end

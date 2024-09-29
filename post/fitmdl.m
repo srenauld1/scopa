@@ -1,10 +1,10 @@
-function fitin = fitmdl(stack, fitin, roidat, md, opts, pixfitflag, pltstr)
+function fitin = mfit(stack, fitin, roidat, md, opts, pixfitflag, pltstr)
 
-% for docs, see file fitmdl_notes.m
+% for docs, see file mfit_notes.m
 
 % indvpre and depvpre are independent and dependent variables before processing 
 % the unintuitive thing that needs to be changed is that depvpre first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim), 
-% while for indvpre, the whole array input to fitmdl is the independent variable . . . need to check if there's a goodreason for this or whether choose_timeseries should output vector depvpre (and input them to this function fitmdl)  
+% while for indvpre, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether choose_timeseries should output vector depvpre (and input them to this function mfit)  
 
 %% check some inputs and prepare save path
 
@@ -35,7 +35,7 @@ end
 pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.mdlname '_' num2str(opts.mdl_length_sec) '_' num2str(opts.mdl_lag_sec) pixfitflagstr];
 pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 
-%% create pixelwise fit for background of hsv plot (if requested) by calling fitmdl here, with pixfitflag==1
+%% create pixelwise fit for background of hsv plot (if requested) by calling mfit here, with pixfitflag==1
 
 if strcmp(opts.plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion
     pixfitflag = 1;
@@ -45,25 +45,25 @@ if strcmp(opts.plt.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfit
     fitin2.vars.depvpre = depv2;
     roidat2 = roidat;
     roidat2.roipx = roipixind2;
-    fitmdl(stack, fitin2, roidat2, md, opts, pixfitflag); %call fitmdl on pixels if you want a pixel fit background behind your roi fit background
+    mfit(stack, fitin2, roidat2, md, opts, pixfitflag); %call mfit on pixels if you want a pixel fit background behind your roi fit background
     pixfitflag = 0; %reset to zero
 end
 
 %% prepare indv and depv
 
-fitin = fitmdl_prepvars(fitin, opts, md, pth_fitdata_prefix);
+fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix);
 
 %% set up model fitting and plotting options
 
-fitin.opop = fitmdl_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvpre, opts.mdlname, opts.chopt, md.imper, fitin.stats, pth_fitdata_prefix);
+fitin.opop = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvpre, opts.mdlname, opts.chopt, md.imper, fitin.stats, pth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 
 for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-    fitin = fitmdl_epochs(fitin, opts, epi, pth_fitdata_prefix);
+    fitin = mfit_epochs(fitin, opts, epi, pth_fitdata_prefix);
 end
 
 if ~isempty(pltstr)
-    fitmdl_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
+    mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
 end
 

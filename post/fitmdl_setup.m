@@ -1,5 +1,5 @@
 
-function opop = fitmdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvpre, mdlname, chopt, imper, inputvar_stats, pth_fitdata_prefix)
+function opop = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvpre, mdlname, chopt, imper, inputvar_stats, pth_fitdata_prefix)
 
 
 spl = strsplit(mdlname, '_');
@@ -25,11 +25,11 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [opop.mdl, opop.optimp, supp] = fitmdl_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvpre, inputvar_stats);
+    [opop.mdl, opop.optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvpre, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 
-    opop = fitmdl_setup_tm(mdlname);
+    opop = mfit_setup_tm(mdlname);
 
 end
 

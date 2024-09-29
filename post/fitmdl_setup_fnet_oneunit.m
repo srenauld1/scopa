@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    fitmdl_setup_fnet_oneunit(fnetspec, num_samp_mdl, imper, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, imper, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
 
 
 
@@ -153,7 +153,7 @@ for fi = 1:num_fun
         ubnd_tmp = [inf,inf,inf,inf];
         x0_tmp = [0,0,0,0];
     elseif startsWith(fnet_onefun, 'h')
-        % previous approach ---> fnet = fitmdl_setup_ohe(fnet, fnetspec, fi, num_dim_indvpre, num_samp_mdl, num_unit);
+        % previous approach ---> fnet = mfit_setup_ohe(fnet, fnetspec, fi, num_dim_indvpre, num_samp_mdl, num_unit);
         num_bin_hot = sscanf(fnet_onefun, 'h%d');
         hotcombos = repmat(vec([1:num_bin_hot]), [1 num_dim_in]);
         fnet.funh{fi} = @fun_ohe;

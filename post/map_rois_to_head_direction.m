@@ -7,7 +7,7 @@ numsamp = size(fitin.vars.depvpre, 1);
 numroi = size(fitin.vars.depvpre, 1);
 
 pltstr = {'ts', 'fov'};
-fitin = fitmdl(stack, fitin, roidat, md, fitopt, [], pltstr);
+fitin = mfit(stack, fitin, roidat, md, fitopt, [], pltstr);
 
 fn = fieldnames(fitin.fits);
 if numel(fn)>1

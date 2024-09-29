@@ -159,7 +159,6 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     %% linear fit and hsv map (work in progress, but it does work)
 
-
     if ui.mn.do_lfit
 
         ui.lc.chanuse = 2;
@@ -246,7 +245,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                 [fitin, dochoose] = choose_timeseries(ui.fitm(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.fitm, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
                 stackcrop = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
-                fitin = fitmdl(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
+                fitin = mfit(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.fitm(si)); %fit model using any available timeseries
 
             end
         end
