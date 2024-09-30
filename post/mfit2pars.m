@@ -1,4 +1,4 @@
-function parsout = default_fit_params(parsin)
+function parsout = mfit2pars(parsin)
 
 do = 1;
 

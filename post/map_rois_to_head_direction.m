@@ -3,8 +3,8 @@ function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
     roidat, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots)
 
 
-numsamp = size(fitin.vars.depvpre, 1);
-numroi = size(fitin.vars.depvpre, 1);
+numsamp = size(fitin.vars.depvp, 1);
+numroi = size(fitin.vars.depvp, 1);
 
 pltstr = {'ts', 'fov'};
 fitin = mfit(stack, fitin, roidat, md, fitopt, [], pltstr);
@@ -13,11 +13,11 @@ fn = fieldnames(fitin.fits);
 if numel(fn)>1
     error("you've requested multiple fits to different epochinds, but map_rois_to_head_direction operates on a single fit; decide which epochinds set you want to use to compute bump")
 end
-prefang = fitin.fits.(fn{1}).indvpref_mean_allval(:)'; %row vector of preferred angle;
+prefang = fitin.fits.(fn{1}).indvpf_mean_allval(:)'; %row vector of preferred angle;
 
 
 [prefang_sorted,sinds] = sort(prefang);
-rawsort = fitin.vars.depvpre(sinds,:);
+rawsort = fitin.vars.depvp(sinds,:);
 
 %% resample functional domain
 
@@ -30,14 +30,14 @@ if numcluster_for_bump_domain_resample
     end
 
     angrange = 2*pi;
-    [resptmp, domain] = resample_compass(fitin.vars.depvpre, prefang, angrange, halfcent*2, resample_smoothfac, doplots);
+    [resptmp, domain] = resample_compass(fitin.vars.depvp, prefang, angrange, halfcent*2, resample_smoothfac, doplots);
     resptmp = rescale(resptmp);
 
     if strcmp(fitin.regionex, 'pb')
 
         % %4pi only works if you shift prefang from one half of pb up by pi, which i have not done yet
         % angrange4pi = 4*pi;
-        % [resptmp4pi, domain4pi] = resample_compass(fitin.vars.depvpre, prefang, angrange4pi, halfcent*2, resample_smoothfac, doplots);
+        % [resptmp4pi, domain4pi] = resample_compass(fitin.vars.depvp, prefang, angrange4pi, halfcent*2, resample_smoothfac, doplots);
         % resptmp4pi = rescale(resptmp4pi);
 
         %resample each half of the compass, then put them together
@@ -46,8 +46,8 @@ if numcluster_for_bump_domain_resample
         rois_right = numroi/2+1:numroi;
         angrange = 2*pi;
 
-        [dfc_left, domain_left] = resample_compass(fitin.vars.depvpre(rois_left,:), prefang(rois_left), angrange, halfcent, resample_smoothfac, doplots);
-        [dfc_right, domain_right] = resample_compass(fitin.vars.depvpre(rois_right,:), prefang(rois_right), angrange, halfcent, resample_smoothfac, doplots);
+        [dfc_left, domain_left] = resample_compass(fitin.vars.depvp(rois_left,:), prefang(rois_left), angrange, halfcent, resample_smoothfac, doplots);
+        [dfc_right, domain_right] = resample_compass(fitin.vars.depvp(rois_right,:), prefang(rois_right), angrange, halfcent, resample_smoothfac, doplots);
 
         % dfc_left = []
         % domain_left = []
@@ -129,7 +129,7 @@ if doplots
                 hax.YAxis(2).Color = 'k';
                 hax.YAxis(2).Limits = [0 1];
                 if plotraw
-                    rawrs = rescale(fitin.vars.depvpre);
+                    rawrs = rescale(fitin.vars.depvp);
                     hpl5 = plot(hax, linspace(1, numroi_rs, numroi), rawrs(:,ind), 'color', [0.1 0.7 0.1], 'LineStyle','-');
                 end
                 hold(hax, 'off');

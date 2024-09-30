@@ -3,7 +3,7 @@ function [tsuse, dochoose] = choose_timeseries(varnms, ts, ti, pth_tsuse_nms_pre
 % select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern,
 % output variables, their names, and some info in struct 'tsuse'
 
-timedim = 2; %assume second dim is time 
+timedim = 2; %for now hard code to assume second dim is time 
 force_single_precision = 1;
 must_have_full_var_sets = 0;
 

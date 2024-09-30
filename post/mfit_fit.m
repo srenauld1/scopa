@@ -1,4 +1,4 @@
-function [ft, depvp, gof_train, gof_val] = mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
+function [ft, pred, mse_train, mse_val] = mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
     validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, depvmin, depvmax, pth_fitdata)
 
 
@@ -37,28 +37,28 @@ else
 end
 
 
-%% predict train/val response, compute train/val gof (slot train/val depvp into same timeseries, later can be separated using indices)
+%% predict train/val response, compute train/val gof (slot train/val pred into same timeseries, later can be separated using indices)
 
-depvp = zeros(num_samp_total, 1, 'single');
+pred = zeros(num_samp_total, 1, 'single');
 
 if startsWith(mdlname, 'svd')
-    [depvp(sampinds_indvdepv_train) = ft*indv;
-    gof_train = mse(depv, depvp(sampinds_indvdepv_train));
+    pred(sampinds_indvdepv_train) = indv*ft;
+    mse_train = mse(depv, pred(sampinds_indvdepv_train));
 else
-    [depvp(sampinds_indvdepv_train), gof_train] = mfit_predict(ft, indv, depv, opop.mdl, supp);
+    [pred(sampinds_indvdepv_train), mse_train] = mfit_predict(ft, indv, depv, opop.mdl, supp);
 end
 
 if validation_fold %if doing validation
-    [depvp(sampinds_indvdepv_val), gof_val] = mfit_predict(ft, indv_val, depv_val, opop.mdl, supp);
+    [pred(sampinds_indvdepv_val), mse_val] = mfit_predict(ft, indv_val, depv_val, opop.mdl, supp);
 else
-    gof_val = nan;
+    mse_val = nan;
 end
 
 
 %% information criteria for model evaluation
 
 % numsamp = length(depv);
-% mpdiff = depv-depvp;
+% mpdiff = depv-pred;
 % sigma2 = var(mpdiff);
 % logLikelihood = -0.5*numsamp*log(2*pi) - 0.5*numsamp*log(sigma2) - (1/(2*sigma2))*sum((mpdiff).^2);
 % AIC = -2*logLikelihood + 2*supp.num_par_total; % calculate the AIC value

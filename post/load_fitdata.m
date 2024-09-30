@@ -1,4 +1,4 @@
-function [dofit, pth_fitdata, ft, depvp, gof, gof_val, depv_good_inds] = load_fitdata(pth_fitdata_prefix, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
+function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pth_fitdata_prefix, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
 
 if validation_fold==0
     pth_fitdata_pattern = [pth_fitdata_prefix '_' strrep(epochinds_str, '_', ',') '_0_*_fitdata_.mat'];
@@ -15,12 +15,12 @@ pth_fitdata = strrep(pth_fitdata_pattern, '*', timestr);
 
 if use_saved_model && ~isempty(fitdata_saved_files)
     fitdata_saved_files = natsortfiles(fitdata_saved_files);
-    load(fitdata_saved_files(end).name, 'ft', 'depvp', 'gof', 'gof_val', 'depv_good_inds') %load most recent, based on timestamp in filename
+    load(fitdata_saved_files(end).name, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds') %load most recent, based on timestamp in filename
     dofit = 0;
 else
     dofit = 1;
     ft = [];
-    depvp = [];
+    pred = [];
     gof = [];
     gof_val = [];
     depv_good_inds = [];

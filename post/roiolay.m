@@ -1,4 +1,4 @@
-function [imroi, imalpha] = make_roi_overlay(imbg, roipx, opt)
+function [imroi, imalpha] = roiolay(imbg, roipx, opt)
 
 % make overlay for roi set defined by roipx, background is imbg;
 % roipx is cell array of roi pixel linear indices into imbg

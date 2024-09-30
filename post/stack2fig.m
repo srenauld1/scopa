@@ -111,7 +111,7 @@ if ~isempty(opt.ik)
 end
 
 
-clear make_roi_overlay %to clear the persistent variable within
+clear roiolay %to clear the persistent variable within
 
 if strcmp(cmap, 'rgb')
     error("don't pass truecolor stack yet, testing still")
@@ -395,7 +395,7 @@ end
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipx)
-        [imroi, imalpha] = make_roi_overlay(stack, roipx{roiinds(ri)}, col=roi_colors(ri,:), alp=roialpha); %make an overlay for one roi
+        [imroi, imalpha] = roiolay(stack, roipx{roiinds(ri)}, col=roi_colors(ri,:), alp=roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after fdimnum
         framecount = framecount+1;
@@ -417,7 +417,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
 
 end
 
-clear make_roi_overlay %to clear the persistent variable within
+clear roiolay %to clear the persistent variable within
 
 end
 

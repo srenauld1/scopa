@@ -109,7 +109,7 @@ else
 
     [roidat_new, resp] = make_morphological_rois(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
-    hardcodenorm = 'in_rawf_pc_f_cl_f_w_no';
+    hardcodenorm = 'rawf_f_f_n';
     resp = channel_combine_struct(resp);
     resp = resp.(hardcodenorm);
     roipx = roidat_new(hardcodechan).roipx;

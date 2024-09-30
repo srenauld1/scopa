@@ -18,9 +18,9 @@ for fi = 1:numel(fn)
 end
 plt = [];
 
-indv = indv(:,sampinds_indvpreaug);
+indv = indv(:,sampinds_indvpaug);
 indv = indv.';
-depv = depv(roiinds_plot,sampinds_depvpre);
+depv = depv(roiinds_plot,sampinds_depvp);
 
 title_add_each = 'TIMESERIES';
 figext = '.gif';
@@ -60,7 +60,7 @@ htx.String = strrep(tittmp{end}, '_', ' ');
 
 %colormaps
 
-num_indv_to_plot = supp.num_dim_indvpre;
+num_indv_to_plot = supp.num_dim_indvp;
 if num_indv_to_plot>max_num_indv_to_plot
     num_indv_to_plot = max_num_indv_to_plot;
 end
@@ -69,14 +69,14 @@ indv_base_color = [0 0 1];
 cmap_indv = repmat(indv_base_color, [num_indv_to_plot 1]);
 cmap_indv(:,2) = linspace(1, 0, num_indv_to_plot);
 cmap_indv = flip(cmap_indv, 1);
-color_depvp = [1 0 0 depvp_alpha];
+color_pred = [1 0 0 pred_alpha];
 color_depv = [0 0 0 depv_alpha];
 
 %set whether to copy each frame with and without model response
 if max_numfits_to_plot_ts == 0 %num_indv_to_plot==1 && num_indv_to_plot<2
-    toggle_depvp_visibility = 0;
+    toggle_pred_visibility = 0;
 else
-    toggle_depvp_visibility = 1;
+    toggle_pred_visibility = 1;
 end
 
 
@@ -87,12 +87,12 @@ hax = cell(1, num_total_subplots);
 framecount = 0;
 for ri = 1:numroi_plot %for each unit
 
-    for fhi = 1:size(depvprow{ri,1}, 1) + toggle_depvp_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
+    for fhi = 1:size(predrow{ri,1}, 1) + toggle_pred_visibility  %for all fits (should be same for all rows so doing first of each roi with {ri, 1}
 
-        if fhi==size(depvprow{ri,1}, 1)+1 %if there's an extra loop iteration, it's to turn off depvp for one frame, to show indv and depv alone, at the end
-            plot_depvp = 0;
+        if fhi==size(predrow{ri,1}, 1)+1 %if there's an extra loop iteration, it's to turn off pred for one frame, to show indv and depv alone, at the end
+            plot_pred = 0;
         else
-            plot_depvp = 1;
+            plot_pred = 1;
         end
 
         framecount = framecount + 1;
@@ -106,7 +106,7 @@ for ri = 1:numroi_plot %for each unit
                 hold(hax{nsi}, 'on')
                 % yyaxis left
                 hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
-                hpl2{nsi} = plot(hax{nsi}, depvprow{ri,nsi}(fhi, :), 'Color', color_depvp, 'LineStyle', '-');
+                hpl2{nsi} = plot(hax{nsi}, predrow{ri,nsi}(fhi, :), 'Color', color_pred, 'LineStyle', '-');
                 hplp{nsi} = patch(hax{nsi}, shadex{nsi}, shadey{nsi}, shadec{nsi}, 'EdgeColor', 'none', 'FaceAlpha', epoch_patch_face_alpha);
                 if plot_indv
                     % yyaxis right
@@ -149,20 +149,20 @@ for ri = 1:numroi_plot %for each unit
             else %if not on the first frame
 
                 hpl{nsi}.YData = depvrow{nsi}(ri,:);
-                if plot_depvp
-                    hpl2{nsi}.YData =  depvprow{ri,nsi}(fhi, :);
+                if plot_pred
+                    hpl2{nsi}.YData =  predrow{ri,nsi}(fhi, :);
                 end
 
             end
 
 
-            if fhi==size(depvprow{ri,1}, 1) % when showing final model, ylim is min/max all
+            if fhi==size(predrow{ri,1}, 1) % when showing final model, ylim is min/max all
                 hax{nsi}.YAxis(1).Limits = [minis_all maxis_all];
-            elseif fhi>size(depvprow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
+            elseif fhi>size(predrow{ri,1}, 1) % when not showing prediction, ylim is min/max depv (indv, if shown, has been rescaled to depv)
                 hax{nsi}.YAxis(1).Limits = [minis_depv maxis_depv];
-            elseif fhi<size(depvprow{ri,1}, 1) %if showing prediction fit history
+            elseif fhi<size(predrow{ri,1}, 1) %if showing prediction fit history
                 if ylim_track_pred %ylim is min/max fit
-                    hax{nsi}.YAxis(1).Limits = [min(depvprow{ri,nsi}(fhi, :)) max(depvprow{ri,nsi}(fhi, :))];
+                    hax{nsi}.YAxis(1).Limits = [min(predrow{ri,nsi}(fhi, :)) max(predrow{ri,nsi}(fhi, :))];
                 else %ylim is min/max depv
                     hax{nsi}.YAxis(1).Limits = [minis_depv maxis_depv];
                 end
@@ -177,10 +177,10 @@ for ri = 1:numroi_plot %for each unit
             %     hax{nsi}.YAxis(2).Color = [0 0 1];
             % end
 
-            if plot_depvp
-                hpl2{nsi}.Color = color_depvp; %make depvp visible
+            if plot_pred
+                hpl2{nsi}.Color = color_pred; %make pred visible
             else
-                hpl2{nsi}.Color = 'none'; %make depvp invisible
+                hpl2{nsi}.Color = 'none'; %make pred invisible
             end
 
         end
@@ -194,7 +194,7 @@ for ri = 1:numroi_plot %for each unit
             end
         end
         supp.framecount = framecount;
-        if plot_depvp
+        if plot_pred
             [~, hax, binmns] = mdl(histxsave{ri}(fhi,:), indv, supp, hax); %plot the model components
             hax{supp.starting_hax+1:end}.YLim = [0 1];
         end

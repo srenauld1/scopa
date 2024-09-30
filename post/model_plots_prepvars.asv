@@ -3,15 +3,15 @@ function [indv, depv_allrois, roidat, fitdata] = ...
 
 %% organize and normalize model data into hsv map
 
-fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpref, fitdata.depvstd, plt, mdlname, fitin.stats);
+fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpf, fitdata.depvstd, plt, mdlname, fitin.stats);
 
 
 %% select which rois get plotted and how they're sorted
 
 switch plt.sort_method
     case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
-        sortinds = fliplr(1:fitin.num_dim_depvpre);
-        sortinds = 1:fitin.num_dim_depvpre;
+        sortinds = fliplr(1:fitin.num_dim_depvp);
+        sortinds = 1:fitin.num_dim_depvp;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
         [~, sortinds] = sort(roidat.idx_vox2roi,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
@@ -22,18 +22,18 @@ switch plt.sort_method
         sortinds = [sortonetmp; sorttwotmp];
 end
 
-roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvpre
+roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvp, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvp
 
 
 %% read full indv and depv from bin, then subsample
 
 indv = read_mdl_var(fitin.pth_indvaug_bin);
-indv = indv(:, fitdata.sampinds_indvpreaug).'; %columns of indv and depv should be number samples, could change above or just transpose here
+indv = indv(:, fitdata.sampinds_indvpaug).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-depv_allrois = read_mdl_var(fitin.pth_depvpre_bin);
-depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvpre).'; %columns of indv and depv should be number samples, could change above or just transpose here
+depv_allrois = read_mdl_var(fitin.pth_depvp_bin);
+depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvp).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-plotvars.depvp = fitdata.depvp(:, roiinds_plot);
+plotvars.pred = fitdata.pred(:, roiinds_plot);
 plotvars.roipx = roidat.roipx(roiinds_plot);
 
 %% reverse standardization, if it occurred
@@ -44,7 +44,7 @@ end
 
 if normalize_depv
     depv_allrois = fitin.revstandvar_depv(depv_allrois);
-    fitdata.depvp = fitin.revstandvar_depv(fitdata.depvp);
+    fitdata.pred = fitin.revstandvar_depv(fitdata.pred);
 end
 
 
@@ -63,8 +63,8 @@ contseg_per_row = ceil(length(tinds_cont_nan) / numrows_ts); %how many continuou
 indvnan_cont_rescale = rescale(indvnan_cont{epi}, minis_depv, maxis_depv);
 
 numroi_plot = size(depvnan_cont{epi}, 1);
-depvprow = cell(numroi_plot, numrows_ts);
-depvp_hist = cell(1, numroi_plot); %original full history, not split by row
+predrow = cell(numroi_plot, numrows_ts);
+pred_hist = cell(1, numroi_plot); %original full history, not split by row
 histxsave = cell(1, numroi_plot); %original full history, not split by row
 
 shadex = cell(1, numrows_ts);
@@ -107,18 +107,18 @@ if max_numfits_to_plot_ts>0
             end
 
             numfits_to_plot = length(keepinds_histfit_ts);
-            depvp_hist{ri} = zeros(numfits_to_plot, size(indv{epi}, 1), 'single');
+            pred_hist{ri} = zeros(numfits_to_plot, size(indv{epi}, 1), 'single');
             histxsave{ri} = zeros(numfits_to_plot, size(histxtmp, 1));
 
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
-                depvp_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv{epi}, supp);
+                pred_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv{epi}, supp);
                 % if normalize_depv
-                %     depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                %     pred_hist{ri}(hxi,:) = pred_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end
             end
             if normalize_depv
-                depvp_hist{ri} = revstandvar_depv(depvp_hist{ri}.');
+                pred_hist{ri} = revstandvar_depv(pred_hist{ri}.');
             end
 
 
@@ -151,26 +151,26 @@ for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualiz
 
     %subset to get one row, and also add nan to end for symmetry at same time
     depvrow{nsi} = cat(2, depvnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-    depvprow_tmp = cat(2, depvpnan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+    predrow_tmp = cat(2, prednan_cont{epi}(:, tinds_row), nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
     % indvrow{nsi} = cat(1, indvnan_cont{epi}(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
     indvrow{nsi} = cat(1, indvnan_cont_rescale(tinds_row, :), nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
 
     for ri = 1:numroi_plot
         if max_numfits_to_plot_ts>0
-            depvprow{ri,nsi} = nan(size(depvp_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
-            depvprow{ri,nsi}(1:end-1,tinds_row_nonan) = depvp_hist{ri}(:,tinds_cont_row); %history of fits
-            % depvprow{ri,nsi}(end,tinds_row_nonan) = depvp_hist{ri}(end,tinds_cont_row); %best validation fit at end
-            % depvprow{ri,nsi}(end,:) = depvp_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-            depvprow{ri,nsi}(end,:) = depvprow_tmp(ri,:); %best fit at end
+            predrow{ri,nsi} = nan(size(pred_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
+            predrow{ri,nsi}(1:end-1,tinds_row_nonan) = pred_hist{ri}(:,tinds_cont_row); %history of fits
+            % predrow{ri,nsi}(end,tinds_row_nonan) = pred_hist{ri}(end,tinds_cont_row); %best validation fit at end
+            % predrow{ri,nsi}(end,:) = pred_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+            predrow{ri,nsi}(end,:) = predrow_tmp(ri,:); %best fit at end
         else
-            % depvprow{ri,nsi} = depvp_hist{ri}(end,tinds_cont_row); %best validation fit at end
-            % depvprow{ri,nsi} = depvp_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-            depvprow{ri,nsi} = depvprow_tmp(ri,:); %just the best fit
+            % predrow{ri,nsi} = pred_hist{ri}(end,tinds_cont_row); %best validation fit at end
+            % predrow{ri,nsi} = pred_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+            predrow{ri,nsi} = predrow_tmp(ri,:); %just the best fit
         end
     end
 
 end
-depvp_hist = [];
+pred_hist = [];
 
 for ri = 1:numroi_plot
     if max_numfits_to_plot_ts>0
@@ -180,8 +180,8 @@ for ri = 1:numroi_plot
     end
 end
 
-minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  depvprow,  'UniformOutput',  false))); %min pred depv across all epochs
-maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  depvprow,  'UniformOutput',  false))); %max pred depv across all epochs
+minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  predrow,  'UniformOutput',  false))); %min pred depv across all epochs
+maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  predrow,  'UniformOutput',  false))); %max pred depv across all epochs
 % minis_all = min(minis_all, minis_pa);
 % maxis_all = max(maxis_all, maxis_pa);
 

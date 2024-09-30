@@ -1,17 +1,17 @@
-function [r2use, puse] = lfit(stim, resp, opt)
+function [r2use, puse] = lfit_riw(stim, resp, opt)
 
 arguments
     stim
     resp
     opt.t = []
-    opt.it = 1:numel(stim)
-    opt.ir = []
-    opt.plotinds = []
+    opt.it = 1:size(resp,2) %which t indices to show in the zoom timeseries
+    opt.ir = [] %which rois to fit 
+    opt.plotinds = [] %which rois to plot from the fit set 
     opt.corrtype = 'pearson' %'pearson', 'kendall', 'spearman'
     opt.lagsec = linspace(-1, 1, 1e4); %lag in seconds, rounded to nearest sample, duplicates are removed so to lag every sample within a range just use a larger number of lag samples than data samples
-    opt.lagstyle = 'bestall' %zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
-    opt.minpval = 0.05; %
-    opt.stack = [] %yxztc stack for plot
+    opt.lagstyle = 'bestall' %which lags to plot; zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
+    opt.minpval = 0.05; %minimum p value to consider significant; saturation in hsvmap set to 0 if p value>minpval
+    opt.stack = [] %yxztc image stack for plot
     opt.roipx = [] %cell array, length number of rois, each cell has linear indices of each roi
     opt.roiwt = [] %size [total number rois, total number voxels in yxz stack]; each column represents linear index of voxel in yxz stack; each element in row n is true if voxel is present in roi n, 0 otherwise
     opt.roicen = [] %cell array, length number of rois; cell n is yxz centroid for roi n;
@@ -20,7 +20,7 @@ arguments
     opt.yconstant = 0
     opt.plotlagged = 0 %plot the timeseries at the chosen lag
     opt.usesaved = 0
-    opt.chan = 1
+    opt.chanuse = 1
     opt.hsvopt = []
     opt.flypos = []
     opt.pixfit = []
@@ -44,7 +44,7 @@ alignzero = opt.alignzero;
 yconstant = opt.yconstant;
 plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
-chan = opt.chan;
+chanuse = opt.chanuse;
 hsvopt = opt.hsvopt;
 flypos = opt.flypos;
 pixfit = opt.pixfit;
@@ -54,12 +54,15 @@ doplots = opt.doplots;
 gif_visibility = 'on';
 fontmedium = 12;
 axord = 'rowmajor';
-crosshair_width = 3;
+crosshair_width = 2;
 xtralimfac = 0.03;
 numtickx = 4;
 numticky = 2;
 
-assert(isvector(stim))
+stim2 = stim(2,:);
+stim1 = stim(1,:);
+
+assert(isvector(stim1))
 assert(ndims(resp)==2)
 
 if isempty(ir)
@@ -80,7 +83,7 @@ matlab_dimorder_char = 'yxz';
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
 pthdat = pthauto('', suffix=savedatsuffix, usetime=0, usefun=0);
 
-stack = stack(:,:,:,:,chan);
+stack = stack(:,:,:,:,chanuse);
 stackmnt = mean(stack, 4, 'native');
 
 numxpix = size(stackmnt,2);
@@ -93,6 +96,9 @@ if pixfit
     resp = stack;
     clear stack
     resp = reshape(resp, [], size(resp,4));
+    numroi = size(resp,1);
+    ir = 1:numroi;
+
 
     hsvopt.foreground = 'pixels';
     roiwt = [];
@@ -128,13 +134,13 @@ if runfit
         parfor k = 1:numroi
             resptmp = resp(k,:);
             for m = 1:numlag
-                [slope_lagall(k,m), rsq_lagall(k,m), p_lagall(k,m)] = lag_and_linfit(resptmp, stim, lagsamp(m), minpval, corrtype);
+                [slope_lagall(k,m), rsq_lagall(k,m), p_lagall(k,m)] = lag_and_linfit(resptmp, stim1, lagsamp(m), minpval, corrtype);
             end
         end
     else
         for k = 1:numroi
             for m = 1:numlag
-                [slope_lagall(k,m), rsq_lagall(k,m), p_lagall(k,m)] = lag_and_linfit(resp(k,:), stim, lagsamp(m), minpval, corrtype);
+                [slope_lagall(k,m), rsq_lagall(k,m), p_lagall(k,m)] = lag_and_linfit(resp(k,:), stim1, lagsamp(m), minpval, corrtype);
             end
         end
     end
@@ -190,6 +196,8 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
         crosshair = cellfun(@round, roicen, 'UniformOutput', false); %will this take it out of bounds? should not
     end
 
+    hsvopt.ignoresat = 0;
+    hsvopt.ignoreval = 0;
     hsvopt = default_hsv_opts(hsvopt);
     hsvopt = plots_setup_hsv(hsvopt);
 
@@ -205,7 +213,10 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
 
     respstd = std(resp, 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
 
-    r2use(puse>minpval) = min(r2use(:))/2;
+    notsig = puse>minpval;
+    respstd(notsig) = min(respstd(:)); %;nan; %min(respstd(:))/2;
+    r2use(notsig) = min(r2use(:)); %nan %min(r2use(:))/2;
+    suse(notsig) = 0; %nan %min(suse(:))/2;
 
     % [histdt, histx] = hist(respstd(:), 1000);
     % thrbin_tri = triangle_threshold(histdt, 'R', 1);
@@ -214,7 +225,25 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
     % rnk  = rnk/100;
     % vrangenew = [rnk 1];
     % hsvopt.vrange_out_manual = [1-rnk 1];
+     
+    [ss,ssi]=sort(suse);
+    sneg = find(ss<0);
+    ssn = ss(sneg);
+    tmp1=r2use(ssi);
+    tmp2=respstd(ssi);
+    hfg = figure; 
+    subplot(211); hold on; plot(ss, tmp1); plot(ssn, tmp1(sneg)); title('r squared versus slope for each roi (or pixel)')
+    subplot(212); hold on; plot(ss, tmp2); plot(ssn, tmp2(sneg)); title('fluorescence std versus slope for each roi (or pixel)')
+    saveas(hfg, strrep(pthgif, '.gif', '.png'))
+    % 
+    % for k = 1:numel(laguse)
+    %     hfg = figure; hold on;
+    %     plot(r2use(laguse==1));
+    %     yline(mean(r2use(laguse==1)), 'b');
+    %     fig2gif(hfg, k, insertBefore(pthgif, '.gif', 'parsbylag'))
+    % end
 
+    
     hsvmap = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use, valft=respstd);
     imhsv = hsvplt(hsvopt, stackmnt, hsvmap, roipx, roiwt);
 
@@ -237,12 +266,13 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
 
     %%%%%%%%%%% SETUP AXES %%%%%%%%%%%
 
-    subplot_layout = {[2,4], imhsv};
-    margins_subplot = [0.05,0.005];
-    margins_fig = [0.07,0.05];
+    subplot_layout = {[3,4]};
+    margins_subplot = [0.05];
+    margins_fig = [0.07];
     splitdim = 'y';
-    splitfrac = 0.55;
+    splitfrac = 1;
     ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+
 
 
     hfg = figure;
@@ -261,93 +291,58 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
     htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
 
-    sectorind = 2;
-    for j = 1:size(imhsv, 3)
-
-        st.hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        st.hax{j}.InnerPosition(1) = ax(sectorind).(axord).xp(j);
-        st.hax{j}.InnerPosition(2) = ax(sectorind).(axord).yp(j);
-        st.hax{j}.InnerPosition(3) = ax(sectorind).xe(1);
-        st.hax{j}.InnerPosition(4) = ax(sectorind).ye(1);
-        st.hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
-        st.hax{j}.XLim = [1 numxpix];
-        st.hax{j}.YLim = [1 numypix];
-
-        st.hlnx{j} = xline(st.hax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
-        st.hlny{j} = yline(st.hax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
-
-        hold(st.hax{j}, 'on')
-        st.hpl{j} = image(st.hax{j}, 'CData', squeeze(imhsv(:,:,j,:)));
-        axis off
-        axis ij
-        hold(st.hax{j}, 'off')
-
-    end
-
     sectorind = 1; spi = 1; widthfac = 4; heightfac = 1;
-    ts.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    ts.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    ts.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    ts.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
-    hold(ts.hax, 'on');
-    yyaxis left;
-    ts.hpl = plot(ts.hax, t, nanresp);
-    yyaxis right;
-    ts.hpl2 = plot(ts.hax, t, stim);
-    hold(ts.hax, 'off');
-    ts.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts.hax.XAxis] = axismod(ts.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
-    [ts.hax.YAxis(1)] = axismod(ts.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts.hax.YAxis(2)] = axismod(ts.hax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
+    ts1.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts1.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
+    ts1.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
+    ts1.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
+    ts1.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    hold(ts1.hax, 'on');
+    % yyaxis left;
+    ts1.hpl = plot(ts1.hax, t, nanresp);
+    % yyaxis right;
+    % ts1.hpl2 = plot(ts1.hax, t, stim);
+    % hold(ts2.hax, 'off');
+    % ts1.xln = yline(0, Color=[0 0 0], Alpha=0.3);
+    [ts1.hax.XAxis] = axismod(ts1.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+    % [ts1.hax.YAxis(2)] = axismod(ts1.hax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
 
 
-    sectorind = 1; spi = 5; widthfac = 1; heightfac = 1;
-    sc.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    sc.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    sc.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    sc.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    sc.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
-    sc.hpl = scatter(sc.hax, stim, nanresp, 2.5, 'filled');
-    sc.hax.PlotBoxAspectRatio = [1 1 1];
-    [sc.hax.XAxis] = axismod(sc.hax.XAxis, stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
-    [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7); %specify axis(1) otherwise to overwrite entire axis
-
-
-    sectorind = 1; spi = 6; widthfac = 1; heightfac = 1;
-    pt.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    pt.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    pt.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    pt.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    pt.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
-    pt.hpl = patch(pt.hax, nanresp, nanresp, nanresp, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
-    if ~isempty(flypos.x)
-        pt.hpl.XData = [flypos.x(1:end-1) nan]; %need the nan to make patch work
-        pt.hpl.YData = [flypos.y(1:end-1) nan]; %need the nan to make patch work
-        pt.hpl.CData = [1:numel(nanresp)-1 nan]; %need the nan to make patch work
-        pt.hax.PlotBoxAspectRatio = [1 1 1];
-        pt.hax.Box = 'on';
-        [pt.hax.XAxis] = axismod(pt.hax.XAxis, flypos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (6 m square)',  labeltightfac=0.7, noticks=1);
-        [pt.hax.YAxis(1)] = axismod(pt.hax.YAxis(1), flypos.y, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='',  labeltightfac=0.7, noticks=1);
-    end
-
-
-    sectorind = 1; spi = 7; widthfac = 2; heightfac = 1;
+    sectorind = 1; spi = 5; widthfac = 4; heightfac = 1;
     ts2.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
     ts2.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
     ts2.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
     ts2.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
     ts2.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
     hold(ts2.hax, 'on');
-    yyaxis left;
-    ts2.hpl = plot(ts2.hax, tsub, nanresp(it));
-    yyaxis right;
-    ts2.hpl2 = plot(ts2.hax, tsub, stim(it));
-    hold(ts2.hax, 'off');
+    % yyaxis left;
+    ts2.hpl = plot(ts2.hax, t, stim1, color=[0.8500    0.3250    0.0980]);
+    % yyaxis right;
+    % ts2.hpl2 = plot(ts2.hax, t, stim);
+    % hold(ts2.hax, 'off');
     ts2.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts2.hax.XAxis] = axismod(ts2.hax.XAxis, tsub, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0);
-    [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts2.hax.YAxis(2)] = axismod(ts2.hax.YAxis(2), stim(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
+    [ts2.hax.XAxis] = axismod(ts2.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
+    [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
+
+
+    sectorind = 1; spi = 9; widthfac = 4; heightfac = 1;
+    ts3.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts3.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
+    ts3.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
+    ts3.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
+    ts3.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    hold(ts3.hax, 'on');
+    % yyaxis left;
+    ts3.hpl = plot(ts3.hax, t, stim2, color=[0.9290    0.6940    0.1250]);
+    % yyaxis right;
+    % ts2.hpl2 = plot(ts2.hax, t, stim);
+    % hold(ts2.hax, 'off');
+    ts3.xln = yline(0, Color=[0 0 0], Alpha=0.3);
+    [ts3.hax.XAxis] = axismod(ts3.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
+    [ts3.hax.YAxis(1)] = axismod(ts3.hax.YAxis(1), stim2, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'yaw vel.'; '(mm/s)'},  labeltightfac=0, labcol=[0.9290    0.6940    0.1250]);
 
 
     %%%%%%%%%%% PLOT %%%%%%%%%%%
@@ -356,48 +351,36 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
         k = sinds(k2);
         if ismember(k2, plotinds)
 
-            rind = ir(k);
+            % rind = ir(k);
+            rind = 1;
 
-            for j = 1:size(imhsv, 3)
-                if j==crosshair{k}(3)
-                    st.hlny{j}.Value = crosshair{k}(1);
-                    st.hlnx{j}.Value = crosshair{k}(2);
-                    st.hlny{j}.LineStyle = '-';
-                    st.hlnx{j}.LineStyle = '-';
-                else
-                    st.hlny{j}.LineStyle = 'none';
-                    st.hlnx{j}.LineStyle = 'none';
-                end
-            end
 
             if plotlagged
-                [resplag, stimlag] = lagvars(resp(k,:), stim, lagsamp_use(k));
+                [resplag, stimlag] = lagvars(resp(k,:), stim1, lagsamp_use(k));
                 nanresp(:) = nan;
                 nanstim(:) = nan;
                 nanresp(1:numel(resplag)) = resplag;
                 nanstim(1:numel(stimlag)) = stimlag;
                 sc.hpl.XData = nanstim;
                 sc.hpl.YData = nanresp;
-                ts.hpl.YData = nanresp;
-                ts.hpl2.YData = nanstim;
-                ts2.hpl.YData = nanresp(it);
-                ts2.hpl2.YData = nanstim(it);
+                ts2.hpl.YData = nanresp;
+                ts2.hpl2.YData = nanstim;
+                ts4.hpl.YData = nanresp(it);
+                ts4.hpl2.YData = nanstim(it);
             else
                 sc.hpl.YData = resp(k,:);
-                ts.hpl.YData = resp(k,:);
-                ts2.hpl.YData = resp(k,it);
+                ts1.hpl.YData = resp(k,:);
+                ts4.hpl.YData = resp(k,it);
             end
 
             if ~yconstant
-                [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
-                [ts.hax.YAxis(1)] = axismod(ts.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
-                [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(k,it), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
+                % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
+                [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
             end
 
 
-            htx.String = {['rec: ' fldr_title]; ['roi: ' num2str(rind) ', lag (sec): ' num2str(lagsec_actual_use(k)) ', slope: ' num2str(suse(k)) ', r-sq: ' num2str(r2use(k)) ', p: ' num2str(puse(k)), ', std: ' num2str(respstd(k))]};
-
-            fig2gif(hfg, k2, pthgif)
+            saveas(gca, [pthgif(1:end-3) '_' num2str(k2) '_.svg'], 'svg')
+            % fig2gif(hfg, k2, pthgif)
 
         end
     end
@@ -422,7 +405,13 @@ else
     [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
     lags_sec_pos = lags_sec(lags_sec>=0);
     [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
-    lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    if isempty(lags_samp_neg)
+        lagsamp = lags_samp_pos;
+    elseif isempty(lags_samp_pos)
+        lagsamp = lags_samp_neg;
+    else
+        lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    end
     lagsamp = unique(lagsamp);
     lagsec_actual = [vec(-ticumdiff(abs(lagsamp(lagsamp<0))+1)); vec(ticumdiff(lagsamp(lagsamp>=0)+1))];
     lagsec_actual = unique(lagsec_actual);
@@ -479,7 +468,6 @@ else %negative lag first variable precedes second (first var shifted right)
 end
 end
 
-
 function [hax] = axismod(hax, dat, opt)
 arguments
     hax %preexisting axis object
@@ -491,7 +479,7 @@ arguments
     opt.labeltightfac = 0
     opt.noticks = 0
     opt.labcol = [0 0 0]
-    opt.roundprec = 0
+    opt.roundprec = 1
 end
 
 

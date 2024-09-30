@@ -30,7 +30,7 @@ function [roidat, resp] = make_morphological_rois(stack, opts_mroi, ...
 % if creating multiple morphological rois, the 3d mask is refined using
 % a high-z-res version of the data, and the mask is mapped back to original resolution
 % find the morphological roi centroids (roicen) of the final 3d mask,
-% and all voxels that are nearest each centroid (roivec)
+% and all voxels that are nearest each centroid (roiwt)
 % if you draw multiple rois in roimaskman, a different mask_mroi_all_simple will be
 % made for each, but the 3d refining code cannot accommodate
 % multiple drawn rois currently, so do not do this;
@@ -39,7 +39,7 @@ function [roidat, resp] = make_morphological_rois(stack, opts_mroi, ...
 % again with the same inputs, but draw a different single 2d roi,
 % and assign the outputs of this function a different name (outside this function)
 
-%roivec can be single when it's weighted, boolean otherwise
+%roiwt can be single when it's weighted, boolean otherwise
 
 %% params
 
@@ -134,23 +134,23 @@ for c = 1:numchan
                         'DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
                         'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
                 end
-                roivec = zeros(num_mroi, numel(sum(roimaskman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+                roiwt = zeros(num_mroi, numel(sum(roimaskman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
                 for mi = 1:num_mroi
                     tmp = roimaskman(:,:,:,mi);
                     [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-                    roivec(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+                    roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
                 end
                 roicen = find_roi_centroids(roimaskman);
                 sprintf("WARNING,\n" + ...
                     "if sort_roi_method is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
                     "since determining the long axis of extraction currently requires automated morph roi extraction")
             else
-                [roivec, roicen, num_mroi] = ...
+                [roiwt, roicen, num_mroi] = ...
                     make_morphological_rois_automated(stackmnt_tmp, roimaskman, num_mroi_auto, ...
                     xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
                     regionex, hsvopt, do_other_plots, autoopts);
             end
-            roidat = makeroidat(stack, roivec, roicen, num_mroi);
+            roidat = makeroidat(stack, roiwt, roicen, num_mroi);
             if ~maskinput
                 save(pth_mroidat, 'roidat', '-mat', '-v7.3');
             end
@@ -172,7 +172,7 @@ try
 catch
     resp = [];
     for c = 1:numchan
-        resp = extract_roi_responses(stack, roivec, pth_mroi_prefix, normopts, imper, resp=resp, dowav=dowav, ti=ti);
+        resp = extract_roi_responses(stack, roiwt, pth_mroi_prefix, normopts, imper, resp=resp, dowav=dowav, ti=ti);
         if ~maskinput && c==numchan
             save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
         end
@@ -193,7 +193,7 @@ if hsvopt.do %roi hsv map
     hsvmap = plots_compute_hsv(hsvopt, hueft=hue_feature);
     hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
     plotchannel = 1;
-    hsvimg_as_rgb = plots_hsvfov(hsvopt, stackmnt(:,:,:,:,plotchannel), hsvmap, roipx, roivec, hsv_filename);
+    hsvimg_as_rgb = hsvplt(hsvopt, stackmnt(:,:,:,:,plotchannel), hsvmap, roipx, roiwt, hsv_filename);
 end
 
 if olayopt.do %roi overlay
@@ -207,7 +207,7 @@ end
 if do_other_plots %all these are at imaging resolution
 
     %colormap for each roi
-    cmap = distinguishable_colors(size(roivec,1));
+    cmap = distinguishable_colors(size(roiwt,1));
     double_colormap = 0;
     if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
         num_region_periods = 2; %for example, two halves of pb

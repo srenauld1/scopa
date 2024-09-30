@@ -4,7 +4,7 @@ plt = opts.plt;
 supp = fitin.opop.supp;
 
 mdl = fitin.opop.mdl;
-num_dim_depvpre = fitin.num_dim_depvpre;
+num_dim_depvp = fitin.num_dim_depvp;
 
 normalize_depv = opts.normalize_depv;
 epochinds = opts.epochinds;
@@ -20,15 +20,15 @@ timeseries_numsegments = plt.timeseries_numsegments;
 ignorehue = plt.ignorehue;
 ignoresat = plt.ignoresat;
 ignoreval = plt.ignoreval;
-depvplot_norm = plt.depvplot_norm;
+predlot_norm = plt.predlot_norm;
 plot_class = plt.plot_class;
 
 %% params
 
 hackindvdim = 1; %haven't yet expanded this plotting function for multidimensional indvuli, for now just choosing one dim
 
-depvp_linewidth = 0.5;
-depvp_transparency = 1;
+pred_linewidth = 0.5;
+pred_transparency = 1;
 numsampnan = 10;
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 mkrsz = 5;
@@ -242,9 +242,9 @@ for framecount = 1:totalplotframes
         htx.String = [figure_title];
     end
 
-    if strcmp(depvplot_norm, 'each') %scale for each roi scanges, if depvplot_norm is 'each' rather than 'all'
-        minis = min([depv{epi}( ri, :) depvp{epi}( ri, :)]);
-        maxis = max([depv{epi}( ri, :) depvp{epi}( ri, :)]);
+    if strcmp(predlot_norm, 'each') %scale for each roi scanges, if predlot_norm is 'each' rather than 'all'
+        minis = min([depv{epi}( ri, :) pred{epi}( ri, :)]);
+        maxis = max([depv{epi}( ri, :) pred{epi}( ri, :)]);
     end
 
 
@@ -322,7 +322,7 @@ for framecount = 1:totalplotframes
                 hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot*2, hbot] );
                 hold(hab{sib}, 'on');
                 hp1b{sib} = plot(hab{sib}, depvnan_seg{epi}( ri, :), 'color', [0 0 1]);
-                hp2b{sib} = plot(hab{sib}, depvpnan_seg{epi}( ri, :), 'color', [1 0 0]);
+                hp2b{sib} = plot(hab{sib}, prednan_seg{epi}( ri, :), 'color', [1 0 0]);
                 yline(hab{sib}, 0)
 
                 xlm = hab{sib}.XLim;
@@ -339,7 +339,7 @@ for framecount = 1:totalplotframes
                 xlabel('time (sec)', 'fontsize', fontsmall)
                 ylabel('dff', 'fontsize', fontsmall)
                 if rib==1
-                    title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
+                    title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (pred) tuning for raw indv
                 end
                 if rib~=numrowsbottom
                     hab{sib}.XAxis.Visible='off';
@@ -350,7 +350,7 @@ for framecount = 1:totalplotframes
             else
 
                 hp1b{sib}.YData = depvnan_seg{epi}( ri, :);
-                hp2b{sib}.YData = depvpnan_seg{epi}( ri, :);
+                hp2b{sib}.YData = prednan_seg{epi}( ri, :);
 
                 hab{sib}.YLim = [minis maxis];
                 ylm = hab{sib}.YLim;
@@ -366,7 +366,7 @@ for framecount = 1:totalplotframes
 
                 hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                 hold(hab{sib}, 'on');
-                hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), depvp{epi}( ri, :), 5, 'filled');
+                hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), pred{epi}( ri, :), 5, 'filled');
                 hp2b{sib} = plot(depv{epi}( ri,  :), depv{epi}( ri,  :), 'k');
                 if strcmp(hsv_background, 'rois') %0 is meaningful if passing dff, for now only data in rois method uses dff
                     xline(hab{sib}, 0)
@@ -389,7 +389,7 @@ for framecount = 1:totalplotframes
                 xlabel('depv', 'fontsize', fontsmall)
                 %ylabel('pred')
                 if rib==1
-                    title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
+                    title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (pred) tuning for raw indv
                 end
                 if rib~=numrowsbottom
                     hab{sib}.XAxis.Visible='off';
@@ -400,7 +400,7 @@ for framecount = 1:totalplotframes
             else
 
                 hp1b{sib}.XData = depv{epi}(ri, :);
-                hp1b{sib}.YData = depvp{epi}(ri, :);
+                hp1b{sib}.YData = pred{epi}(ri, :);
                 hp2b{sib}.XData = depv{epi}(ri, :);
                 hp2b{sib}.YData = depv{epi}(ri, :);
 
@@ -424,7 +424,7 @@ for framecount = 1:totalplotframes
                 hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                 hold(hab{sib}, 'on');
                 hp1b{sib} = scatter(hab{sib}, indv{epi}(:, hackindvdim), depv{epi}(ri, :), 5, 'filled');
-                hp2b{sib} = plot(hab{sib}, indvsort{epi}, depvp_sort{epi}(ri, :), 'LineWidth', depvp_linewidth, 'Color', [1, 0, 0, depvp_transparency]);
+                hp2b{sib} = plot(hab{sib}, indvsort{epi}, pred_sort{epi}(ri, :), 'LineWidth', pred_linewidth, 'Color', [1, 0, 0, pred_transparency]);
                 yline(hab{sib}, 0)
 
                 hab{sib}.YLim = [minis maxis];
@@ -447,7 +447,7 @@ for framecount = 1:totalplotframes
                 hp1b{sib}.XData = indv{epi}(:,hackindvdim);
                 hp1b{sib}.YData = depv{epi}(ri, :);
                 hp2b{sib}.XData = indvsort{epi};
-                hp2b{sib}.YData = depvp_sort{epi}(ri, :);
+                hp2b{sib}.YData = pred_sort{epi}(ri, :);
 
                 hab{sib}.YLim = [minis maxis];
                 ylm = hab{sib}.YLim;

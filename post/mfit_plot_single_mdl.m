@@ -1,4 +1,4 @@
-function mfit_plot_single_mdl(ri, mdl, supp, depv, depvp, ft, indv, ftsyn, normalize_depv, tinds)
+function mfit_plot_single_mdl(ri, mdl, supp, depv, pred, ft, indv, ftsyn, normalize_depv, tinds)
 
 if exist('ftsyn', 'var') && ~isempty(ftsyn)
     ftsyn = ftsyn(ri,:);
@@ -46,7 +46,7 @@ end
 hp1{1}.XData = 1:numel(depv);
 hp1{1}.YData = depv;
 hp2{1}.XData = 1:numel(depv);
-hp2{1}.YData = depvp;
+hp2{1}.YData = pred;
 
 % if exist('indv', 'var') && ~isempty(indv)
 %     if size(indv, 2)>3
@@ -66,7 +66,7 @@ hp2{1}.YData = depvp;
 hp1{2}.XData = 1:numel(tinds);
 hp1{2}.YData = depv(tinds);
 hp2{2}.XData = 1:numel(tinds);
-hp2{2}.YData = depvp(tinds);
+hp2{2}.YData = pred(tinds);
 
 if exist('indv', 'var') && ~isempty(indv)
     if size(indv, 2)>3

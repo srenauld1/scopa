@@ -1,19 +1,19 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, imper, num_dim_indvpre, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, imper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
 
 
 
 %% some useful stats on input variables
 
-depvpre_extreme_alldim = inputvar_stats.depvpre_extreme_alldim;
-depvpre_mean_alldim = inputvar_stats.depvpre_mean_alldim;
-depvpre_min_alldim = inputvar_stats.depvpre_min_alldim;
-depvpre_max_alldim = inputvar_stats.depvpre_max_alldim;
-indvpre_extreme_alldim = inputvar_stats.indvpre_extreme_alldim;
-indvpre_mean_alldim = inputvar_stats.indvpre_mean_alldim;
-indvpre_min_alldim = inputvar_stats.indvpre_min_alldim;
-indvpre_max_alldim = inputvar_stats.indvpre_max_alldim;
+depvp_extreme_alldim = inputvar_stats.depvp_extreme_alldim;
+depvp_mean_alldim = inputvar_stats.depvp_mean_alldim;
+depvp_min_alldim = inputvar_stats.depvp_min_alldim;
+depvp_max_alldim = inputvar_stats.depvp_max_alldim;
+indvp_extreme_alldim = inputvar_stats.indvp_extreme_alldim;
+indvp_mean_alldim = inputvar_stats.indvp_mean_alldim;
+indvp_min_alldim = inputvar_stats.indvp_min_alldim;
+indvp_max_alldim = inputvar_stats.indvp_max_alldim;
 
 %% define time domain for linear filters (constants in the nested functions)
 
@@ -54,22 +54,22 @@ freeformflag = any(strcmp(table2cell(fnet_funlist), 'f'));
 
 con_filt_tau1 = [imper/2, 0.3, imper]; %filter tau, in units of seconds, don't tranform into units of samples since filter is implemented in time not samples
 con_filt_tshift = [0, 0.75, 0.01];   %filter shift (ie lag, delay, rightward shift of filter) in seconds, implemented with spline interp
-con_filt_bias = [-depvpre_extreme_alldim, depvpre_extreme_alldim, 0.01]; %"y intercept", "bias", added to linear filter output
+con_filt_bias = [-depvp_extreme_alldim, depvp_extreme_alldim, 0.01]; %"y intercept", "bias", added to linear filter output
 con_filt_norm = [-2, 2, 1]; %L1 norm of whole filter (con_filt_tau1 filter minus con_tau2 filter, assuming latter is not norm zero )
-con_filt_free_weights = [-depvpre_extreme_alldim*2, depvpre_extreme_alldim*2, depvpre_mean_alldim];
+con_filt_free_weights = [-depvp_extreme_alldim*2, depvp_extreme_alldim*2, depvp_mean_alldim];
 
 % constraints for old 'd' filter function, 'linear_filter_1d_deprecated', more flexible but not as well behaved; now trying derivative of monophasic instead
 % con_tau2 = [0.1, 2, 0.5]; %fraction by which con_tau2 is larger than con_filt_tau1 (better behaved)
 % con_tc = [0, 1, 0.1]; %L1 norm of con_tau2 filter, redundant with con_filtnorm somewhat, so make con_filtnorm constant
 % con_filtnorm = [-inf, inf, 1]; %L1 norm of whole filter (con_filt_tau1 filter minus con_tau2 filter, assuming latter is not norm zero )
 
-con_genlog_slope = [0.1, depvpre_extreme_alldim, 1]; %previously [0.1, inf, 1]  %force positive, letting left/right asymptotes determine sign without redundancy from slope (no constraint that left must be greater than right)
-con_genlog_asympleft = [-depvpre_extreme_alldim*2, depvpre_extreme_alldim*2, depvpre_min_alldim];
-con_genlog_asympright = [-depvpre_extreme_alldim*2, depvpre_extreme_alldim*2, depvpre_max_alldim];
-con_genlog_inflection = [0, depvpre_extreme_alldim*2, 1]; %must be positive, previous was [0, inf, 1]
-con_genlog_xshift = [-indvpre_extreme_alldim*2, indvpre_extreme_alldim*2, mean([indvpre_min_alldim indvpre_max_alldim])];  %since con_filtnorm is forced to be 1, filter output will be on order of indv
+con_genlog_slope = [0.1, depvp_extreme_alldim, 1]; %previously [0.1, inf, 1]  %force positive, letting left/right asymptotes determine sign without redundancy from slope (no constraint that left must be greater than right)
+con_genlog_asympleft = [-depvp_extreme_alldim*2, depvp_extreme_alldim*2, depvp_min_alldim];
+con_genlog_asympright = [-depvp_extreme_alldim*2, depvp_extreme_alldim*2, depvp_max_alldim];
+con_genlog_inflection = [0, depvp_extreme_alldim*2, 1]; %must be positive, previous was [0, inf, 1]
+con_genlog_xshift = [-indvp_extreme_alldim*2, indvp_extreme_alldim*2, mean([indvp_min_alldim indvp_max_alldim])];  %since con_filtnorm is forced to be 1, filter output will be on order of indv
 
-hotnonlin_weights = [-depvpre_extreme_alldim*2, depvpre_extreme_alldim*2, depvpre_mean_alldim];
+hotnonlin_weights = [-depvp_extreme_alldim*2, depvp_extreme_alldim*2, depvp_mean_alldim];
 
 
 %%
@@ -153,7 +153,7 @@ for fi = 1:num_fun
         ubnd_tmp = [inf,inf,inf,inf];
         x0_tmp = [0,0,0,0];
     elseif startsWith(fnet_onefun, 'h')
-        % previous approach ---> fnet = mfit_setup_ohe(fnet, fnetspec, fi, num_dim_indvpre, num_samp_mdl, num_unit);
+        % previous approach ---> fnet = mfit_setup_ohe(fnet, fnetspec, fi, num_dim_indvp, num_samp_mdl, num_unit);
         num_bin_hot = sscanf(fnet_onefun, 'h%d');
         hotcombos = repmat(vec([1:num_bin_hot]), [1 num_dim_in]);
         fnet.funh{fi} = @fun_ohe;

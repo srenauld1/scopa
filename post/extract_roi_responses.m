@@ -1,9 +1,9 @@
 
-function resp = extract_roi_responses(respin, roivec, pth_save_prefix, normopts, imper, opt)
+function resp = extract_roi_responses(respin, roiwt, pth_save_prefix, normopts, imper, opt)
 
 arguments
     respin
-    roivec
+    roiwt
     pth_save_prefix
     normopts
     imper
@@ -42,9 +42,9 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = extract_roi_responses_onechan(respin_onechan, roivec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = extract_roi_responses_onechan(respin_onechan, roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         else
-            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), roivec, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         end
     end
 end
@@ -52,11 +52,11 @@ end
 end
 
 
-function resp = extract_roi_responses_onechan(respin, roivec, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
+function resp = extract_roi_responses_onechan(respin, roiwt, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
 
 arguments
     respin
-    roivec
+    roiwt
     pth_save_prefix
     normopts
     imper
@@ -68,9 +68,9 @@ end
 
 
 
-if isequal(unique(roivec(:)), [0 1]') | unique(roivec)==1
+if isequal(unique(roiwt(:)), [0 1]') | unique(roiwt)==1
     weightingstr = 'n';
-elseif unique(roivec)==0
+elseif unique(roiwt)==0
     error("no pixel indices for any rois present")
 else
     weightingstr = 'y';
@@ -110,7 +110,7 @@ for fnini = 1:length(fnin)
         end
 
         tmp2d = tmp2d(goodinds, :);
-        roiinds_new = roivec(:, goodinds);
+        roiinds_new = roiwt(:, goodinds);
 
         if ~isempty(tmp2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
             resp2.f = roiinds_new * tmp2d ./ sum(roiinds_new,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity

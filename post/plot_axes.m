@@ -8,7 +8,7 @@ function [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, framecou
 cdfool = repmat(reshape([1 0 0], 1, 1, 3), [128 256 1]);
 afool = repmat(0.4, [128 256 1]);
 vidcenflag = 0;
-clear make_roi_overlay pltexp_process_callbacks
+clear roiolay pltexp_process_callbacks
 
 cb = default_cbflags([], 'all'); %set all flags to default
 
@@ -30,7 +30,7 @@ if all(cellfun(@isempty,roipixindp))
 else
     do_overlay = 1;
     stack_oneframe = stack(:,:,:,1);
-    [imroi, roialphamask] = make_roi_overlay(stack_oneframe, roipixindp, col=cols, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+    [imroi, roialphamask] = roiolay(stack_oneframe, roipixindp, col=cols, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 end
 
 tinds_use = tinds;
@@ -285,7 +285,7 @@ while tloop
 
 end
 
-clear make_roi_overlay %make sure persistent in make_roi_overlay variable is cleared
+clear roiolay %make sure persistent in roiolay variable is cleared
 
 end
 

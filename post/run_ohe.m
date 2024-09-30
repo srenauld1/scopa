@@ -1,4 +1,4 @@
-function [ft, gof, depvp] = run_ohe( mdl, indv, depv)
+function [ft, gof, pred] = run_ohe( mdl, indv, depv)
 
 error("this function is deprecated")
 
@@ -8,6 +8,6 @@ scalefac = size(depv, 1)/10; %don't understand why this needs to be around 1/10t
 
 ft = mdl( depv, indv, scalefac);
 
-depvp = indv*ft.';
+pred = indv*ft.';
 
-gof = mse(depv, depvp); 
+gof = mse(depv, pred); 

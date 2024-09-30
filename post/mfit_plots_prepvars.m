@@ -17,17 +17,17 @@ cmap_patch = plt.cmap_patch;
 epochinds_str = strrep(epochinds_str, '_', ',');
 plt = plots_setup_hsv(plt, mdlname);
 
-hsvmap = plots_compute_hsv( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpref, huelimnat=fitin.stats.indvpre_lim_alldim, huelimnat2=fitin.stats.depvpre_lim_alldim, mdlname=mdlname);
+hsvmap = plots_compute_hsv( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=fitin.stats.indvp_lim_alldim, huelimnat2=fitin.stats.depvp_lim_alldim, mdlname=mdlname);
 
 %% select which rois get plotted and how they're sorted
 
 switch plt.sort_method
     case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
-        sortinds = fliplr(1:fitin.num_dim_depvpre);
-        sortinds = 1:fitin.num_dim_depvpre;
+        sortinds = fliplr(1:fitin.num_dim_depvp);
+        sortinds = 1:fitin.num_dim_depvp;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
         % [~, sortinds] = sort(roidat.idx_vox2roi,  'descend');
-        [~, sortinds] = sort(fitdata.indvpref,  'descend');
+        [~, sortinds] = sort(fitdata.indvpf,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
         [~, sortinds] = sort(fitdata.gof, 'descend');
     case 'custom' %ad hoc sort method, checking for an error
@@ -36,50 +36,50 @@ switch plt.sort_method
         sortinds = [sortonetmp; sorttwotmp];
 end
 
-roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvpre, plt.maxnumroiplot))), 'stable'); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvpre
+roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvp, plt.maxnumroiplot))), 'stable'); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvp
 numroi_plot = numel(roiinds_plot);
 
 roipx = roidat.roipx(roiinds_plot);
-roivec = roidat.roivec(roiinds_plot);
+roiwt = roidat.roiwt(roiinds_plot);
 
 
-%% subsample indv, depv, depvp
+%% subsample indv, depv, pred
 
-indv = indv(:, fitdata.sampinds_indvpreaug); %columns of indv and depv should be number samples, could change above or just transpose here
-depv = depv(roiinds_plot, fitdata.sampinds_depvpre); %columns of indv and depv should be number samples, could change above or just transpose here
+indv = indv(:, fitdata.sampinds_indvpaug); %columns of indv and depv should be number samples, could change above or just transpose here
+depv = depv(roiinds_plot, fitdata.sampinds_depvp); %columns of indv and depv should be number samples, could change above or just transpose here
 
-fitdata.depvp = fitdata.depvp.';
+fitdata.pred = fitdata.pred.';
 if ~strcmp(normalize_depv, 'none')
-    fitdata.depvp = fitin.normmdlvar_depv(fitdata.depvp, 'reverse');
-    fitdata.depvp = fitdata.depvp(roiinds_plot, :); %columns of indv and depv should be number samples, could change above or just transpose here
+    fitdata.pred = fitin.normmdlvar_depv(fitdata.pred, 'reverse');
+    fitdata.pred = fitdata.pred(roiinds_plot, :); %columns of indv and depv should be number samples, could change above or just transpose here
 end
 
 minis_indv = min(indv(:)); %min depv across all epochs
 maxis_indv = max(indv(:)); %min depv across all epochs
 minis_depv = min(depv(:)); %min depv across all epochs
 maxis_depv = max(depv(:)); %min depv across all epochs
-minis_depvp = min(fitdata.depvp(:)); %min depv across all epochs
-maxis_depvp = max(fitdata.depvp(:)); %min depv across all epochs
-minis_all = min(minis_depv, minis_depvp);
-maxis_all = max(maxis_depv, maxis_depvp);
+minis_pred = min(fitdata.pred(:)); %min depv across all epochs
+maxis_pred = max(fitdata.pred(:)); %min depv across all epochs
+minis_all = min(minis_depv, minis_pred);
+maxis_all = max(maxis_depv, maxis_pred);
 
 %% pad timeseries discontinuities
 
-plotvars = pad_timeseries_discontinuities(indv, depv, fitdata.depvp, fitdata.epochinds_pure_ts_m, fitdata.sampinds_depvpre, fitin.num_dim_indvpre, numroi_plot, plt.max_tinds, plt.timeseries_numsegments, numsampnan);
+plotvars = pad_timeseries_discontinuities(indv, depv, fitdata.pred, fitdata.epochinds_pure_ts_m, fitdata.sampinds_depvp, fitin.num_dim_indvp, numroi_plot, plt.max_tinds, plt.timeseries_numsegments, numsampnan);
 
 
 %% per row variables to plot
 
 [indvsort, indvsortidx] = sort(indv(hackindvdim,:));
-depvp_sort = fitdata.depvp(:, indvsortidx);
+pred_sort = fitdata.pred(:, indvsortidx);
 
 contseg_per_row = ceil(numel(plotvars.tinds_cont_nan) / numrows_ts); %how many continuous segments per row
 
 indvnan_cont_rescale = rescale(plotvars.indvnan_cont, minis_depv, maxis_depv);
 
 % numroi_plot = size(tmpvars.depvnan_cont, 1);
-depvprow = cell(numroi_plot, numrows_ts);
-depvp_hist = cell(1, numroi_plot); %original full history, not split by row
+predrow = cell(numroi_plot, numrows_ts);
+pred_hist = cell(1, numroi_plot); %original full history, not split by row
 histxsave = cell(1, numroi_plot); %original full history, not split by row
 
 shadex = cell(1, numrows_ts);
@@ -120,18 +120,18 @@ if max_numfits_to_plot_ts>0
             end
 
             numfits_to_plot = length(keepinds_histfit_ts);
-            depvp_hist{ri} = zeros(numfits_to_plot, size(indv, 1), 'single');
+            pred_hist{ri} = zeros(numfits_to_plot, size(indv, 1), 'single');
             histxsave{ri} = zeros(numfits_to_plot, size(histxtmp, 1));
 
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
-                depvp_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv, supp);
+                pred_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv, supp);
                 % if normalize_depv
-                %     depvp_hist{ri}(hxi,:) = depvp_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
+                %     pred_hist{ri}(hxi,:) = pred_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end
             end
             if normalize_depv
-                depvp_hist{ri} = revstandvar_depv(depvp_hist{ri}.');
+                pred_hist{ri} = revstandvar_depv(pred_hist{ri}.');
             end
 
 
@@ -164,26 +164,26 @@ for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualiz
 
     %subset to get one row, and also add nan to end for symmetry at same time
     depvrow{nsi} = cat(2, plotvars.depvnan_cont(:, tinds_row), plotvars.nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
-    depvprow_tmp = cat(2, plotvars.depvpnan_cont(:, tinds_row), plotvars.nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
+    predrow_tmp = cat(2, plotvars.prednan_cont(:, tinds_row), plotvars.nanpad_depv);%add nan to end of each line for symmetry, since nan is at beginning of each line
     %indvrow{nsi} = cat(2, indvnan_cont(:, tinds_row), tmpvars.nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
     indvrow{nsi} = cat(2, indvnan_cont_rescale(:, tinds_row), plotvars.nanpad_indv);%add nan to end of each line for symmetry, since nan is at beginning of each line
 
     for ri = 1:numroi_plot
         if max_numfits_to_plot_ts>0
-            depvprow{ri,nsi} = nan(size(depvp_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
-            depvprow{ri,nsi}(1:end-1,tinds_row_nonan) = depvp_hist{ri}(:,tinds_cont_row); %history of fits
-            % depvprow{ri,nsi}(end,tinds_row_nonan) = depvp_hist{ri}(end,tinds_cont_row); %best validation fit at end
-            % depvprow{ri,nsi}(end,:) = depvp_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-            depvprow{ri,nsi}(end,:) = depvprow_tmp(ri,:); %best fit at end
+            predrow{ri,nsi} = nan(size(pred_hist{ri}, 1)+include_best_fit, size(depvrow{nsi}, 2)); %fit by time, plus optional one for final/best fit
+            predrow{ri,nsi}(1:end-1,tinds_row_nonan) = pred_hist{ri}(:,tinds_cont_row); %history of fits
+            % predrow{ri,nsi}(end,tinds_row_nonan) = pred_hist{ri}(end,tinds_cont_row); %best validation fit at end
+            % predrow{ri,nsi}(end,:) = pred_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+            predrow{ri,nsi}(end,:) = predrow_tmp(ri,:); %best fit at end
         else
-            % depvprow{ri,nsi} = depvp_hist{ri}(end,tinds_cont_row); %best validation fit at end
-            % depvprow{ri,nsi} = depvp_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
-            depvprow{ri,nsi} = depvprow_tmp(ri,:); %just the best fit
+            % predrow{ri,nsi} = pred_hist{ri}(end,tinds_cont_row); %best validation fit at end
+            % predrow{ri,nsi} = pred_hist{ri}(bestindall{ri},tinds_cont_row); %best validation fit at end
+            predrow{ri,nsi} = predrow_tmp(ri,:); %just the best fit
         end
     end
 
 end
-depvp_hist = [];
+pred_hist = [];
 
 for ri = 1:numel(roiinds_plot)
     if max_numfits_to_plot_ts>0
@@ -193,8 +193,8 @@ for ri = 1:numel(roiinds_plot)
     end
 end
 
-minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  depvprow,  'UniformOutput',  false))); %min pred depv across all epochs
-maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  depvprow,  'UniformOutput',  false))); %max pred depv across all epochs
+minis_pa =  min(cell2mat(cellfun(@(x) min(x(:)),  predrow,  'UniformOutput',  false))); %min pred depv across all epochs
+maxis_pa =  max(cell2mat(cellfun(@(x) max(x(:)),  predrow,  'UniformOutput',  false))); %max pred depv across all epochs
 
 
 %% output struct
@@ -205,27 +205,27 @@ plotvars.minis_indv = minis_indv;
 plotvars.maxis_indv = maxis_indv;
 plotvars.minis_depv = minis_depv;
 plotvars.maxis_depv = maxis_depv;
-plotvars.minis_depvp = minis_depvp;
-plotvars.maxis_depvp = maxis_depvp;
+plotvars.minis_pred = minis_pred;
+plotvars.maxis_pred = maxis_pred;
 plotvars.minis_all = minis_all;
 plotvars.maxis_all = maxis_all;
 plotvars.minis_pa = minis_pa;
 plotvars.maxis_pa = maxis_pa;
 
-plotvars.sampinds_indvpreaug = fitdata.sampinds_indvpreaug;
-plotvars.sampinds_depvpre = fitdata.sampinds_depvpre;
+plotvars.sampinds_indvpaug = fitdata.sampinds_indvpaug;
+plotvars.sampinds_depvp = fitdata.sampinds_depvp;
 plotvars.numroi_plot = numroi_plot;
 plotvars.roiinds_plot = roiinds_plot;
-plotvars.roivec = roivec;
+plotvars.roiwt = roiwt;
 plotvars.roipx = roipx;
-plotvars.depvp_sort = depvp_sort;
+plotvars.pred_sort = pred_sort;
 plotvars.indvsort = indvsort;
 
 plotvars.histxsave = histxsave;
 
 plotvars.indvrow = indvrow;
 plotvars.depvrow = depvrow;
-plotvars.depvprow = depvprow;
+plotvars.predrow = predrow;
 
 plotvars.shadex = shadex;
 plotvars.shadey = shadey;

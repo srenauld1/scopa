@@ -32,19 +32,19 @@ end
 
 if isempty(mdlname)
 
-    gethue = @(ft, indvpref) ft; 
+    gethue = @(ft, indvpf) ft; 
     gethr_native = @(limi,limd) limd;
     
 elseif startsWith(mdlname, 'svd')
 
     switch huestr
         case 'loc'
-            gethue = @(ft, indvpref) ft(1);
+            gethue = @(ft, indvpf) ft(1);
             gethr_native = @(limi,limd) error("NO NATIVE LOC NORMALIZATION FOR LINEAR MODEL, SINCE SLOPE IS UNBOUNDED"); %was [-1 1] which doesn't make sense;
         case 'wid'
             error("NO WID PARAM FOR LINEAR MODEL")
         case 'amp'
-            gethue = @(ft, indvpref) ft(2);
+            gethue = @(ft, indvpf) ft(2);
             gethr_native = @(limi,limd) limd;
     end
 
@@ -53,12 +53,12 @@ elseif strcmp(mdlname, 'l')
 
     switch huestr
         case 'loc'
-            gethue = @(ft, indvpref) ft(1);
+            gethue = @(ft, indvpf) ft(1);
             gethr_native = @(limi,limd) error("NO NATIVE LOC NORMALIZATION FOR LINEAR MODEL, SINCE SLOPE IS UNBOUNDED"); %was [-1 1] which doesn't make sense;
         case 'wid'
             error("NO WID PARAM FOR GENLOG MODEL")
         case 'amp'
-            gethue = @(ft, indvpref) ft(2);
+            gethue = @(ft, indvpf) ft(2);
             gethr_native = @(limi,limd) limd;
     end
 
@@ -67,13 +67,13 @@ elseif strcmp(mdlname, 'v')
 
     switch huestr
         case 'loc'
-            gethue = @(ft, indvpref) indvpref; 
+            gethue = @(ft, indvpf) indvpf; 
             gethr_native = @(limi,limd) [0 2*pi];
         case 'wid'
-            gethue = @(ft, indvpref) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
+            gethue = @(ft, indvpf) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
             gethr_native = @(limi,limd) [0 2*pi];
         case 'amp'
-            gethue = @(ft, indvpref) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
+            gethue = @(ft, indvpf) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
             gethr_native = @(limi,limd) limd;
     end
 
@@ -82,13 +82,13 @@ elseif strcmp(mdlname, 'g')
 
     switch huestr
         case 'loc'
-            gethue = @(ft, indvpref) ft(2);
+            gethue = @(ft, indvpf) ft(2);
             gethr_native = @(limi,limd) limi;
         case 'wid'
-            gethue = @(ft, indvpref) 2 * ((2 * log( 2 )) ^ 0.5) * abs(ft(3)); %fwhm
+            gethue = @(ft, indvpf) 2 * ((2 * log( 2 )) ^ 0.5) * abs(ft(3)); %fwhm
             gethr_native = @(limi,limd) limi;
         case 'amp'
-            gethue = @(ft, indvpref) ft(1);
+            gethue = @(ft, indvpf) ft(1);
             gethr_native = @(limi,limd) limd;
     end
 
@@ -96,13 +96,13 @@ elseif startsWith(mdlname, 'A')
 
     switch huestr
         case 'loc'
-            gethue = @(ft, indvpref) indvpref; 
+            gethue = @(ft, indvpf) indvpf; 
             gethr_native = @(limi,limd) [0 2*pi];
         case 'wid'
-            gethue = @(ft, indvpref) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
+            gethue = @(ft, indvpf) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
             gethr_native = @(limi,limd) [0 2*pi];
         case 'amp'
-            gethue = @(ft, indvpref) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
+            gethue = @(ft, indvpf) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
             gethr_native = @(limi,limd) limd;
     end
 
@@ -110,13 +110,13 @@ elseif startsWith(mdlname, 'tm')
 
     switch huestr
         case 'loc'
-            gethue = @(ft, indvpref) indvpref; 
+            gethue = @(ft, indvpf) indvpf; 
             gethr_native = @(limi,limd) [0 2*pi];
         case 'wid'
-            gethue = @(ft, indvpref) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
+            gethue = @(ft, indvpf) 2 * abs( acos( 1/ft(2) * log( 1/2 *( exp(ft(2)) + exp(-ft(2)) ))));
             gethr_native = @(limi,limd) [0 2*pi];
         case 'amp'
-            gethue = @(ft, indvpref) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
+            gethue = @(ft, indvpf) ft(1) * ( exp(ft(2)) - exp(-ft(2)) );
             gethr_native = @(limi,limd) limd;
     end
 

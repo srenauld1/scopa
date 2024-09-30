@@ -77,7 +77,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
     end
 
     if fnetunit.layer_in_index==1 %this if clause for now, soon intermediate layers will also get reorganized the same way indv is in mfit_prepvars (fine for now since not using intermediate multi sample layers)
-        chan_in_inds = [1:supp.num_samp_mdl]*supp.num_dim_indvpre-(supp.num_dim_indvpre-vec(fnetunit.channel_in)); %since indv is organized this way, dims alternate in vec
+        chan_in_inds = [1:supp.num_samp_mdl]*supp.num_dim_indvp-(supp.num_dim_indvp-vec(fnetunit.channel_in)); %since indv is organized this way, dims alternate in vec
         outtmp = indv(:,chan_in_inds);
     else
         chan_in_inds = fnetunit.channel_in;

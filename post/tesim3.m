@@ -30,12 +30,12 @@ stack2 = stackcrop(:,:,15,8,2);
 
 
 
-clear make_roi_overlay pltexp_process_callbacks %clear persistent variables
-[imroi, imalpha] = make_roi_overlay(stack1, roipixindp, col=roi_color, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+clear roiolay pltexp_process_callbacks %clear persistent variables
+[imroi, imalpha] = roiolay(stack1, roipixindp, col=roi_color, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi = squeeze(imroi);
 
-clear make_roi_overlay pltexp_process_callbacks %clear persistent variables
-[imroi2, imalpha2] = make_roi_overlay(stack1, roipixindp2, col=roi_color2, alp=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
+clear roiolay pltexp_process_callbacks %clear persistent variables
+[imroi2, imalpha2] = roiolay(stack1, roipixindp2, col=roi_color2, alp=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi2 = squeeze(imroi2);
 
 

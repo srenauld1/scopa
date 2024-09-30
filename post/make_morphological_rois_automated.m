@@ -1,5 +1,5 @@
 
-function [roivec, roicen, num_mroi_auto_final] = ...
+function [roiwt, roicen, num_mroi_auto_final] = ...
     make_morphological_rois_automated(stackmnt, roimaskman, ...
     num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, ...
     map_hires_lores, pth_mroi_prefix, ...
@@ -284,19 +284,19 @@ end
 
 %% find indices for each mophological roi
 
-roivec = zeros(num_mroi_auto_final, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
+roiwt = zeros(num_mroi_auto_final, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
 
 if isempty(sliceinds_hires) %isempty(stack_hires)
 
     for i = 1:num_mroi_auto_final
-        roivec(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
+        roiwt(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
     end
 
 else % else downsample the 3 output variables from hires to lores
 
     % map from hi-z-res to lo-z-res,
     % find voxel weighting that describes how hi-z-res rois occupy lo-z-res voxels
-    % roivec encodes how each voxel contributes to a roi response
+    % roiwt encodes how each voxel contributes to a roi response
     % each voxel's signal is weighted by the proportion of its hires voxels occupied by the roi
     % later the roi signal will be summed across voxels with these weights,
     % also, automated morphological rois created above are not overlapping at first,
@@ -327,12 +327,12 @@ else % else downsample the 3 output variables from hires to lores
             end
             num_interp_vox_in_this_vox_this_roi = numel(find(inds_this_vox));
             num_interp_vox_in_this_vox_total = numel(zrange{zind_lores_this_vox});
-            roivec(i, sub2ind(size(stackmean_masked), coords_this_roi(voxind,1), coords_this_roi(voxind,2), coords_this_roi(voxind,3))) = num_interp_vox_in_this_vox_this_roi / num_interp_vox_in_this_vox_total;
+            roiwt(i, sub2ind(size(stackmean_masked), coords_this_roi(voxind,1), coords_this_roi(voxind,2), coords_this_roi(voxind,3))) = num_interp_vox_in_this_vox_this_roi / num_interp_vox_in_this_vox_total;
         end
     end
 
-    if any(sum(roivec)>1)
-        totals_with_rounding_error = sum(roivec);
+    if any(sum(roiwt)>1)
+        totals_with_rounding_error = sum(roiwt);
         totals_with_rounding_error = totals_with_rounding_error(totals_with_rounding_error>1);
         nearly_equal_tol = 1e-6;
         for trei = 1:numel(totals_with_rounding_error)
@@ -342,8 +342,8 @@ else % else downsample the 3 output variables from hires to lores
             end
         end
     end
-    if any(isnan(roivec(:)))
-        error("roivec should not have any nans") %roivec(isnan(roivec)) = 0;
+    if any(isnan(roiwt(:)))
+        error("roiwt should not have any nans") %roiwt(isnan(roiwt)) = 0;
     end
 
     %%downsample 3d "allroi" mask for plotting (note this will not quite match union of all roi indices, so it is only used for plotting within this function and is not output)
@@ -375,7 +375,7 @@ if do_plots
 
 
         %colormap for each roi
-        cmap = distinguishable_colors(size(roivec,1));
+        cmap = distinguishable_colors(size(roiwt,1));
         double_colormap = 0;
         if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
             num_region_periods = 2; %for example, two halves of pb
@@ -406,13 +406,13 @@ if do_plots
 
 
         %data for upsamp overlay and hsv
-        roivec_upsamp = zeros(num_mroi_auto_final, numel(mask_allroi_approx_upsamp), 'single');
+        roiwt_upsamp = zeros(num_mroi_auto_final, numel(mask_allroi_approx_upsamp), 'single');
         for i = 1:num_mroi_auto_final
-            roivec_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
+            roiwt_upsamp(i, sub2ind(size(mask_allroi_approx_upsamp), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
         end
         roipixind_upsamp = cell(num_mroi_auto_final, 1);
         for ii = 1:numel(roipixind_upsamp)
-            roipixind_upsamp{ii} = find(vec(roivec_upsamp(ii,:)));
+            roipixind_upsamp{ii} = find(vec(roiwt_upsamp(ii,:)));
         end
 
         %roi overlay in upsampled res
@@ -426,7 +426,7 @@ if do_plots
         hue_feature = [1:num_mroi_auto_final]';
         hsvmap = plots_compute_hsv(hsvopt, hue_feature);
         filename_hsv = [pth_mroi_prefix 'hsvfov_upsamp_.gif'];
-        hsvimg_upsamp = plots_hsvfov(hsvopt, premask, hsvmap, roipixind_upsamp, roivec_upsamp, filename_hsv);
+        hsvimg_upsamp = hsvplt(hsvopt, premask, hsvmap, roipixind_upsamp, roiwt_upsamp, filename_hsv);
 
 
         %3d scatter plot

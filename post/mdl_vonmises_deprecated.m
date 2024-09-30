@@ -1,4 +1,4 @@
-function [depvp, hax, binmns] = mdl_vonmises(pars, indv, supp, optin)
+function [pred, hax, binmns] = mdl_vonmises(pars, indv, supp, optin)
 
 
 hax = [];
@@ -36,7 +36,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         fontmedium = 20;
         numrows_plot = 1;%supp.num_model_functions;
-        numcolumns_plot = 1;%supp.num_dim_indvpre*supp.num_unit;
+        numcolumns_plot = 1;%supp.num_dim_indvp*supp.num_unit;
         margins_fig = 0.03;
         margins_subplot = 0.06;
 
@@ -60,7 +60,7 @@ if exist('optin', 'var') && ~isempty(optin)
 end
 
 
-depvp = pars(1)*exp(pars(2)*cos(indv-pars(3)))+pars(4);
+pred = pars(1)*exp(pars(2)*cos(indv-pars(3)))+pars(4);
 
 
 if make_figure
@@ -74,7 +74,7 @@ if make_figure
 
     if supp.framecount==1
 
-        plot(hax{sfi}, indvsort, depvp(indvsortidx)); %sort to avoid weird plotting error
+        plot(hax{sfi}, indvsort, pred(indvsortidx)); %sort to avoid weird plotting error
 
         xlm = hax{sfi}.XLim;
         extrax = supp.extra_xlim_fac*range(xlm(:));
@@ -86,7 +86,7 @@ if make_figure
     else
 
         hax{sfi}.Children.XData = indvsort;
-        hax{sfi}.Children.YData = depvp(indvsortidx);
+        hax{sfi}.Children.YData = pred(indvsortidx);
 
     end
 

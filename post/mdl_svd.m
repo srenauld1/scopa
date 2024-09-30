@@ -1,4 +1,4 @@
-function depvp = mdl_svd(indv, ft, supp)
+function pred = mdl_svd(indv, ft, supp)
 
-depvp = indv*ft;
+pred = indv*ft;
 

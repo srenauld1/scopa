@@ -236,13 +236,13 @@ else
 
 end
 
-roivec = zeros(num_mroi, length(idx_vox2roi));
-roivec(sub2ind(size(roivec), idx_vox2roi, vec(1:numel(idx_vox2roi)))) = 1;
+roiwt = zeros(num_mroi, length(idx_vox2roi));
+roiwt(sub2ind(size(roiwt), idx_vox2roi, vec(1:numel(idx_vox2roi)))) = 1;
 
-%roivec_wt weights by fraction of number of pixels relative to the whole morphological 3d roi (usually includes multiple functional rois)
-numpix_roi_per_centroid = roivec.*repmat(roinumpix, [num_mroi 1]);
-roivec_wt = numpix_roi_per_centroid ./ sum(numpix_roi_per_centroid, 2);
-roivec_wt(isnan(roivec_wt)) = 0;
+%roiwt_wt weights by fraction of number of pixels relative to the whole morphological 3d roi (usually includes multiple functional rois)
+numpix_roi_per_centroid = roiwt.*repmat(roinumpix, [num_mroi 1]);
+roiwt_wt = numpix_roi_per_centroid ./ sum(numpix_roi_per_centroid, 2);
+roiwt_wt(isnan(roiwt_wt)) = 0;
 
 
 %% sort rois
@@ -258,8 +258,8 @@ end
 
 good_roi_indices = good_roi_indices(roisortinds);
 
-roivec = roivec(:,roisortinds);
-roivec_wt = roivec_wt(:,roisortinds);
+roiwt = roiwt(:,roisortinds);
+roiwt_wt = roiwt_wt(:,roisortinds);
 centroids_froi = centroids_froi(roisortinds);
 cma = cma(:,:,:,roisortinds);
 
@@ -295,8 +295,8 @@ cmc = single(cmc(good_roi_indices, :)); %components denoised by caiman (nonnegat
 numroi = length(good_roi_indices);
 roipixind_bad = roipx(bad_roi_indices);  %pixel indices of each roi, one roi per cell
 roipx = roipx(good_roi_indices);  %pixel indices of each roi, one roi per cell
-roivec = roivec(:,good_roi_indices); %boolean mask vector of each roi
-roivec_wt = roivec_wt(:,good_roi_indices); %same as roivec but weighted pixel indices
+roiwt = roiwt(:,good_roi_indices); %boolean mask vector of each roi
+roiwt_wt = roiwt_wt(:,good_roi_indices); %same as roiwt but weighted pixel indices
 roicen = centroids_froi(good_roi_indices);
 if any(good_roi_indices) %if there are any rois remaining (don't actually need this except for the logical call below would error)
     mask_allroi = logical(mean(cma(:,:,:,good_roi_indices), 4)); %boolean mask of all rois
@@ -323,9 +323,9 @@ end
 resptmp.cmc = cmc; %put into struct before passing to extract_roi_responses
 
 dowav = 0;
-resp = extract_roi_responses(resptmp, roivec, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing roivec
+resp = extract_roi_responses(resptmp, roiwt, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing roiwt
 
-% resp = extract_roi_responses(resp_froi, roivec_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing roivec_wt, appends output resp to input resp, so the nonweighted version is retained
+% resp = extract_roi_responses(resp_froi, roiwt_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
 
 
 
@@ -355,7 +355,7 @@ if doplot
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gif_visibility=gif_visibility, roipx=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipx as argument to plot roi overlay
 
-    figure; imagesc(roivec); title("which caiman rois are closest to which morph roi")
+    figure; imagesc(roiwt); title("which caiman rois are closest to which morph roi")
 
 end
 
@@ -543,8 +543,8 @@ end
 
 roidat.numroi = numroi;
 roidat.roipx = roipx;  %pixel indices of each roi, one roi per cell
-roidat.roivec = roivec; %boolean mask vector of each roi
-roidat.roivec_wt = roivec_wt; %same as roivec but weighted pixel indices
+roidat.roiwt = roiwt; %boolean mask vector of each roi
+roidat.roiwt_wt = roiwt_wt; %same as roiwt but weighted pixel indices
 roidat.roicen = centroids_froi;
 roidat.mask_allroi = mask_allroi; %boolean mask of all rois
 roidat.idx_vox2roi = idx_vox2roi; %for each pixel in a roi, which roi it belongs to

@@ -76,7 +76,7 @@ for j = 1:numsubplot
                 if c==1
                     hpl{j}{fi}{cnt(fi)}{c}.LineStyle = '-';
                 else
-                    hpl{j}{fi}{cnt(fi)}{c}.LineStyle = '--';
+                    hpl{j}{fi}{cnt(fi)}{c}.LineStyle = ':';
                 end
             end
 

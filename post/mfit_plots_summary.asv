@@ -4,7 +4,7 @@ plt = fitin.plt;
 supp = fitin.opop.supp;
 
 mdl = fitin.opop.optimp.mdl;
-num_dim_depvpre = fitin.num_dim_depvpre;
+num_dim_depvp = fitin.num_dim_depvp;
 
 normalize_depv = opts.normalize_depv;
 epochinds = opts.epochinds;
@@ -20,15 +20,15 @@ timeseries_numsegments = plt.timeseries_numsegments;
 ignorehue = plt.ignorehue;
 ignoresat = plt.ignoresat;
 ignoreval = plt.ignoreval;
-depvplot_norm = plt.depvplot_norm;
+predlot_norm = plt.predlot_norm;
 plot_class = plt.plot_class;
 
 %% params
 
 hackindvdim = 1; %haven't yet expanded this plotting function for multidimensional indvuli, for now just choosing one dim
 
-depvp_linewidth = 0.5;
-depvp_transparency = 1;
+pred_linewidth = 0.5;
+pred_transparency = 1;
 numsampnan = 10;
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 mkrsz = 5;
@@ -207,14 +207,14 @@ end
 
 indvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
-depvpnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
+prednan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 pureepochnan_cont = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 tinds_cont_nan = cell(1, length(epochinds)); %nan padding in any native discontinuities (ie bouts removed)
 depvnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created (to save plotting space)
-depvpnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
+prednan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
 pureepochnan_seg = cell(1, length(epochinds)); %nan padding in any native discontinuities, and also where distcontinuous segments have been created  (to save plotting space)
 indvsort = cell(1, length(epochinds));
-depvp_sort = cell(1, length(epochinds));
+pred_sort = cell(1, length(epochinds));
 truncstr = cell(1, length(epochinds));
 seglength = cell(1, length(epochinds));
 
@@ -223,14 +223,14 @@ for epi = 1:length(epochinds)
 
     %%%%%% FIRST PAD ANY DISCONTINUITIES WITH NAN (e.g., where bouts have been removed), these have suffix *_cont
     tinds_cont = [];
-    seg_endpoints = [0 find(diff(sampinds_depvpre{epi})~=1) length(sampinds_depvpre{epi})];
+    seg_endpoints = [0 find(diff(sampinds_depvp{epi})~=1) length(sampinds_depvp{epi})];
     for bei = 2:length(seg_endpoints)
         tinds_cont{bei-1} = seg_endpoints(bei-1)+1 : seg_endpoints(bei); %cell of contiguous indices
     end
 
     indvnan_cont{epi} = [];
     depvnan_cont{epi} = [];
-    depvpnan_cont{epi} = [];
+    prednan_cont{epi} = [];
     pureepochnan_cont{epi} = [];
     tinds_cont_nan{epi} = [];
     nanpad_indv = nan(numsampnan, size(indv{epi}, 2));
@@ -239,7 +239,7 @@ for epi = 1:length(epochinds)
     for tbi = 1:length(tinds_cont) %pad any discontinuities with nan
         indvnan_cont{epi} = cat(1, indvnan_cont{epi},  nanpad_indv, indv{epi}( tinds_cont{tbi}, :));
         depvnan_cont{epi} = cat(2, depvnan_cont{epi},  nanpad_depv, depv{epi}( :, tinds_cont{tbi}));
-        depvpnan_cont{epi} = cat(2, depvpnan_cont{epi},  nanpad_depv, depvp{epi}( :, tinds_cont{tbi}));
+        prednan_cont{epi} = cat(2, prednan_cont{epi},  nanpad_depv, pred{epi}( :, tinds_cont{tbi}));
         pureepochnan_cont{epi} = cat(2, pureepochnan_cont{epi},  nanpad, pureepoch_keepinds{epi}( :, tinds_cont{tbi}));
         if tbi==1
             tmpstart = 1;
@@ -273,11 +273,11 @@ for epi = 1:length(epochinds)
 
 
     depvnan_seg{epi} = depvnan_cont{epi}( :, tinds_seg{1});
-    depvpnan_seg{epi} = depvpnan_cont{epi}( :, tinds_seg{1});
+    prednan_seg{epi} = prednan_cont{epi}( :, tinds_seg{1});
     pureepochnan_seg{epi} = pureepochnan_cont{epi}( :, tinds_seg{1});
     for tnsi = 2:timeseries_numsegments
         depvnan_seg{epi} = cat(2, depvnan_seg{epi}, nanpad_depv, depvnan_cont{epi}( :, tinds_seg{tnsi}));
-        depvpnan_seg{epi} = cat(2, depvpnan_seg{epi}, nanpad_depv, depvpnan_cont{epi}( :, tinds_seg{tnsi}));
+        prednan_seg{epi} = cat(2, prednan_seg{epi}, nanpad_depv, prednan_cont{epi}( :, tinds_seg{tnsi}));
         pureepochnan_seg{epi} = cat(2, pureepochnan_seg{epi}, nanpad, pureepochnan_cont{epi}( :, tinds_seg{tnsi}));
     end
 
@@ -292,7 +292,7 @@ epochinds_str_all = strjoin(epochinds_str, ',,');
 
 for epi = 1:length(epochinds)
     [indvsort{epi}, indvsortidx] = sort(indv{epi}(:,hackindvdim));
-    depvp_sort{epi} = depvp{epi}(:, indvsortidx);
+    pred_sort{epi} = pred{epi}(:, indvsortidx);
 end
 
 %% FOV, DEPVS, AND MODEL PLOTS
@@ -334,9 +334,9 @@ if doplots(1)
             htx.String = [figure_title];
         end
 
-        if strcmp(depvplot_norm, 'each') %scale for each roi scanges, if depvplot_norm is 'each' rather than 'all'
-            minis = min([depv{epi}( ri, :) depvp{epi}( ri, :)]);
-            maxis = max([depv{epi}( ri, :) depvp{epi}( ri, :)]);
+        if strcmp(predlot_norm, 'each') %scale for each roi scanges, if predlot_norm is 'each' rather than 'all'
+            minis = min([depv{epi}( ri, :) pred{epi}( ri, :)]);
+            maxis = max([depv{epi}( ri, :) pred{epi}( ri, :)]);
         end
 
 
@@ -414,7 +414,7 @@ if doplots(1)
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot*2, hbot] );
                     hold(hab{sib}, 'on');
                     hp1b{sib} = plot(hab{sib}, depvnan_seg{epi}( ri, :), 'color', [0 0 1]);
-                    hp2b{sib} = plot(hab{sib}, depvpnan_seg{epi}( ri, :), 'color', [1 0 0]);
+                    hp2b{sib} = plot(hab{sib}, prednan_seg{epi}( ri, :), 'color', [1 0 0]);
                     yline(hab{sib}, 0)
 
                     xlm = hab{sib}.XLim;
@@ -431,7 +431,7 @@ if doplots(1)
                     xlabel('time (sec)', 'fontsize', fontsmall)
                     ylabel('dff', 'fontsize', fontsmall)
                     if rib==1
-                        title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
+                        title(hab{sib}, ['pred(r) depv (b) ' truncstr{epi}], 'fontsize', fontsmall); %model-extracted feature (pred) tuning for raw indv
                     end
                     if rib~=numrowsbottom
                         hab{sib}.XAxis.Visible='off';
@@ -442,7 +442,7 @@ if doplots(1)
                 else
 
                     hp1b{sib}.YData = depvnan_seg{epi}( ri, :);
-                    hp2b{sib}.YData = depvpnan_seg{epi}( ri, :);
+                    hp2b{sib}.YData = prednan_seg{epi}( ri, :);
 
                     hab{sib}.YLim = [minis maxis];
                     ylm = hab{sib}.YLim;
@@ -458,7 +458,7 @@ if doplots(1)
 
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                     hold(hab{sib}, 'on');
-                    hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), depvp{epi}( ri, :), 5, 'filled');
+                    hp1b{sib} = scatter(hab{sib}, depv{epi}( ri, :), pred{epi}( ri, :), 5, 'filled');
                     hp2b{sib} = plot(depv{epi}( ri,  :), depv{epi}( ri,  :), 'k');
                     if strcmp(hsv_background, 'rois') %0 is meaningful if passing dff, for now only data in rois method uses dff
                         xline(hab{sib}, 0)
@@ -481,7 +481,7 @@ if doplots(1)
                     xlabel('depv', 'fontsize', fontsmall)
                     %ylabel('pred')
                     if rib==1
-                        title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (depvp) tuning for raw indv
+                        title(hab{sib}, 'pred vs depv', 'fontsize', fontsmall); %model-extracted feature (pred) tuning for raw indv
                     end
                     if rib~=numrowsbottom
                         hab{sib}.XAxis.Visible='off';
@@ -492,7 +492,7 @@ if doplots(1)
                 else
 
                     hp1b{sib}.XData = depv{epi}(ri, :);
-                    hp1b{sib}.YData = depvp{epi}(ri, :);
+                    hp1b{sib}.YData = pred{epi}(ri, :);
                     hp2b{sib}.XData = depv{epi}(ri, :);
                     hp2b{sib}.YData = depv{epi}(ri, :);
 
@@ -516,7 +516,7 @@ if doplots(1)
                     hab{sib} = axes( 'Parent', hfg, 'Position', [xbot(cib), ybot(rib), wbot, hbot] );
                     hold(hab{sib}, 'on');
                     hp1b{sib} = scatter(hab{sib}, indv{epi}(:, hackindvdim), depv{epi}(ri, :), 5, 'filled');
-                    hp2b{sib} = plot(hab{sib}, indvsort{epi}, depvp_sort{epi}(ri, :), 'LineWidth', depvp_linewidth, 'Color', [1, 0, 0, depvp_transparency]);
+                    hp2b{sib} = plot(hab{sib}, indvsort{epi}, pred_sort{epi}(ri, :), 'LineWidth', pred_linewidth, 'Color', [1, 0, 0, pred_transparency]);
                     yline(hab{sib}, 0)
 
                     hab{sib}.YLim = [minis maxis];
@@ -539,7 +539,7 @@ if doplots(1)
                     hp1b{sib}.XData = indv{epi}(:,hackindvdim);
                     hp1b{sib}.YData = depv{epi}(ri, :);
                     hp2b{sib}.XData = indvsort{epi};
-                    hp2b{sib}.YData = depvp_sort{epi}(ri, :);
+                    hp2b{sib}.YData = pred_sort{epi}(ri, :);
 
                     hab{sib}.YLim = [minis maxis];
                     ylm = hab{sib}.YLim;

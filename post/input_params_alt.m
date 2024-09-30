@@ -34,7 +34,7 @@ opt.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmss
 opt.mn.do_daq = 0;
 opt.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample to match imaging 
 opt.mn.do_popfeat = 0; %compute population features (opt.pf below)
-opt.mn.do_fit = 0; %model fitting (opt.fitm below)
+opt.mn.do_fit = 0; %model fitting (opt.mfit below)
 opt.mn.do_scatter = 0; %scatterplots (opt.scat below)
 opt.mn.do_pltexp = 1; %plot experiment (opt.pltx below)
 opt.mn.old_project = 0; %for carl
@@ -181,13 +181,13 @@ opt.froi.norm.doplots = 0;
 % opt.pf holds params for computing population features, each substructure beneath opt.pf is for a different population feature, below, for example, is opt.pf.bump
 
 % params for bump in compute_bump function
-% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from opt.pf.bump.fitm.varnms.depvpre) and all matches from opt.pf.bump.fitm.varnms.indvpre
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from opt.pf.bump.mfit.varnms.depvp) and all matches from opt.pf.bump.mfit.varnms.indvp
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if opt.pf.bump.domain_methodis 'functional', these preferred headings are used as the angle, and opt.pf.bump.fitm.varnms.depvpre as the magnitude, in computing pva
-% if the regionex in opt.pf.bump.fitm.varnms.depvpre is in opt.pf.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if opt.pf.bump.domain_methodis 'functional', these preferred headings are used as the angle, and opt.pf.bump.mfit.varnms.depvp as the magnitude, in computing pva
+% if the regionex in opt.pf.bump.mfit.varnms.depvp is in opt.pf.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
 % if opt.pf.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
-% opt.pf.bump.fitm(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
+% opt.pf.bump.mfit(1).depv{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']};
 %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_rawf_pc_f_cl_rsc000100_w_*
 %the selected timeseries will be assigned to depv
 %selecting indv uses the same approach
@@ -197,7 +197,7 @@ opt.froi.norm.doplots = 0;
 %depv and indv are composed of all timeseries matching fieldspecs
 %if multiple matches, depv is concatenated along second dim (time), since currently mfit fits single timeseries
 %if multiple matches, indv is concatenated along first dim (not time), since mfit can accept multidimensional independent variable
-% opt.pf.bump.fitm(1).indv{1} = {['vis, angsd']};
+% opt.pf.bump.mfit(1).indv{1} = {['vis, angsd']};
 
 %params for computing bump
 opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
@@ -206,31 +206,31 @@ opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left
 opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.fitm.varnms.depvpre  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.mfit.varnms.depvp  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
 opt.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 opt.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 opt.pf.bump.doplots = 0;
 
 %params for finding preferred heading using mfit
-% opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
-opt.pf.bump.fitm(1).varnms.depvpre{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.fitm(1).depv{1} = {};
-opt.pf.bump.fitm(1).varnms.indvpre{1} = {['vis, angsd']};
-opt.pf.bump.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
+% opt.pf.bump.mfit(1).varnms.depvp{1} = {['resp, pb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.mfit(1).depv{1} = {};
+opt.pf.bump.mfit(1).varnms.depvp{1} = {['resp, eb, mo*, in_rawf_pc_f_cl_rsc000100_w_*']}; %will skip bump if empty opt.pf.bump.mfit(1).depv{1} = {};
+opt.pf.bump.mfit(1).varnms.indvp{1} = {['vis, angsd']};
+opt.pf.bump.mfit(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
 
-opt.pf.bump.fitm(1).normalize_indv = 'none';
-opt.pf.bump.fitm(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-opt.pf.bump.fitm(1).mdlname = 'fnet_v'; %'fnet_v';
-opt.pf.bump.fitm(1).epochinds = {[4]};
+opt.pf.bump.mfit(1).normalize_indv = 'none';
+opt.pf.bump.mfit(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+opt.pf.bump.mfit(1).mdlname = 'fnet_v'; %'fnet_v';
+opt.pf.bump.mfit(1).epochinds = {[4]};
 
-opt.pf.bump.fitm(1).mdl_length_sec = 0;
-opt.pf.bump.fitm(1).hsv_background = 'rois';
-opt.pf.bump.fitm(1).sort_method = 'unbiased';
-opt.pf.bump.fitm(1).use_saved_model = 1;
-opt.pf.bump.fitm(1).doplots = 1;
+opt.pf.bump.mfit(1).mdl_length_sec = 0;
+opt.pf.bump.mfit(1).hsv_background = 'rois';
+opt.pf.bump.mfit(1).sort_method = 'unbiased';
+opt.pf.bump.mfit(1).use_saved_model = 1;
+opt.pf.bump.mfit(1).doplots = 1;
 
 
-opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
+opt.pf.bump.mfit = default_fit_params(opt.pf.bump.mfit);
 
 %% FIT MODEL
 
@@ -239,19 +239,19 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % modeling depv in mfit function
 % mfit fits model describing how indv is transformed into depv
 
-% opt.fitm.varnms.indvpre.(regionex) specifies which input to use for fit,
+% opt.mfit.varnms.indvp.(regionex) specifies which input to use for fit,
 % it is a cell array of cell arrays of strings defining variable struct then field of that struct
-% for example opt.fitm.varnms.indvpre.no_r = {{'ball', 'yawvel'}, {'bump',
+% for example opt.mfit.varnms.indvp.no_r = {{'ball', 'yawvel'}, {'bump',
 % 'mu'}} will fit depv (specified as described above) in regionex 'no_r' to
 % two-dimensional input, the first dimension being ball.yawvel, the second being bump.mu
-%the name of the innermost nested field must be a regionex that is listed in opt.fitm.regionpat_fit
+%the name of the innermost nested field must be a regionex that is listed in opt.mfit.regionpat_fit
 %since roi responses for all regionex are extracted and normalized before mfit, responses from all rois, in struct 'resp', are available as input to mfit
 %since the bump is computed before mfit, fields from structure 'bump' are available as input to mfit
 %subfield not listed, uses all, like wildcard
 
-% to specify independent and dependent variables for model fitting, use opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre
-% format opt.fitm(i).varnms.depvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
-% format opt.fitm(i).varnms.indvpre{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+% to specify independent and dependent variables for model fitting, use opt.mfit.varnms.indvp and opt.mfit.varnms.depvp
+% format opt.mfit(i).varnms.depvp{j} = {fieldspec1, fieldspec2, ... fieldspecN};
+% format opt.mfit(i).varnms.indvp{j} = {fieldspec1, fieldspec2, ... fieldspecN};
 
 % where fieldspec is a string, with substrings separated by comma then space
 % fieldspec specifies the data to use from struct 'ts', which stores various timeseries
@@ -267,31 +267,31 @@ opt.pf.bump.fitm = default_fit_params(opt.pf.bump.fitm);
 % ['tsclass, regionex, parsex, normex, bumpdomain, bumpparam']
 % for all substrings in fieldspec, you can use '*' as wildcard, all matches will be used
 % you can use multiple fieldspec, all matches in a single outer cell (index j) will be grouped into a variable for fitting
-% opt.fitm.varnms.indvpre and opt.fitm.varnms.depvpre are matched by index i in opt.fitm(i)
-% within a single opt.fitm(i).varnms.indvpre or opt.fitm(i).varnms.depvpre, you can specify multiple cells with index j, in single opt.fitm(i).indv{j} or opt.fitm(i).varnms.depvpre{j}
-% indvpre_str and depvpre_str are matched by index j if opt.fitm(i).vars_combine is 'each',
-% if opt.fitm(1).vars_combine is 'any', then all combinations of single opt.fitm(i).indv and single opt.fitm(i).depv are used
+% opt.mfit.varnms.indvp and opt.mfit.varnms.depvp are matched by index i in opt.mfit(i)
+% within a single opt.mfit(i).varnms.indvp or opt.mfit(i).varnms.depvp, you can specify multiple cells with index j, in single opt.mfit(i).indv{j} or opt.mfit(i).varnms.depvp{j}
+% indvp_str and depvp_str are matched by index j if opt.mfit(i).vars_combine is 'each',
+% if opt.mfit(1).vars_combine is 'any', then all combinations of single opt.mfit(i).indv and single opt.mfit(i).depv are used
 % for example
-%    opt.fitm(1).varnms.depvpre{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
-%    opt.fitm(1).varnms.indvpre{1} = {['ball, yawvel'], ['bump, pb, mo*, *, all, mu']};
+%    opt.mfit(1).varnms.depvp{1} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']};
+%    opt.mfit(1).varnms.indvp{1} = {['ball, yawvel'], ['bump, pb, mo*, *, all, mu']};
 
 %for now, depv at single struct and outer cell level should come from single regionex
-opt.fitm(1).varnms.depvpre{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.depvpre{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
-opt.fitm(1).varnms.indvpre{1} = {['ball, yawvel'], ['bump, eb, mo*, *, all, vel']};
-opt.fitm(1).varnms.indvpre{2} = {['ball, yawvel'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
-opt.fitm(1).varnms.indvpre{3} = {['ball, yawvel']};
+opt.mfit(1).varnms.depvp{1} = {['resp, no_l, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+opt.mfit(1).varnms.depvp{2} = {['resp, no_r, mo*, in_rawf_pc_f_cl_f_w_no']}; %if empty, do will be set to false
+opt.mfit(1).varnms.indvp{1} = {['ball, yawvel'], ['bump, eb, mo*, *, all, vel']};
+opt.mfit(1).varnms.indvp{2} = {['ball, yawvel'], ['resp, gal, mo*, in_rawf_pc_f_cl_f_w_no']};
+opt.mfit(1).varnms.indvp{3} = {['ball, yawvel']};
 
-opt.fitm(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
-opt.fitm(1).epochinds = {[2 3 4]};
-opt.fitm(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+opt.mfit(1).vars_combine = 'any'; %any or each, how to combine depv and indv outermost cells for a given fit structure element
+opt.mfit(1).epochinds = {[2 3 4]};
+opt.mfit(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 
-% see notes_mdlname for notes about opt.fitm.mdlname syntax
+% see notes_mdlname for notes about opt.mfit.mdlname syntax
 
-opt.fitm(1).mdlname = 'fnet_A01_sh16';
-opt.fitm(1).plt.doplots = 100;
+opt.mfit(1).mdlname = 'fnet_A01_sh16';
+opt.mfit(1).plt.doplots = 100;
 
-opt.fitm = default_fit_params(opt.fitm);
+opt.mfit = default_fit_params(opt.mfit);
 
 
 %% SCATTERPLOTS
@@ -370,8 +370,8 @@ opt.hires.caiman_hr_str = '*'; %empty to skip
 %     opt.mn.old_project = 1;
 %     opt.md.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 %     opt.md.tcropfront = 2; % how many samples to remove from end of stack
-%     opt.fitm.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
-%     opt.fitm.mdl_length_sec = 1.25;
+%     opt.mfit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
+%     opt.mfit.mdl_length_sec = 1.25;
 % end
 
 %% order fields

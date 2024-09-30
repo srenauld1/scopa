@@ -1,8 +1,8 @@
-function fnet = mfit_setup_ohe(fnet, fnetspec, ni, num_dim_indvpre, num_samp_mdl, num_unit)
+function fnet = mfit_setup_ohe(fnet, fnetspec, ni, num_dim_indvp, num_samp_mdl, num_unit)
 
 hotpower = 1;
 if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
-    hotpower = num_dim_indvpre;
+    hotpower = num_dim_indvp;
 end
 if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 't')) %time (model samples into the past)
     hotpower = hotpower*num_samp_mdl;
@@ -17,7 +17,7 @@ end
 levs_each_hot = repmat({[1:fnetspec.numbinhot{ni}]}, [hotpower 1]);
 hotcombos = cell2mat(table2cell(combinations(levs_each_hot{:})));
 if strcmp(fnetspec.independently_discretized_hot_dims{ni}, 'x') %function unit output channels for current position (layer & channel), ie each linear function or activation function or linear-activation sequence in the current channel
-    hotcombos = repmat(hotcombos, [1 num_dim_indvpre]);
+    hotcombos = repmat(hotcombos, [1 num_dim_indvp]);
 end
 
 
@@ -27,7 +27,7 @@ fnet.actfun{ni} = @ohe_nonlinearity;
 %% nested nonlinearity functions
 
 
-    function [depvp, binmns] = ohe_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
+    function [pred, binmns] = ohe_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
 
 
         if doplots
@@ -67,7 +67,7 @@ fnet.actfun{ni} = @ohe_nonlinearity;
         end
 
 
-        depvp = indv*ft'; %x0 = zeros(81,1);
+        pred = indv*ft'; %x0 = zeros(81,1);
 
     end
 

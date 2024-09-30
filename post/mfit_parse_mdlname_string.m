@@ -1,4 +1,4 @@
-function spec = mfit_parse_mdlname_string(mdlname, chopt, num_dim_indvpre, num_samp_mdl, multi_time_in_layer_one_only)
+function spec = mfit_parse_mdlname_string(mdlname, chopt, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only)
 
 
 % soon remove this to increment layer, since won't require exact channel matching isequal(channel_onelayer, 1:num_unit_previous_layer) 
@@ -18,7 +18,7 @@ exprlin = strjoin(chopt.lin, '|');
 exprnon = strjoin(chopt.non, '|');
 exprhot = cell2mat(chopt.hot); %h followed by a number
 
-num_unit_previous_layer = num_dim_indvpre; %total for input layerindex, wll be updated for each layerindex
+num_unit_previous_layer = num_dim_indvp; %total for input layerindex, wll be updated for each layerindex
 layerindex = 1;
 channel_onelayer = [];
 num_unit_cumulative_onelayer = 0;

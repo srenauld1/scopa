@@ -63,7 +63,7 @@ opts.plt.num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (
 opts.plt.epoch_patch_face_alpha = 0.05;
 opts.plt.ylim_track_pred = 0;
 opts.plt.depv_alpha = 1;
-opts.plt.depvp_alpha = 0.7;
+opts.plt.pred_alpha = 0.7;
 
 opts.plt.numcolumns_ts = 1;
 opts.plt.margins_fig = 0.04;
@@ -92,7 +92,7 @@ if ~strcmp(opts.normalize_indv, 'none')
     indv = fitin.normmdlvar_indv(indv, 'reverse');
 end
 
-depv = read_mdl_var(fitin.pth_depvpre_bin);
+depv = read_mdl_var(fitin.pth_depvp_bin);
 if ~strcmp(opts.normalize_depv, 'none')
     depv = fitin.normmdlvar_depv(depv, 'reverse');
 end
@@ -144,7 +144,7 @@ for ei = 1:numel(enm)
                 case 'ts'
                     mfit_plots_timeseries(indv, depv, fitin.opop.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.opop.supp, pth_fitdata_prefix, epochinds_str_all)
                 case 'fov'
-                    plots_hsvfov(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roivec, hsv_filename);
+                    hsvplt(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
                 case 'mdl'
                     if isequal(mdlfcn, @fit_svd)
                         % plot_svd(ft{epi})

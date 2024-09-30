@@ -40,15 +40,15 @@ for ii = 1:size(tmp, 1)
 
     ft_syn = mdl( indv, depv_syn, pvar_syn); %fit synthetic response
     ft_syn2 = transpose(depv_syn'*indv / size(depv_syn, 1)); %alternate objective function (average correlation)
-    depvp_syn = indv*ft_syn; %synthetic response model prediction
-    depvp_syn2 = indv*ft_syn2; %synthetic response model prediction
+    pred_syn = indv*ft_syn; %synthetic response model prediction
+    pred_syn2 = indv*ft_syn2; %synthetic response model prediction
     gof1 = mse(gtr_syn_1, ft_syn);
     gof2 = mse(gtr_syn_1, ft_syn2);
-    gof3 = mse(depv_syn, depvp_syn);
-    gof4 = mse(depv_syn, depvp_syn2);
+    gof3 = mse(depv_syn, pred_syn);
+    gof4 = mse(depv_syn, pred_syn2);
 
-    si = 1; hp1{si}.YData = depv_syn; hp2{si}.YData = depvp_syn; hp3{si}.YData = depvp_syn2; hax{si}.Title.String = {['pvar: ' num2str(pvar_syn) ', wt: ' num2str(wt_syn)]; ['gof1: ' num2str(gof1) ', gof2: ' num2str(gof2) ', gof3: ' num2str(gof3) ', gof4: ' num2str(gof4)]; "synthesized resp vs fit resp, all samples"};
-    si = 2; hp1{si}.YData = depv_syn(tinds); hp2{si}.YData = depvp_syn(tinds); hp3{si}.YData = depvp_syn2(tinds); hax{si}.Title.String = "synthesized resp vs fit resp, subset of samples";
+    si = 1; hp1{si}.YData = depv_syn; hp2{si}.YData = pred_syn; hp3{si}.YData = pred_syn2; hax{si}.Title.String = {['pvar: ' num2str(pvar_syn) ', wt: ' num2str(wt_syn)]; ['gof1: ' num2str(gof1) ', gof2: ' num2str(gof2) ', gof3: ' num2str(gof3) ', gof4: ' num2str(gof4)]; "synthesized resp vs fit resp, all samples"};
+    si = 2; hp1{si}.YData = depv_syn(tinds); hp2{si}.YData = pred_syn(tinds); hp3{si}.YData = pred_syn2(tinds); hax{si}.Title.String = "synthesized resp vs fit resp, subset of samples";
     si = 3; hp1{si}.YData = gtr_syn_1; hp2{si}.YData = ft_syn; hp3{si}.YData = ft_syn2; hax{si}.Title.String = "ground truth vs fits";
     si = 4; hp1{si}.YData = []; hp2{si}.YData = gtr_syn_1; hp3{si}.YData = gtr_syn_2; hax{si}.Title.String = "ground truth model and contaminating model";
 

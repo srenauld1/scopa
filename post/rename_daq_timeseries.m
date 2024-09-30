@@ -11,4 +11,5 @@ ball.intside = single(daqrs.ficTracIntSide{1}(:)');
 ball.sidevel = single(daqrs.ficTracIntSide_diff{1}(:)');
 vis.yaw = single(daqrs.g4panels{1}(:)');
 vis.yawvel = single(daqrs.g4panels_diff{1}(:)');
+
 ti = single(daqrs.Time{1}(:)');

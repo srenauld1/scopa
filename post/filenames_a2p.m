@@ -208,7 +208,7 @@ for pfi = 1:numel(pffn)
     pth.tsuse_nms_prefix.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi}];
 end
 
-pth.tsuse_nms_prefix.fitm = [pth_fldr 'tsuse_finfits_'];
+pth.tsuse_nms_prefix.mfit = [pth_fldr 'tsuse_finfits_'];
 pth.tsuse_nms_prefix.scat = [pth_fldr 'tsuse_finscatter_'];
 pth.tsuse_nms_prefix.pltx = [pth_fldr 'tsuse_finpltexp_'];
 

@@ -13,7 +13,7 @@ arguments
     opt.minpval = 0.05; %minimum p value to consider significant; saturation in hsvmap set to 0 if p value>minpval
     opt.stack = [] %yxztc image stack for plot
     opt.roipx = [] %cell array, length number of rois, each cell has linear indices of each roi
-    opt.roivec = [] %size [total number rois, total number voxels in yxz stack]; each column represents linear index of voxel in yxz stack; each element in row n is true if voxel is present in roi n, 0 otherwise
+    opt.roiwt = [] %size [total number rois, total number voxels in yxz stack]; each column represents linear index of voxel in yxz stack; each element in row n is true if voxel is present in roi n, 0 otherwise
     opt.roicen = [] %cell array, length number of rois; cell n is yxz centroid for roi n;
     opt.sortstyle = 'xyz' % 'none', 'corr', 'xyz', 'yxz', 'zyx', 'zxy', 'xzy', 'yzx' (all are ascending order); corr is ascending by correlation, negative to positive; for spatial sort styles (xyz and permutations) first dim changes fastest, last slowest, so xyz is like reading a book
     opt.alignzero = 0
@@ -37,7 +37,7 @@ lagstyle = opt.lagstyle;
 minpval = opt.minpval;
 stack = opt.stack;
 roipx = opt.roipx;
-roivec = opt.roivec;
+roiwt = opt.roiwt;
 roicen = opt.roicen;
 sortstyle = opt.sortstyle;
 alignzero = opt.alignzero;
@@ -101,7 +101,7 @@ if pixfit
 
 
     hsvopt.foreground = 'pixels';
-    roivec = [];
+    roiwt = [];
     roicen = [];
     roipx = num2cell(1:numel(stackmnt));
 end
@@ -179,11 +179,11 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
     [~, fldr, ~] = fileparts(fileparts(pthgif));
     fldr_title = strrep(strrep(fldr, '-', ' '), '_', ' ');
 
-    if isempty(roivec)
-        roivec = zeros(numel(roipx), numel(stackmnt), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+    if isempty(roiwt)
+        roiwt = zeros(numel(roipx), numel(stackmnt), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
         for k = 1:numel(roipx)
             [maskytmp, maskxtmp, maskztmp] = ind2sub(size(stackmnt), roipx{k});
-            roivec(k, sub2ind(size(stackmnt), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+            roiwt(k, sub2ind(size(stackmnt), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
         end
     end
 
@@ -208,7 +208,7 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
     else
         roipx = roipx(ir);
         crosshair = crosshair(ir);
-        roivec = roivec(ir,:);
+        roiwt = roiwt(ir,:);
     end
 
     respstd = std(resp, 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
@@ -225,30 +225,27 @@ if doplots && ~isempty(stackmnt) && ~isempty(roipx)
     % rnk  = rnk/100;
     % vrangenew = [rnk 1];
     % hsvopt.vrange_out_manual = [1-rnk 1];
-
      
-    % [susesort,suessortinds]=sort(suse);
-    % suseneg = find(susesort<0);
-    % muk=r2use(suessortinds);
-    % figure; plot(muk); hold on; plot(1:numel(suseneg), muk(suseneg))
+    [ss,ssi]=sort(suse);
+    sneg = find(ss<0);
+    ssn = ss(sneg);
+    tmp1=r2use(ssi);
+    tmp2=respstd(ssi);
+    hfg = figure; 
+    subplot(211); hold on; plot(ss, tmp1); plot(ssn, tmp1(sneg)); title('r squared versus slope for each roi (or pixel)')
+    subplot(212); hold on; plot(ss, tmp2); plot(ssn, tmp2(sneg)); title('fluorescence std versus slope for each roi (or pixel)')
+    saveas(hfg, strrep(pthgif, '.gif', '.png'))
     % 
-    % [susesort,suessortinds]=sort(suse);
-    % suseneg = find(susesort<0);
-    % muk=respstd(suessortinds);
-    % figure; plot(muk); hold on; plot(1:numel(suseneg), muk(suseneg))
-
-    % figure; plot(r2use(laguse==1)); yline(mean(r2use(laguse==1)), 'b'); hold on; plot(r2use(laguse==2)); yline(mean(r2use(laguse==2)), 'r'); hold on; plot(r2use(laguse==3)); yline(mean(r2use(laguse==3)), 'y');
+    % for k = 1:numel(laguse)
+    %     hfg = figure; hold on;
+    %     plot(r2use(laguse==1));
+    %     yline(mean(r2use(laguse==1)), 'b');
+    %     fig2gif(hfg, k, insertBefore(pthgif, '.gif', 'parsbylag'))
+    % end
 
     
     hsvmap = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use, valft=respstd);
-    if ~hsvopt.ignoresat
-        r2use2 = r2use;
-        r2use2(suse>=0) = min(r2use2);
-        hsvmap2 = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use2, valft=respstd);
-        hsvmap(suse<0,:) = hsvmap2(suse<0,:);
-    end
-
-    imhsv = plots_hsvfov(hsvopt, stackmnt, hsvmap, roipx, roivec);
+    imhsv = hsvplt(hsvopt, stackmnt, hsvmap, roipx, roiwt);
 
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
