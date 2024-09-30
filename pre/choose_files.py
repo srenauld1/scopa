@@ -237,19 +237,19 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
             pth_md_old = pth_prefix + '_metadatanew_.npy'
             pth_md_mat_old = pth_md_old[:-4] + '.mat'  
-            if not os.path.isfile(pth_md): #if scanimage metadata file (mdsi.txt) is not present, make it
-                if do_register: #if doing registration, or if the either of the old metadata files are present, make mdsi.txt:
+            if not os.path.isfile(pth_md): #if scanimage metadata file (*mdsi_.txt) is not present, make it
+                if do_register: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
                         read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
                         pth_md = []
                     elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
-                        raise Exception("mdsi.txt is not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or run do_register to create them")
+                        raise Exception("mdsi_.txt is not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or run do_register to create them")
                 else:
                     if os.path.isfile(pth_md_old):
                         convert_md_file(pth_md, pth_md_old, pth_md_mat_old)
                     else:
-                        raise Exception("mdsi.txt is not found, and neither is old metadata file 'metadatanew.npy, and you're not running do_register; can only be created from scanimage metadata in raw tif (the tif file used in do_register), so make sure you haven't moved those metadata files, or run do_register to create them")
+                        raise Exception("mdsi_.txt is not found, and neither is old metadata file 'metadatanew.npy, and you're not running do_register; can only be created from scanimage metadata in raw tif (the tif file used in do_register), so make sure you haven't moved those metadata files, or run do_register to create them")
             if os.path.isfile(pth_md_old): 
                 os.remove(pth_md_old)
             if os.path.isfile(pth_md_mat_old): 
