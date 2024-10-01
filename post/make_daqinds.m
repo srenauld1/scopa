@@ -1,42 +1,104 @@
-function daqinds = make_daqinds(frameinds, timestamps, numvol, numslice_withflyback, pth_daqinds)
+function daqinds = make_daqinds(frameon, t, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre)
+
+
+% make imaging slice indices and imaging volume indices for resampling (aligning) daq timeseries with imaging 
+% frameon is logical indicating when imaging frame is acquiring 
+% frames have flyback lines, volumes have flyback frames, slices are frames mod numslice_withflyback, numslice is number slices without flyback
+
+
+%%%%%%%% frame indices %%%%%%%%
+
+frameinds = bin2ind(frameon);
+
+if max(frameinds)/numslice_withflyback~=numvol
+    error("number of volumes computed from daq frames does not match number of stack volumes reported in scanimage metadata")
+end
+if frameinds(1) == 1
+    sprintf("warning, first daq sample is during an imaging frame; disregard if you're running daq in background and daq record has been cropped to start when frame starts")
+end
 
 
 %%%%%%%% slice indices %%%%%%%%
 
-if frameinds(1) == 1
-    sprintf("warning, first daq sample is during an imaging frame")
+if use_flyback_lines
+    frameinds = assign_flyback(frameinds, t); %assign flyback lines the nearest frame index (ie recenter frame)
+    sliceinds = mod(frameinds-1, numslice_withflyback)+1; %get one-indexed slice indices
+else
+    sliceinds = frameinds; %for clarity let's make a copy and not modify frameinds 
+    sliceinds(sliceinds==0) = nan;
+    sliceinds = mod(sliceinds-1, numslice_withflyback)+1; %get one-indexed slice indices
+    sliceinds(isnan(sliceinds)) = 0;
 end
-frameinds = binary2count(frameinds);
-numvol_from_frames = max(frameinds)/numslice_withflyback;
-if numvol_from_frames~=numvol
-    error("number of volumes computed from daq frames does not match number of stack volumes")
+
+stmp = sliceinds(sliceinds~=0);
+if stmp~=numslice_withflyback
+    error("final daq volume is not complete . . . is this a problem? if you don't care just comment out this error")
 end
-usi = unique(frameinds(frameinds~=0),'stable'); %index of each frame
-sliceinds = nan(size(frameinds));
-trialdata_time_tmp = seconds(timestamps);
-volume_centroid_ind = zeros(numel(usi), 1);
-parfor ii = 1:numel(usi) %loop is much faster than using arrayfun
-    volume_centroid = mean(trialdata_time_tmp(frameinds==usi(ii))); %find time centroid for each volume
-    [~, volume_centroid_ind(ii)] = min(abs(trialdata_time_tmp - volume_centroid)); %find nearest daq sample to volume centroid
-end
-sliceinds(volume_centroid_ind) = frameinds(volume_centroid_ind); %put volume index at nearest daq sample to volume centroid
-sliceinds = fillmissing(sliceinds, 'nearest');
-sliceinds = mod(sliceinds-1, numslice_withflyback)+1; %get one-indexed slice indices
 
 %%%%%%%% volume indices %%%%%%%%
 
-uniquesliceinds = unique(sliceinds(sliceinds~=0));
-endvolinds = strfind(sliceinds', [uniquesliceinds(end) uniquesliceinds(1)]);
-volinds = sliceinds;
-volinds(endvolinds) = 0;
-volinds = binary2count(logical(volinds));
-volinds(endvolinds) = volinds(endvolinds-1); %all slices (the whole volume)
+volinds = sliceinds; %since we might use sliceinds let's make a copy and not modify sliceinds 
+volinds(volinds==0) = nan; %replace zeros (if they exist) with nan, then . . .
+volinds = fillmissing(volinds, 'nearest'); %fill in zeros (which are between slices in sliceinds if use_flyback_lines=0, and absent otherwise) to help define volume; for this, precision is not important, since it just fills in flyback lines (not frames, where precision is more important)
+volinds(volinds>numslice) = 0;
+volinds = bin2ind(logical(volinds));
+if use_flyback_frames
+    volinds = assign_flyback(volinds, t);  %assign flyback frames the nearest volume index (ie recenter volume)
+else
+    frameinds(sliceinds>numslice) = 0; %remove frame flyback in frameinds if use_flyback_frames=0
+    sliceinds(sliceinds>numslice) = 0; %remove frame flyback in sliceinds if use_flyback_frames=0
+end
 
-%%%%%%%% save %%%%%%%%
+vtmp = volinds(volinds~=0);
+if vtmp(end)~=numvol
+    error("number stack volumes in metadata does not match number recorded in daq")
+end
 
-daqinds.slice = single(sliceinds);
-daqinds.vol = single(volinds);
+if any(isnan([frameinds; sliceinds; volinds]))
+    error("there should be no nans in any daqinds")
+end
 
-save(pth_daqinds, 'daqinds', '-v7.3', '-mat');
+%%%%%%%% put output in struct %%%%%%%%
+
+daqinds.frame = single(frameinds); %don't do uint16 for frameinds since they can exceeed 65535
+daqinds.slice = uint16(sliceinds);
+daqinds.vol = uint16(volinds);
+
+%%%%%%%% plotting (optional) %%%%%%%%
+
+if exist('maxtplot', 'var') && ~isempty(maxtplot) && maxtplot~=0
+    if isduration(t)
+        t = seconds(t);
+    end
+    t = t-t(1); %zero, just for plotting, so maxtplot works as intended
+    kp = find(t<maxtplot);
+    tsub = t(kp);
+    figure;
+    sgtitle( ['use flyback lines: ' num2str(use_flyback_lines), '; use flyback frames: ' num2str(use_flyback_frames)])
+    subplot(311);
+    plot(tsub, daqinds.frame(kp));
+    title(['daqinds.frame for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.frame) max(daqinds.frame)]) ])
+    subplot(312);
+    plot(tsub, daqinds.slice(kp));
+    title(['daqinds.slice for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.slice) max(daqinds.slice)]) ])
+    subplot(313);
+    plot(tsub, daqinds.vol(kp))
+    title(['daqinds.vol for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.vol) max(daqinds.vol)]) ])
+    figsuffix = 'daqinds_.png';
+    if exist('pthfigpre', 'var') && ~isempty(pthfigpre)
+        pthfig = [pthfigpre figsuffix];
+    else
+        pthfig = pthauto(suffix=figsuffix, usetime=0);
+    end
+    saveas(gca, pthfig, 'png');
+end
+
 
 end
+
+
+function inds = assign_flyback(inds, t)
+kp = inds==0;
+inds(kp) = interp1(t(~kp),inds(~kp),t(kp), 'nearest', 'extrap'); %extrap for the final samples
+end
+

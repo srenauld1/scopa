@@ -1,9 +1,13 @@
-function tscnt = binary2count(tsbin)
+function tscnt = bin2ind(tsbin)
 
 % convert binary timeseries to cumulative count 
 
 arguments
-    tsbin (:,1) double
+    tsbin {mustBeVector}
+end
+
+if isrow(tsbin)
+    tsbin = tsbin';
 end
 
 if tsbin(1) == 0

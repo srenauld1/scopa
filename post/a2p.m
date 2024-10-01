@@ -35,7 +35,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     ids = get_ids_a2p(ui.mn.pthstacks{pai});
 
-    [pth, parstr] = filenames_a2p(ui, ids, ui.mn.pthstacks{pai});
+    [pth, parstr] = fna2p(ui, ids, ui.mn.pthstacks{pai});
 
     gset.pthfldr = pth.fldr;
     gset.name_noregionex = 'default';
@@ -45,7 +45,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     %% load metadata
 
     md = load_scanimage_metadata(pth.md, ui.ld, ui.hires.ld);
-    % md_flyg = load_flyg_metadata(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except ball_diameter, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
+    % md_flyg = load_flyg_metadata(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % ff = @(x,y) cell2struct([struct2cell(md);struct2cell(md_flyg)],[fieldnames(md);fieldnames(md_flyg)]);
     % md = ff(md, md_flyg);
 
@@ -70,15 +70,27 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         if ui.mn.do_daq
             try
-                bhjdsload(pth.daqrs, 'daqrs')
+                load(pth.daqrs, 'daqrs')
             catch
-                daqrs = daqld(ids.recdatenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice_withflyback, md.imper, ...
-                    pth.daq, pth.daqrs, pth.daqinds, ui.daq.ball_diameter, ui.daq.slopelen_sec, ui.daq.slopeorder, ui.daq.fast_version, ui.daq.doplots);
+                daqrs = daqld(ids.recdatenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice, md.numslice_withflyback, md.imper, ui.daq.balldia, ui.daq.voltmin, ui.daq.voltmax, ...
+                    vnormal=ui.daq.vnormal, ...
+                    vcircular=ui.daq.vcircular, ...
+                    vcategorical=ui.daq.vcategorical, ...
+                    toballscale=ui.daq.toballscale, ...
+                    tounwrap=ui.daq.tounwrap, ...
+                    tozero=ui.daq.tozero, ...
+                    pth_fldr=pth.fldr, ...
+                    slopelensec=ui.daq.slopelensec, ...
+                    slopeord=ui.daq.slopeord, ...
+                    useinds=ui.daq.useinds, ...
+                    use_flyback_lines=ui.daq.use_flyback_lines, ...
+                    use_flyback_frames=ui.daq.use_flyback_frames, ...
+                    doplots=ui.daq.doplots);
             end
             [ts.ball, ts.vis, ts.ti] = rename_daq_timeseries(daqrs);
             md.ti = ts.ti;
             [md.epochs, ts.vis] = load_g4_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.imper, daqrs, ui.daq.use_carls_epochs);
-            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, md.ti, ui.daq.ball_diameter);
+            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, md.ti, ui.daq.balldia);
         end
 
         if ui.mn.do_temporal_downsample_align_fictrac_video

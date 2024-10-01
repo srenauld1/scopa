@@ -1,4 +1,4 @@
-function [pth, parstr] = filenames_a2p(ui, ids, pthstack)
+function [pth, parstr] = fna2p(ui, ids, pthstack)
 
 
 %%set up filenames for a2p 
@@ -48,8 +48,7 @@ else
     pth_daq = pth_daq.name;
 end
 
-pth_daqrs = [pth_fldr recid '_daqrs_.mat']; %keep hyphen for compatibility with flyg
-pth_daqinds = [pth_fldr recid '_daqinds_.mat'];
+pth_daqrs = [pth_fldr recid '_daqrs_.mat']; 
 
 % pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video
 pth_ftdat_pat = [pth_fldr 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.dat']; %
@@ -239,7 +238,6 @@ if numregions>0
 end
 pth.daq = pth_daq;
 pth.daqrs = pth_daqrs;
-pth.daqinds = pth_daqinds;
 pth.ft.dat = pth_ftdat;
 pth.ft.log = pth_ftlog;
 pth.ft.vidlog = pth_ftvidlog;

@@ -8,7 +8,7 @@ arguments
 end
 
 if isempty(pthgif)
-    pthgif = pthauto(pthgif, suffix='.gif', usetime=1);
+    pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1);
 end
 
 frame = getframe(hfg);

@@ -82,9 +82,9 @@ else
 end
 
 if isfield(patternMetadata,'ball')
-    patternMetadata.ball_diameter = patternMetadata.ball;
+    patternMetadata.balldia = patternMetadata.ball;
 else
-    patternMetadata.ball_diameter = 9;
+    patternMetadata.balldia = 9;
     warning('fictrac.ball.diameter missing in experiment CSV, using ball diameter: 9 mm')
 end
 
@@ -114,6 +114,6 @@ end
 
 md.rateft = fictracMetadata.fictracRate;
 md.ratedaq = mD.sampRate;
-md.ball_diameter = patternMetadata.ball_diameter;
+md.balldia = patternMetadata.balldia;
 
 

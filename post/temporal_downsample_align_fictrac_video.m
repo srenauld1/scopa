@@ -182,7 +182,7 @@ if doplots
     ls1 = '-k';
     ls2 = 'or';
     match_ylim = 1;
-    plot_multi_timeseries(laser_ts_smoothed, peaks_timeseries, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
+    pltmultits(laser_ts_smoothed, peaks_timeseries, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
 end
 
 %% find downsampling indices
@@ -201,7 +201,7 @@ lkgzeroed = lkg - keepinds_vid(1) + 1;
 
 rsinds = zeros(size(keepinds_vid));
 rsinds(lkgzeroed) = 1;
-rsinds = binary2count(logical(rsinds));
+rsinds = bin2ind(logical(rsinds));
 rsinds(rsinds==0) = nan;
 rsinds = fillmissing(rsinds, 'nearest');
 

@@ -1,4 +1,4 @@
-function plot_multi_timeseries(ts1, ts2, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
+function pltmultits(ts1, ts2, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
 
 % plot two timeseries on one figure, using different x and y axes
 % if showing multiple xlim segments, the entire timeseries are only plotted once

@@ -183,10 +183,10 @@ yyaxis right; hplr = plot(resp2(plotinds), 'r'); ylim([0 1]); hplr.Parent.YAxis(
 %     numseg(numseg>maxseg) = maxseg;
 % 
 %     % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
-%     % plot_multi_timeseries(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+%     % pltmultits(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
 % 
 %     fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
-%     plot_multi_timeseries(resp1, respnew, fngif3, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+%     pltmultits(resp1, respnew, fngif3, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
 % 
 % 
 % end

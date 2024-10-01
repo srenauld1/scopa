@@ -8,8 +8,8 @@ format long
 maxsec = 300;
 minsec = 90;
 numnumelfac = 0.95;
-slopelen_sec = 0.5;
-slopeorder = 2;
+slopelensec = 0.5;
+slopeord = 2;
 ball_radius = 4.5;
 limfac = 1;
 gif_visibility = 'on';
@@ -72,7 +72,7 @@ count = 0;
 for j = 1:numel(allposx)
     if numel(allposx{j})>numposxmax*numnumelfac && allt{j}(end)>minsec*1e3
         count = count+1;
-        slopelen_samp = round(slopelen_sec/dt(j));
+        slopelen_samp = round(slopelensec/dt(j));
 
         % tmp = alldrlx{j};
         % alldrlxgood{count} = smoothdata(tmp, 'gaussian', slopelen_samp, 'omitmissing');
@@ -85,7 +85,7 @@ for j = 1:numel(allposx)
         % allintxgood{count} = allintx{j}*ball_radius;
         % allintygood{count} = allinty{j}*ball_radius;
 
-        allvelx{count} = differentiate_timeseries('circular', allintx{j}, slopelen_sec, slopeorder, dt(j))*ball_radius/dt(j); %same as (smoothed) alldrlygood
+        allvelx{count} = differentiate_timeseries('circular', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %same as (smoothed) alldrlygood
         cumvelxtmp = cumsum(allvelx{count});
         cumvelx(count) = cumvelxtmp(end);
 
@@ -97,7 +97,7 @@ for j = 1:numel(allposx)
         cumvelxthreshtmp = cumsum(allvelxthresh{count});
         cumvelxthresh2(count) = cumvelxthreshtmp(end);
 
-        allvely{count} = differentiate_timeseries('circular', allinty{j}, slopelen_sec, slopeorder, dt(j))*ball_radius/dt(j); %same as (smoothed) -alldrlxgood
+        allvely{count} = differentiate_timeseries('circular', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %same as (smoothed) -alldrlxgood
         cumvelytmp = cumsum(allvely{count});
         cumvely(count) = cumvelytmp(end);
 

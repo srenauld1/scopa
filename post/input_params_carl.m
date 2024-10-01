@@ -37,12 +37,28 @@ ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 %% DAQ
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
-ui.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-ui.daq.fast_version = 1; %1 will use resample rather than slower but more accurate framewise scheme
-ui.daq.slopeorder = 2; %order of polynomial used to fit local slope
-ui.daq.slopelen_sec = 0.4; %window length used to fit slope
-ui.daq.use_carls_epochs = 1; %0 for everybody else
+ui.daq.useinds = 'none'; %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
+ui.daq.use_flyback_lines = 1; %whether to include flyback lines when resampling with frame indices (if ui.daq.useinds is not 'none')
+ui.daq.use_flyback_frames = 1; %whether to include flyback frames when resampling with volume indices (if ui.daq.useinds is not 'none')
+ui.daq.balldia = 9; %mm, used to convert fictrac variables into mm
+ui.daq.slopelensec = 0.4; %window length used to fit slope (to compute daq variable derivatives (eg velocities)
+ui.daq.slopeord = 2; %order of polynomial used to fit local slope; this should probably just remain 2
+
+ui.daq.vnormal = {'Time', 'heat', 'virmenIteration'}; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
+ui.daq.vcircular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'}; %list circular daq variables you want to process
+ui.daq.vcategorical = {'ftcam'}; %list categorical daq variables you want to process
+
+ui.daq.toballscale = {'ficTracIntSide', 'ficTracIntForward'}; %define which ui.daq.vars to rescale from radians to mm
+ui.daq.tounwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which ui.daq.vars to unwrap
+ui.daq.tozero = {'ficTracIntSide', 'ficTracIntForward'}; %%define which ui.daq.vars to zero (force to start at 0)
+
+ui.daq.voltmin  = 0; %daq voltage min; need to find this in metadata
+ui.daq.voltmax  = 10; %daq voltage max, need to find this in metadata
+
 ui.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
+
+ui.daq.use_carls_epochs = 1; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial 
+
 
 %% LOAD/VISUALIZE STACK
 
@@ -203,8 +219,8 @@ ui.lc.chanuse = 1;
 ui.pf.bump.bump_method = 'pva'; %'pva' for vector average
 ui.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 ui.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
-ui.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-ui.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+ui.pf.bump.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+ui.pf.bump.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 ui.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 ui.pf.bump.numcluster_for_bump_domain_resample.eb = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to ui.pf.bump.mfit.varnms.depvp  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 ui.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass

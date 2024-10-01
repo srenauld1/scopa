@@ -128,7 +128,7 @@ for m = 1:size(frng,1)
         fngif2 = fngif;
 
         axpos = [0.1 0.1 0.85 0.35];
-        plot_multi_timeseries(resp1, respnew, fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
+        pltmultits(resp1, respnew, fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
 
         % fig2gif(hfg,m,fngif)
 

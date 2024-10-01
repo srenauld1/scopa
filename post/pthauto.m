@@ -1,14 +1,13 @@
-function pthsv = pthauto(vnm, opt)
+function pthsv = pthauto(opt)
 
 arguments
-    vnm
+    opt.vnm = ''
     opt.glob = 'pthfldr'
     opt.suffix = ''
     opt.usetime = 1
     opt.usefun = 1
 end
 
-vnm = inputname(1);
 fndefault = '00000_NONAME';
 
 callstack = dbstack('-completenames');
@@ -19,6 +18,7 @@ else
 end
 pthfldr = globals_a2p(opt.glob);
 if isempty(pthfldr)
+    vnm = inputname(1);
     error(sprintf("global variable " + opt.glob + " has not been set" + newline + "and " + vnm + " was not passed as argument into function " + fcnnm + newline + "do one or the other"))
 end
 infix = '';

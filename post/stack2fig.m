@@ -41,7 +41,7 @@ else
 end
 
 if isempty(pthgif)
-    pthgif = pthauto(pthgif, suffix='.gif', usetime=1);
+    pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1);
 end
   
 if isempty(dimorder)

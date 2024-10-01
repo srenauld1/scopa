@@ -45,10 +45,10 @@ opt.mn.old_project = 0; %for carl
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
 opt.daq.ignore_daq = 1; %1 to skip daq
-opt.daq.ball_diameter = 9; %mm, used to convert fictrac variables into mm
-opt.daq.fast_version = 0; %1 will use resample rather than slower but more accurate framewise scheme
-opt.daq.slopeorder = 2; %order of polynomial used to fit local slope
-opt.daq.slopelen_sec = 0.4; %window length used to fit slope
+opt.daq.balldia = 9; %mm, used to convert fictrac variables into mm
+opt.daq.useinds = 0; %1 will use resample rather than slower but more accurate framewise scheme
+opt.daq.slopeord = 2; %order of polynomial used to fit local slope
+opt.daq.slopelensec = 0.4; %window length used to fit slope
 opt.daq.use_carls_epochs = 1; %0 for everybody else
 opt.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
@@ -203,8 +203,8 @@ opt.froi.norm.doplots = 0;
 opt.pf.bump.bump_method = 'pva'; %'pva' for vector average
 opt.pf.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 opt.pf.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
-opt.pf.bump.slopeorder = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-opt.pf.bump.slopelen_sec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+opt.pf.bump.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+opt.pf.bump.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 opt.pf.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
 opt.pf.bump.numcluster_for_bump_domain_resample_str = {'eb-16'}; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, cell array of string 'regionex-integer', regionex must exist in matches to opt.pf.bump.mfit.varnms.depvp  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
 opt.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass

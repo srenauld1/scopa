@@ -1,15 +1,15 @@
 
-function differ = differentiate_timeseries(vartypein, inp, slopelen_sec, slopeorder, dt)
+function differ = differentiate_timeseries(vartypein, inp, slopelensec, slopeord, dt)
 
 arguments
     vartypein char
     inp double
-    slopelen_sec double
-    slopeorder double
+    slopelensec double
+    slopeord double
     dt double
 end
 
-slopelen = round(slopelen_sec / dt);
+slopelen = round(slopelensec / dt);
 
 if strcmp(vartypein, 'circular')
 
@@ -18,15 +18,15 @@ if strcmp(vartypein, 'circular')
     inpx = cos(inp);
     inpy = sin(inp);
 
-    inpdx = movingslope(inpx, slopelen, slopeorder);
-    inpdy = movingslope(inpy, slopelen, slopeorder);
+    inpdx = movingslope(inpx, slopelen, slopeord);
+    inpdy = movingslope(inpy, slopelen, slopeord);
 
     denom = inpx.^2 + inpy.^2;
     differ = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
 
 elseif strcmp(vartypein, 'normal')
 
-    differ = movingslope(inp, slopelen, slopeorder);
+    differ = movingslope(inp, slopelen, slopeord);
 
 elseif strcmp(vartypein, 'categorical')
 

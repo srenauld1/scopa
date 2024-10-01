@@ -7,7 +7,7 @@ end
 
 
 if isempty(pthsv)
-    pthsv = pthauto(pthsv, suffix='.gif', usetime=1);
+    pthsv = pthauto(vnm=pthsv, suffix='.gif', usetime=1);
 end
 
 

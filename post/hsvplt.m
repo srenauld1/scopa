@@ -17,7 +17,7 @@ if strcmp(plt.foreground, 'allrois') && isempty(roiwt)
 end
 
 if isempty(pthgif)
-    pthgif = pthauto(pthgif, suffix='.gif', usetime=1, usefun=1);
+    pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1, usefun=1);
 end
 
 numscalebg = 256; %background intensity depth

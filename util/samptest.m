@@ -8,8 +8,8 @@ load('~/samptestdat.mat', 'A', 'B', 'C', 'inds', 'Ad1', 'Ad2', 'Ad3', 'Ad4');
 
 %% volts to circle 
 
-% maxvolt=10;
-% A = A/maxvolt*2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
+% voltmax=10;
+% A = A/voltmax*2*pi - pi; %put in range -pi to pi, G4 frame 0 assigned to -pi
 
 %% pretend we have native fictrac sampling
 
