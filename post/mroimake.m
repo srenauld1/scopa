@@ -171,17 +171,14 @@ pth_morphroiresp = [pth_mroi_prefix '_resp_.mat']; %don't need channel infix her
 try
     load(pth_morphroiresp, 'resp')
 catch
-    resp = [];
-    for c = 1:numchan
-        resp = roiresp(stack, roidat(c).roiwt, pth_mroi_prefix, normopts, imper, resp=resp, wavp=wavp, degdtr=degdtr, t=t); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-        if ~maskinput && c==numchan
-            save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
-        end
+    resp = roiresp(stack, roidat(c).roiwt, pth_mroi_prefix, normopts, imper, wavp=wavp, degdtr=degdtr, t=t); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    if ~maskinput
+        save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
     end
 end
 
 % if channorm %2 channel normalization based on wavelet coherence, not fully tested
-%     norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=t, roiind=1, it=1:numel(ti), pthgifpre=pth_mroi_prefix, mincoh=0.3);
+%     norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=t, roiind=1, it=1:numel(t), pthgifpre=pth_mroi_prefix, mincoh=0.3);
 % end
 
 

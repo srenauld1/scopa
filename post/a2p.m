@@ -176,7 +176,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     % save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
 
 
-    %% linear fit and hsv map (work in progress, but it does work)
+    %% linear fit and hsv map (will be moved into mfit)
 
    if ui.mn.do_lfit
 %% 
