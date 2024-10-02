@@ -77,7 +77,7 @@ stackmnt = mean(stack, 4, 'native');
 %% draw rois (polygons/polyhedra)
 
 if ~maskinput
-    roimaskman_allchan = repmat({ones(size(stack,1), size(stack,2), size(stack,3), 'logical')}, [1 1 1 numchan]);
+    roimaskman_allchan = repmat({ones(size(stack,1), size(stack,2), size(stack,3), 'logical')}, [numchan, 1]);
     if use_drawn_rois
         for c = 1:numchan
             if ismember(c,chandraw)

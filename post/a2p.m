@@ -174,7 +174,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     if ui.mn.do_lfit
 
-        ui.lc.chanuse = 2;
+        ui.lc.chanuse = 1;
 
         rindy = 1;
         rsp = ts.resp.(regionex).(parstr.mroi.(regionex)).(['rawf_f_f_n_chn' num2str(ui.lc.chanuse)]);
