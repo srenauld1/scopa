@@ -6,7 +6,7 @@
 % for readability, variables are sometimes unpacked/repacked when entering/exiting functions in which they're used, unless they are used infrequently, or they are large and must be modified in a way that requires indexing
 
 % struct 'ui' holds input params in various sub-structs; each substruct is (predominantly) used in one function below, although substruct fields are passed individually as arguments to make the function more portable
-% struct 'ts' holds timeseries (in various sub-structs) with temporal indices corresponding to md.ti (imaging frame timestamps)
+% struct 'ts' holds timeseries (in various sub-structs) with temporal indices corresponding to ts.t (imaging frame timestamps)
 % struct 'roidat' holds roi info for morphological and functional rois
 % struct 'md' holds metadata
 % struct 'pth' holds paths
@@ -65,8 +65,8 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                 crop_edges=1, pth_template=pth.template);
             save(pth.featsave, 'ts', 'stimvid', '-v7.3', '-mat')
         end
-        md.ti = md.imper * [1:md.sz_crop(4)];
-        md.epochs.epochinds_ts_i = ones(numel(md.ti), 1);
+        ts.t = md.imper * [1:md.sz_crop(4)];
+        ts.epochinds = ones(numel(ts.t), 1);
 
     else
 
@@ -87,12 +87,11 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                     useinds=ui.daq.useinds, ...
                     use_flyback_lines=ui.daq.use_flyback_lines, ...
                     use_flyback_frames=ui.daq.use_flyback_frames, ...
-                    doplots=ui.daq.doplots);
+                    doplt=ui.daq.doplt);
             end
-            [ts.ball, ts.vis, ts.ti] = daqrename(daqrs);
-            md.ti = ts.ti;
-            [md.epochs, ts.vis] = load_g4_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.imper, daqrs, ui.daq.use_carls_epochs);
-            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, md.ti, ui.daq.balldia);
+            [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
+            [md.epochs, ts.vis] = g4epochld(ts.t, pth.epochinfo, ts.vis, pth.fldr, ids, md.imper, daqrs, ui.daq.use_carls_epochs);
+            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, ui.daq.balldia);
         end
 
         if ui.mn.do_ftvproc
@@ -103,7 +102,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                     ftvdsrs = ftvproc(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
                         ui.ftv.num_periodic_peaks_defining_laser_oscillations, ui.ftv.ftvid_spatial_smooth_window_std, ui.ftv.numpix_to_extract_laser_timeseries, ...
                         ui.ftv.laser_timeseries_smooth_window_std, ...
-                        ui.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
+                        ui.ftv.doplt, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
                 catch ME
                     sprintf(ME.message)
                 end
@@ -157,7 +156,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roidat.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            mroimake(stackcrop, ui.mroi, md.ti, md.imper, md.xwid, md.ywid, md.zwid, ...
+            mroimake(stackcrop, ui.mroi, ts.t, md.imper, md.xwid, md.ywid, md.zwid, ...
             pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
         %%load/select functional (caiman) roi responses
@@ -175,11 +174,18 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     %% linear fit and hsv map (work in progress, but it does work)
 
     if ui.mn.do_lfit
+%% 
 
         ui.lc.chanuse = 1;
 
         rindy = 1;
         rsp = ts.resp.(regionex).(parstr.mroi.(regionex)).(['rawf_f_f_n_chn' num2str(ui.lc.chanuse)]);
+
+        rsp = wavdn(rsp, t=ti, it=1:numel(ts.t), pthgifpre='', doplt=1); %pth_mroi_prefix
+
+        %% 
+
+
         rsp1 = rsp(rindy,:);
 
         fvd = ts.ball.forvel;
@@ -203,7 +209,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         %     ts.resp.(regionex).(parstr.mroi.(regionex)).in_rawf_pc_f_cl_f_w_no_chn1, ...
         %     stackcrop, ...
         %     roidat.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roipx, ...
-        %     t=md.ti, ...
+        %     t=ts.t, ...
         %     ir=[1:50:1024], ...
         %     it=[1000:1500], ...
         %     yconstant=0 ...
@@ -212,7 +218,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         lfit_riw2( ...
             stim, ..., ts.ball.forvel, ...
             rsp, ... ts.resp.(regionex).(parstr.mroi.(regionex)).in_rawf_pc_f_cl_f_w_no_chn1, ...
-            t = md.ti, ...
+            t = ts.t, ...
             it = 3000:4000, ...
             ir = [], ...
             plotinds = [1:3], ...
@@ -234,7 +240,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             flypos = ts.flypos, ...
             pixfit = 0, ...
             pthgif = [], ...
-            doplots = 1 ...
+            doplt = 1 ...
             );
 
     end
@@ -257,7 +263,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(ui.mfit(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.mfit, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
+                [fitin, dochoose] = choose_timeseries(ui.mfit(si).varnms, ts, ts.t, pth.tsuse_nms_prefix.mfit, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
                 stackcrop = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 fitin = mfit(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.mfit(si)); %fit model using any available timeseries
@@ -276,14 +282,14 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             while dochoose
 
                 choosecount = choosecount + 1;
-                [fitin, dochoose] = choose_timeseries(ui.pltx(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.pltx, pth.stack, choosecount, dochoose);
+                [fitin, dochoose] = choose_timeseries(ui.pltx(si).varnms, ts, ts.t, pth.tsuse_nms_prefix.pltx, pth.stack, choosecount, dochoose);
                 [stackcrop, zstartpos_crop] = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
 
                 pltx(stackcrop, fitin.vars, ui.pltx(si).letui,  ...
                     fitin.varnms, ui.pltx(si).vpmap, ui.pltx(si).epochinds, ...
                     ui.pltx(si).lagsxy_sec, ui.pltx(si).lagsz_sec, ui.pltx(si).lags_to_plot, ...
-                    ui.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), md.ti, md.imper, zstartpos_crop, ...
-                    md.epochs.epochinds_ts_i, ui.pltx(si).gif_visibility, ui.pltx(si).iz, ui.pltx(si).it, ...
+                    ui.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), ts.t, md.imper, zstartpos_crop, ...
+                    ts.epochinds, ui.pltx(si).gif_visibility, ui.pltx(si).iz, ui.pltx(si).it, ...
                     ui.pltx(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
                     pth.mroi_interactive.(fitin.regionex), ui.mroi.norm, md.xwid, md.ywid, md.zwid, vid=ftvdsrs, stim=stimvid)
 

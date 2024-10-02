@@ -1,6 +1,6 @@
 function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
     num_periodic_peaks_defining_laser_oscillations, ftvid_spatial_smooth_window_std, ...
-    numpix_to_extract_laser_timeseries, laser_timeseries_smooth_window_std, doplots, pth_dat, pth_vidlog, pth_log)
+    numpix_to_extract_laser_timeseries, laser_timeseries_smooth_window_std, doplt, pth_dat, pth_vidlog, pth_log)
 
 arguments
     pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
@@ -11,7 +11,7 @@ arguments
     ftvid_spatial_smooth_window_std double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
     laser_timeseries_smooth_window_std double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    doplots = 0 %0 skips plots, 1 plots and saves, 2 saves but does not display 
+    doplt = 0 %0 skips plots, 1 plots and saves, 2 saves but does not display 
     pth_dat char = '' %fictrac .dat file
     pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime
@@ -45,9 +45,9 @@ end
 % error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data, 
 % and because the fictrac video is currently only used for visualization
 
-if doplots==1
+if doplt==1
     gif_visibility = 'on';
-elseif doplots==2
+elseif doplt==2
     gif_visibility = 'off';
 end
 
@@ -95,7 +95,7 @@ laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of
 num_vidframes = numel(laser_ts);
 ftvds = reshape(ftvds, szvd);
 
-if doplots
+if doplt
     hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
     hax = axes('Parent', hfg);
     imagesc(hax, ftvid_meanframe); hold on;
@@ -171,7 +171,7 @@ dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
 
 %% plot laser intensity timeseries with peaks marked
 
-if doplots
+if doplt
     peaks_timeseries = nan(size(laser_ts_smoothed));
     peaks_timeseries(lkg) = pkg;
     xlim_segments = 50;
@@ -218,7 +218,7 @@ sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
 
 %% plot video before and after resampling
 
-if doplots
+if doplt
     title_prefix = 'pre resample';
     pthgif = [pth_vid(1:end-4) '.gif'];
     stack2fig(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
@@ -364,10 +364,10 @@ sprintf("saved fictrac frame times and indices to this file: \n" + pth_log_parse
 end
 
 
-function pkhalfper = find_oscillation_halfperiod(mnt2, doplots)
+function pkhalfper = find_oscillation_halfperiod(mnt2, doplt)
 
-if ~exist('doplots', 'var')
-    doplots = 0;
+if ~exist('doplt', 'var')
+    doplt = 0;
 end
 
 mnt2f = max(mnt2)-mnt2;
@@ -378,7 +378,7 @@ mnt2f = mnt2f+min(mnt2);
 
 [mnt2d, mnt2fd, pkhalfper] = alignsignals(mnt2, mnt2f, 'Method', 'risetime');
 
-if doplots
+if doplt
     tinds = 1601:1800;
     figure;
     subplot(3,1,1); hold on;
@@ -391,10 +391,10 @@ end
 end
 
 
-function dfmnt = differentiate_laser_timeseries(lsts, per, doplots)
+function dfmnt = differentiate_laser_timeseries(lsts, per, doplt)
 
-if ~exist('doplots', 'var')
-    doplots = 0;
+if ~exist('doplt', 'var')
+    doplt = 0;
 end
 
 flt = [zeros(1,per-1) 1 zeros(1,per-1) -1]; %find diffs across dfdt num samples
@@ -403,7 +403,7 @@ dfmnt = conv(lsts, flt, 'full');
 dfmnt = dfmnt((length(flt) - 1)+1:end-(length(flt) - (1 + (per-1))));
 dfmnt = [zeros(1, (per-1)+1) dfmnt];
 
-if doplots
+if doplt
 
     figure;
     subplot(3,1,1);

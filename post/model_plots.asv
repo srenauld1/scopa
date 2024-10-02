@@ -75,19 +75,19 @@ end
 
 %% various plots
 
-if fitin.plt.doplots(1)
+if fitin.plt.doplt(1)
     model_plots_summary(fitin, opts, roidat, stackmean)
 end
 
-if doplots(1)
+if doplt(1)
     model_plots_fov
 end
 
-if doplots(1)
+if doplt(1)
     model_plots_timeseries
 end
 
-if doplots(4)
+if doplt(4)
     if isequal(mdl, @objective_svd)
         % plot_svd(ft{epi})
     else
@@ -95,7 +95,7 @@ if doplots(4)
     end
 end
 
-if doplots(5)
+if doplt(5)
     roivpix(depv_allrois{epi}, stack, roipx, pth_fitdata_prefix) %make gif showing roi against each of its pixels
 end
 

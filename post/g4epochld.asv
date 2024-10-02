@@ -1,16 +1,19 @@
-function [epochs, vis] = load_g4_epochs(trialtime, pth_epochinfo, vis, fldr, ids, imper, daqrs, use_carls_epochs)
+function [epochs, epochinds, vis] = g4epochld(t, pth_epochinfo, vis, fldr, ids, imper, daqrs, use_carls_epochs)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial) 
 % if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
 
 try
 
-    load(pth_epochinfo, 'epochs')
+    load(pth_epochinfo, 'epochs', 'epochinds', 'naninds')
+    if ~exist('epochinds', 'var')
+        throw('pth_epochinfo is old, overwriting with new method')
+    end
 
 catch
 
-    if size(trialtime, 1)<size(trialtime, 2)
-        trialtime = trialtime';
+    if size(t, 1)<size(t, 2)
+        t = t';
     end
 
     if any(strcmp(daqrs.Properties.VariableNames, 'epochs'))
@@ -47,17 +50,17 @@ catch
         hax = axes('Parent', hfg);
 
         bestshiftind_allepochs = [];
-        figframes = 0;
+        cnt = 0;
         for tei = 1:numel(testepochind_all)
             testepochind = testepochind_all(tei);
             criter = nan(numel(ft_misoffset_sec_all), 1);
             for fmsai = 1:numel(ft_misoffset_sec_all)
-                figframes = figframes+1;
+                cnt = cnt+1;
 
                 ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
-                epochs = define_g4_epoch_indices(ft_misoffset_sec, trialtime, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+                [~, epochinds] = define_g4_epoch_indices(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-                fu = daqrs.g4panels{1}(epochs.epochinds_ts_i==testepochind);
+                fu = daqrs.g4panels{1}(epochinds==testepochind);
                 if testepochind==2 || testepochind==3
                     fu = unwrap(fu); %makes it easier to see
                 end
@@ -72,7 +75,7 @@ catch
                 %ylim(hax, [min(daqrs.g4panels{1}(:)) - abs(min(daqrs.g4panels{1}(:)))*0.3, max(daqrs.g4panels{1}(:)) + abs(max(daqrs.g4panels{1}(:)))*0.3])
 
                 title([criter(fmsai) ft_misoffset_sec ft_misoffset_sec])
-                fig2gif(hfg, figframes, [fldr 'misoffset_.gif'])
+                fig2gif(hfg, cnt, [fldr 'misoffset_.gif'])
 
                 if fmsai==numel(ft_misoffset_sec_all)
                     critd = movingslope(criter, 20, 2, imper);
@@ -90,37 +93,37 @@ catch
         else
             ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
         end
-        epochs = define_g4_epoch_indices(ft_misoffset_sec, trialtime, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+        [epochs, epochinds] = define_g4_epoch_indices(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
 
-        figframes = 0;
+        uei = unique(epochinds(epochinds~=0), 'stable');
+        cnt = 0;
         hfg = figure;
         hax = axes('Parent', hfg);
-        for tei = 1:numel(testepochind_all)
-            figframes = figframes+1;
-            plot(hax, daqrs.g4panels{1}(epochs.epochinds_ts_i==testepochind_all(tei)))
-            title(['final offset'])
-            fig2gif(hfg, figframes, [fldr 'misoffset_final.gif'])
+        for tei = 1:numel(uei)
+            cnt = cnt+1;
+            plot(hax, daqrs.g4panels{1}(epochinds==uei(tei)))
+            title(['final offset, epoch ' num2str(uei(tei))])
+            fig2gif(hfg, cnt, [fldr 'offset_final.gif'])
         end
 
     end
 
 
-    if any(epochs.epochinds_ts_i==epochs.dark) || any(epochs.epochinds_ts_i==epochs.closedfinaldark)
-        epochs.naninds_i = epochs.epochinds_ts_i==epochs.dark | epochs.epochinds_ts_i==epochs.closedfinaldark; %dark gets nans
+    if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
+        naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
     else
-        epochs.naninds_i = [];
+        naninds = [];
     end
 
-    close all
 
-
-    save(pth_epochinfo, 'epochs');
+    save(pth_epochinfo, 'epochs', 'epochinds');
 
 end
 
 
-vis.yaw(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
-vis.yawvel(epochs.naninds_i) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
 
 

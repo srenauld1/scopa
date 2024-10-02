@@ -1,4 +1,4 @@
-function [filtall, t] = filter_bank(T,dt,f,t0,f2,tc,t02,type,doplots)
+function [filtall, t] = filter_bank(T,dt,f,t0,f2,tc,t02,type,doplt)
 
 n = (T/dt)+1;
 t = 0:dt:T;
@@ -58,7 +58,7 @@ for i = 1:length(type)
 
     tmp = tmp / norm(tmp(:),1);
 
-    if doplots
+    if doplt
         tmpplot = tmp / norm(tmp(:),1) * filtnorm; %normalize by L1
         figure; plot(tshift, tmpplot); hold on;
     end
@@ -69,7 +69,7 @@ for i = 1:length(type)
     filt = tmppad(padlen+1:end-padlen);
     filt = filt / norm(filt(:),1) * filtnorm; %normalize by L1
 
-    if doplots
+    if doplt
         plot(tshift, filt);
     end   
 

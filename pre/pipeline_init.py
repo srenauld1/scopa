@@ -107,10 +107,10 @@ if not do_copyfiles:
 
   elif do_denoise:
     from denoise import denoise
-    from z_separate import separate_z_slices_for_denoising, separate_z_slices_for_denoising_carls_old_project
+    from z_separate import separate_z_slices_for_denoising
 
   elif do_stitch:
-    from z_stitch import stitch_denoised_slices, stitch_denoised_slices_carls_old_project
+    from z_stitch import stitch_denoised_slices
     
   elif do_remove or do_analysis:
     import matlab.engine

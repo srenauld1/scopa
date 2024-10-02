@@ -1,4 +1,4 @@
-function [respnew, angnew] = resample_compass(resp, yaw, angnew_range, numcluster_new, resample_smoothfac, doplots)
+function [respnew, angnew] = resample_compass(resp, yaw, angnew_range, numcluster_new, resample_smoothfac, doplt)
 
 % use gaussian to downsample and uniformly sample compass
 % resp should be roi x time, and the rois represent positions on a circle,
@@ -20,7 +20,7 @@ gfy = gfy / norm(vec(gfy),1) * 1;  %normalize, should be pointless here though
 
 
 respnew = zeros(numcluster_new, size(resp, 2));
-if doplots
+if doplt
     figure; hold on;
 end
 
@@ -29,7 +29,7 @@ for ai = 1:length(angnew)
     shift = interp1([angnew_endpoints(1),angnew_endpoints(2)], [0, wnlen], angnew(ai)); %find location of new center in terms of sample points
     shift = round(shift - wnlen/2); %since the gaussian is centered on zero, shift must be shifted by half sample points
     gfy2 = circshift(gfy, shift); %shift gaussian to new center
-    if doplots
+    if doplt
         plot(gfx, gfy2)
     end
 

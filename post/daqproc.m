@@ -1,5 +1,5 @@
 function [daqvarout, daqvarout_diff] = daqproc(daqvartype, daqvarname, daqvarin, ...
-    newlength, inds, dt, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplots)
+    newlength, inds, dt, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt)
 
 % default resampling uses daq frame timestamps ('inds')
 % if they're not on daq, backup uses matlab 'resample', matching goal length ('newlength')
@@ -27,7 +27,7 @@ daqvarout = resample_timeseries(daqvartype, daqvarin, inds, newlength); %downsam
 daqvarout_diff = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
 
 
-if doplots
+if doplt
 
     numframes = 20; 
 

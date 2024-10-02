@@ -13,7 +13,7 @@ roipx = roidat.roipx;
 idx_vox2roi = roidat.idx_vox2roi;
 
 gif_visibility = plt.gif_visibility;
-doplots = plt.doplots;
+doplt = plt.doplt;
 hsv_background = plt.hsv_background;
 max_tinds = plt.max_tinds;
 timeseries_numsegments = plt.timeseries_numsegments;

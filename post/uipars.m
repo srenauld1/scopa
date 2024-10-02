@@ -55,7 +55,7 @@ ui.daq.tozero = {'ficTracIntSide', 'ficTracIntForward'}; %%define which ui.daq.v
 ui.daq.voltmin  = 0; %daq voltage min; need to find this in metadata
 ui.daq.voltmax  = 10; %daq voltage max, need to find this in metadata
 
-ui.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
+ui.daq.doplt = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
 ui.daq.use_carls_epochs = 1; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial 
 
@@ -103,7 +103,7 @@ ui.ftv.num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillatio
 ui.ftv.ftvid_spatial_smooth_window_std = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
 ui.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
 ui.ftv.laser_timeseries_smooth_window_std = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display
+ui.ftv.doplt = 1; %0 skips plots, 1 plots and saves, 2 saves but does not display
 
 
 %% MORPHOLOGICAL ROIS
@@ -161,7 +161,7 @@ ui.mroi.hsvopt = default_hsv_opts(ui.mroi.hsvopt);
 
 ui.mroi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.mroi.norm.postcluster = {'f', 'dff008000'}; %must have at least one string, compsed of syllables above
-ui.mroi.norm.doplots = 0;
+ui.mroi.norm.doplt = 0;
 
 %% FUCNTIONAL ROIS
 
@@ -175,7 +175,7 @@ ui.froi.within_mask_threshold = 0.5; %discard roi if more than within_mask_thres
 ui.froi.numbins = 20; %num hist bins for rval and snr caiman output
 ui.froi.sort_roi_method = 'majoraxis'; %'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
 ui.froi.foreground_plot_style = 'overlay'; %'boundary'; %options to show roi are 'boundary' and 'overlay'
-ui.froi.doplot = 0; %plot roi overlay
+ui.froi.doplt = 0; %plot roi overlay
 ui.froi.numrois_for_gif = 0; %how many roi to put in gif, big number to plot all, 0 to skip gif
 ui.froi.ncol_each = 128; %number colors in each part of the overlay plot (2 parts are: mean volume/background, and roi/foreground)
 ui.froi.do_other_plots = 0; %do the other plots
@@ -186,7 +186,7 @@ ui.froi.saturation_factor_rois = 0.1; %for gif above this fraction of data is se
 
 ui.froi.norm.precluster = {'f'}; %must have at least one string, compsed of syllables above
 ui.froi.norm.postcluster = {'f', 'rsc000100'}; %must have at least one string, compsed of syllables above
-ui.froi.norm.doplots = 0;
+ui.froi.norm.doplt = 0;
 
 %% LFIT
 
@@ -226,7 +226,7 @@ ui.pf.bump.numcluster_for_bump_domain_resample.eb = 16; %how many clusters/super
 ui.pf.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
 ui.pf.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 ui.pf.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
-ui.pf.bump.doplots = 0;
+ui.pf.bump.doplt = 0;
 
 %params for finding preferred heading using mfit
 ui.pf.bump.mfit(1).varnms.depvp{1} = {['resp.eb.mo*.*rsc000100_*chn1']}; %will skip bump if empty ui.pf.bump.mfit(1).depv{1} = {};
@@ -240,7 +240,7 @@ ui.pf.bump.mfit(1).mdl_length_sec = 0;
 ui.pf.bump.mfit(1).hsv_background = 'rois';
 ui.pf.bump.mfit(1).sort_method = 'unbiased';
 ui.pf.bump.mfit(1).use_saved_model = 1;
-ui.pf.bump.mfit(1).doplots = 1;
+ui.pf.bump.mfit(1).doplt = 1;
 
 ui.pf.bump.mfit = fill_struct(ui.pf.bump.mfit);
 ui.pf.bump.mfit = default_fit_params(ui.pf.bump.mfit);
@@ -281,14 +281,14 @@ ui.pf.bump.mfit = default_fit_params(ui.pf.bump.mfit);
 % ui.mfit(1).epochinds = {[2 3 4]};
 % ui.mfit(1).validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 % ui.mfit(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about ui.mfit.mdlname syntax
-% ui.mfit(1).plt.doplots = 100;
+% ui.mfit(1).plt.doplt = 100;
 
 ui.mfit(1).varnms.depvp{1} = {['resp.fb2048.mo*.*_chn1']}; %if empty, do will be set to false
 ui.mfit(1).varnms.indvp{1} = {['ball.forvel']};
 ui.mfit(1).epochinds = {[1]};
 ui.mfit(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
 ui.mfit(1).mdlname = 'fnet_A01_s'; % see notes_mdlname for notes about ui.mfit.mdlname syntax; 'fnet_A01_xsie_A02_xsie_B01-02_f_B03-04_f';
-ui.mfit(1).plt.doplots = 0;
+ui.mfit(1).plt.doplt = 0;
 
 ui.mfit = fill_struct(ui.mfit);
 ui.mfit = default_fit_params(ui.mfit);

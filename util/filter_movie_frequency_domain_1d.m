@@ -1,11 +1,11 @@
-function imout = filter_movie_frequency_domain_1d(imin, fldr, doplots)
+function imout = filter_movie_frequency_domain_1d(imin, fldr, doplt)
 
 numfreqtozero = 50;
 
 imin = double(imin);
 fd = fft(imin); % Discrete Fourier-transform of your data
 
-doplots = 1;
+doplt = 1;
 imout = zeros(size(imin));
 for indi = 1:size(imin, 2)
 
@@ -23,7 +23,7 @@ for indi = 1:size(imin, 2)
     end
     imout(:,indi) = ifd;
 
-    if mod(indi, 120)==10 & doplots
+    if mod(indi, 120)==10 & doplt
         subplot(4,2,1)
         plot(log(abs(fdt)))
         hold on;
@@ -37,7 +37,7 @@ for indi = 1:size(imin, 2)
         plot(ifd)
     end
 
-    if mod(indi, 120)==90 & doplots
+    if mod(indi, 120)==90 & doplt
         subplot(4,2,2)
         plot(log(abs(fdt))) % Plot of its absolute values
         hold on;
@@ -75,7 +75,7 @@ if 0
     imout = reshape(imout, size(imin));
 
 
-    if doplots
+    if doplt
 
         plotindz = 1:500;
         imfm = reshape(imfm, size(imin));

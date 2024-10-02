@@ -27,10 +27,10 @@ fnet.actfun{ni} = @ohe_nonlinearity;
 %% nested nonlinearity functions
 
 
-    function [pred, binmns] = ohe_nonlinearity(doplots, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
+    function [pred, binmns] = ohe_nonlinearity(doplt, outflag, pthspre, indv, numbinhot, independently_discretized_hot_dims, ft)
 
 
-        if doplots
+        if doplt
             hfg = figure; hax = axes('Parent', hfg); hp1 = plot(hax,1); yyaxis right; hp2 = plot(hax,1);
         end
 
@@ -43,7 +43,7 @@ fnet.actfun{ni} = @ohe_nonlinearity;
             indvin_hot = zeros(size(indv));
             for i = 1:size(indv, 2) 
                 indvin_hot(:,i) = quantileranks(indv(:,i), numbinhot);
-                if doplots
+                if doplt
                     hp1.YData = indv(1:100,i); yyaxis right; hp2.YData = indvin_hot(1:100,i);
                     filename_save_hot = [pthspre '_dischot_.gif'];
                     fig2gif(hfg, i, filename_save_hot)
@@ -60,7 +60,7 @@ fnet.actfun{ni} = @ohe_nonlinearity;
 
         indv = double(indv);
 
-        if doplots
+        if doplt
             filename_save_hot_levels = [pthspre '_hotlevels_.png'];
             figure; imagesc(hotcombos)
             saveas(gcf, filename_save_hot_levels)

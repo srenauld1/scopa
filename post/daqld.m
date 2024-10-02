@@ -55,7 +55,7 @@ arguments
     opt.useinds = 'none' %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
     opt.use_flyback_lines logical = 1 %use flyback lines when defining resampling inds if useinds is not none; flyback lines are probably always too fast to ever make this parameter matter
     opt.use_flyback_frames logical = 1%use flyback frames when defining resampling inds if useinds is not none; this param could be relevant for slow volume rates, or flyback that is slow, relative to non-flyback
-    opt.doplots logical = 0
+    opt.doplt logical = 0
     opt.idxreg char = 'start' %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
 end
 
@@ -73,7 +73,7 @@ slopeord = opt.slopeord;
 useinds = opt.useinds;
 use_flyback_lines = opt.use_flyback_lines;
 use_flyback_frames = opt.use_flyback_frames;
-doplots = opt.doplots;
+doplt = opt.doplt;
 idxreg = opt.idxreg;
 
 
@@ -98,7 +98,7 @@ end
 
 pthfigpre = pth_daqrs(1:end-4);
 
-if doplots
+if doplt
     maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
 else
     maxtplot = 0; %first maxtplot seconds to plot daqinds in daqindsmake
@@ -213,7 +213,7 @@ for si = 1:num_resamples
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
 
-                [ tmp, tmp_diff ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplots);
+                [ tmp, tmp_diff ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
 
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, tounwrap))
                     tmp = unwrap(tmp); %convert to mm (not for tmp_diff)

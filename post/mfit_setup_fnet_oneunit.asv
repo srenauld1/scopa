@@ -196,7 +196,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 %% nested model functions
 
 
-    function [out, filt] = fun_linfilt_1d(in, filttype, doplots, outflag, pars)
+    function [out, filt] = fun_linfilt_1d(in, filttype, doplt, outflag, pars)
 
 
         %make linear filter
@@ -227,7 +227,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
                 filt_tlong = [0 diff(filt_tlong)];
             end
 
-            if doplots
+            if doplt
                 tmpplot = filt_tlong(1:numel(t));
                 tmpplot = tmpplot / norm(tmpplot(:),1) * filt_norm; %normalize by L1
                 hfg = figure; hax = axes('Parent', hfg); plot(hax, t, tmpplot); hold on;
@@ -244,7 +244,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
             filt = filt(1:numel(t)); %shorten to final length, numel(t)
             filt = filt / norm(filt(:),1) * filt_norm; %normalize by L1
 
-            if doplots
+            if doplt
                 plot(hax, t, filt);
                 close(hfg)
             end
@@ -258,7 +258,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
 
 
-    function [out, out2] = fun_genlog(in, typeflag, doplots, outflag, pars)
+    function [out, out2] = fun_genlog(in, typeflag, doplt, outflag, pars)
 
         out2 = [];
         if numel(pars)==5
@@ -276,14 +276,14 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     end
 
 
-    function [out, out2] = fun_vonmises(in, typeflag, doplots, outflag, pars)
+    function [out, out2] = fun_vonmises(in, typeflag, doplt, outflag, pars)
 
         out2 = [];
         out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
 
     end
 
-    function [out, out2] = fun_sin(in, typeflag, doplots, outflag, pars)
+    function [out, out2] = fun_sin(in, typeflag, doplt, outflag, pars)
 
         out2 = [];
         out = pars(1).*(sin(2*pi*in./pars(2) + 2*pi/pars(3))) + pars(4);
@@ -291,7 +291,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     end
 
 
-    function [out, out2] = fun_gaussian(in, typeflag, doplots, outflag, pars)
+    function [out, out2] = fun_gaussian(in, typeflag, doplt, outflag, pars)
 
         out2 = [];
         out = pars(1)*exp(-(((in-pars(2)).^2)/(2*pars(3).^2)))+pars(4);
@@ -299,7 +299,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     end
 
 
-    function [out, binmns] = fun_ohe(in, typeflag, doplots, outflag, pars)
+    function [out, binmns] = fun_ohe(in, typeflag, doplt, outflag, pars)
 
         % indvin_hot(:) = 0;
         [indvin_hot, binmns] = probability_bin(in, num_bin_hot, outflag);
@@ -311,7 +311,7 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
         in = double(in);
 
-        if doplots
+        if doplt
             pthspre = '';
             filename_save_hot_levels = [pthspre '_hotlevels_.png'];
             figure; imagesc(hotcombos)

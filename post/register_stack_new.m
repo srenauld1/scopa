@@ -96,8 +96,8 @@ stackreg(stackreg~=0) = rescale(stackreg(stackreg~=0));
 
 % save(pthsv, 'stackreg', '-v7.3', '-mat')
 
-doplots = 1;
-if doplots
+doplt = 1;
+if doplt
 
     vwr = viewer3d(BackgroundColor="black",BackgroundGradient="off");
     volshow(stackreg,Parent=vwr,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...

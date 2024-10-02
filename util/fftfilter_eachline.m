@@ -1,4 +1,4 @@
-function imout = fftfilter_eachline(imin, freqin, testframes, doplots)
+function imout = fftfilter_eachline(imin, freqin, testframes, doplt)
 
 maxnumplots = 5;
 
@@ -20,7 +20,7 @@ L = size(imin,1);                                                   % Length Of 
 t = 1:L*Ts;
 %t = linspace(0, 1, L)*Ts;% Time Vector
 
-if doplots
+if doplt
     FTdataall = fft(imin)./L;                                               % Fourier Transform
 end
 Fv = linspace(0, 1, fix(L/2)+1)*Fn;                                 % Frequency Vector (One-Sided FFT)
@@ -53,7 +53,7 @@ for indi = 1:size(imin, 2)
 
     imout(:,indi) = tmpout + mnd;
 
-    % if (mod(indi, 120)==90 |  mod(indi, 120)==10) & plotcount <= maxnumplots & doplots
+    % if (mod(indi, 120)==90 |  mod(indi, 120)==10) & plotcount <= maxnumplots & doplt
     %
     %     if mod(indi, 120)==10
     %         figure

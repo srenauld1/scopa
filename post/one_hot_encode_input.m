@@ -1,10 +1,10 @@
 function [indvpaug, num_dim_indv, num_samp_mdl, levs_full_hot] = ...
-    one_hot_encode_input(mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pth_fitdata_prefix, doplots)
+    one_hot_encode_input(mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pth_fitdata_prefix, doplt)
 
 numbinhot = sscanf(mdlname, 'ohe%d');
 collapse_input_by_ineractions = 1; %default for now
 
-if doplots
+if doplt
     hfg = figure; hax = axes('Parent', hfg); hp1 = plot(hax,1); yyaxis right; hp2 = plot(hax,1);
 end
 
@@ -13,7 +13,7 @@ maxhotcombos = numbinhot^(num_dim_indvp*num_samp_mdl); %this does all possible, 
 indvin_hot = zeros(size(indvpaug));
 for ivai = 1:size(indvpaug, 1)
     indvin_hot(ivai,:) = quantileranks(indvpaug(ivai,:), numbinhot);
-    if doplots
+    if doplt
         hp1.YData = indvpaug(ivai,1:100); yyaxis right; hp2.YData = indvin_hot(ivai,1:100);
         filename_save_hot = [pth_fitdata_prefix '_dischot_.gif'];
         fig2gif(hfg, ivai, filename_save_hot)
@@ -38,7 +38,7 @@ indvpaug = double(indvpaug);
 num_dim_indv = size(indvpaug, 1);
 % num_samp_mdl = 1;
 
-if doplots
+if doplt
     filename_save_hot_levels = [pth_fitdata_prefix '_hotlevels_.png'];
     figure; imagesc(hotcombos)
     saveas(gcf, filename_save_hot_levels)

@@ -28,10 +28,10 @@
 
 %THIS FUNCTION TAKEN FROM build_b_pyramid() by above authors
 
-function [b0, b1, b2] = make_bspline(n, doplots)
+function [b0, b1, b2] = make_bspline(n, doplt)
 
-if ~exist('doplots', 'var')
-    doplots = 0;
+if ~exist('doplt', 'var')
+    doplt = 0;
 end
 
 x0 = -(n+1)/2:(n+1)/2;
@@ -40,7 +40,7 @@ b0 = bNjj;
 b1 = fliplr(x0).*bNjj;
 b2 = x0.^2.*bNjj;
 
-if doplots
+if doplt
     figure; plot(b0); hold on; plot(b1);
 end
 

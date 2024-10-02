@@ -1,4 +1,4 @@
-function [depv_syn, numsyndepv, ftsyn] = mfit_synthesize_depv(pthspre, supp, mdl, depv, indv, doplots, numsyndepv, optimp, plot_syn_against_single_depv, tinds)
+function [depv_syn, numsyndepv, ftsyn] = mfit_synthesize_depv(pthspre, supp, mdl, depv, indv, doplt, numsyndepv, optimp, plot_syn_against_single_depv, tinds)
 
 %if plot_syn_against_single_depv==1 (default), arbitrarily plots synthetic depv against first roi of measured depv
 %if plot_syn_against_single_depv==0, arbitrarily plots synthetic data against first numsyndepv rois of measured depv, if numsyndepv>num depv rois, the final depv roi is repeated 
@@ -13,7 +13,7 @@ end
 
 sprintf("creating " + num2str(numsyndepv) + " synthetic depv")
 
-if doplots
+if doplt
     if plot_syn_against_single_depv
         depv = depv(:,1);
     else
@@ -27,7 +27,7 @@ end
 
 
 
-if doplots
+if doplt
 
     sprintf("plotting default number of samples, synthetic vs measured")
 
@@ -47,7 +47,7 @@ for i = 1:numsyndepv
 
     ftsyn(i,:) = synthesize_params_random(optimp.x0, optimp.lb, optimp.ub); %make synthetic model params, within bounds
     depv_syn(:,i) = mdl(ftsyn(i,:), indv, supp); %replace depv with synthetic depv
-    if doplots
+    if doplt
         if i==1
             hp1{1}.YData = depv(:,i); hp1{2}.YData = depv(tinds,i);
         end

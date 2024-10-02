@@ -13,7 +13,7 @@ rescale_clusters = opts.rescale_clusters; %just before computing bump, rescale e
 numcluster_for_bump_domain_resample = opts.numcluster_for_bump_domain_resample.(regionex);
 resample_smoothfac = opts.resample_smoothfac;
 omitnan_bump = opts.omitnan;
-doplots = opts.doplots;
+doplt = opts.doplt;
 
 fitopts = opts.mfit(si);
 
@@ -36,7 +36,7 @@ end
 
 if strcmp(domain_method, 'functional')
 
-    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roidat, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots);
+    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roidat, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplt);
 
 elseif strcmp(domain_method, 'morphological') %morphological domain
 
@@ -138,7 +138,7 @@ end
 
 %% plots
 
-if doplots
+if doplt
 
     indz = 1:size(mu,1);
 
@@ -157,7 +157,7 @@ if doplots
 
 
     filename_gif = [fn_save_prefix '_ampsortedclust_' fn{fni} '.gif'];
-    epochinds = {num2cell(unique(md.epochs.epochinds_ts_i))};
+    epochinds = {num2cell(unique(ts.epochinds))};
     numclusterplot = 8;
     dvecc = round(linspace(1, numcluster, numclusterplot));
     countz = 0;
@@ -168,7 +168,7 @@ if doplots
         hfg = figure;
 
         if epochinds{epi}
-            indz = find(md.epochs.epochinds_ts_i==epochinds{epi});
+            indz = find(ts.epochinds==epochinds{epi});
         else
             indz = 1:length(trialepochinds);
         end

@@ -62,7 +62,7 @@ plt.timeseries_numsegments = 3; %how many equispaced segments to display in seta
 plt.plot_class = 'hsv'; %hsv only shows one epoch per plot/gif frame, epoch shows multiple epochs but no hsv map
 
 plt.plot3d = 0;
-plt.doplots = 1;
+plt.doplt = 1;
 
 
 

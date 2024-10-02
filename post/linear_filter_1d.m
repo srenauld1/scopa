@@ -1,4 +1,4 @@
-function filt = linear_filter_1d_deprecated(numsamp, filtnorm, doplots, varargin)
+function filt = linear_filter_1d_deprecated(numsamp, filtnorm, doplt, varargin)
 
 
 padlen = 5;
@@ -27,7 +27,7 @@ b2 = b2 / norm(vec(b2(:)),1) * tc;
 
 filt = b1-b2;
 
-if doplots
+if doplt
     filtplot = filt / norm(vec(filt(:)),1) * filtnorm; %normalize by L1
     figure; plot(x, filtplot); hold on;
 end
@@ -44,7 +44,7 @@ x = 0:length(filt)-1;
 
 filt = filt / norm(vec(filt(:)),1) * filtnorm; %normalize by L1
 
-if doplots
+if doplt
     plot(x, filt);
 end
 

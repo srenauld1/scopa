@@ -13,7 +13,7 @@ within_mask_threshold = opts.within_mask_threshold;
 numbins = opts.numbins;
 sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 numrois_for_gif = opts.numrois_for_gif;
-doplot = opts.doplot;
+doplt = opts.doplt;
 
 do_other_plots = opts.do_other_plots;
 
@@ -22,7 +22,7 @@ normopts = opts.norm;
 tcropfront = md.tcropfront;
 tcropback = md.tcropback;
 imper = md.imper;
-ti = md.ti;
+ti = ts.t;
 
 cnt_mroi = roidat.roicen;
 mask_mroi_all = roidat.mask_allroi;
@@ -332,7 +332,7 @@ resp = roiresp(resptmp, roiwt, pth_froi, normopts, imper, resp=[], dowav=dowav, 
 %% plots
 
 
-if doplot
+if doplt
 
 
     if numroi>numrois_for_gif

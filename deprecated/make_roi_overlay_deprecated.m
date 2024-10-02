@@ -1,6 +1,6 @@
 function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol_each, ...
     foreground_plot_style, saturation_factor_background, ...
-    saturation_factor_rois, filename_gif, doplot)
+    saturation_factor_rois, filename_gif, doplt)
 
 % makes roi overlay truecolor image that is x-y-z-channel-roi
 % this function works but is now deprecated because it creates a potentially large variable (the roi overlay),
@@ -16,7 +16,7 @@ arguments
     saturation_factor_background = 1
     saturation_factor_rois = 1
     filename_gif char = 'roioverlay.gif'
-    doplot = 0
+    doplt = 0
 end
 
 if ~iscell(roipx)
@@ -78,6 +78,6 @@ for ri = 1:size(img, 4)
     end
 end
 
-if doplot
+if doplt
     stack2fig(img, pthgif=filename_gif) 
 end

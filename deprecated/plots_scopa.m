@@ -1,7 +1,7 @@
 
 function plots_scopa(filename_sd)
 
-error("plots_scopa is deprecated; very old and bad")
+error("plots_scopa is deprecated; very old and very bad")
 
 %% set params
 
@@ -97,7 +97,7 @@ f_vel = ball.f_vel;
 r_vel = ball.r_vel;
 f_speed = ball.f_speed;
 r_speed = ball.r_speed;
-ti = md.ti;
+ti = ts.t;
 tb = md.t_ts_b;
 smooth_iter = md.smooth_iter;
 smoothfac_i = md.smoothfac_i;

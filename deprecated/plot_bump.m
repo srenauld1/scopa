@@ -2,7 +2,7 @@
 
 function plot_bump(aplot, dplot, bumpang, bumprho, cueang, ballang, ...
     ampbumpang_plot, amppeak_plot, ampmean_plot, resp_gar, resp_gal, resp_nor, resp_nol, ...
-    epochinds, md, centinds, halfcent, pltindz, numfram, startsec, stopsec,  ...
+    epochinds, t, epochinds_ts_i, centinds, halfcent, pltindz, numfram, startsec, stopsec,  ...
     imdata, percentile_to_plot, mask3d, mask_with_3d_mask, roiinds, plot_only_outliers, ...
     plotcolz, xlim_makeroomfac, makeroomfac_rho, makeroomfac_bumpang, ncol, ...
     gif_visibility, separate_cueang_and_bump, sorting_target_metric, ...
@@ -199,9 +199,9 @@ ballang_zero = mod(ballangasclust + (halfcent_new - bumpangasclust_for_zeroing),
 for rind = 1:numr/2
 
     if epochinds
-        indz1 = find(md.epochs.epochinds_ts_i==epochinds(rind));
+        indz1 = find(epochinds_ts_i==epochinds(rind));
     else
-        indz1 = 1:length(md.epochs.epochinds_ts_i);
+        indz1 = 1:length(epochinds_ts_i);
     end
 
 
@@ -210,7 +210,7 @@ for rind = 1:numr/2
         nanpadlen_min = nanpadlen_min_input;
 
         indz_tmp = indz1;
-        xx = md.ti(indz_tmp);
+        xx = t(indz_tmp);
         % [~,idd1] = min(abs(xf-startsec));
         % [~,idd2] = min(abs(xf-stopsec));
         % indz_tmp = idd1:idd2;
@@ -219,9 +219,9 @@ for rind = 1:numr/2
         %now shorten according to numfram
         indz_tmp = indz_tmp(1:numfram);
         xxall{rind} = xx(1:numfram);
-        if any(~ismember(unique(diff(xx)), unique(diff(md.ti))))
+        if any(~ismember(unique(diff(xx)), unique(diff(t))))
             %"NONCONTIGUOUS X, X AXIS IS ARTIFICIAL"
-            xxall{rind} = md.ti(1:numfram);
+            xxall{rind} = t(1:numfram);
         end
 
     else
@@ -236,7 +236,7 @@ for rind = 1:numr/2
                 [~, indz_tmp] = sort(bumprho(indz1,pltindz(bump_method_index)));
         end
         indz_tmp = indz1(indz_tmp);
-        xx = md.ti(1:length(indz_tmp));
+        xx = t(1:length(indz_tmp));
 
         %now shorten according to numfram
         indz_tmp = indz_tmp(round(linspace(1, length(indz_tmp), numfram)));

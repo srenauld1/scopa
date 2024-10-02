@@ -1,6 +1,6 @@
-function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(func, x, B,A,K,V,M,Q,C, doplots, filename_save, xlimin, ylimin)
+function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(func, x, B,A,K,V,M,Q,C, doplt, filename_save, xlimin, ylimin)
 
-if doplots
+if doplt
     fontmedium = 12;
     figsidelength = 0.5; %proportion of your screen occupied by fig
     hfg = figure; %hold on;
@@ -36,7 +36,7 @@ if strcmp(func, 'genlog')
                                 nonlinear_transformation_all{countz} = [x; out];
                                 nlparams_all(countz,:) = [A(ai); K(ki); C(ci); Q(qi); B(bi); M(mi); V(vi)];
 
-                                if doplots
+                                if doplt
 
                                     [xs, idx] = sort(x);
                                     hpl = plot(hax, xs, out(idx)); %sorting prevents an odd plotting error
@@ -94,7 +94,7 @@ elseif strcmp(func, 'vonmises')
                     % nonlinear_transformation_all{countz} = [x; out];
                     % nlparams_all(countz,:) = [A(ai); K(ki); C(ci); Q(qi); B(bi); M(mi); V(vi)];
 
-                    if doplots
+                    if doplt
 
                         [xs, idx] = sort(x);
                         hpl = plot(hax, xs, out(idx)); %sorting prevents an odd plotting error

@@ -1,6 +1,6 @@
 
 function [resptmp, domain] = map_rois_to_head_direction(stack, fitin, ...
-    roidat, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplots)
+    roidat, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplt)
 
 
 numsamp = size(fitin.vars.depvp, 1);
@@ -30,14 +30,14 @@ if numcluster_for_bump_domain_resample
     end
 
     angrange = 2*pi;
-    [resptmp, domain] = resample_compass(fitin.vars.depvp, prefang, angrange, halfcent*2, resample_smoothfac, doplots);
+    [resptmp, domain] = resample_compass(fitin.vars.depvp, prefang, angrange, halfcent*2, resample_smoothfac, doplt);
     resptmp = rescale(resptmp);
 
     if strcmp(fitin.regionex, 'pb')
 
         % %4pi only works if you shift prefang from one half of pb up by pi, which i have not done yet
         % angrange4pi = 4*pi;
-        % [resptmp4pi, domain4pi] = resample_compass(fitin.vars.depvp, prefang, angrange4pi, halfcent*2, resample_smoothfac, doplots);
+        % [resptmp4pi, domain4pi] = resample_compass(fitin.vars.depvp, prefang, angrange4pi, halfcent*2, resample_smoothfac, doplt);
         % resptmp4pi = rescale(resptmp4pi);
 
         %resample each half of the compass, then put them together
@@ -46,8 +46,8 @@ if numcluster_for_bump_domain_resample
         rois_right = numroi/2+1:numroi;
         angrange = 2*pi;
 
-        [dfc_left, domain_left] = resample_compass(fitin.vars.depvp(rois_left,:), prefang(rois_left), angrange, halfcent, resample_smoothfac, doplots);
-        [dfc_right, domain_right] = resample_compass(fitin.vars.depvp(rois_right,:), prefang(rois_right), angrange, halfcent, resample_smoothfac, doplots);
+        [dfc_left, domain_left] = resample_compass(fitin.vars.depvp(rois_left,:), prefang(rois_left), angrange, halfcent, resample_smoothfac, doplt);
+        [dfc_right, domain_right] = resample_compass(fitin.vars.depvp(rois_right,:), prefang(rois_right), angrange, halfcent, resample_smoothfac, doplt);
 
         % dfc_left = []
         % domain_left = []
@@ -66,7 +66,7 @@ end
 
 %%
 
-if doplots
+if doplt
 
     %preferred heading plots
     figure;

@@ -119,7 +119,7 @@ for fnini = 1:length(fnin)
         end
 
         if dowav
-            resp2.f = wavdn(resp2.f, t=ti, it=1:numel(ti), pthgifpre=''); %pth_mroi_prefix
+            resp2.f = wavdn(resp2.f, t=ti, it=1:numel(ti), pthgifpre='', doplt=0); %pth_mroi_prefix
         end
 
         resp2 = normalize_response(resp2.f, normopts.postcluster, imper);
@@ -146,7 +146,7 @@ if ~raw_image_input
 end
 
 
-if normopts.doplots
+if normopts.doplt
 
     fn = fieldnames(resp);
     numnorm = length(fn);

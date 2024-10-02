@@ -25,7 +25,7 @@ arguments
     opt.flypos = []
     opt.pixfit = []
     opt.pthgif = []
-    opt.doplots = 1
+    opt.doplt = 1
 end
 t = opt.t;
 it = opt.it;
@@ -49,7 +49,7 @@ hsvopt = opt.hsvopt;
 flypos = opt.flypos;
 pixfit = opt.pixfit;
 pthgif = opt.pthgif;
-doplots = opt.doplots;
+doplt = opt.doplt;
 
 gif_visibility = 'on';
 fontmedium = 12;
@@ -162,7 +162,7 @@ end
 
 %% plotting
 
-if doplots && ~isempty(stackmnt) && ~isempty(roipx)
+if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
 
     %%%%%%%%%%% SETUP PLOT VARS %%%%%%%%%%%

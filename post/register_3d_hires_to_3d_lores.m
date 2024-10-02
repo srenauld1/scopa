@@ -66,7 +66,7 @@ save(pth_hires_mat_matreg, 'stack_hires_mnt_reg', '-v7.3', '-mat')
 %% plots
 
 
-if opts_hires.doplots
+if opts_hires.doplt
 
     % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
     % volshow(stack_hires_mnt_reg,Parent=viewerRegistered,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...

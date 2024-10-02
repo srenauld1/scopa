@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain(imin, fldr, doplots)
+function imout = filter_movie_frequency_domain(imin, fldr, doplt)
 
 
 %remove pmt ripple noise in 2p images
@@ -181,7 +181,7 @@ stack2fig(rescale(imout(:,:,plotindz)), pthgif=[fldr '/imout.gif'])
 
 %% plots
 
-if doplots
+if doplt
     
     catstack = cat(1, ...
         rescale(imin(:,:,plotindz)), ...

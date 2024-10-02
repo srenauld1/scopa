@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain_1d_2(imin, keepfreq, fldr, doplots)
+function imout = filter_movie_frequency_domain_1d_2(imin, keepfreq, fldr, doplt)
 
 imin = double(imin);
 
@@ -17,7 +17,7 @@ Fkfth = Fv(keepfreq);                                                     % Freq
 FLen = 48;                                                          % Discrete Filter Order
 
 
-if doplots
+if doplt
     figure;
 end
 
@@ -28,7 +28,7 @@ for indi = 1:size(FTdataall, 2)
     b_filt = fir1(FLen, Fkfth/Fn, chebwin(FLen+1,30));                                       % Design FIR Filter
     imout(:,indi) = fftfilt(b_filt, data);
 
-    if (mod(indi, 120)==90 |  mod(indi, 120)==10) & doplots
+    if (mod(indi, 120)==90 |  mod(indi, 120)==10) & doplt
 
         if mod(indi, 120)==10
             spi = 0;

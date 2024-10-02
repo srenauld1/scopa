@@ -25,7 +25,7 @@ bw_all = 0.2;
 % cnt_all = linspace(-3, 3, 10);
 cnt_all = 0;
 types = {'exp', 'deriv'};
-doplots = 0;
+doplt = 0;
 
 framecount = 0;
 for ti2 = 1:length(t02)
@@ -34,7 +34,7 @@ for ti2 = 1:length(t02)
             framecount = framecount + 1;
             
             % [rw,rwt] = ricker(bwall(bi), 11, .2, filtc(ci));
-            [filtall,wt] = filter_bank(total_t_sec, dt, bw_all(bwi), cnt_all(ci), bw_all(bwi)*1.2, f2a, t02(ti2), types, doplots);
+            [filtall,wt] = filter_bank(total_t_sec, dt, bw_all(bwi), cnt_all(ci), bw_all(bwi)*1.2, f2a, t02(ti2), types, doplt);
             
             fpl1 = filtall(1,:);
             norm1 = norm(fpl1(:), 1);

@@ -1,4 +1,4 @@
-function epochs = define_g4_epoch_indices(ft_misoffset_sec, ti, recdatenum)
+function [epochs, epochinds] = define_g4_epoch_indices(ft_misoffset_sec, ti, recdatenum)
 
 
 
@@ -103,7 +103,7 @@ if closed_final_dark_duration>0
 end
 
 fn = fieldnames(boutendpoints_sec_epoch);
-epochinds_ts_i = zeros(1, numel(ti));
+epochinds = zeros(1, numel(ti));
 for fni = 1:numel(fn)
     if size(boutendpoints_sec_epoch.(fn{fni}), 2)==2
         mtchtmp = ti'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & ti'<boutendpoints_sec_epoch.(fn{fni})(:,2);
@@ -111,11 +111,10 @@ for fni = 1:numel(fn)
         if any(mtchtmp>1)
             error("epochs misaligned")
         end
-        if any(ismember(find(epochinds_ts_i), find(mtchtmp)))
+        if any(ismember(find(epochinds), find(mtchtmp)))
             error("epochs misaligned")
         end
-        epochinds_ts_i = epochinds_ts_i + mtchtmp*fni;
+        epochinds = epochinds + mtchtmp*fni;
     end
 end
 
-epochs.epochinds_ts_i = epochinds_ts_i;
