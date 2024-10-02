@@ -52,13 +52,6 @@ end
 
 function respnew = wavdn_oneroi(resp, t, fb, fs, wname, pthgifpre, doplt)
 
-numseg = 10;
-yconst = 1;
-ylim_padfac = 0.1;
-ls1 = '-k';
-ls2 = '-r';
-match_ylim = 0;
-gifvis = 'on';
 
 if ~isa(resp, 'double')
     resp = double(resp);
@@ -130,8 +123,12 @@ for m = 1:size(frng,1)
 
         pthgif = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
 
+        numseg = 10;
+        yconst = 1;
+        ymatch = 0;
+        gifvis = 'on';
         axpos = [0.1 0.1 0.85 0.35];
-        tsplt(resp, respnew, pthgif, numseg, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim, gifvis, hfg, axpos)
+        tsplt(resp, y2=respnew, pthgif=pthgif, xseg=numseg, titlein=titlein, yconst=yconst, ymatch=ymatch, gifvis=gifvis, hfg=hfg, axpos=axpos)
 
         % fig2gif(hfg,m,fngif)
 
