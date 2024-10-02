@@ -1,5 +1,5 @@
 function [roidat, resp] = mroimake(stack, opts_mroi, ...
-    ti, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
+    t, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
     regionex, parstr_mroi, roimaskman_allchan)
 
 
@@ -65,7 +65,8 @@ end
 chandraw = opts_mroi.chandraw;
 chancopy = opts_mroi.chancopy;
 channorm = opts_mroi.channorm;
-dowav = opts_mroi.dowav;
+degdtr = opts_mroi.degdtr;
+wavp = opts_mroi.wavp;
 autoopts = opts_mroi.auto;
 
 
@@ -172,7 +173,7 @@ try
 catch
     resp = [];
     for c = 1:numchan
-        resp = roiresp(stack, roidat(c).roiwt, pth_mroi_prefix, normopts, imper, resp=resp, dowav=dowav, ti=ti); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+        resp = roiresp(stack, roidat(c).roiwt, pth_mroi_prefix, normopts, imper, resp=resp, wavp=wavp, degdtr=degdtr, t=t); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
         if ~maskinput && c==numchan
             save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
         end
@@ -180,7 +181,7 @@ catch
 end
 
 % if channorm %2 channel normalization based on wavelet coherence, not fully tested
-%     norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=ti, roiind=1, it=1:numel(ti), pthgifpre=pth_mroi_prefix, mincoh=0.3);
+%     norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=t, roiind=1, it=1:numel(ti), pthgifpre=pth_mroi_prefix, mincoh=0.3);
 % end
 
 

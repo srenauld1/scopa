@@ -1,7 +1,7 @@
 function ui = uipars(pthstacks)
 
 arguments
-    pthstacks = [] %pthstacks can be empty, or not passed as argument, and will search for file using fnspec* below; pthstacks can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, pass pthstacks as 'nofile'
+    pthstacks = [] %pthstacks can be empty, or not passed as argument, 
 end
 
 % struct 'ui' holds all input params
@@ -126,7 +126,7 @@ ui.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 
 ui.mroi.chancopy = [1]; %which channel(s') rois to project onto the other (concatenated with any other rois on that channel, ie does not overwrite)
 ui.mroi.channorm = []; %which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
 ui.mroi.degdtr = 2; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default 
-ui.mroi.wavp = [0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
+ui.mroi.wavp = [0 inf]; %(n,2) array denoting wavelet filtering min and max period; if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold, and any number larger than j will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip altogether
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);

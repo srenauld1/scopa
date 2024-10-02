@@ -100,14 +100,11 @@ else
         end
     end
 
-    opts_mroi.chandraw = [];
-    opts_mroi.chancopy = [1];
-    opts_mroi.channorm = [];
-    opts_mroi.auto.chan = [1];
-    opts_mroi.dowav = 1;
-    opts_mroi.norm = normopt;
 
-    [roidat_new, resp] = mroimake(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
+    uitmp = uipars('nofile'); %call uipars to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function; use 'nofile' option to skip the file searching because all we need is the mroi substruct 
+    % uitmp.mroi.wavp = [];
+    
+    [roidat_new, resp] = mroimake(stack, uitmp.mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
     hardcodenorm = 'rawf_f_f_n';
     resp = channel_combine_struct(resp);

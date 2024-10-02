@@ -322,10 +322,11 @@ end
 
 resptmp.cmc = cmc; %put into struct before passing to roiresp
 
-dowav = 0;
-resp = roiresp(resptmp, roiwt, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing roiwt
+wavp = [];
+degdtr = [];
+resp = roiresp(resptmp, roiwt, pth_froi, normopts, imper, resp=[], wavp=wavp, degdtr=degdtr, ti=ti); %this version not weighted by area by passing roiwt
 
-% resp = roiresp(resp_froi, roiwt_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
+% resp = roiresp(resp_froi, roiwt_wt, pth_froi, normopts, imper, resp=resp, wavp=wavp, degdtr=degdtr, ti=ti);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
 
 
 

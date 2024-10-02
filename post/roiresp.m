@@ -8,13 +8,18 @@ arguments
     normopts
     imper
     opt.resp = struct %if resp is passed as input, this function's output resp is appended to it
-    opt.dowav = 0
-    opt.ti = []
+    opt.wavp = []
+    opt.degdtr = 0
+    opt.t = []
 end
 resp = opt.resp;
-dowav = opt.dowav;
-ti = opt.ti;
+wavp = opt.wavp;
+degdtr = opt.degdtr;
+t = opt.t;
 
+if isempty(t) && ~isempty(wavp)
+    error("must pass t if passing wavp (must have t to apply wavelet filtering)")
+end
 if isempty(resp)
     resp = struct;
 end
@@ -42,9 +47,9 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = roiresp_onechan(respin_onechan, roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = roiresp_onechan(respin_onechan, roiwt, pth_save_prefix, normopts, imper, chanpat, resp, wavp, degdtr, ti);
         else
-            resp = roiresp_onechan(respin(:,:,:,:,c), roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = roiresp_onechan(respin(:,:,:,:,c), roiwt, pth_save_prefix, normopts, imper, chanpat, resp, wavp, degdtr, ti);
         end
     end
 end
@@ -52,7 +57,7 @@ end
 end
 
 
-function resp = roiresp_onechan(respin, roiwt, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
+function resp = roiresp_onechan(respin, roiwt, pth_save_prefix, normopts, imper, fnchan, resp, wavp, degdtr, ti)
 
 arguments
     respin
@@ -62,7 +67,8 @@ arguments
     imper
     fnchan
     resp
-    dowav
+    wavp
+    degdtr
     ti
 end
 
@@ -118,8 +124,12 @@ for fnini = 1:length(fnin)
             resp2.f = nan;
         end
 
-        if dowav
-            resp2.f = wavdn(resp2.f, t=ti, it=1:numel(ti), pthgifpre='', doplt=0); %pth_mroi_prefix
+        if degdtr
+            resp2.f = detrend(resp2.f, degdtr); %degdtr is polynomial degree
+        end
+
+        if ~isempty(wavp)
+            resp2.f = wavflt(resp2.f, t=t, wavp=wavp, doplt=0); %pth_mroi_prefix
         end
 
         resp2 = normalize_response(resp2.f, normopts.postcluster, imper);

@@ -178,7 +178,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     %% linear fit and hsv map (work in progress, but it does work)
 
-    if ui.mn.do_lfit
+   if ui.mn.do_lfit
 %% 
 
         ui.lc.chanuse = 1;
@@ -186,7 +186,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         rindy = 1;
         rsp = ts.resp.(regionex).(parstr.mroi.(regionex)).(['rawf_f_f_n_chn' num2str(ui.lc.chanuse)]);
 
-        rsp = wavdn(rsp, t=ts.t, it=1:numel(ts.t), ir=[1 3], pthgifpre='', doplt=1); %pth_mroi_prefix
+        rsp = wavflt(rsp, t=ts.t, it=200:900, ir=[1 3], pthgifpre='', wavp=ui.mroi.wavp, doplt=1, onlyir=1); %pth_mroi_prefix
 
         %% 
 
