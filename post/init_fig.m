@@ -1,9 +1,9 @@
-function hndls = init_fig(hndls, letui, gif_visibility, figsidelength, fontsz)
+function hndls = init_fig(hndls, letui, gifvis, figsidelength, fontsz)
 
 arguments
     hndls
     letui
-    gif_visibility = 'on'
+    gifvis = 'on'
     figsidelength = 0.75
     fontsz = 8
 end
@@ -16,7 +16,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     close(hfg)
 
 
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
     if aspect_screen>1
         hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
     else
@@ -26,7 +26,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     if letui
         hfg.KeyPressFcn = @(src,evnt)pltexp_key_press_fcn(src,evnt);
 
-        % hfgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+        % hfgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
         % hfgd.Position = [hfg.Position(1)+hfg.Position(3) 0 0.9-hfg.Position(3) hfg.Position(4)];
         % uib = uicontrol('Parent', hfgd, 'Units', 'Normalized', 'Style', 'popupmenu');
         % uib.Position = [0 0 1 1];

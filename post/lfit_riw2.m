@@ -17,7 +17,7 @@ arguments
     opt.roicen = [] %cell array, length number of rois; cell n is yxz centroid for roi n;
     opt.sortstyle = 'xyz' % 'none', 'corr', 'xyz', 'yxz', 'zyx', 'zxy', 'xzy', 'yzx' (all are ascending order); corr is ascending by correlation, negative to positive; for spatial sort styles (xyz and permutations) first dim changes fastest, last slowest, so xyz is like reading a book
     opt.alignzero = 0
-    opt.yconstant = 0
+    opt.yconst = 0
     opt.plotlagged = 0 %plot the timeseries at the chosen lag
     opt.usesaved = 0
     opt.chanuse = 1
@@ -41,7 +41,7 @@ roiwt = opt.roiwt;
 roicen = opt.roicen;
 sortstyle = opt.sortstyle;
 alignzero = opt.alignzero;
-yconstant = opt.yconstant;
+yconst = opt.yconst;
 plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
 chanuse = opt.chanuse;
@@ -51,7 +51,7 @@ pixfit = opt.pixfit;
 pthgif = opt.pthgif;
 doplt = opt.doplt;
 
-gif_visibility = 'on';
+gifvis = 'on';
 fontmedium = 12;
 axord = 'rowmajor';
 crosshair_width = 2;
@@ -280,7 +280,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     close(hfg)
 
     figsidelength = 0.75;
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility, 'Position', [0, 0, 1, 1]);
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis, 'Position', [0, 0, 1, 1]);
     if aspect_screen>1
         hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
     else
@@ -373,7 +373,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
                 ts4.hpl.YData = resp(k,it);
             end
 
-            if ~yconstant
+            if ~yconst
                 % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
                 [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
             end

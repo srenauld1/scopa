@@ -46,9 +46,9 @@ end
 % and because the fictrac video is currently only used for visualization
 
 if doplt==1
-    gif_visibility = 'on';
+    gifvis = 'on';
 elseif doplt==2
-    gif_visibility = 'off';
+    gifvis = 'off';
 end
 
 if pth_vidlog
@@ -96,7 +96,7 @@ num_vidframes = numel(laser_ts);
 ftvds = reshape(ftvds, szvd);
 
 if doplt
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
     hax = axes('Parent', hfg);
     imagesc(hax, ftvid_meanframe); hold on;
     % imagesc(hax, ftvid_varframe); hold on;
@@ -174,15 +174,15 @@ dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
 if doplt
     peaks_timeseries = nan(size(laser_ts_smoothed));
     peaks_timeseries(lkg) = pkg;
-    xlim_segments = 50;
+    numsegx = 50;
     pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
     titlein = '';
-    constant_ylim = 1;
+    yconst = 1;
     ylim_padfac = 0.1;
     ls1 = '-k';
     ls2 = 'or';
     match_ylim = 1;
-    pltmultits(laser_ts_smoothed, peaks_timeseries, pth_gif, xlim_segments, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility)
+    tsplt(laser_ts_smoothed, peaks_timeseries, pth_gif, numsegx, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim, gifvis)
 end
 
 %% find downsampling indices

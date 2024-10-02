@@ -12,7 +12,7 @@ epochinds = opts.epochinds;
 roipx = roidat.roipx;
 idx_vox2roi = roidat.idx_vox2roi;
 
-gif_visibility = plt.gif_visibility;
+gifvis = plt.gifvis;
 doplt = plt.doplt;
 hsv_background = plt.hsv_background;
 max_tinds = plt.max_tinds;
@@ -215,7 +215,7 @@ tittmp = strsplit(filename_save(1:end-4), '/');
 figure_title = strrep(tittmp{end}, '_', ' ');
 
 
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
 if aspect_screen>1
     hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
 else

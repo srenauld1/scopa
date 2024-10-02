@@ -1,6 +1,6 @@
 function pltx(stack, vars, letui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    roidat, ti, imper, zstartpos, epochinds_ts_i, gif_visibility, ...
+    roidat, ti, imper, zstartpos, epochinds_ts_i, gifvis, ...
     iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
     pth_mroi_interactive, normopt, xwid, ywid, zwid, opt)
 
@@ -20,7 +20,7 @@ arguments
     imper = []
     zstartpos = []
     epochinds_ts_i = []
-    gif_visibility = []
+    gifvis = []
     iz = []
     it = []
     display_range = []
@@ -248,7 +248,7 @@ while plotloop %loop is turned off if no user input
                     hndls = struct;
                     framecount = 0;
 
-                    hndls = init_fig(hndls, letui, gif_visibility);
+                    hndls = init_fig(hndls, letui, gifvis);
 
                     sector_ind = 2;
                     cmap = gray(256);

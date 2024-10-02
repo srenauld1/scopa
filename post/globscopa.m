@@ -1,4 +1,4 @@
-function outp = globals_a2p(inp)
+function outp = globscopa(inp)
 persistent gset
 if isstruct(inp)
     if isempty(gset)

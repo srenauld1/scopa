@@ -1,4 +1,4 @@
-function [daqvarout, daqvarout_diff] = daqproc(daqvartype, daqvarname, daqvarin, ...
+function [daqvarout, daqvarout_dv] = daqproc(daqvartype, daqvarname, daqvarin, ...
     newlength, inds, dt, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt)
 
 % default resampling uses daq frame timestamps ('inds')
@@ -24,7 +24,7 @@ if isequal(vec(unique(daqvarin)), [0;1])
 end
 
 daqvarout = resample_timeseries(daqvartype, daqvarin, inds, newlength); %downsample into imaging rate
-daqvarout_diff = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
+daqvarout_dv = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
 
 
 if doplt
@@ -33,11 +33,11 @@ if doplt
 
     titlein = [daqvarname '_original_v_resample_' num2str(dt) 'sec_norescale'];
     pth_fig = [pthfigpre titlein '_.gif'];
-    pltmultits(daqvarin, daqvarout, pth_fig, numframes, titlein)
+    tsplt(daqvarin, daqvarout, pth_fig, numframes, titlein)
 
-    titlein = [daqvarname '_original_v_diff_resample_' num2str(dt) 'sec_slopelen_' num2str(slopelensec) 'sec_norescale'];
+    titlein = [daqvarname '_original_v_dv_resample_' num2str(dt) 'sec_slopelen_' num2str(slopelensec) 'sec_norescale'];
     pth_fig = [pthfigpre titlein '_.gif'];
-    pltmultits(daqvarin, daqvarout_diff, pth_fig, numframes, titlein)
+    tsplt(daqvarin, daqvarout_dv, pth_fig, numframes, titlein)
 
 end
 

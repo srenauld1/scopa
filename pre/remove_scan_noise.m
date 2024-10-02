@@ -48,9 +48,8 @@ pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif
 pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
 pth_md = [fldr recid '_mdsi_.txt'];
 
-md = struct2cell(load(pth_md)); %file created in initial 'pre' pipeline
-md = md{1};
-sz = single([md.ypix md.xpix md.numslice md.numvol]);
+md = mdsild(pth_md);
+sz = single([md.ypix md.xpix md.numslice md.numvol_o]);
 imper = 1/md.volrate;
 
 
@@ -112,9 +111,9 @@ if makeplots
     index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
     index_labels{3} = iz;
     index_labels{4} = it;
-    gif_visibility = 'on';
+    gifvis = 'on';
 
-    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gif_visibility=gif_visibility, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 
 end
 
@@ -129,7 +128,7 @@ stack = fft_filter_1d(stack, stopband);
 %% plot after filtering
 
 if makeplots
-    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gif_visibility=gif_visibility, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 end
 
 %% save

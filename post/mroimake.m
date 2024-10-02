@@ -198,9 +198,9 @@ end
 
 if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
-    gif_visibility = 'on';
+    gifvis = 'on';
     plotchannel = 1;
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_olay, gif_visibility=gif_visibility, roipx=roipx, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipx as argument to plot roi overlay
+    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_olay, gifvis=gifvis, roipx=roipx, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipx as argument to plot roi overlay
 end
 
 

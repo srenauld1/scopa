@@ -213,30 +213,30 @@ for si = 1:num_resamples
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
 
-                [ tmp, tmp_diff ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
+                [ tmp, tmp_dv ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
 
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, tounwrap))
-                    tmp = unwrap(tmp); %convert to mm (not for tmp_diff)
+                    tmp = unwrap(tmp); %convert to mm (not for tmp_dv)
                 end
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, tozero))
-                    tmp = tmp - tmp(1); %convert to mm (not for tmp_diff)
+                    tmp = tmp - tmp(1); %convert to mm (not for tmp_dv)
                 end
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, toballscale))
                     tmp = tmp*balldia/2; %convert to mm
-                    tmp_diff = tmp_diff*balldia/2; %convert to mm
+                    tmp_dv = tmp_dv*balldia/2; %convert to mm
                 end
-                if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_diff'
-                    tmp_diff = tmp_diff / imper; %convert to per second using mean sample period (could scale by each Time_diff, but this is more stable against dropped samples)
+                if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_dv'
+                    tmp_dv = tmp_dv / imper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
                 end
                 if strcmp(daqvarname, 'Time') && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
                     tmp(1) = 0;
-                    tmp_diff(1) = tmp(2) - tmp(1); %also update first diff, not that it matters
+                    tmp_dv(1) = tmp(2) - tmp(1); %also update first diff, not that it matters
                 end
                 if isrow(tmp) %each daq var must be column; will be column for useinds 'none', will be row for useinds 'all' and 'vol'
                     tmp = tmp';
                 end
                 newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes
-                newrow.([daqvarname '_dv']) = {tmp_diff}; %put in cell, then table, for variable sizes
+                newrow.([daqvarname '_dv']) = {tmp_dv}; %put in cell, then table, for variable sizes
             end
         end
     end

@@ -1,4 +1,4 @@
-function [pth, parstr] = fna2p(ui, ids, pthstack)
+function [pth, parstr] = fnmake(ui, ids, pthstack)
 
 
 %%set up filenames for a2p 

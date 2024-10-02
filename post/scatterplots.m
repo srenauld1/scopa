@@ -1,6 +1,6 @@
 function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     epochinds_all, roidat, ti, imper, zstartpos, epochinds_ts_i, lagsxy_sec, ...
-    lagsz_sec, lags_to_plot, plot_z_as_color, gif_visibility, pthgif_prefix_short, pthgif_prefix)
+    lagsz_sec, lags_to_plot, plot_z_as_color, gifvis, pthgif_prefix_short, pthgif_prefix)
 
 
 error("scatterplots is deprecated, scatterplot module within replaced by plot_experiment")
@@ -99,11 +99,11 @@ for ei = 1:numel(epochinds_all)
 
                     if isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
                         scatter_type = 'cartesian';
-                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac, zstartpos);
+                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     if ~isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
                         scatter_type = 'polar';
-                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac, zstartpos);
+                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     indpolar_prev = polar_index;
 
@@ -524,7 +524,7 @@ end
 
 end
 
-function hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gif_visibility, fontmedium, blindspot, axisroomfac, zstartpos)
+function hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
@@ -539,7 +539,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 
 
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
     if aspect_screen>1
         hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
     else

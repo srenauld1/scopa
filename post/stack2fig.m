@@ -5,7 +5,7 @@ function stack2fig(stack, opt)
 arguments
     stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
     opt.pthgif char = ''
-    opt.gif_visibility char = 'on'
+    opt.gifvis char = 'on'
     opt.roipx = []
     opt.roiinds = []
     opt.roi_colors = [1 0 0]
@@ -356,7 +356,7 @@ hfg = figure;
 aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
 close(hfg)
 
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility, 'Position', [0, 0, 1, 1]);
+hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis, 'Position', [0, 0, 1, 1]);
 if aspect_screen>1
     hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
 else

@@ -27,7 +27,7 @@ end
 function respnew = normcrosschan_oneroi(resp1,resp2,t,pthgifpre,mincoh)
 
 titlein = '';
-constant_ylim = 1;
+yconst = 1;
 ylim_padfac = 0.1;
 ls1 = '-k';
 ls2 = '-r';
@@ -183,10 +183,10 @@ yyaxis right; hplr = plot(resp2(plotinds), 'r'); ylim([0 1]); hplr.Parent.YAxis(
 %     numseg(numseg>maxseg) = maxseg;
 % 
 %     % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
-%     % pltmultits(w(m,:), w2(m,:), fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+%     % tsplt(w(m,:), w2(m,:), fngif2, numseg, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim)
 % 
 %     fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
-%     pltmultits(resp1, respnew, fngif3, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim)
+%     tsplt(resp1, respnew, fngif3, numseg, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim)
 % 
 % 
 % end

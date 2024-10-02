@@ -16,7 +16,7 @@ if numel(callstack) >= 2
 else
     fcnnm = 'unknownfunction';
 end
-pthfldr = globals_a2p(opt.glob);
+pthfldr = globscopa(opt.glob);
 if isempty(pthfldr)
     vnm = inputname(1);
     error(sprintf("global variable " + opt.glob + " has not been set" + newline + "and " + vnm + " was not passed as argument into function " + fcnnm + newline + "do one or the other"))

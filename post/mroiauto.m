@@ -417,8 +417,8 @@ if do_plots
 
         %roi overlay in upsampled res
         filename_olay = [pth_mroi_prefix 'roiolay_upsamp_.gif'];
-        gif_visibility = 'on';
-        stack2fig(premask, pthgif=filename_olay, gif_visibility=gif_visibility, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
+        gifvis = 'on';
+        stack2fig(premask, pthgif=filename_olay, gifvis=gifvis, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
 
 
         %hsv gif, each slice, each roi a different hue

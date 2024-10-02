@@ -99,11 +99,11 @@ if doplt
         plothalves = 0;
         tinds = round(linspace(1, numsamp, 300));
         filename_save = [fitin.fn_save_prefix '_RESAMPCOMP_.gif'];
-        gif_visibility = 'on';
+        gifvis = 'on';
         numroi_rs = size(resptmp,1);
         % numroi_rs = numroi_rs/2
 
-        hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility);
+        hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
         hax = axes( 'Parent', hfg, 'Units', 'Normalized');
         % title({"2pi all (black), 4pi all (cyan), 2pi merged halves (magenta)"; "pre-resampled angle-sorted (red), pre-resampled native sorting (green)"})
         title({"2pi all (black), 2pi merged halves (magenta)"; "pre-resampled angle-sorted (red), pre-resampled native sorting (green)"})

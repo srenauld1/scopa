@@ -4,7 +4,7 @@ function [stack, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim, pt
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
-name_noregionex = globals_a2p('name_noregionex');
+name_noregionex = globscopa('name_noregionex');
 
 if ~exist('use_hires', 'var')
     use_hires = 0;

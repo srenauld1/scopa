@@ -22,31 +22,36 @@ end
 
 sprintf("\n\n\nENTERING a2p.m")
 
-"FIX NO REGIONEX OPTION"
+"MAKE TIME ALWAYS 2ND DIM"
+"MAKE TIME ALWAYS 2ND DIM"
+"MAKE TIME ALWAYS 2ND DIM"
+"MAKE TIME ALWAYS 2ND DIM"
+"MAKE TIME ALWAYS 2ND DIM"
 "FIX DIFFERENT MROI OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS"
 "CAN STACK REMAIN INT16?? zero in uint16 is nice though"
 "MAKE ALL INDICES CONSISTENTLY REPRESENT START, CENTER, OR END . . . daq starts at 0, so maybe do start indexed, but singleton 0 indexed samples don't tell you width; but currently default daq downsampling makes time represent center, since it takeds average"
 
-clear globals_a2p
+clear globscopa
 
 ui = uipars(pthstacks); % params
 
 for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
-    clear globals_a2p
+    clear globscopa
 
-    ids = get_ids_a2p(ui.mn.pthstacks{pai});
+    ids = idmake(ui.mn.pthstacks{pai});
 
-    [pth, parstr] = fna2p(ui, ids, ui.mn.pthstacks{pai});
+    [pth, parstr] = fnmake(ui, ids, ui.mn.pthstacks{pai});
 
     gset.pthfldr = pth.fldr;
     gset.name_noregionex = 'default';
     gset.valid_fnsuffixes = ui.mn.valid_fnsuffixes;
-    globals_a2p(gset);
+    globscopa(gset);
 
     %% load metadata
 
     md = mdsild(pth.md, ui.ld, ui.hires.ld);
+
     % md_flyg = mdflygld(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % ff = @(x,y) cell2struct([struct2cell(md);struct2cell(md_flyg)],[fieldnames(md);fieldnames(md_flyg)]);
     % md = ff(md, md_flyg);
@@ -181,7 +186,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         rindy = 1;
         rsp = ts.resp.(regionex).(parstr.mroi.(regionex)).(['rawf_f_f_n_chn' num2str(ui.lc.chanuse)]);
 
-        rsp = wavdn(rsp, t=ti, it=1:numel(ts.t), pthgifpre='', doplt=1); %pth_mroi_prefix
+        rsp = wavdn(rsp, t=ts.t, it=1:numel(ts.t), ir=[1 3], pthgifpre='', doplt=1); %pth_mroi_prefix
 
         %% 
 
@@ -212,7 +217,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         %     t=ts.t, ...
         %     ir=[1:50:1024], ...
         %     it=[1000:1500], ...
-        %     yconstant=0 ...
+        %     yconst=0 ...
         %     );
 
         lfit_riw2( ...
@@ -232,7 +237,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
             roicen = roidat.(regionex).(parstr.mroi.(regionex))(ui.lc.chanuse).roicen, ...
             sortstyle = 'slope', ...
             alignzero = 1, ...
-            yconstant = 0, ...
+            yconst = 0, ...
             plotlagged = 0, ...
             usesaved = 0, ...
             chanuse = ui.lc.chanuse, ...
@@ -289,7 +294,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                     fitin.varnms, ui.pltx(si).vpmap, ui.pltx(si).epochinds, ...
                     ui.pltx(si).lagsxy_sec, ui.pltx(si).lagsz_sec, ui.pltx(si).lags_to_plot, ...
                     ui.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), ts.t, md.imper, zstartpos_crop, ...
-                    ts.epochinds, ui.pltx(si).gif_visibility, ui.pltx(si).iz, ui.pltx(si).it, ...
+                    ts.epochinds, ui.pltx(si).gifvis, ui.pltx(si).iz, ui.pltx(si).it, ...
                     ui.pltx(si).display_range, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
                     pth.mroi_interactive.(fitin.regionex), ui.mroi.norm, md.xwid, md.ywid, md.zwid, vid=ftvdsrs, stim=stimvid)
 

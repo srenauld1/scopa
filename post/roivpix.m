@@ -7,7 +7,7 @@ arguments
     opt.t = []
     opt.it = []
     opt.ir = []
-    opt.yconstant = 0
+    opt.yconst = 0
     opt.chan = 1
     opt.pthgif = []
 end
@@ -16,7 +16,7 @@ ir = opt.ir;
 t = opt.t;
 chan = opt.chan;
 pthgif = opt.pthgif;
-yconstant = opt.yconstant;
+yconst = opt.yconst;
 
 if isempty(it)
     it = 1:size(stack, 4);
@@ -74,7 +74,7 @@ for r = 1:size(resproi, 1)
             end
 
 
-            if yconstant
+            if yconst
                 hax.YLim = [ymin ymax];
             end
 

@@ -7,7 +7,7 @@ clc
 
 %%
 
-gif_visibility = 'on';
+gifvis = 'on';
 pth_allrec = '~/~/ambrose/allrec/morphmaskno/';
 pth_allrec = '~/~/ambrose/allrec/trans2/';
 epochindstmp = {[1 2 3 4 5]; [1 4]; [2 3]; [1]; [2]; [3]; [4]; [5]};
@@ -142,6 +142,6 @@ for epi = 1:length(epochindstmp)
     scatterplots_2d(cueang_all, cuevel_all, ballang_all, ballvel_all, ...
         bumpmu_all, bumprho_all, bumpvel_all, ampmean_all, amppeak_all, ampmu_all, ...
         respgar_all, respgal_all, respnor_all, respnol_all, meang_all, meann_all, ...
-        do3d, colorvars, manualvars, md, epochinds, epochstring, fn_prefix, gif_visibility)
+        do3d, colorvars, manualvars, md, epochinds, epochstring, fn_prefix, gifvis)
 
 end

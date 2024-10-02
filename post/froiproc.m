@@ -342,9 +342,9 @@ if doplt
     end
 
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    gif_visibility = 'on';
+    gifvis = 'on';
     plotchannel = 1;
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gif_visibility=gif_visibility, roipx=roipx, roiinds=roi_plot_inds_good) %include roipx as argument to plot roi overlay
+    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipx, roiinds=roi_plot_inds_good) %include roipx as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -353,7 +353,7 @@ if doplt
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gif_visibility=gif_visibility, roipx=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipx as argument to plot roi overlay
+    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipx as argument to plot roi overlay
 
     figure; imagesc(roiwt); title("which caiman rois are closest to which morph roi")
 

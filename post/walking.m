@@ -12,7 +12,7 @@ slopelensec = 0.5;
 slopeord = 2;
 ball_radius = 4.5;
 limfac = 1;
-gif_visibility = 'on';
+gifvis = 'on';
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 fontmedium = 12;
 threshmagvel = 5; %mm/s
@@ -161,7 +161,7 @@ aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen
 close(hfg)
 
 
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
 if aspect_screen>1
     hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
 else

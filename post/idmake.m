@@ -1,4 +1,4 @@
-function [ids, recdate, fly, trial, suffix, recdatenum, flynum, trialnum, recid, datefly_hyphen, fldr] = get_ids_a2p(pthstack)
+function [ids, recdate, fly, trial, suffix, recdatenum, flynum, trialnum, recid, datefly_hyphen, fldr] = idmake(pthstack)
 
 %for portability, also outputs ids, a struct collecting all other outputs
 

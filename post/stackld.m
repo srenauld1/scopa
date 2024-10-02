@@ -49,7 +49,7 @@ smooth_window_temporal = opt.smooth_window_temporal; %smooth the stack in time, 
 do_plot_stack_stats = opt.do_plot_stack_stats;
 display_range = opt.display_range;
 
-[~,~,~,~,suffix_analysis,~,~,~,recid,~,pth_fldr] = get_ids_a2p(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to 
+[~,~,~,~,suffix_analysis,~,~,~,recid,~,pth_fldr] = idmake(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to 
 
 if isempty(suffixes_plot)
     plot_stack_gif = 0;
@@ -70,7 +70,7 @@ end
 
 cnt = 0;
 for spi = 1:numel(suffixes_plot)
-    pthtmp = find_preprocessed_files(fullfile_sibling=pth_stack, suffix=suffixes_plot{spi});
+    pthtmp = filefind(fullfile_sibling=pth_stack, suffix=suffixes_plot{spi});
     if ~isempty(pthtmp)
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;

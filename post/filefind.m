@@ -1,4 +1,4 @@
-function pth_all = find_preprocessed_files(opt)
+function pth_all = filefind(opt)
 
 arguments
     opt.fullfile_sibling = []; %full path to a file, returned files will include all matching files in same folder, along with fullfile_sibling  
@@ -25,7 +25,7 @@ fnspec_matching_style = opt.fnspec_matching_style;
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass prioritize_mat as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
 if isempty(valid_fnsuffixes)
-    valid_fnsuffixes = globals_a2p('valid_fnsuffixes');
+    valid_fnsuffixes = globscopa('valid_fnsuffixes');
     if isempty(valid_fnsuffixes)
         sprintf('no variable set for valid_fnsuffixes, returned files may include more than you want if specifiers include wildcard')
     end
@@ -38,7 +38,7 @@ else
     if isfile(fullfile_sibling)
         [pth_parent, ~, ~] = fileparts(fullfile_sibling);
         pth_parent = [pth_parent filesep];
-        [~, recdate, fly, trial, ~] = get_ids_a2p(fullfile_sibling);
+        [~, recdate, fly, trial, ~] = idmake(fullfile_sibling);
     else
         error(sprintf("the following fullfile_sibling is not a file: " + newline + fullfile_sibling))
     end
@@ -49,7 +49,7 @@ fnspec = expand_fn_specifiers(fnspec_matching_style, recdate, fly, trial, suffix
 
 pth_prefix_all = [];
 for j = 1:numel(fnspec.recdate)
-    pth_prefix_all_onespec = find_preprocessed_files_onespec(fnspec.recdate{j}, fnspec.fly{j}, fnspec.trial{j}, fnspec.suffix{j}, pth_parent, valid_fnsuffixes);
+    pth_prefix_all_onespec = filefind_onespec(fnspec.recdate{j}, fnspec.fly{j}, fnspec.trial{j}, fnspec.suffix{j}, pth_parent, valid_fnsuffixes);
     pth_prefix_all = cat(1, pth_prefix_all, vec(pth_prefix_all_onespec));
 end
 
@@ -156,7 +156,7 @@ end
 end
 
 
-function pth_prefix_all = find_preprocessed_files_onespec(recdate, fly, trial, suffix, pth_parent, valid_fnsuffixes)
+function pth_prefix_all = filefind_onespec(recdate, fly, trial, suffix, pth_parent, valid_fnsuffixes)
 
 
 recdate = num2str(recdate); %just in case it's numeric, won't matter if not
@@ -226,7 +226,7 @@ end
 function check_for_duplicate_specifiers(pth_all)
 
 for k = 1:numel(pth_all)
-    [~, recdate, fly, trial, suffix, ~, ~, ~, ~, ~] = get_ids_a2p(pth_all{k});
+    [~, recdate, fly, trial, suffix, ~, ~, ~, ~, ~] = idmake(pth_all{k});
     tmp{k} = [recdate '_' fly '_' trial '_' suffix];
 end
 if numel(tmp)~=numel(unique(tmp))

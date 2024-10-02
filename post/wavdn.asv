@@ -1,18 +1,20 @@
 
-function resp1 = wavdn(resp1, opt)
+function resp = wavdn(resp, opt)
 
 arguments
-    resp1
-    opt.t = 1:size(resp1,2)
-    opt.it = 1:size(resp1,2)
-    opt.roiind = 1:size(resp1,1)
+    resp
+    opt.t = 1:size(resp,2)
+    opt.it = 1:size(resp,2)
+    opt.ir = 1:size(resp,1)
     opt.pthgifpre = ''
+    opt.doplt = 0
 end
 
 t = opt.t;
 it = opt.it;
-roiind = opt.roiind;
+ir = opt.ir;
 pthgifpre = opt.pthgifpre;
+doplt = opt.doplt;
 
 if isempty(pthgifpre)
     pthgifpre = pthauto(suffix='', usetime=1, usefun=1);
@@ -20,7 +22,7 @@ end
 
 %% mostly default right now
 
-numsamp = size(resp1,2);
+numsamp = size(resp,2);
 
 if ~isa(t, 'double')
     t = double(t);
@@ -41,14 +43,14 @@ fb = cwtfilterbank(SignalLength=numsamp, Wavelet='Morse', VoicesPerOctave=num_vo
 % [FourierFactor,sigmaT] = wavCFandSD_cw(fb.Wavelet);
 
 
-for ri = 1:numel(roiind)
-    resp1(ri,it) = wavdn_oneroi(resp1(roiind(ri),it),t(it),fb,fs,wname,pthgifpre);
+for k = 1:numel(ir)
+    resp(k,it) = wavdn_oneroi(resp(ir(k),it), t(it), fb, fs, wname, pthgifpre, doplt);
 end
 
 
 end
 
-function respnew = wavdn_oneroi(resp1, t, fb,fs,wname,pthgifpre,doplt)
+function respnew = wavdn_oneroi(resp, t, fb, fs, wname, pthgifpre, doplt)
 
 numseg = 10;
 constant_ylim = 1;
@@ -58,12 +60,9 @@ ls2 = '-r';
 match_ylim = 0;
 gif_visibility = 'on';
 
-if ~isa(resp1, 'double')
-    resp1 = double(resp1);
+if ~isa(resp, 'double')
+    resp = double(resp);
 end
-
-pthgif = [pthgifpre 'resp_wavdn_.gif'];
-
 
 
 %% transform
@@ -77,13 +76,13 @@ prng = [nan nan];
 
 if dodetrend
     pdeg = 2; %polynomial degree
-    resp1 = detrend(resp1, pdeg);
+    resp = detrend(resp, pdeg);
 end
 
 if dowav
     
-    % [wt, wtf, coi] = cwt(resp1, FilterBank=fb);
-    [wt, wtf, coi] = cwt(resp1, fs);
+    % [wt, wtf, coi] = cwt(resp, FilterBank=fb);
+    [wt, wtf, coi] = cwt(resp, fs);
 
     pmin = linspace(1/wtf(1), 1/wtf(1), 3);
     pmin = 1/wtf(1);
@@ -105,19 +104,19 @@ end
 for m = 1:size(frng,1)
 
     if dowav
-        respnew = icwt(wt, wname, wtf, [frng(m,2) frng(m,1)]) + mean(resp1);
+        respnew = icwt(wt, wname, wtf, [frng(m,2) frng(m,1)]) + mean(resp);
         % respnew = rescale(respnew);
     else
-        respnew = resp1;
+        respnew = resp;
     end
 
-    if ~isempty(pthgifpre)
+    if doplt
         if m==1
             hfg = figure( 'Units', 'Normalized');
             hax = axes('Parent', hfg, 'Units', 'Normalized', 'Position', [0.1 0.6 0.85 0.35]);
             hold(hax, 'on')
             yyaxis left
-            hpl1 = plot(hax, t, resp1, 'k-');
+            hpl1 = plot(hax, t, resp, 'k-');
             yyaxis right
             hpl2 = plot(hax, t, respnew, 'r-');
             hold(hax, 'off')
@@ -129,11 +128,10 @@ for m = 1:size(frng,1)
         titlein = ['period range (sec) ' num2str(round(prng(m,2),2)) ',  ' num2str(round(prng(m,1),2))];
         hax.Title.String = titlein;
 
-        pthgif2 = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
-        pthgif2 = pthgif;
+        pthgif = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
 
         axpos = [0.1 0.1 0.85 0.35];
-        pltmultits(resp1, respnew, pthgif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
+        tsplt(resp, respnew, pthgif, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
 
         % fig2gif(hfg,m,fngif)
 

@@ -5,14 +5,14 @@ arguments
     resp
     opt.t = 1:size(resp,2)
     opt.it = 1:size(resp,2)
-    opt.roiind = 1:size(resp,1)
+    opt.ir = 1:size(resp,1)
     opt.pthgifpre = ''
     opt.doplt = 0
 end
 
 t = opt.t;
 it = opt.it;
-roiind = opt.roiind;
+ir = opt.ir;
 pthgifpre = opt.pthgifpre;
 doplt = opt.doplt;
 
@@ -43,8 +43,8 @@ fb = cwtfilterbank(SignalLength=numsamp, Wavelet='Morse', VoicesPerOctave=num_vo
 % [FourierFactor,sigmaT] = wavCFandSD_cw(fb.Wavelet);
 
 
-for ri = 1:numel(roiind)
-    resp(ri,it) = wavdn_oneroi(resp(roiind(ri),it), t(it), fb, fs, wname, pthgifpre, doplt);
+for k = 1:numel(ir)
+    resp(k,it) = wavdn_oneroi(resp(ir(k),it), t(it), fb, fs, wname, pthgifpre, doplt);
 end
 
 
@@ -53,12 +53,12 @@ end
 function respnew = wavdn_oneroi(resp, t, fb, fs, wname, pthgifpre, doplt)
 
 numseg = 10;
-constant_ylim = 1;
+yconst = 1;
 ylim_padfac = 0.1;
 ls1 = '-k';
 ls2 = '-r';
 match_ylim = 0;
-gif_visibility = 'on';
+gifvis = 'on';
 
 if ~isa(resp, 'double')
     resp = double(resp);
@@ -131,7 +131,7 @@ for m = 1:size(frng,1)
         pthgif = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
 
         axpos = [0.1 0.1 0.85 0.35];
-        pltmultits(resp, respnew, pthgif, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
+        tsplt(resp, respnew, pthgif, numseg, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim, gifvis, hfg, axpos)
 
         % fig2gif(hfg,m,fngif)
 

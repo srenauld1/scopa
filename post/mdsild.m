@@ -1,6 +1,19 @@
 function md = mdsild(pth_md, optld, optld_hires)
 
-md = readmdsi(pth_md); %function for converting scanimage metadata dict written to txt file by json in read_save_metadata.py 
+arguments
+    pth_md
+    optld = []
+    optld_hires = []
+end
+
+if isempty(optld)
+    optld = default_ld_opts();
+end
+if isempty(optld_hires)
+    optld_hires = default_ld_opts();
+end
+
+md = readmdsi(pth_md); %function for converting scanimage metadata dict written to txt file by json in read_save_metadata.py
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];

@@ -44,7 +44,7 @@ end
 num_total_subplots = numrows_ts+supp.num_total_model_functions;
 
 %axes
-hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gif_visibility) ;
+hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
 hfg.Position = [0 0.2 0.8 0.6];
 bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
 

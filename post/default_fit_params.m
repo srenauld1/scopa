@@ -55,7 +55,7 @@ plt.predlot_norm = 'each'; %amplotude normalization for the detail plots at bott
 plt.maxnumroiplot = 100; %number of rois that get detail view on the bottom, one per gif frame
 plt.sort_method = 'unbiased'; %'majoraxis', 'unbiased', 'gof', 'custom'; %how to select rois for detail plots, 'unbiased' for equidistant maxnumroiplot, 'gof' for equidistant maxnumroiplot sorted by gof in descending order (so starts with best fit ends with worst)
 
-plt.gif_visibility = 'on'; %on shows gif while plotting/writing/saving, off saves/writes but doesn't show it
+plt.gifvis = 'on'; %on shows gif while plotting/writing/saving, off saves/writes but doesn't show it
 plt.max_tinds = 1000; %1000; %for the timeseries view of depv, how many samples to plot at the most (will take indices 1:max_tinds), big number to plot all
 plt.timeseries_numsegments = 3; %how many equispaced segments to display in setail view, ending at final frame
 
