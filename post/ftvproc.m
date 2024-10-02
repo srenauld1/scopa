@@ -221,11 +221,11 @@ sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
 if doplt
     title_prefix = 'pre resample';
     pthgif = [pth_vid(1:end-4) '.gif'];
-    stack2fig(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
+    stackplt(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
 
     title_prefix = 'post resample';
     pthgif = [pth_vid(1:end-4) 'RS_.gif'];
-    stack2fig(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
+    stackplt(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
 end
 
 save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')

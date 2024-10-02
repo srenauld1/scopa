@@ -113,7 +113,7 @@ if makeplots
     index_labels{4} = it;
     gifvis = 'on';
 
-    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stackplt(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 
 end
 
@@ -128,7 +128,7 @@ stack = fft_filter_1d(stack, stopband);
 %% plot after filtering
 
 if makeplots
-    stack2fig(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stackplt(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 end
 
 %% save

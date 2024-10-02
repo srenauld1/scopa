@@ -1,4 +1,4 @@
-function stack2fig(stack, opt)
+function stackplt(stack, opt)
 
 %alphamapping is not yet an option
 

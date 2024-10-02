@@ -371,7 +371,7 @@ if do_plots
 
         %mask overlay
         overlayarray = rescale(0.2*rescale(mask_allroi_approx_upsamp) + rescale(premask, 0, 1));
-        stack2fig( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
+        stackplt( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
 
 
         %colormap for each roi
@@ -418,7 +418,7 @@ if do_plots
         %roi overlay in upsampled res
         filename_olay = [pth_mroi_prefix 'roiolay_upsamp_.gif'];
         gifvis = 'on';
-        stack2fig(premask, pthgif=filename_olay, gifvis=gifvis, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
+        stackplt(premask, pthgif=filename_olay, gifvis=gifvis, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
 
 
         %hsv gif, each slice, each roi a different hue
@@ -456,7 +456,7 @@ if do_plots
 
     end
 
-    stack2fig(premask, pthgif=[pth_mroi_prefix 'autopremask_.gif'])
+    stackplt(premask, pthgif=[pth_mroi_prefix 'autopremask_.gif'])
 
     if strcmp(create_mask_method, 'triangle')
         duk = sort(tmpup_nz);

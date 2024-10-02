@@ -5,7 +5,7 @@ function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol_each, ...
 % makes roi overlay truecolor image that is x-y-z-channel-roi
 % this function works but is now deprecated because it creates a potentially large variable (the roi overlay),
 % and the colormapping method here is a little complex because it is fairly low level
-% newer approach plots overlay within stack2fig by including the roi pixel indices as an argument 
+% newer approach plots overlay within stackplt by including the roi pixel indices as an argument 
 % newer approach handles colormapping and transparency with higher level matlab functions
 
 arguments
@@ -79,5 +79,5 @@ for ri = 1:size(img, 4)
 end
 
 if doplt
-    stack2fig(img, pthgif=filename_gif) 
+    stackplt(img, pthgif=filename_gif) 
 end

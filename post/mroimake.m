@@ -200,7 +200,7 @@ if olayopt.do %roi overlay
     filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
     gifvis = 'on';
     plotchannel = 1;
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_olay, gifvis=gifvis, roipx=roipx, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipx as argument to plot roi overlay
+    stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=filename_olay, gifvis=gifvis, roipx=roipx, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipx as argument to plot roi overlay
 end
 
 
@@ -240,13 +240,13 @@ if do_other_plots %all these are at imaging resolution
 
     %mask overlay
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    stack2fig( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_.gif'])
+    stackplt( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_.gif'])
 
     %manual roi mask
-    stack2fig(roimaskman, pthgif=[pth_mroi_prefix 'roimaskman_.gif'])
+    stackplt(roimaskman, pthgif=[pth_mroi_prefix 'roimaskman_.gif'])
 
     %mask all rois (without stack background)
-    stack2fig(mask_allroi, pthgif=[pth_mroi_prefix 'maskallroi_.gif'])
+    stackplt(mask_allroi, pthgif=[pth_mroi_prefix 'maskallroi_.gif'])
 
     % %3d surface plot
     % kbnd = boundary([maskx,masky,maskz]);

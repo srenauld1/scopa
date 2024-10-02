@@ -146,7 +146,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         map_hires_lores = [];
     end
 
-    % stack2fig(stack, it=20.3, fdimnum=3) %view stack in various ways
+    % stackplt(stack, it=20.3, fdimnum=3) %view stack in various ways
 
     %% create/load/select rois/responses for each regionex
 

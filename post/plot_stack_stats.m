@@ -170,7 +170,7 @@ for iiii = ctopvec
     end
 end
 
-stack2fig(outall, pthgif=[pthsv_prefix '_mov_' maskstring '_.gif'])
+stackplt(outall, pthgif=[pthsv_prefix '_mov_' maskstring '_.gif'])
 
 
 %% plot image with the brightest pixel
@@ -210,7 +210,7 @@ else
     pix_timeseries_all = reshape(inpcrop_allslice, [], szo(4));
 end
 
-%stack2fig(rescale(inpcrop_allslice(:,:,:,round(linspace(1, szo(4), 10)))), pthgif=[pthsv_prefix '_movcrop_' maskstring '_.gif'])
+%stackplt(rescale(inpcrop_allslice(:,:,:,round(linspace(1, szo(4), 10)))), pthgif=[pthsv_prefix '_movcrop_' maskstring '_.gif'])
 
 pix_mean_all = mean(pix_timeseries_all, 2);
 ylnew = [min(pix_mean_all(:)) max(pix_mean_all(:))];

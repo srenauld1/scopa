@@ -105,7 +105,7 @@ if doplt
     volshow(template,Parent=vwr,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...
         Colormap=[1 0 1],Alphamap=0.1);
     %
-    % stack2fig(stack_hires_mnt_reg, pthgif=[pthsv(1:end-4) 'stack_hires_mnt_reg.gif'])
+    % stackplt(stack_hires_mnt_reg, pthgif=[pthsv(1:end-4) 'stack_hires_mnt_reg.gif'])
     %
     % regplot = stack_hires_mnt_reg;
     % pct = prctile(regplot(:), 98);
@@ -119,7 +119,7 @@ if doplt
     %
     % catreg = cat(1, rescale(loresplot), rescale(regplot));
     %
-    % stack2fig(catreg, pthgif=[pthsv(1:end-4) 'catreg.gif'])
+    % stackplt(catreg, pthgif=[pthsv(1:end-4) 'catreg.gif'])
     %
     % figure; montage(catreg)
     % saveas( gcf, [pthsv(1:end-4) 'catreg_montage.png'])
@@ -133,7 +133,7 @@ if doplt
 
     figure; imagesc(mean(stack, 3)); axis image; title("hires stack before registration mean z, mean t");
     saveas( gcf, [pthsv(1:end-4) '_meanmean_.png'])
-    stack2fig(stack, pthgif=[pthsv(1:end-4) 'hires_mean_notreg_.gif'])
+    stackplt(stack, pthgif=[pthsv(1:end-4) 'hires_mean_notreg_.gif'])
 
     lrthr = 0.3; % template binariztion threshold to help vis
     hrthr = 0.3;% hires_ds binariztion threshold to help vis

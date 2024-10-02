@@ -80,7 +80,7 @@ ui.ld.gif.suffixes_plot = {
     %'bksb_cmrg_dcdn_nosn'
     }; %anything missing will be skipped, will be reordered from least to most processed (by suffix length)
 
-% display ranges for each suffixes_plot; applied in stack2fig; display_range represents proportion of full range, where [0,1] is full range;
+% display ranges for each suffixes_plot; applied in stackplt; display_range represents proportion of full range, where [0,1] is full range;
 % stack values that are proportionally within display_range are linearly mapped to image intensity; less than or equal to display_range(1) is mapped to image min (black); greater than or equal to display_range(2) is mapped to image max (white);
 % for example, [0,1] will be full contrast, [0, 0.5] will map upper half of stack intensities to white;
 % if stack doesn't exist its display_range is ignored
