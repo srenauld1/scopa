@@ -1,4 +1,4 @@
-function [roidat, resp] = make_morphological_rois(stack, opts_mroi, ...
+function [roidat, resp] = mroimake(stack, opts_mroi, ...
     ti, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
     regionex, parstr_mroi, roimaskman_allchan)
 
@@ -6,7 +6,7 @@ function [roidat, resp] = make_morphological_rois(stack, opts_mroi, ...
 %if you want to automate rois from multiple drawn regions, use different
 %regionex (they can be analzed together after extracting voluem
 %responses), or choose to draw discontiguous roi and that one can get
-%passed to make_morphological_rois_automated
+%passed to mroiauto
 
 
 % for num_mroi argument
@@ -35,7 +35,7 @@ function [roidat, resp] = make_morphological_rois(stack, opts_mroi, ...
 % made for each, but the 3d refining code cannot accommodate
 % multiple drawn rois currently, so do not do this;
 % if you want multiple rois within the fov passed to this function,
-% call this function (make_morphological_rois)
+% call this function (mroimake)
 % again with the same inputs, but draw a different single 2d roi,
 % and assign the outputs of this function a different name (outside this function)
 
@@ -124,7 +124,6 @@ for c = 1:numchan
         num_mroi_manual = size(roimaskman, 4);
         pth_mroidat = [pth_mroi_prefix 'chn' num2str(c) '_mroidat_.mat'];
         try
-            mo=mo
             load(pth_mroidat, 'roidat');
         catch
             if num_mroi_manual>1 || num_mroi_auto==0
@@ -147,7 +146,7 @@ for c = 1:numchan
                     "since determining the long axis of extraction currently requires automated morph roi extraction")
             else
                 [roiwt, roicen, num_mroi] = ...
-                    make_morphological_rois_automated(stackmnt_tmp, roimaskman, num_mroi_auto, ...
+                    mroiauto(stackmnt_tmp, roimaskman, num_mroi_auto, ...
                     xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
                     regionex, hsvopt, do_other_plots, autoopts);
             end
@@ -173,7 +172,7 @@ try
 catch
     resp = [];
     for c = 1:numchan
-        resp = extract_roi_responses(stack, roiwt, pth_mroi_prefix, normopts, imper, resp=resp, dowav=dowav, ti=ti); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+        resp = roiresp(stack, roidat(c).roiwt, pth_mroi_prefix, normopts, imper, resp=resp, dowav=dowav, ti=ti); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
         if ~maskinput && c==numchan
             save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
         end

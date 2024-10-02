@@ -99,9 +99,9 @@ end
 pthfigpre = pth_daqrs(1:end-4);
 
 if doplots
-    maxtplot = 2; %first maxtplot seconds to plot daqinds in make_daqinds
+    maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
 else
-    maxtplot = 0; %first maxtplot seconds to plot daqinds in make_daqinds
+    maxtplot = 0; %first maxtplot seconds to plot daqinds in daqindsmake
 end
 
 daqvars_bytype.normal = vnormal;
@@ -133,11 +133,11 @@ end
 
 %%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%% 
 
-daqinds.frame = []; %frame inds are not used outside function make_daqinds, although could be in the same way as slice or volume indices 
+daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices 
 daqinds.slice = [];
 daqinds.vol = [];
-if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run make_daqinds without frameClock
-    daqinds = make_daqinds(trialData.frameClock, trialData.Time, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre);
+if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
+    daqinds = daqindsmake(trialData.frameClock, trialData.Time, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre);
 else
     sprintf("frame clock not on daq, or user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices")
 end
@@ -213,7 +213,7 @@ for si = 1:num_resamples
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
 
-                [ tmp, tmp_diff ] = process_DAQ_signal(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplots);
+                [ tmp, tmp_diff ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplots);
 
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, tounwrap))
                     tmp = unwrap(tmp); %convert to mm (not for tmp_diff)

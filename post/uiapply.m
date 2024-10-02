@@ -1,7 +1,7 @@
 
-function [vars, labs, lims, roipx, varcombos] = apply_user_input(cb, vars, labs, roipx, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
 
-"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN apply_user_input "
+"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN uiapply "
 
 try
 
@@ -107,7 +107,7 @@ else
     opts_mroi.dowav = 1;
     opts_mroi.norm = normopt;
 
-    [roidat_new, resp] = make_morphological_rois(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
+    [roidat_new, resp] = mroimake(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
     hardcodenorm = 'rawf_f_f_n';
     resp = channel_combine_struct(resp);

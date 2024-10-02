@@ -1,5 +1,5 @@
 
-function resp = extract_roi_responses(respin, roiwt, pth_save_prefix, normopts, imper, resp)
+function resp = roiresp(respin, roiwt, pth_save_prefix, normopts, imper, opt)
 
 arguments
     respin
@@ -7,11 +7,21 @@ arguments
     pth_save_prefix
     normopts
     imper
-    resp = [] %if resp is passed as input, this function's output resp is appended to it
+    opt.resp = struct %if resp is passed as input, this function's output resp is appended to it
+    opt.dowav = 0
+    opt.ti = []
+end
+resp = opt.resp;
+dowav = opt.dowav;
+ti = opt.ti;
+
+if isempty(resp)
+    resp = struct;
 end
 
 if isstruct(respin)
-    chanused = [any(cell2mat(regexp(fieldnames(respin), 'chn1$'))) any(cell2mat(regexp(fieldnames(respin), 'chn2$')))];
+    fn = fieldnames(respin);
+    chanused = [any(endsWith(fn, 'chn1')) any(endsWith(fn, 'chn2'))];
     if sum(chanused)==0
         chanused = [1 0];
     end
@@ -27,15 +37,14 @@ for c = 1:numel(chanused)
             chanpat = '';
         end
         if isstruct(respin)
-            fn = fieldnames(respin);
             respin_onechan = struct2cell(respin);
             kp = endsWith(fn, chanpat);
             respin_onechan = respin_onechan(kp);
-            fn = erase(fn(kp), chanpat);
-            respin_onechan = cell2struct(respin_onechan, fn);
-            resp = extract_roi_responses_onechan(respin_onechan, roiwt, pth_save_prefix, normopts, imper, chanpat, resp);
+            fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
+            respin_onechan = cell2struct(respin_onechan, fntmp);
+            resp = roiresp_onechan(respin_onechan, roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         else
-            resp = extract_roi_responses_onechan(respin(:,:,:,:,c), roiwt, pth_save_prefix, normopts, imper, chanpat, resp);
+            resp = roiresp_onechan(respin(:,:,:,:,c), roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
         end
     end
 end
@@ -43,7 +52,7 @@ end
 end
 
 
-function resp = extract_roi_responses_onechan(respin, roiwt, pth_save_prefix, normopts, imper, fnchan, resp)
+function resp = roiresp_onechan(respin, roiwt, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
 
 arguments
     respin
@@ -52,16 +61,19 @@ arguments
     normopts
     imper
     fnchan
-    resp = [] %if resp is passed as input, this function's output resp is appended to it
+    resp
+    dowav
+    ti
 end
 
 
+
 if isequal(unique(roiwt(:)), [0 1]') | unique(roiwt)==1
-    weightingstr = 'no';
+    weightingstr = 'n';
 elseif unique(roiwt)==0
     error("no pixel indices for any rois present")
 else
-    weightingstr = 'yes';
+    weightingstr = 'y';
 end
 
 if ~isstruct(respin) %if input is plain raw image f
@@ -106,12 +118,16 @@ for fnini = 1:length(fnin)
             resp2.f = nan;
         end
 
+        if dowav
+            resp2.f = wavdn(resp2.f, t=ti, it=1:numel(ti), pthgifpre=''); %pth_mroi_prefix
+        end
+
         resp2 = normalize_response(resp2.f, normopts.postcluster, imper);
 
         fn2 = fieldnames(resp2);
 
         for fni2 = 1:length(fn2)
-            fieldname_tmp = ['in_' fnin{fnini} '_pc_' fn1{fn1i} '_cl_'  fn2{fni2} '_w_' weightingstr fnchan];
+            fieldname_tmp = [fnin{fnini} '_' fn1{fn1i} '_'  fn2{fni2} '_' weightingstr fnchan];
             resp.(fieldname_tmp) = resp2.(fn2{fni2});
         end
 
@@ -124,7 +140,7 @@ end
 %pc gets f, cl and w get null since there is no clustering for this field
 if ~raw_image_input
     for fnini = 1:length(fnin)
-        fieldname_tmp = ['in_' fnin{fnini} '_pc_f_cl_null_w_null'];
+        fieldname_tmp = [fnin{fnini} '_f_null_null'];
         resp.(fieldname_tmp) = respin.(fnin{fnini});
     end
 end

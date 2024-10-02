@@ -107,7 +107,7 @@ num_panel_frames = md.num_panel_frames;
 
 %% find subset indices using mu-cue offset
 
-[~, err_std] = compute_bump_error(offset);
+[~, err_std] = bumpcomp_error(offset);
 %[~, err_cum_sorted] = sort(err_cum);
 [~, err_std_sorted] = sort(err_std);
 

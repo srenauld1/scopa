@@ -1,6 +1,6 @@
 
 function [roiwt, roicen, num_mroi_auto_final] = ...
-    make_morphological_rois_automated(stackmnt, roimaskman, ...
+    mroiauto(stackmnt, roimaskman, ...
     num_mroi_auto_initial, xwid, ywid, zwid, stack_hires, ...
     map_hires_lores, pth_mroi_prefix, ...
     regionex, hsvopt, do_plots, opts)
@@ -367,7 +367,7 @@ end
 
 if do_plots
 
-    if ~isempty(sliceinds_hires) %if interp to hi z res to help segmentation, plot those hi z res versions here, imaging sampling version of these (which are the used variables) are plotted in make_morphological_rois
+    if ~isempty(sliceinds_hires) %if interp to hi z res to help segmentation, plot those hi z res versions here, imaging sampling version of these (which are the used variables) are plotted in mroimake
 
         %mask overlay
         overlayarray = rescale(0.2*rescale(mask_allroi_approx_upsamp) + rescale(premask, 0, 1));

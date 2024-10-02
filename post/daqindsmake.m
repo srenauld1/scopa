@@ -1,4 +1,4 @@
-function daqinds = make_daqinds(frameon, t, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre)
+function daqinds = daqindsmake(frameon, t, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre)
 
 
 % make imaging slice indices and imaging volume indices for resampling (aligning) daq timeseries with imaging 

@@ -1,5 +1,5 @@
 
-function differ = differentiate_timeseries(vartypein, inp, slopelensec, slopeord, dt)
+function differ = tsdv(vartypein, inp, slopelensec, slopeord, dt)
 
 arguments
     vartypein char

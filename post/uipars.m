@@ -1,4 +1,4 @@
-function ui = input_params_carl(pthstacks)
+function ui = uipars(pthstacks)
 
 % struct 'ui' holds all input params
 % substructures within ui are mostly used within single functions called from a2p
@@ -23,11 +23,11 @@ else
     ui.mn.pthstacks = remove_missing_input_files(pthstacks);
 end
 
-ui.mn.regionex_all = {'fullfov44'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
+ui.mn.regionex_all = {'fb2048'}; %cell array of strings matching regionex from scopa 'pre' pipeline; append an underscore and suffix (format existingregionex_suffix) to create a new regionex with the same croplim as existing regionex (e.g., if the cuboid from 'pre' has two subregions you want to analyze separately, including with different morphological rois);  if no match from 'pre' you will be prompted to define the regionex (i.e., to define 'croplim', a cuboid, in interactive plots)
 ui.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 ui.mn.do_daq = 1; %process daq data
-ui.mn.do_temporal_downsample_align_fictrac_video = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+ui.mn.do_ftvproc = 1; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 ui.mn.do_lfit = 0;
 ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
 ui.mn.do_fit = 0; %model fitting (ui.mfit below)
@@ -37,23 +37,23 @@ ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)
 %% DAQ
 
 %params for daq processing in load_DAQ (i.e. stimulus/fictrac processing)
-ui.daq.useinds = 'vol'; %'none' (resample using 'resample' function), 'vol' (resample using volume indices), 'all' (resample using frame indices and volume indices; for n slices, will create n+1 timeseries, the first n for each slice, the last is for volume) 
+ui.daq.useinds = 'none'; %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
 ui.daq.use_flyback_lines = 1; %whether to include flyback lines when resampling with frame indices (if ui.daq.useinds is not 'none')
 ui.daq.use_flyback_frames = 1; %whether to include flyback frames when resampling with volume indices (if ui.daq.useinds is not 'none')
 ui.daq.balldia = 9; %mm, used to convert fictrac variables into mm
 ui.daq.slopelensec = 0.4; %window length used to fit slope (to compute daq variable derivatives (eg velocities)
 ui.daq.slopeord = 2; %order of polynomial used to fit local slope; this should probably just remain 2
 
-ui.daq.vars.normal = {'Time', 'heat', 'virmenIteration'}; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-ui.daq.vars.circular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'}; %list circular daq variables you want to process
-ui.daq.vars.categorical = {'ftcam'}; %list categorical daq variables you want to process
+ui.daq.vnormal = {'Time', 'heat', 'virmenIteration'}; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
+ui.daq.vcircular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'}; %list circular daq variables you want to process
+ui.daq.vcategorical = {'ftcam'}; %list categorical daq variables you want to process
 
 ui.daq.toballscale = {'ficTracIntSide', 'ficTracIntForward'}; %define which ui.daq.vars to rescale from radians to mm
 ui.daq.tounwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which ui.daq.vars to unwrap
 ui.daq.tozero = {'ficTracIntSide', 'ficTracIntForward'}; %%define which ui.daq.vars to zero (force to start at 0)
 
-ui.daq.vmin  = 0; %daq voltage min; need to find this in metadata
-ui.daq.vmax  = 10; %daq voltage max, need to find this in metadata
+ui.daq.voltmin  = 0; %daq voltage min; need to find this in metadata
+ui.daq.voltmax  = 10; %daq voltage max, need to find this in metadata
 
 ui.daq.doplots = 0; %if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
@@ -108,11 +108,11 @@ ui.ftv.doplots = 1; %0 skips plots, 1 plots and saves, 2 saves but does not disp
 
 %% MORPHOLOGICAL ROIS
 
-% params for making morphological rois (manual or automated), mostly used in function make_morphological_rois
+% params for making morphological rois (manual or automated), mostly used in function mroimake
 % for ui.mroi.auto.use_hires, ui.mroi.use_drawn_rois, and ui.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in ui.mroi will be skipped
 
 %%params for the manually drawn morphological rois
-ui.mroi.use_drawn_rois =  {'fullfov44'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
+ui.mroi.use_drawn_rois =  {'fb2048'}; %cell of regionex strings, let the user hand draw 2d or 3d morphological rois in an interactive plot, and save, or load if already drawn and saved
 
 ui.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
 ui.mroi.chancopy = [1]; %which channel(s') rois to project onto the other (concatenated with any other rois on that channel, ie does not overwrite)
@@ -121,7 +121,7 @@ ui.mroi.dowav = 1; %wavelet denoising
 
 %%params for the automated morphological roi extraction (will be applied to drawn morphological rois, if they exist . . . for example, you draw a roi around a region, then there is automated morphological segmentation within that region)
 ui.mroi.auto.chan = [1]; %which channel for auto mroi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
-ui.mroi.auto.num_mroi_auto.fullfov44 = 0; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
+ui.mroi.auto.num_mroi_auto.fb2048 = 2048; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 ui.mroi.auto.use_hires = {''}; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 ui.mroi.auto.create_mask_method = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 ui.mroi.auto.subsample_mask_method = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', ui.mroi.auto.num_mroi_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
@@ -130,7 +130,7 @@ ui.mroi.auto.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2]; %for edge detection, def
 ui.mroi.auto.closing_element_size = 8; %for bwmorph close after edge detection, helps connect edges
 ui.mroi.auto.extract_morph_rois_in_3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
-ui.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in make_morphological_rois and make_morphological_rois_auto
+ui.mroi.do_other_plots = 0; %do plots besides overlay and hsvopt in mroimake and mroiauto
 
 %params for roi overlay plot of morophological rois (make a gif showing each z slice of mean t stack)
 ui.mroi.olayopt.do = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
@@ -165,7 +165,7 @@ ui.mroi.norm.doplots = 0;
 
 %% FUCNTIONAL ROIS
 
-%params for loading/selecting/viewing functional rois (applied in process_functional_rois)
+%params for loading/selecting/viewing functional rois (applied in froiproc)
 ui.froi.caiman_lr_str = {'2_1_*_*_*_*_*_1000_*_*_graph_2dex'}; %cell array of caiman param strings (in filename of roi file output by scopa pre), can use wildcards, empty to skip
 ui.froi.min_pixels_per_region = 3; %min pix in each distongiguous region, roi selection criterion
 ui.froi.min_roi_size = 5;%pixels, roi selection criterion
@@ -196,7 +196,7 @@ ui.lc.chanuse = 1;
 
 % ui.pf holds params for computing population features, each substructure beneath ui.pf is for a different population feature, below, for example, is ui.pf.bump
 
-% params for bump in compute_bump function
+% params for bump in bumpcomp function
 % a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from ui.pf.bump.mfit.varnms.depvp) and all matches from ui.pf.bump.mfit.varnms.indvp
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
 % if ui.pf.bump.domain_methodis 'functional', these preferred headings are used as the angle, and ui.pf.bump.mfit.varnms.depvp as the magnitude, in computing pva
@@ -283,7 +283,7 @@ ui.pf.bump.mfit = default_fit_params(ui.pf.bump.mfit);
 % ui.mfit(1).mdlname = 'fnet_A01_sh16'; % see notes_mdlname for notes about ui.mfit.mdlname syntax
 % ui.mfit(1).plt.doplots = 100;
 
-ui.mfit(1).varnms.depvp{1} = {['resp.fb204866.mo*.*_chn1']}; %if empty, do will be set to false
+ui.mfit(1).varnms.depvp{1} = {['resp.fb2048.mo*.*_chn1']}; %if empty, do will be set to false
 ui.mfit(1).varnms.indvp{1} = {['ball.forvel']};
 ui.mfit(1).epochinds = {[1]};
 ui.mfit(1).validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
@@ -303,7 +303,7 @@ ui.pltx(1).varnms.ts1{1} = {['ball.forvel']};
 ui.pltx(1).varnms.ts2{1} = {['']};
 ui.pltx(1).varnms.ts3{1} = {['']};
 ui.pltx(1).varnms.ts4{1} = {['']};
-ui.pltx(1).varnms.ts5{1} = {['resp.fullfov44.mo*.*chn1.ind1']}; %if empty, do will be set to false
+ui.pltx(1).varnms.ts5{1} = {['resp.fb2048.mo*.*chn1.ind1']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts6{1} = {['']}; %if empty, do will be set to false
 ui.pltx(1).varnms.ts7{1} = {['']};
 ui.pltx(1).varnms.ts8{1} = {['']};
@@ -365,7 +365,7 @@ if (~isempty(ui.mn.pthstacks) || ~isempty(cell2mat(ui.mn.pthstacks))) && all(con
     ui.mfit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
     ui.mfit.mdl_length_sec = 1.25;
     ui.mn.do_daq = 0; %process daq data
-    ui.mn.do_temporal_downsample_align_fictrac_video = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+    ui.mn.do_ftvproc = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
     ui.mn.do_popfeat = 0; %compute population features (ui.pf below)
     ui.mn.do_fit = 0; %model fitting (ui.mfit below)
     ui.mn.do_pltexp = 1; %plot experiment (ui.pltx below)

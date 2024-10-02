@@ -1,4 +1,4 @@
-function bump = compute_bump(stack, fitin, roidat, opts, md, regionex, si)
+function bump = bumpcomp(stack, fitin, roidat, opts, md, regionex, si)
 
 
 %% params
@@ -114,7 +114,7 @@ for fi = 1:length(bump_subdomain)
         rho = smooth_timeseries('normal', rho, smoothwindow_sec, md.imper);
     end
 
-    bumpvel = differentiate_timeseries('circular', mu, slopelensec, slopeord, md.imper);
+    bumpvel = tsdv('circular', mu, slopelensec, slopeord, md.imper);
     offset = circ_dist_nan(fitin.vars.indvp.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point

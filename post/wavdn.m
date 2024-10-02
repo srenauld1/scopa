@@ -1,5 +1,5 @@
 
-function resp1 = wavelet_denoise(resp1, opt)
+function resp1 = wavdn(resp1, opt)
 
 arguments
     resp1
@@ -13,6 +13,10 @@ t = opt.t;
 it = opt.it;
 roiind = opt.roiind;
 pthgifpre = opt.pthgifpre;
+
+if isempty(pthgifpre)
+    pthgifpre = pthauto(suffix='', usetime=1, usefun=1);
+end
 
 %% mostly default right now
 
@@ -38,13 +42,13 @@ fb = cwtfilterbank(SignalLength=numsamp, Wavelet='Morse', VoicesPerOctave=num_vo
 
 
 for ri = 1:numel(roiind)
-    resp1(ri,it) = wavelet_denoise_oneroi(resp1(roiind(ri),it),t(it),fb,fs,wname,pthgifpre);
+    resp1(ri,it) = wavdn_oneroi(resp1(roiind(ri),it),t(it),fb,fs,wname,pthgifpre);
 end
 
 
 end
 
-function respnew = wavelet_denoise_oneroi(resp1,t,fb,fs,wname,pthgifpre)
+function respnew = wavdn_oneroi(resp1,t,fb,fs,wname,pthgifpre)
 
 numseg = 10;
 constant_ylim = 1;
@@ -58,12 +62,13 @@ if ~isa(resp1, 'double')
     resp1 = double(resp1);
 end
 
+pthgif = [pthgifpre 'resp_wavdn_.gif'];
 
-fngif = [pthgifpre 'resp_mra_.gif'];
+
 
 %% transform
 
-dodetrend = 0;
+dodetrend = 0; %wavelet processing can already detrend, so this probably doens't make much sense within this function
 dowav = 1;
 
 frng = [nan nan];
@@ -124,11 +129,11 @@ for m = 1:size(frng,1)
         titlein = ['period range (sec) ' num2str(round(prng(m,2),2)) ',  ' num2str(round(prng(m,1),2))];
         hax.Title.String = titlein;
 
-        fngif2 = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
-        fngif2 = fngif;
+        pthgif2 = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
+        pthgif2 = pthgif;
 
         axpos = [0.1 0.1 0.85 0.35];
-        pltmultits(resp1, respnew, fngif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
+        pltmultits(resp1, respnew, pthgif2, numseg, titlein, constant_ylim, ylim_padfac, ls1, ls2, match_ylim, gif_visibility, hfg, axpos)
 
         % fig2gif(hfg,m,fngif)
 

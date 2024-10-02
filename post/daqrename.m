@@ -1,5 +1,5 @@
 
-function [ball, vis, ti] = rename_daq_timeseries(daqrs)
+function [ball, vis, ti] = daqrename(daqrs)
 
 %make sure they're all row vectors 
 

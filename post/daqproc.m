@@ -1,4 +1,4 @@
-function [daqvarout, daqvarout_diff] = process_DAQ_signal(daqvartype, daqvarname, daqvarin, ...
+function [daqvarout, daqvarout_diff] = daqproc(daqvartype, daqvarname, daqvarin, ...
     newlength, inds, dt, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplots)
 
 % default resampling uses daq frame timestamps ('inds')
@@ -7,9 +7,9 @@ function [daqvarout, daqvarout_diff] = process_DAQ_signal(daqvartype, daqvarname
 
 % note:
 % smoothing daqvarout before differentiation should not be necessary because it's been downsampled so much,
-% and differentiate_timeseries allows variable slope window anyway (increase to reduce output noise)
-% but if you still want to smooth first, try passing output of smooth_timeseries to differentiate_timeseries, like this:
-% differentiate_timeseries(daqvartype, smooth_timeseries(daqvartype, daqvarin, smoothwindow_sec, dt), slopelensec, slopeord, dt);
+% and tsdv allows variable slope window anyway (increase to reduce output noise)
+% but if you still want to smooth first, try passing output of smooth_timeseries to tsdv, like this:
+% tsdv(daqvartype, smooth_timeseries(daqvartype, daqvarin, smoothwindow_sec, dt), slopelensec, slopeord, dt);
 
 if isduration(daqvarin)
     daqvarin = seconds(daqvarin); %convert to seconds, whatever the units
@@ -24,7 +24,7 @@ if isequal(vec(unique(daqvarin)), [0;1])
 end
 
 daqvarout = resample_timeseries(daqvartype, daqvarin, inds, newlength); %downsample into imaging rate
-daqvarout_diff = differentiate_timeseries(daqvartype, daqvarout, slopelensec, slopeord, dt);
+daqvarout_diff = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
 
 
 if doplots

@@ -12,6 +12,8 @@
 % struct 'pth' holds paths
 % numeric array 'stack' is the imaging movie chosen for analysis (using 'ui.mn.suffix_analysis')
 
+% if you get error "Invalid argument at position n. Function requires exactly 5-1 positional input(s)" check that you're not passing a nonscalar struct into a function (eg if you want to pass channel 1 roi weights, and there are two channels, pass roidat(1).roiwt, instead of roidat.roiwt)
+
 function a2p(pthstacks)
 
 arguments
@@ -27,7 +29,7 @@ sprintf("\n\n\nENTERING a2p.m")
 
 clear globals_a2p
 
-ui = input_params_carl(pthstacks); % params
+ui = uipars(pthstacks); % params
 
 for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
@@ -44,8 +46,8 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
     %% load metadata
 
-    md = load_scanimage_metadata(pth.md, ui.ld, ui.hires.ld);
-    % md_flyg = load_flyg_metadata(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
+    md = mdsild(pth.md, ui.ld, ui.hires.ld);
+    % md_flyg = mdflygld(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % ff = @(x,y) cell2struct([struct2cell(md);struct2cell(md_flyg)],[fieldnames(md);fieldnames(md_flyg)]);
     % md = ff(md, md_flyg);
 
@@ -70,7 +72,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         if ui.mn.do_daq
             try
-                hujibjhload(pth.daqrs, 'daqrs')
+                load(pth.daqrs, 'daqrs')
             catch
                 daqrs = daqld(ids.recdatenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice, md.numslice_withflyback, md.imper, ui.daq.balldia, ui.daq.voltmin, ui.daq.voltmax, ...
                     vnormal=ui.daq.vnormal, ...
@@ -82,23 +84,23 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
                     pth_fldr=pth.fldr, ...
                     slopelensec=ui.daq.slopelensec, ...
                     slopeord=ui.daq.slopeord, ...
-                    useinds='none', ...
+                    useinds=ui.daq.useinds, ...
                     use_flyback_lines=ui.daq.use_flyback_lines, ...
                     use_flyback_frames=ui.daq.use_flyback_frames, ...
                     doplots=ui.daq.doplots);
             end
-            [ts.ball, ts.vis, ts.ti] = rename_daq_timeseries(daqrs);
+            [ts.ball, ts.vis, ts.ti] = daqrename(daqrs);
             md.ti = ts.ti;
             [md.epochs, ts.vis] = load_g4_epochs(md.ti, pth.epochinfo, ts.vis, pth.fldr, ids, md.imper, daqrs, ui.daq.use_carls_epochs);
             [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, md.ti, ui.daq.balldia);
         end
 
-        if ui.mn.do_temporal_downsample_align_fictrac_video
+        if ui.mn.do_ftvproc
             try
                 load(pth.ft.vidrs, 'ftvdsrs')
             catch
                 try
-                    ftvdsrs = temporal_downsample_align_fictrac_video(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
+                    ftvdsrs = ftvproc(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
                         ui.ftv.num_periodic_peaks_defining_laser_oscillations, ui.ftv.ftvid_spatial_smooth_window_std, ui.ftv.numpix_to_extract_laser_timeseries, ...
                         ui.ftv.laser_timeseries_smooth_window_std, ...
                         ui.ftv.doplots, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
@@ -150,31 +152,31 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
         %%crop movie to regionex cuboid
         [stackcrop, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
-            crop_stacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
+            cropstacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
             md.sz_crop, ui.mroi.auto.use_hires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roidat.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            make_morphological_rois(stackcrop, ui.mroi, md.ti, md.imper, md.xwid, md.ywid, md.zwid, ...
+            mroimake(stackcrop, ui.mroi, md.ti, md.imper, md.xwid, md.ywid, md.zwid, ...
             pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
         %%load/select functional (caiman) roi responses
         for rfi = 1:numel(pth.froi_all.(regionex)) %for each caiman extraction run (each roi file)
             [roidat.(regionex).(parstr.froi.(regionex){rfi}), ts.resp.(regionex).(parstr.froi.(regionex){rfi})] = ...
-                process_functional_rois(stackcrop, roidat.(regionex).(parstr.mroi.(regionex)), ...
+                froiproc(stackcrop, roidat.(regionex).(parstr.mroi.(regionex)), ...
                 pth.froi_all.(regionex){rfi}, regionex, md, ui.froi);
         end
 
     end
 
-    save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
+    % save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
 
 
     %% linear fit and hsv map (work in progress, but it does work)
 
     if ui.mn.do_lfit
 
-        ui.lc.chanuse = 2;
+        ui.lc.chanuse = 1;
 
         rindy = 1;
         rsp = ts.resp.(regionex).(parstr.mroi.(regionex)).(['rawf_f_f_n_chn' num2str(ui.lc.chanuse)]);
@@ -183,12 +185,12 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
         fvd = ts.ball.forvel;
         fvd = abs(fvd);
         fvd = smoothdata(fvd, 'gaussian', 12, 'omitnan');
-        %%fvd = differentiate_timeseries('normal', fvd, 0.4, 2, md.imper);
+        %%fvd = tsdv('normal', fvd, 0.4, 2, md.imper);
 
         yvd = ts.ball.yawvel;
         % yvd = abs(yvd);
         yvd = smoothdata(yvd, 'gaussian', 12, 'omitnan');
-        %%yvd = differentiate_timeseries('normal', yvd, 0.4, 2, md.imper);
+        %%yvd = tsdv('normal', yvd, 0.4, 2, md.imper);
 
         tinds = 3000:4000;
         xtrem = max(abs([vec(fvd(tinds)); vec(ts.ball.forvel(tinds))]));
@@ -242,7 +244,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
     if ui.mn.do_popfeat
         pffn = fieldnames(ui.pf);
         for pfi = 1:numel(pffn)
-            ts = compute_population_feature(pffn{pfi}, ts, stack, croplim_all, roidat, ui.pf.(pffn{pfi}), md, pth, ids.recid);
+            ts = popcomp(pffn{pfi}, ts, stack, croplim_all, roidat, ui.pf.(pffn{pfi}), md, pth, ids.recid);
         end
     end
 
@@ -256,7 +258,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(ui.mfit(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.mfit, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
-                stackcrop = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
+                stackcrop = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 fitin = mfit(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, ui.mfit(si)); %fit model using any available timeseries
 
@@ -275,7 +277,7 @@ for pai = 1:numel(ui.mn.pthstacks) % loop over recordings
 
                 choosecount = choosecount + 1;
                 [fitin, dochoose] = choose_timeseries(ui.pltx(si).varnms, ts, md.ti, pth.tsuse_nms_prefix.pltx, pth.stack, choosecount, dochoose);
-                [stackcrop, zstartpos_crop] = crop_stacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
+                [stackcrop, zstartpos_crop] = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
 
                 pltx(stackcrop, fitin.vars, ui.pltx(si).letui,  ...
                     fitin.varnms, ui.pltx(si).vpmap, ui.pltx(si).epochinds, ...

@@ -1,4 +1,4 @@
-function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = load_flyg_metadata(ids, pth_flyg_md, fldr, md)
+function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = mdflygld(ids, pth_flyg_md, fldr, md)
 
 % optionally output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata
 % also add scopa md to consolidate metadata fields relevant to scopa pipeline

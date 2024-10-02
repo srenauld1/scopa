@@ -1,4 +1,4 @@
-function [roidat, resp] = process_functional_rois(stack, roidat, pth_froi, regionex, md, opts)
+function [roidat, resp] = froiproc(stack, roidat, pth_froi, regionex, md, opts)
 
 
 %% params
@@ -320,12 +320,12 @@ end
 
 %% compute functional (caiman) responses averaged by which morphological roi they belong to (while also saving the original caiman responses too)
 
-resptmp.cmc = cmc; %put into struct before passing to extract_roi_responses
+resptmp.cmc = cmc; %put into struct before passing to roiresp
 
 dowav = 0;
-resp = extract_roi_responses(resptmp, roiwt, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing roiwt
+resp = roiresp(resptmp, roiwt, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing roiwt
 
-% resp = extract_roi_responses(resp_froi, roiwt_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
+% resp = roiresp(resp_froi, roiwt_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
 
 
 
