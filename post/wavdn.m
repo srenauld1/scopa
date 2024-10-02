@@ -123,12 +123,11 @@ for m = 1:size(frng,1)
 
         pthgif = [pthgifpre 'resp_rec_' num2str(round(prng(m,1),2)) '_' num2str(round(prng(m,2),2)) '_.gif'];
 
-        numseg = 10;
+        xseg = 10;
         yconst = 1;
-        ymatch = 0;
         gifvis = 'on';
         axpos = [0.1 0.1 0.85 0.35];
-        tsplt(resp, y2=respnew, pthgif=pthgif, xseg=numseg, titlein=titlein, yconst=yconst, ymatch=ymatch, gifvis=gifvis, hfg=hfg, axpos=axpos)
+        tsplt(resp, y2=respnew, pthgif=pthgif, xseg=xseg, titlein=titlein, yconst=yconst, gifvis=gifvis, hfg=hfg, axpos=axpos)
 
         % fig2gif(hfg,m,fngif)
 

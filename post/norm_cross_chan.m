@@ -1,6 +1,11 @@
 
 function resp1 = norm_cross_chan(resp1, resp2, opt)
 
+% work in progress; 
+% remove/reduce signal that appears in both channels (eg remove brain motion artifacts in functional channel using structural channel)
+% apply continuous wavelet transform (cwt), measure wavelet coherence (wcoherence), reduce or zero coefficients in highly coherent bins (not rigorous yet), apply inverse continuous wavelet transform (icwt)
+% this can work to the extent that correlation between green and red channels is predominantly due to brain motion (and not, for example, because of bleedthrough/crosstalk from green into red channel) 
+
 arguments
     resp1
     resp2
@@ -26,12 +31,7 @@ end
 
 function respnew = normcrosschan_oneroi(resp1,resp2,t,pthgifpre,mincoh)
 
-titlein = '';
-yconst = 1;
-ylim_padfac = 0.1;
-ls1 = '-k';
-ls2 = '-r';
-match_ylim = 0;
+titlein = 'normcrosschan';
 maxseg = 128;
 
 plotstring = 'hertz';
@@ -179,14 +179,14 @@ yyaxis right; hplr = plot(resp2(plotinds), 'r'); ylim([0 1]); hplr.Parent.YAxis(
 % 
 % 
 %     wlen = ceil(numsamp./2.^(size(mra,1)-m));
-%     numseg = ceil(numsamp/wlen);
-%     numseg(numseg>maxseg) = maxseg;
+%     segx = ceil(numsamp/wlen);
+%     segx(segx>maxseg) = maxseg;
 % 
 %     % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
-%     % tsplt(w(m,:), w2(m,:), fngif2, numseg, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim)
+%     % tsplt(w(m,:), y2=w2(m,:), pthgif=fngif2, segx=segx, titlein=titlein, yconst=yconst)
 % 
 %     fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
-%     tsplt(resp1, respnew, fngif3, numseg, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim)
+%     tsplt(resp1, y2=respnew, pthgif=fngif3, segx=segx, titlein=titlein, yconst=yconst)
 % 
 % 
 % end

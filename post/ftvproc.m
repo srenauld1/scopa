@@ -174,15 +174,13 @@ dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
 if doplt
     peaks_timeseries = nan(size(laser_ts_smoothed));
     peaks_timeseries(lkg) = pkg;
-    numsegx = 50;
+    segx = 50;
     pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
-    titlein = '';
+    titlein = 'laser oscillation with peaks (ideally imaging volumes) marked in red';
     yconst = 1;
-    ylim_padfac = 0.1;
-    ls1 = '-k';
-    ls2 = 'or';
-    match_ylim = 1;
-    tsplt(laser_ts_smoothed, peaks_timeseries, pth_gif, numsegx, titlein, yconst, ylim_padfac, ls1, ls2, match_ylim, gifvis)
+    mkr2 = 'o';
+    ymatch = 1;
+    tsplt(laser_ts_smoothed, y2=peaks_timeseries, pthgif=pth_gif, segx=segx, titlein=titlein, yconst=yconst, ymatch=ymatch, mkr2=mkr2)
 end
 
 %% find downsampling indices
