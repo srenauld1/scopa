@@ -17,7 +17,7 @@ if strcmp(plt.foreground, 'allrois') && isempty(roiwt)
 end
 
 if isempty(pthgif)
-    pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1, usefun=1);
+    pthgif = pthauto(vnm=pthgif, suffix='hsvmap.gif', usetime=1, usefun=1);
 end
 
 numscalebg = 256; %background intensity depth
@@ -50,7 +50,7 @@ switch plt.foreground
 
     case 'pixels'
 
-        imgtmp(cell2mat(roipx), :) = hsv2rgb( hsvmap );
+        imgtmp(cell2mat(roipx), :) = hsv2rgb( hsvmap ); %hsvmap must have been computed for each pixel, ie roipx maps 1:1 to hsvmap; should it be this way? user could mistakenly want pixmap for rois, which aren't always 1:1 (like if they overlap)
         imgtmp = reshape(imgtmp, size_imgnew);
 
     case 'eachroi'
@@ -111,7 +111,7 @@ if doplt
                 axis off
                 axis ij
             else
-                hpl.CData = img(:,:,iz,:,ir);
+                hpl.CData = squeeze(img(:,:,iz,:,ir));
             end
 
             fig2gif(hfg, cnt, pthgif)

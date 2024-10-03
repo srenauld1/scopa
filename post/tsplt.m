@@ -18,7 +18,7 @@ arguments
     opt.mkr1 {mustBeText} = 'none' %marker for line 1
     opt.mkr2 {mustBeText} = 'none' %marker for line 2
     opt.titlein {mustBeText} = '' %title
-    opt.pthgif {mustBeText} %figure save path
+    opt.pthgif {mustBeText} = '' %figure save path
     opt.gifvis {mustBeText} = 'on'
     opt.hfg = [] %can pass figure handle to add to existing figure
     opt.axpos = []; %axis position
@@ -153,14 +153,18 @@ for fi = 1:size(xseg, 1)
 
 
     if all(isfinite(ylm1)) %why did i do this? nans from dividing by zero when rescaling?
-        hax{1}.YLim = [ylm1(1) - range(ylm1)*ypadfac, ylm1(2) + range(ylm1)*ypadfac];
+        if ylm1(1)~=ylm1(2) %in case segment is constant, just skip setting new scale
+            hax{1}.YLim = [ylm1(1) - range(ylm1)*ypadfac, ylm1(2) + range(ylm1)*ypadfac];
+        end
     end
     if ~isempty(y2)
         if ymatch
             hax{2}.YLim = hax{1}.YLim;
         else
             if all(isfinite(ylm2)) %why did i do this?  nans from dividing by zero when rescaling?
-                hax{2}.YLim = [ylm2(1) - range(ylm2)*ypadfac, ylm2(2) + range(ylm2)*ypadfac];
+                if ylm2(1)~=ylm2(2) %in case segment is constant, , just skip setting new scale
+                    hax{2}.YLim = [ylm2(1) - range(ylm2)*ypadfac, ylm2(2) + range(ylm2)*ypadfac];
+                end
             end
         end
     end

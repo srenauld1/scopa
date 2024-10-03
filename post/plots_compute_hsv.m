@@ -22,6 +22,20 @@ huelimnat = opt.huelimnat;
 huelimnat2 = opt.huelimnat2;
 mdlname = opt.mdlname;
 
+if isempty(hueft)
+    if ~isempty(satft)
+        hueft = zeros(size(satft)); %only need to get the size right for hue, when empty, since it comes first in code below
+    elseif ~isempty(valft)
+        hueft = zeros(size(valft));
+    end
+    hueft(1) = 0.5;
+end
+if isempty(satft)
+    satft = 1;
+end
+if isempty(valft)
+    valft = 1;
+end
 
 if isrow(hueft)
     hueft = hueft'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname

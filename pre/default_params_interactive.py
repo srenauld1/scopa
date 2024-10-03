@@ -20,7 +20,7 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 
 registration_template_group_id=('') #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 discard_channel_reg = None #None, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
@@ -47,7 +47,7 @@ use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise remov
 
 do_crop_only = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings in pth_allrecs without interruption
 
-do_extract = 0 #caiman source extraction 
+do_extract = 1 #caiman source extraction 
 discard_channel_ex = None #None, 1, or 2
 chan_primary_when_two_ex = 2 #1, or 2; this is ignored if data has one channel or discard_channel_ex is not 'none'; 1 will seed extraction in channel 2 with morphological masks extracted from a channel 1 mean image; 2 will do the inverse; 1 and 2 only work for 2d extraction (if extract_in_2d=1)
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)

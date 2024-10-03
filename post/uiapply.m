@@ -102,7 +102,7 @@ else
 
 
     uitmp = uipars('nofile'); %call uipars to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function; use 'nofile' option to skip the file searching because all we need is the mroi substruct 
-    % uitmp.mroi.wavp = [];
+    % uitmp.mroi.wavp = [0.3 0.6];
     
     [roidat_new, resp] = mroimake(stack, uitmp.mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;

@@ -1,5 +1,5 @@
 
-function resp = wavflt(resp, opt)
+function [resp, pwr] = wavflt(resp, opt)
 
 arguments
     resp %response
@@ -58,17 +58,22 @@ flim = [minf maxf];
 fb = cwtfilterbank(SignalLength=numsamp, Wavelet='Morse', VoicesPerOctave=num_voices_per_octave, SamplingFrequency=fs, FrequencyLimits=flim, Boundary='reflection');
 % [FourierFactor,sigmaT] = wavCFandSD_cw(fb.Wavelet);
 
+% kpf = findwavp(resp(1,:), fs, wavp); %this is probably not the best way to do this
+% pwr = zeros(size(resp,1), numel(kpf), 5, 'single');
+% load('~/stacks/muk.mat', 'kpstim2') %hack for now
+pwr = zeros(size(resp,1), 1, 1, 'single');
+kpstim2 = 1;
 
 for k = 1:size(resp,1)
     if ~onlyir || (onlyir && ismember(k, ir))
-        resp(k,:) = wavdn_oneroi(resp(k,:), t, k, ir, it, fb, fs, wname, pthgifpre, wavp, doplt);
+        [resp(k,:), pwr(k,:,:)] = wavdn_oneroi(resp(k,:), t, k, ir, it, fb, fs, wname, pthgifpre, wavp, doplt, kpstim2);
     end
 end
 
 
 end
 
-function respnew = wavdn_oneroi(resp, t, k, ir, it, fb, fs, wname, pthgifpre, wavp, doplt)
+function [respnew, pwr] = wavdn_oneroi(resp, t, k, ir, it, fb, fs, wname, pthgifpre, wavp, doplt, kpstim)
 
 
 if ~isa(resp, 'double')
@@ -104,6 +109,20 @@ tmpminf(tmpminf<wtf(end)) = wtf(end); %threshold in case user requested max peri
 frng = [tmpmaxf tmpminf];
 prng = 1./frng; %recompute in case thresholding changed
 
+kp = wtf>frng(end) & wtf<frng(1);
+% kp = kp(1:3:end);
+pwr = abs(wt(kp,:)).^2;
+% pwr = mean(pwr);
+pwr(:,coi>frng(end)) = 0; %zero out power outside cone of influence (where there are edge artifacts)
+
+pwrtmp = pwr(1);
+% pwrtmp(:,1) = mean(pwr(:,kpstim), 2);
+% pwrtmp(:,2) = prctile(pwr(:,kpstim), 10, 2);
+% pwrtmp(:,3) = prctile(pwr(:,kpstim), 50, 2);
+% pwrtmp(:,4) = prctile(pwr(:,kpstim), 95, 2);
+% pwrtmp(:,5) = (pwrtmp(:,4)-pwrtmp(:,1)) ./ (pwrtmp(:,4)+pwrtmp(:,1));
+pwr = pwrtmp;
+
 for m = 1:size(frng,1)
 
     respnew = icwt(wt, wname, wtf, [frng(m,2) frng(m,1)]) + mean(resp);
@@ -137,6 +156,39 @@ for m = 1:size(frng,1)
 
 end
 
+
+end
+
+function wtf = findwavp(resp, fs, wavp)
+
+[~, wtf, ~] = cwt(resp, fs);
+
+if isempty(wavp)
+    pmin = 1/wtf(1);
+    pmax = 1/wtf(end);
+else
+    pmin = wavp(:,1); %0.3; %min period in seconds
+    pmax = wavp(:,2); %50; %max period in seconds
+end
+
+[ff,gg] = meshgrid(pmin, pmax);
+prng = [ff(:) gg(:)];
+
+if any(prng(:,1)>prng(:,2))
+    error("all min periods must be greater than max periods")
+end
+
+frng = 1./prng;
+tmpmaxf = frng(:,1);
+tmpmaxf(tmpmaxf>wtf(1)) = wtf(1); %threshold in case user requested min period outside valid range
+tmpmaxf = unique(tmpmaxf, 'stable');
+tmpminf = frng(:,2);
+tmpminf(tmpminf<wtf(end)) = wtf(end); %threshold in case user requested max period outside valid range
+tmpminf = unique(tmpminf, 'stable');
+frng = [tmpmaxf tmpminf];
+prng = 1./frng; %recompute in case thresholding changed
+kp = wtf>frng(end) & wtf<frng(1);
+wtf = wtf(kp);
 
 end
 

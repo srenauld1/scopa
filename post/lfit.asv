@@ -204,9 +204,6 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
         iplttsmax = 30;
         ipltts = unique(round(linspace(1, numel(ipltts), iplttsmax)));
         sprintf(['pixfit is true so only plotting equidistant ' num2str(numel(ipltts)) ' rois in frames of gif, but all in hsvmap'])
-        crosshair = [];
-        [crosshair(:,1), crosshair(:,2), crosshair(:,3)] = ind2sub(size(stackmnt), cell2mat(roipx));
-        crosshair = num2cell(crosshair, 2)';
     else
         roipx = roipx(ir);
         crosshair = crosshair(ir);
@@ -243,42 +240,31 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     pthgif44 = insertBefore(pthgif, '.gif', 'parsbylagr2use');
     hfg = figure; hold on;
     for k = 1:numel(laguni)
-        kepins = r2use(lagsamp_use==laguni(k));
-        if ~isempty(kepins)
-            kepinsx = [1:numel(kepins)]+prevkepins;
-            prevkepins = kepinsx(end)+1;
-            hpltmp = plot(kepinsx, kepins);
-            yline(mean(r2use(lagsamp_use==laguni(k))), color=hpltmp.Color);
-        else
-            kepinsx = [1:50]+prevkepins;
-            hpltmp = plot(kepinsx, zeros(size(kepinsx)));
-            yline(mean(r2use(lagsamp_use==laguni(k))), color=hpltmp.Color);
-        end
+        kepins = r2use(lagsamp_use==k);
+        kepinsx = [1:numel(kepins)]+prevkepins;
+        prevkepins = kepinsx(end)+1;
+        hpltmp = plot(kepinsx, kepins);
+        yline(mean(r2use(laguni==k)), color=hpltmp.Color);
     end
     saveas(hfg, strrep(pthgif44, '.gif', '.png'))
 
+    laguni = unique(lagsamp_use);
     prevkepins = 0;
     pthgif44 = insertBefore(pthgif, '.gif', 'parsbylagsuse');
     hfg = figure; hold on;
     for k = 1:numel(laguni)
-        kepins = suse(lagsamp_use==laguni(k));
+        kepins = suse(lagsamp_use==k);
         if ~isempty(kepins)
             kepinsx = [1:numel(kepins)]+prevkepins;
             prevkepins = kepinsx(end)+1;
             hpltmp = plot(kepinsx, kepins);
-            yline(mean(suse(lagsamp_use==laguni(k))), color=hpltmp.Color);
+            yline(mean(r2use(laguni==k)), color=hpltmp.Color);
         else
-            kepinsx = [1:50]+prevkepins;
-            hpltmp2 = plot(kepinsx, zeros(size(kepinsx)));
-            yline(mean(suse(lagsamp_use==laguni(k))), color=hpltmp.Color);
+            hpltmp2 = plot(kepinsx, nan(size(kepinsx)));
         end
     end
     saveas(hfg, strrep(pthgif44, '.gif', '.png'))
 
-
-    hfg = figure; plot(sort(lagsamp_use))
-    pthgif44 = insertBefore(pthgif, '.gif', 'sortlags');
-    saveas(hfg, strrep(pthgif44, '.gif', '.png'))
 
     close all
 
@@ -477,7 +463,6 @@ end
 
 
 
-
 function [lagsec_actual, lagsamp, zero_lag_index, numlags] = compute_lags(t, lags_sec)
 
 ticumdiff = t - t(1);
@@ -491,13 +476,7 @@ else
     [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
     lags_sec_pos = lags_sec(lags_sec>=0);
     [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
-    if isempty(lags_samp_neg)
-        lagsamp = lags_samp_pos;
-    elseif isempty(lags_samp_pos)
-        lagsamp = lags_samp_neg;
-    else
-        lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
-    end
+    lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
     lagsamp = unique(lagsamp);
     lagsec_actual = [vec(-ticumdiff(abs(lagsamp(lagsamp<0))+1)); vec(ticumdiff(lagsamp(lagsamp>=0)+1))];
     lagsec_actual = unique(lagsec_actual);
