@@ -29,6 +29,8 @@ use function odf to set default options, like this:
         every call to odf shows output for a major routine that can be called, and the nesting of that output struct shows where in a2p that routine is called (o.k means routine k is called directly from a2p, while o.m.k means k is called from within routine m, which is called directly from a2p)
         it's done this way because because several routines get called multiple times in different locations, so this reduces the number of default options (ie this way you don't have to set unique defaults for routine x when called from different locations
 
+YOU CAN NEST FIELDS THAT ARE FIELDS OF d IN odf, or subfields of fields of d; you cannot nest fields 
+
 %}
 
 arguments
@@ -156,9 +158,6 @@ o.hires.sld = odf(tmp); tmp = [];
 tmp.sp.it = [1];
 o.hires.sld.sp = odf(tmp); tmp = [];
 
-%% carl
-
-oldcarlo %this is ignored if you're not carl
 
 %% find files 
 
@@ -179,6 +178,8 @@ else
 end
 
 %% organize
+
+oldcarlo %ignored if you're not carl
 
 o = fieldord(o);
 

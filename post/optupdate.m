@@ -1,0 +1,83 @@
+function optout = optupdate(optin, optdef, sub)
+
+arguments
+    optin
+    optdef
+    sub = []
+end
+
+% recursively update struct optdef with entries from struct optin;
+% optin and optout can be nonscalar, but optdef must be scalar
+% if field is in both optin and optdef, assign to optout the value in optin; if field is only in optdef, assign to optout the value in optdef; if field isn't in optdef, ignore it (don't put in optout)
+% optional input sub copies top level structs in optin into subfields sharing sub names (convenient way to copy options)
+
+% before entering optudrec (recursive opt update), copy all defaults for top level fields in optin
+
+if numel(optdef)>1
+    error("optdef must be scalar structure")
+end
+
+fn1 = fieldnames(optin);
+for k = 1:numel(fn1)
+    if ~isfield(optdef, fn1{k})
+        error(sprintf(fn1{k} + " IS NOT A FIELD OF d IN odf"))
+    end
+    if isempty(sub)
+        optout.(fn1{k}) = optdef.(fn1{k});
+        optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k});
+    else
+        for w = 1:numel(sub)
+            optout.(fn1{k}).(sub{w}) = optdef.(fn1{k});
+            optout.(fn1{k}).(sub{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(sub{w}), fn1{k});
+        end
+    end
+end
+
+
+
+
+    function optout = optudrec(optin, optout, fnparent)
+        numstin = numel(optin);
+        numstorig = numel(optout);
+
+        if numstin>1
+            if numstorig==1
+                optout = repelem(optout, numstin);
+            elseif numstorig~=numstin
+                error("optdef must be scalar struct, or match length of optin")
+            end
+            for v = 1:numstin
+                optout(v) = optudrec(optin(v), optout(v), fnparent);
+            end
+        else
+            fn = fieldnames(optin);
+            for u = 1:numel(fn)
+                if isfield(optout, fn{u})
+                    if isstruct(optin.(fn{u}))
+                        if ~isstruct(optout.(fn{u})) && ~isobject(optout.(fn{u})) %struct can refer to object not struct
+                            error(sprintf("optdef." + fn{u} + " DOES NOT EXIST"))
+                        else
+                            optout.(fn{u}) = optudrec(optin.(fn{u}), optout.(fn{u}), fn{u});
+                        end
+                    else
+                        if ~isempty(optin.(fn{u})) %in case we're in an index of nonscalar struct where optin wasnt specified
+                            optout.(fn{u}) = optin.(fn{u}); %update
+                        end
+                    end
+                else
+                    if isstruct(optin.(fn{u}))
+                        if ~isfield(optdef, fn{u})
+                            error(sprintf("IN odf, " + fn{u} + " IS NOT A FIELD OF d, nor is it a subfield of " + fnparent + ", BUT YOU PLACED IT IN YOUR OPT STRUCT AS IF IT WERE ONE OF THESE"))
+                        end
+                        optout.(fn{u}) = optudrec(optin.(fn{u}), optdef.(fn{u}), fn{u});
+                    else
+                        sprintf("ignoring field " + fn{u} + " because it is not a field of d." + fnparent + " in odf")
+                    end
+                end
+            end
+        end
+
+    end
+
+
+end
