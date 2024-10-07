@@ -1,13 +1,13 @@
 function [stack, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim, pth_mroi] = ...
     cropstacks(stack, regionex, zstartpos, recid, fldr, pth_tmpfiles, sz_crop, ...
-    use_hires, stack_hires_mnt, map_hires_lores, pth_mroi )
+    usehires, stack_hires_mnt, map_hires_lores, pth_mroi )
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
-name_noregionex = globscopa('name_noregionex');
+name_noregionex = glb('name_noregionex');
 
-if ~exist('use_hires', 'var')
-    use_hires = 0;
+if ~exist('usehires', 'var')
+    usehires = 0;
 end
 
 if strcmp(regionex, name_noregionex) %strcmp(croplim, name_noregionex)
@@ -34,9 +34,9 @@ end
 
 zstartpos_crop = zstartpos(croplim(5):croplim(6));
 
-if use_hires
+if usehires
     if contains(regionex, '_')
-        error("you set use_hires=1 with a sub-regionex (ie regionex has an underscore); code isn't written for this yet; just need to crop hires accordingly (or, depending on sub-regionex)")
+        error("you set usehires=1 with a sub-regionex (ie regionex has an underscore); code isn't written for this yet; just need to crop hires accordingly (or, depending on sub-regionex)")
     end
     if ~isempty(croplim)
         zinds_lores = croplim(5):croplim(6);

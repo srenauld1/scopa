@@ -1,4 +1,4 @@
-function [err_cum, err_std] = bumpcomp_error(offset)
+function [err_cum, err_std] = bumpcmp_error(offset)
 
 error("function needs to be updated")
 

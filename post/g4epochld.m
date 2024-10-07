@@ -1,4 +1,4 @@
-function [epochs, epochinds, vis] = g4epochld(t, pth_epochinfo, vis, fldr, ids, imper, daqrs, use_carls_epochs)
+function [epochs, epochinds, vis] = g4epochld(t, pth_epochinfo, vis, fldr, ids, sampper, daqrs, use_carls_epochs)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial) 
 % if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
@@ -44,7 +44,7 @@ catch
             maxshiftsec = 0;
         end
 
-        ft_misoffset_sec_all = minshiftsec : imper*0.45 : maxshiftsec;
+        ft_misoffset_sec_all = minshiftsec : sampper*0.45 : maxshiftsec;
 
         hfg = figure;
         hax = axes('Parent', hfg);
@@ -78,7 +78,7 @@ catch
                 fig2gif(hfg, cnt, [fldr 'misoffset_.gif'])
 
                 if fmsai==numel(ft_misoffset_sec_all)
-                    critd = movingslope(criter, 20, 2, imper);
+                    critd = movingslope(criter, 20, 2, sampper);
                     if ~(min(critd)<0 && max(critd)>0)
                         error("error is monotonic, expand search range")
                     end

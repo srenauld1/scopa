@@ -27,7 +27,7 @@ if isempty(it)
     it = 1:numsamp;
 end
 if isempty(pthgif)
-    pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1, usefun=1);
+    pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
 end
 
 stack = reshape(stack(:,:,:,it,chan), [], size(stack, 4));

@@ -67,7 +67,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             pth_tif_write_secondary_tmp_prefix = pth_tif_write[:-4] + '_presmoothed_tmp'
 
 
-    stack = crop_flyback(stack, md['dims'], md['flyback'])
+    stack = cropfb(stack, md['dims'], md['flyback'])
 
     bidiphase_frame_increment = 8 #use subset of frames because bidiphase_compute uses complex doubles, increasing size of array 8 times, also bidiphase should be constant throughout recording
     phoff = bidiphase_compute(stack[::bidiphase_frame_increment,...]) #compute bidirectional phase offset, can be zero 
@@ -75,7 +75,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         bidiphase_shift(stack, phoff) #correct any bidirectional phase offset if nonzero
     stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     if two_channel_reg:
-        stack_secondary = crop_flyback(stack_secondary, md['dims'], md['flyback'])
+        stack_secondary = cropfb(stack_secondary, md['dims'], md['flyback'])
         phoff = bidiphase_compute(stack_secondary[::bidiphase_frame_increment,...])
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
@@ -207,7 +207,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 ########################################################################################################################################################
 
 
-def crop_flyback(stack, dims, flyback):
+def cropfb(stack, dims, flyback):
     stack = stack.reshape(dims[0], dims[1]+flyback, dims[2], dims[3])
     if flyback!=0:    
         stack = stack[:,:-flyback,:,:] #crop flyback frames
@@ -223,8 +223,8 @@ def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
 
         dimtmp_presmooth = stack.shape
         numsigma_smooth_prereg = 5.0 #truncate gaussian filter after this many stds
-        imper = 1/volrate
-        len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / imper #smooth might require int, cant remember 
+        sampper = 1/volrate
+        len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / sampper #smooth might require int, cant remember 
         sigma_smooth_prereg = (len_window_smooth_t_mcp_samp - 1) / numsigma_smooth_prereg / 2
         if len(stack.shape)==3:
             stack = smooth_movie(stack, sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=(1,2))

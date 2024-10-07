@@ -1,5 +1,5 @@
 
-function [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, framecount, varsp, ...
+function [hndls, framecount, cb] = axplt(hndls, stack, stackp, vid, framecount, varsp, ...
     vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
     pthgif, figure_title, varsz, letui, timestr_ui, sampinc, ...
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
@@ -8,7 +8,7 @@ function [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, framecou
 cdfool = repmat(reshape([1 0 0], 1, 1, 3), [128 256 1]);
 afool = repmat(0.4, [128 256 1]);
 vidcenflag = 0;
-clear roiolay pltexp_process_callbacks
+clear roiolmake pltexp_process_callbacks
 
 cb = default_cbflags([], 'all'); %set all flags to default
 
@@ -30,7 +30,7 @@ if all(cellfun(@isempty,roipixindp))
 else
     do_overlay = 1;
     stack_oneframe = stack(:,:,:,1);
-    [imroi, roialphamask] = roiolay(stack_oneframe, roipixindp, col=cols, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+    [imroi, roialphamask] = roiolmake(stack_oneframe, roipixindp, col=cols, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 end
 
 tinds_use = tinds;
@@ -285,7 +285,7 @@ while tloop
 
 end
 
-clear roiolay %make sure persistent in roiolay variable is cleared
+clear roiolmake %make sure persistent in roiolmake variable is cleared
 
 end
 

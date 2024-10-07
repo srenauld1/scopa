@@ -12,12 +12,12 @@ arguments
     pthgif = ''
 end
 
-if strcmp(plt.foreground, 'allrois') && isempty(roiwt)
-    error("for foreground 'allrois' you must also pass roiwt")
+if strcmp(plt.fg, 'allrois') && isempty(roiwt)
+    error("for fg 'allrois' you must also pass roiwt")
 end
 
 if isempty(pthgif)
-    pthgif = pthauto(vnm=pthgif, suffix='hsvmap.gif', usetime=1, usefun=1);
+    pthgif = pthauto(suffix='hsvmap.gif', usetime=1, usefun=1);
 end
 
 numscalebg = 256; %background intensity depth
@@ -46,7 +46,7 @@ end
 imgtmp = reshape(imgtmp, [], size(imgtmp, 4)); %collapse spatial dimensions to make pixel by time
 
 
-switch plt.foreground
+switch plt.fg
 
     case 'pixels'
 
@@ -74,7 +74,7 @@ switch plt.foreground
             rgbmap{ir} = repmat(rgbmap{ir}, [numel(roipx{ir}) 1]);
             imgtmp(roipx{ir}, :, ir) = rgbmap{ir};
         end
-        imgtmp = sum(roiwt.*imgtmp, 3); %for each voxel, weighted mean of contribution from all rois and background (can be range 0-1 for some roi extractions methods); this only occurs in 'allrois' foreground because must deal with how voxels can be shared among rois
+        imgtmp = sum(roiwt.*imgtmp, 3); %for each voxel, weighted mean of contribution from all rois and background (can be range 0-1 for some roi extractions methods); this only occurs in 'allrois' fg because must deal with how voxels can be shared among rois
         imgtmp = reshape(imgtmp, size_imgnew);
 
 
@@ -85,7 +85,7 @@ switch plt.foreground
 end
 
 img = zeros(size(imgtmp), 'uint8');
-for ir = 1:size(imgtmp,5) %each roi, if foreground is 'eachroi'
+for ir = 1:size(imgtmp,5) %each roi, if fg is 'eachroi'
     for iz = 1:size(imgtmp,3)
         img(:,:,iz,:,ir) = im2uint8(imgtmp(:,:,iz,:,ir));
     end

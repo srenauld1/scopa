@@ -24,7 +24,7 @@ pth_save = [pth_save_prefix '/' strjoin(spl(1:end-3), '_') '_.mat']; %remove the
 
 
 %normalization params are separated by underscores:
-% in_input normlization_pc_precluster normalization_cl_cluster normalization_w_weighting
+% in_input normlization_pc_pre normalization_cl_cluster normalization_w_weighting
 
 %put pb last for now
 region_choose = {'gar', 'gal', 'no_r', 'no_l', 'pb'};
@@ -62,7 +62,7 @@ for rci = 1:length(region_choose)
         % resp_tmp_new(1,:) = resp_tmp(idx,:);
         % idx = find(strcmp(params_all_tmp(:,1), '3_1_0.7_15_None_1_1_10_1000_graph_3dex') & strcmp(params_all_tmp(:,3), 'in_cmdff_pc_null_cl_null_w_yes'));
         % resp_tmp_new(end+1,:) = resp_tmp(idx,:);
-        % idx = find(strcmp(params_all_tmp(:,1), 'morphological') & strcmp(params_all_tmp(:,3), 'in_rawf_pc_null_cl_null_w_no'));
+        % idx = find(strcmp(params_all_tmp(:,1), 'morphological') & strcmp(params_all_tmp(:,3), 'in_imf_pc_null_cl_null_w_no'));
         % resp_tmp_new(end+1,:) = resp_tmp(idx,:);
         % figure; hold on;indies = 1:500; plot(resp_tmp_new(1, indies));
         % yyaxis right; plot(resp_tmp_new(2, indies));
@@ -107,7 +107,7 @@ num_panel_frames = md.num_panel_frames;
 
 %% find subset indices using mu-cue offset
 
-[~, err_std] = bumpcomp_error(offset);
+[~, err_std] = bumpcmp_error(offset);
 %[~, err_cum_sorted] = sort(err_cum);
 [~, err_std_sorted] = sort(err_std);
 

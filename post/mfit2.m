@@ -4,7 +4,14 @@ classdef mfit2
     end
     methods
         function obj = mfit2(val)
-            obj.opts = mfit2pars(val);
+            arguments
+                val = []
+            end
+            if isstruct(val) || isempty(val)
+                obj.opts = mfit2pars(val);
+            else
+                error("must pass struct into mfit2")
+            end
         end
     end
 end

@@ -1,11 +1,11 @@
-function ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac, y_order)
+function ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac, y_order)
 
 % find xy positions and extents of subplots
 % can split figure into sectors along x or y (not both yet); sectors can have different subplot arrangements
 % each cell element of argument subplot_layout defines each sector's layout
 % if subplot_layout cell element is 1d, it denotes [numrows, numcolumns] for that sector
-% if subplot_layout cell element is 2d, 3d, 4d, 5d, or 6d, arrange_subplots assumes it is an image stack
-% the image stack dims are assumed to be (y,x,z,t,p,c), and arrange_subplots will maximally fill sector area with z images, each size (y,x)
+% if subplot_layout cell element is 2d, 3d, 4d, 5d, or 6d, figarr assumes it is an image stack
+% the image stack dims are assumed to be (y,x,z,t,p,c), and figarr will maximally fill sector area with z images, each size (y,x)
 % note, for image stack layout style, there may be more than z subplot positions, if the space cannot be evenly tiled into z subplots; it is up to user to choose which of the available subplots to use  
 % (i.e., will preserve images' aspect ratios, and maximize their size, given the sector area)
 % output ax is struct, where each element is sector, and each field is x or y position or extent
@@ -160,7 +160,7 @@ end
 ax = rmfield(ax, 'xp');
 ax = rmfield(ax, 'yp');
 
-ax = orderfields_recursive(ax);
+ax = fieldord(ax);
 
 
 end

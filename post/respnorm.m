@@ -1,4 +1,4 @@
-function respout = normalize_response(respin, normtype_all, imper)
+function respout = respnorm(respin, normtype_all, sampper)
 
 % several normalization methods, input respin is 2d space x time, single or double precision
 % normtype_all is cell array of strings, each string specifies a different
@@ -44,7 +44,7 @@ for nti = 1:length(normtype_all)
                 f0_pct = sscanf(patmatch(4:6), '%d');
                 winlen = sscanf(patmatch(7:9), '%d');
                 if winlen
-                    winlen = round(winlen / imper);
+                    winlen = round(winlen / sampper);
                     f0 = RankOrderFilter(tmp, winlen, f0_pct); %moving baseline
                 else
                     f0 = prctile(tmp, f0_pct, 2); %static baseline

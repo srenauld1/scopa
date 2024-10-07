@@ -21,7 +21,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         make_figure = 1;
         framecount_gif = 1;
-        hfg = []; hax = []; htx = []; numrows_plot = 0; numcolumns_plot = 0; %init figure handle so initialize_figure knows to make figure, rather than update existing figure
+        hfg = []; hax = []; htx = []; numrows_plot = 0; numcolumns_plot = 0; %init figure handle so figinit knows to make figure, rather than update existing figure
         supp.starting_hax = 0;
 
         pth_save = [optin 'MODELCOMPS_.gif'];
@@ -47,17 +47,17 @@ end
 doplots_fun = 0;
 layer_index_previous = 0;
 
-for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output according to layer and channel fields
+for k = 1:supp.num_unit_total %loop over all units, indexing into input/output according to layer and channel fields
 
-    fnetunit = supp.fnet(ui,:);
+    fnetunit = supp.fnet(k,:);
 
-    layer_in_index = supp.fnet(ui,:).layer_in_index;
+    layer_in_index = supp.fnet(k,:).layer_in_index;
     chanout = fnetunit.channel_out;
 
     if layer_in_index~=layer_index_previous
         fragile_layer_out_index_variable = layer_in_index+1;
         allchanout_currlayer = unique([supp.fnet([supp.fnet.layer_out_index]==fragile_layer_out_index_variable).channel_out]);
-        if ui~=1
+        if k~=1
             intmp = outtmpall;
         end
         outtmpall = zeros(size(indv,1), numel(allchanout_currlayer));
@@ -71,7 +71,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
                 newaxes = 1;
                 numrows_plot = num_unit_curr_layer;
                 numcolumns_plot = max_num_fun_curr_layer;
-                [hfg, hax, htx] = initialize_figure(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subplot, fontsmall);
+                [hfg, hax, htx] = figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subplot, fontsmall);
             end
         end
     end
@@ -118,7 +118,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
 
                     xlm = hax{sfi}.XLim;
                     hax{sfi}.XAxis.TickValues = linspace(0, numel(out2), 3); %linspace(0, supp.num_samp_mdl, 3);
-                    hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.imper, 2);
+                    hax{sfi}.XAxis.TickLabels = round(hax{sfi}.XAxis.TickValues*supp.sampper, 2);
 
                 else
                     hax{sfi}.Children.YData = out2;
@@ -126,7 +126,7 @@ for ui = 1:supp.num_unit_total %loop over all units, indexing into input/output 
 
                 if ~strcmp(fnetunit.funstr{fi}, 'f')
                     pars_plot = pars_curr_fun;
-                    pars_plot(2) = pars_plot(2) * supp.imper;
+                    pars_plot(2) = pars_plot(2) * supp.sampper;
                 end
 
             else

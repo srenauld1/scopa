@@ -16,10 +16,10 @@
 
         respstd = std(reshape(stackcrop(:,:,:,:,1), [], size(stackcrop, 4)), 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
 
-        hsvopt = [];
-        hsvopt.foreground = 'pixels';
-        hsvopt = default_hsv_opts(hsvopt);
-        hsvopt = plots_setup_hsv(hsvopt);
+        imhsv = [];
+        imhsv.fg = 'pixels';
+        imhsv = default_hsv_opts(imhsv);
+        imhsv = plots_setup_hsv(imhsv);
 
         stackmnt = mean(stackcrop(:,:,:,:,1), 4);
         roipxall = num2cell(1:numel(stackmnt));
@@ -27,8 +27,8 @@
         pwrind = 1;
         imhsvall = zeros([size(stackmnt) 3 size(pwr,2)], 'uint8');
         for kk = 1:size(pwr,2)
-            hsvmap = plots_compute_hsv(hsvopt, hueft=[], satft=pwr(:,kk,pwrind), valft=respstd);
-            imhsvall(:,:,:,:,kk) = hsvplt(hsvopt, stackmnt, hsvmap, roipxall);
+            hsvmap = hsvcmp(imhsv, hueft=[], satft=pwr(:,kk,pwrind), valft=respstd);
+            imhsvall(:,:,:,:,kk) = hsvplt(imhsv, stackmnt, hsvmap, roipxall);
         end
 
         stackplt(squeeze(imhsvall(:,:,:,2,:)), fdimnum=3)

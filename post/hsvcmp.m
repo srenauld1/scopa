@@ -1,5 +1,5 @@
 
-function hsvmap = hsvcmpt(plt, opt)
+function hsvmap = hsvcmp(plt, opt)
 
 % hue is 0 red , 0.2 yellow, 0.4 green, 0.6 blue, 0.8 magenta
 
@@ -22,6 +22,20 @@ huelimnat = opt.huelimnat;
 huelimnat2 = opt.huelimnat2;
 mdlname = opt.mdlname;
 
+if isempty(hueft)
+    if ~isempty(satft)
+        hueft = zeros(size(satft)); %only need to get the size right for hue, when empty, since it comes first in code below
+    elseif ~isempty(valft)
+        hueft = zeros(size(valft));
+    end
+    hueft(1) = 0.5;
+end
+if isempty(satft)
+    satft = 1;
+end
+if isempty(valft)
+    valft = 1;
+end
 
 if isrow(hueft)
     hueft = hueft'; %alternative hue feature, unused unless requested in plots_setup_hsv, according to mdlname
@@ -137,6 +151,7 @@ else
     huesplit = 'ind';
     switch huesplit
         case 'ind'
+            splitval = 0;
             hdata(hdata>splitval) = scale_range( hdata(hdata>splitval), [splitval hrange_in(2)], [hrange_out(2)/2 hrange_out(2)] );
             hdata(hdata<splitval) = scale_range( hdata(hdata<splitval), [hrange_in(1) splitval], [hrange_out(1) hrange_out(2)/2] );
         case 'dep'

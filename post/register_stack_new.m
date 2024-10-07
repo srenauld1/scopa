@@ -5,9 +5,10 @@ arguments
     pthsv = []
 end
 
+%THIS IS JUST EXPLORATORY
 
 if isempty(pthsv)
-    pthsv = pthauto(vnm=pthsv, suffix='.gif', usetime=1);
+    pthsv = pthauto(suffix='.gif', usetime=1);
 end
 
 

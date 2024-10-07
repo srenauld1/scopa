@@ -1,4 +1,4 @@
-function hgroup = init_axes_stack(hfg, ax, letui, stack, cmap, txtvar, display_range, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hgroup = init_axes_stack(hfg, ax, letui, stack, cmap, txtvar, dr, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hfg
@@ -7,7 +7,7 @@ arguments
     stack
     cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
     txtvar = []
-    display_range = [0,1]
+    dr = [0,1]
     sector_ind = 1
     subplot_ind = 1:size(stack,3)
     widfac = 1
@@ -45,7 +45,7 @@ for j = 1:numsubplot
     hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
     hax{j}.XLim = [1 numxpix]; %do this instead of axis image or data
     hax{j}.YLim = [1 numypix];
-    hax{j}.CLim = stackrange*display_range+stackmin;
+    hax{j}.CLim = stackrange*dr+stackmin;
     hax{j}.Toolbar.Visible = 'off';
 
     colormap(hax{j}, cmap);

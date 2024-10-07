@@ -10,7 +10,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
 
     mdt = {}
 
-    print("READING METADATA") #use ScanImageTiffReader to read metadata (strange parsing because scanimage tif headers are not saved as json)
+    print("READING METADATA") #use ScanImageTiffReader to read metadata (strange ping because scanimage tif headers are not saved as json)
 
     try:
         

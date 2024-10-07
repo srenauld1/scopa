@@ -7,8 +7,8 @@ arguments
     opt.pthgif char = ''
     opt.gifvis char = 'on'
     opt.roipx = []
-    opt.roiinds = []
-    opt.roi_colors = [1 0 0]
+    opt.ir = []
+    opt.roicols = [1 0 0]
     opt.roialpha = 0.3
     opt.cmap = gray(256) %colormap or 'rgb' if stack is truecolor (final dim length 3 . . . can be any numeric type)
     opt.title_prefix char = ''
@@ -18,7 +18,7 @@ arguments
     opt.numcolorsgif = 128
     opt.fdimnum = 2; %how many dims to display on a each frame
     opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
-    opt.display_range = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
+    opt.dr = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.iy = [];
     opt.ix = [];
     opt.iz = [];
@@ -41,7 +41,7 @@ else
 end
 
 if isempty(pthgif)
-    pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1);
+    pthgif = pthauto(suffix='.gif', usetime=1);
 end
   
 if isempty(dimorder)
@@ -111,7 +111,7 @@ if ~isempty(opt.ik)
 end
 
 
-clear roiolay %to clear the persistent variable within
+clear roiolmake %to clear the persistent variable within
 
 if strcmp(cmap, 'rgb')
     error("don't pass truecolor stack yet, testing still")
@@ -128,19 +128,19 @@ max_num_inds_to_print = 20;
 max_num_im_per_frame = 60;
 max_num_gif_frames = 2000;
 
-if ~iscell(display_range)
-    if numel(display_range)~=2
+if ~iscell(dr)
+    if numel(dr)~=2
         error("display range must be a cell of 2-element vectors or a 2-element vector")
     end
-    display_range = {display_range};
+    dr = {dr};
 end
 
-if any(vec(cell2mat(cellfun(@(x) x<0 | x>1 , display_range, 'UniformOutput', false))))
-    error("display_range must be in range 0-1")
+if any(vec(cell2mat(cellfun(@(x) x<0 | x>1 , dr, 'UniformOutput', false))))
+    error("dr must be in range 0-1")
 end
 
-if any(cell2mat(cellfun(@(x) x(1)>x(2), display_range, 'UniformOutput', false)))
-    error("display_range(1) must be less than display_range(2)")
+if any(cell2mat(cellfun(@(x) x(1)>x(2), dr, 'UniformOutput', false)))
+    error("dr(1) must be less than dr(2)")
 end
 
 if iscell(stack)
@@ -150,23 +150,23 @@ if iscell(stack)
     if numel(stack)~=1 && ~isempty(roipx)
         error("cannot currently plot roi overlay on multi-stack image")
     end
-    if numel(display_range)~=1 && numel(display_range)~=numel(stack)
-        error("display_range length must be 1, or match number of stacks")
+    if numel(dr)~=1 && numel(dr)~=numel(stack)
+        error("dr length must be 1, or match number of stacks")
     end
-    if numel(display_range)==1
-        display_range = repmat(display_range, [numel(stack) 1]);
+    if numel(dr)==1
+        dr = repmat(dr, [numel(stack) 1]);
     end
 
-    for si = 1:numel(stack) %if you are combining multiple stacks, rescale them to apply the display range, and make [0 1] new display_range (CLim)
+    for si = 1:numel(stack) %if you are combining multiple stacks, rescale them to apply the display range, and make [0 1] new dr (CLim)
         stackmin = double(min(stack{si}(:)));
         stackmax = double(max(stack{si}(:)));
-        stackrange = stackmax-stackmin; %(max-min)*display_range+min = [0 1]
+        stackrange = stackmax-stackmin; %(max-min)*dr+min = [0 1]
 
         if stackmin<0
             error("need to fix rescaling for negative stack")
         end
-        rsa = [display_range{si}(1) 1-display_range{si}(1); %display_range{si}(1)*newmax - display_range{si}(1)*newmin + newmin = 0;
-               display_range{si}(2) 1-display_range{si}(2)]; %display_range{si}(2)*newmax - display_range{si}(2)*newmin + newmin = 1;
+        rsa = [dr{si}(1) 1-dr{si}(1); %dr{si}(1)*newmax - dr{si}(1)*newmin + newmin = 0;
+               dr{si}(2) 1-dr{si}(2)]; %dr{si}(2)*newmax - dr{si}(2)*newmin + newmin = 1;
         rsb = [0;1];
         rstmp = mldivide(rsa, rsb); %two equations two unknowns 
         newmax = rstmp(1);
@@ -180,9 +180,9 @@ if iscell(stack)
     clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled 
     stack = cell2mat(stack); %convert to mat and cat stacks 
 
-else %if there's only one stack, don't rescale it, just assign display_range to CLim 
-    if numel(display_range)~=1
-        error("display_range length must be 1 if one stack is passed as argument")
+else %if there's only one stack, don't rescale it, just assign dr to CLim 
+    if numel(dr)~=1
+        error("dr length must be 1 if one stack is passed as argument")
     end
     stackmin = double(min(stack(:)));
     stackmax = double(max(stack(:)));
@@ -190,13 +190,13 @@ else %if there's only one stack, don't rescale it, just assign display_range to 
         error("need to fix rescaling for negative stack")
     end
     stackrange = stackmax-stackmin;
-    clim_tmp = stackrange*cell2mat(display_range)+stackmin;
+    clim_tmp = stackrange*cell2mat(dr)+stackmin;
 end
 
 
 if isempty(roipx)
     roi_loop_size = 1;
-    if isempty(roiinds)
+    if isempty(ir)
         roi_message = ', roi-NaN';
     else
         roi_message = ', roi-not plotting roi without pixinds roi argument';
@@ -219,16 +219,21 @@ else
     if ~all(diff(dimorder)==1)
         error("dimorder must be consecutive integers to visualize rois (you passed roipx as argument)")
     end
-    if isempty(roiinds)
-        roiinds = 1:numel(roipx);
+    if isempty(ir)
+        ir = 1:numel(roipx);
         roi_loop_size = numel(roipx);
     else
-        roi_loop_size = numel(roiinds);
+        kpir = ismember(ir, 1:numel(roipx));
+        if any(kpir==0)
+            sprintf("you requested to plot some rois (ir) that don't exist, according to the roi pixel indices you passed as argument (roipx), so ignoring those rois")
+        end
+        ir = ir(kpir);
+        roi_loop_size = numel(ir);
     end
 end
 
-if size(roi_colors, 1)==1
-    roi_colors = repmat(roi_colors, [roi_loop_size 1]);
+if size(roicols, 1)==1
+    roicols = repmat(roicols, [roi_loop_size 1]);
 end
 
 
@@ -311,7 +316,7 @@ end
 
 %% prep titles
 
-dr_str = vec(cellfun(@num2str, display_range, 'UniformOutput', false))';
+dr_str = vec(cellfun(@num2str, dr, 'UniformOutput', false))';
 dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'to'}, numel(dr_str)), 'UniformOutput', false);
 dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
 dr_str = ['dr-' strjoin(dr_str, ' AND ')];
@@ -331,7 +336,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if isempty(roipx)
         roinum_title = roi_message;
     else
-        roinum_title = [', roi-' num2str(roiinds(ri))];
+        roinum_title = [', roi-' num2str(ir(ri))];
     end
     for k = 1:numframes
         framecount = framecount+1;
@@ -350,7 +355,7 @@ end
 
 %% init subplots
 
-ax = arrange_subplots(stack, margins_subplot, margins_fig);
+ax = figarr(stack, margins_subplot, margins_fig);
 
 hfg = figure;
 aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
@@ -395,7 +400,7 @@ end
 framecount = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipx)
-        [imroi, imalpha] = roiolay(stack, roipx{roiinds(ri)}, col=roi_colors(ri,:), alp=roialpha); %make an overlay for one roi
+        [imroi, imalpha] = roiolmake(stack, roipx{ir(ri)}, col=roicols(ri,:), alp=roialpha); %make an overlay for one roi
     end
     for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after fdimnum
         framecount = framecount+1;
@@ -417,7 +422,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
 
 end
 
-clear roiolay %to clear the persistent variable within
+clear roiolmake %to clear the persistent variable within
 
 end
 

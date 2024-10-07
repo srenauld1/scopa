@@ -1,4 +1,4 @@
-function [imroi, imalpha] = roiolay(imbg, roipx, opt)
+function [imroi, imalpha] = roiolmake(imbg, roipx, opt)
 
 % make overlay for roi set defined by roipx, background is imbg;
 % roipx is cell array of roi pixel linear indices into imbg
@@ -47,7 +47,7 @@ rcnt = 0;
 for ri = 1:numel(roipx)
     if ~isempty(roipx{ri})
         rcnt = rcnt+1;
-        [imroi_oneroi, imalpha_oneroi] = make_roi_overlay_oneroi(roipx{ri}, imroi_oneroi, imalpha_oneroi, col(ri,:), alp(ri)); %make an overlay for one roi
+        [imroi_oneroi, imalpha_oneroi] = roiolmake_each(roipx{ri}, imroi_oneroi, imalpha_oneroi, col(ri,:), alp(ri)); %make an overlay for one roi
         if rcnt==1
             imroi = imroi_oneroi;
             imalpha = imalpha_oneroi;
@@ -70,7 +70,7 @@ end
 end
 
 
-function [imroi, imalpha] = make_roi_overlay_oneroi(pixind_oneroi, imroi, imalpha, col, alp)
+function [imroi, imalpha] = roiolmake_each(pixind_oneroi, imroi, imalpha, col, alp)
 
 imroi(:) = 0;
 imalpha(:) = 0;

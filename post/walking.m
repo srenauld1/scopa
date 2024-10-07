@@ -153,7 +153,7 @@ dummyvec = nan(numposxmax, 1);
 subplot_layout = {[6,4]};
 margins_subplot = 0.05;
 margins_fig = 0.05;
-ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig);
+ax = figarr(subplot_layout, margins_subplot, margins_fig);
 
 
 hfg = figure;

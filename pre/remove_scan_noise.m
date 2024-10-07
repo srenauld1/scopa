@@ -12,9 +12,9 @@ stopband = [10 20]; %set emperically for now, stopband frequency indices keep be
 it = 50.4; %t indices to plot, blank for all, negative for that number equidistant from all available
 iz = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 
-zero_stack = 1; %subtract min to make min zero 
+zerostack = 1; %subtract min to make min zero 
 
-display_range = [0,1]; %for plotting, if makeplots
+dr = [0,1]; %for plotting, if makeplots
 fdimnum = 3;%for plotting, if makeplots
 dimorder = [1,2,3,4];%for plotting, if makeplots
 
@@ -37,9 +37,9 @@ spl = strsplit(spl, '_'); %then separate by underscore
 recdatenum = str2double(spl{1});
 flynum = str2double(spl{2});
 trialnum = str2double(spl{3});
-suffix_analysis = strjoin(spl(4:end), '_');
-if strcmp(suffix_analysis(end), '_')
-    suffix_analysis = suffix_analysis(1:end-1);
+suffix = strjoin(spl(4:end), '_');
+if strcmp(suffix(end), '_')
+    suffix = suffix(1:end-1);
 end
 
 recid = [num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum)];
@@ -50,31 +50,31 @@ pth_md = [fldr recid '_mdsi_.txt'];
 
 md = mdsild(pth_md);
 sz = single([md.ypix md.xpix md.numslice md.numvol_o]);
-imper = 1/md.volrate;
+sampper = 1/md.volrate;
 
 
-crop_flyback = 0;
+cropfb = 0;
 numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
 
 [it, itstr] = make_plot_inds(it, indsall=sz(4), label_prefix='t');
 [iz, izstr] = make_plot_inds(it, indsall=sz(3), label_prefix='z');
 
 
-if isequal(display_range, [0,1])
+if isequal(dr, [0,1])
     dr_str = 'DRfull';
 else
-    dr_str = ['DR' num2str(display_range(1)) 'to' num2str(display_range(2))];
+    dr_str = ['DR' num2str(dr(1)) 'to' num2str(dr(2))];
 end
 
 if len_window_smooth_t_rsc_sec
     smooth_str = [strrep(num2str(len_window_smooth_t_rsc_sec), '.', 'p') 'secSmooth'];
-    len_window_smooth_t_rsc_samp = len_window_smooth_t_rsc_sec / imper; %does not need to be rounded for smoothdata
+    len_window_smooth_t_rsc_samp = len_window_smooth_t_rsc_sec / sampper; %does not need to be rounded for smoothdata
 else
     smooth_str = 'nosmooth';
     len_window_smooth_t_rsc_samp = 0;
 end
 
-figtitle_prefix = [recid '_' suffix_analysis '_' dr_str '_' smooth_str];
+figtitle_prefix = [recid '_' suffix '_' dr_str '_' smooth_str];
 filename_prefix = [fldr figtitle_prefix '_' izstr '_' itstr ];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
@@ -88,7 +88,7 @@ try
     stack = struct2cell(load(pth_stack_mat));
     stack = stack{1};
 catch
-    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, crop_flyback, zero_stack, sz(4));
+    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, cropfb, zerostack, sz(4));
 end
 
 
@@ -113,7 +113,7 @@ if makeplots
     index_labels{4} = it;
     gifvis = 'on';
 
-    stackplt(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stackplt(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gifvis=gifvis, dr=dr, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 
 end
 
@@ -128,7 +128,7 @@ stack = fft_filter_1d(stack, stopband);
 %% plot after filtering
 
 if makeplots
-    stackplt(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gifvis=gifvis, display_range=display_range, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+    stackplt(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gifvis=gifvis, dr=dr, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
 end
 
 %% save

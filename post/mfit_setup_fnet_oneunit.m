@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, imper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
 
 
 
@@ -17,17 +17,17 @@ indvp_max_alldim = inputvar_stats.indvp_max_alldim;
 
 %% define time domain for linear filters (constants in the nested functions)
 
-tmax = imper*(num_samp_mdl-1);
-t = 0:imper:tmax; %zero-indexed time for final/used filter
+tmax = sampper*(num_samp_mdl-1);
+t = 0:sampper:tmax; %zero-indexed time for final/used filter
 
 tlongfac = 2;
 tlongmax = tmax*tlongfac;
-tlong = 0:imper:tlongmax; %zero-indexed time for long-time domain filter (initial instantiation)
+tlong = 0:sampper:tlongmax; %zero-indexed time for long-time domain filter (initial instantiation)
 
-filt_padlen = round(padlen_sec/imper);
+filt_padlen = round(padlen_sec/sampper);
 filt_padded = zeros(1, numel(tlong)+filt_padlen*2);
-t_shifted_max = imper*(numel(filt_padded)-1);
-t_shifted = 0:imper:t_shifted_max; %zero-indexed time for padded and shifted filter
+t_shifted_max = sampper*(numel(filt_padded)-1);
+t_shifted = 0:sampper:t_shifted_max; %zero-indexed time for padded and shifted filter
 
 
 %% nonlinear function constants
@@ -52,7 +52,7 @@ freeformflag = any(strcmp(table2cell(fnet_funlist), 'f'));
 
 % prefix con_* denotes 'constraint', 3-element vectors below are [lowerbound, upperbound, startpoint]
 
-con_filt_tau1 = [imper/2, 0.3, imper]; %filter tau, in units of seconds, don't tranform into units of samples since filter is implemented in time not samples
+con_filt_tau1 = [sampper/2, 0.3, sampper]; %filter tau, in units of seconds, don't tranform into units of samples since filter is implemented in time not samples
 con_filt_tshift = [0, 0.75, 0.01];   %filter shift (ie lag, delay, rightward shift of filter) in seconds, implemented with spline interp
 con_filt_bias = [-depvp_extreme_alldim, depvp_extreme_alldim, 0.01]; %"y intercept", "bias", added to linear filter output
 con_filt_norm = [-2, 2, 1]; %L1 norm of whole filter (con_filt_tau1 filter minus con_tau2 filter, assuming latter is not norm zero )

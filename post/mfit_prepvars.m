@@ -7,7 +7,7 @@ num_samp_indvp = fitin.num_samp_indvp;
 num_dim_depvp = fitin.num_dim_depvp;
 num_samp_depvp = fitin.num_samp_depvp;
 epochinds_ts_i = ts.epochinds;
-imper = md.imper;
+sampper = md.sampper;
 
 time_dimension = find(size(fitin.vars.indvp)==num_samp_indvp);
 
@@ -63,11 +63,11 @@ end
 %% reorganize indv into size [dimensions, samples]
 
 
-num_samp_mdl = round(opts.mdl_length_sec/imper);
+num_samp_mdl = round(opts.mdl_length_sec/sampper);
 if num_samp_mdl==0
     num_samp_mdl = 1; %a convenience, so user can pass opts.mdl_length_sec=0 if they don't know volume rate
 end
-num_samp_lag = round(opts.mdl_lag_sec/imper);
+num_samp_lag = round(opts.mdl_lag_sec/sampper);
 if num_samp_lag==0
     num_samp_lag = 1; %a convenience, so user can pass opts.mdl_lag_sec=0 if they don't know volume rate
 end
@@ -146,5 +146,5 @@ fitin.pth_depvp_bin = pth_depvp_bin;
 fitin.pth_indvaug_bin = pth_indvaug_bin;
 
 
-fitin = orderfields_recursive(fitin);
+fitin = fieldord(fitin);
 

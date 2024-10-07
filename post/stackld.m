@@ -14,74 +14,74 @@ function stack = stackld(pth_stack, opt)
 
 arguments
     pth_stack
-    opt.suffixes_plot = {}
+    opt.suffixplt = {}
     opt.sz = []
-    opt.stack_make_datatype = 'uint16'
+    opt.stackdtype = 'uint16'
     opt.numslice_withflyback = []
     opt.channel_save = []
-    opt.channel_use = 1
+    opt.chanuse = 1
     opt.tcropfront = 0
     opt.tcropback = 0
-    opt.crop_flyback = 0
-    opt.zero_stack = 0
+    opt.cropfb = 0
+    opt.zerostack = 0
     opt.it = -50;
     opt.iz = []
     opt.smsdspace
-    opt.smooth_window_temporal = []
-    opt.do_plot_stack_stats = 0
-    opt.display_range = []
+    opt.smsdtime = []
+    opt.dostats = 0
+    opt.dr = []
 end
 
-suffixes_plot = opt.suffixes_plot;
+suffixplt = opt.suffixplt;
 sz = opt.sz;
-stack_make_datatype = opt.stack_make_datatype;
+stackdtype = opt.stackdtype;
 numslice_withflyback = opt.numslice_withflyback;
 channel_save = opt.channel_save;
-channel_use = opt.channel_use;
+chanuse = opt.chanuse;
 tcropfront = opt.tcropfront;
 tcropback = opt.tcropback;
-crop_flyback = opt.crop_flyback;
-zero_stack = opt.zero_stack;
+cropfb = opt.cropfb;
+zerostack = opt.zerostack;
 it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 smsdspace = opt.smsdspace;
-smooth_window_temporal = opt.smooth_window_temporal; %smooth the stack in time, 0 to skip
-do_plot_stack_stats = opt.do_plot_stack_stats;
-display_range = opt.display_range;
+smsdtime = opt.smsdtime; %smooth the stack in time, 0 to skip
+dostats = opt.dostats;
+dr = opt.dr;
 
-[~,~,~,~,suffix_analysis,~,~,~,recid,~,pth_fldr] = idmake(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to 
+[~,~,~,~,suffixstack,~,~,~,recid,~,pth_fldr] = idmake(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to 
 
-if isempty(suffixes_plot)
+if isempty(suffixplt)
     plot_stack_gif = 0;
 else
     plot_stack_gif = 1;
 end
 
-[~, plot_stack_order] = sort(cellfun(@numel, suffixes_plot)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
-suffixes_plot = suffixes_plot(plot_stack_order);
-% if ~ismember(suffix_analysis, suffixes_plot)
-%     sprintf("suffixes_plot DOES NOT CONTAIN suffix_analysis, ADDING IT TO suffixes_plot NOW")
-%     suffixes_plot{end+1} = suffix_analysis;
+[~, plot_stack_order] = sort(cellfun(@numel, suffixplt)); %default plot order is shortest to longest suffix (least to most processed, since additional suffixes are added at each stage)
+suffixplt = suffixplt(plot_stack_order);
+% if ~ismember(suffixstack, suffixplt)
+%     sprintf("suffixplt DOES NOT CONTAIN suffixstack, ADDING IT TO suffixplt NOW")
+%     suffixplt{end+1} = suffixstack;
 % end
-suffixes_plot = unique(suffixes_plot, 'stable'); %make sure there aren't accidental repeats
-if numel(suffixes_plot)~=1
-    suffixes_plot = cat(1, setxor(suffix_analysis, suffixes_plot(:), 'stable'), suffix_analysis); % make suffix_analysis last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
+suffixplt = unique(suffixplt, 'stable'); %make sure there aren't accidental repeats
+if numel(suffixplt)~=1
+    suffixplt = cat(1, setxor(suffixstack, suffixplt(:), 'stable'), suffixstack); % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
 end
 
 cnt = 0;
-for spi = 1:numel(suffixes_plot)
-    pthtmp = filefind(fullfile_sibling=pth_stack, suffix=suffixes_plot{spi});
+for spi = 1:numel(suffixplt)
+    pthtmp = filefind(fullfile_sibling=pth_stack, suffix=suffixplt{spi});
     if ~isempty(pthtmp)
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;
-        if isempty(display_range)
+        if isempty(dr)
             display_range_cell{cnt} = [0, 1];
         else
-            display_range_cell{cnt} = display_range.(suffixes_plot{spi});
+            display_range_cell{cnt} = dr.(suffixplt{spi});
         end
-        suffixes_plot_keep{cnt} = suffixes_plot{spi};
+        suffixplt_keep{cnt} = suffixplt{spi};
     else
-        sprintf("WARNING, NO FILE FOUND WITH SUFFIX: " + suffixes_plot{spi} + " WITH SAME folder, recdate, fly, and trial as sibling file " + pth_stack +  newline + "SKIPPING IT FOR PLOT")
+        sprintf("WARNING, NO FILE FOUND WITH SUFFIX: " + suffixplt{spi} + " WITH SAME folder, recdate, fly, and trial as sibling file " + pth_stack +  newline + "SKIPPING IT FOR PLOT")
     end
 end
 
@@ -109,18 +109,18 @@ for spi = 1:numel(pth_stacks)
             sz_yxzt=sz, ...
             numslice_withflyback=numslice_withflyback, ...
             channel_save=channel_save,...
-            channel_use=channel_use,...
-            crop_flyback=crop_flyback, ...
+            chanuse=chanuse,...
+            cropfb=cropfb, ...
             tcropfront=tcropfront, ...
             tcropback=tcropback, ...
-            zero_stack=zero_stack, ...
-            output_datatype=stack_make_datatype);
+            zerostack=zerostack, ...
+            output_datatype=stackdtype);
     else
         error("pth_stacks must end with tif or mat");
     end
 
 
-    if do_plot_stack_stats
+    if dostats
         plot_stack_stats(stack, ...
             mask=[], ...
             iz=1:size(stack,3), ...
@@ -128,7 +128,7 @@ for spi = 1:numel(pth_stacks)
             pthsv_prefix=pth_stacks{spi}(1:end-4))
     end
 
-    if smsdspace %  && contains(pth_stacks{spi}, {'raw_.', 'cmrg_.'})
+    if smsdspace 
         for tind = 1:size(stack,4)
             for zind = 1:size(stack,3)
                 stack(:,:,zind,tind) = imgaussfilt(stack(:,:,zind,tind), smsdspace);
@@ -136,15 +136,16 @@ for spi = 1:numel(pth_stacks)
         end
     end
 
+
+    if smsdtime
+        stacktmp = single(smoothdata(stack, 4, 'gaussian', smsdtime)); %smoothdata will output double so that could be huge and slow
+    else
+        stacktmp = stack; %this does not require another stack of memory, it just creates a tiny reference to the data
+    end
+
     if plot_stack_gif
 
         stacktmp_mn = single(mean(stack, 4));
-
-        if smooth_window_temporal
-            stacktmp = single(smoothdata(stack, 4, 'gaussian', smooth_window_temporal)); %smoothdata will output double so that could be huge and slow
-        else
-            stacktmp = stack; %this does not require another stack of memory, it just creates a tiny reference to the data
-        end
 
         [iz, izstr] = make_plot_inds(iz, indsall=size(stack,3), label_prefix='z', strdelim='-', printmax=20);
         [it, itstr] = make_plot_inds(it, indsall=size(stack,4), label_prefix='t', strdelim='-', printmax=20);
@@ -168,7 +169,7 @@ end
 
 if plot_stack_gif
 
-    fn_suffix_insert = strjoin(suffixes_plot_keep, '_AND_');
+    fn_suffix_insert = strjoin(suffixplt_keep, '_AND_');
 
     figtitle_prefix = [recid '_' fn_suffix_insert];
     filename_prefix = [pth_fldr figtitle_prefix '_' dr_str '_' izstr '_' itstr ];
@@ -212,7 +213,7 @@ if plot_stack_gif
     stackplt( ...
         stackplot, ...
         pthgif=[filename_prefix '.gif'], ...
-        display_range=display_range_cell, ...
+        dr=display_range_cell, ...
         fdimnum=3, ...
         dimorder=dimorder, ...
         title_prefix=figtitle_prefix, ...
@@ -224,7 +225,7 @@ if plot_stack_gif
     % stackplt( ...
     %     stackplot, ...
     %     pthgif=[filename_prefix 'side.gif'], ...
-    %     display_range=display_range_cell, ...
+    %     dr=display_range_cell, ...
     %     fdimnum=3, ...
     %     dimorder=[3,2,1,4], ...
     %     iy=round(linspace(1,size(stackplot{1},1), 8)),...
@@ -235,7 +236,7 @@ if plot_stack_gif
     stackplt( ...
         stackplot_mn, ...
         pthgif=[filename_prefix 'meant_.gif'], ...
-        display_range=display_range_cell, ...
+        dr=display_range_cell, ...
         fdimnum=2, ...
         dimorder=[1:ndims(stackplot_mn{1})], ...
         title_prefix=figtitle_prefix, ...

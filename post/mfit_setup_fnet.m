@@ -1,4 +1,4 @@
-function [mdl, optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvp, inputvar_stats)
+function [mdl, optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
 
 padlen_sec = 4;
 
@@ -22,10 +22,10 @@ supp.max_num_fun_per_unit = 0; %initialize with 0
 pindmax_prev = 0;
 freeformflag = 0;
 
-for ui = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
+for k = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
 
     [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflagtmp] = ...
-        mfit_setup_fnet_oneunit(fnetspec(ui,:), num_samp_mdl, imper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
+        mfit_setup_fnet_oneunit(fnetspec(k,:), num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
 
     lbnd = [lbnd lbnd_tmp];
     ubnd = [ubnd ubnd_tmp];
@@ -42,15 +42,15 @@ for ui = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param start
     tmpcl = tmpcl(~cellfun(@isempty, tmpcl));
     pindmax_prev = max(vertcat(pindmax_prev, vec(cell2mat(tmpcl)))); %max param index for single position (layer+channel)
 
-    fnettmp.layer_in = cell2mat(fnetspec(ui,:).layer_in);
-    [~, layer_in_index] = regexp(all_layers_ordered, fnetspec(ui,:).layer_in, 'match');
+    fnettmp.layer_in = cell2mat(fnetspec(k,:).layer_in);
+    [~, layer_in_index] = regexp(all_layers_ordered, fnetspec(k,:).layer_in, 'match');
     fnettmp.layer_in_index = cell2mat(layer_in_index);
-    fnettmp.channel_in = cell2mat(fnetspec(ui,:).channel_in);
-    [~, layer_out_index] = regexp(all_layers_ordered, fnetspec(ui,:).layer_out, 'match');
-    fnettmp.layer_out = cell2mat(fnetspec(ui,:).layer_out);
+    fnettmp.channel_in = cell2mat(fnetspec(k,:).channel_in);
+    [~, layer_out_index] = regexp(all_layers_ordered, fnetspec(k,:).layer_out, 'match');
+    fnettmp.layer_out = cell2mat(fnetspec(k,:).layer_out);
     fnettmp.layer_out_index = cell2mat(layer_out_index);
-    fnettmp.channel_out = cell2mat(fnetspec(ui,:).channel_out);
-    supp.fnet(ui,:) = fnettmp; %make it first dim, even though only dim
+    fnettmp.channel_out = cell2mat(fnetspec(k,:).channel_out);
+    supp.fnet(k,:) = fnettmp; %make it first dim, even though only dim
     supp.num_total_model_functions = supp.num_total_model_functions + fnettmp.max_num_fun_per_unit;
     supp.max_num_fun_per_unit = max(supp.max_num_fun_per_unit, fnettmp.max_num_fun_per_unit);
 

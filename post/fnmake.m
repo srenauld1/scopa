@@ -1,4 +1,4 @@
-function [pth, parstr] = fnmake(ui, ids, pthstack)
+function [pth, parstr] = fnmake(o, ids, pthstack)
 
 
 %%set up filenames for a2p 
@@ -12,15 +12,15 @@ recid = ids.recid;
 datefly_hyphen = ids.datefly_hyphen;
 
 
-regionex_all = ui.mn.regionex_all;
-tmp_folder_name = ui.mn.tmp_folder_name;
-use_caiman_on_hires = ui.hires.use_caiman_on_hires;
-use_hires = ui.mroi.auto.use_hires; %gets updated to numeric struct, fieldname use_hires
-use_drawn_rois = ui.mroi.use_drawn_rois; %gets updated to numeric struct, fieldname use_drawn_rois
-num_mroi_auto = ui.mroi.auto.num_mroi_auto; %gets updated to numeric struct, fieldname num_mroi_auto
-caiman_lr_str = ui.froi.caiman_lr_str;
-numcluster_for_bump_domain_resample = ui.pf.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
-caiman_hr_str = ui.hires.caiman_hr_str;
+regionexs = o.mn.regionexs;
+fldrtmp = o.mn.fldrtmp;
+use_caiman_on_hires = o.hires.use_caiman_on_hires;
+usehires = o.mroi.auto.usehires; %gets updated to numeric struct, fieldname usehires
+dodraw = o.mroi.dodraw; %gets updated to numeric struct, fieldname dodraw
+numroiauto = o.mroi.auto.numroi; %gets updated to numeric struct, fieldname numroiauto
+roistr = o.froi.roistr;
+numcluster_for_bump_domain_resample = o.pf.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
+caiman_hr_str = o.hires.caiman_hr_str;
 
 %% variables for all regionex
 
@@ -92,7 +92,7 @@ pth_epochinfo = [pth_fldr recid '_epochinfo_.mat'];
 pth_grandparent = strsplit(pth_fldr, filesep); %in case trailing filesep, or not
 pth_grandparent = [strjoin(pth_grandparent(1:end-2), filesep) filesep];
 
-pth_tmpfiles = [pth_grandparent tmp_folder_name filesep];
+pth_tmpfiles = [pth_grandparent fldrtmp filesep];
 if ~isdir(pth_tmpfiles)
     mkdir(pth_tmpfiles)
 end
@@ -100,22 +100,22 @@ end
 %% variables for each regionex
 
 
-if isempty(cell2mat(regionex_all))
+if isempty(cell2mat(regionexs))
     numregions = 0;
 else
-    numregions = numel(regionex_all);
+    numregions = numel(regionexs);
 end
 
 parstr = '';
 for k = 1:numregions
 
-    regionex = regionex_all{k};
+    regionex = regionexs{k};
     spl = strsplit(regionex, '_');
     regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionex cuboid from python preprocessing
 
     [~, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
 
-    paramstr = ['moex_' num2str(use_hires.(regionex)) '_' num2str(use_drawn_rois.(regionex)) '_' num2str(num_mroi_auto.(regionex))];
+    paramstr = ['moex_' num2str(usehires.(regionex)) '_' num2str(dodraw.(regionex)) '_' num2str(numroiauto.(regionex))];
     parstr.mroi.(regionex) = paramstr;
 
     pth_mroi.(regionex) = [pthstack(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_morph_.mat'];
@@ -123,8 +123,8 @@ for k = 1:numregions
     pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
 
     pth_froi_all_tmp = [];
-    for csi = 1:length(caiman_lr_str)
-        pth_froi_pat = [pth_fldr recid '_' suffix '_' regionex_nounderscore '_*_cmex_' caiman_lr_str{csi} '_rois_.mat'];
+    for csi = 1:length(roistr)
+        pth_froi_pat = [pth_fldr recid '_' suffix '_' regionex_nounderscore '_*_cmex_' roistr{csi} '_rois_.mat'];
         tmp = rdir(pth_froi_pat);
         pth_froi_all_tmp = cat(1, pth_froi_all_tmp, tmp);
     end
@@ -149,7 +149,7 @@ for k = 1:numregions
             error("a regionex has different croplim (FOV coordinates) across extraction runs, should be the same across runs")
         end
         pth_roi_allmethods.(regionex) = cat(1, pth_roi_allmethods.(regionex), pth_froi_all.(regionex));
-        paramstr = [paramstr '_cmex_' caiman_lr_str];
+        paramstr = [paramstr '_cmex_' roistr];
 
     else
         parstr.froi.(regionex) = [];
@@ -158,7 +158,7 @@ for k = 1:numregions
 
     paramstr = [paramstr '_' num2str(numcluster_for_bump_domain_resample.(regionex))];
 
-    % if use_hires(k)
+    % if usehires(k)
     %     paramstr = [paramstr '_hr_moex_paramtbd_'];
     %     parstr.mroi.(regionex) = [parstr.mroi.(regionex) '_hr_moex_paramtbd'];
     %     if use_caiman_on_hires(k)
@@ -202,7 +202,7 @@ else
     pth_froi_hires = [];
 end
 
-pffn = fieldnames(ui.pf);
+pffn = fieldnames(o.pf);
 for pfi = 1:numel(pffn)
     pth.tsuse_nms_prefix.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi}];
 end
@@ -213,9 +213,9 @@ pth.tsuse_nms_prefix.pltx = [pth_fldr 'tsuse_finpltexp_'];
 
 %% carl's old project 
 
-pth_feat_save = [pth_fldr ui.carl.feat '_lin_ds_.mat'];
-pthparent_feat = ui.carl.pthparent_feat;
-pth_template = ui.carl.pth_template;
+pth_feat_save = [pth_fldr o.carl.feat '_lin_ds_.mat'];
+pthparent_feat = o.carl.pthparent_feat;
+pth_template = o.carl.pth_template;
 
 %% assign to struct
 
@@ -250,7 +250,7 @@ pth.featsave = pth_feat_save;
 pth.parent_feat = pthparent_feat;
 pth.template = pth_template;
 
-pth = orderfields_recursive(pth);
+pth = fieldord(pth);
 
 
 

@@ -1,4 +1,4 @@
-function [stack_hires_mnt, map_hires_lores] = load_hires_stack(recid, pth, stack, md, opts_hires)
+function [stack_hires_mnt, map_hires_lores] = hiresld(recid, pth, stack, md, opts_hires)
 
 
 %% if using a high-z-res stack also, map low resolution z indices to to high resolution z indices

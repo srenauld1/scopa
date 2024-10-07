@@ -1,5 +1,6 @@
 function [posx, posy] = ficpath(vf, vs, yw, t, balld)
 
+mmpd = balld*pi/360
 mmpd = balld/2; 
 vangf = vf / mmpd; %vf was scaled by mmpd in daqld; revert for angular 
 vangs = vs / mmpd; %vs was scaled by mmpd in daqld; revert for angular 

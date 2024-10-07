@@ -50,7 +50,7 @@ bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim
 
 
 
-ax = arrange_subplots({[numrows_ts, numcolumns_ts], [numrows_ts2, numcolumns_ts2]}, margins_subplot, margins_fig, splitdim, splitfrac);
+ax = figarr({[numrows_ts, numcolumns_ts], [numrows_ts2, numcolumns_ts2]}, margins_subplot, margins_fig, splitdim, splitfrac);
 
 %title string
 htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;

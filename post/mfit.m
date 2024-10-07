@@ -4,7 +4,7 @@ function fitin = mfit(stack, fitin, roidat, md, opts, pixfitflag, pltstr)
 
 % indvp and depvp are independent and dependent variables before processing 
 % the unintuitive thing that needs to be changed is that depvp first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim), 
-% while for indvp, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether choose_timeseries should output vector depvp (and input them to this function mfit)  
+% while for indvp, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether tsget should output vector depvp (and input them to this function mfit)  
 
 fitin.vars.indvp
 fitin.vars.depvp
@@ -68,7 +68,7 @@ fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix);
 
 %% set up model fitting and plotting options
 
-fitin.opop = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, opts.mdlname, opts.chopt, md.imper, fitin.stats, pth_fitdata_prefix);
+fitin.opop = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, opts.mdlname, opts.chopt, md.sampper, fitin.stats, pth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 

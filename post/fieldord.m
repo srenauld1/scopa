@@ -1,4 +1,4 @@
-function structout = orderfields_recursive(structin)
+function structout = fieldord(structin)
 
 for ofi = 1:numel(structin) %for struct index in structin
     [rind, cind] = ind2sub(size(structin), ofi);

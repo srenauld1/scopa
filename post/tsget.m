@@ -1,4 +1,4 @@
-function [tsuse, dochoose] = choose_timeseries(varnms, ts, ti, pth_tsuse_nms_prefix, pth_stack, choosecount, dochoose)
+function [tsuse, dochoose] = tsget(varnms, ts, ti, pth_tsuse_nms_prefix, pth_stack, choosecount, dochoose)
 
 % select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern,
 % output variables, their names, and some info in struct 'tsuse'
@@ -11,7 +11,7 @@ pth_tsuse_nms = [pth_tsuse_nms_prefix num2str(choosecount) '_.mat'];
 
 %%% FLATTEN TIMESERIES STRUCT ts FOR SIMPLE MATCHING WITH USER INPUT PATTERN varnms %%%
 
-[sflat, fnflat, fnflatex] = flatten_struct_a2p(ts);
+[sflat, fnflat, fnflatex] = structflat(ts);
 sflat = struct2cell(sflat);
 if force_single_precision
     sflat = cellfun(@single, sflat, 'UniformOutput', false);
@@ -149,7 +149,7 @@ tsuse.fn_save_prefix = [pth_stack(1:end-4) tsuse.regionex '_' tsuse.parsex '_' t
 tsuse.fn_save_prefix_short = [pth_stack(1:end-4) '_fit' num2str(tsuse.choosecount)];
 
 
-tsuse = orderfields_recursive(tsuse);
+tsuse = fieldord(tsuse);
 
 if choosecount==size(fnflatcat, 2) %quit flag on final set of varnms (length of nonscalar struct)
     dochoose = 0;

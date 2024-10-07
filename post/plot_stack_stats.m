@@ -24,7 +24,7 @@ end
 
 
 if isempty(pthsv_prefix)
-    pthsv_prefix = pthauto(vnm=pthsv_prefix, suffix='', usetime=1);
+    pthsv_prefix = pthauto(suffix='', usetime=1);
 end
 
 

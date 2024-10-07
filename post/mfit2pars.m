@@ -1,4 +1,11 @@
-function parsout = mfit2pars(parsin)
+function pout = mfit2pars(pin)
+
+arguments
+    pin = []
+end
+if isempty(pin)
+    pin = struct;
+end
 
 do = 1;
 
@@ -83,7 +90,7 @@ chopt.fnet.hot = {'h\d+'}; %one-hot encoding function; h followed by one or more
 %% assign to struct
 
 
-update_param_struct; %call this script to overwrite any default params above with fields in parsin, and organize into parsout 
+update_param_struct; %call this script to overwrite any default params above with fields in pin, and organize into pout 
 
 
 end

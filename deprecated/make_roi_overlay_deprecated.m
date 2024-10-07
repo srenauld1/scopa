@@ -63,8 +63,8 @@ end
 %create colormap for roi+mean image overlay (roi is red by default)
 startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
 endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
-startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
-endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
+startcol2 = [0 0 0]; %start color for part 2 (roi/fg)
+endcol2 = [1 0 0]; %end color for part 2 (roi/fg)
 cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
 
 cmap = colormap_custom(cmap_method, ncol_each, ...

@@ -4,30 +4,30 @@ arguments
     opt.fullfile_sibling = []; %full path to a file, returned files will include all matching files in same folder, along with fullfile_sibling  
     opt.pthparent_local = [];
     opt.pthparent_o2 = [];
-    opt.valid_fnsuffixes = [];
+    opt.validsuffix = [];
     opt.recdate = '*';
     opt.fly = '*';
     opt.trial = '*';
     opt.suffix = '*';
-    opt.fnspec_matching_style = 'each';
+    opt.match = 'each';
 end
 
 fullfile_sibling = opt.fullfile_sibling;
 pthparent_local = opt.pthparent_local;
 pthparent_o2 = opt.pthparent_o2;
-valid_fnsuffixes = opt.valid_fnsuffixes;
+validsuffix = opt.validsuffix;
 recdate = opt.recdate;
 fly = opt.fly;
 trial = opt.trial;
 suffix = opt.suffix;
-fnspec_matching_style = opt.fnspec_matching_style;
+match = opt.match;
 
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass prioritize_mat as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
-if isempty(valid_fnsuffixes)
-    valid_fnsuffixes = globscopa('valid_fnsuffixes');
-    if isempty(valid_fnsuffixes)
-        sprintf('no variable set for valid_fnsuffixes, returned files may include more than you want if specifiers include wildcard')
+if isempty(validsuffix)
+    validsuffix = glb('validsuffix');
+    if isempty(validsuffix)
+        sprintf('no variable set for validsuffix, returned files may include more than you want if specifiers include wildcard')
     end
 end
 
@@ -45,18 +45,18 @@ else
 end
 
 
-fnspec = expand_fn_specifiers(fnspec_matching_style, recdate, fly, trial, suffix);
+fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix);
 
 pth_prefix_all = [];
-for j = 1:numel(fnspec.recdate)
-    pth_prefix_all_onespec = filefind_onespec(fnspec.recdate{j}, fnspec.fly{j}, fnspec.trial{j}, fnspec.suffix{j}, pth_parent, valid_fnsuffixes);
+for j = 1:numel(fspc.recdate)
+    pth_prefix_all_onespec = filefind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, pth_parent, validsuffix);
     pth_prefix_all = cat(1, pth_prefix_all, vec(pth_prefix_all_onespec));
 end
 
 
 if isempty(pth_prefix_all)
-    fnspecstr = sprintf("pth_parent: " + pth_parent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix);
-    sprintf("WARNING, NO FILES FOUND WITH fnspec_matching_style '" + fnspec_matching_style + "' AND FILENAME SPECIFIERS:" + newline + fnspecstr)
+    fspcstr = sprintf("pth_parent: " + pth_parent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix);
+    sprintf("WARNING, NO FILES FOUND WITH match '" + match + "' AND FILENAME SPECIFIERS:" + newline + fspcstr)
     pth_all = [];
 else
     pth_all = prioritize_mat(pth_prefix_all);
@@ -71,7 +71,7 @@ end
 
 
 
-function fnspec = expand_fn_specifiers(fnspec_matching_style, recdate, fly, trial, suffix)
+function fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix)
 
 if ~iscell(recdate)==1
     recdate = {recdate};
@@ -86,9 +86,9 @@ if ~iscell(suffix)==1
     suffix = {suffix};
 end
 
-if strcmp(fnspec_matching_style, 'any')
-    fnspec = combinations(recdate, fly, trial, suffix);
-elseif strcmp(fnspec_matching_style, 'each')
+if strcmp(match, 'any')
+    fspc = combinations(recdate, fly, trial, suffix);
+elseif strcmp(match, 'each')
     specnums = [numel(recdate), numel(fly), numel(trial), numel(suffix)];
     uniquespecnums = unique(specnums);
     if numel(uniquespecnums(uniquespecnums~=1))>1
@@ -107,10 +107,10 @@ elseif strcmp(fnspec_matching_style, 'each')
     if numel(suffix)==1
         suffix = repelem(suffix, maxspecnum);
     end
-    fnspec.recdate = recdate;
-    fnspec.fly = fly;
-    fnspec.trial = trial;
-    fnspec.suffix = suffix;
+    fspc.recdate = recdate;
+    fspc.fly = fly;
+    fspc.trial = trial;
+    fspc.suffix = suffix;
 end
 
 
@@ -156,7 +156,7 @@ end
 end
 
 
-function pth_prefix_all = filefind_onespec(recdate, fly, trial, suffix, pth_parent, valid_fnsuffixes)
+function pth_prefix_all = filefind_onespec(recdate, fly, trial, suffix, pth_parent, validsuffix)
 
 
 recdate = num2str(recdate); %just in case it's numeric, won't matter if not
@@ -166,11 +166,11 @@ trial = num2str(trial); %just in case it's numeric, won't matter if not
 
 %%SCOPA PATTERN, TIF AND MAT
 fn_pattern_tif = [pth_parent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
-valid_tif_fns = strcat(valid_fnsuffixes, '_.tif');
+valid_tif_fns = strcat(validsuffix, '_.tif');
 pth_all_tif = rdir(fn_pattern_tif);
 pth_all_tif = pth_all_tif(contains({pth_all_tif.name}, valid_tif_fns)); %in case wildcard suffix returns unwanted files
 
-valid_mat_fns = strcat(valid_fnsuffixes, '_.mat');
+valid_mat_fns = strcat(validsuffix, '_.mat');
 fn_pattern_mat = [fn_pattern_tif(1:end-4) '.mat'];
 pth_all_mat = rdir(fn_pattern_mat);
 pth_all_mat = pth_all_mat(contains({pth_all_mat.name}, valid_mat_fns)); %in case wildcard suffix returns unwanted files
@@ -186,7 +186,7 @@ if strcmp(suffix, 'raw')
     pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
 
     fn_pattern_flyg_raw_mat = [fn_pattern_flyg_raw_tif(1:end-4) '.mat'];
-    pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by valid_fnsuffixes since flygraw pattern doesn't include suffix
+    pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by validsuffix since flygraw pattern doesn't include suffix
 
 else
     pth_all_flyg_raw_tif = [];

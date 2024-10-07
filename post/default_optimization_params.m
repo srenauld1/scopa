@@ -1,23 +1,23 @@
-function parsout = default_optimization_params(parsin)
+function pout = default_optimization_params(pin)
 
 %currently only uses one global optimization solver, GlobalSearch
 
 % patternsearch satisfies linear constraints at intermediate iterations, does globalsearch?
 
-if ~exist('parsin', 'var') || ~isfield(parsin, 'slvrl')
+if ~exist('pin', 'var') || ~isfield(pin, 'slvrl')
     slvrl = 'fmincon';
 else
-    slvrl = parsin.slvrl;
+    slvrl = pin.slvrl;
 end
-if ~exist('parsin', 'var') || ~isfield(parsin, 'max_iter_local')
+if ~exist('pin', 'var') || ~isfield(pin, 'max_iter_local')
     max_iter_local = 1000;
 else
-    max_iter_local = parsin.max_iter_local;
+    max_iter_local = pin.max_iter_local;
 end
-if ~exist('parsin', 'var') || ~isfield(parsin, 'max_iter_global')
+if ~exist('pin', 'var') || ~isfield(pin, 'max_iter_global')
     max_iter_global = 3;
 else
-    max_iter_global = parsin.max_iter_global;
+    max_iter_global = pin.max_iter_global;
 end
 
 mdl = []; %this is the model function
@@ -94,6 +94,6 @@ optimp.options = optiml;
 
 %% assign to struct
 
-update_param_struct; %call this script to overwrite any default params above with fields in parsin, and organize into parsout
+update_param_struct; %call this script to overwrite any default params above with fields in pin, and organize into pout
 
 end

@@ -40,7 +40,7 @@ if exist('optin', 'var') && ~isempty(optin)
         margins_fig = 0.03;
         margins_subplot = 0.06;
 
-        [axx, axy, axw, axh] = arrange_subplots(numrows_plot, numcolumns_plot, margins_fig, margins_subplot);
+        [axx, axy, axw, axh] = figarr(numrows_plot, numcolumns_plot, margins_fig, margins_subplot);
 
         hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', 'on') ;
         hfg.Position = [0 0 0.5 0.5]; %make square inner size (excludes top menu bar), plot in bottom left

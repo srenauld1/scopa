@@ -1,9 +1,9 @@
-function bump = bumpcomp(stack, fitin, roidat, opts, md, regionex, si)
+function bump = bumpcmp(stack, fitin, roidat, opts, md, regionex, si)
 
 
 %% params
 
-bump_method = opts.bump_method; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
+mthd = opts.mthd; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
 domain_method = opts.domain_method; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 bump_subdomain = opts.bump_subdomain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
 slopeord = opts.slopeord; %order of polynomial used to fit local slope (e.g. to compute bump speed)
@@ -87,7 +87,7 @@ for fi = 1:length(bump_subdomain)
 
     domain = domaintmp(centinds);
 
-    switch bump_method
+    switch mthd
 
         case 'pva'
 
@@ -102,7 +102,7 @@ for fi = 1:length(bump_subdomain)
 
         case 'vonmises'
 
-            disp("vonmises bump_method (fit vonmises to each timepoint using mfit) not written yet")
+            disp("vonmises mthd (fit vonmises to each timepoint using mfit) not written yet")
 
     end
 
@@ -110,11 +110,11 @@ for fi = 1:length(bump_subdomain)
     rho = rho';
 
     if smoothwindow_sec
-        mu = smooth_timeseries('circular', mu, smoothwindow_sec, md.imper);
-        rho = smooth_timeseries('normal', rho, smoothwindow_sec, md.imper);
+        mu = smooth_timeseries('circular', mu, smoothwindow_sec, md.sampper);
+        rho = smooth_timeseries('normal', rho, smoothwindow_sec, md.sampper);
     end
 
-    bumpvel = tsdv('circular', mu, slopelensec, slopeord, md.imper);
+    bumpvel = tsdv('circular', mu, slopelensec, slopeord, md.sampper);
     offset = circ_dist_nan(fitin.vars.indvp.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point
