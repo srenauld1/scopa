@@ -2,14 +2,9 @@ function o = oset(recin)
 
 %{
 
-IMPORTANT: 
-    DO NOT CHANGE ORDER OF SECTIONS (IF YOU DO, SOME OPTIONS MAY NOT GET SET); SECTION TITLES SHOW EACH MAJOR ROUTINE 
-    DO NOT DELETE ANY CALLS TO odf (IF YOU DO, SOME OPTIONS MAY NOT GET SET) 
-    IF YOU WANT TO USE ALL DEFAULTS FOR ANY ROUTINE k, JUST DON'T PASS INPUT FOR THE CALL TO odf THAT SETS OPTIONS FOR ROUTINE k; 
-        FOR EXAMPLE, o.k = odf() WILL USE ALL DEFAULTS FOR ROUTINE k 
-        OR YOU CAN COMMENT OUT THE SPECIFICATION FOR INPUT o
-        FOR SIMPLICITY, THIS FILE SHOWS ONLY OPTIONS THE USER IS LIKELY TO WANT TO ADJUST
-    DOCS ON ALL OPTIONS ARE IN odf
+these docs are slightly outdated 
+FOR SIMPLICITY, THIS FILE SHOWS ONLY OPTIONS THE USER IS LIKELY TO WANT TO ADJUST
+DOCS ON ALL OPTIONS ARE IN odf
 
 this function (oset) sets options for all major routines in a2p
 output is nested (o) and flattened (oflat) struct containing all options used in a2p
@@ -29,7 +24,7 @@ use function odf to set default options, like this:
         every call to odf shows output for a major routine that can be called, and the nesting of that output struct shows where in a2p that routine is called (o.k means routine k is called directly from a2p, while o.m.k means k is called from within routine m, which is called directly from a2p)
         it's done this way because because several routines get called multiple times in different locations, so this reduces the number of default options (ie this way you don't have to set unique defaults for routine x when called from different locations
 
-YOU CAN NEST FIELDS THAT ARE FIELDS OF d IN odf, or subfields of fields of d; you cannot nest fields 
+YOU CAN NEST FIELDS THAT ARE FIELDS OF d IN odf, or subfields of fields of d; 
 
 %}
 
@@ -98,13 +93,13 @@ o.hires.sld.sp.it = [1];
 o.mroi.dodraw = 1;
 o.mroi.auto.chan = 99;
 o.mroi.imhsv.do = 100;
-o.mroi.imhsv.fg = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
+o.mroi.imhsv.fg = 'allrois'; 
 o.froi.roistr = {'2_1_*_*_*_*_*_1000_*_*_graph_3dex'};
-o = odf(o, {'froi', 'mroi'}, {'fb256', 'fb512'});
+o = odf(o, {'froi', 'mroi'}, {'fb', 'ga'});
 
 
-o.mroi.imhsv.fg = 'pixels'; %'eachroi' plots each individually, 'allrois' plots all together
-o = odf(o, {'mroi'}, {'fb2566', 'fb5126'}); 
+o.mroi.imhsv.fg = 'pixels'; 
+o = odf(o, {'mroi'}, {'pb', 'eb'}); 
 
 
 

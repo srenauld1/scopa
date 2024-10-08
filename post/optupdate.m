@@ -42,10 +42,18 @@ else
         else
             fn2 = fieldnames(optin.(fn1{k}));
             tmphold = fn2(ismember(fn2, subsused));
+            for w = 1:numel(tmphold) %store previous sub, and remove from current optin to create optout (any nested previous sub are unmodified within optudrec 
+                tmphold2.(tmphold{w}) = optin.(fn1{k}).(tmphold{w});
+                optin.(fn1{k}) = rmfield(optin.(fn1{k}), tmphold{w});
+            end
             for w = 1:numel(sub)
                 optout.(fn1{k}).(sub{w}) = optdef.(fn1{k});
                 optout.(fn1{k}).(sub{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(sub{w}), fn1{k});
             end
+            for w = 1:numel(tmphold) %add previous sub back to optout
+                optout.(fn1{k}).(tmphold{w}) = tmphold2.(tmphold{w});
+            end
+            % o = cell2struct([struct2cell(o); struct2cell(osub)],[fieldnames(o); fieldnames(osub)]);
         end
     end
 end
