@@ -31,17 +31,14 @@ if isempty(fieldnames(optin))
 else
     fn1 = fieldnames(optin);
     fn1 = fn1(~ismember(fn1, subsused));
-    fn1 = fn1(~strcmp(fn1, 'subsused'));
     for k = 1:numel(fn1)
-        if ~isfield(optdef, fn1{k}) 
+        if ~isfield(optdef, fn1{k}) && ~strcmp(fn1{k}, 'subsused')
             error(sprintf(fn1{k} + " IS NOT A FIELD OF d IN odf"))
         end
         if isempty(sub)
             optout.(fn1{k}) = optdef.(fn1{k});
             optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k});
         else
-            fn2 = fieldnames(optin.(fn1{k}));
-            tmphold = fn2(ismember(fn2, subsused));
             for w = 1:numel(sub)
                 optout.(fn1{k}).(sub{w}) = optdef.(fn1{k});
                 optout.(fn1{k}).(sub{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(sub{w}), fn1{k});
@@ -81,15 +78,11 @@ end
                         end
                     end
                 else
-                    if isstruct(optin.(fn{u}))
-                        if ismember(fn{u}, subsused)
-                            optout.(fn{u}) = optin.(fn{u});
+                    if isstruct(optin.(fn{u})) && ~ismember(fn{u}, subsused)
+                        if ~isfield(optdef, fn{u})
+                            error(sprintf("IN odf, " + fn{u} + " IS NOT A FIELD OF d, nor is it a subfield of " + fnparent + ", BUT YOU PLACED IT IN YOUR OPT STRUCT AS IF IT WERE ONE OF THESE"))
                         else
-                            if ~isfield(optdef, fn{u})
-                                error(sprintf("IN odf, " + fn{u} + " IS NOT A FIELD OF d, nor is it a subfield of " + fnparent + ", BUT YOU PLACED IT IN YOUR OPT STRUCT AS IF IT WERE ONE OF THESE"))
-                            else
-                                optout.(fn{u}) = optudrec(optin.(fn{u}), optdef.(fn{u}), fn{u});
-                            end
+                            optout.(fn{u}) = optudrec(optin.(fn{u}), optdef.(fn{u}), fn{u});
                         end
                     else
                         sprintf("ignoring field " + fn{u} + " because it is not a field of d." + fnparent + " in odf")

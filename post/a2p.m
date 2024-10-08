@@ -88,8 +88,7 @@ for pai = 1:numel(o.rec) % loop over recordings
     md = mdsild(pth.md, o.sld, o.hires.ld);
 
     % md_flyg = mdflygld(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
-    % ff = @(x,y) cell2struct([struct2cell(md);struct2cell(md_flyg)],[fieldnames(md);fieldnames(md_flyg)]);
-    % md = ff(md, md_flyg);
+    % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md
 
     %% load and process daq
 
@@ -212,9 +211,9 @@ for pai = 1:numel(o.rec) % loop over recordings
     %% compute population features (e.g. bump), add them to ts
 
     if o.mn.dopop
-        pffn = fieldnames(o.pf);
+        pffn = fieldnames(o.pop);
         for pfi = 1:numel(pffn)
-            ts = popcmp(pffn{pfi}, ts, stack, croplim_all, roidat, o.pf.(pffn{pfi}), md, pth, ids.recid);
+            ts = popcmp(pffn{pfi}, ts, stack, croplim_all, roidat, o.pop.(pffn{pfi}), md, pth, ids.recid);
         end
     end
 

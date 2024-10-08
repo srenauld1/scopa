@@ -25,10 +25,10 @@ for k = 1:numel(o.mn.regionexs)
     else
         usehires_tmp.(regionex) = 0;
     end
-    if ~isfield(o.pf.bump.numcluster_for_bump_domain_resample, regionex)
+    if ~isfield(o.pop.bump.numcluster_for_bump_domain_resample, regionex)
         numcluster_for_bump_domain_resample_tmp.(regionex) = 0;
     else
-        numcluster_for_bump_domain_resample_tmp.(regionex) = o.pf.bump.numcluster_for_bump_domain_resample.(regionex);    
+        numcluster_for_bump_domain_resample_tmp.(regionex) = o.pop.bump.numcluster_for_bump_domain_resample.(regionex);    
     end
 
 end
@@ -36,6 +36,6 @@ end
 o.mroi.auto.numroi = numroiautotmp;
 o.mroi.dodraw = dodraw_tmp;
 o.mroi.auto.usehires = usehires_tmp;
-o.pf.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_tmp;
+o.pop.bump.numcluster_for_bump_domain_resample = numcluster_for_bump_domain_resample_tmp;
 
 end

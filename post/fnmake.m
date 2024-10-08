@@ -19,7 +19,7 @@ usehires = o.mroi.auto.usehires; %gets updated to numeric struct, fieldname useh
 dodraw = o.mroi.dodraw; %gets updated to numeric struct, fieldname dodraw
 numroiauto = o.mroi.auto.numroi; %gets updated to numeric struct, fieldname numroiauto
 roistr = o.froi.roistr;
-numcluster_for_bump_domain_resample = o.pf.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
+numcluster_for_bump_domain_resample = o.pop.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
 caiman_hr_str = o.hires.caiman_hr_str;
 
 %% variables for all regionex
@@ -202,7 +202,7 @@ else
     pth_froi_hires = [];
 end
 
-pffn = fieldnames(o.pf);
+pffn = fieldnames(o.pop);
 for pfi = 1:numel(pffn)
     pth.tsuse_nms_prefix.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi}];
 end

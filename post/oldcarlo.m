@@ -14,7 +14,7 @@ if (~isempty(o.rec) || ~isempty(cell2mat(o.rec))) && all(contains(o.rec, 'f91g_s
     o.mfit.mdl_length_sec = 1.25;
     o.mn.dodaq = 0; %process daq data
     o.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
-    o.mn.dopop = 0; %compute population features (o.pf below)
+    o.mn.dopop = 0; %compute population features (o.pop below)
     o.mn.dofit = 0; %model fitting (o.mfit below)
     o.mn.dopltx = 1; %plot experiment (o.pltx below)
     o.mn.regionexs = {'tms'};

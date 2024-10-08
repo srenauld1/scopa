@@ -226,9 +226,9 @@ for pai = 1:numel(o.mn.rec) % loop over recordings
     %% compute population features (e.g. bump), add them to ts
 
     if o.mn.dopop
-        pffn = fieldnames(o.pf);
+        pffn = fieldnames(o.pop);
         for pfi = 1:numel(pffn)
-            ts = popcmp(pffn{pfi}, ts, stack, croplim_all, roidat, o.pf.(pffn{pfi}), md, pth, ids.recid);
+            ts = popcmp(pffn{pfi}, ts, stack, croplim_all, roidat, o.pop.(pffn{pfi}), md, pth, ids.recid);
         end
     end
 

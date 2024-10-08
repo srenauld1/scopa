@@ -356,8 +356,6 @@ if ~iscell(sub)
 end
 
 if isfield(oin, 'subsused')
-    subsused = oin.subsused;
-else
     subsused = [];
 end
 
