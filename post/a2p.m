@@ -53,7 +53,7 @@ utility functions:
 
 
 abbreviations
-    stack: imaging volume; o: options, df: default, pars: parameters, ts: timeseries, vel: velocity, dv: derivative, fb: flyback, ftv: fictrac video, ft: fictrac, mroi: morphological roi, froi: functional roi, ld: load, pth: path, plt: plot, px: pixel, resp: response/neural activity timeseries; stim: stimulus; depv: dependent variable; indv: independent variable; cnt: count (loop index); cm: caiman; proc: process; fn: filename and fieldname (need to disambiguate) 
+    stack: imaging volume; o: options, md: metadata, df: default, pars: parameters, ts: timeseries, vel: velocity, dv: derivative, fb: flyback, ftv: fictrac video, ft: fictrac, mroi: morphological roi, froi: functional roi, ld: load, pth: path, plt: plot, px: pixel, resp: response/neural activity timeseries; stim: stimulus; depv: dependent variable; indv: independent variable; cnt: count (loop index); cm: caiman; proc: process; fn: filename and fieldname (need to disambiguate) 
 
 
 variables are organized into structs, which are sometimes unpacked when entering functions, unless they are used infrequently, or they are large and are modified with indexing
@@ -70,9 +70,10 @@ end
 
 sprintf("\n\n\nENTERING a2p.m")
 
-clear glb
-
 o = oset(recin); % set options
+
+clear glb
+glb(name_noregionex='default', validsuffix=o.recspec.validsuffix); %set some globals
 
 for pai = 1:numel(o.rec) % loop over recordings
 
@@ -80,8 +81,7 @@ for pai = 1:numel(o.rec) % loop over recordings
 
     [pth, parstr] = fnmake(o, ids, o.rec{pai});
 
-    clear glb; 
-    glb(pthfldr=pth.fldr, name_noregionex='default', validsuffix=o.recspec.validsuffix); %set some globals
+    glb(pthfldr=pth.fldr); %set another global
 
     %% load metadata
 
@@ -139,8 +139,8 @@ for pai = 1:numel(o.rec) % loop over recordings
             catch
                 try
                     ftvdsrs = ftvproc(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
-                        o.ftv.num_periodic_peaks_defining_laser_oscillations, o.ftv.ftvid_spatial_smooth_window_std, o.ftv.numpix_to_extract_laser_timeseries, ...
-                        o.ftv.laser_timeseries_smooth_window_std, ...
+                        o.ftv.num_periodic_peaks_defining_laser_oscillations, o.ftv.smsdspace, o.ftv.numpix_to_extract_laser_timeseries, ...
+                        o.ftv.smsdtime, ...
                         o.ftv.doplt, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
                 catch ME
                     sprintf(ME.message)
@@ -226,7 +226,7 @@ for pai = 1:numel(o.rec) % loop over recordings
             while dochoose
 
                 cnt = cnt + 1;
-                [fitin, dochoose] = tsget(o.mfit(si).varnms, ts, ts.t, pth.tsuse_nms_prefix.mfit, pth.stack, cnt, dochoose); %select indv/depv for fit using input options
+                [fitin, dochoose] = tsget(o.mfit(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.mfit, pth.stack, cnt, dochoose); %select indv/depv for fit using input options
                 stackcrop = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 fitin = mfit(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, o.mfit(si)); %fit model using any available timeseries
@@ -245,11 +245,11 @@ for pai = 1:numel(o.rec) % loop over recordings
             while dochoose
 
                 cnt = cnt + 1;
-                [fitin, dochoose] = tsget(o.pltx(si).varnms, ts, ts.t, pth.tsuse_nms_prefix.pltx, pth.stack, cnt, dochoose);
+                [fitin, dochoose] = tsget(o.pltx(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.pltx, pth.stack, cnt, dochoose);
                 [stackcrop, zstartpos_crop] = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
 
                 pltx(stackcrop, fitin.vars, o.pltx(si).letui,  ...
-                    fitin.varnms, o.pltx(si).vpmap, o.pltx(si).epochinds, ...
+                    fitin.vnm, o.pltx(si).vpmap, o.pltx(si).epochinds, ...
                     o.pltx(si).lagsxy_sec, o.pltx(si).lagsz_sec, o.pltx(si).lags_to_plot, ...
                     o.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), ts.t, md.sampper, zstartpos_crop, ...
                     ts.epochinds, o.pltx(si).gifvis, o.pltx(si).iz, o.pltx(si).it, ...

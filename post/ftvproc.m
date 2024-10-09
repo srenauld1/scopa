@@ -1,6 +1,6 @@
 function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
-    num_periodic_peaks_defining_laser_oscillations, ftvid_spatial_smooth_window_std, ...
-    numpix_to_extract_laser_timeseries, laser_timeseries_smooth_window_std, doplt, pth_dat, pth_vidlog, pth_log)
+    num_periodic_peaks_defining_laser_oscillations, smsdspace, ...
+    numpix_to_extract_laser_timeseries, smsdtime, doplt, pth_dat, pth_vidlog, pth_log)
 
 arguments
     pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
@@ -8,9 +8,9 @@ arguments
     numvol double %number of imaging volumes
     imrate double %imaging rate (average,approximate)
     num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-    ftvid_spatial_smooth_window_std double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+    smsdspace double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-    laser_timeseries_smooth_window_std double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+    smsdtime double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
     doplt = 0 %0 skips plots, 1 plots and saves, 2 saves but does not display 
     pth_dat char = '' %fictrac .dat file
     pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
@@ -79,13 +79,13 @@ ftvds = permute(ftvds, [2 3 1]);
 szvd = size(ftvds);
 ftvds = reshape(ftvds, [], size(ftvds, 3));
 ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
-ftvid_meanframe = imgaussfilt(ftvid_meanframe,ftvid_spatial_smooth_window_std);
+ftvid_meanframe = imgaussfilt(ftvid_meanframe,smsdspace);
 % ftvid_meanframe(25:end,:) = 0; %hack
 [~,mxi] = sort(ftvid_meanframe(:), 'descend');
 
 % ftvid_varframe = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
 % ftvid_varframe(25:end,:) = 0; %hack
-% ftvid_varframe = imgaussfilt(ftvid_varframe,ftvid_spatial_smooth_window_std);
+% ftvid_varframe = imgaussfilt(ftvid_varframe,smsdspace);
 % [~,mxi] = sort(ftvid_varframe(:), 'descend');
 
 laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of oscillations in the brightest numbrightpix pixels in the spatially smoothed, mean-t image
@@ -110,8 +110,8 @@ end
 %% find peaks in the laser timeseries
 
 laser_ts_smoothed = laser_ts;
-if laser_timeseries_smooth_window_std
-    laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', laser_timeseries_smooth_window_std);
+if smsdtime
+    laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', smsdtime);
 end
 [pk,lk,pw,pp] = findpeaks(laser_ts_smoothed);
 pkdist = diff(lk);

@@ -33,6 +33,7 @@ variables:
     y, x, z, t, c: reserved for stack dimensions
     k, m, p, q, s, u, v, w: reserved for loop indices
     b: reserved for model parameters
+    cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in froiproc)
 
 
     
@@ -43,14 +44,16 @@ main process functions:
 
 utility functions:
     stackplt: plot stack(s) 
+    pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
     pthauto: create path (e.g. for saving figures)
     oset: set options
     odf: invoke default options, overwriting defaults with input
-    tsget: choose timeseries from struct ts using string
+    tsget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)
+    figarr: arrange subplots, including automatically arranging frames of imaging stack to optimally fill available space while maintaining aspect ratio 
 
 
 abbreviations
-    stack: imaging volume; o: options, df: default, pars: parameters, ts: timeseries, vel: velocity, dv: derivative, fb: flyback, ftv: fictrac video, ft: fictrac, mroi: morphological roi, froi: functional roi, ld: load, pth: path, plt: plot, px: pixel, resp: response/neural activity timeseries; stim: stimulus; depv: dependent variable; indv: independent variable; cnt: count (loop index) 
+    stack: imaging volume; o: options, md: metadata, df: default, pars: parameters, ts: timeseries, vel: velocity, dv: derivative, fb: flyback, ftv: fictrac video, ft: fictrac, mroi: morphological roi, froi: functional roi, ld: load, pth: path, plt: plot, px: pixel, resp: response/neural activity timeseries; stim: stimulus; depv: dependent variable; indv: independent variable; cnt: count (loop index); cm: caiman; proc: process; fn: filename and fieldname (need to disambiguate) 
 
 
 variables are organized into structs, which are sometimes unpacked when entering functions, unless they are used infrequently, or they are large and are modified with indexing
@@ -59,48 +62,42 @@ pixel (abbr. px) can mean both pixel and voxel in scopa variable names (because 
 
 %}
 
-function a2p(rec)
+function a2p(recin)
 
 arguments
-    rec = [] %optional; full path to recording (char or cell), or cell array of full paths (char), or struct with recording specifiers (see rec in oset and odf); if missing or empty, recording(s) found in oset
+    recin = [] %optional; full path to recording (char or cell), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
 end
-
 
 sprintf("\n\n\nENTERING a2p.m")
 
-"MAKE TIME ALWAYS 2ND DIM"
-"MAKE TIME ALWAYS 2ND DIM"
-"MAKE TIME ALWAYS 2ND DIM"
-"MAKE TIME ALWAYS 2ND DIM"
-"MAKE TIME ALWAYS 2ND DIM"
-"FIX DIFFERENT MROI OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS"
-"CAN STACK REMAIN INT16?? zero in uint16 is nice though"
-"MAKE ALL INDICES CONSISTENTLY REPRESENT START, CENTER, OR END . . . daq starts at 0, so maybe do start indexed, but singleton 0 indexed samples don't tell you width; but currently default daq downsampling makes time represent center, since it takeds average"
+clear glb muk
+glb(muk='m', fuk='f'); %set some globals
 
-clear glb
+glb(duk='d')
+glb('fuk')
+glb('muk')
+glb('duk')
 
-o = oset(rec); % params
+glb(0, muk='d')
+glb('muk')
 
-for pai = 1:numel(o.mn.rec) % loop over recordings
+o = oset(recin); % set options
 
-    clear glb
+for pai = 1:numel(o.rec) % loop over recordings
 
-    ids = idmake(o.mn.rec{pai});
+    ids = idmake(o.rec{pai});
 
-    [pth, parstr] = fnmake(o, ids, o.mn.rec{pai});
+    [pth, parstr] = fnmake(o, ids, o.rec{pai});
 
-    gset.pthfldr = pth.fldr;
-    gset.name_noregionex = 'default';
-    gset.validsuffix = o.mn.validsuffix;
-    glb(gset);
+    clear glb; 
+    glb(pthfldr=pth.fldr, name_noregionex='default', validsuffix=o.recspec.validsuffix); %set some globals
 
     %% load metadata
 
     md = mdsild(pth.md, o.sld, o.hires.ld);
 
     % md_flyg = mdflygld(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
-    % ff = @(x,y) cell2struct([struct2cell(md);struct2cell(md_flyg)],[fieldnames(md);fieldnames(md_flyg)]);
-    % md = ff(md, md_flyg);
+    % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md
 
     %% load and process daq
 
@@ -151,8 +148,8 @@ for pai = 1:numel(o.mn.rec) % loop over recordings
             catch
                 try
                     ftvdsrs = ftvproc(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
-                        o.ftv.num_periodic_peaks_defining_laser_oscillations, o.ftv.ftvid_spatial_smooth_window_std, o.ftv.numpix_to_extract_laser_timeseries, ...
-                        o.ftv.laser_timeseries_smooth_window_std, ...
+                        o.ftv.num_periodic_peaks_defining_laser_oscillations, o.ftv.smsdspace, o.ftv.numpix_to_extract_laser_timeseries, ...
+                        o.ftv.smsdtime, ...
                         o.ftv.doplt, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
                 catch ME
                     sprintf(ME.message)
@@ -182,8 +179,6 @@ for pai = 1:numel(o.mn.rec) % loop over recordings
         smsdspace=o.sld.smsdspace, ...
         smsdtime = o.sld.sp.smsdtime, ...
         dr = o.sld.sp.dr);
-
-    % stackreg = register_stack_new(stack(:,:,:,:,1)); %this is just exploratory
 
     if any(cell2mat(struct2cell(o.mroi.auto.usehires)))
         [stack_hires_mnt, map_hires_lores] = hiresld(ids.recid, pth, stack, md, o.hires);
@@ -222,7 +217,6 @@ for pai = 1:numel(o.mn.rec) % loop over recordings
     % save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
 
 
-
     %% compute population features (e.g. bump), add them to ts
 
     if o.mn.dopop
@@ -237,11 +231,11 @@ for pai = 1:numel(o.mn.rec) % loop over recordings
     if o.mn.dofit
         for si = 1:numel(o.mfit)
             dochoose = 1;
-            choosecount = 0;
+            cnt = 0;
             while dochoose
 
-                choosecount = choosecount + 1;
-                [fitin, dochoose] = tsget(o.mfit(si).varnms, ts, ts.t, pth.tsuse_nms_prefix.mfit, pth.stack, choosecount, dochoose); %select indv/depv for fit using input params
+                cnt = cnt + 1;
+                [fitin, dochoose] = tsget(o.mfit(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.mfit, pth.stack, cnt, dochoose); %select indv/depv for fit using input options
                 stackcrop = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
 
                 fitin = mfit(stackcrop, fitin, roidat.(fitin.regionex).(fitin.parsex), md, o.mfit(si)); %fit model using any available timeseries
@@ -256,15 +250,15 @@ for pai = 1:numel(o.mn.rec) % loop over recordings
     if o.mn.dopltx
         for si = 1:numel(o.pltx)
             dochoose = 1;
-            choosecount = 0;
+            cnt = 0;
             while dochoose
 
-                choosecount = choosecount + 1;
-                [fitin, dochoose] = tsget(o.pltx(si).varnms, ts, ts.t, pth.tsuse_nms_prefix.pltx, pth.stack, choosecount, dochoose);
+                cnt = cnt + 1;
+                [fitin, dochoose] = tsget(o.pltx(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.pltx, pth.stack, cnt, dochoose);
                 [stackcrop, zstartpos_crop] = cropstacks(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
 
                 pltx(stackcrop, fitin.vars, o.pltx(si).letui,  ...
-                    fitin.varnms, o.pltx(si).vpmap, o.pltx(si).epochinds, ...
+                    fitin.vnm, o.pltx(si).vpmap, o.pltx(si).epochinds, ...
                     o.pltx(si).lagsxy_sec, o.pltx(si).lagsz_sec, o.pltx(si).lags_to_plot, ...
                     o.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), ts.t, md.sampper, zstartpos_crop, ...
                     ts.epochinds, o.pltx(si).gifvis, o.pltx(si).iz, o.pltx(si).it, ...

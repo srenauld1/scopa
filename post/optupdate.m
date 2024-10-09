@@ -1,24 +1,27 @@
-function optout = optupdate(optin, optdef, sub, subsused)
+function optout = optupdate(optin, optdef, copybinall, copybin)
 
 arguments
     optin
     optdef
-    sub = []
-    subsused = []
+    copybinall = []
+    copybin = []
 end
 
 % recursively update struct optdef with entries from struct optin;
 % optin and optout can be nonscalar, but optdef must be scalar
 % if field is in both optin and optdef, assign to optout the value in optin; if field is only in optdef, assign to optout the value in optdef; if field isn't in optdef, ignore it (don't put in optout)
-% optional input sub copies top level structs in optin into subfields sharing sub names (convenient way to copy options)
+% optional input copybin copies top level structs in optin into subfields sharing copybin names (convenient way to copy options)
 
 % before entering optudrec (recursive opt update), copy all defaults for top level fields in optin
 
-if isempty(sub)
-    sub = {}; %make it an empty cell, to be sure
+if isempty(copybin)
+    copybin = {}; %make it an empty cell, to be sure
 end
-if isempty(subsused)
-    subsused = {}; %make it an empty cell, to be sure
+if ~iscell(copybin)
+    copybin = {copybin};
+end
+if isempty(copybinall)
+    copybinall = {}; %make it an empty cell, to be sure
 end
 
 
@@ -30,27 +33,27 @@ if isempty(fieldnames(optin))
     optout = optdef;
 else
     fn1 = fieldnames(optin);
-    fn1 = fn1(~ismember(fn1, subsused));
-    fn1 = fn1(~strcmp(fn1, 'subsused'));
+    fn1 = fn1(~ismember(fn1, copybinall));
+    fn1 = fn1(~strcmp(fn1, 'copybinall'));
     for k = 1:numel(fn1)
         if ~isfield(optdef, fn1{k}) 
-            error(sprintf(fn1{k} + " IS NOT A FIELD OF d IN odf"))
+            error(sprintf("d." + fn1{k} + " does not exist in odf"))
         end
-        if isempty(sub)
+        if isempty(copybin)
             optout.(fn1{k}) = optdef.(fn1{k});
             optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k});
         else
             fn2 = fieldnames(optin.(fn1{k}));
-            tmphold = fn2(ismember(fn2, subsused));
-            for w = 1:numel(tmphold) %store previous sub, and remove from current optin to create optout (any nested previous sub are unmodified within optudrec 
+            tmphold = fn2(ismember(fn2, copybinall));
+            for w = 1:numel(tmphold) %store previous copybin, and remove from current optin to create optout (any nested previous copybin are unmodified within optudrec 
                 tmphold2.(tmphold{w}) = optin.(fn1{k}).(tmphold{w});
                 optin.(fn1{k}) = rmfield(optin.(fn1{k}), tmphold{w});
             end
-            for w = 1:numel(sub)
-                optout.(fn1{k}).(sub{w}) = optdef.(fn1{k});
-                optout.(fn1{k}).(sub{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(sub{w}), fn1{k});
+            for w = 1:numel(copybin)
+                optout.(fn1{k}).(copybin{w}) = optdef.(fn1{k});
+                optout.(fn1{k}).(copybin{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(copybin{w}), fn1{k});
             end
-            for w = 1:numel(tmphold) %add previous sub back to optout
+            for w = 1:numel(tmphold) %add previous copybin back to optout
                 optout.(fn1{k}).(tmphold{w}) = tmphold2.(tmphold{w});
             end
             % o = cell2struct([struct2cell(o); struct2cell(osub)],[fieldnames(o); fieldnames(osub)]);
@@ -70,16 +73,29 @@ end
             elseif numstorig~=numstin
                 error("optdef must be scalar struct, or match length of optin")
             end
-            for v = 1:numstin
-                optout(v) = optudrec(optin(v), optout(v), fnparent);
+
+            %for nonscalar struct, find fields that are struct in one index but empty in another (ie not specified) and make them struct so they appear in output tmp, then assign tmp to optout
+            fnq = fieldnames(optin);
+            yesstruct = cellfun(@isstruct, struct2cell(vec(optin)));
+            notstable = ~all(yesstruct==yesstruct(:,1), 2);
+            for chx = 1:numel(optin)
+                for chi = 1:numel(fnq)
+                    if yesstruct(chi,chx)==0 && notstable(chi)==1
+                        optin(chx).(fnq{chi}) = struct;
+                    end
+                end
             end
+            for v = numstin:-1:1 %go backwards to preallocate
+                tmp(v) = optudrec(optin(v), optout(v), fnparent);
+            end
+            optout = reshape(tmp, size(optin));
         else
             fn = fieldnames(optin);
             for u = 1:numel(fn)
                 if isfield(optout, fn{u})
                     if isstruct(optin.(fn{u}))
                         if ~isstruct(optout.(fn{u})) && ~isobject(optout.(fn{u})) %struct can refer to object not struct
-                            error(sprintf("optdef." + fn{u} + " DOES NOT EXIST"))
+                            error(sprintf("d." + fn{u} + " does not exist in odf"))
                         else
                             optout.(fn{u}) = optudrec(optin.(fn{u}), optout.(fn{u}), fn{u});
                         end
@@ -90,17 +106,17 @@ end
                     end
                 else
                     if isstruct(optin.(fn{u}))
-                        if ismember(fn{u}, subsused)
+                        if ismember(fn{u}, copybinall)
                             optout.(fn{u}) = optin.(fn{u});
                         else
                             if ~isfield(optdef, fn{u})
-                                error(sprintf("IN odf, " + fn{u} + " IS NOT A FIELD OF d, nor is it a subfield of " + fnparent + ", BUT YOU PLACED IT IN YOUR OPT STRUCT AS IF IT WERE ONE OF THESE"))
+                                error(sprintf("neither d." + fn{u} + " nor d." + [fnparent '.' fn{u}] + " exist in odf"))
                             else
                                 optout.(fn{u}) = optudrec(optin.(fn{u}), optdef.(fn{u}), fn{u});
                             end
                         end
                     else
-                        sprintf("ignoring field " + fn{u} + " because it is not a field of d." + fnparent + " in odf")
+                        error(sprintf("d." + [fnparent '.' fn{u}] + " does not exist in odf"))
                     end
                 end
             end

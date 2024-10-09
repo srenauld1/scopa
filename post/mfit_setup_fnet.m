@@ -1,10 +1,10 @@
-function [mdl, optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
+function [mdl, optimp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
 
 padlen_sec = 4;
 
 multi_time_in_layer_one_only = 1;
 
-fnetspec = mfit_parse_mdlname_string(mdlname, chopt, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only);
+fnetspec = mfit_parse_mdlname_string(mdlname, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only);
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 
 lbnd = [];

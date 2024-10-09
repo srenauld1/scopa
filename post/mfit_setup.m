@@ -1,14 +1,9 @@
 
-function opop = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, mdlname, chopt, sampper, inputvar_stats, pth_fitdata_prefix)
+function opop = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, mdlname, sampper, inputvar_stats, pth_fitdata_prefix)
 
 
 spl = strsplit(mdlname, '_');
 mdlclass = spl{1};
-try
-    chopt = chopt.(mdlclass);
-catch
-    chopt = [];
-end
 
 
 %% model-specific vars
@@ -25,7 +20,7 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [opop.mdl, opop.optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats);
+    [opop.mdl, opop.optimp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 

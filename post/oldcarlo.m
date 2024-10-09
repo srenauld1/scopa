@@ -19,8 +19,8 @@ if (~isempty(o.rec) || ~isempty(cell2mat(o.rec))) && all(contains(o.rec, 'f91g_s
     o.mn.dopltx = 1; %plot experiment (o.pltx below)
     o.mn.regionexs = {'tms'};
     o.mroi.dodraw =  {'tms'};
-    o.pltx(1).varnms.ts1{1} = {['vis.CON_51.ind1']};
-    o.pltx(1).varnms.ts5{1} = {['resp.tms.mo*.imf_f_f_*']}; %if empty, do will be set to false
+    o.pltx(1).vnm.ts1{1} = {['vis.CON_51.ind1']};
+    o.pltx(1).vnm.ts5{1} = {['resp.tms.mo*.imf_f_f_*']}; %if empty, do will be set to false
     o.carl.stimtype = 'drone';
     o.carl.feat = 'CON_51';
     o.carl.pthparent_feat = '~/ds/data/rec';

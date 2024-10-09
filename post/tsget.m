@@ -1,6 +1,6 @@
-function [tsuse, dochoose] = tsget(varnms, ts, ti, pth_tsuse_nms_prefix, pth_stack, choosecount, dochoose)
+function [tsuse, dochoose] = tsget(vnm, ts, ti, pth_tsuse_nms_prefix, pth_stack, choosecount, dochoose)
 
-% select timeseries from 'ts' whose flattened nested struct fieldnames match varnms pattern,
+% select timeseries from 'ts' whose flattened nested struct fieldnames match vnm pattern,
 % output variables, their names, and some info in struct 'tsuse'
 
 timedim = 2; %for now hard code to assume second dim is time 
@@ -9,7 +9,7 @@ must_have_full_var_sets = 0;
 
 pth_tsuse_nms = [pth_tsuse_nms_prefix num2str(choosecount) '_.mat'];
 
-%%% FLATTEN TIMESERIES STRUCT ts FOR SIMPLE MATCHING WITH USER INPUT PATTERN varnms %%%
+%%% FLATTEN TIMESERIES STRUCT ts FOR SIMPLE MATCHING WITH USER INPUT PATTERN vnm %%%
 
 [sflat, fnflat, fnflatex] = structflat(ts);
 sflat = struct2cell(sflat);
@@ -19,13 +19,13 @@ end
 
 %%% TRANFORM INPUT VARNM PATTERNS FROM NESTED CELL TO UN-NESTED CELL, TO RUN unique ON IT AND REMOVE DUPLICATE PATTERNS %%%
 
-fn = fieldnames(varnms);
+fn = fieldnames(vnm);
 
 tmp2 = cell(numel(fn),1);
 for vpfi = 1:numel(fn)
-    tmp = cell(numel(varnms.(fn{vpfi})),1);
-    for j = 1:numel(varnms.(fn{vpfi}))
-        tmp{j} = strjoin(varnms.(fn{vpfi}){j}, ', ');
+    tmp = cell(numel(vnm.(fn{vpfi})),1);
+    for j = 1:numel(vnm.(fn{vpfi}))
+        tmp{j} = strjoin(vnm.(fn{vpfi}){j}, ', ');
     end
     tmp2{vpfi} = tmp;
 end
@@ -34,7 +34,7 @@ tmp2 = cellfun(@(x) unique(x, 'stable'), tmp2, 'UniformOutput', false);
 
 %%% MAKE ALL COMBINATIONS OF PATTERNS ACROSS fn %%%
 
-tmp2 = table2cell(combinations(tmp2{:})); %make all combos of varnms fields outer cells
+tmp2 = table2cell(combinations(tmp2{:})); %make all combos of vnm fields outer cells
 tmp3 = cell(size(tmp2));
 for vpfi = 1:size(tmp2, 2)
     for j = 1:size(tmp2, 1)
@@ -42,7 +42,7 @@ for vpfi = 1:size(tmp2, 2)
     end
 end
 
-%%% FLATTEN TIMESERIES STRUCT ts AND FIND MATCHES WITH PATTERNS IN varnms %%%
+%%% FLATTEN TIMESERIES STRUCT ts AND FIND MATCHES WITH PATTERNS IN vnm %%%
 
 tsflatcat = cell(size(tmp3'));
 fnflatcat = cell(size(tmp3'));
@@ -91,9 +91,9 @@ for vpfi = 1:size(tmp3,2)
 end
 
 
-if must_have_full_var_sets %remove an entire var set if any one fn is missing (ts struct has no match with varnms)
-    fnflatcat = fnflatcat(:,~sum(cell2mat(cellfun(@isempty, fnflatcat, 'UniformOutput', false)))); %remove any empty cells, where there are no matches to varnms pattern
-    tsflatcat = tsflatcat(:,~sum(cell2mat(cellfun(@isempty, tsflatcat, 'UniformOutput', false)))); %remove any empty cells, where there are no matches to varnms pattern
+if must_have_full_var_sets %remove an entire var set if any one fn is missing (ts struct has no match with vnm)
+    fnflatcat = fnflatcat(:,~sum(cell2mat(cellfun(@isempty, fnflatcat, 'UniformOutput', false)))); %remove any empty cells, where there are no matches to vnm pattern
+    tsflatcat = tsflatcat(:,~sum(cell2mat(cellfun(@isempty, tsflatcat, 'UniformOutput', false)))); %remove any empty cells, where there are no matches to vnm pattern
 end
 
 
@@ -111,7 +111,7 @@ save(pth_tsuse_nms, 'fnflatcat', '-v7.3', '-mat') %save since this only needs to
 
 tsuse.numsamp = numsamp;
 tsuse.timedim = timedim;
-tsuse.varnms = cell2struct(fnflatcat(:,choosecount), fn);
+tsuse.vnm = cell2struct(fnflatcat(:,choosecount), fn);
 tsuse.vars = cell2struct(tsflatcat(:,choosecount), fn);
 
 
@@ -119,9 +119,9 @@ tsuse.vars = cell2struct(tsflatcat(:,choosecount), fn);
 
 regionex_cat = [];
 for fi = 1:numel(fn)
-    for vni = 1:numel(tsuse.varnms.(fn{fi}))
-        if startsWith(tsuse.varnms.(fn{fi}){vni}, 'resp')
-            varnmtmp = strsplit(tsuse.varnms.(fn{fi}){vni}, '.');
+    for vni = 1:numel(tsuse.vnm.(fn{fi}))
+        if startsWith(tsuse.vnm.(fn{fi}){vni}, 'resp')
+            varnmtmp = strsplit(tsuse.vnm.(fn{fi}){vni}, '.');
             tsuse.regionex = varnmtmp{2};
             tsuse.parsex = varnmtmp{3};
             tsuse.parsnorm = varnmtmp{4};
@@ -151,7 +151,7 @@ tsuse.fn_save_prefix_short = [pth_stack(1:end-4) '_fit' num2str(tsuse.choosecoun
 
 tsuse = fieldord(tsuse);
 
-if choosecount==size(fnflatcat, 2) %quit flag on final set of varnms (length of nonscalar struct)
+if choosecount==size(fnflatcat, 2) %quit flag on final set of vnm (length of nonscalar struct)
     dochoose = 0;
 end
 

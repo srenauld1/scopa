@@ -68,7 +68,7 @@ fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix);
 
 %% set up model fitting and plotting options
 
-fitin.opop = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, opts.mdlname, opts.chopt, md.sampper, fitin.stats, pth_fitdata_prefix);
+fitin.opop = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, opts.mdlname, md.sampper, fitin.stats, pth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 

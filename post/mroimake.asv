@@ -40,7 +40,7 @@ function [roidat, resp] = mroimake(stack, opts_mroi, nrm, t, sampper, xwid, ywid
 
 %% params
 
-if exist('roimaskman_allchan', 'var') %if passing in a morph roi mask (interactive mode, upadating roi info)
+if exist('roimaskman_allchan', 'var') %if passing in a morph roi mask (interactive mode, upadating roi)
     roimaskman_allchan = {roimaskman_allchan};
     maskinput = 1;
     dodraw = 0;
@@ -56,8 +56,8 @@ else
     normopts = opts_mroi.norm;
     imhsv = opts_mroi.imhsv;
     roiol = opts_mroi.roiol;
-    doimhsv = opts_mroi.doimhsv;
-    doroiol = opts_mroi.doroiol;
+    doimhsv = 0;
+    doroiol = 0;
     doplt = opts_mroi.doplt;
 end
 

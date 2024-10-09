@@ -75,7 +75,7 @@ for spi = 1:numel(suffixplt)
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;
         if isempty(dr)
-            display_range_cell{cnt} = [0, 1];
+            display_range_cell{cnt} = [0,1];
         else
             display_range_cell{cnt} = dr.(suffixplt{spi});
         end

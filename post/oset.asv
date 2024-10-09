@@ -2,18 +2,66 @@ function o = oset(recin)
 
 %{
 
-IMPORTANT: 
-    DO NOT CHANGE ORDER OF SECTIONS (IF YOU DO, SOME OPTIONS MAY NOT GET SET); SECTION TITLES SHOW EACH MAJOR ROUTINE 
-    DO NOT DELETE ANY CALLS TO odf (IF YOU DO, SOME OPTIONS MAY NOT GET SET) 
-    IF YOU WANT TO USE ALL DEFAULTS FOR ANY ROUTINE k, JUST DON'T PASS INPUT FOR THE CALL TO odf THAT SETS OPTIONS FOR ROUTINE k; 
-        FOR EXAMPLE, o.k = odf() WILL USE ALL DEFAULTS FOR ROUTINE k 
-        OR YOU CAN COMMENT OUT THE SPECIFICATION FOR INPUT o
-        FOR SIMPLICITY, THIS FILE SHOWS ONLY OPTIONS THE USER IS LIKELY TO WANT TO ADJUST
-    DOCS ON ALL OPTIONS ARE IN odf
+
 
 this function (oset) sets options for all major routines in a2p
-output is nested (o) and flattened (oflat) struct containing all options used in a2p
-use function odf to set default options, like this:
+docs on all available options are in odf
+all option defaults are also set in each function that has a deafult substruct in odf 
+(so the user could skip passing in arguments with the options struct; the options struct is meant to show all options for a2p, and put them all in one place for easy adjustment)
+output is nested (o) and a flattened (oflat) struct containing all options used in a2p
+the flattened version is just for inspection, for the user's convenience; only the nested version is used in a2p  
+
+purpose:
+    reduce number of defaults
+    puts all options in one place
+    can access all options anywhere by calling odf
+    modularity 
+    readability
+    versatility
+
+for simplicity, this file shows only options the user is likely to want to change
+for convenience, at least one option from all available nestings are shown below  
+
+use function odf to set default options
+
+for example, to set the following options 
+    o.mn.dodaq = 1;
+    o.pop.bump.domain_method = 'morphological';
+    o.sld.sp.it = [50.3];
+
+you can call odf in 3 different ways 
+
+one-argument syntax
+
+    o = odf(o); 
+
+this will set the above 3 options to their specified values, overwriting their defaults (if specified to be different than defaults listed in odf)
+you can set as many options as you want before calling odf
+if the option name doesn't match its name in odf, it will not appear in the odf output
+
+you can also call odf with two additional input arguments, like this
+
+o.mn.dodaq = 1;
+o.pop.bump.domain_method = 'morphological';
+o.sld.sp.it = [50.3];
+o = odf(o, {'mn', 'pop'}, {'fb', 'eb'}); 
+
+this is the 3-argument syntax
+this will create substructs named fb and eb within substruct mn and pop only 
+it is a convenient way to copy all the options in mn into two substructs (fb and eb)
+which allows you to set different options for each substruct, for example
+
+o.pop.bump.domain_method = 'morphological';
+o = odf(o, {'mn', 'pop'}, {'pb'}); 
+
+this will create another substruct within mn and pop named pb, with a different value for o.pop.bump.domain_method (but o.mn.dodaq will remain unchanged from the value that was set the first time odf was called)
+
+if you need to go back and set options for a subfield after it's already been set in o, you can use this syntax to update one field specifically 
+
+o = odf(o, {'mn', 'pop'})
+this will only update o with values in substructs mn and pop
+
+
     callingRoutine.updatedRoutine = odf(tmpPlaceholder, dataBin1, dataBin2, ..., dataBinN), where . . . 
         tmpPlaceholder is a struct with one field, updatedRoutine, which specifies how defaults for updatedRoutine will change (defaults are in o.updatedRoutine in function odf)
         callingRoutine.updatedRoutine will have substructs dataBin1, dataBin2, ..., dataBinN, if any dataBin arguments were passed to odf; 
@@ -29,7 +77,51 @@ use function odf to set default options, like this:
         every call to odf shows output for a major routine that can be called, and the nesting of that output struct shows where in a2p that routine is called (o.k means routine k is called directly from a2p, while o.m.k means k is called from within routine m, which is called directly from a2p)
         it's done this way because because several routines get called multiple times in different locations, so this reduces the number of default options (ie this way you don't have to set unique defaults for routine x when called from different locations
 
-YOU CAN NEST FIELDS THAT ARE FIELDS OF d IN odf, or subfields of fields of d; you cannot nest fields 
+
+o is the option struct for a2p
+o is a struct containing funbins
+each funbin is a container for options that can be passed as arguments to a major function in a2p
+the fields of the funbin are the options
+some minor functions also have optional arguments, but they are not listed in odf because they are less likely to need adjusting 
+options are only used in functions denoted by their enclosing funbin; 
+funbin names are similar to, or abbreviated forms of, their corresponding functions
+here is a complete list of funbins and functions they hold options for (see also section headers in odf)
+funbin fields are all optional inputs to their corresponding functions (the user could skip passing the substruct variables, which would just use default values)
+each funbin has default values listed in struct d of odf
+
+funbins can also hold funbins
+funbins can be nested within funbins arbitrarily, although the nesting must reflect the organization of a2p (nesting of major functions)
+if you reorganize a2p, you might need to reorganize how funbins are nested in o
+there is no funbin nesting in defaults (in odf), since each funbin refers to a function that is meant to be modular (this also reduces the number of defaults required in odf)  
+in some cases, funbin fields in odf are themselves structs holding options, but there is no funbin nesting within funbin in odf
+
+example 1:
+    o.funbin1.funbin2.optionA = 2
+    o = odf(o);
+    
+    output o will contain all default values for funbin1 (listed in d.funbin1), and all default values for funbin2 (listed in d.funbin2), except optionA, assuming its value here (2) doesn't match the value of d.funbin2.optionA in odf
+
+default values in odf currently do not enforce any restrictions, although in the future they should to prevent the user from setting invalid options 
+
+
+if copybins are listed for funbins that are not in o, all defaults are used for those funbins in their copybins
+
+example 2
+    o.funbin1.funbin2.optionA = 2
+    o = odf(o, {'funbin3', 'funbin4'}, {'copybin1', 'copybin2');
+
+output o will contain the same funbin1 described in example 1
+output o will also contain funbin3 and funbin4, each of which will contain copybin1 and copybin2, each of which will contain all defaults for funbin3 and funbin4
+
+
+example 3
+    o.funbin1.optionA = 2
+    o.funbin2.optionA = 3
+    o = odf(o, {'funbin2'});
+
+output o will contain all defaults for funbin2, except o.funbin2.optionA = 3, and will contain o.funbin1.optionA = 2 without any other fields in funbin1
+output o will also contain funbin3 and funbin4, each of which will contain copybin1 and copybin2, each of which will contain all defaults for funbin3 and funbin4
+
 
 %}
 
@@ -59,34 +151,37 @@ o.mn.dopltx = 1;
 o.daq.useinds = 'none';
 
 o.sld.chanuse = 1;
-o.sld.suffixplt = 'cmrg_dcdn';
+o.sld.suffixplt = {'raw', 'cmrg', 'cmrg_dcdn'};
 
-o.sp.it = [50.3];
+o.sld.sp.it = [50.3];
 
+o.sld.sp.dr = [0,1];
+
+o = odf(o, 'sld', o.sld.suffixplt);
+
+o.ftv.smsdspace = 2;
 o.ftv.doplt = 1;
 
-
 o.pop.bump.domain_method = 'functional';
-o.pop.bump.mfit.varnms.depvp{1} = {['resp.fb256.mo*.*rsc000100_*chn1']}; 
-o.pop.bump.mfit.varnms.indvp{1} = {['vis.yaw']};
+o.pop.bump.mfit.tg.v1{1} = {['resp.fb256.mo*.*rsc000100_*chn1']}; 
+o.pop.bump.mfit.tg.v2{1} = {['vis.yaw']};
 
 
-o.mfit(1).varnms.depvp{1} = {['resp.fb256.mo*.*_chn1']}; 
-o.mfit(1).varnms.indvp{1} = {['ball.forvel']};
-o.mfit(1).validation_fold = 0; 
+o.mfit(1).tg.v1{1} = {['resp.fb256.mo*.*_chn1']}; 
+o.mfit(1).tg.v2{1} = {['ball.forvel']};
 o.mfit(1).mdlname = 'fnet_A01_s'; 
-o.mfit(1).plt.doplt = 0;
 
-o.mfit(2).varnms.depvp{1} = {['resp.fb256.mo*.*_chn1']}; 
-o.mfit(2).varnms.indvp{1} = {['ball.forvel']};
-o.mfit(2).validation_fold = 0; 
-o.mfit(2).mdlname = 'fnet_A01_s'; 
-o.mfit(2).plt.doplt = 0;
 
-o.pltx.varnms.ts1{1} = {['ball.forvel']};
-o.pltx.varnms.ts5{1} = {['resp.fb256.mo*.*chn1.ind1']}; 
-o.pltx.lagsxy_sec = linspace(-1, 1, 1e4);
-o.pltx.lagsz_sec = linspace(-1, 1, 1e4); 
+o.mfit(2).tg.v1{1} = {['resp.fb256.mo*.*_chn1']}; 
+o.mfit(2).tg.v1{1} = {['ball.forvel']};
+o.mfit(2).mdlname = 'fnet_A01_d'; 
+
+o.mfit(2).tp.predlot_norm = 'any';
+
+o.pltx.tg.v1{1} = {['ball.forvel']};
+o.pltx.tg.v5{1} = {['resp.fb256.mo*.*chn1.ind1']}; 
+o.pltx.lagsxy_sec = linspace(0, 1, 1e4);
+o.pltx.lagsz_sec = linspace(0, 1, 1e4); 
 
 
 o.hires.do_reg_plots = 0;
@@ -96,15 +191,28 @@ o.hires.sld.dostats = 0;
 o.hires.sld.sp.it = [1];
 
 o.mroi.dodraw = 1;
-o.mroi.auto.chan = 99;
-o.mroi.imhsv.do = 100;
-o.mroi.imhsv.fg = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
+o.mroi.wavp = [0 50];
 
-o.froi.roistr = {'2_1_*_*_*_*_*_1000_*_*_graph_3dex'};
+o.mroi.seg.chan = [1];
+o.mroi.seg.numroi = 128;
+o.mroi.seg.usehires = 0;
+o.mroi.seg.maskseg = 'uniform';
+o.mroi.seg.do3d = 1;
+o.mroi.seg.doplt = 0;
+
+o.mroi.doimhsv = 1;
+o.mroi.imhsv.fg = 'allrois'; 
+
+o.froi.roistr = {'2_1_*_graph_3dex'};
+
+o = odf(o, {'froi', 'mroi'}, {'pb', 'eb'});
 
 
-o = odf(o, {'mroi', 'froi'}, {'fb256', 'fb512'});
-o = odf(o, {'mroi'}, {'fb2566', 'fb5126'}); 
+o.mroi.seg.numroi = 256;
+o = odf(o, {'mroi'}, {'fb'}); 
+
+
+% display ranges for each suffix; applied in stackplt; dr represents proportion of full range, where [0,1] is full range; stack values that are proportionally within dr are linearly mapped to image intensity; less than or equal to dr(1) is mapped to image min (black); greater than or equal to dr(2) is mapped to image max (white); if stack doesn't exist its dr is ignored
 
 
 
@@ -113,8 +221,8 @@ o = odf(o, {'mroi'}, {'fb2566', 'fb5126'});
 
 if isstruct(recin) %if recin was empty or was struct
     o.recspec = recin;
-    o.recspec = odf(o); %call defaults for any missing recspec field; if no fields missing, nothing will change
-    o.rec = filefind(pthparent_local=o.recspec.pthparent_local, pthparent_o2=o.recspec.pthparent_o2, validsuffix=o.recspec.validsuffix, recdate=recspec.recdate, fly=recspec.fly, trial=recspec.trial, suffix=recspec.suffix, match=recspec.match); %find files matching recspec
+    o = odf(o, 'recspec'); %call defaults for any missing recspec field; if no fields missing, nothing will change
+    o.rec = filefind(pthparent_local=o.recspec.pthparent_local, pthparent_o2=o.recspec.pthparent_o2, validsuffix=o.recspec.validsuffix, recdate=o.recspec.recdate, fly=o.recspec.fly, trial=o.recspec.trial, suffix=o.recspec.suffix, match=o.recspec.match); %find files matching recspec
 else
     if strcmp(recin, 'nofile')
         o.rec = [];

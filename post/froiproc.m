@@ -1,4 +1,4 @@
-function [roidat, resp] = froiproc(stack, roidat, pth_froi, regionex, md, opts)
+function [roidat, resp] = froiproc(stack, roidat, pth_froi, regionex, md, opts, nrm)
 
 
 %% params
@@ -11,8 +11,8 @@ maxroisz = opts.maxroisz;
 maxregperroi = opts.maxregperroi;
 inmaskthr = opts.inmaskthr;
 numbins = opts.numbins;
-normpre = opts.normpre;
-normpost = opts.normpost;
+normpre = nrm.pre;
+normpost = nrm.post;
 
 roisrt = opts.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 numrois_for_gif = opts.roiol.ir;
