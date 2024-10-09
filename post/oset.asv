@@ -2,82 +2,26 @@ function o = oset(recin)
 
 %{
 
+-----
+oset sets options for all major functions in a2p
+output o is a nested struct containing all options used in a2p
+defaults for all available options are in struct d in function odf
+all option defaults are also set within each major function (so the user could skip passing optional arguments with the options struct created here)
 
+output oflat is a flattened version of o, and is just for inspection, for the user's convenience; a2p uses o, not oflat  
 
-this function (oset) sets options for all major routines in a2p
-docs on all available options are in odf
-all option defaults are also set in each function that has a deafult substruct in odf 
-(so the user could skip passing in arguments with the options struct; the options struct is meant to show all options for a2p, and put them all in one place for easy adjustment)
-output is nested (o) and a flattened (oflat) struct containing all options used in a2p
-the flattened version is just for inspection, for the user's convenience; only the nested version is used in a2p  
-
-purpose:
-    reduce number of defaults
-    puts all options in one place
-    can access all options anywhere by calling odf
-    modularity 
-    readability
-    versatility
+reason for using o, oset, and odf:
+    minimize number of defaults
+    all options in one place (o, with defaults in odf)
+    can access all default options anywhere in a2p by calling odf (without input arguments)
+    modularity
 
 for simplicity, this file shows only options the user is likely to want to change
-for convenience, at least one option from all available nestings are shown below  
+for convenience, at least one option from all currently valid nestings are shown below  
 
-use function odf to set default options
+use function odf to set options
 
-for example, to set the following options 
-    o.mn.dodaq = 1;
-    o.pop.bump.domain_method = 'morphological';
-    o.sld.sp.it = [50.3];
-
-you can call odf in 3 different ways 
-
-one-argument syntax
-
-    o = odf(o); 
-
-this will set the above 3 options to their specified values, overwriting their defaults (if specified to be different than defaults listed in odf)
-you can set as many options as you want before calling odf
-if the option name doesn't match its name in odf, it will not appear in the odf output
-
-you can also call odf with two additional input arguments, like this
-
-o.mn.dodaq = 1;
-o.pop.bump.domain_method = 'morphological';
-o.sld.sp.it = [50.3];
-o = odf(o, {'mn', 'pop'}, {'fb', 'eb'}); 
-
-this is the 3-argument syntax
-this will create substructs named fb and eb within substruct mn and pop only 
-it is a convenient way to copy all the options in mn into two substructs (fb and eb)
-which allows you to set different options for each substruct, for example
-
-o.pop.bump.domain_method = 'morphological';
-o = odf(o, {'mn', 'pop'}, {'pb'}); 
-
-this will create another substruct within mn and pop named pb, with a different value for o.pop.bump.domain_method (but o.mn.dodaq will remain unchanged from the value that was set the first time odf was called)
-
-if you need to go back and set options for a subfield after it's already been set in o, you can use this syntax to update one field specifically 
-
-o = odf(o, {'mn', 'pop'})
-this will only update o with values in substructs mn and pop
-
-
-    callingRoutine.updatedRoutine = odf(tmpPlaceholder, dataBin1, dataBin2, ..., dataBinN), where . . . 
-        tmpPlaceholder is a struct with one field, updatedRoutine, which specifies how defaults for updatedRoutine will change (defaults are in o.updatedRoutine in function odf)
-        callingRoutine.updatedRoutine will have substructs dataBin1, dataBin2, ..., dataBinN, if any dataBin arguments were passed to odf; 
-            for example,  after this call 
-                    o.b = 2
-                    a = odf(o, 'c', 'd')
-                struct k contains user-defined k.c.b and k.d.b, and default values for any other field (see defaults in in o.k in function odf)
-        updatedRoutine can be nonscalar struct; if at least one field specification for updatedRoutine includes index p, all unspecified fields for all struct indices up to index p are filled with defaults (e.g see how options are set in 'mfit' section below); alternatively, struct index can be assigned in the output of odf
-    note odf will only set options for structs recursively within updatedRoutine; it will not set options for structs placed above input struct by position in output
-        for example: o.hires.sld.sp = odf(o) will set options for o.hires.sld.sp, but not for o.hires.sld; that must be set separately, and it must be done before o.hires.sld.sp
-            section order below sets options for all routines, so if you leave the section order unchanged, and do not delete any calls to odf, no routine's options will be skipped
-        for this reason, every routine's options are set below (at least on scopa 'main' branch); this shows how a2p is organized; 
-        every call to odf shows output for a major routine that can be called, and the nesting of that output struct shows where in a2p that routine is called (o.k means routine k is called directly from a2p, while o.m.k means k is called from within routine m, which is called directly from a2p)
-        it's done this way because because several routines get called multiple times in different locations, so this reduces the number of default options (ie this way you don't have to set unique defaults for routine x when called from different locations
-
-
+-----
 o is the option struct for a2p
 o is a struct containing funbins
 each funbin is a container for options that can be passed as arguments to a major function in a2p
@@ -86,6 +30,26 @@ some minor functions also have optional arguments, but they are not listed in od
 options are only used in functions denoted by their enclosing funbin; 
 funbin names are similar to, or abbreviated forms of, their corresponding functions
 here is a complete list of funbins and functions they hold options for (see also section headers in odf)
+
+    mn, a2p
+    recspec, filefind
+    daq, daqld
+    sld, stackld
+    ftv, ftvproc
+    mroi, mroimake
+    seg, mroiauto
+    froi, froiproc
+    nrm, respnorm
+    pop, popcmp
+    bump, bumpcmp
+    mfit, mfit
+    tg, tsget
+    pltx, pltx
+    hires, hiresld
+    tp, tsplt 
+    sp, stackplt
+    imhsv, imhsvplt
+
 funbin fields are all optional inputs to their corresponding functions (the user could skip passing the substruct variables, which would just use default values)
 each funbin has default values listed in struct d of odf
 
@@ -93,34 +57,63 @@ funbins can also hold funbins
 funbins can be nested within funbins arbitrarily, although the nesting must reflect the organization of a2p (nesting of major functions)
 if you reorganize a2p, you might need to reorganize how funbins are nested in o
 there is no funbin nesting in defaults (in odf), since each funbin refers to a function that is meant to be modular (this also reduces the number of defaults required in odf)  
+
+o.funbin1 means the function funbin1 refers to is called directly from a2p, while o.funbin1.funbin2 means the function funbin2 refers to is called from the function funbin1 refers to, and the function funbin1 refers to is called directly from a2p
+it's done this way because because several functions get called multiple times in different locations, so this reduces the number of default options (ie this way you don't have to set different defaults for the samer function called from different locations
+
 in some cases, funbin fields in odf are themselves structs holding options, but there is no funbin nesting within funbin in odf
 
-example 1:
+
+-----
+a funbin can be nonscalar struct; 
+if at least one field specification for funbin includes index p, all unspecified fields for all struct indices up to index p are filled with defaults 
+(e.g see how options are set in 'mfit' section below); 
+alternatively, struct index can be assigned in the output of odf
+
+-----
+example 1 (zero-argument syntax):
+    o = odf
+
+o will contain all defaults (listed in options struct d in odf)
+
+-----
+example 2 (one-argument syntax):
     o.funbin1.funbin2.optionA = 2
     o = odf(o);
     
     output o will contain all default values for funbin1 (listed in d.funbin1), and all default values for funbin2 (listed in d.funbin2), except optionA, assuming its value here (2) doesn't match the value of d.funbin2.optionA in odf
 
-default values in odf currently do not enforce any restrictions, although in the future they should to prevent the user from setting invalid options 
-
-
-if copybins are listed for funbins that are not in o, all defaults are used for those funbins in their copybins
-
-example 2
-    o.funbin1.funbin2.optionA = 2
-    o = odf(o, {'funbin3', 'funbin4'}, {'copybin1', 'copybin2');
-
-output o will contain the same funbin1 described in example 1
-output o will also contain funbin3 and funbin4, each of which will contain copybin1 and copybin2, each of which will contain all defaults for funbin3 and funbin4
-
-
-example 3
+-----
+example 3 (two-argument syntax)
     o.funbin1.optionA = 2
     o.funbin2.optionA = 3
     o = odf(o, {'funbin2'});
 
-output o will contain all defaults for funbin2, except o.funbin2.optionA = 3, and will contain o.funbin1.optionA = 2 without any other fields in funbin1
-output o will also contain funbin3 and funbin4, each of which will contain copybin1 and copybin2, each of which will contain all defaults for funbin3 and funbin4
+this will only update o with values in substruct funbin2
+currently, funbin will only
+output o will contain all defaults for funbin2, except o.funbin2.optionA = 3, while everything else in o will be unchanged 
+if you need to go back and set options for a subfield after it's already been set in o, you can use this syntax to update specific bin structs
+
+-----
+example 4 (three-argument syntax)
+    o.funbin1.funbin2.optionA = 2
+    o.funbin3.funbin3.optionA = 2
+    o = odf(o, {'funbin3', 'funbin4'}, {'copybin1', 'copybin2');
+
+output o will contain the same funbin1 described in example 2
+output o will also contain funbin3 and funbin4, each of which will contain copybin1 and copybin2; fubbin3.copybin1.optionA and fubbin3.copybin2.optionA will equal 2, with all other options default, and fubbin4.copybin1 and fubbin4.copybin2 will contain defaults for all options
+if copybins are listed for funbins that are not in o (but which are in d), all defaults are used for those funbins in their copybins
+this will create substructs named fb and eb within substruct mn and pop only 
+it is a convenient way to copy all the options in mn into two substructs (fb and eb)
+which allows you to set different options for each substruct, for example
+this will create another substruct within mn and pop named pb, with a different value for o.pop.bump.domain_method (but o.mn.dodaq will remain unchanged from the value that was set the first time odf was called)
+
+-----
+
+any funbin or option not in d in odf will cause error, to prevent user setting invalid or unused options
+default values in odf currently do not enforce any restrictions, although in the future they should to prevent the user from setting invalid options 
+
+
 
 
 %}
@@ -150,14 +143,14 @@ o.mn.dopltx = 1;
 
 o.daq.useinds = 'none';
 
+o.daq.sld.chanuse = 1;
+
+
 o.sld.chanuse = 1;
 o.sld.suffixplt = {'raw', 'cmrg', 'cmrg_dcdn'};
 
+o.sld.sp.dr = {[0,1], [0,1], [0,1]}; %can do one for each o.sld.suffixplt
 o.sld.sp.it = [50.3];
-
-o.sld.sp.dr = [0,1];
-
-o = odf(o, 'sld', o.sld.suffixplt);
 
 o.ftv.smsdspace = 2;
 o.ftv.doplt = 1;
@@ -184,7 +177,6 @@ o.pltx.lagsxy_sec = linspace(0, 1, 1e4);
 o.pltx.lagsz_sec = linspace(0, 1, 1e4); 
 
 
-o.hires.do_reg_plots = 0;
 o.hires.disttype = 'monomodal';
 o.hires.regtype = 'rigid';
 o.hires.sld.dostats = 0;
@@ -194,7 +186,7 @@ o.mroi.dodraw = 1;
 o.mroi.wavp = [0 50];
 
 o.mroi.seg.chan = [1];
-o.mroi.seg.numroi = 128;
+o.mroi.seg.numroi = 0;
 o.mroi.seg.usehires = 0;
 o.mroi.seg.maskseg = 'uniform';
 o.mroi.seg.do3d = 1;
@@ -210,12 +202,6 @@ o = odf(o, {'froi', 'mroi'}, {'pb', 'eb'});
 
 o.mroi.seg.numroi = 256;
 o = odf(o, {'mroi'}, {'fb'}); 
-
-
-% display ranges for each suffix; applied in stackplt; dr represents proportion of full range, where [0,1] is full range; stack values that are proportionally within dr are linearly mapped to image intensity; less than or equal to dr(1) is mapped to image min (black); greater than or equal to dr(2) is mapped to image max (white); if stack doesn't exist its dr is ignored
-
-
-
 
 %% find files 
 

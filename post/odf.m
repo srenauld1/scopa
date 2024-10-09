@@ -14,6 +14,7 @@ end
 % o matches d unless input struct oin specifies a different value
 % in particular: let's call dsub a field of d; if a field is in both oin and dsub, use the value in oin; if field is only in dsub, use the value in dsub; if field isn't in dsub, recurse into odf to check field in the same way as dsub
 
+
 %% recspec (filefind: find files matching recording specifications)
 
 d.recspec.recdate = {'*'}; %cell array of char, can use wildcards
@@ -127,7 +128,7 @@ d.froi.roisrt = 'majoraxis'; % 'snr' sorts by caiman output cmsnr, 'none' doens'
 d.froi.doplt = 0; %plot roi overlay
 
 
-%% norm (respnorm: normalize roi timeseries)
+%% nrm (respnorm: normalize roi timeseries)
 
 % options for response extraction/normalization of morphological roi responses (o.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
@@ -215,12 +216,6 @@ d.bump.doplt = 0;
 % all combinations of single o.mfit(i).indv and single o.mfit(i).depv at the outer cell level are used
 %for now, depv at single struct and outer cell level should come from single regionex
 
-d.mfit.tg.v1{1} = {...
-    ['resp.*.*.*'], ...
-    };
-d.mfit.tg.v2{1} = {...
-    ['resp.*.*.*'], ...
-    };
 d.mfit.num_synthetic_depv = 0; %create synthetic data (using requested mdlname options, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
 d.mfit.epochinds = {[1]};
 d.mfit.mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
@@ -244,14 +239,14 @@ d.mfit.doplt = 0;
 
 %% tg (tsget: choose timeseries using string matching of flattened struct ts)
 
-tg.v1{1} = {['']};
-tg.v2{1} = {['']};
-tg.v3{1} = {['']};
-tg.v4{1} = {['']};
-tg.v5{1} = {['']}; 
-tg.v6{1} = {['']}; 
-tg.v7{1} = {['']};
-tg.v8{1} = {['']};
+d.tg.v1{1} = {['']};
+d.tg.v2{1} = {['']};
+d.tg.v3{1} = {['']};
+d.tg.v4{1} = {['']};
+d.tg.v5{1} = {['']}; 
+d.tg.v6{1} = {['']}; 
+d.tg.v7{1} = {['']};
+d.tg.v8{1} = {['']};
 
 %% pltx (pltx: explore various components of experiment in interactive plots, e.g. brain images, timeseries, stimulus videos, scatterplots, fictive path, model components)
 
