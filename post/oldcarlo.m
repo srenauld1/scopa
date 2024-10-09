@@ -2,8 +2,8 @@
 % params for carl's old project; not set if you're not carl (if you don't have a recording folder with substring 'f91g_syt')
 
 o.mn.oldcarl = 0;
-if (~isempty(o.rec) || ~isempty(cell2mat(o.rec))) && all(contains(o.rec, 'f91g_syt')) %~strcmp(fspc_recdate, '*') && startsWith(fspc_recdate{1}, '22') %override some settings for old project
-    if numel(o.rec)>1
+if (~isempty(o.mn.rec) || ~isempty(cell2mat(o.mn.rec))) && all(contains(o.mn.rec, 'f91g_syt')) %~strcmp(fspc_recdate, '*') && startsWith(fspc_recdate{1}, '22') %override some settings for old project
+    if numel(o.mn.rec)>1
         error("right now old project is one file at a time")
     end
     o.mn.oldcarl = 1;
@@ -17,7 +17,7 @@ if (~isempty(o.rec) || ~isempty(cell2mat(o.rec))) && all(contains(o.rec, 'f91g_s
     o.mn.dopop = 0; %compute population features (o.pop below)
     o.mn.dofit = 0; %model fitting (o.mfit below)
     o.mn.dopltx = 1; %plot experiment (o.pltx below)
-    o.mn.regionexs = {'tms'};
+    o.mn.regionex = {'tms'};
     o.mroi.dodraw =  {'tms'};
     o.pltx(1).vnm.ts1{1} = {['vis.CON_51.ind1']};
     o.pltx(1).vnm.ts5{1} = {['resp.tms.mo*.imf_f_f_*']}; %if empty, do will be set to false

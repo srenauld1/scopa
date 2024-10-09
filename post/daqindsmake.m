@@ -1,5 +1,17 @@
-function daqinds = daqindsmake(frameon, t, usefbl, usefbf, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre)
+function daqinds = daqindsmake(frameon, t, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre)
 
+arguments
+    frameon
+    t
+    usefbl
+    usefbf
+    numvol
+    numslice
+    numslice_withflyback
+    doplt = 0
+    maxtplot = 2;
+    pthfigpre = []
+end
 
 % make imaging slice indices and imaging volume indices for resampling (aligning) daq timeseries with imaging 
 % frameon is logical indicating when imaging frame is acquiring 
@@ -66,7 +78,7 @@ daqinds.vol = uint16(volinds);
 
 %%%%%%%% plotting (optional) %%%%%%%%
 
-if exist('maxtplot', 'var') && ~isempty(maxtplot) && maxtplot~=0
+if doplt
     if isduration(t)
         t = seconds(t);
     end
@@ -85,10 +97,10 @@ if exist('maxtplot', 'var') && ~isempty(maxtplot) && maxtplot~=0
     plot(tsub, daqinds.vol(kp))
     title(['daqinds.vol for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.vol) max(daqinds.vol)]) ])
     figsuffix = 'daqinds_.png';
-    if exist('pthfigpre', 'var') && ~isempty(pthfigpre)
-        pthfig = [pthfigpre figsuffix];
-    else
+    if isempty(pthfigpre)
         pthfig = pthauto(suffix=figsuffix, usetime=0);
+    else
+        pthfig = [pthfigpre figsuffix];
     end
     saveas(gca, pthfig, 'png');
 end

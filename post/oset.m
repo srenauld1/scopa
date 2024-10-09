@@ -21,7 +21,7 @@ for convenience, at least one option from all currently valid nestings are shown
 
 use function odf to set options
 
------
+-----  -----
 o is the option struct for a2p
 o is a struct containing funbins
 each funbin is a container for options that can be passed as arguments to a major function in a2p
@@ -64,13 +64,15 @@ it's done this way because because several functions get called multiple times i
 in some cases, funbin fields in odf are themselves structs holding options, but there is no funbin nesting within funbin in odf
 
 
------
+----- nonscalar funbin -----
+
 a funbin can be nonscalar struct; 
 if at least one field specification for funbin includes index p, all unspecified fields for all struct indices up to index p are filled with defaults 
 (e.g see how options are set in 'mfit' section below); 
 alternatively, struct index can be assigned in the output of odf
 
------
+----- examples -----
+
 example 1 (zero-argument syntax):
     o = odf
 
@@ -90,9 +92,21 @@ example 3 (two-argument syntax)
     o = odf(o, {'funbin2'});
 
 this will only update o with values in substruct funbin2
-currently, funbin will onlyapply at the highest level in struct o (o.funbin); it will not apply to a nested instance of funbin; in the future, 2nd argument will take nesting to allow more flexibility 
 output o will contain all defaults for funbin2, except o.funbin2.optionA = 3, while everything else in o will be unchanged 
-if you need to go back and set options for a subfield after it's already been set in o, you can use this syntax to update specific bin structs
+if you need to set options for a subfield after it's already been set in o, you can use this syntax to update specific binstructs without affecting the others 
+
+-----
+example 4 (using a temporary struct to update nested funbin) 
+currently, funbin will only apply at the highest level of the odf input struct; it will not apply to a nested instance of funbin;
+to get around this limitation and operate on nested funbin, you can create a temporary options struct containing only the funbin you want to modify, pass this to odf, and assign the odf output the desired nested position in options struct o  
+
+    tmp.funbin3.optionA = 2
+    o.funbin1.funbin2 = odf(tmp, {'funbin3'});
+
+    this will update funbin3, setting optionA to 2 (everything else in funbin3 default) and will place funbin3 within o.funbin1.funbin2, and will not affect anything else in o (unless fun
+
+    you can also use copybin with this approach as ususal
+    o.funbin1.funbin2 = odf(tmp, {'funbin3'}, {'copybin2', 'copybin3'});
 
 -----
 example 4 (three-argument syntax)
@@ -104,16 +118,13 @@ output o will contain the same funbin1 described in example 2
 output o will also contain funbin3 and funbin4, each of which will contain copybin1 and copybin2; fubbin3.copybin1.optionA and fubbin3.copybin2.optionA will equal 2, with all other options default, and fubbin4.copybin1 and fubbin4.copybin2 will contain defaults for all options
 if copybins are listed for funbins that are not in o (but which are in d), all defaults are used for those funbins in their copybins
 this will create substructs named fb and eb within substruct mn and pop only 
-it is a convenient way to copy all the options in mn into two substructs (fb and eb)
-which allows you to set different options for each substruct, for example
-this will create another substruct within mn and pop named pb, with a different value for o.pop.bump.domain_method (but o.mn.dodaq will remain unchanged from the value that was set the first time odf was called)
+it is a convenient way to copy all the options in mn into multiple substructs (here, fb and eb)
+which allows you to set different options for each substruct (for example, to concisely set different options for different regions, or different recordings, etc)
 
------
+-----   
 
 any funbin or option not in d in odf will cause error, to prevent user setting invalid or unused options
 default values in odf currently do not enforce any restrictions, although in the future they should to prevent the user from setting invalid options 
-
-
 
 
 %}
@@ -122,6 +133,7 @@ arguments
     recin = [] %recin can be empty, or not passed as argument, and will search for file using fspc* below; recin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, pass recin as 'nofile'
 end
 
+odf; %run odf without input or output to set some default global variables 
 
 %% recin
 
@@ -140,6 +152,8 @@ o.mn.doftv = 1;
 o.mn.dopop = 0; 
 o.mn.dofit = 0;
 o.mn.dopltx = 1;
+o.mn.regionex = {};
+
 
 o.daq.useinds = 'none';
 
@@ -181,6 +195,9 @@ o.hires.regtype = 'rigid';
 o.hires.sld.dostats = 0;
 o.hires.sld.sp.it = [1];
 
+
+
+
 o.mroi.dodraw = 1;
 o.mroi.wavp = [0 50];
 
@@ -196,25 +213,31 @@ o.mroi.imhsv.fg = 'allrois';
 
 o.froi.roistr = {'2_1_*_graph_3dex'};
 
-o = odf(o, {'froi', 'mroi'}, {'pb', 'eb'});
+if isempty(o.mn.regionex)
+    o.mn.regionex{1} = glb('regionexdf');
+end
 
+o = odf(o, {'froi', 'mroi'}, o.mn.regionex);
 
 o.mroi.seg.numroi = 256;
-o = odf(o, {'mroi'}, {'fb'}); 
+o = odf(o, {'mroi'}, o.mn.regionex); 
+
+o.sld.sp.it = [9989];
+o = odf(o, 'sld.sp');
+
 
 %% find files 
 
 if isstruct(recin) %if recin was empty or was struct
     o.recspec = recin;
     o = odf(o, 'recspec'); %call defaults for any missing recspec field; if no fields missing, nothing will change
-    o.rec = filefind(pthparent_local=o.recspec.pthparent_local, pthparent_o2=o.recspec.pthparent_o2, validsuffix=o.recspec.validsuffix, recdate=o.recspec.recdate, fly=o.recspec.fly, trial=o.recspec.trial, suffix=o.recspec.suffix, match=o.recspec.match); %find files matching recspec
+    o.mn.rec = filefind(pthparent_local=o.recspec.pthparent_local, pthparent_o2=o.recspec.pthparent_o2, validsuffix=o.recspec.validsuffix, recdate=o.recspec.recdate, fly=o.recspec.fly, trial=o.recspec.trial, suffix=o.recspec.suffix, match=o.recspec.match); %find files matching recspec
 else
     if strcmp(recin, 'nofile')
-        o.rec = [];
         sprintf("SETTING OPTIONS WITHOUT SEARCHING FOR FILES")
     else
-        o.rec = fileignore(recin);
-        if isempty(o.rec)
+        o.mn.rec = fileignore(recin);
+        if isempty(o.mn.rec)
             sprintf("NONE OF THE FULL PATH INPUT TO a2p EXIST")
         end
     end
@@ -228,7 +251,7 @@ o = fieldord(o);
 
 [oflat, oflatfn, oflatflex] = structflat(o);
 
-if ~strcmp(recin, 'nofile') && isempty(cell2mat(o.rec))
+if ~strcmp(recin, 'nofile') && isempty(cell2mat(o.mn.rec))
     error("NO STACKS FOUND")
 end
 

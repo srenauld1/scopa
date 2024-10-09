@@ -12,7 +12,7 @@ recid = ids.recid;
 datefly_hyphen = ids.datefly_hyphen;
 
 
-regionexs = o.mn.regionexs;
+regionex = o.mn.regionex;
 fldrtmp = o.mn.fldrtmp;
 use_caiman_on_hires = o.hires.use_caiman_on_hires;
 usehires = o.mroi.auto.usehires; %gets updated to numeric struct, fieldname usehires
@@ -22,7 +22,7 @@ roistr = o.froi.roistr;
 numcluster_for_bump_domain_resample = o.pop.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
 caiman_hr_str = o.hires.caiman_hr_str;
 
-%% variables for all regionex
+%% variables for all regionextmp
 
 
 [pth_fldr, ~, ~] = fileparts(pthstack);
@@ -97,30 +97,30 @@ if ~isdir(pth_tmpfiles)
     mkdir(pth_tmpfiles)
 end
 
-%% variables for each regionex
+%% variables for each regionextmp
 
 
-if isempty(cell2mat(regionexs))
+if isempty(cell2mat(regionex))
     numregions = 0;
 else
-    numregions = numel(regionexs);
+    numregions = numel(regionex);
 end
 
 parstr = '';
 for k = 1:numregions
 
-    regionex = regionexs{k};
-    spl = strsplit(regionex, '_');
-    regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionex cuboid from python preprocessing
+    regionextmp = regionex{k};
+    spl = strsplit(regionextmp, '_');
+    regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionextmp cuboid from python preprocessing
 
     [~, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
 
-    paramstr = ['moex_' num2str(usehires.(regionex)) '_' num2str(dodraw.(regionex)) '_' num2str(numroiauto.(regionex))];
-    parstr.mroi.(regionex) = paramstr;
+    paramstr = ['moex_' num2str(usehires.(regionextmp)) '_' num2str(dodraw.(regionextmp)) '_' num2str(numroiauto.(regionextmp))];
+    parstr.mroi.(regionextmp) = paramstr;
 
-    pth_mroi.(regionex) = [pthstack(1:end-4) regionex '_' croplimstr '_' paramstr '_rois_morph_.mat'];
-    pth_mroi_interactive.(regionex) = [pthstack(1:end-4) regionex '_' croplimstr '_interactive_rois_morph_.mat'];
-    pth_roi_allmethods.(regionex){1} = pth_mroi.(regionex);
+    pth_mroi.(regionextmp) = [pthstack(1:end-4) regionextmp '_' croplimstr '_' paramstr '_rois_morph_.mat'];
+    pth_mroi_interactive.(regionextmp) = [pthstack(1:end-4) regionextmp '_' croplimstr '_interactive_rois_morph_.mat'];
+    pth_roi_allmethods.(regionextmp){1} = pth_mroi.(regionextmp);
 
     pth_froi_all_tmp = [];
     for csi = 1:length(roistr)
@@ -141,32 +141,32 @@ for k = 1:numregions
             croplimstr_check{ci} = strjoin(spl(insloc+1:insloc+8), '_');
 
             cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_'); %everything in filename after 'cmex'
-            parstr.froi.(regionex){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
-            pth_froi_all.(regionex){ci,1} = pth_froi_all_tmp{ci};
+            parstr.froi.(regionextmp){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
+            pth_froi_all.(regionextmp){ci,1} = pth_froi_all_tmp{ci};
 
         end
         if numel(unique(croplimstr_check))>1
-            error("a regionex has different croplim (FOV coordinates) across extraction runs, should be the same across runs")
+            error("a regionextmp has different croplim (FOV coordinates) across extraction runs, should be the same across runs")
         end
-        pth_roi_allmethods.(regionex) = cat(1, pth_roi_allmethods.(regionex), pth_froi_all.(regionex));
+        pth_roi_allmethods.(regionextmp) = cat(1, pth_roi_allmethods.(regionextmp), pth_froi_all.(regionextmp));
         paramstr = [paramstr '_cmex_' roistr];
 
     else
-        parstr.froi.(regionex) = [];
-        pth_froi_all.(regionex) = [];
+        parstr.froi.(regionextmp) = [];
+        pth_froi_all.(regionextmp) = [];
     end
 
-    paramstr = [paramstr '_' num2str(numcluster_for_bump_domain_resample.(regionex))];
+    paramstr = [paramstr '_' num2str(numcluster_for_bump_domain_resample.(regionextmp))];
 
     % if usehires(k)
     %     paramstr = [paramstr '_hr_moex_paramtbd_'];
-    %     parstr.mroi.(regionex) = [parstr.mroi.(regionex) '_hr_moex_paramtbd'];
+    %     parstr.mroi.(regionextmp) = [parstr.mroi.(regionextmp) '_hr_moex_paramtbd'];
     %     if use_caiman_on_hires(k)
     %         paramstr = [paramstr '_hr_cmex_' caiman_hr_str];
     %     end
     % end
 
-    pth_savedata_oneregion.(regionex) = [pth_fldr recid '_' suffix '_' paramstr '_' regionex '_savedata_.mat'];
+    pth_savedata_oneregion.(regionextmp) = [pth_fldr recid '_' suffix '_' paramstr '_' regionextmp '_savedata_.mat'];
 
     pth_caimanfails = [pth_fldr recid '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
     pth_caimanfails2 = [pth_fldr recid '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];

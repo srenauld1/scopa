@@ -6,9 +6,9 @@ if ~iscell(o.mn.pthstacks)
     o.mn.pthstacks = {o.mn.pthstacks};
 end
 
-for k = 1:numel(o.mn.regionexs)
+for k = 1:numel(o.mn.regionex)
 
-    regionex = o.mn.regionexs{k};
+    regionex = o.mn.regionex{k};
 
     if ~isfield(o.mroi.auto.numroi, regionex)
         numroiautotmp.(regionex) = 0;

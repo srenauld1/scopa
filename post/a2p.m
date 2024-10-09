@@ -68,20 +68,17 @@ arguments
     recin = [] %optional; full path to recording (char or cell), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
 end
 
-sprintf("\n\n\nENTERING a2p.m")
+clear glb %clear globals
 
 o = oset(recin); % set options
 
-clear glb
-glb(name_noregionex='default', validsuffix=o.recspec.validsuffix); %set some globals
+for k = 1:numel(o.mn.rec) % loop over recordings
 
-for pai = 1:numel(o.rec) % loop over recordings
+    ids = idmake(o.mn.rec{k});
 
-    ids = idmake(o.rec{pai});
+    [pth, parstr] = fnmake(o, ids, o.mn.rec{k});
 
-    [pth, parstr] = fnmake(o, ids, o.rec{pai});
-
-    glb(pthfldr=pth.fldr); %set another global
+    glb(1, pthfldr=pth.fldr); %set/update data folder path as global           
 
     %% load metadata
 
@@ -90,7 +87,7 @@ for pai = 1:numel(o.rec) % loop over recordings
     % md_flyg = mdflygld(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md
 
-    %% load and process daq
+    %% load daq / stim
 
     ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = [];
     if o.mn.oldcarl
@@ -113,7 +110,7 @@ for pai = 1:numel(o.rec) % loop over recordings
             try
                 load(pth.daqrs, 'daqrs')
             catch
-                daqrs = daqld(ids.recdatenum, ids.flynum, ids.trialnum, md.numvol_o, md.numslice, md.numslice_withflyback, md.sampper, o.daq.balldia, o.daq.voltmin, o.daq.voltmax, ...
+                daqrs = daqld(md.numvol_o, md.numslice, md.numslice_withflyback, md.sampper, o.daq.balldia, o.daq.voltmin, o.daq.voltmax, ...
                     vnormal=o.daq.vnormal, ...
                     vcircular=o.daq.vcircular, ...
                     vcategorical=o.daq.vcategorical, ...
@@ -182,9 +179,9 @@ for pai = 1:numel(o.rec) % loop over recordings
 
     %% create/load/select rois/responses for each regionex
 
-    for rei = 1:numel(o.mn.regionexs) %for each regionex
+    for rei = 1:numel(o.mn.regionex) %for each regionex
 
-        regionex = o.mn.regionexs{rei};
+        regionex = o.mn.regionex{rei};
 
         %%crop movie to regionex cuboid
         [stackcrop, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...

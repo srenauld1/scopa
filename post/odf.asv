@@ -14,6 +14,7 @@ end
 % o matches d unless input struct oin specifies a different value
 % in particular: let's call dsub a field of d; if a field is in both oin and dsub, use the value in oin; if field is only in dsub, use the value in dsub; if field isn't in dsub, recurse into odf to check field in the same way as dsub
 
+
 %% recspec (filefind: find files matching recording specifications)
 
 d.recspec.recdate = {'*'}; %cell array of char, can use wildcards
@@ -35,7 +36,8 @@ d.mn.dofit = 0; %model fitting (o.mfit below)
 d.mn.dopltx = 1; %plot experiment (o.pltx below)
 d.mn.fldrtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-
+d.mn.rec = []; %full path to recording(s)
+d.mn.regionex = 'default'; %names to analyze same recording separately
 
 %% daq (daqld: load, process daq)
 
@@ -127,7 +129,7 @@ d.froi.roisrt = 'majoraxis'; % 'snr' sorts by caiman output cmsnr, 'none' doens'
 d.froi.doplt = 0; %plot roi overlay
 
 
-%% norm (respnorm: normalize roi timeseries)
+%% nrm (respnorm: normalize roi timeseries)
 
 % options for response extraction/normalization of morphological roi responses (o.mroi.norm)
 % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
@@ -215,12 +217,6 @@ d.bump.doplt = 0;
 % all combinations of single o.mfit(i).indv and single o.mfit(i).depv at the outer cell level are used
 %for now, depv at single struct and outer cell level should come from single regionex
 
-d.mfit.tg.v1{1} = {...
-    ['resp.*.*.*'], ...
-    };
-d.mfit.tg.v2{1} = {...
-    ['resp.*.*.*'], ...
-    };
 d.mfit.num_synthetic_depv = 0; %create synthetic data (using requested mdlname options, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
 d.mfit.epochinds = {[1]};
 d.mfit.mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
@@ -244,19 +240,16 @@ d.mfit.doplt = 0;
 
 %% tg (tsget: choose timeseries using string matching of flattened struct ts)
 
-tg.v1{1} = {['']};
-tg.v2{1} = {['']};
-tg.v3{1} = {['']};
-tg.v4{1} = {['']};
-tg.v5{1} = {['']}; 
-tg.v6{1} = {['']}; %if empty, do will be set to false
-tg.v7{1} = {['']};
-tg.v8{1} = {['']};
+d.tg.v1{1} = {['']};
+d.tg.v2{1} = {['']};
+d.tg.v3{1} = {['']};
+d.tg.v4{1} = {['']};
+d.tg.v5{1} = {['']}; 
+d.tg.v6{1} = {['']}; 
+d.tg.v7{1} = {['']};
+d.tg.v8{1} = {['']};
 
 %% pltx (pltx: explore various components of experiment in interactive plots, e.g. brain images, timeseries, stimulus videos, scatterplots, fictive path, model components)
-
-% options for plot_experiment
-
 
 d.pltx.vpmapl = [1 2 3 4]; %map of indices of each tg.v above to plot positions (on left axis)
 d.pltx.vpmapr = [5 6 7 8]; %map of indices of each tg.v above to plot positions (on right axis)
@@ -306,7 +299,7 @@ d.sp.roi_color = [1 0 0]; %color for rois, if shown
 d.sp.roialpha = 0.3; %transparency for rois, if shown
 d.sp.dr = [0,1];
 
-%% imhsv (hsvplt and hsvcmp: hsv
+%% imhsv (hsvplt and hsvcmp: make and plot hsv images)
 
 d.imhsv.fg = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
 d.imhsv.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set
@@ -325,6 +318,10 @@ d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is buil
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 
+
+%% globals
+
+glb(1, regionexdf=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.recspec.validsuffix); %set some globals, force update if they already have been set with first argument 1
 
 
 %% for output oout, update defaults with input oin
@@ -348,6 +345,7 @@ else
     end
     for w = 1:numel(funbin)
         if ismember(funbin{w}, fn)
+            eval(['oinsub.' funbin{w} '= oin.' funbin{w}]);
             oinsub.(funbin{w}) = oin.(funbin{w});
             oin = rmfield(oin, funbin{w});
         else

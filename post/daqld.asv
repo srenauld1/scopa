@@ -31,6 +31,9 @@ function daqrs = daqld(numvol, numslice, numslice_withflyback, sampper, balldia,
 
 
 arguments
+    recdatenum {mustBeNumeric}
+    flynum {mustBeNumeric}
+    trialnum {mustBeNumeric}
     numvol {mustBeNumeric}
     numslice {mustBeNumeric}
     numslice_withflyback {mustBeNumeric}
@@ -44,11 +47,11 @@ arguments
     opt.toballscale = {'ficTracIntSide', 'ficTracIntForward'}; %define which vars to rescale from radians to mm
     opt.tounwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which vars to unwrap
     opt.tozero = {'ficTracIntSide', 'ficTracIntForward'}; %%define which vars to zero (force to start at 0)
-    opt.recdatenum = [] %if not passed, or empty, will be set to '*' for daq file search
-    opt.flynum = [] %if not passed, or empty, will be set to '*' for daq file search
-    opt.trialnum = [] %if not passed, or empty, will be set to '*' for daq file search
+    opt.recdatenum = [] %can pass 
+    opt.flynum = []
+    opt.trialnum = []
     opt.pth_fldr = '' %can pass pth_fldr instead of pth_daq and/or pth_daqrs
-    opt.pth_daq char = '' %path to daq data from experiment; can pass pth_fldr, and optional recdatenum, flynum, trialnum instead of pth_daq and/or pth_daqrs
+    opt.pth_daq char = '' %path to daq data from experiment; can pass pth_fldr instead of pth_daq and/or pth_daqrs
     opt.pth_daqrs char = '' %save path for resampled daq data; can pass pth_fldr instead of pth_daq and/or pth_daqrs
     opt.slopelensec {mustBeNumeric} = 0.2 %slope length (seconds) for computing derivative of each daq variable
     opt.slopeord {mustBeNumeric} = 2 %slope order for computing derivative of each daq variable (should just stay 2)
@@ -67,7 +70,7 @@ tounwrap = opt.tounwrap;
 tozero = opt.tozero;
 recdatenum = opt.recdatenum;
 flynum = opt.flynum;
-trialnum = opt.trialnum;
+tri
 pth_fldr = opt.pth_fldr;
 pth_daq = opt.pth_daq;
 pth_daqrs = opt.pth_daqrs;
@@ -82,27 +85,12 @@ idxreg = opt.idxreg;
 
 sprintf("FOR NORMAL AND CIRCULAR VARIABLES, CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS LOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING (IF THEY ARE INCLUDED WITH usefbf=1)")
 
-if isempty(recdatenum)
-    recdate = '*';
-else
-    recdate = num2str(recdatenum);
-end
-if isempty(flynum)
-    fly = '*';
-else
-    fly = num2str(flynum);
-end
-if isempty(trialnum)
-    trial = '*';
-else
-    trial = num2str(trialnum);
-end
 
 if isempty(pth_daq)
     if isempty(pth_fldr)
         error(sprintf("pth_fldr cannot be empty if pth_daq is empty"))
     end
-    pth_daq_pat = [pth_fldr recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
+    pth_daq_pat = [pth_fldr num2str(recdatenum) '-' num2str(flynum) '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
     pth_daq = rdir(pth_daq_pat);
     pth_daq = pth_daq.name;
 end
@@ -143,9 +131,9 @@ end
 
 %% define inds for downsampling
 
-%%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%%
+%%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%% 
 
-daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
+daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices 
 daqinds.slice = [];
 daqinds.vol = [];
 if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock

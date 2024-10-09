@@ -4,13 +4,13 @@ function [stack, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim, pt
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
-name_noregionex = glb('name_noregionex');
+regionexdf = glb('regionexdf');
 
 if ~exist('usehires', 'var')
     usehires = 0;
 end
 
-if strcmp(regionex, name_noregionex) %strcmp(croplim, name_noregionex)
+if strcmp(regionex, regionexdf) %strcmp(croplim, regionexdf)
 
     croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4), 1, size(stack, 5)];
     stack = single(stack);

@@ -36,7 +36,8 @@ d.mn.dofit = 0; %model fitting (o.mfit below)
 d.mn.dopltx = 1; %plot experiment (o.pltx below)
 d.mn.fldrtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-
+d.mn.rec = []; %full path to recording(s)
+d.mn.regionex = 'default'; %names to analyze same recording separately
 
 %% daq (daqld: load, process daq)
 
@@ -250,9 +251,6 @@ d.tg.v8{1} = {['']};
 
 %% pltx (pltx: explore various components of experiment in interactive plots, e.g. brain images, timeseries, stimulus videos, scatterplots, fictive path, model components)
 
-% options for plot_experiment
-
-
 d.pltx.vpmapl = [1 2 3 4]; %map of indices of each tg.v above to plot positions (on left axis)
 d.pltx.vpmapr = [5 6 7 8]; %map of indices of each tg.v above to plot positions (on right axis)
 
@@ -301,7 +299,7 @@ d.sp.roi_color = [1 0 0]; %color for rois, if shown
 d.sp.roialpha = 0.3; %transparency for rois, if shown
 d.sp.dr = [0,1];
 
-%% imhsv (hsvplt and hsvcmp: hsv
+%% imhsv (hsvplt and hsvcmp: make and plot hsv images)
 
 d.imhsv.fg = 'allrois'; %'eachroi' plots each individually, 'allrois' plots all together
 d.imhsv.mdlname = ''; %string for swithcing among plotting defaults in plots_setup_hsv, leave empty for default set
@@ -320,6 +318,10 @@ d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is buil
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 
+
+%% globals
+
+glb(1, regionexdf=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.recspec.validsuffix); %set some globals, force update if they already have been set with first argument 1
 
 
 %% for output oout, update defaults with input oin
@@ -342,14 +344,21 @@ else
         funbin = {funbin};
     end
     for w = 1:numel(funbin)
-        if ismember(funbin{w}, fn)
-            oinsub.(funbin{w}) = oin.(funbin{w});
-            oin = rmfield(oin, funbin{w});
+        if contains(funbin{w}, '.')
+            funbintmp = strsplit(funbin{w}, '.');
+            parbintmp = funbintmp(1:end-1);
+            funbintmp = funbintmp(end);
         else
-            if ~isfield(d, funbin{w})
-                error(sprintf("d." + funbin{w}) + " does not exist")
+            funbintmp = funbin{w};
+        end
+        if ismember(funbintmp, fn)
+            oinsub.(funbintmp) = oin.(funbintmp);
+            oin = rmfield(oin, funbintmp);
+        else
+            if ~isfield(d, funbintmp)
+                error(sprintf("d." + funbintmp) + " does not exist")
             end
-            oinsub.(funbin{w}) = d.(funbin{w}); %use all defaults funbin{w} is not in oin
+            oinsub.(funbintmp) = d.(funbintmp); %use all defaults funbintmp is not in oin
         end
     end
     o = optupdate(oinsub, d, copybinall, copybin);
