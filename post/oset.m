@@ -97,6 +97,8 @@ if you need to set options for a subfield after it's already been set in o, you 
 
 -----
 example 4 (using a temporary struct to update nested funbin) 
+danger of iterative nested funbin
+nested funbin must start with priamry funbin
 currently, funbin will only apply at the highest level of the odf input struct; it will not apply to a nested instance of funbin;
 to get around this limitation and operate on nested funbin, you can create a temporary options struct containing only the funbin you want to modify, pass this to odf, and assign the odf output the desired nested position in options struct o  
 
@@ -152,7 +154,8 @@ o.mn.doftv = 1;
 o.mn.dopop = 0; 
 o.mn.dofit = 0;
 o.mn.dopltx = 1;
-o.mn.regionex = {};
+
+o.mn.regionex = {'fb256', 'pb'};
 
 
 o.daq.useinds = 'none';
@@ -196,8 +199,6 @@ o.hires.sld.dostats = 0;
 o.hires.sld.sp.it = [1];
 
 
-
-
 o.mroi.dodraw = 1;
 o.mroi.wavp = [0 50];
 
@@ -217,13 +218,15 @@ if isempty(o.mn.regionex)
     o.mn.regionex{1} = glb('regionexdf');
 end
 
-o = odf(o, {'froi', 'mroi'}, o.mn.regionex);
+o = odf(o);
+
+o = odf(o, 'froi', o.mn.regionex);
 
 o.mroi.seg.numroi = 256;
-o = odf(o, {'mroi'}, o.mn.regionex); 
+o = odf(o, {'mroi'}, 'fb256'); 
+o.mroi.seg.numroi = 10;
+o = odf(o, {'mroi'}, 'pb'); 
 
-o.sld.sp.it = [9989];
-o = odf(o, 'sld.sp');
 
 
 %% find files 

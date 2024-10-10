@@ -1,6 +1,7 @@
 function [s1, fn, fnex] = structflat(s,varargin)
 
 % adapted from flattenStruct by Uhlending, Markus
+% fnex has field for each index in first dimension of each field in fn (with .indN appended to end, where N is index) 
 
 % FLATTENSTRUCT Convert nested struct to flatten struct
 % The function also works with array of structs and deeply nested structs.
@@ -94,25 +95,28 @@ end
 %% Prepare data
 
 fn = tab.Field;
-varnm = convertStringsToChars(regexprep(tab.Field, '^s.', prefix)); 
+varnm = convertStringsToChars(regexprep(tab.Field, '^s.', prefix));
+if ischar(varnm) %in case it's just one varnm, will be char; put in cell to prevent error below
+    varnm = {varnm};
+end
 varnmval = replace(tab.ValidVarName,'s_',prefix);
 
 %% Create struct
 nn = numel(fn);
 fnex = cell(nn,1);
-for ii = 1:nn
-    Value = eval(fn(ii));
+for k = 1:nn
+    Value = eval(fn(k));
     if size(Value,1)>1
         for tmpi = 1:size(Value,1)
-            vntmp = {[varnm{ii} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
-            fnex{ii} = cat(1, fnex{ii}, vntmp);
+            vntmp = {[varnm{k} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
+            fnex{k} = cat(1, fnex{k}, vntmp);
         end
     else
-        vntmp = {varnm{ii}};
-        fnex{ii} = cat(1, fnex{ii}, vntmp);
+        vntmp = {varnm{k}};
+        fnex{k} = cat(1, fnex{k}, vntmp);
     end
 
-    VarName = varnmval(ii);
+    VarName = varnmval(k);
     out.(VarName) = Value;
 end
 end

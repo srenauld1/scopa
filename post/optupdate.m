@@ -14,13 +14,13 @@ end
 
 % before entering optudrec (recursive opt update), copy all defaults for top level fields in optin
 
-if isempty(copybin)
+if isempty(cell2mat(copybin))
     copybin = {}; %make it an empty cell, to be sure
 end
 if ~iscell(copybin)
     copybin = {copybin};
 end
-if isempty(copybinall)
+if isempty(cell2mat(copybinall))
     copybinall = {}; %make it an empty cell, to be sure
 end
 

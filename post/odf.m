@@ -1,7 +1,7 @@
 function o = odf(oin, funbin, copybin)
 
 arguments
-    oin = [] %input options for overwriting defaults in d 
+    oin = [] %input options for overwriting defaults in d
     funbin = [] %cell of char (or char, if scalar); if nonempty, and copybin is nonempty, update funbin and place results in copybin, and update ~funbin without placing in copybin; if nonempty and copybin is empty, just update funbin; if empty and copybin is nonempty, update all and place all in copybin
     copybin = [] %subfields into which funbin is copied
 end
@@ -244,8 +244,8 @@ d.tg.v1{1} = {['']};
 d.tg.v2{1} = {['']};
 d.tg.v3{1} = {['']};
 d.tg.v4{1} = {['']};
-d.tg.v5{1} = {['']}; 
-d.tg.v6{1} = {['']}; 
+d.tg.v5{1} = {['']};
+d.tg.v6{1} = {['']};
 d.tg.v7{1} = {['']};
 d.tg.v8{1} = {['']};
 
@@ -279,7 +279,7 @@ d.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for thi
 d.hires.caiman_hr_str = '*'; %empty to skip
 d.hires.doplt = 0;
 
-%% tp (tsplt: plot timeseries) 
+%% tp (tsplt: plot timeseries)
 
 d.tp.predlot_norm = 'each'; %amplotude normalization for the detail plots at bottom, 'all' normalizes to population, 'each' normalizes to each
 d.tp.maxnumroiplot = 100; %number of rois that get detail view on the bottom, one per gif frame
@@ -326,54 +326,110 @@ glb(1, regionexdf=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.recspec.val
 
 %% for output oout, update defaults with input oin
 
+fnd = fieldnames(d);
+
+% if isempty(funbin)
+%     funbin = {};
+% end
+if isempty(copybin)
+    copybin = {};
+end
+if ~iscell(funbin)
+    funbin = {funbin};
+end
+if ~iscell(copybin)
+    copybin = {copybin};
+end
+
 if isempty(oin) || isempty(fieldnames(oin))
-    oin = d;
+    if isempty(cell2mat(funbin))
+        oin = d;
+    else
+        for k = 1:numel(funbin)
+            if ~isfield(d, funbin{k})
+                error(sprintf("d." + funbin{k}) + " does not exist")
+            end
+            oin.(funbin{k}) = d.(funbin{k});
+        end
+    end
 end
 
 if isfield(oin, 'copybinall')
     copybinall = oin.copybinall;
 else
-    copybinall = [];
+    copybinall = {};
 end
+% if ~isempty(cell2mat(copybin)) %this was up here but i think copybinall_tmpnesting makes it fine to move to bottom; not sure it has an effect up here on first time through a copybin having it part of copybinall 
+%     copybinall = unique([copybinall, copybin]);
+% end
 
-if isempty(funbin)
+if isempty(cell2mat(funbin))
     o = optupdate(oin, d, copybinall, copybin);
 else
-    fn = fieldnames(oin);
-    if ~iscell(funbin)
-        funbin = {funbin};
-    end
-    for w = 1:numel(funbin)
-        if contains(funbin{w}, '.')
-            funbintmp = strsplit(funbin{w}, '.');
-            parbintmp = funbintmp(1:end-1);
-            funbintmp = funbintmp(end);
-        else
-            funbintmp = funbin{w};
+    if any(contains(funbin, '.')) %if nested funbin, remove deepest funbin and operate on it, invoking defaults throughout the nested funbin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
+        [~, fnflattmp] = structflat(oin);
+        notfunbin = regexprep(erase(fnflattmp, strcat(fnd, '.')), '^[.]*', ''); %remove everything but the funbins 
+        if ~isempty(cell2mat(regexp(notfunbin, '[.]{2,}')))
+            error("you must have placed a non-funbin somewhere other than the end of a nesting; for example, o.funbin1.optionA.funbin2 is not allowed; options can themselves be nested, but options must come at the end of each flattened fieldname")
         end
-        if ismember(funbintmp, fn)
-            oinsub.(funbintmp) = oin.(funbintmp);
-            oin = rmfield(oin, funbintmp);
-        else
-            if ~isfield(d, funbintmp)
-                error(sprintf("d." + funbintmp) + " does not exist")
+        fnflat = unique(regexprep(erase(fnflattmp, notfunbin), '[.]*$', ''));
+        copybinall_tmpnesting = [];
+        for w = 1:numel(funbin)
+            if startsWith(funbin{w}, 'o.')
+                error("for nested funbin, omit the leading 'o.'")
             end
-            oinsub.(funbintmp) = d.(funbintmp); %use all defaults funbintmp is not in oin
+            funbintmp = strsplit(funbin{w}, '.');
+            funbinpar = strjoin(funbintmp(1:end-1), '.');
+            funbinshallowest = funbintmp{1};
+            funbindeepest = funbintmp{end};
+            if ~isempty(cell2mat(copybin))
+                copybinall_tmpnesting = unique([copybinall_tmpnesting, copybinall, funbindeepest]); %you must ignore copybinall and funbindeepest in optupdate
+            end
+            if ~isfield(d, funbinshallowest)
+                error(sprintf("d." + funbinshallowest) + " does not exist; nested funbin must start with primary funbin directly under o")
+            end
+            if ismember(funbin{w}, fnflat) %if the nesting exists in oin, grab the deepest funbin
+                eval(['oindeepest.' funbindeepest ' = oin.' funbin{w}]); %use eval to succinctly extract nested field
+            else %if the nesting doesn't exist in oin, create it with defaults in the deepest layer, and nothing above
+                if ~isfield(d, funbindeepest)
+                    error(sprintf("d." + funbindeepest) + " does not exist")
+                end
+                oindeepest.(funbindeepest) = d.(funbindeepest);
+            end
+            oindeepest = optupdate(oindeepest, d, copybinall, copybin); %update deepest funbin
+            eval(['oin.' funbin{w} ' = oindeepest.' funbindeepest]); %return updated deepest into oin according to funbin nesting
+            oinsub.(funbinshallowest) = oin.(funbinshallowest); %put that nested funbin aside and ...
+            oin = rmfield(oin, funbinshallowest); %remove it from oin
+            if w==numel(funbin)
+                o = optupdate(oinsub, d, copybinall_tmpnesting, []); %can't use copybin on oinsub full nested funbin (only oindeepest above)
+            end
         end
-    end
-    o = optupdate(oinsub, d, copybinall, copybin);
-    if isempty(copybin) %if 2-argument syntax, just update funbin
-        o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]);
-    else %if 3-argument syntax, update funbin and place in copybin, and update ~funbin without placing in any copybin
-        if ~isempty(fieldnames(oin)) 
-            ointmp = optupdate(oin, d, copybinall, []);
-            o = cell2struct([struct2cell(ointmp); struct2cell(o)],[fieldnames(ointmp); fieldnames(o)]);
+    else %if non-nested funbin, remove funbin and operate on it, and then merge with everything else in input, which remains untouched
+        fn = fieldnames(oin);
+        for w = 1:numel(funbin)
+            if ismember(funbin{w}, fn)
+                oinsub.(funbin{w}) = oin.(funbin{w});
+                oin = rmfield(oin, funbin{w});
+            else
+                if ~isfield(d, funbin{w})
+                    error(sprintf("d." + funbin{w}) + " does not exist")
+                end
+                oinsub.(funbin{w}) = d.(funbin{w}); %use all defaults funbin{w} is not in oin
+            end
         end
+        copybin_inert = copybin(ismember(copybin, copybinall));
+        if ~isempty(copybin_inert)
+            sprintf(strjoin(copybin_inert, ', ') + " has/have already been set, nothing will change in this/these copybin")
+        end
+        o = optupdate(oinsub, d, copybinall, copybin); %just update funbin
     end
+    o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]); %combine with what was unchanged
 end
 
-
-o.copybinall = unique([copybinall, copybin]); %keep record of copybin, to ignore them in optupdate
+if ~isempty(cell2mat(copybin))
+    copybinall = unique([copybinall, copybin]);
+end
+o.copybinall = copybinall; %keep record of copybin, to ignore them in optupdate
 
 o = fieldord(o);
 
