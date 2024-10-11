@@ -1,4 +1,5 @@
-function o = oset(recin)
+function [o, oflatfn] = oset(recin)
+
 
 %{
 
@@ -7,6 +8,9 @@ oset sets options for all major functions in a2p
 output o is a nested struct containing all options used in a2p
 defaults for all available options are in struct d in function odf
 all option defaults are also set within each major function (so the user could skip passing optional arguments with the options struct created here)
+
+oset is a wrapper for odf; it is intended to be the only place the user might want to adjust inputs to a2p; 
+if they don't want to adjust inputs, they can just replace oset with odf (with no arguments, in which case it will return all defaults and all stack files in the filesystem)
 
 output oflat is a flattened version of o, and is just for inspection, for the user's convenience; a2p uses o, not oflat  
 
@@ -32,7 +36,7 @@ funbin names are similar to, or abbreviated forms of, their corresponding functi
 here is a complete list of funbins and functions they hold options for (see also section headers in odf)
 
     mn, a2p
-    recspec, filefind
+    spec, filefind
     daq, daqld
     sld, stackld
     ftv, ftvproc
@@ -123,7 +127,12 @@ this will create substructs named fb and eb within substruct mn and pop only
 it is a convenient way to copy all the options in mn into multiple substructs (here, fb and eb)
 which allows you to set different options for each substruct (for example, to concisely set different options for different regions, or different recordings, etc)
 
------   
+----- 
+
+use tmp struct and indexing into o in the output to go back and add options beneath a previously created copybin 
+tmp.seg.numroi=22; 
+o.mroi.fb=odf(tmp, [], {'eb'});
+o.mroi.fb.seg.eb.numroi will be 22
 
 any funbin or option not in d in odf will cause error, to prevent user setting invalid or unused options
 default values in odf currently do not enforce any restrictions, although in the future they should to prevent the user from setting invalid options 
@@ -135,28 +144,35 @@ arguments
     recin = [] %recin can be empty, or not passed as argument, and will search for file using fspc* below; recin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, pass recin as 'nofile'
 end
 
-odf; %run odf without input or output to set some default global variables 
-
+if strcmp(recin, 'nofilemode') %if the only input to oset is 'nofile', will do everything but skip searching for files (and skip setting globals)
+    dofindfiles = 0;
+else
+    dofindfiles = 1;
+end
+    
 %% recin
 
-if isempty(recin) %if you're running a2p without arguments (recin is empty), set recording specifiers (recspec) here to find files
-    recin.recdate = {'20240907'}; %cell array of char, can use wildcards
-    recin.fly = {'*'}; %cell array of char, can use wildcards
-    recin.trial = {'*'}; %cell array of char, can use wildcards
-    recin.suffix = {'cmrg_dcdn'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in validsuffix
-    recin.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not struct (if full file paths), will not search for files
+    o.spec.recdate = {'2024*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.fly = {'1'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.suffix = {'*'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+    o.spec.pth = {};
+elseif iscell(recin) || ischar(recin) %if not struct (if full file paths), will not search for files
+    o.spec.pth = recin;
 end
 
-%% mn
+
+o = odf(o, files=dofindfiles); %call odf first with files set to true, so subsequent calls don't repeatedly search for files, since files is false by default
 
 o.mn.dodaq = 1;
 o.mn.doftv = 1;
-o.mn.dopop = 0; 
+o.mn.dopop = 0;
 o.mn.dofit = 0;
 o.mn.dopltx = 1;
 
 o.mn.regionex = {'fb256', 'pb'};
-
 
 o.daq.useinds = 'none';
 
@@ -172,25 +188,25 @@ o.ftv.smsdspace = 2;
 o.ftv.doplt = 1;
 
 o.pop.bump.domain_method = 'functional';
-o.pop.bump.mfit.tg.v1{1} = {['resp.fb256.mo*.*rsc000100_*chn1']}; 
+o.pop.bump.mfit.tg.v1{1} = {['resp.fb256.mo*.*rsc000100_*chn1']};
 o.pop.bump.mfit.tg.v2{1} = {['vis.yaw']};
 
 
-o.mfit(1).tg.v1{1} = {['resp.fb256.mo*.*_chn1']}; 
+o.mfit(1).tg.v1{1} = {['resp.fb256.mo*.*_chn1']};
 o.mfit(1).tg.v2{1} = {['ball.forvel']};
-o.mfit(1).mdlname = 'fnet_A01_s'; 
+o.mfit(1).mdlname = 'fnet_A01_s';
 
 
-o.mfit(2).tg.v1{1} = {['resp.fb256.mo*.*_chn1']}; 
+o.mfit(2).tg.v1{1} = {['resp.fb256.mo*.*_chn1']};
 o.mfit(2).tg.v1{1} = {['ball.forvel']};
-o.mfit(2).mdlname = 'fnet_A01_d'; 
+o.mfit(2).mdlname = 'fnet_A01_d';
 
 o.mfit(2).tp.predlot_norm = 'any';
 
 o.pltx.tg.v1{1} = {['ball.forvel']};
-o.pltx.tg.v5{1} = {['resp.fb256.mo*.*chn1.ind1']}; 
+o.pltx.tg.v5{1} = {['resp.fb256.mo*.*chn1.ind1']};
 o.pltx.lagsxy_sec = linspace(0, 1, 1e4);
-o.pltx.lagsz_sec = linspace(0, 1, 1e4); 
+o.pltx.lagsz_sec = linspace(0, 1, 1e4);
 
 
 o.hires.disttype = 'monomodal';
@@ -210,7 +226,7 @@ o.mroi.seg.do3d = 1;
 o.mroi.seg.doplt = 0;
 
 o.mroi.doimhsv = 1;
-o.mroi.imhsv.fg = 'allrois'; 
+o.mroi.imhsv.fg = 'allrois';
 
 o.froi.roistr = {'2_1_*_graph_3dex'};
 
@@ -223,42 +239,26 @@ o = odf(o);
 o = odf(o, 'froi', o.mn.regionex);
 
 o.mroi.seg.numroi = 256;
-o = odf(o, {'mroi'}, 'fb256'); 
+o = odf(o, {'mroi'}, 'fb256');
 o.mroi.seg.numroi = 10;
-o = odf(o, {'mroi'}, 'pb'); 
+o = odf(o, {'mroi'}, 'pb');
 
-
-
-%% find files 
-
-if isstruct(recin) %if recin was empty or was struct
-    o.recspec = recin;
-    o = odf(o, 'recspec'); %call defaults for any missing recspec field; if no fields missing, nothing will change
-    o.mn.rec = filefind(pthparent_local=o.recspec.pthparent_local, pthparent_o2=o.recspec.pthparent_o2, validsuffix=o.recspec.validsuffix, recdate=o.recspec.recdate, fly=o.recspec.fly, trial=o.recspec.trial, suffix=o.recspec.suffix, match=o.recspec.match); %find files matching recspec
-else
-    if strcmp(recin, 'nofile')
-        sprintf("SETTING OPTIONS WITHOUT SEARCHING FOR FILES")
-    else
-        o.mn.rec = fileignore(recin);
-        if isempty(o.mn.rec)
-            sprintf("NONE OF THE FULL PATH INPUT TO a2p EXIST")
-        end
-    end
-end
 
 %% organize
 
-oldcarlo %ignored if you're not carl
+oldcarlo %update carl's options; ignored if you're not carl
 
-o = fieldord(o);
+o = fieldord(o); %recursively order alphabetically
 
-[oflat, oflatfn, oflatflex] = structflat(o);
+[~, oflatfn] = structflat(o); %get flattened fieldnames for user to see structure more easily (does not get used)
 
-if ~strcmp(recin, 'nofile') && isempty(cell2mat(o.mn.rec))
-    error("NO STACKS FOUND")
-end
 
 end
+
+
+
+
+
 
 
 

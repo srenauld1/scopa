@@ -73,7 +73,7 @@ end
 
 cnt = 0;
 for spi = 1:numel(suffixplt)
-    pthtmp = filefind(pthsib=pth_stack, suffix=suffixplt{spi});
+    pthtmp = filefind(fullfile_sibling=pth_stack, suffix=suffixplt{spi});
     if ~isempty(pthtmp)
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;

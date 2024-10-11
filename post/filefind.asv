@@ -29,28 +29,23 @@ match = opt.match;
 if ~isempty(pth) && ~isempty(pthsib)
     error("cannot use pth and pthsib inputs at the same time")
 end
-if ~isempty(pth)
-    pth = strrep(pth, '/', filesep);
-    pth = strrep(pth, '\', filesep);
-    if ~iscell(pth)
-        pth = {pth};
-    end
-    if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix)
-        error("cannot use recdate, fly, trial, or suffix inputs with pth input")
-    end
+if ~isempty(pth) && ( ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix) )
+    error("cannot use recdate, fly, trial, or suffix inputs with pth input")
 end
-if ~isempty(pthsib)
-    pthsib = strrep(pthsib, '/', filesep);
-    pthsib = strrep(pthsib, '\', filesep);
-    if ~iscell(pthsib)
-        pthsib = {pthsib};
-    end
-    if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial)
-        error("cannot use recdate, fly, or trial inputs with pthsib input")
-    end
+if ~isempty(pthsib) && ( ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) )
+    error("cannot use recdate, fly, or trial inputs with pthsib input")
+end
+if ~iscell(pth)
+    pth = {pth};
+end
+if ~iscell(pth)
+    pthsib = {pthsib};
 end
 
-
+pth = strrep(pth, '/', filesep);
+pth = strrep(pth, '\', filesep);
+pthsib = strrep(pthsib, '/', filesep);
+pthsib = strrep(pthsib, '\', filesep);
 
 if isempty(recdate)
     recdate = '*';

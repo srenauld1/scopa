@@ -70,7 +70,7 @@ elseif ischar(inp) %retrieving globals
     if isequal(inp,'all')
         outp = gset;
     elseif ~isfield(gset,inp)
-        sprintf("parameter " + inp + " does not exist in gset; need to set first; returning empty array")
+        sprintf("parameter " + inp + " has not yet been set as a global variable")
         outp = [];
     else
         outp = gset.(inp);

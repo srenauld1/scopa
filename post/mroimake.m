@@ -52,7 +52,7 @@ if exist('roimaskman_allchan', 'var') %if passing in a morph roi mask (interacti
 else
     maskinput = 0;
     dodraw = opts_mroi.dodraw.(regionex);
-    numroiauto = opts_mroi.auto.numroi.(regionex);
+    numroiauto = opts_mroi.seg..numroi.(regionex);
     normopts = opts_mroi.norm;
     imhsv = opts_mroi.imhsv;
     roiol = opts_mroi.roiol;
@@ -66,7 +66,7 @@ chancp = opts_mroi.chancp;
 channorm = opts_mroi.channorm;
 degdtr = opts_mroi.degdtr;
 wavp = opts_mroi.wavp;
-autoopts = opts_mroi.auto;
+autoopts = opts_mroi.seg.;
 normpre = nrm.pre;
 normpost = nrm.post;
 

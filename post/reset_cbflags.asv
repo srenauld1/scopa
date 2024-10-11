@@ -7,7 +7,7 @@ if any(strcmp('all', varargin))
         cb.restart.t = [];
     end
 
-    if any(strcmp('get', varargin))
+    if any(strcmp('nofile', varargin))
         cb.get.v = [];
         cb.get.i = [];
         cb.get.tstart = [];

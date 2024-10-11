@@ -1,9 +1,9 @@
-function optout = optupdate(optin, optdef, copybinall, copybin)
+function optout = optupdate(optin, optdef, copybinprev, copybin)
 
 arguments
     optin
     optdef
-    copybinall = []
+    copybinprev = []
     copybin = []
 end
 
@@ -20,8 +20,8 @@ end
 if ~iscell(copybin)
     copybin = {copybin};
 end
-if isempty(cell2mat(copybinall))
-    copybinall = {}; %make it an empty cell, to be sure
+if isempty(cell2mat(copybinprev))
+    copybinprev = {}; %make it an empty cell, to be sure
 end
 
 
@@ -33,10 +33,10 @@ if isempty(fieldnames(optin))
     optout = optdef;
 else
     fn1 = fieldnames(optin);
-    fn1 = fn1(~ismember(fn1, copybinall));
-    fn1 = fn1(~strcmp(fn1, 'copybinall'));
+    fn1 = fn1(~ismember(fn1, copybinprev));
+    fn1 = fn1(~strcmp(fn1, 'copybinprev')); %this line means copybinprev does not have to exist as a default in odf
     for k = 1:numel(fn1)
-        if ~isfield(optdef, fn1{k}) 
+        if ~isfield(optdef, fn1{k})
             error(sprintf("d." + fn1{k} + " does not exist in odf"))
         end
         if isempty(copybin)
@@ -44,8 +44,8 @@ else
             optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k});
         else
             fn2 = fieldnames(optin.(fn1{k}));
-            tmphold = fn2(ismember(fn2, copybinall));
-            for w = 1:numel(tmphold) %store previous copybin, and remove from current optin to create optout (any nested previous copybin are unmodified within optudrec 
+            tmphold = fn2(ismember(fn2, copybinprev));
+            for w = 1:numel(tmphold) %store previous copybin, and remove from current optin to create optout (any nested previous copybin are unmodified within optudrec
                 tmphold2.(tmphold{w}) = optin.(fn1{k}).(tmphold{w});
                 optin.(fn1{k}) = rmfield(optin.(fn1{k}), tmphold{w});
             end
@@ -106,7 +106,7 @@ end
                     end
                 else
                     if isstruct(optin.(fn{u}))
-                        if ismember(fn{u}, copybinall)
+                        if ismember(fn{u}, copybinprev)
                             optout.(fn{u}) = optin.(fn{u});
                         else
                             if ~isfield(optdef, fn{u})

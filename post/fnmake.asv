@@ -1,11 +1,8 @@
-function [pth, parstr] = fnmake(o)
+function [pth, parstr] = fnmake(o, ids, pthstack)
 
 
 %%set up filenames for a2p 
 
-
-ids = o.mn.id;
-pthstack = o.mn.id.pth;
 
 recdatenum = ids.recdatenum; 
 flynum = ids.flynum; 

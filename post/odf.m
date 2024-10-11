@@ -1,11 +1,19 @@
-function o = odf(oin, funbin, copybin)
+function o = odf(oin, funbin, copybin, opt)
+
+% WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
+% odf is intended to help the user easily set a potentially complex set of pipeline options
 
 arguments
-    oin = [] %input options for overwriting defaults in d
+    oin = [] %input options struct for overwriting defaults in default options struct d
     funbin = [] %cell of char (or char, if scalar); if nonempty, and copybin is nonempty, update funbin and place results in copybin, and update ~funbin without placing in copybin; if nonempty and copybin is empty, just update funbin; if empty and copybin is nonempty, update all and place all in copybin
     copybin = [] %subfields into which funbin is copied
+    opt.files = 0 %whether to use spec to find stack files, or skip
 end
+files = opt.files;
 
+if isstring(oin) || isstring(funbin) || isstring(funbin)
+    error('you may have attempted to pass "files" name-value argument, without some of the other non-name-value arguments, but misspelled "files" it or used the wrong term;')
+end
 
 % struct d holds all default options;
 % fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
@@ -15,17 +23,34 @@ end
 % in particular: let's call dsub a field of d; if a field is in both oin and dsub, use the value in oin; if field is only in dsub, use the value in dsub; if field isn't in dsub, recurse into odf to check field in the same way as dsub
 
 
-%% recspec (filefind: find files matching recording specifications)
+%% spec (filefind: find files matching recording specifications)
 
-d.recspec.recdate = {'*'}; %cell array of char, can use wildcards
-d.recspec.fly = {'*'}; %cell array of char, can use wildcards
-d.recspec.trial = {'*'}; %cell array of char, can use wildcards
-d.recspec.suffix = {'raw'}; %cell array of char; can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg); valid suffixes are defined in validsuffix
-d.recspec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-d.recspec.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
-d.recspec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-d.recspec.validsuffix = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
-
+d.spec.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
+d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
+d.spec.validsuffix = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
+d.spec.pth = {};  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
+if files
+    if ~isfield(oin, 'spec') || isempty(oin.spec.pth) %if user passed no input to a2p, or a struct with file specifiers, or is running odf with files flag true but no oin or no spec field in oin
+        d.spec.recdate = {'*'}; %cell array of char, can use wildcards
+        d.spec.fly = {'*'}; %cell array of char, can use wildcards
+        d.spec.trial = {'*'}; %cell array of char, can use wildcards
+        d.spec.suffix = {'raw'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+        d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+    else
+        d.spec.recdate = {'fullpathinput'};
+        d.spec.fly = {'fullpathinput'};
+        d.spec.trial = {'fullpathinput'};
+        d.spec.suffix = {'fullpathinput'};
+        d.spec.match = 'fullpathinput';
+    end
+else
+    d.spec.recdate = 'nofilemode';
+    d.spec.fly = 'nofilemode';
+    d.spec.trial = 'nofilemode';
+    d.spec.suffix = 'nofilemode';
+    d.spec.pth = 'nofilemode';
+    d.spec.match = 'nofilemode';
+end
 
 %% mn (ap2: main pipeline control in a2p)
 
@@ -36,7 +61,6 @@ d.mn.dofit = 0; %model fitting (o.mfit below)
 d.mn.dopltx = 1; %plot experiment (o.pltx below)
 d.mn.fldrtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-d.mn.rec = []; %full path to recording(s)
 d.mn.regionex = 'default'; %names to analyze same recording separately
 
 %% daq (daqld: load, process daq)
@@ -91,7 +115,7 @@ d.ftv.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 %% mroi (mroimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
 % options for making morphological rois (manual or automated), mostly used in function mroimake
-% for o.mroi.auto.use_hires, o.mroi.dodraw, and o.mroi.auto.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in o.mroi will be skipped
+% for o.mroi.seg.use_hires, o.mroi.dodraw, and o.mroi.seg.num_mroi_auto: use empty cell to skip, otherwise a cell array of strings from regionex_all;any string in regionex_all that is missing in o.mroi will be skipped
 
 d.mroi.dodraw = 0; %whether to draw rois in an interactive plot, and save, or load if already drawn and saved
 d.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
@@ -109,7 +133,7 @@ d.seg.chan = [1]; %which channel for auto mroi extraction (for now all options b
 d.seg.numroi = 128; %partition regionex into num_mroi_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_mroi_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 d.seg.usehires = 0; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 d.seg.maskmake = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
-d.seg.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.mroi.auto.num_mroi_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
+d.seg.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.mroi.seg.num_mroi_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
 d.seg.edgethr = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 d.seg.edgesig = [sqrt(2)*2 sqrt(2)*2 sqrt(2)*2]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 d.seg.celsz = 8; %for bwmorph close after edge detection, helps connect edges
@@ -270,7 +294,7 @@ d.pltx.letui = 1;
 %% hires (hiresld: load and register high-z-res stack if it exists)
 
 %options for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set o.mroi.auto.use_hires=1 to use
+%hires stack is only used in making morphological rois, set o.mroi.seg.use_hires=1 to use
 %options below, in o.hires, are for processing the hires stack, and visualization with gif in o.hires.gif
 
 d.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
@@ -318,31 +342,41 @@ d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is buil
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 
-
 %% globals
 
-glb(1, regionexdf=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.recspec.validsuffix); %set some globals, force update if they already have been set with first argument 1
-
+if isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('validsuffix'))
+    if ~files
+        sprintf("warning, globals have not been set (or have been cleared), so this is likely the first time you've called odf, but files is set to 0; typically you want to find files the first time you call odf (set files to 1), although it's not required")
+    end
+    glb(regionexdf=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.spec.validsuffix); %set some globals, force update if they already have been set with first argument 1
+end
 
 %% for output oout, update defaults with input oin
 
+if isfield(oin, 'id') %id is the one field that doesn't have defaults (it holds found files info)
+    idhold = oin.id; %put it aside and put back at bottom
+    oin = rmfield(oin, 'id');
+else
+    idhold = [];
+end
+
 fnd = fieldnames(d);
 
-% if isempty(funbin)
-%     funbin = {};
-% end
-if isempty(copybin)
-    copybin = {};
+if isempty(funbin)
+    funbin = {};
 end
 if ~iscell(funbin)
     funbin = {funbin};
+end
+if isempty(copybin)
+    copybin = {};
 end
 if ~iscell(copybin)
     copybin = {copybin};
 end
 
 if isempty(oin) || isempty(fieldnames(oin))
-    if isempty(cell2mat(funbin))
+    if isempty(funbin)
         oin = d;
     else
         for k = 1:numel(funbin)
@@ -354,87 +388,116 @@ if isempty(oin) || isempty(fieldnames(oin))
     end
 end
 
-if isfield(oin, 'copybinall')
-    copybinall = oin.copybinall;
-else
-    copybinall = {};
+if ~isfield(oin, 'copybinprev')
+    oin.copybinprev = {};
 end
-% if ~isempty(cell2mat(copybin)) %this was up here but i think copybinall_tmpnesting makes it fine to move to bottom; not sure it has an effect up here on first time through a copybin having it part of copybinall 
-%     copybinall = unique([copybinall, copybin]);
-% end
+copybinprev = oin.copybinprev;
 
-if isempty(cell2mat(funbin))
-    o = optupdate(oin, d, copybinall, copybin);
+if isempty(funbin)
+    o = optupdate(oin, d, copybinprev, copybin);
 else
     if any(contains(funbin, '.')) %if nested funbin, remove deepest funbin and operate on it, invoking defaults throughout the nested funbin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
+        [~, fbsortinds] = sort(cellfun(@numel, regexp(funbin, '[.]*')), 'descend'); %
+        funbin = funbin(fbsortinds); %sort to make update order deepest nested funbin to shallowest, otherwise doens't work
+        for k = 1:numel(fnd)
+            repeatfunbin = cellfun(@numel, strfind(funbin, fnd{k}))>1;
+            if any(repeatfunbin)
+                error(sprintf("you have multiple copies of funbin " + fnd{k} + " and possibly others; in a nested funbin each funbin can only appear once, for now at least"))
+            end
+        end
         [~, fnflattmp] = structflat(oin);
-        notfunbin = regexprep(erase(fnflattmp, strcat(fnd, '.')), '^[.]*', ''); %remove everything but the funbins 
-        if ~isempty(cell2mat(regexp(notfunbin, '[.]{2,}')))
+        notfunbin = regexprep(erase(fnflattmp, strcat(fnd, '.')), '^[.]*', ''); %remove everything but the funbins
+        if ~isempty(cell2mat(regexp(notfunbin, '[.]{2,}'))) %at least 2 periods means a non-funbin is above a funbin
             error("you must have placed a non-funbin somewhere other than the end of a nesting; for example, o.funbin1.optionA.funbin2 is not allowed; options can themselves be nested, but options must come at the end of each flattened fieldname")
         end
         fnflat = unique(regexprep(erase(fnflattmp, notfunbin), '[.]*$', ''));
-        copybinall_tmpnesting = [];
-        for w = 1:numel(funbin)
-            if startsWith(funbin{w}, 'o.')
+        copybinprev_and_newfunbindeepest = [];
+        for k = 1:numel(funbin)
+            if startsWith(funbin{k}, 'o.')
                 error("for nested funbin, omit the leading 'o.'")
             end
-            funbintmp = strsplit(funbin{w}, '.');
-            funbinpar = strjoin(funbintmp(1:end-1), '.');
+            funbintmp = strsplit(funbin{k}, '.');
             funbinshallowest = funbintmp{1};
             funbindeepest = funbintmp{end};
-            if ~isempty(cell2mat(copybin))
-                copybinall_tmpnesting = unique([copybinall_tmpnesting, copybinall, funbindeepest]); %you must ignore copybinall and funbindeepest in optupdate
+            if ~isempty(copybin) %if you're making copybin of a nested funbin . . .
+                copybinprev_and_newfunbindeepest = unique([copybinprev_and_newfunbindeepest, copybinprev, funbindeepest]); %must ignore copybinprev and funbindeepest in optupdate on the full nested funbin branch (otherwise the funbin enclosing the new copybin, funbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
             end
             if ~isfield(d, funbinshallowest)
                 error(sprintf("d." + funbinshallowest) + " does not exist; nested funbin must start with primary funbin directly under o")
             end
-            if ismember(funbin{w}, fnflat) %if the nesting exists in oin, grab the deepest funbin
-                eval(['oindeepest.' funbindeepest ' = oin.' funbin{w}]); %use eval to succinctly extract nested field
+            if ismember(funbin{k}, fnflat) %if the nested funbin exists in oin, grab the deepest funbin
+                eval(['oindeepest.' funbindeepest ' = oin.' funbin{k}]); %use eval to succinctly extract nested field
             else %if the nesting doesn't exist in oin, create it with defaults in the deepest layer, and nothing above
-                if ~isfield(d, funbindeepest)
+                if isfield(d, funbindeepest)
+                    sprintf("note: " + funbindeepest + " does not exist in your input to odf, creating it and populating with all default values")
+                else
                     error(sprintf("d." + funbindeepest) + " does not exist")
                 end
                 oindeepest.(funbindeepest) = d.(funbindeepest);
             end
-            oindeepest = optupdate(oindeepest, d, copybinall, copybin); %update deepest funbin
-            eval(['oin.' funbin{w} ' = oindeepest.' funbindeepest]); %return updated deepest into oin according to funbin nesting
+            oindeepest = optupdate(oindeepest, d, copybinprev, copybin); %update deepest funbin
+            eval(['oin.' funbin{k} ' = oindeepest.' funbindeepest]); %after updating, put deepest back into oin where it was before (ie according to funbin nesting), with possible copybin applied
             oinsub.(funbinshallowest) = oin.(funbinshallowest); %put that nested funbin aside and ...
             oin = rmfield(oin, funbinshallowest); %remove it from oin
-            if w==numel(funbin)
-                o = optupdate(oinsub, d, copybinall_tmpnesting, []); %can't use copybin on oinsub full nested funbin (only oindeepest above)
+            if k==numel(funbin)
+                o = optupdate(oinsub, d, copybinprev_and_newfunbindeepest, []); %then update the full nested funbin; don't use copybin on full nested funbin (only use it on oindeepest above); here you must ignore copybinprev_and_newfunbindeepest, which contains both the enclosing funbin for the newly created copybin (funbindeepest), as well as old copybin (copybinprev); note you could break this if copybindeepest appears more than once in the nesting, then optupdate will ignore the shallower, so there's an above error to catch that
             end
         end
     else %if non-nested funbin, remove funbin and operate on it, and then merge with everything else in input, which remains untouched
         fn = fieldnames(oin);
-        for w = 1:numel(funbin)
-            if ismember(funbin{w}, fn)
-                oinsub.(funbin{w}) = oin.(funbin{w});
-                oin = rmfield(oin, funbin{w});
+        for k = 1:numel(funbin)
+            if ismember(funbin{k}, fn)
+                oinsub.(funbin{k}) = oin.(funbin{k});
+                oin = rmfield(oin, funbin{k});
             else
-                if ~isfield(d, funbin{w})
-                    error(sprintf("d." + funbin{w}) + " does not exist")
+                if isfield(d, funbin{k})
+                    sprintf("note: " + funbin{k} + " does not exist in your input to odf, creating it and populating with all default values")
+                    oinsub.(funbin{k}) = d.(funbin{k}); %use all defaults funbin{k} is not in oin
+                else
+                    error(sprintf("d." + funbin{k}) + " does not exist")
                 end
-                oinsub.(funbin{w}) = d.(funbin{w}); %use all defaults funbin{w} is not in oin
             end
         end
-        copybin_inert = copybin(ismember(copybin, copybinall));
+        copybin_inert = copybin(ismember(copybin, copybinprev));
         if ~isempty(copybin_inert)
             sprintf(strjoin(copybin_inert, ', ') + " has/have already been set, nothing will change in this/these copybin")
         end
-        o = optupdate(oinsub, d, copybinall, copybin); %just update funbin
+        o = optupdate(oinsub, d, copybinprev, copybin); %just update funbin
     end
     o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]); %combine with what was unchanged
 end
 
-if ~isempty(cell2mat(copybin))
-    copybinall = unique([copybinall, copybin]);
-end
-o.copybinall = copybinall; %keep record of copybin, to ignore them in optupdate
+o.copybinprev = unique([oin.copybinprev, copybin]); %must ignore copybinprev and funbindeepest in optupdate on the full nested funbin branch (otherwise the funbin enclosing the new copybin, funbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
 
+o.id = idhold; 
 o = fieldord(o);
 
 
+%% find files
+
+if files
+    if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
+        rectmp = filefind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, validsuffix=o.spec.validsuffix, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, match=o.spec.match); %find files matching spec
+    else
+        rectmp = filefind(pth=o.spec.pth); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
+        if isempty(rectmp)
+            sprintf("NONE OF THE FULL PATH INPUT (OR WILDCARD PATTERNS) TO a2p EXIST")
+        end
+    end
+    if isempty(cell2mat(rectmp))
+        error("NO STACKS FOUND")
+    end
+    o.id = idmake(rectmp);
+else
+    sprintf("RUNNING odf IN nofile MODE, NOT SEARCHING FOR FILES")
 end
+
+
+
+
+end
+
+
 
 
 

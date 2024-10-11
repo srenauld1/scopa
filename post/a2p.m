@@ -36,8 +36,6 @@ variables:
     cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in froiproc)
 
 
-    
-
 main process functions:
     stackld: load stacks; plot stacks for comparison
     daqld: load/process daq data
@@ -65,18 +63,16 @@ pixel (abbr. px) can mean both pixel and voxel in scopa variable names (because 
 function a2p(recin)
 
 arguments
-    recin = [] %optional; full path to recording (char or cell), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
+    recin = [] %optional; full path to recording (char or cell, wildcards allowed matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
 end
 
 clear glb %clear globals
 
 o = oset(recin); % set options
 
-for k = 1:numel(o.mn.rec) % loop over recordings
+for k = 1:numel(o.mn.id) % loop over recordings
 
-    ids = idmake(o.mn.rec{k});
-
-    [pth, parstr] = fnmake(o, ids, o.mn.rec{k});
+    [pth, parstr] = fnmake(o);
 
     glb(1, pthfldr=pth.fldr); %set/update data folder path as global           
 
@@ -168,7 +164,7 @@ for k = 1:numel(o.mn.rec) % loop over recordings
         smsdtime = o.sld.sp.smsdtime, ...
         dr = o.sld.sp.dr);
 
-    if any(cell2mat(struct2cell(o.mroi.auto.usehires)))
+    if any(cell2mat(struct2cell(o.mroi.seg.usehires)))
         [stack_hires_mnt, map_hires_lores] = hiresld(ids.recid, pth, stack, md, o.hires);
     else
         stack_hires_mnt = [];
@@ -186,7 +182,7 @@ for k = 1:numel(o.mn.rec) % loop over recordings
         %%crop movie to regionex cuboid
         [stackcrop, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
             cropstacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
-            md.sz_crop, o.mroi.auto.usehires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
+            md.sz_crop, o.mroi.seg.usehires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
         %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
         [roidat.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
