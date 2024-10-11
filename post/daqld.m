@@ -1,4 +1,4 @@
-function daqrs = daqld(recdatenum, flynum, trialnum, numvol, numslice, numslice_withflyback, imper, balldia, voltmin, voltmax, opt)
+function daqrs = daqld(numvol, numslice, numslice_withflyback, sampper, balldia, voltmin, voltmax, opt)
 
 
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
@@ -31,13 +31,10 @@ function daqrs = daqld(recdatenum, flynum, trialnum, numvol, numslice, numslice_
 
 
 arguments
-    recdatenum {mustBeNumeric}
-    flynum {mustBeNumeric}
-    trialnum {mustBeNumeric}
     numvol {mustBeNumeric}
     numslice {mustBeNumeric}
     numslice_withflyback {mustBeNumeric}
-    imper {mustBeNumeric} %imaging frame period (1/volrate)
+    sampper {mustBeNumeric} %imaging frame period (1/volrate)
     balldia {mustBeNumeric}
     voltmin {mustBeNumeric}
     voltmax {mustBeNumeric}
@@ -47,14 +44,17 @@ arguments
     opt.toballscale = {'ficTracIntSide', 'ficTracIntForward'}; %define which vars to rescale from radians to mm
     opt.tounwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which vars to unwrap
     opt.tozero = {'ficTracIntSide', 'ficTracIntForward'}; %%define which vars to zero (force to start at 0)
+    opt.recdatenum = [] %if not passed, or empty, will be set to '*' for daq file search
+    opt.flynum = [] %if not passed, or empty, will be set to '*' for daq file search
+    opt.trialnum = [] %if not passed, or empty, will be set to '*' for daq file search
     opt.pth_fldr = '' %can pass pth_fldr instead of pth_daq and/or pth_daqrs
-    opt.pth_daq char = '' %path to daq data from experiment; can pass pth_fldr instead of pth_daq and/or pth_daqrs
+    opt.pth_daq char = '' %path to daq data from experiment; can pass pth_fldr, and optional recdatenum, flynum, trialnum instead of pth_daq and/or pth_daqrs
     opt.pth_daqrs char = '' %save path for resampled daq data; can pass pth_fldr instead of pth_daq and/or pth_daqrs
     opt.slopelensec {mustBeNumeric} = 0.2 %slope length (seconds) for computing derivative of each daq variable
     opt.slopeord {mustBeNumeric} = 2 %slope order for computing derivative of each daq variable (should just stay 2)
     opt.useinds = 'none' %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-    opt.use_flyback_lines logical = 1 %use flyback lines when defining resampling inds if useinds is not none; flyback lines are probably always too fast to ever make this parameter matter
-    opt.use_flyback_frames logical = 1%use flyback frames when defining resampling inds if useinds is not none; this param could be relevant for slow volume rates, or flyback that is slow, relative to non-flyback
+    opt.usefbl logical = 1 %use flyback lines when defining resampling inds if useinds is not none; flyback lines are probably always too fast to ever make this parameter matter
+    opt.usefbf logical = 1%use flyback frames when defining resampling inds if useinds is not none; this param could be relevant for slow volume rates, or flyback that is slow, relative to non-flyback
     opt.doplt logical = 0
     opt.idxreg char = 'start' %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
 end
@@ -65,26 +65,44 @@ vcategorical = opt.vcategorical;
 toballscale = opt.toballscale;
 tounwrap = opt.tounwrap;
 tozero = opt.tozero;
+recdatenum = opt.recdatenum;
+flynum = opt.flynum;
+trialnum = opt.trialnum;
 pth_fldr = opt.pth_fldr;
 pth_daq = opt.pth_daq;
 pth_daqrs = opt.pth_daqrs;
 slopelensec = opt.slopelensec;
 slopeord = opt.slopeord;
 useinds = opt.useinds;
-use_flyback_lines = opt.use_flyback_lines;
-use_flyback_frames = opt.use_flyback_frames;
+usefbl = opt.usefbl;
+usefbf = opt.usefbf;
 doplt = opt.doplt;
 idxreg = opt.idxreg;
 
 
-sprintf("FOR NORMAL AND CIRCULAR VARIABLES, CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS LOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING (IF THEY ARE INCLUDED WITH use_flyback_frames=1)")
+sprintf("FOR NORMAL AND CIRCULAR VARIABLES, CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS LOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING (IF THEY ARE INCLUDED WITH usefbf=1)")
 
+if isempty(recdatenum)
+    recdate = '*';
+else
+    recdate = num2str(recdatenum);
+end
+if isempty(flynum)
+    fly = '*';
+else
+    fly = num2str(flynum);
+end
+if isempty(trialnum)
+    trial = '*';
+else
+    trial = num2str(trialnum);
+end
 
 if isempty(pth_daq)
     if isempty(pth_fldr)
         error(sprintf("pth_fldr cannot be empty if pth_daq is empty"))
     end
-    pth_daq_pat = [pth_fldr num2str(recdatenum) '-' num2str(flynum) '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+    pth_daq_pat = [pth_fldr recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
     pth_daq = rdir(pth_daq_pat);
     pth_daq = pth_daq.name;
 end
@@ -97,12 +115,6 @@ if isempty(pth_daqrs)
 end
 
 pthfigpre = pth_daqrs(1:end-4);
-
-if doplt
-    maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
-else
-    maxtplot = 0; %first maxtplot seconds to plot daqinds in daqindsmake
-end
 
 daqvars_bytype.normal = vnormal;
 daqvars_bytype.circular = vcircular;
@@ -131,18 +143,19 @@ end
 
 %% define inds for downsampling
 
-%%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%% 
+%%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%%
 
-daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices 
+daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
 daqinds.slice = [];
 daqinds.vol = [];
 if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
-    daqinds = daqindsmake(trialData.frameClock, trialData.Time, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre);
+    maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
+    daqinds = daqindsmake(trialData.frameClock, trialData.Time, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre);
 else
     sprintf("frame clock not on daq, or user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices")
 end
 
-%%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%% 
+%%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
 
 if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
     daqinds.vol = [];
@@ -152,7 +165,7 @@ if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
 end
 if isnumeric(useinds)
     if any(~ismember(useinds(useinds~=0), daqinds.slice))
-        error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for use_flyback_frames")
+        error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
     end
     if all(useinds==0) %useinds=0 is same as useinds='vol'
         daqinds.slice = [];
@@ -213,7 +226,7 @@ for si = 1:num_resamples
                 sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
             else
 
-                [ tmp, tmp_dv ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, imper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
+                [ tmp, tmp_dv ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, sampper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
 
                 if any(strcmp(daqvars_bytype.(daqvartype){ii}, tounwrap))
                     tmp = unwrap(tmp); %convert to mm (not for tmp_dv)
@@ -226,7 +239,7 @@ for si = 1:num_resamples
                     tmp_dv = tmp_dv*balldia/2; %convert to mm
                 end
                 if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_dv'
-                    tmp_dv = tmp_dv / imper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
+                    tmp_dv = tmp_dv / sampper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
                 end
                 if strcmp(daqvarname, 'Time') && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
                     tmp(1) = 0;

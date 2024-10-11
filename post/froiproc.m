@@ -1,27 +1,27 @@
-function [roidat, resp] = froiproc(stack, roidat, pth_froi, regionex, md, opts)
+function [roidat, resp] = froiproc(stack, roidat, pth_froi, regionex, md, opts, nrm)
 
 
 %% params
 
 
 
-min_pixels_per_region = opts.min_pixels_per_region;
-min_roi_size = opts.min_roi_size;
-max_roi_size = opts.max_roi_size;
-max_regions_per_roi = opts.max_regions_per_roi;
-within_mask_threshold = opts.within_mask_threshold;
+minpixperreg = opts.minpixperreg;
+minroisz = opts.minroisz;
+maxroisz = opts.maxroisz;
+maxregperroi = opts.maxregperroi;
+inmaskthr = opts.inmaskthr;
 numbins = opts.numbins;
-sort_roi_method = opts.sort_roi_method; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
-numrois_for_gif = opts.numrois_for_gif;
+normpre = nrm.pre;
+normpost = nrm.post;
+
+roisrt = opts.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
+numrois_for_gif = opts.roiol.ir;
+
 doplt = opts.doplt;
-
-do_other_plots = opts.do_other_plots;
-
-normopts = opts.norm;
 
 tcropfront = md.tcropfront;
 tcropback = md.tcropback;
-imper = md.imper;
+sampper = md.sampper;
 ti = ts.t;
 
 cnt_mroi = roidat.roicen;
@@ -171,22 +171,22 @@ for ci = 1:numrois
             centroid_is_outside_mask(ci) = ~mask_mroi_all( round(centroids_froi{ci}(subroi_primary(ci), 1)), round(centroids_froi{ci}(subroi_primary(ci), 2)), round(centroids_froi{ci}(subroi_primary(ci), 3)));
         end
 
-        if proportion_within_mask(ci) >= within_mask_threshold
+        if proportion_within_mask(ci) >= inmaskthr
             roi_is_mostly_outside_mask(ci) = 0;
         end
 
-        imout = bwareaopen( imtmp, min_pixels_per_region ); %get rid of small disconnected components (to not include in the tests below)
+        imout = bwareaopen( imtmp, minpixperreg ); %get rid of small disconnected components (to not include in the tests below)
 
         %%filter ROIs based on size
         numpix_roi = sum(imout(:));
-        if numpix_roi > min_roi_size || numpix_roi < max_roi_size
+        if numpix_roi > minroisz || numpix_roi < maxroisz
             roi_is_outside_size_limits(ci) = 0;
         end
 
 
         %%filter ROIs based on number of disconnected components
         tmp = bwconncomp( imout );
-        if tmp.NumObjects < max_regions_per_roi
+        if tmp.NumObjects < maxregperroi
             roi_is_discontiguous(ci) = 0;
         end
 
@@ -247,7 +247,7 @@ roiwt_wt(isnan(roiwt_wt)) = 0;
 
 %% sort rois
 
-switch sort_roi_method
+switch roisrt
     case 'majoraxis'
         [~, roisortinds] = sort(idx_vox2roi);
     case 'snr'
@@ -322,10 +322,11 @@ end
 
 resptmp.cmc = cmc; %put into struct before passing to roiresp
 
-dowav = 0;
-resp = roiresp(resptmp, roiwt, pth_froi, normopts, imper, resp=[], dowav=dowav, ti=ti); %this version not weighted by area by passing roiwt
+wavp = [];
+degdtr = [];
+resp = roiresp(resptmp, roiwt=roiwt, normpre=normpre, normpost=normpost, sampper=sampper, resp=[], wavp=wavp, degdtr=degdtr, ti=ti, pthpre=pth_froi); %this version not weighted by area by passing roiwt
 
-% resp = roiresp(resp_froi, roiwt_wt, pth_froi, normopts, imper, resp=resp, dowav=dowav, ti=ti);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
+% resp = roiresp(resp_froi, roiwt=roiwt_wt, normpre=normpre, normpost=normpost, sampper=sampper, resp=resp, wavp=wavp, degdtr=degdtr, ti=ti, pthpre=pth_froi);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
 
 
 
@@ -344,7 +345,7 @@ if doplt
     filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
     gifvis = 'on';
     plotchannel = 1;
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipx, roiinds=roi_plot_inds_good) %include roipx as argument to plot roi overlay
+    stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipx, ir=roi_plot_inds_good) %include roipx as argument to plot roi overlay
 
     if length(bad_roi_indices)>numrois_for_gif
         roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
@@ -353,7 +354,7 @@ if doplt
     end
 
     filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipixind_bad, roiinds=roi_plot_inds_bad) %include roipx as argument to plot roi overlay
+    stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipixind_bad, ir=roi_plot_inds_bad) %include roipx as argument to plot roi overlay
 
     figure; imagesc(roiwt); title("which caiman rois are closest to which morph roi")
 
@@ -361,7 +362,7 @@ end
 
 %variable 'cma' has not been subset by good_roi_indices
 
-if do_other_plots
+if doplt
 
     tmp = cma(:,:,:,good_roi_indices);
 

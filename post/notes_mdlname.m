@@ -11,7 +11,7 @@
 %       note mdlname 'svd' is currently the only model that is not defined by mdl_fnet.m
 
 % other than models in mdlclass 'svd', all models (structure, functions, parameters, constants, constraints) are defined by mdl_fnet.m
-% see example section below for table output ('fnetspec') after parsing mdlname 
+% see example section below for table output ('fnetspec') after ping mdlname 
 % mdl_fnet.m refers to a function network, similar to an ann, or cnn, but different in enough ways to deserve a different name 
 % mdl_fnet.m creates a network of functions (or a single function), and a set of optional constraints for all free parameters; those parameters are optimized with matlab built-in global solver GlobalSearch (which repeatedly calls local solver fmincon)
 % 
@@ -67,7 +67,7 @@
                 %   h requires an additional integer suffix denoting number of bins (must be power of 2, for now); binning applies to the joint distribution of all dimensions of incoming signal (including time)
                 % NOT YET AVAILABLE --> n: is for 'nonlinear omit', no nonlinear function; only useful when using 'combo syntax', and you want a missing nonlinear function to be an element in one of the possible combinations <-- NOT YET AVAILABLE
 % in the entire fnet mdlname string, all numbers must be 2-digit (leading zero for 1-9) 
-% see struct 'chopt' in default_fit_params for current list of characters and regex expressions for parsing the mdlname string;
+% see struct 'chopt' in default_fit_params for current list of characters and regex expressions for ping the mdlname string;
 % for simplicity, position substring can be omitted for single-unit, single-position models
 %   for example, mdlname = 'fnet_g' fits a gaussian to the entire input signal
 %   for example, mdlname = 'fnet_si' fits a linear filter followed by static nonlinearity to the entire input signal (in this case, the linear filter is a positive monophasic filter, and the nonlinearity is "inhibitory", ie a generalized logistic function with negative slope)
@@ -93,7 +93,7 @@
 
 % you can run mfit_parse_mdlname_string (with arbitrary values below for num_dim_input and num_samples_model) 
 % and inspect output table 'fnetspec' to see how single string modetype is transformed into a table representing a function network 
-% chopt.fnet holds the charcters and expressions for parsing the string, and is copied from default_fit_params.m to run the example below  
+% chopt.fnet holds the charcters and expressions for ping the string, and is copied from default_fit_params.m to run the example below  
 
 % the example mdlname below is: 'fnet_A_x02sieh16g_B01-02_i_e_B03-08_svg' 
 %   applies 1 unit substring ('x2sieh16g') to all channels of input (all channels since there is no channel substring for layer A); 
@@ -111,7 +111,7 @@ num_dim_input = 2;
 num_samples_model = 0;
 multi_time_in_layer_one_only = 1;
 
-%chopt holds the expressions for mdlname parsing with regexp  
+%chopt holds the expressions for mdlname ping with regexp  
 chopt.fnet.lay = {'[A-Z]{1}'}; %layer is any single capital letter 
 chopt.fnet.chan = {'^(0*\d{1,2})*(0*\d{1,2}-\d+)*$'}; %channel is zero or more two-digit numbers, with optional hyphens denoting ranges; no channel means all channels 
 chopt.fnet.comb = {'x'}; %a single x

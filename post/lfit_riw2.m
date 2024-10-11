@@ -6,7 +6,7 @@ arguments
     opt.t = []
     opt.it = 1:size(resp,2) %which t indices to show in the zoom timeseries
     opt.ir = [] %which rois to fit 
-    opt.plotinds = [] %which rois to plot from the fit set 
+    opt.ipltts = [] %which rois to plot from the fit set 
     opt.corrtype = 'pearson' %'pearson', 'kendall', 'spearman'
     opt.lagsec = linspace(-1, 1, 1e4); %lag in seconds, rounded to nearest sample, duplicates are removed so to lag every sample within a range just use a larger number of lag samples than data samples
     opt.lagstyle = 'bestall' %which lags to plot; zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
@@ -21,7 +21,7 @@ arguments
     opt.plotlagged = 0 %plot the timeseries at the chosen lag
     opt.usesaved = 0
     opt.chanuse = 1
-    opt.hsvopt = []
+    opt.imhsv = []
     opt.flypos = []
     opt.pixfit = []
     opt.pthgif = []
@@ -30,7 +30,7 @@ end
 t = opt.t;
 it = opt.it;
 ir = opt.ir;
-plotinds = opt.plotinds;
+ipltts = opt.ipltts;
 corrtype = opt.corrtype;
 lagsec = opt.lagsec;
 lagstyle = opt.lagstyle;
@@ -45,7 +45,7 @@ yconst = opt.yconst;
 plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
 chanuse = opt.chanuse;
-hsvopt = opt.hsvopt;
+imhsv = opt.imhsv;
 flypos = opt.flypos;
 pixfit = opt.pixfit;
 pthgif = opt.pthgif;
@@ -65,23 +65,15 @@ stim1 = stim(1,:);
 assert(isvector(stim1))
 assert(ndims(resp)==2)
 
-if isempty(ir)
-    ir = 1:size(resp,1);
-end
-numroi = numel(ir);
-
-if isempty(plotinds)
-    plotinds = 1:numroi;
-end
-if isempty(hsvopt)
-    hsvopt = struct;
+if isempty(imhsv)
+    imhsv = struct;
 end
 
 
 matlab_dimorder_char = 'yxz';
 
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
-pthdat = pthauto(vnm=pthdat, suffix=savedatsuffix, usetime=0, usefun=0);
+pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
 
 stack = stack(:,:,:,:,chanuse);
 stackmnt = mean(stack, 4, 'native');
@@ -96,16 +88,26 @@ if pixfit
     resp = stack;
     clear stack
     resp = reshape(resp, [], size(resp,4));
-    numroi = size(resp,1);
-    ir = 1:numroi;
-
-
-    hsvopt.foreground = 'pixels';
+    if pixfit==1
+        resp = resp(unique(cell2mat(roipx)),:);
+    elseif pixfit==2
+        roipx = num2cell(1:numel(stackmnt));
+    end
+    ir = 1:size(resp,1);
+    imhsv.fg = 'pixels';
     roiwt = [];
     roicen = [];
-    roipx = num2cell(1:numel(stackmnt));
 end
 
+
+if isempty(ir)
+    ir = 1:size(resp,1);
+end
+numroi = numel(ir);
+
+if isempty(ipltts)
+    ipltts = 1:numroi;
+end
 
 resp = resp(ir,:);
 numsamp = size(resp,2);
@@ -174,7 +176,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     %%%%%%%%%%% SETUP PLOT VARS %%%%%%%%%%%
 
     if isempty(pthgif)
-        pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1, usefun=1);
+        pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
     end
     [~, fldr, ~] = fileparts(fileparts(pthgif));
     fldr_title = strrep(strrep(fldr, '-', ' '), '_', ' ');
@@ -196,15 +198,14 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
         crosshair = cellfun(@round, roicen, 'UniformOutput', false); %will this take it out of bounds? should not
     end
 
-    hsvopt.ignoresat = 0;
-    hsvopt.ignoreval = 0;
-    hsvopt = default_hsv_opts(hsvopt);
-    hsvopt = plots_setup_hsv(hsvopt);
+    imhsv.ignoresat = 0;
+    imhsv.ignoreval = 0;
+    imhsv = default_hsv_opts(imhsv);
+    imhsv = plots_setup_hsv(imhsv);
 
     if pixfit
         numroiplot_pixfit = 300;
         sprintf("pixfit is true so only plotting 100 rois in frames of gif, but all in hsvmap")
-        ir = round(linspace(1, numroi, numroiplot_pixfit));
     else
         roipx = roipx(ir);
         crosshair = crosshair(ir);
@@ -224,7 +225,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     % rnk = percentrank(respstd(:), thr_tri);
     % rnk  = rnk/100;
     % vrangenew = [rnk 1];
-    % hsvopt.vrange_out_manual = [1-rnk 1];
+    % imhsv.vrange_out_manual = [1-rnk 1];
      
     [ss,ssi]=sort(suse);
     sneg = find(ss<0);
@@ -244,8 +245,8 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     % end
 
     
-    hsvmap = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use, valft=respstd);
-    imhsv = hsvplt(hsvopt, stackmnt, hsvmap, roipx, roiwt);
+    hsvmap = hsvcmp(imhsv, hueft=suse, satft=r2use, valft=respstd);
+    imhsv = hsvplt(imhsv, stackmnt, hsvmap, roipx, roiwt);
 
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
@@ -271,7 +272,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     margins_fig = [0.07];
     splitdim = 'y';
     splitfrac = 1;
-    ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+    ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
 
 
@@ -349,7 +350,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     for k2 = 1:numel(sinds)
         k = sinds(k2);
-        if ismember(k2, plotinds)
+        if ismember(k2, ipltts)
 
             % rind = ir(k);
             rind = 1;

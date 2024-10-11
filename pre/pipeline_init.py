@@ -18,11 +18,13 @@ print("\n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??")
 print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
 
 if '--pth_parsfile' in sys.argv:
-   print("pth_parsfile passed as input to pipeline_init.py (in batch mode), using params from pth_parsfile (params from cxp.sh)")
-   exec(open(currscriptdir + '/' + 'default_params_batch.py').read())
+  imode = 0
+  print("pth_parsfile passed as input to pipeline_init.py (in batch mode), using params from pth_parsfile (params from cxp.sh)")
+  exec(open(currscriptdir + '/' + 'default_params_batch.py').read())
 else:
-   print("pth_parsfile not passed as input (in interactive mode), using params from pipeline_init.py below")
-   exec(open(currscriptdir + '/' + 'default_params_interactive.py').read())
+  imode = 1
+  print("pth_parsfile not passed as input (in interactive mode), using params from pipeline_init.py below")
+  exec(open(currscriptdir + '/' + 'default_params_interactive.py').read())
 
 from parse_args import parse_command_line
 from paths_scopa import make_paths
@@ -138,7 +140,7 @@ for ri, _ in enumerate(pth_read_all):
       print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_read_all[ri] + "\nLOADING SCANIMAGE METADATA FROM THIS FILE: \n" + pth_md_all[ri]) 
 
       with open(pth_md_all[ri], 'r') as file:
-         md = file.read()
+        md = file.read()
       md = json.loads(md)
 
       if do_register:
@@ -152,10 +154,10 @@ for ri, _ in enumerate(pth_read_all):
         chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
         denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_primary)
         if chanstr_secondary:
-           denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)
+          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)
            
       if do_stitch:
-         stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+        stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
 
       if do_remove:
         eng = matlab.engine.start_matlab()
@@ -165,7 +167,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
-         extract(index_extraction_param_set, pth_prefix_all[ri], pth_read_all[ri], md, do_crop_only, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, makeplots, cluster_backend, use_cluster)
+        extract(index_extraction_param_set, pth_prefix_all[ri], pth_read_all[ri], md, do_crop_only, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, makeplots, cluster_backend, use_cluster)
           
       if do_analysis:
         eng = matlab.engine.start_matlab()

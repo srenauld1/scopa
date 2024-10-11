@@ -20,7 +20,7 @@ nrows = supp.num_total_model_functions + 3;
 ncols = 1;
 margins_subplot = 0.05;
 margins_fig = 0.05;
-ax = arrange_subplots([nrows, ncols], margins_subplot, margins_fig);
+ax = figarr([nrows, ncols], margins_subplot, margins_fig);
 
 widfac = 1;
 htfac = 1;

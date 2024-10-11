@@ -1,5 +1,5 @@
 
-function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, sampper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
 
 "WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN uiapply "
 
@@ -24,10 +24,10 @@ try
                     error("v must match cnt")
                 end
 
-                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, imper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
+                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
                 roipx = cat(1, roipx, roipixind_new);
-                disp("warning, hard coding ui parsex and parsnorm, fix this now")
-                labs{j} = {['resp.fullfov.moex_interactive.in_rawf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of choose_timeseries
+                disp("warning, hard coding parsex and parsnorm, fix this now")
+                labs{j} = {['resp.fullfov.moex_interactive.in_imf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of tsget
             end
         end
 
@@ -75,7 +75,7 @@ varcombos = make_varcombos(vars);
 end
 
 
-function [roipx, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, imper, pth_mroi_interactive)
+function [roipx, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_mroi_interactive)
 
 if ~isempty(roicen)
     if zwid==0
@@ -100,16 +100,13 @@ else
         end
     end
 
-    opts_mroi.chandraw = [];
-    opts_mroi.chancopy = [1];
-    opts_mroi.channorm = [];
-    opts_mroi.auto.chan = [1];
-    opts_mroi.dowav = 1;
-    opts_mroi.norm = normopt;
 
-    [roidat_new, resp] = mroimake(stack, opts_mroi, ti, imper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
+    otmp = odf('nofile'); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function; use 'nofile' option to skip the file searching because all we need is the mroi substruct 
+    % otmp.mroi.wavp = [0.3 0.6];
+    
+    [roidat_new, resp] = mroimake(stack, otmp.mroi, ti, sampper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
-    hardcodenorm = 'rawf_f_f_n';
+    hardcodenorm = 'imf_f_f_n';
     resp = channel_combine_struct(resp);
     resp = resp.(hardcodenorm);
     roipx = roidat_new(hardcodechan).roipx;

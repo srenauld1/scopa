@@ -17,7 +17,7 @@ cmap_patch = plt.cmap_patch;
 epochinds_str = strrep(epochinds_str, '_', ',');
 plt = plots_setup_hsv(plt, mdlname);
 
-hsvmap = plots_compute_hsv( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=fitin.stats.indvp_lim_alldim, huelimnat2=fitin.stats.depvp_lim_alldim, mdlname=mdlname);
+hsvmap = hsvcmp( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=fitin.stats.indvp_lim_alldim, huelimnat2=fitin.stats.depvp_lim_alldim, mdlname=mdlname);
 
 %% select which rois get plotted and how they're sorted
 

@@ -1,14 +1,9 @@
 
-function opop = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, mdlname, chopt, imper, inputvar_stats, pth_fitdata_prefix)
+function opop = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, mdlname, sampper, inputvar_stats, pth_fitdata_prefix)
 
 
 spl = strsplit(mdlname, '_');
 mdlclass = spl{1};
-try
-    chopt = chopt.(mdlclass);
-catch
-    chopt = [];
-end
 
 
 %% model-specific vars
@@ -25,7 +20,7 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [opop.mdl, opop.optimp, supp] = mfit_setup_fnet(mdlname, chopt, num_samp_mdl, imper, num_dim_indvp, inputvar_stats);
+    [opop.mdl, opop.optimp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 
@@ -39,7 +34,7 @@ end
 supp.mdlname = mdlname;
 supp.mdlclass = mdlclass;
 supp.pthspre = pth_fitdata_prefix;
-supp.imper = imper;
+supp.sampper = sampper;
 supp.num_dim_indvp = num_dim_indvp;
 supp.num_samp_mdl = num_samp_mdl;
 if strcmp(mdlclass, 'svd') || strcmp(mdlclass, 'ohe') || strcmp(mdlclass, 'ohe_svd')
@@ -68,7 +63,7 @@ opop = default_optimization_params(opop);
 opop.supp = supp; %assign this after default_optimization_params, since supp is for supplemental options that can vary (exist or not) 
 
 
-% orderfields currently erroring when called here, not super important though opop = orderfields_recursive(opop);
+% orderfields currently erroring when called here, not super important though opop = fieldord(opop);
 
 
 end

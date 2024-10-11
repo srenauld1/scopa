@@ -1,7 +1,10 @@
-function spec = mfit_parse_mdlname_string(mdlname, chopt, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only)
+function spec = mfit_parse_mdlname_string(mdlname, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only)
 
 
 % soon remove this to increment layer, since won't require exact channel matching isequal(channel_onelayer, 1:num_unit_previous_layer) 
+
+
+chopt = fnet_chopt();
 
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 

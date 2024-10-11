@@ -149,7 +149,7 @@ fitin.fits.(epochinds_str).gof_val_mean_allval = mean(gof_val_mean_allval, ndims
 fitin.fits.(epochinds_str).indvpf_mean_allval = mean(indvpf_mean_allval, ndims(indvpf_mean_allval), 'omitmissing');
 
 
-fitin = orderfields_recursive(fitin);
+fitin = fieldord(fitin);
 
 
 

@@ -1,7 +1,6 @@
 function pthsv = pthauto(opt)
 
 arguments
-    opt.vnm = ''
     opt.glob = 'pthfldr'
     opt.suffix = ''
     opt.usetime = 1
@@ -16,10 +15,10 @@ if numel(callstack) >= 2
 else
     fcnnm = 'unknownfunction';
 end
-pthfldr = globscopa(opt.glob);
+pthfldr = glb(opt.glob);
 if isempty(pthfldr)
     vnm = inputname(1);
-    error(sprintf("global variable " + opt.glob + " has not been set" + newline + "and " + vnm + " was not passed as argument into function " + fcnnm + newline + "do one or the other"))
+    error(sprintf("global variable " + opt.glob + " has not been set" + newline + "and a save path was not passed as argument into function " + fcnnm + newline + "do one or the other"))
 end
 infix = '';
 if opt.usefun

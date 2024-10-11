@@ -1,7 +1,7 @@
 function pltx(stack, vars, letui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    roidat, ti, imper, zstartpos, epochinds_ts_i, gifvis, ...
-    iz, it, display_range, pthgif_prefix_short, pthgif_prefix, ...
+    roidat, ti, sampper, zstartpos, epochinds_ts_i, gifvis, ...
+    iz, it, dr, pthgif_prefix_short, pthgif_prefix, ...
     pth_mroi_interactive, normopt, xwid, ywid, zwid, opt)
 
 arguments
@@ -17,13 +17,13 @@ arguments
     plot_z_as_color = []
     roidat = []
     ti = []
-    imper = []
+    sampper = []
     zstartpos = []
     epochinds_ts_i = []
     gifvis = []
     iz = []
     it = []
-    display_range = []
+    dr = []
     pthgif_prefix_short = []
     pthgif_prefix = []
     pth_mroi_interactive = []
@@ -97,7 +97,7 @@ margins_subplot = [0.05,0.005];
 margins_fig = [0.07,0.05];
 splitdim = 'y';
 splitfrac = 0.55;
-ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
 cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 cols(1,:) = cols(4,:);
@@ -176,7 +176,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, imper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sampper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -219,7 +219,7 @@ while plotloop %loop is turned off if no user input
 
                 pthgif = make_filename(labsp, gif_scope, epochstring, pthgif_prefix_short, timestr_use); %gif_scope determines whether pthgif gets updated
                 [roiindp, roi_index_str] = find_roi_index(labsp);
-                figure_title = make_figure_title(pthgif_prefix_short, epochstring, imper, roi_index_str);
+                figure_title = make_figure_title(pthgif_prefix_short, epochstring, sampper, roi_index_str);
                 labsp = process_labels(labsp, roiindp);
 
                 roipixindp = cell(numel(roiindp),1);
@@ -252,7 +252,7 @@ while plotloop %loop is turned off if no user input
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    hndls.st = init_axes_stack(hndls.hfg, ax, letui, stack, stackp, cmap, zstartpos, display_range, sector_ind);
+                    hndls.st = init_axes_stack(hndls.hfg, ax, letui, stack, stackp, cmap, zstartpos, dr, sector_ind);
 
 
 
@@ -287,7 +287,7 @@ while plotloop %loop is turned off if no user input
 
 
                 %%%% PLOT AXES %%%%
-                [hndls, framecount, cb] = plot_axes(hndls, stack, stackp, vid, ...
+                [hndls, framecount, cb] = axplt(hndls, stack, stackp, vid, ...
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
@@ -410,11 +410,11 @@ pthgif = [pthgif_prefix '_' strrep(strjoin(pthgif_suffix), ' ', '_') '_' timestr
 end
 
 
-function figure_title = make_figure_title(pthgif_prefix_short, epochstring, imper, roi_index_str)
+function figure_title = make_figure_title(pthgif_prefix_short, epochstring, sampper, roi_index_str)
 
 stackidtmp = strsplit(pthgif_prefix_short, filesep);
 stackid = stackidtmp{end};
-sample_period_string = make_sample_period_string(imper);
+sample_period_string = make_sample_period_string(sampper);
 figure_title = [strrep(stackid, '_', ' ') ',   ' epochstring.parsed  ',   ' sample_period_string ' SAMPLES,    ROI #' roi_index_str];
 figure_title = upper(figure_title);
 
@@ -452,9 +452,9 @@ lab = upper(lab);
 end
 
 
-function sample_period_string = make_sample_period_string(imper)
+function sample_period_string = make_sample_period_string(sampper)
 
-sample_period_string = [num2str(imper*1000, 4) ' ms']; %'%.2g'
+sample_period_string = [num2str(sampper*1000, 4) ' ms']; %'%.2g'
 
 end
 

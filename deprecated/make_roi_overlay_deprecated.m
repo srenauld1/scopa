@@ -5,7 +5,7 @@ function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol_each, ...
 % makes roi overlay truecolor image that is x-y-z-channel-roi
 % this function works but is now deprecated because it creates a potentially large variable (the roi overlay),
 % and the colormapping method here is a little complex because it is fairly low level
-% newer approach plots overlay within stack2fig by including the roi pixel indices as an argument 
+% newer approach plots overlay within stackplt by including the roi pixel indices as an argument 
 % newer approach handles colormapping and transparency with higher level matlab functions
 
 arguments
@@ -63,8 +63,8 @@ end
 %create colormap for roi+mean image overlay (roi is red by default)
 startcol1 = [0 0 0]; %start color for part 1 (mean volume/background)
 endcol1 = [1 1 1]; %end color for part 1 (mean volume/background)
-startcol2 = [0 0 0]; %start color for part 2 (roi/foreground)
-endcol2 = [1 0 0]; %end color for part 2 (roi/foreground)
+startcol2 = [0 0 0]; %start color for part 2 (roi/fg)
+endcol2 = [1 0 0]; %end color for part 2 (roi/fg)
 cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
 
 cmap = colormap_custom(cmap_method, ncol_each, ...
@@ -79,5 +79,5 @@ for ri = 1:size(img, 4)
 end
 
 if doplt
-    stack2fig(img, pthgif=filename_gif) 
+    stackplt(img, pthgif=filename_gif) 
 end

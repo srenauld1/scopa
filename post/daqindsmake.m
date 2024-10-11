@@ -1,5 +1,17 @@
-function daqinds = daqindsmake(frameon, t, use_flyback_lines, use_flyback_frames, numvol, numslice, numslice_withflyback, maxtplot, pthfigpre)
+function daqinds = daqindsmake(frameon, t, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre)
 
+arguments
+    frameon
+    t
+    usefbl
+    usefbf
+    numvol
+    numslice
+    numslice_withflyback
+    doplt = 0
+    maxtplot = 2;
+    pthfigpre = []
+end
 
 % make imaging slice indices and imaging volume indices for resampling (aligning) daq timeseries with imaging 
 % frameon is logical indicating when imaging frame is acquiring 
@@ -20,7 +32,7 @@ end
 
 %%%%%%%% slice indices %%%%%%%%
 
-if use_flyback_lines
+if usefbl
     frameinds = assign_flyback(frameinds, t); %assign flyback lines the nearest frame index (ie recenter frame)
     sliceinds = mod(frameinds-1, numslice_withflyback)+1; %get one-indexed slice indices
 else
@@ -39,14 +51,14 @@ end
 
 volinds = sliceinds; %since we might use sliceinds let's make a copy and not modify sliceinds 
 volinds(volinds==0) = nan; %replace zeros (if they exist) with nan, then . . .
-volinds = fillmissing(volinds, 'nearest'); %fill in zeros (which are between slices in sliceinds if use_flyback_lines=0, and absent otherwise) to help define volume; for this, precision is not important, since it just fills in flyback lines (not frames, where precision is more important)
+volinds = fillmissing(volinds, 'nearest'); %fill in zeros (which are between slices in sliceinds if usefbl=0, and absent otherwise) to help define volume; for this, precision is not important, since it just fills in flyback lines (not frames, where precision is more important)
 volinds(volinds>numslice) = 0;
 volinds = bin2ind(logical(volinds));
-if use_flyback_frames
+if usefbf
     volinds = assign_flyback(volinds, t);  %assign flyback frames the nearest volume index (ie recenter volume)
 else
-    frameinds(sliceinds>numslice) = 0; %remove frame flyback in frameinds if use_flyback_frames=0
-    sliceinds(sliceinds>numslice) = 0; %remove frame flyback in sliceinds if use_flyback_frames=0
+    frameinds(sliceinds>numslice) = 0; %remove frame flyback in frameinds if usefbf=0
+    sliceinds(sliceinds>numslice) = 0; %remove frame flyback in sliceinds if usefbf=0
 end
 
 vtmp = volinds(volinds~=0);
@@ -66,7 +78,7 @@ daqinds.vol = uint16(volinds);
 
 %%%%%%%% plotting (optional) %%%%%%%%
 
-if exist('maxtplot', 'var') && ~isempty(maxtplot) && maxtplot~=0
+if doplt
     if isduration(t)
         t = seconds(t);
     end
@@ -74,7 +86,7 @@ if exist('maxtplot', 'var') && ~isempty(maxtplot) && maxtplot~=0
     kp = find(t<maxtplot);
     tsub = t(kp);
     figure;
-    sgtitle( ['use flyback lines: ' num2str(use_flyback_lines), '; use flyback frames: ' num2str(use_flyback_frames)])
+    sgtitle( ['use flyback lines: ' num2str(usefbl), '; use flyback frames: ' num2str(usefbf)])
     subplot(311);
     plot(tsub, daqinds.frame(kp));
     title(['daqinds.frame for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.frame) max(daqinds.frame)]) ])
@@ -85,10 +97,10 @@ if exist('maxtplot', 'var') && ~isempty(maxtplot) && maxtplot~=0
     plot(tsub, daqinds.vol(kp))
     title(['daqinds.vol for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.vol) max(daqinds.vol)]) ])
     figsuffix = 'daqinds_.png';
-    if exist('pthfigpre', 'var') && ~isempty(pthfigpre)
-        pthfig = [pthfigpre figsuffix];
-    else
+    if isempty(pthfigpre)
         pthfig = pthauto(suffix=figsuffix, usetime=0);
+    else
+        pthfig = [pthfigpre figsuffix];
     end
     saveas(gca, pthfig, 'png');
 end

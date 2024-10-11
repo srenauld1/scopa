@@ -1,12 +1,9 @@
-function [roidat, resp] = mroimake(stack, opts_mroi, ...
-    ti, imper, xwid, ywid, zwid, pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, ...
-    regionex, parstr_mroi, roimaskman_allchan)
+function [roidat, resp] = mroimake(stack, opts_mroi, nrm, t, sampper, xwid, ywid, zwid, ...
+    pth_mroi, pth_tmpfiles, stack_hires, map_hires_lores, regionex, parstr_mroi, roimaskman_allchan)
 
 
-%if you want to automate rois from multiple drawn regions, use different
-%regionex (they can be analzed together after extracting voluem
-%responses), or choose to draw discontiguous roi and that one can get
-%passed to mroiauto
+%if you want to independently automate mrois from multiple drawn regions, use different regionex 
+% (they can be analzed together after extracting responses), or choose to draw discontiguous roi and that one can get passed to mroiauto
 
 
 % for num_mroi argument
@@ -43,31 +40,35 @@ function [roidat, resp] = mroimake(stack, opts_mroi, ...
 
 %% params
 
-if exist('roimaskman_allchan', 'var') %if passing in a morph roi mask (interactive mode)
+if exist('roimaskman_allchan', 'var') %if passing in a morph roi mask (interactive mode, upadating roi info)
     roimaskman_allchan = {roimaskman_allchan};
     maskinput = 1;
-    use_drawn_rois = 0;
-    num_mroi_auto = 0;
+    dodraw = 0;
+    numroiauto = 0;
     normopts = opts_mroi.norm;
-    hsvopt.do = 0;
-    olayopt.do = 0;
-    do_other_plots = 0;
+    doimhsv = 0; %skip plots if passing in roimaskman_allchan
+    doroiol = 0; %skip plots if passing in roimaskman_allchan
+    doplt = 0; %skip plots if passing in roimaskman_allchan
 else
     maskinput = 0;
-    use_drawn_rois = opts_mroi.use_drawn_rois.(regionex);
-    num_mroi_auto = opts_mroi.auto.num_mroi_auto.(regionex);
+    dodraw = opts_mroi.dodraw.(regionex);
+    numroiauto = opts_mroi.seg..numroi.(regionex);
     normopts = opts_mroi.norm;
-    hsvopt = opts_mroi.hsvopt;
-    olayopt = opts_mroi.olayopt;
-    do_other_plots = opts_mroi.do_other_plots;
+    imhsv = opts_mroi.imhsv;
+    roiol = opts_mroi.roiol;
+    doimhsv = opts_mroi.doimhsv;
+    doroiol = opts_mroi.doroiol;
+    doplt = opts_mroi.doplt;
 end
 
 chandraw = opts_mroi.chandraw;
-chancopy = opts_mroi.chancopy;
+chancp = opts_mroi.chancp;
 channorm = opts_mroi.channorm;
-dowav = opts_mroi.dowav;
-autoopts = opts_mroi.auto;
-
+degdtr = opts_mroi.degdtr;
+wavp = opts_mroi.wavp;
+autoopts = opts_mroi.seg.;
+normpre = nrm.pre;
+normpost = nrm.post;
 
 pth_mroi_prefix = pth_mroi(1:end-4);
 numchan = size(stack,5);
@@ -78,7 +79,7 @@ stackmnt = mean(stack, 4, 'native');
 
 if ~maskinput
     roimaskman_allchan = repmat({ones(size(stack,1), size(stack,2), size(stack,3), 'logical')}, [numchan, 1]);
-    if use_drawn_rois
+    if dodraw
         for c = 1:numchan
             if ismember(c,chandraw)
                 pth_mroi_manual_prefix = erase(pth_mroi_prefix, ['_' parstr_mroi]); %different prefix since the parstr_mroi are irrelevant for manually drawn rois, allowing manually drawn to be used for different parstr_mroi
@@ -92,7 +93,7 @@ if ~maskinput
                     end
                 catch
                     flag_limit_one_manual_roi = 0;
-                    if num_mroi_auto>1
+                    if numroiauto>1
                         flag_limit_one_manual_roi = 1;
                     end
                     roimaskman = drawrois(stack(:,:,:,:,c), regionex, pth_tmpfiles, flag_limit_one_manual_roi);
@@ -101,13 +102,13 @@ if ~maskinput
                 roimaskman_allchan{c} = roimaskman;
             end
         end
-        if ~isempty(chancopy) && numchan==2
-            chanreceive = setxor(chancopy, [1,2]);
-            sprintf("chancopy is " + num2str(chancopy) + "; \nCOPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(chancopy) + " ONTO CHANNEL " + num2str(chanreceive));
-            if all(roimaskman_allchan{chancopy}==1, 'all') && ~all(roimaskman_allchan{chanreceive}==1, 'all')
+        if ~isempty(chancp) && numchan==2
+            chanreceive = setxor(chancp, [1,2]);
+            sprintf("chancp is " + num2str(chancp) + "; \nCOPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(chancp) + " ONTO CHANNEL " + num2str(chanreceive));
+            if all(roimaskman_allchan{chancp}==1, 'all') && ~all(roimaskman_allchan{chanreceive}==1, 'all')
                 sprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones; you may not intend this");
             end
-            roimaskman_allchan(chanreceive) = roimaskman_allchan(chancopy);
+            roimaskman_allchan(chanreceive) = roimaskman_allchan(chancp);
         end
     end
 end
@@ -126,11 +127,11 @@ for c = 1:numchan
         try
             load(pth_mroidat, 'roidat');
         catch
-            if num_mroi_manual>1 || num_mroi_auto==0
+            if num_mroi_manual>1 || numroiauto==0
                 num_mroi = num_mroi_manual;
-                if num_mroi_auto>0
+                if numroiauto>0
                     error(sprintf(['ERROR \n' ...
-                        'num_mroi_manual is greater than one AND num_mroi_auto is greater than zero \n' ...
+                        'num_mroi_manual is greater than one AND numroiauto is greater than zero \n' ...
                         'DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
                         'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
                 end
@@ -142,13 +143,13 @@ for c = 1:numchan
                 end
                 roicen = find_roi_centroids(roimaskman);
                 sprintf("WARNING,\n" + ...
-                    "if sort_roi_method is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
+                    "if roisrt is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
                     "since determining the long axis of extraction currently requires automated morph roi extraction")
             else
                 [roiwt, roicen, num_mroi] = ...
-                    mroiauto(stackmnt_tmp, roimaskman, num_mroi_auto, ...
+                    mroiauto(stackmnt_tmp, roimaskman, numroiauto, ...
                     xwid, ywid, zwid, stack_hires, map_hires_lores, pth_mroi_prefix, ...
-                    regionex, hsvopt, do_other_plots, autoopts);
+                    regionex, imhsv, doplt, autoopts);
             end
             roidat = makeroidat(stack, roiwt, roicen, num_mroi);
             if ~maskinput
@@ -157,10 +158,10 @@ for c = 1:numchan
         end
     end
 end
-if ~isempty(chancopy) && numchan==2
-    chanreceive = setxor(chancopy, [1,2]);
-    sprintf("chancopy is " + num2str(chancopy) + "; \nCOPYING ROI INFO FROM CHANNEL " + num2str(chancopy) + " ONTO CHANNEL " + num2str(chanreceive));
-    roidat(chanreceive) = roidat(chancopy);
+if ~isempty(chancp) && numchan==2
+    chanreceive = setxor(chancp, [1,2]);
+    sprintf("chancp is " + num2str(chancp) + "; \nCOPYING ROI INFO FROM CHANNEL " + num2str(chancp) + " ONTO CHANNEL " + num2str(chanreceive));
+    roidat(chanreceive) = roidat(chancp);
 end
 
 
@@ -170,41 +171,38 @@ pth_morphroiresp = [pth_mroi_prefix '_resp_.mat']; %don't need channel infix her
 try
     load(pth_morphroiresp, 'resp')
 catch
-    resp = [];
-    for c = 1:numchan
-        resp = roiresp(stack, roidat(c).roiwt, pth_mroi_prefix, normopts, imper, resp=resp, dowav=dowav, ti=ti); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-        if ~maskinput && c==numchan
-            save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
-        end
+    resp = roiresp(stack, roiwt=roidat(c).roiwt, normpre=normpre, normpost=normpost, sampper=sampper, wavp=wavp, degdtr=degdtr, t=t, pthpre=pth_mroi_prefix, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    if ~maskinput
+        save(pth_morphroiresp, 'resp', '-v7.3', '-mat')
     end
 end
 
-% if channorm %2 channel normalization based on wavelet coherence, not fully tested
-%     norm_cross_chan(resp.in_rawf_pc_f_cl_rsc000100_w_no_chn1, resp.in_rawf_pc_f_cl_rsc000100_w_no_chn2, t=ti, roiind=1, it=1:numel(ti), pthgifpre=pth_mroi_prefix, mincoh=0.3);
+% if channorm %2 channel normalization based on wavelet coherence, work in progress
+%     norm_cross_chan(resp.in_imf_pc_f_cl_rsc000100_w_no_chn1, resp.in_imf_pc_f_cl_rsc000100_w_no_chn2, t=t, roiind=1, it=1:numel(t), pthgifpre=pth_mroi_prefix, mincoh=0.3);
 % end
 
 
 %% plots
 
 
-if hsvopt.do %roi hsv map
-    hsvopt = plots_setup_hsv(hsvopt);
-    hue_feature = [1:num_mroi]';
-    hsvmap = plots_compute_hsv(hsvopt, hueft=hue_feature);
-    hsv_filename = [pth_mroi_prefix 'hsvfov_.gif'];
+if doimhsv %roi as hue 
+    imhsv = plots_setup_hsv(imhsv);
+    hueft = [1:num_mroi]';
+    hsvmap = hsvcmp(imhsv, hueft=hueft);
+    pthhsv = [pth_mroi_prefix 'hsvfov_.gif'];
     plotchannel = 1;
-    hsvimg_as_rgb = hsvplt(hsvopt, stackmnt(:,:,:,:,plotchannel), hsvmap, roipx, roiwt, hsv_filename);
+    hsvplt(imhsv, stackmnt(:,:,:,:,plotchannel), hsvmap, roipx, roiwt, dohsv, pthhsv);
 end
 
-if olayopt.do %roi overlay
-    filename_olay = [pth_mroi_prefix 'roioverlay_.gif'];
+if doroiol %roi overlay
+    ptholay = [pth_mroi_prefix 'roioverlay_.gif'];
     gifvis = 'on';
     plotchannel = 1;
-    stack2fig(stackmnt(:,:,:,:,plotchannel), pthgif=filename_olay, gifvis=gifvis, roipx=roipx, roi_colors=olayopt.roi_color, roialpha=olayopt.roialpha) %include roipx as argument to plot roi overlay
+    stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=ptholay, gifvis=gifvis, roipx=roipx, ir=roiol.ir, roicols=roiol.roicol, roialpha=roiol.roialpha) %include roipx as argument to plot roi overlay
 end
 
 
-if do_other_plots %all these are at imaging resolution
+if doplt %all these are at imaging resolution
 
     %colormap for each roi
     cmap = distinguishable_colors(size(roiwt,1));
@@ -240,13 +238,13 @@ if do_other_plots %all these are at imaging resolution
 
     %mask overlay
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    stack2fig( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_.gif'])
+    stackplt( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_.gif'])
 
     %manual roi mask
-    stack2fig(roimaskman, pthgif=[pth_mroi_prefix 'roimaskman_.gif'])
+    stackplt(roimaskman, pthgif=[pth_mroi_prefix 'roimaskman_.gif'])
 
     %mask all rois (without stack background)
-    stack2fig(mask_allroi, pthgif=[pth_mroi_prefix 'maskallroi_.gif'])
+    stackplt(mask_allroi, pthgif=[pth_mroi_prefix 'maskallroi_.gif'])
 
     % %3d surface plot
     % kbnd = boundary([maskx,masky,maskz]);

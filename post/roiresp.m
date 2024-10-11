@@ -1,20 +1,38 @@
-
-function resp = roiresp(respin, roiwt, pth_save_prefix, normopts, imper, opt)
+function resp = roiresp(respin, opt)
 
 arguments
-    respin
-    roiwt
-    pth_save_prefix
-    normopts
-    imper
-    opt.resp = struct %if resp is passed as input, this function's output resp is appended to it
-    opt.dowav = 0
-    opt.ti = []
+    respin % response; numeric array or struct; if numeric array, must be yxztc (can be singleton c); if struct, each field is a numeric array, size [roi,time]
+    opt.roiwt = [] % weighting; size [n,s] where each row n is a roi, and each column s is a subroi; subroi is pixel if respin is stack, otherwise subroi is a roi within response n
+    opt.normpre = 'f' % normalization before clustering of pixels into rois, or subrois into rois (ie normalization applied to each pixel or subroi)
+    opt.normpost = 'f'%n ormalization after clustering of pixels into rois, or subrois into rois (ie normalization applied to each roi)
+    opt.sampper = [] % sample period
+    opt.resp = struct % if resp is passed as input, this function's output resp is appended to it
+    opt.wavp = [] % keep periods in range wavp, using continuous wavelet transform and inverse; empty to skip
+    opt.degdtr = 0 % detrend polynomial degree; 0 to skip detrending
+    opt.t = [] % time for timeseries
+    opt.pthpre = [] % save path prefix for figures; if empty, one will be generated
+    opt.doplt = 0 %whether to do plots
 end
+roiwt = opt.roiwt;
+normpre = opt.normpre;
+normpost = opt.normpost;
+sampper = opt.sampper;
 resp = opt.resp;
-dowav = opt.dowav;
-ti = opt.ti;
+wavp = opt.wavp;
+degdtr = opt.degdtr;
+t = opt.t;
+pthpre = opt.pthpre;
+doplt = opt.doplt;
 
+if isempty(roiwt)
+    roiwt = 1;
+end
+if isempty(pthpre)
+    pthpre = pthauto(suffix='.gif', usetime=1);
+end
+if isempty(t) && ~isempty(wavp)
+    error("must pass t if passing wavp (must have t to apply wavelet filtering)")
+end
 if isempty(resp)
     resp = struct;
 end
@@ -42,9 +60,9 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = roiresp_onechan(respin_onechan, roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = roiresp_onechan(respin_onechan, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         else
-            resp = roiresp_onechan(respin(:,:,:,:,c), roiwt, pth_save_prefix, normopts, imper, chanpat, resp, dowav, ti);
+            resp = roiresp_onechan(respin(:,:,:,:,c), roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         end
     end
 end
@@ -52,33 +70,38 @@ end
 end
 
 
-function resp = roiresp_onechan(respin, roiwt, pth_save_prefix, normopts, imper, fnchan, resp, dowav, ti)
+function resp = roiresp_onechan(respin, roiwt, normpre, normpost, sampper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
 
 arguments
     respin
     roiwt
-    pth_save_prefix
-    normopts
-    imper
+    normpre
+    normpost
+    sampper
     fnchan
     resp
-    dowav
-    ti
+    wavp
+    degdtr
+    t
+    pthpre
 end
 
-
-
-if isequal(unique(roiwt(:)), [0 1]') | unique(roiwt)==1
-    weightingstr = 'n';
-elseif unique(roiwt)==0
-    error("no pixel indices for any rois present")
+nowt = 0;
+uwt = unique(roiwt);
+if uwt==0
+    error("roiwt contains no pixel or subroi indices for any roi")
+elseif uwt(uwt~=0)==1
+    wtstr = 'n'; %no pixel weighting, just indices
+    if uwt==1
+        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roiresp, or wasn't passed to roiresp
+    end
 else
-    weightingstr = 'y';
+    wtstr = 'y'; %pixel indices with weighting
 end
 
-if ~isstruct(respin) %if input is plain raw image f
+if ~isstruct(respin) %if input is raw image f
     raw_image_input = 1;
-    respintmp.rawf = reshape(respin, [], size(respin, ndims(respin))); %reshape
+    respintmp.imf = reshape(respin, [], size(respin, ndims(respin))); %reshape
     respin = respintmp;
     clear respintmp
 else
@@ -88,19 +111,19 @@ end
 fnin = fieldnames(respin);
 cnt = 0;
 
-for fnini = 1:length(fnin)
+for k = 1:length(fnin)
 
-    resp1.f = respin.(fnin{fnini}); %assign the no-normalization default
+    resp1.f = respin.(fnin{k}); %assign the no-normalization default
 
-    resp1 = normalize_response(resp1.f, normopts.precluster, imper);
+    resp1 = respnorm(resp1.f, normpre, sampper);
 
     fn1 = fieldnames(resp1);
 
-    for fn1i = 1:length(fn1)
+    for m = 1:length(fn1)
 
         cnt = cnt+1;
 
-        tmp2d = resp1.(fn1{fn1i});
+        tmp2d = resp1.(fn1{m});
 
         assert(ndims(tmp2d)==2)
 
@@ -110,25 +133,32 @@ for fnini = 1:length(fnin)
         end
 
         tmp2d = tmp2d(goodinds, :);
-        roiinds_new = roiwt(:, goodinds);
+        if nowt
+            roiwt_tmp = 1;
+        else
+            roiwt_tmp = roiwt(:, goodinds);
+        end
 
         if ~isempty(tmp2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
-            resp2.f = roiinds_new * tmp2d ./ sum(roiinds_new,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
+            resp2.f = roiwt_tmp * tmp2d ./ sum(roiwt_tmp,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
         else
             resp2.f = nan;
         end
 
-        if dowav
-            resp2.f = wavdn(resp2.f, t=ti, it=1:numel(ti), pthgifpre='', doplt=0); %pth_mroi_prefix
+        if degdtr
+            resp2.f = detrend(resp2.f, degdtr); %degdtr is polynomial degree
         end
 
-        resp2 = normalize_response(resp2.f, normopts.postcluster, imper);
+        if ~isempty(wavp)
+            resp2.f = wavflt(resp2.f, t=t, wavp=wavp, doplt=0); %pth_mroi_prefix
+        end
+
+        resp2 = respnorm(resp2.f, normpost, sampper);
 
         fn2 = fieldnames(resp2);
-
         for fni2 = 1:length(fn2)
-            fieldname_tmp = [fnin{fnini} '_' fn1{fn1i} '_'  fn2{fni2} '_' weightingstr fnchan];
-            resp.(fieldname_tmp) = resp2.(fn2{fni2});
+            fntmp = [fnin{k} '_' fn1{m} '_'  fn2{fni2} '_' wtstr fnchan];
+            resp.(fntmp) = resp2.(fn2{fni2});
         end
 
     end
@@ -139,14 +169,14 @@ end
 %note these can have different size than the fields that were clustered
 %pc gets f, cl and w get null since there is no clustering for this field
 if ~raw_image_input
-    for fnini = 1:length(fnin)
-        fieldname_tmp = [fnin{fnini} '_f_null_null'];
-        resp.(fieldname_tmp) = respin.(fnin{fnini});
+    for k = 1:length(fnin)
+        fntmp = [fnin{k} '_f_null_null'];
+        resp.(fntmp) = respin.(fnin{k});
     end
 end
 
 
-if normopts.doplt
+if doplt
 
     fn = fieldnames(resp);
     numnorm = length(fn);
@@ -166,7 +196,7 @@ if normopts.doplt
             title(strrep(fn{fni}, '_', ' '))
         end
     end
-    saveas( gcf, [pth_save_prefix 'normcompresp_.png'])
+    saveas( gcf, [pthpre 'normcompresp_.png'])
 
     %
     % figure;
@@ -178,7 +208,7 @@ if normopts.doplt
     %         xlim([min(vec(resp.(fn{fni})(mi,:))), max(vec(resp.(fn{fni})(mi,:))) ])
     %     end
     % end
-    % saveas( gcf, [pth_save_prefix 'normhistsresp_.png'])
+    % saveas( gcf, [pthpre 'normhistsresp_.png'])
     %
 
     % prctcheck = 99;
@@ -199,7 +229,7 @@ if normopts.doplt
     % scat(1:length(pzfn), pzfn)
     % title("percentile normalized")
     %
-    % saveas( gcf, [pth_save_prefix 'normcompprct_.png'])
+    % saveas( gcf, [pthpre 'normcompprct_.png'])
     %
     %
     % if length(pfn)>1
@@ -219,7 +249,7 @@ if normopts.doplt
     %     plot(pzfn)
     %     title(std(pzfn, 1)) %2nd arg is 1 to normalize by n, not n-1
     %
-    %     saveas( gcf, [pth_save_prefix 'normcompprctnorm_.png'])
+    %     saveas( gcf, [pthpre 'normcompprctnorm_.png'])
     %
     % end
     %

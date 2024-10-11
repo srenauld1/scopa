@@ -1,4 +1,4 @@
-function [s1, fn] = flatten_struct_a2p(s,varargin)
+function [s1, fn] = structflat(s,varargin)
 
 % adapted from flattenStruct by Uhlending, Markus
 

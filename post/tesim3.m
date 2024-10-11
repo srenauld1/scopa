@@ -7,16 +7,16 @@ clc
 load('~/stacks/imtest.mat', 'stackcrop')
 
 roipixindp = {[1:100], [300:400]};
-roi_color = [ [0 1 0]; [1 0 0]];
-roi_color = [1 1 0];
+roicol = [ [0 1 0]; [1 0 0]];
+roicol = [1 1 0];
 roialpha = [0.3, 0.3];
 
 roipixindp2 = {[350:550], [500:600]};
-roi_color2 = [ [0 0 1]; [1 1 0]];
-roi_color2 = [1 1 0];
+roicol2 = [ [0 0 1]; [1 1 0]];
+roicol2 = [1 1 0];
 roialpha2 = [0.3, 0.3];
 
-display_range = [0 1];
+dr = [0 1];
 
 numypix = size(stackcrop, 1);
 numxpix = size(stackcrop, 2);
@@ -30,12 +30,12 @@ stack2 = stackcrop(:,:,15,8,2);
 
 
 
-clear roiolay pltexp_process_callbacks %clear persistent variables
-[imroi, imalpha] = roiolay(stack1, roipixindp, col=roi_color, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+clear roiolmake pltexp_process_callbacks %clear persistent variables
+[imroi, imalpha] = roiolmake(stack1, roipixindp, col=roicol, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi = squeeze(imroi);
 
-clear roiolay pltexp_process_callbacks %clear persistent variables
-[imroi2, imalpha2] = roiolay(stack1, roipixindp2, col=roi_color2, alp=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
+clear roiolmake pltexp_process_callbacks %clear persistent variables
+[imroi2, imalpha2] = roiolmake(stack1, roipixindp2, col=roicol2, alp=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi2 = squeeze(imroi2);
 
 
@@ -45,7 +45,7 @@ hax = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPos
 hax.DataAspectRatio = [1 1 1]; %don't think this is necessary
 hax.XLim = [1 numxpix]; %why do this instead of axis image or dataaspectratio 1 1 1????
 hax.YLim = [1 numypix];%why do this instead of axis image or dataaspectratio 1 1 1 ????
-hax.CLim = stackrange*display_range+stackmin;
+hax.CLim = stackrange*dr+stackmin;
 hax.Toolbar.Visible = 'off';
 colormap(hax, gray(256));
 axis off

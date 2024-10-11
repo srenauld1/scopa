@@ -8,9 +8,9 @@ arguments
     opt.sz_yxzt = [] % known size of stack, dim order yxzt
     opt.numslice_withflyback = []
     opt.channel_save = 1
-    opt.channel_use = 1
-    opt.crop_flyback = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
-    opt.zero_stack = 1 %subtract min to make min zero
+    opt.chanuse = 1
+    opt.cropfb = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
+    opt.zerostack = 1 %subtract min to make min zero
     opt.output_datatype = 'uint16'
     opt.tcropfront = 0 %num frames to crop from beginning
     opt.tcropback = 0 %num frames to crop from end
@@ -25,9 +25,9 @@ end
 numslice_withflyback = opt.numslice_withflyback;
 sz_yxzt = opt.sz_yxzt;
 channel_save = opt.channel_save;
-channel_use = opt.channel_use;
-crop_flyback = opt.crop_flyback;
-zero_stack = opt.zero_stack;
+chanuse = opt.chanuse;
+cropfb = opt.cropfb;
+zerostack = opt.zerostack;
 output_datatype = opt.output_datatype;
 tcropfront = opt.tcropfront;
 tcropback = opt.tcropback;
@@ -37,8 +37,8 @@ inds_c_read_from = opt.inds_c_read_from;
 inds_z_read_from = opt.inds_z_read_from;
 inds_t_read_from = opt.inds_t_read_from;
 
-if ~isempty(inds_z_read_from) && ~isempty(crop_flyback)
-    sprintf("WARNING, inds_z_read_from is nonempty AND crop_flyback is true; ignoring crop_flyback to give priority to the user-supplied inds_z_read_from, which may or may not crop flyback")
+if ~isempty(inds_z_read_from) && ~isempty(cropfb)
+    sprintf("WARNING, inds_z_read_from is nonempty AND cropfb is true; ignoring cropfb to give priority to the user-supplied inds_z_read_from, which may or may not crop flyback")
 end
 
 [~, filnam, ~] = fileparts(pth_stack_tif);
@@ -69,10 +69,10 @@ if stack_size_is_known
         inds_c_read_from = 1:size_read_from(3); %can choose any subset of t, can be discontiguous
     end
     if isempty(inds_z_read_from)
-        if crop_flyback
+        if cropfb
             inds_z_read_from = 1:sz_yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:sz_yxzt(3) will skip flyback frames for raw and hires, while 1:size_z_read_from will read flyback frames;
         else
-            inds_z_read_from = 1:size_read_from(4); %read all frames of not crop_flyback
+            inds_z_read_from = 1:size_read_from(4); %read all frames of not cropfb
         end
     end
     if isempty(inds_t_read_from)
@@ -97,7 +97,7 @@ stack = tifld(pth_stack_tif, ...
 
 if ndims(stack)==3
     
-    sprintf("WARNING, ignoring tcropback, tcropfront, and channel_use because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
+    sprintf("WARNING, ignoring tcropback, tcropfront, and chanuse because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
 
 else
 
@@ -106,19 +106,19 @@ else
         stack = stack(:,:,:,:,keepinds_t);
     end
 
-    channel_use = intersect(channel_save, channel_use); %ignore requested channels that don't exist
-    stack = stack(:,:,channel_use,:,:);
+    chanuse = intersect(channel_save, chanuse); %ignore requested channels that don't exist
+    stack = stack(:,:,chanuse,:,:);
 
 end
 
 stackmin = min(stack(:));
 
-if zero_stack==0 && stackmin<0 && ( strcmp(output_datatype, 'uint16') || strcmp(output_datatype, 'uint32') || strcmp(output_datatype, 'uint64') )
-    sprintf("WARNING, zero_stack==0, but stack min is less than zero, and output_datatype is " + output_datatype + "; forcing zero_stack to be true to prevent lower clipping of unsigned integer output datatype")
-    zero_stack = 1;
+if zerostack==0 && stackmin<0 && ( strcmp(output_datatype, 'uint16') || strcmp(output_datatype, 'uint32') || strcmp(output_datatype, 'uint64') )
+    sprintf("WARNING, zerostack==0, but stack min is less than zero, and output_datatype is " + output_datatype + "; forcing zerostack to be true to prevent lower clipping of unsigned integer output datatype")
+    zerostack = 1;
 end
 
-if zero_stack
+if zerostack
     stack = stack - stackmin;
 end
 

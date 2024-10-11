@@ -6,7 +6,7 @@ arguments
     opt.t = []
     opt.it = 1:numel(stim)
     opt.ir = []
-    opt.plotinds = []
+    opt.ipltts = []
     opt.corrtype = 'pearson' %'pearson', 'kendall', 'spearman'
     opt.lagsec = linspace(-1, 1, 1e4); %lag in seconds, rounded to nearest sample, duplicates are removed so to lag every sample within a range just use a larger number of lag samples than data samples
     opt.lagstyle = 'bestall' %zero, besteach, bestall, all (all option doesn't work yet); which lags to output and plot
@@ -20,8 +20,8 @@ arguments
     opt.yconst = 0
     opt.plotlagged = 0 %plot the timeseries at the chosen lag
     opt.usesaved = 0
-    opt.chan = 1
-    opt.hsvopt = []
+    opt.chanuse = 1
+    opt.imhsv = []
     opt.flypos = []
     opt.pixfit = []
     opt.pthgif = []
@@ -30,7 +30,7 @@ end
 t = opt.t;
 it = opt.it;
 ir = opt.ir;
-plotinds = opt.plotinds;
+ipltts = opt.ipltts;
 corrtype = opt.corrtype;
 lagsec = opt.lagsec;
 lagstyle = opt.lagstyle;
@@ -44,8 +44,8 @@ alignzero = opt.alignzero;
 yconst = opt.yconst;
 plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
-chan = opt.chan;
-hsvopt = opt.hsvopt;
+chanuse = opt.chanuse;
+imhsv = opt.imhsv;
 flypos = opt.flypos;
 pixfit = opt.pixfit;
 pthgif = opt.pthgif;
@@ -62,25 +62,17 @@ numticky = 2;
 assert(isvector(stim))
 assert(ndims(resp)==2)
 
-if isempty(ir)
-    ir = 1:size(resp,1);
-end
-numroi = numel(ir);
-
-if isempty(plotinds)
-    plotinds = 1:numroi;
-end
-if isempty(hsvopt)
-    hsvopt = struct;
+if isempty(imhsv)
+    imhsv = struct;
 end
 
 
 matlab_dimorder_char = 'yxz';
 
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
-pthdat = pthauto(vnm=pthdat, suffix=savedatsuffix, usetime=0, usefun=0);
+pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
 
-stack = stack(:,:,:,:,chan);
+stack = stack(:,:,:,:,chanuse);
 stackmnt = mean(stack, 4, 'native');
 
 numxpix = size(stackmnt,2);
@@ -93,13 +85,26 @@ if pixfit
     resp = stack;
     clear stack
     resp = reshape(resp, [], size(resp,4));
-
-    hsvopt.foreground = 'pixels';
+    if pixfit==1
+        resp = resp(unique(cell2mat(roipx)),:);
+    elseif pixfit==2
+        roipx = num2cell(1:numel(stackmnt));
+    end
+    ir = 1:size(resp,1);
+    imhsv.fg = 'pixels';
     roiwt = [];
     roicen = [];
-    roipx = num2cell(1:numel(stackmnt));
 end
 
+
+if isempty(ir)
+    ir = 1:size(resp,1);
+end
+numroi = numel(ir);
+
+if isempty(ipltts)
+    ipltts = 1:numroi;
+end
 
 resp = resp(ir,:);
 numsamp = size(resp,2);
@@ -168,7 +173,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     %%%%%%%%%%% SETUP PLOT VARS %%%%%%%%%%%
 
     if isempty(pthgif)
-        pthgif = pthauto(vnm=pthgif, suffix='.gif', usetime=1, usefun=1);
+        pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
     end
     [~, fldr, ~] = fileparts(fileparts(pthgif));
     fldr_title = strrep(strrep(fldr, '-', ' '), '_', ' ');
@@ -190,13 +195,18 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
         crosshair = cellfun(@round, roicen, 'UniformOutput', false); %will this take it out of bounds? should not
     end
 
-    hsvopt = default_hsv_opts(hsvopt);
-    hsvopt = plots_setup_hsv(hsvopt);
+    imhsv.ignoresat = 1;
+    imhsv.ignoreval = 0;
+    imhsv = default_hsv_opts(imhsv);
+    imhsv = plots_setup_hsv(imhsv);
 
     if pixfit
-        numroiplot_pixfit = 300;
-        sprintf("pixfit is true so only plotting 100 rois in frames of gif, but all in hsvmap")
-        ir = round(linspace(1, numroi, numroiplot_pixfit));
+        iplttsmax = 30;
+        ipltts = unique(round(linspace(1, numel(ipltts), iplttsmax)));
+        sprintf(['pixfit is true so only plotting equidistant ' num2str(numel(ipltts)) ' rois in frames of gif, but all in hsvmap'])
+        crosshair = [];
+        [crosshair(:,1), crosshair(:,2), crosshair(:,3)] = ind2sub(size(stackmnt), cell2mat(roipx));
+        crosshair = num2cell(crosshair, 2)';
     else
         roipx = roipx(ir);
         crosshair = crosshair(ir);
@@ -205,7 +215,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     respstd = std(resp, 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
 
-    r2use(puse>minpval) = min(r2use(:))/2;
+    notsig = puse>minpval;
+    respstd(notsig) = min(respstd(:)); %;nan; %min(respstd(:))/2;
+    r2use(notsig) = min(r2use(:)); %nan %min(r2use(:))/2;
+    suse(notsig) = 0; %nan %min(suse(:))/2;
 
     % [histdt, histx] = hist(respstd(:), 1000);
     % thrbin_tri = triangle_threshold(histdt, 'R', 1);
@@ -213,10 +226,64 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     % rnk = percentrank(respstd(:), thr_tri);
     % rnk  = rnk/100;
     % vrangenew = [rnk 1];
-    % hsvopt.vrange_out_manual = [1-rnk 1];
+    % imhsv.vrange_out_manual = [1-rnk 1];
 
-    hsvmap = plots_compute_hsv(hsvopt, hueft=suse, satft=r2use, valft=respstd);
-    imhsv = hsvplt(hsvopt, stackmnt, hsvmap, roipx, roiwt);
+    [ss,ssi]=sort(suse);
+    sneg = find(ss<0);
+    ssn = ss(sneg);
+    tmp1=r2use(ssi);
+    tmp2=respstd(ssi);
+    hfg = figure;
+    subplot(211); hold on; plot(ss, tmp1); plot(ssn, tmp1(sneg)); title('r squared versus slope for each roi (or pixel)')
+    subplot(212); hold on; plot(ss, tmp2); plot(ssn, tmp2(sneg)); title('fluorescence std versus slope for each roi (or pixel)')
+    saveas(hfg, strrep(pthgif, '.gif', '.png'))
+
+    laguni = unique(lagsamp_use);
+    prevkepins = 0;
+    pthgif44 = insertBefore(pthgif, '.gif', 'parsbylagr2use');
+    hfg = figure; hold on;
+    for k = 1:numel(laguni)
+        kepins = r2use(lagsamp_use==laguni(k));
+        if ~isempty(kepins)
+            kepinsx = [1:numel(kepins)]+prevkepins;
+            prevkepins = kepinsx(end)+1;
+            hpltmp = plot(kepinsx, kepins);
+            yline(mean(r2use(lagsamp_use==laguni(k))), color=hpltmp.Color);
+        else
+            kepinsx = [1:50]+prevkepins;
+            hpltmp = plot(kepinsx, zeros(size(kepinsx)));
+            yline(mean(r2use(lagsamp_use==laguni(k))), color=hpltmp.Color);
+        end
+    end
+    saveas(hfg, strrep(pthgif44, '.gif', '.png'))
+
+    prevkepins = 0;
+    pthgif44 = insertBefore(pthgif, '.gif', 'parsbylagsuse');
+    hfg = figure; hold on;
+    for k = 1:numel(laguni)
+        kepins = suse(lagsamp_use==laguni(k));
+        if ~isempty(kepins)
+            kepinsx = [1:numel(kepins)]+prevkepins;
+            prevkepins = kepinsx(end)+1;
+            hpltmp = plot(kepinsx, kepins);
+            yline(mean(suse(lagsamp_use==laguni(k))), color=hpltmp.Color);
+        else
+            kepinsx = [1:50]+prevkepins;
+            hpltmp2 = plot(kepinsx, zeros(size(kepinsx)));
+            yline(mean(suse(lagsamp_use==laguni(k))), color=hpltmp.Color);
+        end
+    end
+    saveas(hfg, strrep(pthgif44, '.gif', '.png'))
+
+
+    hfg = figure; plot(sort(lagsamp_use))
+    pthgif44 = insertBefore(pthgif, '.gif', 'sortlags');
+    saveas(hfg, strrep(pthgif44, '.gif', '.png'))
+
+    close all
+
+    hsvmap = hsvcmp(imhsv, hueft=suse, satft=r2use, valft=respstd);
+    imhsv = hsvplt(imhsv, stackmnt, hsvmap, roipx, roiwt);
 
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
@@ -242,7 +309,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     margins_fig = [0.07,0.05];
     splitdim = 'y';
     splitfrac = 0.55;
-    ax = arrange_subplots(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+    ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
 
 
     hfg = figure;
@@ -354,7 +421,8 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     for k2 = 1:numel(sinds)
         k = sinds(k2);
-        if ismember(k2, plotinds)
+        if ismember(k2, ipltts)
+            
 
             rind = ir(k);
 
@@ -409,6 +477,7 @@ end
 
 
 
+
 function [lagsec_actual, lagsamp, zero_lag_index, numlags] = compute_lags(t, lags_sec)
 
 ticumdiff = t - t(1);
@@ -422,7 +491,13 @@ else
     [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
     lags_sec_pos = lags_sec(lags_sec>=0);
     [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
-    lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    if isempty(lags_samp_neg)
+        lagsamp = lags_samp_pos;
+    elseif isempty(lags_samp_pos)
+        lagsamp = lags_samp_neg;
+    else
+        lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
+    end
     lagsamp = unique(lagsamp);
     lagsec_actual = [vec(-ticumdiff(abs(lagsamp(lagsamp<0))+1)); vec(ticumdiff(lagsamp(lagsamp>=0)+1))];
     lagsec_actual = unique(lagsec_actual);

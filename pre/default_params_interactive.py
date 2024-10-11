@@ -11,7 +11,7 @@ fnind_fn_prefix = '' #string, the job id (before any underscore if arrayed) for 
 pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 scopatmpdir = '' #string, keep empty
 
-recdate = ['20240907'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdate = ['202410*'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly index_extraction_param_set, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial index_extraction_param_set, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
@@ -23,7 +23,7 @@ registration_template_group_id=('') #empty string to skip; list of strings, each
 do_register = 1 #caiman normCorre registration 
 discard_channel_reg = None #None, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
-register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
+register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
 halfwidth_window_bgsub = 0 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
 len_window_smooth_t_mcp_sec = 0 #0.8 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp_sec - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp_sec = 0 skips smoothing)
 register_presmoothed = 0 # if 1, and if len_window_smooth_t_mcp_sec!=0, register the presmoothed stack to the smoothed stack and discard the smoothed stack, if 0 and if len_window_smooth_t_mcp_sec!=0, just register the smoothed stack and use that going formward  

@@ -128,7 +128,7 @@ end
 %THIS IS STUPID, DON'T LOOP OVER EPOCH/VALIDATION SETS; NEED TO BE ABLE TO MAKE IT INNER LOOP TOO 
 
 hsv_filename = [pth_fitdata_prefix 'hsvfov_.gif'];
-opts.plt.foreground = 'allrois';
+opts.plt.fg = 'allrois';
 opts.plt.ignoresat = 0;
 opts.plt.ignoreval = 0;
 

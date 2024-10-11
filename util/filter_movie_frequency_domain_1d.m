@@ -94,7 +94,7 @@ if 0
         end
         %%
 
-        stack2fig(rescale(imin(:,1:30)), pthgif=[fldr '/imout.gif'])
+        stackplt(rescale(imin(:,1:30)), pthgif=[fldr '/imout.gif'])
 
 
         catstack = cat(1, ...
@@ -103,7 +103,7 @@ if 0
             rescale(log(abs(imff(:,:,plotindz)))), ...
             rescale(imout(:,:,plotindz)));
 
-        stack2fig( catstack, pthgif=[fldr '/finalcat.gif'])
+        stackplt( catstack, pthgif=[fldr '/finalcat.gif'])
 
     end
 end

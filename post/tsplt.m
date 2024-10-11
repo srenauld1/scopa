@@ -7,18 +7,18 @@ function [hfg, hax] = tsplt(y1, opt)
 arguments
     y1 {mustBeVector} %timeseries 1, can be different length than y2
     opt.x1 {mustBeVector} = 1:numel(y1); %x for timeseries 1
-    opt.y2 {mustBeVector} = [] %timeseries 2, can be different length than y1
-    opt.x2 {mustBeVector} = []; %x for timeseries 2
+    opt.y2 = [] %timeseries 2, can be different length than y1
+    opt.x2 = []; %x for timeseries 2
     opt.xseg {mustBeNumeric} = 1 %(n,2) vector of x axis limits as fraction range 0-1, or scalar n for partitioning x axis into n segments; will plot each n and optionally save each as different frame in gif
     opt.yconst {mustBeNumeric} = 0 %whether to update y limits for each xlim subset
-    opt.ymatch {mustBeNumeric} = 0 %match y axes if plotting two timeseries
+    opt.ymatch {mustBeNumeric} = 0 %match y axes if plotting two timeseries (force y axis for 2nd timeseries to match y axis for first timeseries)
     opt.ypadfac {mustBeNumeric} = 0.1 %percentage of y range to pad above and below
     opt.ls1 {mustBeText} = '-' %linestyle for line 1
     opt.ls2 {mustBeText} = '-' %linestyle for line 2
-    opt.mkr1 {mustBeText} = '' %marker for line 1
-    opt.mkr2 {mustBeText} = '' %marker for line 2
+    opt.mkr1 {mustBeText} = 'none' %marker for line 1
+    opt.mkr2 {mustBeText} = 'none' %marker for line 2
     opt.titlein {mustBeText} = '' %title
-    opt.pthgif {mustBeText} %figure save path
+    opt.pthgif {mustBeText} = '' %figure save path
     opt.gifvis {mustBeText} = 'on'
     opt.hfg = [] %can pass figure handle to add to existing figure
     opt.axpos = []; %axis position
@@ -41,7 +41,9 @@ gifvis = opt.gifvis;
 hfg = opt.hfg;
 axpos = opt.axpos;
 
-
+if isempty(pthgif)
+    pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
+end
 if isempty(x1)
     x1 = 1:numel(y1);
 end
@@ -51,17 +53,8 @@ if isempty(x2)
 else
     default_x2 = 0;
 end
-if isempty(ls1)
-    ls1 = '-';
-end
-if isempty(ls2)
-    ls2 = '-';
-end
-if isempty(mkr1)
-    mkr1 = '';
-end
-if isempty(mkr2)
-    mkr2 = '';
+if ~isempty(axpos) && isempty(hfg)
+    error("must not pass axpos without hfg")
 end
 if isempty(axpos)
     if isempty(hfg)
@@ -89,7 +82,7 @@ if isempty(hfg)
     dosave = 1;
     hfg = figure('Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
 else
-    dosave = 0;
+    dosave = 1; %1 for now but eventually 0 here; not set up to save outside this function because of the loop, but that would be better 
 end
 
 hax{1} = axes('Parent', hfg, 'Position', axpos);
@@ -160,14 +153,18 @@ for fi = 1:size(xseg, 1)
 
 
     if all(isfinite(ylm1)) %why did i do this? nans from dividing by zero when rescaling?
-        hax{1}.YLim = [ylm1(1) - range(ylm1)*ypadfac, ylm1(2) + range(ylm1)*ypadfac];
+        if ylm1(1)~=ylm1(2) %in case segment is constant, just skip setting new scale
+            hax{1}.YLim = [ylm1(1) - range(ylm1)*ypadfac, ylm1(2) + range(ylm1)*ypadfac];
+        end
     end
     if ~isempty(y2)
         if ymatch
             hax{2}.YLim = hax{1}.YLim;
         else
             if all(isfinite(ylm2)) %why did i do this?  nans from dividing by zero when rescaling?
-                hax{2}.YLim = [ylm2(1) - range(ylm2)*ypadfac, ylm2(2) + range(ylm2)*ypadfac];
+                if ylm2(1)~=ylm2(2) %in case segment is constant, , just skip setting new scale
+                    hax{2}.YLim = [ylm2(1) - range(ylm2)*ypadfac, ylm2(2) + range(ylm2)*ypadfac];
+                end
             end
         end
     end
