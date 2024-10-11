@@ -1,12 +1,26 @@
 function o = odf(oin, funbin, copybin, opt)
 
-% WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
-% odf is intended to help the user easily set a potentially complex set of pipeline options
+%{
 
-%no input sets all funbin
-%input sets funbin for input funbin, unless restricted with funbin argument
-%funbin argument where funbin isn't in oin sets that funbin to default
-%if files==1, must have spec funbin in oin, or pass 'spec' as funbin argument to find default files
+WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
+note the docs in oset are also about odf, and are much more extensive than the docs here
+odf is intended to help the user easily set a potentially complex set of pipeline options (see function oset, where odf is called)
+
+can call odf in different ways
+    zero arguments sets o equal to d (all default options)
+    one argument sets options for fields in oin, setting default for options not listed 
+    two arguments sets options for d.funbin only, even if funbin don't appear in oin (if they don't they will be all default)
+    three arguments creates struct(s) (names in copybin) within funbin
+    name-value argument 'files': if files==1, will find files matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); files mode must have 'spec' funbin in oin, or 'spec' as funbin second argument
+
+struct d holds all default options;
+fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
+each section contains options for a major routine called in a2p (section header is options field name, with function name in parentheses, and brief description of function)
+output struct o holds options used in a2p
+output o matches default d unless input oin specifies a different value
+in particular: if a field is in both oin.funbin and d.funbin, use the value in oin.funbin; if field is only in d.funbin, use the value in d.funbin; if field isn't in d.funbin, error
+
+%}
 
 arguments
     oin = [] %input options struct for overwriting defaults in default options struct d
@@ -32,13 +46,6 @@ if files
         end
     end
 end
-
-% struct d holds all default options;
-% fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
-% each section contains options for a major routine called in a2p (section header is options field name, with function name in parentheses, and brief description of function)
-% output struct o holds options used in pipeline
-% o matches d unless input struct oin specifies a different value
-% in particular: let's call dsub a field of d; if a field is in both oin and dsub, use the value in oin; if field is only in dsub, use the value in dsub; if field isn't in dsub, recurse into odf to check field in the same way as dsub
 
 
 %% spec (filefind: find files matching recording specifications, called below)

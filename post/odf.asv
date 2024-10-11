@@ -1,12 +1,15 @@
 function o = odf(oin, funbin, copybin, opt)
 
 % WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
-% odf is intended to help the user easily set a potentially complex set of pipeline options
+% note the docs in oset are also about odf, and are much more extensive than the docs here
+% odf is intended to help the user easily set a potentially complex set of pipeline options (see function oset, where odf is called)
 
-%no input sets all funbin
-%input sets funbin for input funbin, unless restricted with funbin argument
-%funbin argument where funbin isn't in oin sets that funbin to default
-%if files==1, must have spec funbin in oin, or pass 'spec' as funbin argument to find default files
+% can call odf in different ways
+    % zero arguments sets o equal to d (all default options)
+    % one argument sets options for fields in oin, setting default for options not listed 
+    % two arguments sets options for d.funbin only, even if funbin don't appear in oin (if they don't they will be all default)
+    % three arguments creates struct(s) (names in copybin) within funbin
+    % name-value argument 'files': if files==1, will find files matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); files mode must have 'spec' funbin in oin, or 'spec' as funbin second argument
 
 arguments
     oin = [] %input options struct for overwriting defaults in default options struct d
@@ -36,9 +39,9 @@ end
 % struct d holds all default options;
 % fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
 % each section contains options for a major routine called in a2p (section header is options field name, with function name in parentheses, and brief description of function)
-% output struct o holds options used in pipeline
+% output struct o holds options used in a2p
 % o matches d unless input struct oin specifies a different value
-% in particular: let's call dsub a field of d; if a field is in both oin and dsub, use the value in oin; if field is only in dsub, use the value in dsub; if field isn't in dsub, recurse into odf to check field in the same way as dsub
+% in particular: let's call dsub a field of d; if a field is in both oin.funbin and d.funbin, use the value in oin.funbin; if field is only in d.funbin, use the value in d.funbin; if field isn't in d.funbin, recurse into odf to check field in the same way as dsub
 
 
 %% spec (filefind: find files matching recording specifications, called below)
@@ -46,15 +49,19 @@ end
 d.spec.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 d.spec.validsuffix = {'raw', 'cmrg', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'}; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
-d.spec.pth = {};  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
+d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
 if files
     d.spec.recdate = {'*'}; %cell array of char, can use wildcards
-d.spec.fly = {'*'}; %cell array of char, can use wildcards
-d.spec.trial = {'*'}; %cell array of char, can use wildcards
-d.spec.suffix = {'raw'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
-d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+    d.spec.fly = {'*'}; %cell array of char, can use wildcards
+    d.spec.trial = {'*'}; %cell array of char, can use wildcards
+    d.spec.suffix = {'raw'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 else
-
+    d.spec.recdate = ''; %cell array of char, can use wildcards
+    d.spec.fly = ''; %cell array of char, can use wildcards
+    d.spec.trial = ''; %cell array of char, can use wildcards
+    d.spec.suffix = '';  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    d.spec.match = ''; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 end
 
 %% mn (ap2: main pipeline control in a2p)
@@ -484,11 +491,11 @@ o = fieldord(o);
 
 if files
     if ~isempty(o.spec.pth) %if user passed no input to a2p, or a struct with file specifiers, or is running odf with files flag true but no oin or no spec field in oin
-        o.spec.recdate = {};
-        o.spec.fly = {};
-        o.spec.trial = {};
-        o.spec.suffix = {};
-        o.spec.match = {};
+        o.spec.recdate = '';
+        o.spec.fly = '';
+        o.spec.trial = '';
+        o.spec.suffix = '';
+        o.spec.match = '';
     end
 end
 
@@ -514,7 +521,7 @@ if files
         o(h).id = idtmp(h);
     end
 else
-    o.id = 'nofile';
+    o.id = 'nofilemode';
     sprintf("RUNNING odf IN nofile MODE, NOT SEARCHING FOR FILES")
 end
 
