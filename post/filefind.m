@@ -64,8 +64,6 @@ end
 if isempty(suffix)
     suffix = '*';
 end
-
-
 if isempty(validsuffix)
     validsuffix = glb('validsuffix');
     if isempty(validsuffix)
@@ -104,7 +102,7 @@ else %if full path input (wildcards allowed)
     for k = 1:numel(pth)
         pthtmp = rdir(pth{k});
         pthtmp = {pthtmp.name};
-        pthtmptif = erase(pthtmp(contains(pthtmp, strcat(validsuffix ,'_.tif'))), '.mat');
+        pthtmptif = erase(pthtmp(contains(pthtmp, strcat(validsuffix ,'_.tif'))), '.tif');
         pthtmpmat = erase(pthtmp(contains(pthtmp, strcat(validsuffix ,'_.mat'))), '.mat');
         pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat]);
     end
@@ -274,7 +272,7 @@ for k = 1:numel(pth_prefix_all)
         if isfile(tmptif)
             pth_all{k} = tmptif;
         else
-            error("what?")
+            error("there's might be a bug in filefind")
         end
     end
 end

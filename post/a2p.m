@@ -70,7 +70,7 @@ clear glb %clear globals
 
 o = oset(recin); % set options
 
-for k = 1:numel(o.mn.id) % loop over recordings
+for k = 1:numel(o.id) % loop over recordings
 
     [pth, parstr] = fnmake(o);
 

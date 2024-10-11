@@ -1,9 +1,9 @@
 
 % params for carl's old project; not set if you're not carl (if you don't have a recording folder with substring 'f91g_syt')
 
-o.mn.oldcarl = 0;
-if (~isempty(o.mn.rec) || ~isempty(cell2mat(o.mn.rec))) && all(contains(o.mn.rec, 'f91g_syt')) %~strcmp(fspc_recdate, '*') && startsWith(fspc_recdate{1}, '22') %override some settings for old project
-    if numel(o.mn.rec)>1
+
+if dofindfiles && all(contains(getfieldns([o.id],'pth'), 'f91g_syt')) %override some options for carl's old project (files contain substring f91g_syt)
+    if numel(o.id)>1
         error("right now old project is one file at a time")
     end
     o.mn.oldcarl = 1;

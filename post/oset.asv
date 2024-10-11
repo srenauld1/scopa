@@ -144,7 +144,7 @@ arguments
     recin = [] %recin can be empty, or not passed as argument, and will search for file using fspc* below; recin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, pass recin as 'nofile'
 end
 
-if strcmp(recin, 'nofilemode') %if the only input to oset is 'nofile', will do everything but skip searching for files (and skip setting globals)
+if strcmp(recin, 'nofile') %if the only input to oset is 'nofile', will do everything but skip searching for files (and skip setting globals)
     dofindfiles = 0;
 else
     dofindfiles = 1;

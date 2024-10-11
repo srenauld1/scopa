@@ -67,7 +67,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             pth_tif_write_secondary_tmp_prefix = pth_tif_write[:-4] + '_presmoothed_tmp'
 
 
-    stack = cropfb(stack, md['dims'], md['flyback'])
+    stack = cropflyback(stack, md['dims'], md['flyback'])
 
     bidiphase_frame_increment = 8 #use subset of frames because bidiphase_compute uses complex doubles, increasing size of array 8 times, also bidiphase should be constant throughout recording
     phoff = bidiphase_compute(stack[::bidiphase_frame_increment,...]) #compute bidirectional phase offset, can be zero 
@@ -75,7 +75,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         bidiphase_shift(stack, phoff) #correct any bidirectional phase offset if nonzero
     stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     if two_channel_reg:
-        stack_secondary = cropfb(stack_secondary, md['dims'], md['flyback'])
+        stack_secondary = cropflyback(stack_secondary, md['dims'], md['flyback'])
         phoff = bidiphase_compute(stack_secondary[::bidiphase_frame_increment,...])
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
@@ -207,7 +207,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 ########################################################################################################################################################
 
 
-def cropfb(stack, dims, flyback):
+def cropflyback(stack, dims, flyback):
     stack = stack.reshape(dims[0], dims[1]+flyback, dims[2], dims[3])
     if flyback!=0:    
         stack = stack[:,:-flyback,:,:] #crop flyback frames

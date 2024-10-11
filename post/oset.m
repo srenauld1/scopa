@@ -144,27 +144,31 @@ arguments
     recin = [] %recin can be empty, or not passed as argument, and will search for file using fspc* below; recin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, pass recin as 'nofile'
 end
 
-if strcmp(recin, 'nofilemode') %if the only input to oset is 'nofile', will do everything but skip searching for files (and skip setting globals)
+if strcmp(recin, 'nofile') %if the only input to oset is 'nofile', will do everything but skip searching for files (and skip setting globals)
     dofindfiles = 0;
 else
     dofindfiles = 1;
 end
-    
+
 %% recin
 
 if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not struct (if full file paths), will not search for files
-    o.spec.recdate = {'2024*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.fly = {'1'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.recdate = {'202410*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'*'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    o.spec.suffix = {'cmrg'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
     o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-    o.spec.pth = {};
+    o.spec.pth = '';
 elseif iscell(recin) || ischar(recin) %if not struct (if full file paths), will not search for files
-    o.spec.pth = recin;
+    if strcmp(recin, 'nofile')
+        o.spec.pth = '';
+    else
+        o.spec.pth = recin;
+    end
 end
 
 
-o = odf(o, files=dofindfiles); %call odf first with files set to true, so subsequent calls don't repeatedly search for files, since files is false by default
+% o = odf(o, files=dofindfiles); %call odf first with files set to true, so subsequent calls don't repeatedly search for files, since files is false by default
 
 o.mn.dodaq = 1;
 o.mn.doftv = 1;
@@ -243,6 +247,7 @@ o = odf(o, {'mroi'}, 'fb256');
 o.mroi.seg.numroi = 10;
 o = odf(o, {'mroi'}, 'pb');
 
+o = odf(o, files=dofindfiles);
 
 %% organize
 
