@@ -6,6 +6,7 @@
 
 ap2 (analysis 2-photon)
     scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
+    primarily for defining/processing rois, fitting models, and visualizing data (including interactively)
     can run on single recordings, or in loop on batch of recordings
     can run locally, or on O2
     many subroutines can be run on electrophysiological data too; full pipeline could be easily adapted to run on electrophysiological data 
@@ -36,13 +37,16 @@ variables:
     cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in froiproc)
 
 
-    
-
-main process functions:
+main processing functions:
     stackld: load stacks; plot stacks for comparison
     daqld: load/process daq data
+    mroimake: make manual (drawn) and/or automated morphological rois
+    froiproc: process functional rois extracted in pre pipeline with caiman
+    bumpcmp: compute bump in various ways
+    popcmp: compute poulation features, currently only holds bumpcmp; eventually will be general stack and timeseries feature extraction routine, to make extracted features available to mfit routine
+    mfit: fit models to any available timeseries (derived from roi code, or feature extraction code, or direct experimental timeseries (e.g stimulus, fictrac timeseries, etc)
 
-utility functions:
+utility functions (and visualization functions):
     stackplt: plot stack(s) 
     pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
     pthauto: create path (e.g. for saving figures)
@@ -65,18 +69,21 @@ pixel (abbr. px) can mean both pixel and voxel in scopa variable names (because 
 function a2p(recin)
 
 arguments
-    recin = [] %optional; full path to recording (char or cell), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
+    recin = [] %optional; full path to recording (char or cell, wildcards allowed matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
 end
 
 clear glb %clear globals
 
-o = oset(recin); % set options
+oa = oset(recin); % set options; oa stands for o all (ie all recordings)
 
-for k = 1:numel(o.mn.rec) % loop over recordings
+for k = 1:numel(oa) % loop over recordings
 
-    ids = idmake(o.mn.rec{k});
+    o = oa(k); %index into options for one recording, o
 
-    [pth, parstr] = fnmake(o, ids, o.mn.rec{k});
+    of = structflat(o);
+    writetable(struct2table(of), '~/stacks/foo.txt')
+
+    [pth, parstr] = fnmake(o);
 
     glb(1, pthfldr=pth.fldr); %set/update data folder path as global           
 
@@ -179,7 +186,7 @@ for k = 1:numel(o.mn.rec) % loop over recordings
 
     %% create/load/select rois/responses for each regionex
 
-    for rei = 1:numel(o.mroi.regionex) %for each regionex
+    for rei = 1:numel(o.mn.regionex) %for each regionex
 
         regionex = o.mn.regionex{rei};
 

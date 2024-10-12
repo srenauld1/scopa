@@ -6,6 +6,7 @@
 
 ap2 (analysis 2-photon)
     scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
+    primarily for defining/processing rois, fitting models, and visualizing data (including interactively)
     can run on single recordings, or in loop on batch of recordings
     can run locally, or on O2
     many subroutines can be run on electrophysiological data too; full pipeline could be easily adapted to run on electrophysiological data 
@@ -36,11 +37,16 @@ variables:
     cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in froiproc)
 
 
-main process functions:
+main processing functions:
     stackld: load stacks; plot stacks for comparison
     daqld: load/process daq data
+    mroimake: make manual (drawn) and/or automated morphological rois
+    froiproc: process functional rois extracted in pre pipeline with caiman
+    bumpcmp: compute bump in various ways
+    popcmp: compute poulation features, currently only holds bumpcmp; eventually will be general stack and timeseries feature extraction routine, to make extracted features available to mfit routine
+    mfit: fit models to any available timeseries (derived from roi code, or feature extraction code, or direct experimental timeseries (e.g stimulus, fictrac timeseries, etc)
 
-utility functions:
+utility functions (and visualization functions):
     stackplt: plot stack(s) 
     pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
     pthauto: create path (e.g. for saving figures)
@@ -68,9 +74,13 @@ end
 
 clear glb %clear globals
 
-o = oset(recin); % set options
+oa = oset(recin); % set options; oa stands for o all (ie all recordings)
 
-for k = 1:numel(o.id) % loop over recordings
+for k = 1:numel(oa) % loop over recordings
+
+    o = oa(k); %index into options for one recording, o
+
+    osave(o); %save all options to txt file 
 
     [pth, parstr] = fnmake(o);
 

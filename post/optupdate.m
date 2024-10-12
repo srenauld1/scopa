@@ -40,7 +40,11 @@ else
             error(sprintf("d." + fn1{k} + " does not exist in odf"))
         end
         if isempty(copybin)
-            optout.(fn1{k}) = optdef.(fn1{k});
+            if all(ismember(fieldnames(optin.(fn1{k})), copybinprev)) %skip if the vbin is all copybins (ie if there is are no options passed in the vbin)
+                optout.(fn1{k}) = optin.(fn1{k});
+            else
+                optout.(fn1{k}) = optdef.(fn1{k});
+            end
             optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k});
         else
             fn2 = fieldnames(optin.(fn1{k}));

@@ -1,4 +1,4 @@
-function o = odf(oin, funbin, copybin, opt)
+function o = odf(oin, vbin, copybin, opt)
 
 %{
 
@@ -9,37 +9,37 @@ odf is intended to help the user easily set a potentially complex set of pipelin
 can call odf in different ways
     zero arguments sets o equal to d (all default options)
     one argument sets options for fields in oin, setting default for options not listed 
-    two arguments sets options for d.funbin only, even if funbin don't appear in oin (if they don't they will be all default)
-    three arguments creates struct(s) (names in copybin) within funbin
-    name-value argument 'files': if files==1, will find files matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); files mode must have 'spec' funbin in oin, or 'spec' as funbin second argument
+    two arguments sets options for d.vbin only, even if vbin don't appear in oin (if they don't they will be all default); vbin can be nested (vbin1.vbin2)
+    three arguments creates struct(s) (names in copybin) within vbin
+    name-value argument 'files': if files==1, will find files matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); files mode must have 'spec' vbin in oin, or 'spec' as vbin second argument
 
 struct d holds all default options;
 fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
 each section contains options for a major routine called in a2p (section header is options field name, with function name in parentheses, and brief description of function)
 output struct o holds options used in a2p
 output o matches default d unless input oin specifies a different value
-in particular: if a field is in both oin.funbin and d.funbin, use the value in oin.funbin; if field is only in d.funbin, use the value in d.funbin; if field isn't in d.funbin, error
+in particular: if a field is in both oin.vbin and d.vbin, use the value in oin.vbin; if field is only in d.vbin, use the value in d.vbin; if field isn't in d.vbin, error
 
 %}
 
 arguments
     oin = [] %input options struct for overwriting defaults in default options struct d
-    funbin = [] %cell of char (or char, if scalar); if nonempty, and copybin is nonempty, update funbin and place results in copybin, and update ~funbin without placing in copybin; if nonempty and copybin is empty, just update funbin; if empty and copybin is nonempty, update all and place all in copybin
-    copybin = [] %subfields into which funbin is copied
+    vbin = [] %cell of char (or char, if scalar); if nonempty, and copybin is nonempty, update vbin and place results in copybin, and update ~vbin without placing in copybin; if nonempty and copybin is empty, just update vbin; if empty and copybin is nonempty, update all and place all in copybin
+    copybin = [] %subfields into which vbin is copied
     opt.files = 0 %whether to use spec to find stack files, or skip
 end
 files = opt.files;
 
-if isstring(oin) || isstring(funbin) || isstring(funbin)
+if isstring(oin) || isstring(vbin) || isstring(vbin)
     error('you may have attempted to pass "files" name-value argument, without some of the other non-name-value arguments, but misspelled "files" it or used the wrong term;')
 end
 
-if files && ~isfield(oin, 'spec') && ~any(strcmp(funbin, 'spec'))
-    error("if files is true, you must pass input struct with spec funbin, or pass funbin argument that includes 'spec'")
+if files && ~isfield(oin, 'spec') && ~any(strcmp(vbin, 'spec'))
+    error("if files is true, you must pass input struct with spec vbin, or pass vbin argument that includes 'spec'")
 end
 
 if files
-    [~, flatfntmp, ~] = structflat(oin);
+    [~, flatfntmp, ~] = structflat(oin, 'prefix', 'o');
     if any(strcmp(flatfntmp, 'spec.pth')) && ~isempty(oin.spec.pth)
         if (any(strcmp(flatfntmp, 'spec.recdate')) && ~isempty(oin.spec.recdate)) || (any(strcmp(flatfntmp, 'spec.fly')) && ~isempty(oin.spec.fly)) || (any(strcmp(flatfntmp, 'spec.trial')) && ~isempty(oin.spec.trial)) || (any(strcmp(flatfntmp, 'spec.suffix')) && ~isempty(oin.spec.suffix))
             error("in file mode, cannot pass in spec.pth and any of spec.recdate, spec.fly, spec.trial, spec.suffix")
@@ -139,7 +139,7 @@ d.mroi.chandraw = [1]; %which channel(s) to use as background for roi drawing; '
 d.mroi.chancp = [1]; %which channel's rois to copy onto the other (concatenated with any other rois on that channel, ie does not overwrite)
 d.mroi.channorm = []; %which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
 d.mroi.degdtr = 0; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default
-d.mroi.wavp = [0 50];%[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
+d.mroi.wavp = [];%[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
 d.mroi.doplt = 0; %do plots besides overlay and imhsv in mroimake and mroiauto
 d.mroi.doroiol = 0; %plot or don't plot roi overlay with background, plots one roi at a time, each slice, with roi in red
 d.mroi.doimhsv = 0; %plot or don't plot hsv image with roi as hue
@@ -295,8 +295,8 @@ d.tg.v8{1} = {['']};
 d.pltx.vpmapl = [1 2 3 4]; %map of indices of each tg.v above to plot positions (on left axis)
 d.pltx.vpmapr = [5 6 7 8]; %map of indices of each tg.v above to plot positions (on right axis)
 
-d.pltx.lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x;
-d.pltx.lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable
+d.pltx.lagsxy_sec = {0, 1, 'all'}; %lags for interactive scatterplot;  %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, put in cell like this {min, max, 'all'}
+d.pltx.lagsz_sec = {0, 1, 'all'}; %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable
 d.pltx.lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
 d.pltx.plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color
 
@@ -317,7 +317,7 @@ d.pltx.letui = 1;
 d.hires.disttype = 'monomodal'; % multimodal monomodal, used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
 d.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in register_one_stack_to_another_in_3d from within register_3d_hires_to_3d_lores
 d.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
-d.hires.caiman_hr_str = '*'; %empty to skip
+d.hires.roistr = '*'; %empty to skip
 d.hires.doplt = 0;
 
 %% tp (tsplt: plot timeseries)
@@ -361,17 +361,17 @@ d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is bui
 
 %% globals
 
-if isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('validsuffix'))
+if isempty(glb('noregionex')) && isempty(glb('timestr')) && isempty(glb('validsuffix'))
     if ~files
         sprintf("warning, globals have not been set (or have been cleared), so this is likely the first time you've called odf, but files is set to 0; typically you want to find files the first time you call odf (set files to 1), although it's not required")
     end
-    glb(regionexdf=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.spec.validsuffix); %set some globals, force update if they already have been set with first argument 1
+    glb(noregionex=d.mn.regionex, timestr=d.mn.timestr, validsuffix=d.spec.validsuffix); %set some globals, force update if they already have been set with first argument 1
 end
 
 %% for output oout, update defaults with input oin
 
 if isfield(oin, 'id') %id is the one field that doesn't have defaults (it holds found files info)
-    idhold = oin.id; %put it aside and put back at bottom
+    idhold = oin.id; %put it aside and put back below
     oin = rmfield(oin, 'id');
 else
     idhold = [];
@@ -379,11 +379,11 @@ end
 
 fnd = fieldnames(d);
 
-if isempty(funbin)
-    funbin = {};
+if isempty(vbin)
+    vbin = {};
 end
-if ~iscell(funbin)
-    funbin = {funbin};
+if ~iscell(vbin)
+    vbin = {vbin};
 end
 if isempty(copybin)
     copybin = {};
@@ -393,14 +393,14 @@ if ~iscell(copybin)
 end
 
 if isempty(oin) || isempty(fieldnames(oin))
-    if isempty(funbin)
+    if isempty(vbin)
         oin = d;
     else
-        for k = 1:numel(funbin)
-            if ~isfield(d, funbin{k})
-                error(sprintf("d." + funbin{k}) + " does not exist")
+        for k = 1:numel(vbin)
+            if ~isfield(d, vbin{k})
+                error(sprintf("d." + vbin{k}) + " does not exist")
             end
-            oin.(funbin{k}) = d.(funbin{k});
+            oin.(vbin{k}) = d.(vbin{k});
         end
     end
 end
@@ -410,68 +410,69 @@ if ~isfield(oin, 'copybinprev')
 end
 copybinprev = oin.copybinprev;
 
-if isempty(funbin)
+if isempty(vbin)
     o = optupdate(oin, d, copybinprev, copybin);
 else
-    if any(contains(funbin, '.')) %if nested funbin, remove deepest funbin and operate on it, invoking defaults throughout the nested funbin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
-        [~, fbsortinds] = sort(cellfun(@numel, regexp(funbin, '[.]*')), 'descend'); %
-        funbin = funbin(fbsortinds); %sort to make update order deepest nested funbin to shallowest, otherwise doens't work
+    if any(contains(vbin, '.')) %if nested vbin, remove deepest vbin and operate on it, invoking defaults throughout the nested vbin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
+        [~, fbsortinds] = sort(cellfun(@numel, regexp(vbin, '[.]*')), 'descend'); %
+        vbin = vbin(fbsortinds); %sort to make update order deepest nested vbin to shallowest, otherwise doens't work
         for k = 1:numel(fnd)
-            repeatfunbin = cellfun(@numel, strfind(funbin, fnd{k}))>1;
-            if any(repeatfunbin)
-                error(sprintf("you have multiple copies of funbin " + fnd{k} + " and possibly others; in a nested funbin each funbin can only appear once, for now at least"))
+            repeatvbin = cellfun(@numel, strfind(vbin, fnd{k}))>1;
+            if any(repeatvbin)
+                error(sprintf("you have multiple copies of vbin " + fnd{k} + " and possibly others; in a nested vbin each vbin can only appear once, for now at least"))
             end
         end
-        [~, fnflattmp] = structflat(oin);
-        notfunbin = regexprep(erase(fnflattmp, strcat(fnd, '.')), '^[.]*', ''); %remove everything but the funbins
-        if ~isempty(cell2mat(regexp(notfunbin, '[.]{2,}'))) %at least 2 periods means a non-funbin is above a funbin
-            error("you must have placed a non-funbin somewhere other than the end of a nesting; for example, o.funbin1.optionA.funbin2 is not allowed; options can themselves be nested, but options must come at the end of each flattened fieldname")
+        [~, fnflattmp] = structflat(oin, 'prefix', 'o'); %use prefix in case it's nonscalar
+        fnflattmp = erase(fnflattmp, 'o_');
+        notvbin = regexprep(erase(fnflattmp, strcat(fnd, '.')), '^[.]*', ''); %remove everything but the vbins
+        if ~isempty(cell2mat(regexp(notvbin, '[.]{2,}'))) %at least 2 periods means a non-vbin is above a vbin
+            error("you must have placed a non-vbin somewhere other than the end of a nesting; for example, o.vbin1.optionA.vbin2 is not allowed; options can themselves be nested, but options must come at the end of each flattened fieldname")
         end
-        fnflat = unique(regexprep(erase(fnflattmp, notfunbin), '[.]*$', ''));
-        copybinprev_and_newfunbindeepest = [];
-        for k = 1:numel(funbin)
-            if startsWith(funbin{k}, 'o.')
-                error("for nested funbin, omit the leading 'o.'")
+        fnflat = unique(regexprep(erase(fnflattmp, notvbin), '[.]*$', '')); %just the vbins (options and copybins removed)
+        copybinprev_and_newvbindeepest = [];
+        for k = 1:numel(vbin)
+            if startsWith(vbin{k}, 'o.')
+                error("for nested vbin, omit the leading 'o.'")
             end
-            funbintmp = strsplit(funbin{k}, '.');
-            funbinshallowest = funbintmp{1};
-            funbindeepest = funbintmp{end};
-            if ~isempty(copybin) %if you're making copybin of a nested funbin . . .
-                copybinprev_and_newfunbindeepest = unique([copybinprev_and_newfunbindeepest, copybinprev, funbindeepest]); %must ignore copybinprev and funbindeepest in optupdate on the full nested funbin branch (otherwise the funbin enclosing the new copybin, funbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
+            vbintmp = strsplit(vbin{k}, '.');
+            vbinshallowest = vbintmp{1};
+            vbindeepest = vbintmp{end};
+            if ~isempty(copybin) %if you're making copybin of a nested vbin . . .
+                copybinprev_and_newvbindeepest = unique([copybinprev_and_newvbindeepest, copybinprev, vbindeepest]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
             end
-            if ~isfield(d, funbinshallowest)
-                error(sprintf("d." + funbinshallowest) + " does not exist; nested funbin must start with primary funbin directly under o")
+            if ~isfield(d, vbinshallowest)
+                error(sprintf("d." + vbinshallowest) + " does not exist; nested vbin must start with primary vbin directly under o")
             end
-            if ismember(funbin{k}, fnflat) %if the nested funbin exists in oin, grab the deepest funbin
-                eval(['oindeepest.' funbindeepest ' = oin.' funbin{k}]); %use eval to succinctly extract nested field
+            if ismember(vbin{k}, fnflat) %if the nested vbin exists in oin, grab the deepest vbin
+                eval(['oindeepest.' vbindeepest ' = oin.' vbin{k}]); %use eval to succinctly extract nested field
             else %if the nesting doesn't exist in oin, create it with defaults in the deepest layer, and nothing above
-                if isfield(d, funbindeepest)
-                    sprintf("note: " + funbindeepest + " does not exist in your input to odf, creating it and populating with all default values")
+                if isfield(d, vbindeepest)
+                    sprintf("note: " + vbindeepest + " does not exist in your input to odf, creating it and populating with all default values")
                 else
-                    error(sprintf("d." + funbindeepest) + " does not exist")
+                    error(sprintf("d." + vbindeepest) + " does not exist")
                 end
-                oindeepest.(funbindeepest) = d.(funbindeepest);
+                oindeepest.(vbindeepest) = d.(vbindeepest);
             end
-            oindeepest = optupdate(oindeepest, d, copybinprev, copybin); %update deepest funbin
-            eval(['oin.' funbin{k} ' = oindeepest.' funbindeepest]); %after updating, put deepest back into oin where it was before (ie according to funbin nesting), with possible copybin applied
-            oinsub.(funbinshallowest) = oin.(funbinshallowest); %put that nested funbin aside and ...
-            oin = rmfield(oin, funbinshallowest); %remove it from oin
-            if k==numel(funbin)
-                o = optupdate(oinsub, d, copybinprev_and_newfunbindeepest, []); %then update the full nested funbin; don't use copybin on full nested funbin (only use it on oindeepest above); here you must ignore copybinprev_and_newfunbindeepest, which contains both the enclosing funbin for the newly created copybin (funbindeepest), as well as old copybin (copybinprev); note you could break this if copybindeepest appears more than once in the nesting, then optupdate will ignore the shallower, so there's an above error to catch that
+            oindeepest = optupdate(oindeepest, d, copybinprev, copybin); %update deepest vbin
+            eval(['oin.' vbin{k} ' = oindeepest.' vbindeepest]); %after updating, put deepest back into oin where it was before (ie according to vbin nesting), with possible copybin applied
+            oinsub.(vbinshallowest) = oin.(vbinshallowest); %put that nested vbin aside and ...
+            oin = rmfield(oin, vbinshallowest); %remove it from oin
+            if k==numel(vbin)
+                o = optupdate(oinsub, d, copybinprev_and_newvbindeepest, []); %then update the full nested vbin; don't use copybin on full nested vbin (only use it on oindeepest above); here you must ignore copybinprev_and_newvbindeepest, which contains both the enclosing vbin for the newly created copybin (vbindeepest), as well as old copybin (copybinprev); note you could break this if copybindeepest appears more than once in the nesting, then optupdate will ignore the shallower, so there's an above error to catch that
             end
         end
-    else %if non-nested funbin, remove funbin and operate on it, and then merge with everything else in input, which remains untouched
+    else %if non-nested vbin, remove vbin and operate on it, and then merge with everything else in input, which remains untouched
         fn = fieldnames(oin);
-        for k = 1:numel(funbin)
-            if ismember(funbin{k}, fn)
-                oinsub.(funbin{k}) = oin.(funbin{k});
-                oin = rmfield(oin, funbin{k});
+        for k = 1:numel(vbin)
+            if ismember(vbin{k}, fn)
+                oinsub.(vbin{k}) = oin.(vbin{k});
+                oin = rmfield(oin, vbin{k});
             else
-                if isfield(d, funbin{k})
-                    sprintf("note: " + funbin{k} + " does not exist in your input to odf, creating it and populating with all default values")
-                    oinsub.(funbin{k}) = d.(funbin{k}); %use all defaults funbin{k} is not in oin
+                if isfield(d, vbin{k})
+                    sprintf("note: " + vbin{k} + " does not exist in your input to odf, creating it and populating with all default values")
+                    oinsub.(vbin{k}) = d.(vbin{k}); %use all defaults vbin{k} is not in oin
                 else
-                    error(sprintf("d." + funbin{k}) + " does not exist")
+                    error(sprintf("d." + vbin{k}) + " does not exist")
                 end
             end
         end
@@ -479,12 +480,12 @@ else
         if ~isempty(copybin_inert)
             sprintf(strjoin(copybin_inert, ', ') + " has/have already been set, nothing will change in this/these copybin")
         end
-        o = optupdate(oinsub, d, copybinprev, copybin); %just update funbin
+        o = optupdate(oinsub, d, copybinprev, copybin); %just update vbin
     end
     o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]); %combine with what was unchanged
 end
 
-o.copybinprev = unique([oin.copybinprev, copybin]); %must ignore copybinprev and funbindeepest in optupdate on the full nested funbin branch (otherwise the funbin enclosing the new copybin, funbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
+o.copybinprev = unique([oin.copybinprev, copybin]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
 
 o.id = idhold;
 o = fieldord(o);

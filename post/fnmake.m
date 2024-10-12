@@ -3,27 +3,27 @@ function [pth, parstr] = fnmake(o)
 
 %%set up filenames for a2p 
 
+id = o.id;
+pthstack = o.id.pth;
 
-ids = o.mn.id;
-pthstack = o.mn.id.pth;
-
-recdatenum = ids.recdatenum; 
-flynum = ids.flynum; 
-trialnum = ids.trialnum; 
-suffix = ids.suffix; 
-recid = ids.recid;
-datefly_hyphen = ids.datefly_hyphen;
+recdatenum = id.recdatenum; 
+flynum = id.flynum; 
+trialnum = id.trialnum; 
+suffix = id.suffix; 
+recid = id.recid;
+datefly_hyphen = id.datefly_hyphen;
 
 
 regionex = o.mn.regionex;
 fldrtmp = o.mn.fldrtmp;
-usehires = o.mroi.seg.usehires; %gets updated to numeric struct, fieldname usehires
-dodraw = o.mroi.dodraw; %gets updated to numeric struct, fieldname dodraw
-numroiauto = o.mroi.seg.numroi; %gets updated to numeric struct, fieldname numroiauto
+fntmp = fieldnames(o.mroi);
+for k = 1:numel(fntmp)
+    usehires(k) = o.mroi.(fntmp{k}).seg.usehires; %gets updated to numeric struct, fieldname usehires
+end
+usehires = any(usehires);
+
 roistr = o.froi.roistr;
-% numcluster_for_bump_domain_resample = o.pop.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
-use_caiman_on_hires = o.hires.use_caiman_on_hires;
-caiman_hr_str = o.hires.caiman_hr_str;
+roistrhr = o.hires.roistr;
 
 %% variables for all regionextmp
 
@@ -102,21 +102,14 @@ end
 
 %% variables for each regionextmp
 
-
-if isempty(cell2mat(regionex))
-    numregions = 0;
-else
-    numregions = numel(regionex);
-end
-
 parstr = '';
-for k = 1:numregions
+for k = 1:numel(regionex)
 
     regionextmp = regionex{k};
     spl = strsplit(regionextmp, '_');
     regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionextmp cuboid from python preprocessing
 
-    [~, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
+    [~, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
 
     paramstr = ['moex_' num2str(usehires.(regionextmp)) '_' num2str(dodraw.(regionextmp)) '_' num2str(numroiseg.(regionextmp))];
     parstr.mroi.(regionextmp) = paramstr;
@@ -159,15 +152,6 @@ for k = 1:numregions
         pth_froi_all.(regionextmp) = [];
     end
 
-    % paramstr = [paramstr '_' num2str(numcluster_for_bump_domain_resample.(regionextmp))];
-
-    % if usehires(k)
-    %     paramstr = [paramstr '_hr_moex_paramtbd_'];
-    %     parstr.mroi.(regionextmp) = [parstr.mroi.(regionextmp) '_hr_moex_paramtbd'];
-    %     if use_caiman_on_hires(k)
-    %         paramstr = [paramstr '_hr_cmex_' caiman_hr_str];
-    %     end
-    % end
 
     pth_svdat.(regionextmp) = [pth_fldr recid '_' suffix '_' paramstr '_' regionextmp '_savedata_.mat'];
 
@@ -198,7 +182,7 @@ end
 if ~isempty(pth_tmp)
     pth_hires_prefix = pth_tmp.name(1:end-4);
     pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];
-    pth_froi_hires = [pth_hires_prefix 'caiman' caiman_hr_str '_roishires_.mat'];
+    pth_froi_hires = [pth_hires_prefix 'caiman' roistrhr '_roishires_.mat'];
 else
     pth_hires_prefix = [];
     pth_hires_mat_matreg = [];
@@ -214,15 +198,15 @@ pth.tsuse_nms_prefix.mfit = [pth_fldr 'tsuse_finfits_'];
 pth.tsuse_nms_prefix.scat = [pth_fldr 'tsuse_finscatter_'];
 pth.tsuse_nms_prefix.pltx = [pth_fldr 'tsuse_finpltexp_'];
 
+
 %% carl's old project 
 
 pth_feat_save = [pth_fldr o.carl.feat '_lin_ds_.mat'];
 pthparent_feat = o.carl.pthparent_feat;
 pth_template = o.carl.pth_template;
 
+
 %% assign to struct
-
-
 
 pth.prefix = pth_prefix;
 pth.fldr = pth_fldr;
@@ -232,13 +216,11 @@ pth.hires_mat_matreg = pth_hires_mat_matreg;
 pth.froi_hires = pth_froi_hires;
 pth.md = pth_md;
 pth.flyg_md = pth_flyg_md;
-if numregions>0
     pth.mroi = pth_mroi;
     pth.mroi_interactive = pth_mroi_interactive;
     pth.froi_all = pth_froi_all;
     pth.roi_allmethods = pth_roi_allmethods;
     pth.savedata_oneregion = pth_svdat;
-end
 pth.daq = pth_daq;
 pth.daqrs = pth_daqrs;
 pth.ft.dat = pth_ftdat;

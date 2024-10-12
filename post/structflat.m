@@ -40,6 +40,7 @@ function [s1, fn, fnex] = structflat(s,varargin)
 try
     
     %% Check input
+        
     p = inputParser;
     p.KeepUnmatched = 1;
     addRequired(p,'s',@(x)validateattributes(x,{'struct'},{},mfilename,'s',1))
@@ -54,9 +55,13 @@ try
     Prefix(Prefix=="") = [];
     Prefix = convertStringsToChars(Prefix);
     
-    % Get all Unmatched parameters fro sub fuctions
+    % Get all Unmatched parameters for sub fuctions
     varargin = namedargs2cell(p.Unmatched);
     
+    if numel(s)>1 && isempty(Prefix)
+        error("for nonscalar struct input to structflat, you must also pass prefix argument to make flattened fieldnames valid (this is a temporary solution)")
+    end
+
     %% Get all fieldnames
     [~,tab] = fieldnamesAll(s,varargin{:});
     

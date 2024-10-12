@@ -1,22 +1,27 @@
-function [pth, parstr] = fnmake(o, ids, pthstack)
+function [pth, parstr] = fnmake(o)
 
 
 %%set up filenames for a2p 
 
+id = o.id;
+pthstack = o.id.pth;
 
-recdatenum = ids.recdatenum; 
-flynum = ids.flynum; 
-trialnum = ids.trialnum; 
-suffix = ids.suffix; 
-recid = ids.recid;
-datefly_hyphen = ids.datefly_hyphen;
+recdatenum = id.recdatenum; 
+flynum = id.flynum; 
+trialnum = id.trialnum; 
+suffix = id.suffix; 
+recid = id.recid;
+datefly_hyphen = id.datefly_hyphen;
 
 
 regionex = o.mn.regionex;
 fldrtmp = o.mn.fldrtmp;
-usehires = o.mroi.seg.usehires; %gets updated to numeric struct, fieldname usehires
-dodraw = o.mroi.dodraw; %gets updated to numeric struct, fieldname dodraw
-numroiauto = o.mroi.seg.numroi; %gets updated to numeric struct, fieldname numroiauto
+fntmp = fieldnames(o.mroi);
+for k = 1:numel(fntmp)
+    usehires(k) = o.mroi.(fntmp{k}).seg.usehires; %gets updated to numeric struct, fieldname usehires
+end
+usehires = any(usehires);
+
 roistr = o.froi.roistr;
 % numcluster_for_bump_domain_resample = o.pop.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
 use_caiman_on_hires = o.hires.use_caiman_on_hires;
