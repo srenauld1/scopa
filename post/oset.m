@@ -230,7 +230,7 @@ if isempty(recin) %if you're running a2p without input arguments (ie if recin is
     o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'*'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
     o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     o.spec.pth = '';
 elseif iscell(recin) || ischar(recin) %if input to a2p is not empty, and is not struct 
@@ -256,10 +256,10 @@ o.mn.regionex = {}; %empty to skip rois (mroimake and froiproc); list any region
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = 1; %which channel to use
-o.sld.suffixplt = {}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
+o.sld.suffixplt = {'raw', 'cmrg', 'cmrg_dcdn'}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
 
-o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
-o.sld.sp.it = [10.3]; % t indices for gif showing o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.dr = {[0,1], [0,1], [0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
+o.sld.sp.it = [50.3]; % t indices for gif showing o.sld.suffixplt; see indsmake for nonstandard syntax options
 
 o.ftv.smsdspace = 2;
 o.ftv.doplt = 1;
