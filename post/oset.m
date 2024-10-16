@@ -255,11 +255,12 @@ o.mn.regionex = {}; %empty to skip rois (mroimake and froiproc); list any region
 
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
-o.sld.chanuse = 1; %which channel to use
-o.sld.suffixplt = {'raw', 'cmrg', 'cmrg_dcdn'}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
+o.sld.chanuse = [1 2]; %which channel to use
+o.sld.suffixplt = {'cmrg', 'cmrg_dcdn'}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
 
 o.sld.sp.dr = {[0,1], [0,1], [0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
-o.sld.sp.it = [50.3]; % t indices for gif showing o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.it = [10.3]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
 o.ftv.smsdspace = 2;
 o.ftv.doplt = 1;

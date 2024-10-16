@@ -27,7 +27,12 @@ arguments
     opt.ik = []; %rgb color channel indices 
 end
 
-eval(structvars(opt).'); %turn opt into local variables with the same name as opt fields
+
+%NEED TO REMOVE THIS, LIST INPUTS INSTEAD
+fn = fieldnames(opt);
+for fi = 1:numel(fn)
+    eval([fn{fi} '= opt.(fn{fi});' ]);%transform 'opt' fields into local variables
+end
 
 if iscell(stack)
     szin = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
@@ -314,7 +319,7 @@ end
 dr_str = vec(cellfun(@num2str, dr, 'UniformOutput', false))';
 dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'-'}, numel(dr_str)), 'UniformOutput', false);
 dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
-dr_str = ['dr: ' strjoin(dr_str, ' AND ')];
+dr_str = ['dr-' strjoin(dr_str, ' AND ')];
 
 lab_framestable = {dr_str};
 index_labels_tmp = index_labels(1:fdimnum); %labels that are the same on every frame
@@ -340,7 +345,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         subtmp = subtmp(1:numel(lab_framechange));
         labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
         labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
-        labtmp = cellfun(@horzcat, dimlabels(dims_changing_across_frames), repelem({': '}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
+        labtmp = cellfun(@horzcat, dimlabels(dims_changing_across_frames), repelem({':'}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
         titlesuffix = cat(1, lab_framestable(:), labtmp(:));
         titlesuffix = strjoin(titlesuffix, ', ');
         titlesuffix = [titlesuffix roinum_title];

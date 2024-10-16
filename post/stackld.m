@@ -93,7 +93,7 @@ for spi = 1:numel(suffixplt)
 end
 
 dr_str = vec(cellfun(@num2str, dr, 'UniformOutput', false))';
-dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'to'}, numel(dr_str)), 'UniformOutput', false);
+dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({': '}, numel(dr_str)), 'UniformOutput', false);
 dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
 dr_str = ['DR_' strjoin(dr_str, '_AND_')];
 
@@ -102,8 +102,8 @@ dr_str = ['DR_' strjoin(dr_str, '_AND_')];
 %%  loop over suffixes, loading and concatenating
 
 
-stackplot = cell(numel(pth_stacks), 1); %make it cell column so first dim is cat when cell2mat below
-stackplot_mn = cell(numel(pth_stacks), 1); %make it cell column so first dim is cat when cell2mat below
+stacktmp = cell(numel(pth_stacks), 1); %make it cell column so first dim is cat when cell2mat below
+stackmntmp = cell(numel(pth_stacks), 1); %make it cell column so first dim is cat when cell2mat below
 
 
 for spi = 1:numel(pth_stacks)
@@ -153,21 +153,15 @@ for spi = 1:numel(pth_stacks)
 
     if plot_stack_gif
 
-        stacktmp_mn = mean(stack, 4, 'native');
+        [iz, izstr] = indsmake(iz, indsall=size(stack,3), label_prefix='z', strdelim=': ', printmax=20);
+        [it, itstr] = indsmake(it, indsall=size(stack,4), label_prefix='t', strdelim=': ', printmax=20);
 
-        [iz, izstr] = indsmake(iz, indsall=size(stack,3), label_prefix='z', strdelim='-', printmax=20);
-        [it, itstr] = indsmake(it, indsall=size(stack,4), label_prefix='t', strdelim='-', printmax=20);
+        stacktmp{spi} = stack(:,:,iz,it,:);
+        stackmntmp{spi} = mean(stack, 4, 'native');
 
-        stacktmp = stack(:,:,iz,it,:);
-
-        if ~strcmp(pth_stack, pth_stacks{spi}) %if it's the stack for analysis outside this function
-            stack = [];
+        if ~strcmp(pth_stack, pth_stacks{spi})
+            stack = []; %remove unless it's the stack for analysis outside this function
         end
-
-        stackplot{spi} = stacktmp;
-        stackplot_mn{spi} = stacktmp_mn;
-
-        clear stacktmp stacktmp_mn
 
     end
 end
@@ -180,75 +174,46 @@ if plot_stack_gif
     fn_suffix_insert = strjoin(suffixplt_keep, '_AND_');
 
     figtitle_prefix = [recid '_' fn_suffix_insert];
-    filename_prefix = [pth_fldr figtitle_prefix '_' dr_str '_' izstr '_' itstr ];
+    filename_prefix = [pth_fldr figtitle_prefix]; %  '_' dr_str '_' izstr '_' itstr ];
 
-    % testing RGB arguments to stackplt
-    % for spp = 1:size(stackplot{1}, 3)
-    %     for sppp = 1:size(stackplot{1}, 4)
-    %         stackplotnew(:,:,spp,sppp,:) = ind2rgb(stackplot{1}(:,:,spp,sppp), gray(256));
-    %     end
-    % end
-    % stackplot{1} = stackplotnew;
-    % stackplot{2} = stackplotnew;
-
-
-    %test thresholding stack prior to plot
-    % for spi = 1:numel(stackplot)
-    %     [histdt, histx] = hist(stackplot_mn{spi}(:), 1000);
-    %     thrbin_tri = triangle_threshold(histdt, 'R', 1);
-    %     thr_tri = histx(thrbin_tri);
-    %     bdsb = find(stackplot_mn{spi}<thr_tri);
-    %     mntmp = min(stackplot_mn{spi}(:));
-    %     stdtmp = zeros(size(stackplot{spi}, 4), numel(bdsb), 'uint16');
-    %     for fr = 1:size(stackplot{spi}, 4)
-    %         tmpfr = stackplot{spi}(:,:,:,fr);
-    %         stdtmp(fr,:) = tmpfr(bdsb);
-    %         tmpfr(bdsb) = mntmp;
-    %         stackplot{spi}(:,:,:,fr) = tmpfr;
-    %     end
-    %     stdtmp = mean(std(single(stdtmp))); %std over time of "unlabeled" pixels
-    % end
-
-    index_labels = arrayfun(@(x) 1:x(end), size(stackplot{1}), 'UniformOutput', false); % setup labels for stack that has already been subset;
+    index_labels = arrayfun(@(x) 1:x(end), size(stacktmp{1}), 'UniformOutput', false); % setup labels for stack that has already been subset;
     index_labels{3} = iz; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
     index_labels{4} = it; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
 
-    if ndims(stackplot{1})==4
-        dimorder = [1,2,4,3]; %yxctz
-    else
-        dimorder = [1,2,5,4,3]; %yxtz
+    numchan = unique(cellfun(@(x) size(x,5), stacktmp)); %must be the same for each stack, will error if not
+    if numel(numchan)==1
+        for k = numel(stacktmp):-1:1
+            for m = numchan:-1:1
+                stacktmp{k,m} = stacktmp{k}(:,:,:,:,m);
+                stackmntmp{k,m} = stackmntmp{k}(:,:,:,:,m);
+            end
+        end
     end
+
+    if numchan==2
+        if numel(dr)~=numel(stacktmp)
+            dr = repelem(dr, 2); %since we separated channels into different cells
+        end
+    end
+
     stackplt( ...
-        stackplot, ...
-        pthgif=[filename_prefix '.gif'], ...
+        stacktmp, ...
+        pthgif=[filename_prefix '_.gif'], ...
         dr=dr, ...
         fdimnum=3, ...
-        dimorder=dimorder, ...
+        dimorder=[1:ndims(stacktmp{1})], ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
         )
 
-
-    % index_labels{1} = []; %make it empty since you're passing iy
-    % stackplt( ...
-    %     stackplot, ...
-    %     pthgif=[filename_prefix 'side.gif'], ...
-    %     dr=dr, ...
-    %     fdimnum=3, ...
-    %     dimorder=[3,2,1,4], ...
-    %     iy=round(linspace(1,size(stackplot{1},1), 8)),...
-    %     title_prefix=figtitle_prefix, ...
-    %     index_labels=index_labels ...
-    %     )
-
     stackplt( ...
-        stackplot_mn, ...
-        pthgif=[filename_prefix 'meant_.gif'], ...
+        stackmntmp, ...
+        pthgif=[filename_prefix '_meant_.gif'], ...
         dr=dr, ...
-        fdimnum=2, ...
-        dimorder=[1:ndims(stackplot_mn{1})], ...
+        fdimnum=3, ...
+        dimorder=[1:ndims(stackmntmp{1})], ...
         title_prefix=figtitle_prefix, ...
-        index_labels=index_labels([1:ndims(stackplot_mn{1})]) ...
+        index_labels=index_labels([1:ndims(stackmntmp{1})]) ...
         )
 
 end
