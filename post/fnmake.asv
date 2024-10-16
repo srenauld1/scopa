@@ -1,48 +1,43 @@
-function [pth, parstr] = fnmake(o)
+function pth = fnmake(o)
 
 
-%%set up filenames for a2p 
+%%set up filenames for a2p
 
 id = o.id;
-pthstack = o.id.pth;
 
-recdatenum = id.recdatenum; 
-flynum = id.flynum; 
-trialnum = id.trialnum; 
-suffix = id.suffix; 
+pthstack = o.id.pth;
+recdatenum = id.recdatenum;
+flynum = id.flynum;
+trialnum = id.trialnum;
+suffix = id.suffix;
 recid = id.recid;
 datefly_hyphen = id.datefly_hyphen;
 
-
 regionex = o.mn.regionex;
 fldrtmp = o.mn.fldrtmp;
-fntmp = fieldnames(o.mroi);
-for k = 1:numel(fntmp)
-    usehires(k) = o.mroi.(fntmp{k}).seg.usehires; %gets updated to numeric struct, fieldname usehires
-end
-usehires = any(usehires);
 
-roistr = o.froi.roistr;
-% numcluster_for_bump_domain_resample = o.pop.bump.numcluster_for_bump_domain_resample; %gets updated to numeric struct, fieldname numcluster_for_bump_domain_resample
-use_caiman_on_hires = o.hires.use_caiman_on_hires;
-caiman_hr_str = o.hires.caiman_hr_str;
-
-%% variables for all regionextmp
-
+%% files before roimake
 
 [pth_fldr, ~, ~] = fileparts(pthstack);
 pth_fldr = [pth_fldr filesep];
 
 pth_prefix = [pth_fldr recid '_'];
 
+pth_grandparent = strsplit(pth_fldr, filesep);
+pth_grandparent = [strjoin(pth_grandparent(1:end-2), filesep) filesep];
+
+pth_tmpfiles = [pth_grandparent fldrtmp filesep];
+if ~isfolder(pth_tmpfiles)
+    mkdir(pth_tmpfiles)
+end
 
 pth_md = [pth_fldr recid '_mdsi_.txt'];
-pth_flyg_md_pat = [pth_fldr datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
-pth_flyg_md = rdir(pth_flyg_md_pat);
-if isempty(pth_flyg_md)
-    pth_flyg_md = [];
+pth_mdflyg_pat = [pth_fldr datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pth_mdflyg = rdir(pth_mdflyg_pat);
+if isempty(pth_mdflyg)
+    pth_mdflyg = [];
 else
-    pth_flyg_md = pth_flyg_md.name;
+    pth_mdflyg = pth_mdflyg.name;
 end
 
 pth_daq_pat = [pth_fldr datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
@@ -53,7 +48,7 @@ else
     pth_daq = pth_daq.name;
 end
 
-pth_daqrs = [pth_fldr recid '_daqrs_.mat']; 
+pth_daqrs = [pth_fldr recid '_daqrs_.mat'];
 
 % pth_ftvid_pat = [pth_fldr 'FicTracData' filesep 'fictrac-raw-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video
 pth_ftdat_pat = [pth_fldr 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.dat']; %
@@ -94,163 +89,80 @@ end
 pth_epochinds = [pth_fldr recid '_epochinds_.bin'];
 pth_epochinfo = [pth_fldr recid '_epochinfo_.mat'];
 
-pth_grandparent = strsplit(pth_fldr, filesep); %in case trailing filesep, or not
-pth_grandparent = [strjoin(pth_grandparent(1:end-2), filesep) filesep];
-
-pth_tmpfiles = [pth_grandparent fldrtmp filesep];
-if ~isdir(pth_tmpfiles)
-    mkdir(pth_tmpfiles)
-end
-
-%% variables for each regionextmp
-
-
-if isempty(cell2mat(regionex))
-    numregions = 0;
-else
-    numregions = numel(regionex);
-end
-
-parstr = '';
-for k = 1:numregions
-
-    regionextmp = regionex{k};
-    spl = strsplit(regionextmp, '_');
-    regionex_nounderscore = spl{1}; %anything after an underscore defines a region within the prefix regionextmp cuboid from python preprocessing
-
-    [~, croplimstr] = load_croplim(pth_fldr, recid, regionex_nounderscore ); %if no croplim exists, 'nocroplimhold' is temporary string insert that gets replaced when user creates croplim
-
-    paramstr = ['moex_' num2str(usehires.(regionextmp)) '_' num2str(dodraw.(regionextmp)) '_' num2str(numroiseg.(regionextmp))];
-    parstr.mroi.(regionextmp) = paramstr;
-
-    pth_mroi.(regionextmp) = [pthstack(1:end-4) regionextmp '_' croplimstr '_' paramstr '_rois_morph_.mat'];
-    pth_mroi_interactive.(regionextmp) = [pthstack(1:end-4) regionextmp '_' croplimstr '_interactive_rois_morph_.mat'];
-    pth_roi_allmethods.(regionextmp){1} = pth_mroi.(regionextmp);
-
-    pth_froi_all_tmp = [];
-    for csi = 1:length(roistr)
-        pth_froi_pat = [pth_fldr recid '_' suffix '_' regionex_nounderscore '_*_cmex_' roistr{csi} '_rois_.mat'];
-        tmp = rdir(pth_froi_pat);
-        pth_froi_all_tmp = cat(1, pth_froi_all_tmp, tmp);
-    end
-
-    if ~isempty(pth_froi_all_tmp) %if caiman file(s) do exist . . .
-
-        pth_froi_all_tmp = unique({pth_froi_all_tmp.name});
-        pth_froi_all_tmp = natsortfiles(pth_froi_all_tmp);
-
-        for ci = 1:length(pth_froi_all_tmp)
-            [~, fncr, ~] = fileparts(pth_froi_all_tmp{ci});
-            spl = strsplit(fncr, '_');
-            insloc = find(strcmp(spl, regionex_nounderscore));
-            croplimstr_check{ci} = strjoin(spl(insloc+1:insloc+8), '_');
-
-            cpatmp = strjoin(spl(find(strcmp(spl, 'cmex')):end-2), '_'); %everything in filename after 'cmex'
-            parstr.froi.(regionextmp){ci,1} = strrep(cpatmp, '.', 'p'); %replace period with p
-            pth_froi_all.(regionextmp){ci,1} = pth_froi_all_tmp{ci};
-
-        end
-        if numel(unique(croplimstr_check))>1
-            error("a regionextmp has different croplim (FOV coordinates) across extraction runs, should be the same across runs")
-        end
-        pth_roi_allmethods.(regionextmp) = cat(1, pth_roi_allmethods.(regionextmp), pth_froi_all.(regionextmp));
-        paramstr = [paramstr '_cmex_' roistr];
-
-    else
-        parstr.froi.(regionextmp) = [];
-        pth_froi_all.(regionextmp) = [];
-    end
-
-    % paramstr = [paramstr '_' num2str(numcluster_for_bump_domain_resample.(regionextmp))];
-
-    % if usehires(k)
-    %     paramstr = [paramstr '_hr_moex_paramtbd_'];
-    %     parstr.mroi.(regionextmp) = [parstr.mroi.(regionextmp) '_hr_moex_paramtbd'];
-    %     if use_caiman_on_hires(k)
-    %         paramstr = [paramstr '_hr_cmex_' caiman_hr_str];
-    %     end
-    % end
-
-    pth_svdat.(regionextmp) = [pth_fldr recid '_' suffix '_' paramstr '_' regionextmp '_savedata_.mat'];
-
-    pth_caimanfails = [pth_fldr recid '_*_' regionex_nounderscore '_*_cmex_*_FAILURE_.mat'];
-    pth_caimanfails2 = [pth_fldr recid '_*_' regionex_nounderscore '_*_cmex_*_NOROIS_.mat'];
-    delete_caiman_fails(pth_caimanfails, pth_fldr, regionex_nounderscore)
-    delete_caiman_fails(pth_caimanfails2, pth_fldr, regionex_nounderscore)
-
-end
-
 
 %% hires
 
-pthpat = [pth_fldr recid  '_hires_.tif'];
-pth_tmp = rdir(pthpat);
-if isempty(pth_tmp)
-    pthpat = [pthpat(1:end-4) '.mat'];
+fntmp = fieldnames(o.mroi);
+for k = 1:numel(fntmp)
+    usehires(k) = o.mroi.(fntmp{k}).seg.usehires; %gets updated to numeric struct, fieldname usehires
+end
+
+pth_hires_prefix = [];
+pth_hires_mat_matreg = [];
+pth_froi_hires = [];
+if any(usehires) %for each recording, dohires if any regionex have usehires true (since we want to load/process hires once before looping over regionex)
+    pthpat = [pth_fldr recid  '_hires_.tif'];
     pth_tmp = rdir(pthpat);
     if isempty(pth_tmp)
-        pthpat = [pth_fldr num2str(recdatenum) '_' num2str(flynum) '_hires_.tif']; %sometimes hires has no trial in filename (one hires for all trials)
+        pthpat = [pthpat(1:end-4) '.mat'];
         pth_tmp = rdir(pthpat);
         if isempty(pth_tmp)
-            pthpat = [pthpat(1:end-4) '.mat'];
+            pthpat = [pth_fldr num2str(recdatenum) '_' num2str(flynum) '_hires_.tif']; %sometimes hires has no trial in filename (one hires for all trials)
             pth_tmp = rdir(pthpat);
+            if isempty(pth_tmp)
+                pthpat = [pthpat(1:end-4) '.mat'];
+                pth_tmp = rdir(pthpat);
+            end
         end
     end
-end
-if ~isempty(pth_tmp)
-    pth_hires_prefix = pth_tmp.name(1:end-4);
-    pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];
-    pth_froi_hires = [pth_hires_prefix 'caiman' caiman_hr_str '_roishires_.mat'];
-else
-    pth_hires_prefix = [];
-    pth_hires_mat_matreg = [];
-    pth_froi_hires = [];
+    if isempty(pth_tmp)
+        sprintf("WARNING, USER REQUESTED usehires FOR AT LEAST ONE REGIONEX BUT NO FILE WITH SUFFIX hires CAN BE FOUND")
+    else
+        pth_hires_prefix = pth_tmp.name(1:end-4);
+        pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];
+        pth_froi_hires = [pth_hires_prefix '_roishires_.mat'];
+    end
 end
 
-pffn = fieldnames(o.pop);
-for pfi = 1:numel(pffn)
-    pth.tsuse_nms_prefix.(pffn{pfi}) = [pth_fldr 'tsuse_' pffn{pfi}];
+
+%% files for roimake
+
+for k = 1:numel(regiconex)
+    pth_roi = [pthstack(1:end-4) regionex{k} '_roi_.mat'];
+    pth_roif= [pthstack(1:end-4) regionex{k} '_roif_.mat'];
+    pth_roii = [pthstack(1:end-4) regionex{k} '_roii_.mat'];
 end
 
-pth.tsuse_nms_prefix.mfit = [pth_fldr 'tsuse_finfits_'];
-pth.tsuse_nms_prefix.scat = [pth_fldr 'tsuse_finscatter_'];
-pth.tsuse_nms_prefix.pltx = [pth_fldr 'tsuse_finpltexp_'];
-
-%% carl's old project 
+%% carl's old project
 
 pth_feat_save = [pth_fldr o.carl.feat '_lin_ds_.mat'];
 pthparent_feat = o.carl.pthparent_feat;
 pth_template = o.carl.pth_template;
 
-%% assign to struct
 
-
+%% output
 
 pth.prefix = pth_prefix;
 pth.fldr = pth_fldr;
 pth.stack = pthstack;
+pth.md = pth_md;
+pth.mdflyg = pth_mdflyg;
+pth.tmpfiles = pth_tmpfiles;
+pth.mroi = pth_roi;
+pth.froi_all = pth_roif;
+pth.mroi_interactive = pth_roii;
+pth.daq = pth_daq;
+pth.daqrs = pth_daqrs;
+pth.ftdat = pth_ftdat;
+pth.ftlog = pth_ftlog;
+pth.ftvidlog = pth_ftvidlog;
+pth.ftvid = pth_ftvid;
+pth.ftvidrs = pth_ftvidrs;
+pth.epochinds = pth_epochinds;
+pth.epochinfo = pth_epochinfo;
 pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
 pth.froi_hires = pth_froi_hires;
-pth.md = pth_md;
-pth.flyg_md = pth_flyg_md;
-if numregions>0
-    pth.mroi = pth_mroi;
-    pth.mroi_interactive = pth_mroi_interactive;
-    pth.froi_all = pth_froi_all;
-    pth.roi_allmethods = pth_roi_allmethods;
-    pth.savedata_oneregion = pth_svdat;
-end
-pth.daq = pth_daq;
-pth.daqrs = pth_daqrs;
-pth.ft.dat = pth_ftdat;
-pth.ft.log = pth_ftlog;
-pth.ft.vidlog = pth_ftvidlog;
-pth.ft.vid = pth_ftvid;
-pth.ft.vidrs = pth_ftvidrs;
-pth.epochinds = pth_epochinds;
-pth.epochinfo = pth_epochinfo;
-pth.tmpfiles = pth_tmpfiles;
 pth.featsave = pth_feat_save;
 pth.parent_feat = pthparent_feat;
 pth.template = pth_template;

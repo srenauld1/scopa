@@ -227,7 +227,7 @@ end
 o.spec.pthparent_local = '~/stacks';
 o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not recin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    o.spec.recdate = {'2024*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.suffix = {'*'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
@@ -243,28 +243,35 @@ end
 
 %%%% dos %%%%
 
-o.mn.dodaq = 1; %process daq timeseries?
-o.mn.doftv = 1; %process fictrac video?
+o.mn.dodaq = 0; %process daq timeseries?
+o.mn.doftv = 0; %process fictrac video?
 o.mn.dopop = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
-o.mn.dopltx = 1; %enter pltx for summary interactive plots?
+o.mn.dopltx = 0; %enter pltx for summary interactive plots?
+
+o.mn.regionex = {}; %empty to skip rois (mroimake and froiproc); list any regionex you want to define for independent mroi or froi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); these do not have to be subregions of fov, or even unique regions of fov, although the user is prompted with that option; empty will use regionex named 'default' in o, which skips roi creation/loading/processing altogether
 
 %%%% some simple option specification %%%%
 
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
-o.sld.chanuse = 1;
-o.sld.suffixplt = {'raw', 'cmrg', 'cmrg_dcdn'}; %which stacks to plot in gif for comparison; empty to skip plot
+o.sld.chanuse = 1; %which channel to use
+o.sld.suffixplt = {}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
 
-o.sld.sp.dr = {[0,1], [0,1], [0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
-o.sld.sp.it = [50.3]; % t indices for gif showing o.sld.suffixplt
+o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
+o.sld.sp.it = [10.3]; % t indices for gif showing o.sld.suffixplt; see indsmake for nonstandard syntax options
 
 o.ftv.smsdspace = 2;
 o.ftv.doplt = 1;
 
+%%%% two params for carl but don't remove these yet %%%%
+
+o.carl.stimtype = 'drone';
+o.hires.sld.sp.it = 1;
+
 %%%% compute bump %%%%
 
-o.pop.bump.domain_method = 'functional';
+o.pop.bump.domaintype = 'functional';
 o.pop.bump.mfit.tg.v1{1} = {['resp.fb*.mo*.*rsc000100_*chn1']}; %extract bump using all variables matching this string as dependent variable
 o.pop.bump.mfit.tg.v2{1} = {['vis.yaw']}; %extract bump using all variables matching this string as independent variable
 
@@ -278,8 +285,8 @@ o.mfit(1).mdlname = 'fnet_A01_s'; %see notes_mdlname for how to use
 
 o.pltx.tg.v1{1} = {['ball.forvel']};  %interactive plots using all variables matching this string as timeseries one
 o.pltx.tg.v5{1} = {['resp.fb256.mo*.*chn1.ind1']};  %interactive plots using all variables matching this string as timeseries two
-o.pltx.lagsxy_sec = {0, 1, 'all'}; linspace(0, 1, 1e4); %lags for interactive scatterplot; vector, or if you want al
-o.pltx.lagsz_sec = linspace(0, 1, 1e4); %lags for interactive scatterplot
+o.pltx.lagsxy_sec = {0, 1, 'all'}; %lags for interactive scatterplot; vector, or if you want all within range, put in cell like this {min, max, 'all'}
+o.pltx.lagsz_sec = {0, 1, 'all'}; %lags for interactive scatterplot; vector, or if you want all within range, put in cell like this {min, max, 'all'}
 
 %%%% mroi (morphological rois) %%%%
 
@@ -304,10 +311,9 @@ o = odf(o); %set all above options and find files (unless oset input recin is 'n
 
 %%%% create distinct options (or not) for different regionex %%%%
 
-o.mn.regionex = {'fb1', 'fb2', 'pb'}; %empty to skip mroimake and froiproc; list any regionex you want to define for independent mroi or froi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); these do not have to be subregions of fov, or even unique regions of fov, although the user is prompted with that option; empty will use regionex named 'default'
 
 if isempty(o.mn.regionex)
-    o = odf(o, 'froi', glb('noregionex')); %put froi within copybin called 'noregionex', which will skip froi routine
+    o = odf(o, {'froi', 'mroi'}, glb('noregionex')); %put froi and mroi within the name for noregionex, which will skip the roi routine
 else
 
     o = odf(o, 'froi', o.mn.regionex); %create froi options for each regionex
@@ -322,13 +328,14 @@ else
     end
 end
 
+
 %%%% create distinct options (or not) for different found recordings %%%%
 
 o = odf(o, files=dofindfiles); %now find files (unless oset input recin is 'nofile'), otherwise changing nothing
 
 allrecs = getfieldns([o.id], 'recdate');
-recgroup1 = find(contains(allrecs, '202406')); %index of all found files in june of this year
-recgroup2 = find(contains(allrecs, '202409')); %index of all found files in september of this year
+recgroup1 = find(contains(allrecs, '202206')); %index of all found files in june of 2022
+recgroup2 = find(contains(allrecs, '202109')); %index of all found files in september of 2021
 for k = 1:numel(allrecs)
     if ismember(k, recgroup1)
         o(k).sld.chanuse = [2]; %use channel 2 in recgroup1, recordings from neither recgroup are unchanged from settings above (or from default, if none set above in oset)
@@ -336,9 +343,10 @@ for k = 1:numel(allrecs)
         o(k).sld.chanuse = [1 2]; %use both channels in recgroup2, recordings from neither recgroup are unchanged from above (or from default, if none set above in oset)
     end
 end
+
 %%%% options for carl's old project %%%%
 
-oldcarlo %ignored if you're not carl
+oldcarlo %don't comment this out, but it's just for carl
 
 %%%% organize %%%%
 

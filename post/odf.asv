@@ -108,8 +108,8 @@ d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.tcropback = 0; % how many samples to remove from end of stack
 d.sld.stackdtype = 'uint16';
-d.sld.smsdspace = 0; %smooth the stack in time, 0 to skip
-d.sld.smsdtime = 0; %smooth the stack in time, 0 to skip
+d.sld.smsdspace = [0 0 0]; %gaussian smooth the stack with yxz window size smsdspace;  each entry must be odd, or 0; [0 0 0] or empty to skip smoothing, 0 will skip smoothing in corresponding dimension, ie [3 3 0] skips smoothing in z; gaussian sd is 1/5 smsdspace
+d.sld.smsdtime = 0; %gaussian smooth the stack smsdtime seconds in time, 0 to skip
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = { %stack suffixes to plot together in stackplt gif, nonexistent or invalid suffixes are ignored; will be reordered from least to most processed (by suffix length)
     %'raw', ...
@@ -200,9 +200,9 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 % options for bump in bumpcmp function
 % a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bump.mfit.tg.v1) and all matches from o.bump.mfit.tg.v2
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if o.bump.domain_methodis 'functional', these preferred headings are used as the angle, and o.bump.mfit.tg.v1 as the magnitude, in computing pva
+% if o.bump.domaintypeis 'functional', these preferred headings are used as the angle, and o.bump.mfit.tg.v1 as the magnitude, in computing pva
 % if the regionex in o.bump.mfit.tg.v1 is in o.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
-% if o.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
+% if o.bump.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 % o.bump.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
 %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
@@ -218,8 +218,8 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 
 %options for computing bump
 d.bump.mthd = 'pva'; %'pva' for vector average
-d.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-d.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
+d.bump.domaintype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+d.bump.domain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
 d.bump.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bump.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
@@ -295,8 +295,8 @@ d.tg.v8{1} = {['']};
 d.pltx.vpmapl = [1 2 3 4]; %map of indices of each tg.v above to plot positions (on left axis)
 d.pltx.vpmapr = [5 6 7 8]; %map of indices of each tg.v above to plot positions (on right axis)
 
-d.pltx.lagsxy_sec = linspace(-1, 1, 1e4); %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, use spacing smaller than sample rate (just use very small spacing to ensure it, so you don't have to think about it, like this linspace(-1, 1, 1e4)); negative means x follows y, positive means y follows x;
-d.pltx.lagsz_sec = linspace(-1, 1, 1e4); %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable
+d.pltx.lagsxy_sec = {0, 1, 'all'}; %lags for interactive scatterplot;  %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, put in cell like this {min, max, 'all'}
+d.pltx.lagsz_sec = {0, 1, 'all'}; %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable
 d.pltx.lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
 d.pltx.plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color
 
@@ -358,6 +358,13 @@ d.imhsv.hueshift = 0; %0-1, circularly shift the hue map around the color circle
 d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+
+%% options for carl's old project
+
+o.carl.stimtype = 'drone';
+o.carl.feat = 'CON_51';
+o.carl.pthparent_feat = '~/ds/data/rec';
+o.carl.pth_template = '~/ds/data/stimuli';
 
 %% globals
 
@@ -422,7 +429,8 @@ else
                 error(sprintf("you have multiple copies of vbin " + fnd{k} + " and possibly others; in a nested vbin each vbin can only appear once, for now at least"))
             end
         end
-        [~, fnflattmp] = structflat(oin, 'prefix', 'o');
+        [~, fnflattmp] = structflat(oin, 'prefix', 'o'); %use prefix in case it's nonscalar
+        fnflattmp = erase(fnflattmp, 'o_');
         notvbin = regexprep(erase(fnflattmp, strcat(fnd, '.')), '^[.]*', ''); %remove everything but the vbins
         if ~isempty(cell2mat(regexp(notvbin, '[.]{2,}'))) %at least 2 periods means a non-vbin is above a vbin
             error("you must have placed a non-vbin somewhere other than the end of a nesting; for example, o.vbin1.optionA.vbin2 is not allowed; options can themselves be nested, but options must come at the end of each flattened fieldname")

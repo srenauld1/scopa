@@ -50,7 +50,7 @@ end
 
 index_labels_opt = cell(1,6);
 if ~isempty(opt.iy)
-    opt.iy = make_plot_inds(opt.iy, indsall=szin(1));
+    opt.iy = indsmake(opt.iy, indsall=szin(1));
     if iscell(stack)
         stack = cellfun(@(x) x(opt.iy,:,:,:,:,:), stack, 'UniformOutput', false);
     else
@@ -59,7 +59,7 @@ if ~isempty(opt.iy)
     index_labels_opt{1} = opt.iy;
 end
 if ~isempty(opt.ix)
-    opt.ix = make_plot_inds(opt.ix, indsall=szin(2));
+    opt.ix = indsmake(opt.ix, indsall=szin(2));
     if iscell(stack)
         stack = cellfun(@(x) x(:,opt.ix,:,:,:,:), stack, 'UniformOutput', false);
     else
@@ -68,7 +68,7 @@ if ~isempty(opt.ix)
     index_labels_opt{2} = opt.ix;
 end
 if ~isempty(opt.iz)
-    opt.iz = make_plot_inds(opt.iz, indsall=szin(3));
+    opt.iz = indsmake(opt.iz, indsall=szin(3));
     if iscell(stack)
         stack = cellfun(@(x) x(:,:,opt.iz,:,:,:), stack, 'UniformOutput', false);
     else
@@ -77,7 +77,7 @@ if ~isempty(opt.iz)
     index_labels_opt{3} = opt.iz;
 end
 if ~isempty(opt.it)
-    opt.it = make_plot_inds(opt.it, indsall=szin(4));
+    opt.it = indsmake(opt.it, indsall=szin(4));
     if iscell(stack)
         stack = cellfun(@(x) x(:,:,:,opt.it,:,:), stack, 'UniformOutput', false);
     else
@@ -89,7 +89,7 @@ if ~isempty(opt.ic)
     if numel(szin)<5
         error("you requested ic but stack is less than 5d")
     end
-    opt.ic = make_plot_inds(opt.ic, indsall=szin(5));
+    opt.ic = indsmake(opt.ic, indsall=szin(5));
     if iscell(stack)
         stack = cellfun(@(x) x(:,:,:,:,opt.ic,:), stack, 'UniformOutput', false);
     else
@@ -101,7 +101,7 @@ if ~isempty(opt.ik)
     if numel(szin)<6
         error("you requested ik but stack is less than 5d")
     end
-    opt.ik = make_plot_inds(opt.ik, indsall=szin(6));
+    opt.ik = indsmake(opt.ik, indsall=szin(6));
     if iscell(stack)
         stack = cellfun(@(x) x(:,:,:,:,:,opt.ik), stack, 'UniformOutput', false);
     else
@@ -324,7 +324,7 @@ dr_str = ['dr-' strjoin(dr_str, ' AND ')];
 lab_framestable = {dr_str};
 index_labels_tmp = index_labels(1:fdimnum); %labels that are the same on every frame
 for li = 1:numel(index_labels_tmp)
-    [~, index_labels_tmp{li}] = make_plot_inds(index_labels_tmp{li}, indsall=index_labels_tmp{li}, label_prefix=dimlabels{li}, printmax=max_num_inds_to_print);
+    [~, index_labels_tmp{li}] = indsmake(index_labels_tmp{li}, indsall=index_labels_tmp{li}, label_prefix=dimlabels{li}, printmax=max_num_inds_to_print);
 end
 lab_framestable = cat(1, lab_framestable, index_labels_tmp);
 dims_changing_across_frames = fdimnum+1:maxnumdims;

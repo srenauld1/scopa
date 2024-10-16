@@ -109,8 +109,8 @@ end
 
 %% prep vars
 
-[iz, izstr] = make_plot_inds(iz, indsall=size(stack, 3), label_prefix='z', strdelim='-', printmax=20);
-[it, itstr] = make_plot_inds(it, indsall=size(stack, 4), label_prefix='t', strdelim='-', printmax=20);
+[iz, izstr] = indsmake(iz, indsall=size(stack, 3), label_prefix='z', strdelim='-', printmax=20);
+[it, itstr] = indsmake(it, indsall=size(stack, 4), label_prefix='t', strdelim='-', printmax=20);
 
 % stack = stack(:,:,iz,it,:);
 kpepidx = setxor(1:numel(epochinds_ts_i), it);

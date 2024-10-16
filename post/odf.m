@@ -77,7 +77,7 @@ d.mn.dofit = 0; %model fitting (o.mfit below)
 d.mn.dopltx = 1; %plot experiment (o.pltx below)
 d.mn.fldrtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-d.mn.regionex = 'default'; %names to analyze same recording separately
+d.mn.regionex = {'default'}; %names to analyze same recording separately
 d.mn.oldcarl = 0; %run with some settings for carl's old project
 
 %% daq (daqld: load, process daq)
@@ -108,8 +108,8 @@ d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.tcropfront = 0; %how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.tcropback = 0; % how many samples to remove from end of stack
 d.sld.stackdtype = 'uint16';
-d.sld.smsdspace = 0; %smooth the stack in time, 0 to skip
-d.sld.smsdtime = 0; %smooth the stack in time, 0 to skip
+d.sld.smsdspace = [0 0 0]; %gaussian smooth stack in space (yxz); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smsdspace; each entry must be odd, or 0; [0 0 0] or empty to skip smoothing; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+d.sld.smsdtimesec = 0; %gaussian smooth stack in time; gaussian sd is smsdtime seconds; 0 to skip
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = { %stack suffixes to plot together in stackplt gif, nonexistent or invalid suffixes are ignored; will be reordered from least to most processed (by suffix length)
     %'raw', ...
@@ -200,9 +200,9 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 % options for bump in bumpcmp function
 % a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bump.mfit.tg.v1) and all matches from o.bump.mfit.tg.v2
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if o.bump.domain_methodis 'functional', these preferred headings are used as the angle, and o.bump.mfit.tg.v1 as the magnitude, in computing pva
+% if o.bump.domaintypeis 'functional', these preferred headings are used as the angle, and o.bump.mfit.tg.v1 as the magnitude, in computing pva
 % if the regionex in o.bump.mfit.tg.v1 is in o.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
-% if o.bump.domain_methodis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
+% if o.bump.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 % o.bump.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
 %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
@@ -218,8 +218,8 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 
 %options for computing bump
 d.bump.mthd = 'pva'; %'pva' for vector average
-d.bump.domain_method = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-d.bump.bump_subdomain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
+d.bump.domaintype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+d.bump.domain = {'all'}; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
 d.bump.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bump.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
@@ -358,6 +358,13 @@ d.imhsv.hueshift = 0; %0-1, circularly shift the hue map around the color circle
 d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
+
+%% options for carl's old project
+
+d.carl.stimtype = 'drone';
+d.carl.feat = 'CON_51';
+d.carl.pthparent_feat = '~/ds/data/rec';
+d.carl.pth_template = '~/ds/data/stimuli';
 
 %% globals
 

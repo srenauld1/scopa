@@ -8,7 +8,7 @@ arguments
     opt.sz_yxzt = [] % known size of stack, dim order yxzt
     opt.numslice_withflyback = []
     opt.channel_save = 1
-    opt.chanuse = 1
+    opt.chanuse = [1 2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
     opt.cropfb = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
     opt.zerostack = 1 %subtract min to make min zero
     opt.output_datatype = 'uint16'

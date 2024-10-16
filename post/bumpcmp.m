@@ -4,8 +4,8 @@ function bump = bumpcmp(stack, fitin, roidat, opts, md, regionex, si)
 %% params
 
 mthd = opts.mthd; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
-domain_method = opts.domain_method; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-bump_subdomain = opts.bump_subdomain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
+domaintype = opts.domaintype; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+domain = opts.domain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
 slopeord = opts.slopeord; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 slopelensec = opts.slopelensec; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 smoothwindow_sec = opts.smoothwindow_sec; %full width of gaussian smoothing window (5 times std)
@@ -34,11 +34,11 @@ else
     halfcent = floor(numcluster / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
 end
 
-if strcmp(domain_method, 'functional')
+if strcmp(domaintype, 'functional')
 
     [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roidat, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplt);
 
-elseif strcmp(domain_method, 'morphological') %morphological domain
+elseif strcmp(domaintype, 'morphological') %morphological domain
 
     domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
     domaintmp = domaintmp(1:end-1);
@@ -56,22 +56,22 @@ end
 
 
 
-for fi = 1:length(bump_subdomain)
+for fi = 1:length(domain)
 
-    if any(strcmp(bump_subdomain{fi}, 'all')) %regular pva, all clusters, same as mean of both halves
+    if any(strcmp(domain{fi}, 'all')) %regular pva, all clusters, same as mean of both halves
         centinds = 1:numcluster;
         resptmp = resp_cl;
-    elseif any(strcmp(bump_subdomain{fi}, 'right')) %right half
+    elseif any(strcmp(domain{fi}, 'right')) %right half
         centinds = 1:halfcent;
         resptmp = resp_cl(centinds,:);
-    elseif any(strcmp(bump_subdomain{fi}, 'left')) %left half
+    elseif any(strcmp(domain{fi}, 'left')) %left half
         centinds = halfcent+1:numcluster;
         resptmp = resp_cl(centinds,:);
-    elseif any(strcmp(bump_subdomain{fi}, 'larger')) %larger amp half
+    elseif any(strcmp(domain{fi}, 'larger')) %larger amp half
         centinds = 1:halfcent;
         maxinds = sum(resp_cl(centinds,:),1) > sum(resp_cl(centinds+halfcent,:),1);
         resptmp = resp_cl(centinds,:).*maxinds + resp_cl(centinds+halfcent,:).*~maxinds;
-    elseif any(strcmp(bump_subdomain{fi}, 'weighted')) %weighted mean of both halves, if you use equal weighting it will be same as all clusters
+    elseif any(strcmp(domain{fi}, 'weighted')) %weighted mean of both halves, if you use equal weighting it will be same as all clusters
         centinds = 1:halfcent;
         wt1 = 0.5;
         wt2 = 0.5;
@@ -79,7 +79,7 @@ for fi = 1:length(bump_subdomain)
         tmp2 = wt2*vec(resp_cl(centinds+halfcent,:))';
         resptmp = nansum([tmp1; tmp2]) / (wt1+wt2);
         resptmp = reshape(resptmp, size(resp_cl(centinds,:)));
-    elseif any(strcmp(bump_subdomain{fi}, 'random')) %random
+    elseif any(strcmp(domain{fi}, 'random')) %random
         centinds = 1:numcluster;
         resptmp = zeros(size(resp_cl));
         resptmp(sub2ind(size(resptmp), randi([1 size(resptmp,1)],1,size(resptmp,2)), 1:size(resptmp,2))) = 1;
@@ -123,15 +123,15 @@ for fi = 1:length(bump_subdomain)
     amppeak = max(resptmp, [], 1, 'omitmissing')'; %extract max amplitude at each time point
     ampmean = mean(resptmp, 1, 'omitmissing')'; %find the amp, which is the mean dff in the whole mask
 
-    bump.(bump_subdomain{fi}).mu = single(mu);
-    bump.(bump_subdomain{fi}).rho = single(rho);
-    bump.(bump_subdomain{fi}).ampmean = single(ampmean);
-    bump.(bump_subdomain{fi}).amppeak = single(amppeak);
-    bump.(bump_subdomain{fi}).ampmu = single(ampmu);
-    bump.(bump_subdomain{fi}).vel = single(bumpvel);
-    bump.(bump_subdomain{fi}).offset = single(offset);
-    bump.(bump_subdomain{fi}).domain = single(domain);
-    bump.(bump_subdomain{fi}).centinds = single(centinds);
+    bump.(domain{fi}).mu = single(mu);
+    bump.(domain{fi}).rho = single(rho);
+    bump.(domain{fi}).ampmean = single(ampmean);
+    bump.(domain{fi}).amppeak = single(amppeak);
+    bump.(domain{fi}).ampmu = single(ampmu);
+    bump.(domain{fi}).vel = single(bumpvel);
+    bump.(domain{fi}).offset = single(offset);
+    bump.(domain{fi}).domain = single(domain);
+    bump.(domain{fi}).centinds = single(centinds);
 
 end
 
