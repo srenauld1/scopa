@@ -1,4 +1,4 @@
-function [inds, indslab] = make_plot_inds(indsin, opt)
+function [inds, indslab] = indsmake(indsin, opt)
 
 
 arguments

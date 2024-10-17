@@ -76,7 +76,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
             
             for ii in index_extraction_param_set_new:
 
-                if 1: #try, since some param sets will error
+                try: #try, since some param sets will error
 
                     if extract_in_2d: #adjust images and some params for 2D EXTRACTION 
                         indz = np.arange(stackcrop_ex.shape[3])
@@ -241,11 +241,11 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         print("norois")
                         pth_mat_ex = pth_write_prefix + fnadd + '_rois_NOROIS_.mat'
 
-                # except Exception as error:
+                except Exception as error:
                     
-                #     mdict = {}
-                #     pth_mat_ex = pth_write_prefix + fnadd + '_rois_FAILURE_.mat'
-                #     print("An exception occurred:", type(error).__name__, "-", error) 
+                    mdict = {}
+                    pth_mat_ex = pth_write_prefix + fnadd + '_rois_FAILURE_.mat'
+                    print("An exception occurred:", type(error).__name__, "-", error) 
 
                 
                 sio.savemat(pth_mat_ex, mdict)

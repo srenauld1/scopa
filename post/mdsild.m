@@ -1,28 +1,28 @@
-function md = mdsild(pth_md, optld, optld_hires)
+function md = mdsild(pth_md, optsld, optsldhr)
 
 arguments
     pth_md
-    optld = []
-    optld_hires = []
+    optsld = []
+    optsldhr = []
 end
 
-if isempty(optld)
-    optld = default_ld_opts();
+if isempty(optsld)
+    optsld = odf('sld');
 end
-if isempty(optld_hires)
-    optld_hires = default_ld_opts();
+if isempty(optsldhr)
+    optsldhr = odf('sld');
 end
 
 md = readmdsi(pth_md); %function for converting scanimage metadata dict written to txt file by json in read_save_metadata.py
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optld.tcropfront - optld.tcropback;
+md.numvol_crop = md.numvol_o - optsld.tcropfront - optsld.tcropback;
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
-md.tcropfront = optld.tcropfront; %copy from struct ld
-md.tcropback = optld.tcropfront; %copy from struct ld
-md.cropfb = optld.cropfb; %copy from struct ld
-md.zerostack = optld.zerostack; %copy from struct ld
+md.tcropfront = optsld.tcropfront; %copy from struct ld
+md.tcropback = optsld.tcropfront; %copy from struct ld
+md.cropfb = optsld.cropfb; %copy from struct ld
+md.zerostack = optsld.zerostack; %copy from struct ld
 
 
 if ~isfield(md,'channel_save')
@@ -37,8 +37,8 @@ if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
     md.md_hires.tcropfront = 0;
     md.md_hires.tcropback = 0;
-    md.md_hires.cropfb = optld_hires.cropfb;
-    md.md_hires.zerostack = optld_hires.zerostack;
+    md.md_hires.cropfb = optsldhr.cropfb;
+    md.md_hires.zerostack = optsldhr.zerostack;
     hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
     if ~isfield(hires_struct_tmp,'zwid')%do this after conversion to double
         sprintf("zwid_hires NOT IN mdsi, COMPUTING/ADDING IT NOW")

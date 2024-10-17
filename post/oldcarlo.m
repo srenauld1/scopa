@@ -7,7 +7,6 @@ if dofindfiles && all(contains(getfieldns([o.id],'pth'), 'f91g_syt')) %override 
         error("right now old project is one file at a time")
     end
     o.mn.oldcarl = 1;
-    o.mn.oldcarl = 1;
     o.sld.tcropfront = 4; % how many samples to remove from beginning of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
     o.sld.tcropback = 2; % how many samples to remove from end of stack
     o.mfit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)

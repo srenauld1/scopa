@@ -56,8 +56,8 @@ sampper = 1/md.volrate;
 cropfb = 0;
 numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
 
-[it, itstr] = make_plot_inds(it, indsall=sz(4), label_prefix='t');
-[iz, izstr] = make_plot_inds(it, indsall=sz(3), label_prefix='z');
+[it, itstr] = indsmake(it, indsall=sz(4), label_prefix='t');
+[iz, izstr] = indsmake(it, indsall=sz(3), label_prefix='z');
 
 
 if isequal(dr, [0,1])

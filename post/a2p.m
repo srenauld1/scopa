@@ -1,11 +1,12 @@
 
 
-%%%%%%%%%%%%%% a2p %%%%%%%%%%%%%% 
+%%%%%%%%%%%%%% a2p %%%%%%%%%%%%%%
 
 %{
 
 ap2 (analysis 2-photon)
     scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
+    primarily for defining/processing rois, fitting models, and visualizing data (including interactively)
     can run on single recordings, or in loop on batch of recordings
     can run locally, or on O2
     many subroutines can be run on electrophysiological data too; full pipeline could be easily adapted to run on electrophysiological data 
@@ -36,11 +37,16 @@ variables:
     cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in froiproc)
 
 
-main process functions:
+main processing functions:
     stackld: load stacks; plot stacks for comparison
     daqld: load/process daq data
+    mroimake: make manual (drawn) and/or automated morphological rois
+    froiproc: process functional rois extracted in pre pipeline with caiman
+    bumpcmp: compute bump in various ways
+    popcmp: compute poulation features, currently only holds bumpcmp; eventually will be general stack and timeseries feature extraction routine, to make extracted features available to mfit routine
+    mfit: fit models to any available timeseries (derived from roi code, or feature extraction code, or direct experimental timeseries (e.g stimulus, fictrac timeseries, etc)
 
-utility functions:
+utility functions (and visualization functions):
     stackplt: plot stack(s) 
     pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
     pthauto: create path (e.g. for saving figures)
@@ -68,30 +74,34 @@ end
 
 clear glb %clear globals
 
-o = oset(recin); % set options
+oa = oset(recin); % set options; oa stands for o all (ie all recordings)
 
-for k = 1:numel(o.id) % loop over recordings
+for k = 1:numel(oa) % loop over recordings
 
-    [pth, parstr] = fnmake(o);
+    o = oa(k); %index into options for one recording, o
 
-    glb(1, pthfldr=pth.fldr); %set/update data folder path as global           
+    osave(o); %save all options to txt file
+
+    pth = fnmake(o);
+
+    glb(1, pthfldr=pth.fldr); %set/update data folder path as global
 
     %% load metadata
 
-    md = mdsild(pth.md, o.sld, o.hires.ld);
+    md = mdsild(pth.md, o.sld, o.hires.sld);
 
-    % md_flyg = mdflygld(ids, pth.flyg_md, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
+    % md_flyg = mdflygld(ids, pth.mdflyg, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md
 
     %% load daq / stim
 
-    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = [];
+    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = []; stack_hires_mnt = []; map_hires_lores = []; %init some optional variables
     if o.mn.oldcarl
 
         try
             load(pth.featsave, 'ts', 'stimvid')
         catch
-            [ts.vis.(o.carl.feat), stimvid] = load_feat(ids.recdate, ids.fly, ids.trial, o.carl.stimtype, o.carl.feat, ...
+            [ts.vis.(o.carl.feat), stimvid] = featld(ids.recdate, ids.fly, ids.trial, o.carl.stimtype, o.carl.feat, ...
                 pthparent_feat=pth.parent_feat, rep=1, feat2=[], pthsv_plot=[], doplt=0, ...
                 getgrid=1, vistype='plane', it=[1:3:250], gridres=256, flipped=0, downsample_template=1, ...
                 crop_edges=1, pth_template=pth.template);
@@ -113,7 +123,8 @@ for k = 1:numel(o.id) % loop over recordings
                     toballscale=o.daq.toballscale, ...
                     tounwrap=o.daq.tounwrap, ...
                     tozero=o.daq.tozero, ...
-                    pth_fldr=pth.fldr, ...
+                    pth_daq=pth.daq, ...
+                    pth_daqrs=pth.daqrs, ...
                     slopelensec=o.daq.slopelensec, ...
                     slopeord=o.daq.slopeord, ...
                     useinds=o.daq.useinds, ...
@@ -122,19 +133,19 @@ for k = 1:numel(o.id) % loop over recordings
                     doplt=o.daq.doplt);
             end
             [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
-            [md.epochs, ts.epochinds, ts.vis] = g4epochld(ts.t, pth.epochinfo, ts.vis, pth.fldr, ids, md.sampper, daqrs, o.daq.use_carls_epochs);
+            [md.epochs, ts.epochinds, ts.vis] = g4epochld(ts.t, pth.epochinfo, ts.vis, pth.fldr, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
             [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
         end
 
         if o.mn.doftv
             try
-                load(pth.ft.vidrs, 'ftvdsrs')
+                load(pth.ftvidrs, 'ftvdsrs')
             catch
                 try
-                    ftvdsrs = ftvproc(pth.ft.vid, pth.ft.vidrs, md.numvol_o, md.volrate, ...
+                    ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol_o, md.volrate, ...
                         o.ftv.num_periodic_peaks_defining_laser_oscillations, o.ftv.smsdspace, o.ftv.numpix_to_extract_laser_timeseries, ...
                         o.ftv.smsdtime, ...
-                        o.ftv.doplt, pth.ft.dat, pth.ft.vidlog, pth.ft.log);
+                        o.ftv.doplt, pth.ftdat, pth.ftvidlog, pth.ftlog);
                 catch ME
                     sprintf(ME.message)
                 end
@@ -147,7 +158,7 @@ for k = 1:numel(o.id) % loop over recordings
     %% load/visualize stack (and optional hires stack)
 
     stack = stackld(pth.stack, ...   %can just pass pth.stack if it's mat; if tif need to also pass sz to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim;
-        suffixplt=o.sld.sp.suffixplt, ... %pass nonempty suffixplt and it will plot whichever suffixes are in same folder as pth.stack, along with pth.stack
+        suffixplt=o.sld.suffixplt, ... %pass nonempty suffixplt and it will plot whichever suffixes are in same folder as pth.stack, along with pth.stack
         sz = md.sz_o, ...
         numslice_withflyback = md.numslice_withflyback, ...
         channel_save = md.channel_save, ...
@@ -161,14 +172,12 @@ for k = 1:numel(o.id) % loop over recordings
         it = o.sld.sp.it, ...
         iz = o.sld.sp.iz, ...
         smsdspace=o.sld.smsdspace, ...
-        smsdtime = o.sld.sp.smsdtime, ...
-        dr = o.sld.sp.dr);
+        smsdtimesec = o.sld.smsdtimesec, ...
+        dr = o.sld.sp.dr, ...
+        imrate = md.volrate);
 
-    if any(cell2mat(struct2cell(o.mroi.seg.usehires)))
+    if pth.hires_prefix
         [stack_hires_mnt, map_hires_lores] = hiresld(ids.recid, pth, stack, md, o.hires);
-    else
-        stack_hires_mnt = [];
-        map_hires_lores = [];
     end
 
     % stackplt(stack, it=20.3, fdimnum=3) %view stack in various ways
@@ -177,23 +186,25 @@ for k = 1:numel(o.id) % loop over recordings
 
     for rei = 1:numel(o.mn.regionex) %for each regionex
 
-        regionex = o.mn.regionex{rei};
+        if ~strcmp(o.mn.regionex, 'default')
 
-        %%crop movie to regionex cuboid
-        [stackcrop, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
-            cropstacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
-            md.sz_crop, o.mroi.seg.usehires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
+            %%crop movie to regionex cuboid
+            [stackcrop, zstartpos_crop, map_hires_lores_crop, hiresmntcrop, croplim_all.(regionex), pth.mroi.(regionex)] = ...
+                cropstacks(stack, regionex, md.zstartpos, ids.recid, pth.fldr, pth.tmpfiles, ...
+                md.sz_crop, o.mroi.seg.usehires.(regionex), stack_hires_mnt, map_hires_lores, pth.mroi.(regionex));
 
-        %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
-        [roidat.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
-            mroimake(stackcrop, o.mroi, ts.t, md.sampper, md.xwid, md.ywid, md.zwid, ...
-            pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
+            %%make (manual and/or automated) morphological rois in 2d or 3d, and extract their responses
+            [roidat.(regionex).(parstr.mroi.(regionex)), ts.resp.(regionex).(parstr.mroi.(regionex))] = ...
+                mroimake(stackcrop, o.mroi, ts.t, md.sampper, md.xwid, md.ywid, md.zwid, ...
+                pth.mroi.(regionex), pth.tmpfiles, hiresmntcrop, map_hires_lores_crop, regionex, parstr.mroi.(regionex));
 
-        %%load/select functional (caiman) roi responses
-        for rfi = 1:numel(pth.froi_all.(regionex)) %for each caiman extraction run (each roi file)
-            [roidat.(regionex).(parstr.froi.(regionex){rfi}), ts.resp.(regionex).(parstr.froi.(regionex){rfi})] = ...
-                froiproc(stackcrop, roidat.(regionex).(parstr.mroi.(regionex)), ...
-                pth.froi_all.(regionex){rfi}, regionex, md, o.froi);
+            %%load/select functional (caiman) roi responses
+            for rfi = 1:numel(pth.froi_all.(regionex)) %for each caiman extraction run (each roi file)
+                [roidat.(regionex).(parstr.froi.(regionex){rfi}), ts.resp.(regionex).(parstr.froi.(regionex){rfi})] = ...
+                    froiproc(stackcrop, roidat.(regionex).(parstr.mroi.(regionex)), ...
+                    pth.froi_all.(regionex){rfi}, regionex, md, o.froi);
+            end
+
         end
 
     end
