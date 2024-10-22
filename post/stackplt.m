@@ -43,7 +43,9 @@ else
 end
 
 stackdims_default = 'yxztck';
-
+if isequal(stackdims, stackdims_default)
+    stackdims = stackdims_default(1:numel(szin));
+end
 if numel(stackdims)~=numel(szin)
     error("stackdims length must match ndims(stack)")
 end
