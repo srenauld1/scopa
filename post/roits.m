@@ -20,6 +20,7 @@ normpost = opt.normpost;
 sampper = opt.sampper;
 resp = opt.resp;
 wavp = opt.wavp;
+channorm = opt.channorm;
 degdtr = opt.degdtr;
 t = opt.t;
 pthpre = opt.pthpre;
@@ -31,7 +32,7 @@ end
 if isempty(pthpre)
     pthpre = pthauto(suffix='.gif', usetime=1);
 end
-if isempty(t) && ( ~isempty(wavp) || ~isempty(channorm) )
+if isempty(t) && ( ~isempty(wavp) || channorm~=0 )
     error("must pass t if passing wavp or channorm (must have t to apply wavelet filtering or wavelet cohernece based 2-channel normalization)")
 end
 if isempty(resp)
