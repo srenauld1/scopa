@@ -31,8 +31,8 @@ end
 if isempty(pthpre)
     pthpre = pthauto(suffix='.gif', usetime=1);
 end
-if isempty(t) && ~isempty(wavp)
-    error("must pass t if passing wavp (must have t to apply wavelet filtering)")
+if isempty(t) && ( ~isempty(wavp) || ~isempty(channorm) )
+    error("must pass t if passing wavp or channorm (must have t to apply wavelet filtering or wavelet cohernece based 2-channel normalization)")
 end
 if isempty(resp)
     resp = struct;
@@ -89,6 +89,7 @@ arguments
     degdtr
     t
     pthpre
+    doplt
 end
 
 nowt = 0;
