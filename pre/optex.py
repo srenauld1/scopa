@@ -3,49 +3,12 @@
 import numpy as np
 from map2params import map2params
 
-##########################################################################################################################################
+def optex(index_extraction_param_set = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
-# configs for caiman motion correction and source extraction
-# this is not comprehensive, but should be the most likely params to require tuning 
-# below is more comprehensive for extraction than motion correction 
-
-##########################################################################################################################################
-
-def configs(register_in_2d = True, index_extraction_param_set = 'default', fnames = None, min_mov = 0,
-            md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
-
-    #md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
-
+    # this is not comprehensive, but is most options, and the options map2params are the most likely to require tuning, i think
+    # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
     # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
     # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object (but which may still be used in caiman functions)
-   
-    ### motion correction configs ###
-
-    pw_rigid = False #rigid or non, for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
-    nonneg_movie = True #true because i make it nonnegative before registration
-    min_mov = min_mov
-
-    niter_rig = 2 #default 1, number registration iterations (regardles of pw_rigid, or is3d); template is updated as bin_median of registered stack from each iteration 
-    shifts_opencv = False #automatically false if is3D_mc==true, or if pw_rigid = True . . . so true only works for rigid 2d registration . . . true uses intercubic interp (faster but smoother), false uses fourier
-    max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
-    upsample_factor_grid = 4 #default 4, use for merging patches if pw_rigid==True; not the same as upsample factor in register translation, whichy is just set to 10 by default, for subpixel shift
-    # num_frames_split = 200 #for paralellization, within each split frames are processed one at a time, so this doens't matter i don't think
-
-    if register_in_2d:
-        is3D_mc = False #if not 3d, register each slice . . . 
-        indices_mc = (slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
-        strides_mc = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
-        overlaps_mc = (12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch overlap
-        max_shifts_mc = (8, 8) #max allowed shifts (in patch if piecewise, or whole fov if not) 
-        gsig_filt = None #(3,3)
-    else:
-        is3D_mc = True
-        indices_mc = (slice(None), slice(None), slice(None)) #if is3d is true for motion correction, will overwrite with nones and will lose indices_ex
-        strides_mc = (12, 12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
-        overlaps_mc = (8, 8, 8)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
-        max_shifts_mc = (4, 4, 4) #max allowed shifts (in patch if piecewise, or whole fov if not) 
-        gsig_filt = None #(3,3,3)#(3,3,3) #(3,3,3)
-
 
     ### roi extraction params ###
 
@@ -57,7 +20,6 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
         indices_ex = [slx, sly, slz]
     else:
         indices_ex = [slice(None), slice(None), slice(None)]
-
 
     p = 0 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
     merge_thresh = 0.85
@@ -83,7 +45,7 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
     bas_nonneg = False #appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
-    decay_time = .4  # only for deconvolution, length of transient - CONFIRMED APPROPRIATE FOR OUR INDICATOR GCaMP6f
+    decay_time = .2  # only used in deconvolution, approximate length of indicator tau off
     if md['zfov']==0: #this occurs if it's a 2d stack (not volumetric); below the third element (hard coded 0.0) will be removed
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], 0.0 ] #pixels per micron
     else:
@@ -244,25 +206,11 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
         print("index_extraction_param_set is " + str(index_extraction_param_set) + " with filename string " + fnadd)
 
     opts_dict = {
-                'strides': strides_mc,    # start a new patch for pw-rigid motion correction every x pixels
-                'overlaps': overlaps_mc,   # overlap between pathes (size of patch strides+overlaps)
-                'max_shifts': max_shifts_mc,   # maximum allowed rigid shifts (in pixels)
-                'max_deviation_rigid': max_deviation_rigid,  # maximum shifts deviation allowed for patch with respect to rigid shifts
-                'pw_rigid': pw_rigid,         # flag for performing non-rigid motion correction
-                # 'num_frames_split': num_frames_split,
-                'gSig_filt': gsig_filt,
-                'is3D': is3D_mc,
-                'nonneg_movie':nonneg_movie,
-                'min_mov': min_mov,
-                'shifts_opencv':shifts_opencv,
-                'niter_rig':niter_rig,
-                'upsample_factor_grid':upsample_factor_grid,
                 'fr': fr,
                 'p': p,
                 'nb': nb,
                 'merge_thr': merge_thresh,
                 'rf': rf,
-                'indices': indices_mc,  #for some reason indices_mc is causing error, maybe needs list for mc and tuple for extraction?
                 'K': k,
                 'gSig': gSig,
                 'gSiz': gSiz,
@@ -311,7 +259,8 @@ def configs(register_in_2d = True, index_extraction_param_set = 'default', fname
                 'nrgthr': nrgthr,
                 'fnames': fnames,
                 #'medw': medw,
-                'extract_cc': extract_cc} 
+                'extract_cc': extract_cc
+                } 
 
     opts_dict_morph = {
                 'morph_se': morph_se, 

@@ -132,7 +132,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
 
 
     with open(pth_md, 'w') as file: 
-        file.write(json.dumps(md))
+        file.write(json.dumps(md, sort_keys=True, indent=4))
 
 
 
@@ -141,6 +141,8 @@ def convert_md_file(pth_md, pth_md_old, pth_md_mat_old): #convert old metadatafi
     md = np.load(pth_md_old, allow_pickle='TRUE').item()
 
     if not 'channel_save' in md or not 'channel_active' in md:
+        # md['channel_save'] = 1
+        # md['channel_active'] = 1
         raise Exception("your metadata file is old and does not have channel information, rerun registration so channel information can be saved in the new metadata file")
 
     with open(pth_md, 'w') as file: 

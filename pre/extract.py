@@ -7,7 +7,7 @@ from tifffile.tifffile import imwrite, imread
 
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
-from configs import configs
+from optex import optex
 from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
 from separate_channels_when_two import separate_channels_when_two
@@ -105,7 +105,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm2 = None
                         Ain = None
                        
-                        opts_dict, opts_dict_morph, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING configs OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
+                        opts_dict, opts_dict_morph, indices_ex, fnadd = optex(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING optex OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL optex SO EACH SLICE GETS THE SAME 
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time

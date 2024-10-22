@@ -11,7 +11,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 
-from configs import configs
+from optrg import optrg
 from im_montage import im_montage
 from plot_gif import plot_gif
 
@@ -61,7 +61,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
             if os.path.isfile(pth_regtemplate):
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
-                opts_dict, _, _, _ = configs(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+                opts_dict = optrg(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #opts for motion correction (will also define for extraction, but extraction params are in redefined later call to optex)
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
                 regtemplate = make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
@@ -152,7 +152,7 @@ def make_registration_template(stack, stack_has_multiple_z_slices, register_in_2
     
     time_slicer = slice(subidx.start, subidx.stop, step + 1)
 
-    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in configs (default does not use these)
+    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in optrg (default does not use these)
         if stack_has_multiple_z_slices:
             stack = stack[time_slicer, indices[0], indices[1], :]
         else:
