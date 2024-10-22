@@ -1,12 +1,17 @@
-function hndls = init_fig(hndls, letui, gifvis, figsidelength, fontsz)
+function hndls = initfig(opt)
 
 arguments
-    hndls
-    letui
-    gifvis = 'on'
-    figsidelength = 0.75
-    fontsz = 8
+    opt.hndls = struct
+    opt.doui = 1
+    opt.gifvis = 'on'
+    opt.figsidelength = 0.75
+    opt.fontsz = 8
 end
+hndls = opt.hndls;
+doui = opt.doui;
+gifvis = opt.gifvis;
+figsidelength = opt.figsidelength;
+fontsz = opt.fontsz;
 
 if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
 
@@ -15,16 +20,22 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
     close(hfg)
 
-
+    % envname = getenv('HOSTNAME');
+    % if ~isempty(regexp( envname, 'compute-', 'once' ))
+    %     hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked', 'Color', 'white', 'visible', gifvis);
+    % else
+    %     hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen', 'Color', 'white', 'visible', gifvis);
+    % end
     hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
+
     if aspect_screen>1
         hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
     else
         hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
     end
 
-    if letui
-        hfg.KeyPressFcn = @(src,evnt)pltexp_key_press_fcn(src,evnt);
+    if doui
+        hfg.KeyPressFcn = @(src,evnt)uikeypress(src,evnt);
 
         % hfgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
         % hfgd.Position = [hfg.Position(1)+hfg.Position(3) 0 0.9-hfg.Position(3) hfg.Position(4)];

@@ -1,9 +1,9 @@
-function hgroup = init_axes_scatter(hfg, ax, letui, scatter_type, mkrsz, blindspot, numsamp, numlags, actual_lags_xy_sec, plot_z_as_color, labs, cols, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hgroup = initaxsc(hfg, ax, doui, scatter_type, mkrsz, blindspot, numsamp, numlags, actual_lags_xy_sec, plot_z_as_color, labs, cols, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
 
 arguments
     hfg
     ax struct
-    letui
+    doui
     scatter_type
     mkrsz
     blindspot
@@ -18,7 +18,7 @@ arguments
     widfac = 1
     htfac = 1
     fontsz = [6 8 12]
-    axorder char = 'rowmajor'
+    axorder char = 'rm'
 end
 
 do_bar = 0;

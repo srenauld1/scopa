@@ -1,9 +1,9 @@
-function stackplt(stack, opt)
+function h = stackplt(stack, opt)
 
 %alphamapping is not yet an option
 
 arguments
-    stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, stack scaled to colormap range; if no cmap, assumed to be rgb
+    stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, clim property of image scaled to colormap range; if cmap is 'rgb', image must be rgb
     opt.pthgif char = ''
     opt.gifvis char = 'on'
     opt.roipx = []
@@ -14,17 +14,24 @@ arguments
     opt.title_prefix char = ''
     opt.index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
     opt.figsidelength = 0.75 %figure size as proportion of your available screen small dimension (cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
-    opt.axord char = 'rowmajor'
+    opt.axord char = 'rm'
     opt.numcolorsgif = 128
     opt.fdimnum = 2; %how many dims to display on a each frame
     opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
+    opt.stackdims = 'yxztck'
     opt.dr = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.iy = [];
     opt.ix = [];
     opt.iz = [];
     opt.it = [];
     opt.ic = []; %pmt indices (red or green channel
-    opt.ik = []; %rgb color channel indices 
+    opt.ik = []; %rgb color channel indices
+    opt.doui = 0;
+    opt.dool = 0;
+    opt.stackjust = 'center' %how to justify stack image; center, minimize, none
+    opt.marginsfig = 0.05;
+    opt.marginssp = 0.01;
+    opt.fontsz = 10;
 end
 
 eval(structvars(opt).'); %turn opt into local variables with the same name as opt fields
@@ -35,12 +42,44 @@ else
     szin = size(stack); %taking first cell because below code makes sure all stacks are same size, if multiple
 end
 
+stackdims_default = 'yxztck';
+
+if numel(stackdims)~=numel(szin)
+    error("stackdims length must match ndims(stack)")
+end
+if isempty(stackdims)
+    stackdims = stackdims_default;
+end
+for k = 1:numel(stackdims)
+    loc(k) = strfind(stackdims_default, stackdims(k));
+end
+sznew = num2cell(ones(numel(szin), 1));
+if numel(unique(loc))~=numel(loc)
+    error("there cannot be repeated stackdims")
+end
+for k = 1:numel(loc)
+    sznew{loc(k)} = szin(k);
+end
+if ~isequal(vec(cell2mat(sznew)), vec(szin))
+    if iscell(stack)
+        for k = 1:numel(stack)
+            stack{k} = reshape(stack{k}, sznew{:});
+        end
+        szin = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
+    else
+        stack = reshape(stack, sznew{:});
+        szin = size(stack); %taking first cell because below code makes sure all stacks are same size, if multiple
+    end
+end
+
+
+
 if isempty(pthgif)
     pthgif = pthauto(suffix='.gif', usetime=1);
 end
-  
+
 if isempty(dimorder)
-    dimorder = 1:numel(szin); %for now only one dim order allowed, so just take from first cell if stack is a cell 
+    dimorder = 1:numel(szin); %for now only one dim order allowed, so just take from first cell if stack is a cell
 end
 
 index_labels_opt = cell(1,6);
@@ -105,7 +144,6 @@ if ~isempty(opt.ik)
     index_labels_opt{6} = opt.ik;
 end
 
-
 clear roiolmake %to clear the persistent variable within
 
 if strcmp(cmap, 'rgb')
@@ -114,11 +152,8 @@ end
 
 %% check vars
 
-dimlabels = vec(num2cell('yxztck')); %c is scanimage channel and k is rgb channel
-fontmedium = 10;
+dimlabels = vec(num2cell(stackdims_default)); %c is scanimage channel and k is rgb channel
 maxnumdims = 6;
-margins_fig = 0.05;
-margins_subplot = 0;
 max_num_inds_to_print = 20;
 max_num_im_per_frame = 60;
 max_num_gif_frames = 2000;
@@ -156,14 +191,14 @@ if iscell(stack)
         stackmin = double(min(stack{si}(:)));
         stackmax = double(max(stack{si}(:)));
         stackrange = stackmax-stackmin; %(max-min)*dr+min = [0 1]
-
-        if stackmin<0
-            error("need to fix rescaling for negative stack")
-        end
+        % 
+        % if stackmin<0
+        %     error("need to fix rescaling for negative stack when you are passing multiple stacks")
+        % end
         rsa = [dr{si}(1) 1-dr{si}(1); %dr{si}(1)*newmax - dr{si}(1)*newmin + newmin = 0;
-               dr{si}(2) 1-dr{si}(2)]; %dr{si}(2)*newmax - dr{si}(2)*newmin + newmin = 1;
+            dr{si}(2) 1-dr{si}(2)]; %dr{si}(2)*newmax - dr{si}(2)*newmin + newmin = 1;
         rsb = [0;1];
-        rstmp = mldivide(rsa, rsb); %two equations two unknowns 
+        rstmp = mldivide(rsa, rsb); %two equations two unknowns
         newmax = rstmp(1);
         newmin = rstmp(2);
         if ~isa(stack{si}, 'single') %for the rescaling cannot be uint16
@@ -172,18 +207,18 @@ if iscell(stack)
         stack{si} = newmin + ((stack{si} - stackmin) / stackrange)*(newmax-newmin);
     end
 
-    clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled 
-    stack = cell2mat(stack); %convert to mat and cat stacks 
+    clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled
+    stack = cell2mat(stack); %convert to mat and cat stacks
 
-else %if there's only one stack, don't rescale it, just assign dr to CLim 
+else %if there's only one stack, don't rescale it, just assign dr to CLim
     if numel(dr)~=1
         error("dr length must be 1 if one stack is passed as argument")
     end
     stackmin = double(min(stack(:)));
     stackmax = double(max(stack(:)));
-    if stackmin<0
-        error("need to fix rescaling for negative stack")
-    end
+    % if stackmin<0
+    %     error("need to fix rescaling for negative stack")
+    % end
     stackrange = stackmax-stackmin;
     clim_tmp = stackrange*cell2mat(dr)+stackmin;
 end
@@ -204,10 +239,10 @@ else
             error("roipx must be cell, or vector")
         end
     end
-    if numel(size(stack))>3
+    if ndims(stack)>3
         sprintf("you passed roipx as argument and a stack with numdims>3; \nautomatically averaging dimensions>3 to create 3d background image for roi overlay; \nyou can also pass 2d or 3d stack instead")
-        tmp = size(stack); 
-        tmp = num2cell(tmp(1:3)); 
+        tmp = size(stack);
+        tmp = num2cell(tmp(1:3));
         stack = mean(reshape(stack, tmp{:}, []), 4);
         dimorder = dimorder(1:3);
     end
@@ -294,13 +329,8 @@ sz_framedims = sztmp(1:fdimnum);
 sz_framedims = num2cell([sz_framedims(1:2) prod(sz_framedims(3:fdimnum))]);
 stack = reshape(stack, sz_framedims{:}, []); %collapse fdimnum into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
 
-numxpix = size(stack,2);
-numypix = size(stack,1);
 numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
 numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
-dummyim = nan(numypix, numxpix);
-dummyim_rgb = nan(numypix, numxpix, 3);
-
 
 if numim_per_frame>max_num_gif_frames
     error(sprintf("you are attempting to plot " + num2str(numframes) + " gif frames, which exceeds the (optional) default max of " + num2str(max_num_gif_frames)))
@@ -350,45 +380,9 @@ end
 
 %% init subplots
 
-ax = figarr(stack, margins_subplot, margins_fig);
-
-hfg = figure;
-aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-close(hfg)
-
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis, 'Position', [0, 0, 1, 1]);
-if aspect_screen>1
-    hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-else
-    hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-end
-
-haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
-htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
-
-
-for j = 1:numim_per_frame
-
-    hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    hax{j}.InnerPosition(1) = ax.(axord).xp(j);
-    hax{j}.InnerPosition(2) = ax.(axord).yp(j);
-    hax{j}.InnerPosition(3) = ax.xe(1);
-    hax{j}.InnerPosition(4) = ax.ye(1);
-    hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
-    hax{j}.XLim = [1 numxpix];
-    hax{j}.YLim = [1 numypix];
-    hax{j}.CLim = clim_tmp;
-    colormap(hax{j}, cmap);
-    axis off
-    axis ij
-
-    hold(hax{j}, 'on')
-    hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
-    hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
-    hol{j} = image(hax{j}, 'CData', dummyim_rgb, 'AlphaData', dummyim);
-    hold(hax{j}, 'off')
-
-end
+ax = figarr(stack, marginssp=marginssp, marginsfig=marginsfig);
+h = initfig(fontsz=fontsz);
+h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap);
 
 %% plot
 
@@ -401,23 +395,24 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         framecount = framecount+1;
         for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
 
-            hpl{j}.CData = stack(:,:,j,k);
+            h.st.hpl{j}.CData = stack(:,:,j,k);
             if ~isempty(roipx) %&& k==1 %if there are roi variables
-                hol{j}.CData = squeeze(imroi(:,:,j,k,:)); %squeeze to make it 3d (2d plus color channel)
-                hol{j}.AlphaData = imalpha(:,:,j,k);
+                h.st.hol{j}.CData = squeeze(imroi(:,:,j,k,:)); %squeeze to make it 3d (2d plus color channel)
+                h.st.hol{j}.AlphaData = imalpha(:,:,j,k);
             end
 
         end
 
-        htx.String = titlenew{framecount};
+        h.httl.String = titlenew{framecount};
 
-        fig2gif(hfg, framecount, pthgif, numcolorsgif)
+        fig2gif(h.hfg, framecount, pthgif, numcolorsgif)
 
     end
 
 end
 
 clear roiolmake %to clear the persistent variable within
+
 
 end
 

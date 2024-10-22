@@ -33,7 +33,7 @@ if doplt
 
     filename_save = [pthspre '_syntest_.gif'];
     nrows = 2; ncols = 1;
-    [axx, axy, axw, axh] = figarr(nrows, ncols);
+    ax = figarr([nrows, ncols]);
     hfg = figure; sgtitle(['synthetic vs measured depv; top: all samples; bottom: first ' num2str(numel(tinds)) ' samples'])
     for i = 1:numel(axx)
         hax{i} = axes('Parent', hfg, 'Position', [axx(i), axy(i), axw(i), axh(i)]); hp1{i} = plot(hax{i},1); hold(hax{i}, 'on'); hp2{i} = plot(hax{i},1);

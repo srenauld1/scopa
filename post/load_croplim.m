@@ -21,7 +21,7 @@ elseif length(pthcroplimall)==1
     croplimstr = strjoin(spl(insloc+1:insloc+10), '_');
     croplimtmp = str2double(strsplit(croplimstr, '_'));
     croplim = croplimtmp(vec([1:2]'+2*([3 2 4 1 5]-1)));
-    if  all(isnan(croplim(end-1:end))) %in case it's an old croplim file (no channel)
+    if all(isnan(croplim(end-1:end))) %in case it's an old croplim file (no channel)
         croplimstr = strjoin(spl(insloc+1:insloc+8), '_');
         croplimtmp = str2double(strsplit(croplimstr, '_'));
         croplim = croplimtmp(vec([1:2]'+2*([3 2 4 1]-1)));

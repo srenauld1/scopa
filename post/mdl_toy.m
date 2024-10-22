@@ -16,9 +16,10 @@ tmp = [pp(:) qq(:)];
 
 numrows = 4;
 numcolumns = 1;
-margins_fig = 0.05;
-margins_subplot = 0.05;
-[axx, axy, axw, axh] = figarr(numrows,numcolumns,margins_fig,margins_subplot);
+marginsfig = 0.05;
+marginssp = 0.05;
+[axx, axy, axw, axh] = figarr(numrows,numcolumns,marginsfig,marginssp);
+
 ylm = [min(depv(:)) max(depv(:))];
 ylm = [min(depv(:))-range(ylm)*0.1 max(depv(:))+range(ylm)*0.1 ];
 hfg = figure;

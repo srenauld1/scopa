@@ -4,7 +4,7 @@ close all
 clear all
 clc
 
-load('~/stacks/imtest.mat', 'stackcrop')
+load('~/stacks/imtest.mat', 'stacksub')
 
 roipixindp = {[1:100], [300:400]};
 roicol = [ [0 1 0]; [1 0 0]];
@@ -18,15 +18,15 @@ roialpha2 = [0.3, 0.3];
 
 dr = [0 1];
 
-numypix = size(stackcrop, 1);
-numxpix = size(stackcrop, 2);
+numypix = size(stacksub, 1);
+numxpix = size(stacksub, 2);
 
-stackmin = double(min(stackcrop(:)));
-stackmax = double(max(stackcrop(:)));
+stackmin = double(min(stacksub(:)));
+stackmax = double(max(stacksub(:)));
 stackrange = stackmax-stackmin;
 
-stack1 = stackcrop(:,:,2,8,1);
-stack2 = stackcrop(:,:,15,8,2);
+stack1 = stacksub(:,:,2,8,1);
+stack2 = stacksub(:,:,15,8,2);
 
 
 

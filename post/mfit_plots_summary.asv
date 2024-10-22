@@ -65,7 +65,7 @@ end
 numcolumnsbottom = 5; %really number grid lines in which the plots are arranged
 numplotsbottom = numrowsbottom*numcolumnsbottom;
 
-% [xbot2, ybot2, wbot2, hbot2] = figarr(numrowsbottom, numcolumnsbottom, margins_fig, marginsbottom);
+% [xbot2, ybot2, wbot2, hbot2] = figarr(numrowsbottom, numcolumnsbottom, marginsfig, marginsbottom);
 
 bottomregionminx = 0+marginsbottom+leftmost_extra_margin;
 bottomregionmaxx = 1-marginsbottom;

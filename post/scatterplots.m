@@ -32,12 +32,12 @@ switch roi_type
         error("raw doens't work yet")
 end
 
-subplot_layout = {[4,4], stack};
-margins_subplot = [0.05, 0];
-margins_fig = 0.05;
+layout = {[4,4], stack};
+marginssp = [0.05, 0];
+marginsfig = 0.05;
 splitdim = 'x';
 splitfrac = 0.65;
-ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig, splitdim=splitdim, splitfrac=splitfrac);
 
 
 [varsx, varsy, varsz] = convert_to_single_precision(varsx, varsy, varsz);

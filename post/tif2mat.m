@@ -12,8 +12,7 @@ arguments
     opt.cropfb = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
     opt.zerostack = 1 %subtract min to make min zero
     opt.output_datatype = 'uint16'
-    opt.tcropfront = 0 %num frames to crop from beginning
-    opt.tcropback = 0 %num frames to crop from end
+    opt.tcrop = [0, 0] %num frames to crop from [start, end]
     opt.inds_y_read_from = []
     opt.inds_x_read_from = []
     opt.inds_c_read_from = []
@@ -29,8 +28,7 @@ chanuse = opt.chanuse;
 cropfb = opt.cropfb;
 zerostack = opt.zerostack;
 output_datatype = opt.output_datatype;
-tcropfront = opt.tcropfront;
-tcropback = opt.tcropback;
+tcrop = opt.tcrop;
 inds_y_read_from = opt.inds_y_read_from;
 inds_x_read_from = opt.inds_x_read_from;
 inds_c_read_from = opt.inds_c_read_from;
@@ -97,11 +95,11 @@ stack = tifld(pth_stack_tif, ...
 
 if ndims(stack)==3
     
-    sprintf("WARNING, ignoring tcropback, tcropfront, and chanuse because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
+    sprintf("WARNING, ignoring tcrop, and chanuse because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
 
 else
 
-    keepinds_t = tcropfront+1:sz_yxzt(4)-tcropback;
+    keepinds_t = tcrop(1)+1:sz_yxzt(4)-tcrop(2);
     if ~isequal(keepinds_t, 1:size(stack,4)) && ~isempty(keepinds_t)
         stack = stack(:,:,:,:,keepinds_t);
     end

@@ -1,9 +1,9 @@
-function roidat = makeroidat(stack, roiwt, roicen, num_mroi)
+function roidat = roidatmake(stack, roiwt, roicen, num_roim)
 
 mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');
 
-roipx = cell(num_mroi, 1);
-pixinds_bnd_roi = cell(num_mroi, 1);
+roipx = cell(num_roim, 1);
+pixinds_bnd_roi = cell(num_roim, 1);
 bnd2d = zeros(size(mask_allroi), 'logical');
 for ii = 1:length(roipx)
     roipx{ii} = find(vec(roiwt(ii,:))); %pixel indices of each roi
@@ -36,7 +36,7 @@ for ii = 1:numel(pixinds_allroi) %one pixel at a time
     pixinds_allroi{ii} = pixinds_allroi_tmp(ii); %put in cell array to match what happens with functional rois
 end
 
-roidat.numroi = num_mroi;
+roidat.numroi = num_roim;
 roidat.roipx = roipx;  %pixel indices of each roi, one roi per cell
 roidat.roiwt = roiwt; %boolean mask vector of each roi
 roidat.roicen = roicen;

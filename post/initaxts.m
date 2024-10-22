@@ -1,9 +1,9 @@
-function hgroup = init_axes_timeseries(hfg, ax, letui, numsamp, vpmapflat_axid, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hgroup = initaxts(hfg, ax, doui, numsamp, vpmapflat_axid, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
 
 arguments
     hfg
     ax struct
-    letui
+    doui
     numsamp
     vpmapflat_axid
     ti
@@ -17,7 +17,7 @@ arguments
     htfac = 1
     rescale_timeseries = 1
     fontsz = [6 8 12]
-    axorder char = 'rowmajor'
+    axorder char = 'rm'
 end
 
 numchan = max(cell2mat(cellfun(@(x) size(x,3), ticklab, 'UniformOutput', false)));
@@ -116,7 +116,7 @@ for j = 1:numsubplot
 
         if j==1
 
-            if letui
+            if doui
                 hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt);
                 hax{j}.PickableParts = 'visible';
                 hax{j}.HitTest = 'on';

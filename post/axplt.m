@@ -1,7 +1,7 @@
 
 function [hndls, framecount, cb] = axplt(hndls, stack, stackp, vid, framecount, varsp, ...
     vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
-    pthgif, figure_title, varsz, letui, timestr_ui, sampinc, ...
+    pthgif, figure_title, varsz, doui, timestr_ui, sampinc, ...
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
     cols_sc, scdimmin, scdimsd, vidrot)
 
@@ -233,7 +233,7 @@ while tloop
 
 
         %%%% PROCESS USER INPUT CALLBACKS %%%%
-        if letui
+        if doui
             % cb = default_cbflags(cb, 'quick'); %set all 'quick' flags to default
             [cb, hndls.httl.String{2}] = pltexp_process_callbacks(cb, hndls, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_use, sampinc);
             tloop = 1;

@@ -150,10 +150,10 @@ maxvelall = max([maxvelx, maxvely]);
 
 dummyvec = nan(numposxmax, 1);
 
-subplot_layout = {[6,4]};
-margins_subplot = 0.05;
-margins_fig = 0.05;
-ax = figarr(subplot_layout, margins_subplot, margins_fig);
+layout = {[6,4]};
+marginssp = 0.05;
+marginsfig = 0.05;
+ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig);
 
 
 hfg = figure;

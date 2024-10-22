@@ -37,10 +37,10 @@ if exist('optin', 'var') && ~isempty(optin)
         fontmedium = 20;
         numrows_plot = 1;%supp.num_model_functions;
         numcolumns_plot = 1;%supp.num_dim_indvp*supp.num_unit;
-        margins_fig = 0.03;
-        margins_subplot = 0.06;
+        marginsfig = 0.03;
+        marginssp = 0.06;
 
-        [axx, axy, axw, axh] = figarr(numrows_plot, numcolumns_plot, margins_fig, margins_subplot);
+        [axx, axy, axw, axh] = figarr(numrows_plot, numcolumns_plot, marginsfig, marginssp);
 
         hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', 'on') ;
         hfg.Position = [0 0 0.5 0.5]; %make square inner size (excludes top menu bar), plot in bottom left

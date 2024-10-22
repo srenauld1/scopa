@@ -6,8 +6,8 @@ function [outtmpall, hax, out2] = mdl_fnet(pars, indv, supp, optin)
 %plotting currently is one layer per frame, with units as rows and functions as columns; for each function, plots show input, output, transfer function, and params
 
 make_figure = 0; %0 to not make figure (during optimization), 1 to make and save here, 2 if plotting on axes that are passed in as argument (and not saving here)
-margins_fig = 0.03; %if not passing in figure
-margins_subplot = 0.06;%if not passing in figure
+marginsfig = 0.03; %if not passing in figure
+marginssp = 0.06; %if not passing in figure
 extra_xlim_fac = 0.1;%if not passing in figure
 fontsmall = 8;
 outflag = 0; %made 1 if making figures; flag to make some functions output an extra variable for plotting
@@ -21,7 +21,7 @@ if exist('optin', 'var') && ~isempty(optin)
 
         make_figure = 1;
         framecount_gif = 1;
-        hfg = []; hax = []; htx = []; numrows_plot = 0; numcolumns_plot = 0; %init figure handle so figinit knows to make figure, rather than update existing figure
+        hfg = []; hax = []; htx = []; numrows_plot = 0; numcolumns_plot = 0; %init figure handle so mdl_figinit knows to make figure, rather than update existing figure
         supp.starting_hax = 0;
 
         pth_save = [optin 'MODELCOMPS_.gif'];
@@ -71,7 +71,7 @@ for k = 1:supp.num_unit_total %loop over all units, indexing into input/output a
                 newaxes = 1;
                 numrows_plot = num_unit_curr_layer;
                 numcolumns_plot = max_num_fun_curr_layer;
-                [hfg, hax, htx] = figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, margins_fig, margins_subplot, fontsmall);
+                [hfg, hax, htx] = mdl_figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, marginsfig, marginssp, fontsmall);
             end
         end
     end

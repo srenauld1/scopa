@@ -1,6 +1,6 @@
-function [registered, tform] = register_one_stack_to_another_in_3d(moving, fixed, disttype, regtype)
+function [registered, tform] = stackrg3d(moving, fixed, disttype, regtype)
 
-% this registration works, but input params below may need adjusting across recordings unfortunately
+% this registration works, but input params below may need adjusting across recordings
 
 [optimizer,metric] = imregconfig(disttype);
 switch disttype

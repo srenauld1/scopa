@@ -1,4 +1,4 @@
-function resp = roiresp(respin, opt)
+function resp = roits(respin, opt)
 
 arguments
     respin % response; numeric array or struct; if numeric array, must be yxztc (can be singleton c); if struct, each field is a numeric array, size [roi,time]
@@ -9,6 +9,7 @@ arguments
     opt.resp = struct % if resp is passed as input, this function's output resp is appended to it
     opt.wavp = [] % keep periods in range wavp, using continuous wavelet transform and inverse; empty to skip
     opt.degdtr = 0 % detrend polynomial degree; 0 to skip detrending
+    opt.channorm = 0
     opt.t = [] % time for timeseries
     opt.pthpre = [] % save path prefix for figures; if empty, one will be generated
     opt.doplt = 0 %whether to do plots
@@ -60,17 +61,21 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = roiresp_onechan(respin_onechan, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
+            resp = roits_onechan(respin_onechan, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         else
-            resp = roiresp_onechan(respin(:,:,:,:,c), roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
+            resp = roits_onechan(respin(:,:,:,:,c), roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         end
     end
 end
 
+if channorm 
+    norm_cross_chan(resp, t=t, pthgifpre=pthpre, mincoh=0.3); %2-channel normalization based on wavelet coherence, work in progress
+end
+
 end
 
 
-function resp = roiresp_onechan(respin, roiwt, normpre, normpost, sampper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
+function resp = roits_onechan(respin, roiwt, normpre, normpost, sampper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
 
 arguments
     respin
@@ -93,7 +98,7 @@ if uwt==0
 elseif uwt(uwt~=0)==1
     wtstr = 'n'; %no pixel weighting, just indices
     if uwt==1
-        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roiresp, or wasn't passed to roiresp
+        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roits, or wasn't passed to roits
     end
 else
     wtstr = 'y'; %pixel indices with weighting
@@ -150,7 +155,7 @@ for k = 1:length(fnin)
         end
 
         if ~isempty(wavp)
-            resp2.f = wavflt(resp2.f, t=t, wavp=wavp, doplt=0); %pth_mroi_prefix
+            resp2.f = wavflt(resp2.f, t=t, wavp=wavp, doplt=0); %pth_roim_prefix
         end
 
         resp2 = respnorm(resp2.f, normpost, sampper);

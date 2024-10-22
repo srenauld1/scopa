@@ -5,9 +5,11 @@ function out = getfieldns(s,field)
 tmp = strsplit(field, '.');
 
 if numel(tmp)>1
-    tmp1 = tmp{1};
-    tmp2 = strjoin(tmp(2:end), '.');
-    out = getfieldns([s.(tmp1)],tmp2);
+tmp1 = tmp{1};
+tmp2 = strsplit(tmp, '.');
+for k = 1:numel(tmp)
+        out = getfieldns([s.tmp{1}],tmp{k});
+    end
 else
     out = {s.(field)};
 end

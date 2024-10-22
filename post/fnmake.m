@@ -13,7 +13,7 @@ suffix = id.suffix;
 recid = id.recid;
 datefly_hyphen = id.datefly_hyphen;
 
-regionex = o.mn.regionex;
+regionex = fieldnames(o.roi);
 fldrtmp = o.mn.fldrtmp;
 
 %% files before roimake
@@ -92,14 +92,14 @@ pth_epochinfo = [pth_fldr recid '_epochinfo_.mat'];
 
 %% hires
 
-fntmp = fieldnames(o.mroi);
+fntmp = fieldnames(o.roi);
 for k = 1:numel(fntmp)
-    usehires(k) = o.mroi.(fntmp{k}).seg.usehires; %gets updated to numeric struct, fieldname usehires
+    usehires(k) = o.roi.(fntmp{k}).ma.usehires; %gets updated to numeric struct, fieldname usehires
 end
 
 pth_hires_prefix = [];
 pth_hires_mat_matreg = [];
-pth_froi_hires = [];
+pth_roif_hires = [];
 if any(usehires) %for each recording, dohires if any regionex have usehires true (since we want to load/process hires once before looping over regionex)
     pthpat = [pth_fldr recid  '_hires_.tif'];
     pth_tmp = rdir(pthpat);
@@ -120,7 +120,7 @@ if any(usehires) %for each recording, dohires if any regionex have usehires true
     else
         pth_hires_prefix = pth_tmp.name(1:end-4);
         pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];
-        pth_froi_hires = [pth_hires_prefix '_roishires_.mat'];
+        pth_roif_hires = [pth_hires_prefix '_roishires_.mat'];
     end
 end
 
@@ -128,9 +128,9 @@ end
 %% files for roimake
 
 for k = 1:numel(regionex)
-    pth_roi = [pthstack(1:end-4) regionex{k} '_roi_.mat'];
-    pth_roif= [pthstack(1:end-4) regionex{k} '_roif_.mat'];
-    pth_roii = [pthstack(1:end-4) regionex{k} '_roii_.mat'];
+    pth_roi.(regionex{k}) = [pthstack(1:end-4) regionex{k} '_roi_.mat'];
+    pth_roif.(regionex{k}) = [pthstack(1:end-4) regionex{k} '_roif_.mat'];
+    pth_roii.(regionex{k}) = [pthstack(1:end-4) regionex{k} '_roii_.mat'];
 end
 
 %% carl's old project
@@ -148,9 +148,9 @@ pth.stack = pthstack;
 pth.md = pth_md;
 pth.mdflyg = pth_mdflyg;
 pth.tmpfiles = pth_tmpfiles;
-pth.mroi = pth_roi;
-pth.froi_all = pth_roif;
-pth.mroi_interactive = pth_roii;
+pth.roi = pth_roi;
+pth.roif_all = pth_roif;
+pth.roi_interactive = pth_roii;
 pth.daq = pth_daq;
 pth.daqrs = pth_daqrs;
 pth.ftdat = pth_ftdat;
@@ -162,7 +162,7 @@ pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.hires_prefix = pth_hires_prefix;
 pth.hires_mat_matreg = pth_hires_mat_matreg;
-pth.froi_hires = pth_froi_hires;
+pth.roif_hires = pth_roif_hires;
 pth.featsave = pth_feat_save;
 pth.parent_feat = pthparent_feat;
 pth.template = pth_template;

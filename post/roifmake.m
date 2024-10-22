@@ -1,47 +1,50 @@
-function [roidat, resp] = froiproc(stack, roidat, pth_froi, regionex, md, opts, nrm)
+function roifmake(stack, pth_roif, opt)
+
+arguments
+    stack
+    pth_roif
+    roitype
+    opt.minpixperreg = 3 % min pix in each distongiguous region, roi selection criterion
+    opt.minroisz = 5 % pixels, roi selection criterion
+    opt.maxroisz = 300 % pixels
+    opt.maxregperroi = 4 % for discontiguous rois
+    opt.inmaskthr = 0.5 % discard roi if more than inmaskthr is outside morphological mask (morph mask is all ones if you don't make one)
+    opt.numbins = 20 % num hist bins for rval and snr caiman output
+    opt.roisrt = 'majoraxis' % 'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
+    opt.ir = []
+    opt.doplt = 0
+    opt.tcrop = [0, 0]
+    opt.roicen = []
+    opt.mask_allroi = []
+end
+minpixperreg = opt.minpixperreg;
+minroisz = opt.minroisz;
+maxroisz = opt.maxroisz;
+maxregperroi = opt.maxregperroi;
+inmaskthr = opt.inmaskthr;
+roisrt = opt.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
+numroiplt = opt.roiol.ir;
+doplt = opt.doplt;
+tcrop = opt.tcrop;
+cnt_roim = opt.roicen;
+mask_roim_all = opt.mask_allroi;
 
 
-%% params
-
-
-
-minpixperreg = opts.minpixperreg;
-minroisz = opts.minroisz;
-maxroisz = opts.maxroisz;
-maxregperroi = opts.maxregperroi;
-inmaskthr = opts.inmaskthr;
-numbins = opts.numbins;
-normpre = nrm.pre;
-normpost = nrm.post;
-
-roisrt = opts.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
-numrois_for_gif = opts.roiol.ir;
-
-doplt = opts.doplt;
-
-tcropfront = md.tcropfront;
-tcropback = md.tcropback;
-sampper = md.sampper;
-ti = ts.t;
-
-cnt_mroi = roidat.roicen;
-mask_mroi_all = roidat.mask_allroi;
-
-
+numbins = 20;
 stackmnt = mean(stack, 4, 'native');
 
 
 %% prepare vars
 
-num_mroi = length(cnt_mroi);
-cenmorphflat = cell2mat(cnt_mroi(:));
-flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(cnt_mroi{idx},1),1), (1:size(cnt_mroi{idx},1)).'], (1:numel(cnt_mroi)).', 'uniform', 0));
+num_roim = length(cnt_roim);
+cenmorphflat = cell2mat(cnt_roim(:));
+flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(cnt_roim{idx},1),1), (1:size(cnt_roim{idx},1)).'], (1:numel(cnt_roim)).', 'uniform', 0));
 
-mask_mroi_all_xy = sum(mask_mroi_all, 3);
+mask_roim_all_xy = sum(mask_roim_all, 3);
 
 %% load caiman rois (permute, and crop)
 
-load(pth_froi)
+load(pth_roif)
 
 if exist('rcor', 'var')%rename vars in old files
     cmsnr = rsnr;
@@ -64,7 +67,7 @@ end
 
 cma = permute(cma, [2 1 3 4]);
 
-if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
+if ~isempty(regexp(pth_roif, '_2dex_')) %planar/2d extraction
 
     %convert 2d rois into 3d (by inserting each roi in 3d array in correct slice)
     roimasks_new = zeros(size(cma,1), size(cma,2), size(cma,4), size(cma,4), size(cma,3), 'single');
@@ -86,10 +89,7 @@ if ~isempty(regexp(pth_froi, '_2dex_')) %planar/2d extraction
     cmsnr = cmsnr(:);
 
 
-
     %cmc = cmdffr;
-
-
 
 end
 
@@ -100,19 +100,18 @@ if ndims(cma)~=4
     error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
 end
 
-if tcropfront || tcropback
-    cmc = cmc(:,tcropfront+1:end-tcropback);
-    cms = cms(:,tcropfront+1:end-tcropback);
+if any(tcrop)
+    cmc = cmc(:,tcrop(1)+1:end-tcrop(2));
+    cms = cms(:,tcrop(1)+1:end-tcrop(2));
 end
 
 numrois = size(cma, 4);
 
 
-
 %% find roi centroids
 
 
-centroids_froi = find_roi_centroids(cma);
+centroids_roif = find_roi_centroids(cma);
 
 %% loop over rois, applying morphological selection criteria
 
@@ -134,7 +133,7 @@ good_roi_indices = zeros(numrois, 1);
 roinumpix = zeros(1, numrois);
 roipixvals_binned = cell(numrois, 1);
 roipixvals_edges = cell(numrois, 1);
-roipx = cell(numrois, 1); %suffix 'pixels' distinguishes this from inds_froi_all and inds_froi_wt_all, which are indices into set of roi timeseries, rather than pixel indices like inds_mroi, but nevertheless are used in extract_volue_responses the same way as inds_mroi, since they are applied to "stack" of roi timeseries rather than movie stack (stack of pixel timeseries)
+roipx = cell(numrois, 1); %suffix 'pixels' distinguishes this from inds_roif_all and inds_roif_wt_all, which are indices into set of roi timeseries, rather than pixel indices like inds_roim, but nevertheless are used in extract_volue_responses the same way as inds_roim, since they are applied to "stack" of roi timeseries rather than movie stack (stack of pixel timeseries)
 subroi_primary = ones(numrois, 1);
 
 for ci = 1:numrois
@@ -144,7 +143,7 @@ for ci = 1:numrois
 
     noresponseflag = 1;
 
-    if any(centroids_froi{ci}(:)) && ~isempty(centroids_froi{ci}) %if roi exists, apply tests (caiman makes empty rois sometimes, not sure why)
+    if any(centroids_roif{ci}(:)) && ~isempty(centroids_roif{ci}) %if roi exists, apply tests (caiman makes empty rois sometimes, not sure why)
 
         roiprops = regionprops(logical(imtmp), imtmp, 'MaxIntensity'); %in case roi is discontiguous, apply any func2morph map using the subregion with the highest energy pixel (could do meanintensity instead, or several other things ) this is a bit of a hack, but the best solution probably isn't too different, right?
         [~, subroi_primary(ci)] = max([roiprops(:).MaxIntensity]);
@@ -155,21 +154,24 @@ for ci = 1:numrois
             roi_has_no_response(ci) = 0;
         end
 
-        numpix_within_mask_2d = sum(boolean(imtmp_xy .* mask_mroi_all_xy), "all");
-        numpix_outside_mask_2d = sum(boolean(imtmp_xy .* ~mask_mroi_all_xy), "all");
+        numpix_within_mask_2d = sum(boolean(imtmp_xy .* mask_roim_all_xy), "all");
+        numpix_outside_mask_2d = sum(boolean(imtmp_xy .* ~mask_roim_all_xy), "all");
         proportion_within_mask_2d = numpix_within_mask_2d / (numpix_within_mask_2d + numpix_outside_mask_2d);
 
-        numpix_within_mask_3d = sum(boolean(imtmp .* mask_mroi_all), "all");
-        numpix_outside_mask_3d = sum(boolean(imtmp .* ~mask_mroi_all), "all");
+        numpix_within_mask_3d = sum(boolean(imtmp .* mask_roim_all), "all");
+        numpix_outside_mask_3d = sum(boolean(imtmp .* ~mask_roim_all), "all");
         proportion_within_mask_3d = numpix_within_mask_3d / (numpix_within_mask_3d + numpix_outside_mask_3d);
 
-        if strcmp(regionex, 'mivesdalis')
-            proportion_within_mask(ci) = proportion_within_mask_2d;
-            centroid_is_outside_mask(ci) = ~mask_mroi_all_xy( round(centroids_froi{ci}(subroi_primary(ci), 1)), round(centroids_froi{ci}(subroi_primary(ci), 2)));
-        else
-            proportion_within_mask(ci) = proportion_within_mask_3d;
-            centroid_is_outside_mask(ci) = ~mask_mroi_all( round(centroids_froi{ci}(subroi_primary(ci), 1)), round(centroids_froi{ci}(subroi_primary(ci), 2)), round(centroids_froi{ci}(subroi_primary(ci), 3)));
-        end
+        proportion_within_mask(ci) = proportion_within_mask_3d;
+        centroid_is_outside_mask(ci) = ~mask_roim_all( round(centroids_roif{ci}(subroi_primary(ci), 1)), round(centroids_roif{ci}(subroi_primary(ci), 2)), round(centroids_roif{ci}(subroi_primary(ci), 3)));
+
+        % if strcmp(regionex, 'mivesdalis')
+        %     proportion_within_mask(ci) = proportion_within_mask_2d;
+        %     centroid_is_outside_mask(ci) = ~mask_roim_all_xy( round(centroids_roif{ci}(subroi_primary(ci), 1)), round(centroids_roif{ci}(subroi_primary(ci), 2)));
+        % else
+        %     proportion_within_mask(ci) = proportion_within_mask_3d;
+        %     centroid_is_outside_mask(ci) = ~mask_roim_all( round(centroids_roif{ci}(subroi_primary(ci), 1)), round(centroids_roif{ci}(subroi_primary(ci), 2)), round(centroids_roif{ci}(subroi_primary(ci), 3)));
+        % end
 
         if proportion_within_mask(ci) >= inmaskthr
             roi_is_mostly_outside_mask(ci) = 0;
@@ -222,25 +224,25 @@ end
 
 %% map functional rois to morphological rois (ie map to location)
 
-if length(cnt_mroi)==1
+if length(cnt_roim)==1
 
-    idx_vox2roi = ones(length(centroids_froi), 1, 'uint16');
+    idx_vox2roi = ones(length(centroids_roif), 1, 'uint16');
 
 else
 
     idx_vox2roi = zeros(numrois, 1, 'uint16');
     for ci = 1:numrois %find which morph roi is closest to each functional roi's "primary" subroi (by the way most functional rois don't have multiple subrois)
-        [~, maptmp] = pdist2(cenmorphflat, centroids_froi{ci}(subroi_primary(ci),:), 'euclidean', 'smallest', 1); % %map roi centroids to to morphological centroids . . . change euclidian to chebychev??
+        [~, maptmp] = pdist2(cenmorphflat, centroids_roif{ci}(subroi_primary(ci),:), 'euclidean', 'smallest', 1); % %map roi centroids to to morphological centroids . . . change euclidian to chebychev??
         idx_vox2roi(ci) = flatten_key(maptmp, 1); %this records which cell the nearest morph centroid is from
     end
 
 end
 
-roiwt = zeros(num_mroi, length(idx_vox2roi));
+roiwt = zeros(num_roim, length(idx_vox2roi));
 roiwt(sub2ind(size(roiwt), idx_vox2roi, vec(1:numel(idx_vox2roi)))) = 1;
 
 %roiwt_wt weights by fraction of number of pixels relative to the whole morphological 3d roi (usually includes multiple functional rois)
-numpix_roi_per_centroid = roiwt.*repmat(roinumpix, [num_mroi 1]);
+numpix_roi_per_centroid = roiwt.*repmat(roinumpix, [num_roim 1]);
 roiwt_wt = numpix_roi_per_centroid ./ sum(numpix_roi_per_centroid, 2);
 roiwt_wt(isnan(roiwt_wt)) = 0;
 
@@ -260,7 +262,7 @@ good_roi_indices = good_roi_indices(roisortinds);
 
 roiwt = roiwt(:,roisortinds);
 roiwt_wt = roiwt_wt(:,roisortinds);
-centroids_froi = centroids_froi(roisortinds);
+centroids_roif = centroids_roif(roisortinds);
 cma = cma(:,:,:,roisortinds);
 
 cmc = cmc(roisortinds, :);
@@ -297,7 +299,7 @@ roipixind_bad = roipx(bad_roi_indices);  %pixel indices of each roi, one roi per
 roipx = roipx(good_roi_indices);  %pixel indices of each roi, one roi per cell
 roiwt = roiwt(:,good_roi_indices); %boolean mask vector of each roi
 roiwt_wt = roiwt_wt(:,good_roi_indices); %same as roiwt but weighted pixel indices
-roicen = centroids_froi(good_roi_indices);
+roicen = centroids_roif(good_roi_indices);
 if any(good_roi_indices) %if there are any rois remaining (don't actually need this except for the logical call below would error)
     mask_allroi = logical(mean(cma(:,:,:,good_roi_indices), 4)); %boolean mask of all rois
 else
@@ -318,52 +320,33 @@ for ii = 1:length(pixinds_allroi)
     pixinds_allroi{ii} = pixinds_allroi_tmp(ii); %put each pixel in cell to match what happens with functional rois
 end
 
-%% compute functional (caiman) responses averaged by which morphological roi they belong to (while also saving the original caiman responses too)
-
-resptmp.cmc = cmc; %put into struct before passing to roiresp
-
-wavp = [];
-degdtr = [];
-resp = roiresp(resptmp, roiwt=roiwt, normpre=normpre, normpost=normpost, sampper=sampper, resp=[], wavp=wavp, degdtr=degdtr, ti=ti, pthpre=pth_froi); %this version not weighted by area by passing roiwt
-
-% resp = roiresp(resp_froi, roiwt=roiwt_wt, normpre=normpre, normpost=normpost, sampper=sampper, resp=resp, wavp=wavp, degdtr=degdtr, ti=ti, pthpre=pth_froi);  %this version weighted by area by passing roiwt_wt, appends output resp to input resp, so the nonweighted version is retained
-
-
-
 %% plots
-
 
 if doplt
 
-
-    if numroi>numrois_for_gif
-        roi_plot_inds_good = round(linspace(1, numroi, numrois_for_gif));
+    if numroi>numroiplt
+        roi_plot_inds_good = round(linspace(1, numroi, numroiplt));
     else
         roi_plot_inds_good = 1:numroi;
     end
 
-    filename_gif = [pth_froi(1:end-4) 'goodrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
+    filename_gif = [pth_roif(1:end-4) 'goodrois_subset_' num2str(numroiplt) 'rois_.gif'];
     gifvis = 'on';
     plotchannel = 1;
     stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipx, ir=roi_plot_inds_good) %include roipx as argument to plot roi overlay
 
-    if length(bad_roi_indices)>numrois_for_gif
-        roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numrois_for_gif));
+    if length(bad_roi_indices)>numroiplt
+        roi_plot_inds_bad = round(linspace(1, length(bad_roi_indices), numroiplt));
     else
         roi_plot_inds_bad = 1:length(bad_roi_indices);
     end
 
-    filename_gif = [pth_froi(1:end-4) 'badrois_subset_' num2str(numrois_for_gif) 'rois_.gif'];
+    filename_gif = [pth_roif(1:end-4) 'badrois_subset_' num2str(numroiplt) 'rois_.gif'];
     stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=filename_gif, gifvis=gifvis, roipx=roipixind_bad, ir=roi_plot_inds_bad) %include roipx as argument to plot roi overlay
 
     figure; imagesc(roiwt); title("which caiman rois are closest to which morph roi")
 
-end
-
-%variable 'cma' has not been subset by good_roi_indices
-
-if doplt
-
+    %variable 'cma' has not been subset by good_roi_indices
     tmp = cma(:,:,:,good_roi_indices);
 
     %plot pixel energies (similar to strength of each pixel's contribution to the roi signal)
@@ -400,7 +383,7 @@ if doplt
         end
 
         roimasks_all = rescale(mean(tmp, 4));
-        roimasks_all_masked = rescale(roimasks_all.*mask_mroi_all);
+        roimasks_all_masked = rescale(roimasks_all.*mask_roim_all);
         roimasks_all_2d = mean(roimasks_all, 3);
         roimasks_all_masked_2d = mean(roimasks_all_masked, 3);
 
@@ -413,7 +396,7 @@ if doplt
             axis image; axis off
         end
         sgtitle(['roi mean ' titadd])
-        saveas( gcf, [pth_froi(1:end-4) 'roisall_' titadd '_.png'])
+        saveas( gcf, [pth_roif(1:end-4) 'roisall_' titadd '_.png'])
 
         figure;
         [numimrows, numimcols] = subplot_tiling(size(roimasks_all_masked, 3));
@@ -423,26 +406,26 @@ if doplt
             axis image; axis off
         end
         sgtitle(['roi mean ' titadd])
-        saveas( gcf, [pth_froi(1:end-4) 'roisallmask_' titadd '_.png'])
+        saveas( gcf, [pth_roif(1:end-4) 'roisallmask_' titadd '_.png'])
 
         figure; imagesc(roimasks_all_2d); title(['roisall2d ' titadd]); axis image
-        saveas( gcf, [pth_froi(1:end-4) 'roisall2d_' titadd '_.png'])
+        saveas( gcf, [pth_roif(1:end-4) 'roisall2d_' titadd '_.png'])
 
         figure; imagesc(roimasks_all_masked_2d); title(['roisall2d ' titadd]); axis image
-        saveas( gcf, [pth_froi(1:end-4) 'roisall2dmask_' titadd '_.png'])
+        saveas( gcf, [pth_roif(1:end-4) 'roisall2dmask_' titadd '_.png'])
 
     end
 
     % running = 1;
     % simultaneous = 1;
-    % filename_gif = [pth_froi(1:end-4) 'caimanrois_notsimul_bads.gif'];
-    % plot_data(resp_froi(bad_roi_indices(roi_plot_inds_bad), :), 'resp_froi', roiindies, filename_gif, [], [], 0, 0)
-    % filename_gif = [pth_froi(1:end-4) 'caimanrois_simul_bads.gif'];
-    % plot_data(resp_froi(good_roi_indices(roi_plot_inds_good), :), 'resp_froi', roiindies, filename_gif, [], [], running, simultaneous)
-    % filename_gif = [pth_froi(1:end-4) 'caimanrois_simul_goods.gif'];
-    % plot_data(resp_froi(good_roi_indices(roi_plot_inds_good), :), 'resp_froi', roiindies, filename_gif, [], [], 0, 0)
-    % filename_gif = [pth_froi(1:end-4) 'caimanrois_notsimul_goods.gif'];
-    % plot_data(resp_froi(good_roi_indices(roi_plot_inds_good), :), 'resp_froi', roiindies, filename_gif, [], [], running, simultaneous)
+    % filename_gif = [pth_roif(1:end-4) 'caimanrois_notsimul_bads.gif'];
+    % plot_data(resp_roif(bad_roi_indices(roi_plot_inds_bad), :), 'resp_roif', roiindies, filename_gif, [], [], 0, 0)
+    % filename_gif = [pth_roif(1:end-4) 'caimanrois_simul_bads.gif'];
+    % plot_data(resp_roif(good_roi_indices(roi_plot_inds_good), :), 'resp_roif', roiindies, filename_gif, [], [], running, simultaneous)
+    % filename_gif = [pth_roif(1:end-4) 'caimanrois_simul_goods.gif'];
+    % plot_data(resp_roif(good_roi_indices(roi_plot_inds_good), :), 'resp_roif', roiindies, filename_gif, [], [], 0, 0)
+    % filename_gif = [pth_roif(1:end-4) 'caimanrois_notsimul_goods.gif'];
+    % plot_data(resp_roif(good_roi_indices(roi_plot_inds_good), :), 'resp_roif', roiindies, filename_gif, [], [], running, simultaneous)
 
 
     % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
@@ -451,16 +434,16 @@ if doplt
 
 
     % figure;
-    % numplots = size(mask_froi_all, 3);
+    % numplots = size(mask_roif_all, 3);
     % npk = 1:numplots;
     % divtmp = npk(rem(numplots,npk)==0);
     % npc = ceil(divtmp(end/2));
     % npr = numplots/npc;
-    % for rmi = 1:size(mask_froi_all, 3)
+    % for rmi = 1:size(mask_roif_all, 3)
     %     subplot(npr,npc,rmi);
     %     plot(sort(idx_f2m_all{rmi}))
     % end
-    % saveas( gcf, [pth_froi_all{1} '_allclusterinds_.png'])
+    % saveas( gcf, [pth_roif_all{1} '_allclusterinds_.png'])
 
 
     % restrict_to_max = 0;
@@ -478,7 +461,7 @@ if doplt
     hfg = figure;
     spl1 = subplot(2,1,1);
     spl2 = subplot(2,1,2);
-    filename_gif = [pth_froi(1:end-4) '_roimaskkneeeach_.gif'];
+    filename_gif = [pth_roif(1:end-4) '_roimaskkneeeach_.gif'];
 
     for ci = 1:numrois
         furn = vec(cma(:,:,:,ci));
@@ -532,7 +515,7 @@ if doplt
     hold on
     scatter(kneeidx, furnsort(kneeidx), 'm', 'filled');
     sgtitle("spatial correlation (?) for all rois")
-    saveas( gcf, [pth_froi(1:end-4) '_roimaskknee_.png'])
+    saveas( gcf, [pth_roif(1:end-4) '_roimaskknee_.png'])
 
 
 
@@ -540,21 +523,6 @@ if doplt
 end
 
 
-%% assign to struct
-
-roidat.numroi = numroi;
-roidat.roipx = roipx;  %pixel indices of each roi, one roi per cell
-roidat.roiwt = roiwt; %boolean mask vector of each roi
-roidat.roiwt_wt = roiwt_wt; %same as roiwt but weighted pixel indices
-roidat.roicen = centroids_froi;
-roidat.mask_allroi = mask_allroi; %boolean mask of all rois
-roidat.idx_vox2roi = idx_vox2roi; %for each pixel in a roi, which roi it belongs to
-roidat.cmrval = cmrval;
-roidat.cmsnr = cmsnr;
-roidat.roinumpix = roinumpix;
-roidat.roipixvals_binned = roipixvals_binned;
-roidat.roipixvals_edges = roipixvals_edges;
-roidat.pixinds_allroi = pixinds_allroi;
 
 
 

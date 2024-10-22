@@ -13,11 +13,11 @@ ignore_zeros = 1; %don't include zeros in percentile for contrast adjustment
 numdim_out = 2; %number of dimensions of output image
 filename_gif = []; %filename to save image, empty to skip
 
-stack_mnzt = prep_stack_for_roi_selection(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+stack_mnzt = stackimprep(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
 
 stackmnt = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'single');
 for szi = 1:size(stack, 3)
-    stackmnt(:,:,szi) = prep_stack_for_roi_selection(stack(:,:,szi,:), numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+    stackmnt(:,:,szi) = stackimprep(stack(:,:,szi,:), numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
 end
 
 %% show mean zt and decide if you still want to draw rois

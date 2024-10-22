@@ -12,24 +12,24 @@ arguments
     opt.t = 1:size(resp1,2)
     opt.it = 1:size(resp1,2)
     opt.roiind = 1:size(resp1,1)
-    opt.pthgifpre = ''
+    opt.pthpre = ''
     opt.mincoh = 0.7
 end
-
+error("make channorm=0 because norm_cross_chan is a work in progress")
 t = opt.t;
 it = opt.it;
 roiind = opt.roiind;
-pthgifpre = opt.pthgifpre;
+pthpre = opt.pthpre;
 mincoh = opt.mincoh;
 
 for ri = 1:numel(roiind)
-    resp1(ri,it) = normcrosschan_oneroi(resp1(roiind,it),resp2(roiind,it),t(it),pthgifpre,mincoh);
+    resp1(ri,it) = normcrosschan_oneroi(resp1(roiind,it),resp2(roiind,it),t(it),pthpre,mincoh);
 end
 
 
 end
 
-function respnew = normcrosschan_oneroi(resp1,resp2,t,pthgifpre,mincoh)
+function respnew = normcrosschan_oneroi(resp1,resp2,t,pthpre,mincoh)
 
 titlein = 'normcrosschan';
 maxseg = 128;
@@ -50,7 +50,7 @@ numsamp = numel(resp1);
 fs = 1/median(diff(t));
 lev = floor(log2(numsamp));
 
-fngif = [pthgifpre(1:end-4) 'resp_mra_.gif'];
+fngif = [pthpre(1:end-4) 'resp_mra_.gif'];
 
 %% set up wavelet filters using the default used in wsst, but not wcoherence
 
@@ -182,10 +182,10 @@ yyaxis right; hplr = plot(resp2(plotinds), 'r'); ylim([0 1]); hplr.Parent.YAxis(
 %     segx = ceil(numsamp/wlen);
 %     segx(segx>maxseg) = maxseg;
 % 
-%     % fngif2 = [pthgifpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
+%     % fngif2 = [pthpre(1:end-4) 'resp_mracoeffs_' num2str(m) '_.gif'];
 %     % tsplt(w(m,:), y2=w2(m,:), pthgif=fngif2, segx=segx, titlein=titlein, yconst=yconst)
 % 
-%     fngif3 = [pthgifpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
+%     fngif3 = [pthpre(1:end-4) 'resp_rec_' num2str(m) '_.gif'];
 %     tsplt(resp1, y2=respnew, pthgif=fngif3, segx=segx, titlein=titlein, yconst=yconst)
 % 
 % 

@@ -1,24 +1,21 @@
 
-function [croplim, croplimstr] = make_croplim(stack, sz_t, fldr, pth_tmpfiles, recid, regionex, regionex_nounderscore)
+function [croplim, croplimstr] = croplimmake(stack, sz_t, fldr, recid, regionex, regionex_nounderscore, numchan)
 
+if numchan==2
+    sprintf("averaging both channels to create the images for defining croplim")
+end
 
-clip_prctile = [0 100]; %[0 100] does not change contrast
-scalefac = 1;
-ignore_zeros = 1; %don't include zeros in percentile for contrast adjustment
-numdim_out = 3; %number of dimensions of output image
-filename_gif = []; %filename to save image, empty to skip
-
-stackmnt = prep_stack_for_roi_selection(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+stackmnt = mean(stack, [4 5], 'native'); %averaging 
 
 %% first define z limits
 
-prompt = ['you requested region "' regionex '", but there is no croplim file "' regionex_nounderscore '"; do you want to define a subset of z slices to be used for region "' regionex '" and all regions prefixed with "' regionex_nounderscore '"? type 1 for yes, type 0 to use all z slices: '];
+prompt = ['you requested region "' regionex '", but there is no croplim file "' regionex_nounderscore '"\nDo you want to define a subset of z slices to be used for region "' regionex '" and all regions prefixed with "' regionex_nounderscore '"? type 1 for yes, type 0 to use all z slices: '];
 
 commandwindow();
 define_z_lim = input(sprintf(prompt));
 
 if define_z_lim
-    [zinds, stackmnt] = croplim_z(stackmnt, pth_tmpfiles, regionex_nounderscore);
+    [zinds, stackmnt] = cropz(stackmnt, regionex_nounderscore);
 else
     zinds = 1:size(stackmnt, 3);
 end
@@ -40,7 +37,7 @@ if define_xy_lim
     flag_croplim = 1;
     flag_one_image = 1;
     flag_limit_one_manual_roi = 1;
-    roi_cropxy = drawrois_oneimage(stackmntz, pth_tmpfiles, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
+    roi_cropxy = drawrois_oneimage(stackmntz, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end

@@ -1,21 +1,35 @@
-function hgroup = init_axes_stack(hfg, ax, letui, stack, stackp, cmap, txtvar, dr, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hgroup = initaxim(hfg, ax, stack, opt)
 
 arguments
     hfg
     ax struct
-    letui
     stack
-    stackp = []
-    cmap double = [] %if no cmap passed as argument, stack assumed to be rgb
-    txtvar = []
-    dr = [0,1]
-    sector_ind = 1
-    subplot_ind = 1:size(stack,3)
-    widfac = 1
-    htfac = 1
-    fontsz = [6 11 15]
-    axorder char = 'rowmajor'
+    opt.stackp = [] %hack for rgb image for now
+    opt.cmap double = gray(256) %cmap or 'rgb'
+    opt.txtvar = []
+    opt.dr = [0,1]
+    opt.sector_ind = 1
+    opt.subplot_ind = 1:size(stack,3)
+    opt.widfac = 1
+    opt.htfac = 1
+    opt.fontsz = [6 11 15]
+    opt.axorder char = 'rm'
+    opt.dool = 0
+    opt.doui = 0
 end
+
+stackp = opt.stackp;
+cmap = opt.cmap;
+txtvar = opt.txtvar;
+dr = opt.dr;
+sector_ind = opt.sector_ind;
+subplot_ind = opt.subplot_ind;
+widfac = opt.widfac;
+htfac = opt.htfac;
+fontsz = opt.fontsz;
+axorder = opt.axorder;
+dool = opt.dool;
+doui = opt.doui;
 
 if ~isempty(stackp)
     stack = stackp;
@@ -64,14 +78,25 @@ for j = 1:numsubplot
 
     hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
     hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
-    hpl{j}.ButtonDownFcn = 'callbacks_for_this_image_are_assigned_to_overlay_image_with_handle_hol';
 
-    hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
 
-    if letui
-        hol{j}.ButtonDownFcn = @(src,evnt)ui_roi_click_fcn(src,evnt);
-        hol{j}.PickableParts = 'visible';
-        hol{j}.HitTest = 'on';
+    if dool
+        hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
+    else
+        hol = [];
+    end
+
+    if doui
+        if dool
+            hpl{j}.ButtonDownFcn = 'callbacks for this image are assigned to overlay image with handle hol';
+            hol{j}.ButtonDownFcn = @(src,evnt)uiclickim(src,evnt);
+            hol{j}.PickableParts = 'visible';
+            hol{j}.HitTest = 'on';
+        else
+            hpl{j}.ButtonDownFcn = @(src,evnt)uiclickim(src,evnt);
+            hpl{j}.PickableParts = 'visible';
+            hpl{j}.HitTest = 'on';
+        end
     end
 
 
@@ -82,7 +107,7 @@ for j = 1:numsubplot
     else
         htx{j} = [];
     end
-    htx{j}.PickableParts = 'none'; %so you can capture click on image beneath the text 
+    htx{j}.PickableParts = 'none'; %so you can capture click on image beneath the text
     htx{j}.HorizontalAlignment = 'right';
     htx{j}.VerticalAlignment = 'bottom';
 

@@ -27,7 +27,7 @@ else
     hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
 end
 
-set(hfg, 'KeyPressFcn', @(src,evnt)roi_key_press_fcn(src,evnt,pth_tmpfiles));
+set(hfg, 'KeyPressFcn', @(src,evnt)roi_uikeypress(src,evnt,pth_tmpfiles));
 
 him = imshow(stack, 'InitialMagnification', 'fit');
 axis image
@@ -293,7 +293,7 @@ close(hfg);
 end
 
 
-function roi_key_press_fcn(hfg, event, varargin)
+function roi_uikeypress(hfg, event, varargin)
 
 pth_tmpfiles = varargin{1};
 

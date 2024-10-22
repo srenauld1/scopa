@@ -13,14 +13,13 @@ if isempty(optsldhr)
     optsldhr = odf('sld');
 end
 
-md = readmdsi(pth_md); %function for converting scanimage metadata dict written to txt file by json in read_save_metadata.py
+md = jsondecode(fileread(pth_md)); %convert scanimage metadata dict written to txt file by json.dumps in read_save_metadata.py
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optsld.tcropfront - optsld.tcropback;
+md.numvol_crop = md.numvol_o - optsld.tcrop(1) - optsld.tcrop(2);
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
-md.tcropfront = optsld.tcropfront; %copy from struct ld
-md.tcropback = optsld.tcropfront; %copy from struct ld
+md.tcrop = optsld.tcrop; %copy from struct ld
 md.cropfb = optsld.cropfb; %copy from struct ld
 md.zerostack = optsld.zerostack; %copy from struct ld
 
@@ -35,8 +34,7 @@ end
 
 if isfield(md,'md_hires')
     md.md_hires.sz_o = [md.md_hires.ypix md.md_hires.xpix md.md_hires.numslice md.md_hires.numvol];
-    md.md_hires.tcropfront = 0;
-    md.md_hires.tcropback = 0;
+    md.md_hires.tcrop = [0 0];
     md.md_hires.cropfb = optsldhr.cropfb;
     md.md_hires.zerostack = optsldhr.zerostack;
     hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
@@ -80,9 +78,14 @@ if ~isfield(md,'zstartpos')%do this after conversion to double
     end
 end
 
+md.widyxz = [md.ywid, md.xwid, md.zwid];
+if isfield(md,'md_hires') && ~isempty(md.md_hires)
+    md.md_hires.widyxz = [md.ywid, md.xwid, md.md_hires.zwid];
+end
+
 md.sampper = 1/md.volrate;
 
-md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcropfront' and 'md.tcropback'";
+md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcrop'";
 
 md = fieldord(md);
 
@@ -90,32 +93,3 @@ end
 
 
 
-function md = readmdsi(pth_md)
-str = fileread(pth_md);
-if startsWith(str, '{') && endsWith(str, '}')
-    str = str(2:end-1);
-    if endsWith(str, '}')
-        str = str(1:end-1);
-        if endsWith(str, '}')
-            error("only written for one nested dict/struct, which is for md_hires; if you want more nesting need to repeat above for each layer")
-        end
-        str = strsplit(str, '{');
-    else
-        str = {str};
-    end
-end
-for m = 1:numel(str)
-    ts = str{m};
-    ts = strsplit(ts, ', "');
-    ts = erase(ts, {'{', '}', '"', ':'});
-    tsn = regexp(ts, '[+-]?\d+\.?\d*', 'match');
-    tss = regexp(ts, '[A-Z_a-z]*', 'match');
-    for k = 1:numel(tss)
-        if m==1
-            md.(tss{k}{1}) = str2double(tsn{k});
-        elseif m==2
-            md.md_hires.(tss{k}{1}) = str2double(tsn{k});
-        end
-    end
-end
-end

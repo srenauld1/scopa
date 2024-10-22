@@ -1,5 +1,5 @@
 
-function pltexp_key_press_fcn(src, event)
+function uikeypress(src, event)
 
 eventkey = event.Key;
 % if ispc && strcmpi(eventkey, '0')

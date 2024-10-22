@@ -66,8 +66,8 @@ opts.plt.depv_alpha = 1;
 opts.plt.pred_alpha = 0.7;
 
 opts.plt.numcolumns_ts = 1;
-opts.plt.margins_fig = 0.04;
-opts.plt.margins_subplot = 0.02;
+opts.plt.marginsfig = 0.04;
+opts.plt.marginssp = 0.02;
 opts.plt.splitdim = 'x';
 opts.plt.splitfrac = 0.7;
 opts.plt.fontsmall = 6;

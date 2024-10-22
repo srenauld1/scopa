@@ -1,8 +1,8 @@
 
 function [roiwt, roicen, numroifinal] = ...
-    mroiauto(stackmnt, roimaskman, ...
-    numroiinit, xwid, ywid, zwid, stack_hires, ...
-    map_hires_lores, pth_mroi_prefix, ...
+    roimauto(stackmnt, roimaskman, ...
+    numroiinit, widyxz, stack_hires, ...
+    hrlr, pth_roim_prefix, ...
     regionex, imhsv, doplt, opts)
 
 %this function has several partially overlapping control features,
@@ -19,6 +19,9 @@ edgesig = opts.edgesig;
 celsz = opts.celsz;
 do3d = opts.do3d;
 
+ywid = widyxz(1);
+xwid = widyxz(2);
+zwid = widyxz(3);
 
 %% preprocess stackmnt, make mean stackmnt
 
@@ -69,7 +72,7 @@ if numroiinit > 1 && do3d
             idxnz = premask~=0; %find nonzero indices
             premask(idxnz) = rescale(premask(idxnz));
         end
-        sliceinds_hires = [0 find(diff(map_hires_lores))] + 1; %map_hires_lores may not be uniform hi-z-res sampling of lo-z-res, causing some imprecision (design acquisition zfov and zwid to avoid this)
+        sliceinds_hires = [0 find(diff(hrlr))] + 1; %hrlr may not be uniform hi-z-res sampling of lo-z-res, causing some imprecision (design acquisition zfov and zwid to avoid this)
 
     else  %else make a hi-z-res stackmnt from the lo-z-res stackmnt
 
@@ -229,9 +232,9 @@ else
                     zinds_each{uzi} = find(maskz==uz(uzi));
                     num_vox_each_slice(uzi) = numel(zinds_each{uzi});
                     frac_vox_each_slice(uzi) = num_vox_each_slice(uzi) / numel(maskz);
-                    ideal_mroi_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * numroiinit;
+                    ideal_roim_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * numroiinit;
                 end
-                rnds = pow2(round(log2(ideal_mroi_auto_each_slice))); %rnds = round(frac_mroi_auto_each_slice);
+                rnds = pow2(round(log2(ideal_roim_auto_each_slice))); %rnds = round(frac_roim_auto_each_slice);
 
                 numroifinal = sum(rnds);
                 if numroiinit~=numroifinal
@@ -367,11 +370,11 @@ end
 
 if doplt
 
-    if ~isempty(sliceinds_hires) %if interp to hi z res to help segmentation, plot those hi z res versions here, imaging sampling version of these (which are the used variables) are plotted in mroimake
+    if ~isempty(sliceinds_hires) %if interp to hi z res to help segmentation, plot those hi z res versions here, imaging sampling version of these (which are the used variables) are plotted in roimake
 
         %mask overlay
         overlayarray = rescale(0.2*rescale(mask_allroi_approx_upsamp) + rescale(premask, 0, 1));
-        stackplt( overlayarray, pthgif=[pth_mroi_prefix 'maskallroi_overlay_upsamp.gif'])
+        stackplt( overlayarray, pthgif=[pth_roim_prefix 'maskallroi_overlay_upsamp.gif'])
 
 
         %colormap for each roi
@@ -398,7 +401,7 @@ if doplt
         set(gca,'CameraViewAngle',8)
         rotinc = 30;
         views = -180:rotinc:180;
-        pthgif = [pth_mroi_prefix 'huerois_3dspin_upsamp.gif'];
+        pthgif = [pth_roim_prefix 'huerois_3dspin_upsamp.gif'];
         for framecount = 1:length(views) - 1
             view(views(framecount)+2, 20)
             fig2gif(hfg, framecount, pthgif)
@@ -416,7 +419,7 @@ if doplt
         end
 
         %roi overlay in upsampled res
-        filename_olay = [pth_mroi_prefix 'roiolmake_upsamp_.gif'];
+        filename_olay = [pth_roim_prefix 'roiolmake_upsamp_.gif'];
         gifvis = 'on';
         stackplt(premask, pthgif=filename_olay, gifvis=gifvis, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
 
@@ -425,7 +428,7 @@ if doplt
         imhsv = plots_setup_hsv(imhsv);
         hue_feature = [1:numroifinal]';
         hsvmap = hsvcmp(imhsv, hue_feature);
-        filename_hsv = [pth_mroi_prefix 'hsvfov_upsamp_.gif'];
+        filename_hsv = [pth_roim_prefix 'hsvfov_upsamp_.gif'];
         hsvimg_upsamp = hsvplt(imhsv, premask, hsvmap, roipixind_upsamp, roiwt_upsamp, filename_hsv);
 
 
@@ -438,7 +441,7 @@ if doplt
         axis image;
         view(3);
         title('3d mask (interpolated to hires if do3d is true)')
-        saveas( gcf, [pth_mroi_prefix 'maskallroi_scatter_upsamp_.png'])
+        saveas( gcf, [pth_roim_prefix 'maskallroi_scatter_upsamp_.png'])
 
 
         % %3d surface plot
@@ -446,7 +449,7 @@ if doplt
         % figure;
         % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
         % axis image
-        % saveas( gcf, [pth_mroi_prefix 'maskallroi_surface_upsamp_.png'])
+        % saveas( gcf, [pth_roim_prefix 'maskallroi_surface_upsamp_.png'])
 
         % 3d volume plot
         % viewerRegistered = viewer3d(BackgroundColor="black",BackgroundGradient="off");
@@ -456,7 +459,7 @@ if doplt
 
     end
 
-    stackplt(premask, pthgif=[pth_mroi_prefix 'autopremask_.gif'])
+    stackplt(premask, pthgif=[pth_roim_prefix 'autopremask_.gif'])
 
     if strcmp(maskmake, 'triangle')
         duk = sort(tmpup_nz);
@@ -469,7 +472,7 @@ if doplt
         subplot(2,1,2);
         plot(sort(tmpup_nz)); hold on; plot(duk)
         title('knee threshold (alternative, not used by default)')
-        saveas( gcf, [pth_mroi_prefix 'trianglethresh_.png'])
+        saveas( gcf, [pth_roim_prefix 'trianglethresh_.png'])
     end
 
 end
