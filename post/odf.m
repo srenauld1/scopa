@@ -3,34 +3,6 @@ function o = odf(oin, vbin, copybin, opt)
 
 %{
 
-field can be 
-    option (which can be struct of options)
-    function (a struct with fields that are the function's options; name represents the function)
-    output (a struct, name represents the output of a function in struct above; used when function can be called more than once)
-
-besides o itself, all structs are scalar; there is no need for nonscalar struct within o
-o is nonscalar for multiple recordings
-we use a nonscalar struct when the input/output map can be named with info in the struct; and when all elements must contain the same fields
-we use a field when the input/output map cannot be named with info in the struct (requires the fieldname); and when each substruct can have variable fields (this is possible since each vbin can have a subset of its function's inputs, invoking defaults within the function)
-
-
-o.202409070102.roi.fb.ma.numroi
-    o is a2p
-    202409070102 is output built entirely from inputs (recdate, fly, trial); if it was an option set, it would have optid
-        recording is itself an option; gets expanded; its identity requires lookup; but its 
-        202409070102 is not used as an output; the recording info in the struct is used to save files, not that bin label
-
-
-    roi is function roimake
-    fb is output 
-    ma is function roimauto
-    numroi is option
-
-o.roi.fb_left_2.ma.numroi
-    o and roi and ma are functions (a2p, roimake, roimauto)
-    fb_left_2 is output only (not an input to anything, but built from inputs region, maskname, but optid is not an input, it is purely a bin for assigning output)
-    numroi is option
-
 odf is just a wrapper for odfscal; odfscal operates on scalar struct argument oin; odf just loops over elements of oin
 
 WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
@@ -68,9 +40,9 @@ end
 if files %if files==1, oin must be scalar
     o = odfscal(oin, vbin, copybin, files); %odfs is for scalar struct o
 else %otherwise, oin can be nonscalar
-    % if any(getfieldns(o,'id'))
-    %     files=2;
-    % end
+    if ( numel(oin)>1 && any(~cellfun(@isempty, getfieldns(oin,'id.pth'))) ) || ( isfield(oin, 'id') && isfield(oin.id, 'pth') )
+        files=2;
+    end
     for k = numel(oin):-1:1 %in case o is nonscalar, loop over each element, calling odfs; backwards to preallocate
         o(k) = odfscal(oin(k), vbin, copybin, files); %odfs is for scalar struct o
     end

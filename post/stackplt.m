@@ -191,10 +191,6 @@ if iscell(stack)
         stackmin = double(min(stack{si}(:)));
         stackmax = double(max(stack{si}(:)));
         stackrange = stackmax-stackmin; %(max-min)*dr+min = [0 1]
-        % 
-        % if stackmin<0
-        %     error("need to fix rescaling for negative stack when you are passing multiple stacks")
-        % end
         rsa = [dr{si}(1) 1-dr{si}(1); %dr{si}(1)*newmax - dr{si}(1)*newmin + newmin = 0;
             dr{si}(2) 1-dr{si}(2)]; %dr{si}(2)*newmax - dr{si}(2)*newmin + newmin = 1;
         rsb = [0;1];
@@ -216,9 +212,6 @@ else %if there's only one stack, don't rescale it, just assign dr to CLim
     end
     stackmin = double(min(stack(:)));
     stackmax = double(max(stack(:)));
-    % if stackmin<0
-    %     error("need to fix rescaling for negative stack")
-    % end
     stackrange = stackmax-stackmin;
     clim_tmp = stackrange*cell2mat(dr)+stackmin;
 end

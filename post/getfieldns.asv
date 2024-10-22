@@ -1,15 +1,17 @@
 function out = getfieldns(s,field)
 
-%get field values in nonscalar struct
+% get field values in nonscalar struct
+% field can be nested (a.b.c)
+% out is equivalent to the requested fields if s were flattened
+
+% so structure of nonscalar structs is lost in the output, except their order 
 
 tmp = strsplit(field, '.');
 
 if numel(tmp)>1
-tmp1 = tmp{1};
-tmp2 = strsplit(tmp, '.');
-for k = 1:numel(tmp)
-        out = getfieldns([s.tmp{1}],tmp{k});
-    end
+    tmp1 = tmp{1};
+    tmp2 = strjoin(tmp(2:end), '.');
+    out = getfieldns([s.(tmp1)],tmp2);
 else
     out = {s.(field)};
 end

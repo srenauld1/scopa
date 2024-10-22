@@ -3,31 +3,6 @@ function o = odf(oin, vbin, copybin, opt)
 
 %{
 
-field can be 
-    option (which can be struct of options)
-    function (a struct with fields that are the function's options; name represents the function)
-    output (a struct, name represents the output of a function in struct above; used when function can be called more than once)
-
-besides o itself, all structs are scalar; there is no need for nonscalar struct within o
-o is nonscalar for multiple recordings
-
-o.202409070102.roi.fb.ma.numroi
-    o is a2p
-    202409070102 is output built entirely from inputs (recdate, fly, trial); if it was an option set, it would have optid
-        recording is itself an option; gets expanded; its identity requires lookup; but its 
-        202409070102 is not used as an output; the recording info in the struct is used to save files, not that bin label
-
-    so we use a nonscalar struct when the input/output map can be named with info in the 
-    roi is function roimake
-    fb is output 
-    ma is function roimauto
-    numroi is option
-
-o.roi.fb_left_2.ma.numroi
-    o and roi and ma are functions (a2p, roimake, roimauto)
-    fb_left_2 is output only (not an input to anything, but built from inputs region, maskname, but optid is not an input, it is purely a bin for assigning output)
-    numroi is option
-
 odf is just a wrapper for odfscal; odfscal operates on scalar struct argument oin; odf just loops over elements of oin
 
 WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
@@ -65,9 +40,9 @@ end
 if files %if files==1, oin must be scalar
     o = odfscal(oin, vbin, copybin, files); %odfs is for scalar struct o
 else %otherwise, oin can be nonscalar
-    % if any(getfieldns(o,'id'))
-    %     files=2;
-    % end
+    if any(getfieldns(oin,'id.pth'))
+        files=2;
+    end
     for k = numel(oin):-1:1 %in case o is nonscalar, loop over each element, calling odfs; backwards to preallocate
         o(k) = odfscal(oin(k), vbin, copybin, files); %odfs is for scalar struct o
     end
