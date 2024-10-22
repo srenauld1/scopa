@@ -7,12 +7,12 @@
                     zinds_each{uzi} = find(maskz==uz(uzi));
                     num_vox_each_slice(uzi) = numel(zinds_each{uzi});
                     frac_vox_each_slice(uzi) = num_vox_each_slice(uzi) / numel(maskz);
-                    frac_mroi_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * numroiauto;
+                    frac_roim_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * numroiauto;
                 end
-                rnds = pow2(round(log2(frac_mroi_auto_each_slice))); %rnds = round(frac_mroi_auto_each_slice);
+                rnds = pow2(round(log2(frac_roim_auto_each_slice))); %rnds = round(frac_roim_auto_each_slice);
                 
-                num_mroi_change = sum(rnds);
-                numroiauto = num_mroi_change;
+                num_roim_change = sum(rnds);
+                numroiauto = num_roim_change;
 
                 tmp = zeros([numel(masky) 2], 'uint16');
                 centmp = [];
