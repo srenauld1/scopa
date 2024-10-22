@@ -16,6 +16,9 @@ function respout = respnorm(respin, normtype_all, sampper)
 % 'box' : box-cox transformation
 % for example
 
+if ~iscell(normtype_all)
+    normtype_all = {normtype_all};
+end
 
 for nti = 1:length(normtype_all)
 
