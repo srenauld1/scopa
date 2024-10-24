@@ -31,7 +31,7 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
                     chan_primary = np.setxor1d([1,2], discard_channel)
                     # chanstr_primary = '_chn' + str(chan_primary) #if you set chanstr_primary to nonempty when discard_channel is not none, later the index will be wrong since the output stack has only one channel  
                     stack = stack[:,:,chan_primary[0]-1,:,:].squeeze()
-                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(chanstr_primary))
+                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(chan_primary[0]-1))
                 else:
                     use_two_channels = 1
                     chan_secondary = np.setxor1d([1,2], chan_primary)
