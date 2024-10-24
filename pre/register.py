@@ -18,7 +18,7 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots):
    
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -73,13 +73,13 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     phoff = bidiphase_compute(stack[::bidiphase_frame_increment,...]) #compute bidirectional phase offset, can be zero 
     if phoff:
         bidiphase_shift(stack, phoff) #correct any bidirectional phase offset if nonzero
-    stack = stack_reshape_transpose_zero_type(stack, md['dims'])
+    stack = stack_reshape_transpose_zero_type(stack, md['dims'], clipneg=clipneg)
     if two_channel_reg:
         stack_secondary = cropflyback(stack_secondary, md['dims'], md['flyback'])
         phoff = bidiphase_compute(stack_secondary[::bidiphase_frame_increment,...])
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
-        stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'])
+        stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'], clipneg=clipneg)
 
     if makeplots:
         #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack))

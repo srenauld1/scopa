@@ -2,6 +2,8 @@ def optrg(register_in_2d = True,  min_mov = 0, fnames = None, md = None):
 
     ### registration options ###
 
+    ## carl wienecke made some changes to caiman registration that only affect rigid registration because drosophila brain motion seems rigid (is he wrong?)
+
     pw_rigid = False #rigid or non, for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
     nonneg_movie = True #true because i make it nonnegative before registration
     min_mov = min_mov

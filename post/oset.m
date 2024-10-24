@@ -113,7 +113,7 @@ o = odf(o, files=dofindfiles); %set all above options and find files (unless ose
 
 %%%% create distinct options (or not) for different found recordings, and different regionex %%%%
 
-allrecs = getfieldns([o.id], 'recdate');
+allrecs = getfieldns(o, 'id.recdate');
 recgroup1 = find(contains(allrecs, '202306')); %index of all found files in june of 2022
 recgroup2 = find(contains(allrecs, '202409')); %index of all found files in september of 2021
 
@@ -140,7 +140,7 @@ for k = 1:numel(allrecs)
 
             o(k).roi.mm.chandraw = [1];
 
-            o(k).roi.ma.chan = [1];
+            o(k).roi.ma.chanauto = [1];
             o(k).roi.ma.numroi = 0; %for auto morph roi extraction (after optional mask draw)
             o(k).roi.ma.maskseg = 'uniform';
             o(k).roi.ma.do3d = 1;
