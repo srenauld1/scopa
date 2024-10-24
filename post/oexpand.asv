@@ -60,47 +60,49 @@ for j = 1:numel(o)
             alltmp = fieldord(alltmp);
 
 
-        end
-        fntmp = fieldnames(alltmp);
-        pthopt = '~/stacks/optroi.txt';
-        fid = fopen(pthopt, 'a+');
-        tmpout = fread(fid, "*char")';
-        newopts = 0;
-        for p = 1:numel(fntmp)
-           if isempty(tmpout)
-                optfile = struct;
-            else
-                optfile = jsondecode(tmpout);
-            end
-            fnfile = fieldnames(optfile);
-            optindnum = cellfun(@str2double, cellflat(regexp(fnfile,'\d+','match')));
-            if numel(optindnum)~=numel(fnfile)
-                error("there should be one integer per optind, you may have an optind with an invalid name; name should be i followed by an integer")
-            end
-            if isempty(optindnum)
-                fnfilenew = ['i' num2str(p)];
-                optfile.(fnfilenew) = alltmp.(fntmp{p});
-            else
-                maxoptind = max(optindnum);
-                for w = 1:numel(fnfile)
-                    if w==numel(fnfile) && ~isequal(alltmp.(fntmp{p}), optfile.(fnfile{w})) %if current options don't match any in the roiopt file, append them to end as new option set
-                        fnfilenew = ['i' num2str(maxoptind+1)];
-                        maxoptind.(fnfilenew) = alltmp.(fntmp{p});
+            fntmp = fieldnames(alltmp);
+            pthopt = '~/stacks/optroi.txt';
+            fid = fopen(pthopt, 'a+');
+            tmpout = fread(fid, "*char")';
+            newopts = 0;
+            for p = 1:numel(fntmp)
+                if isempty(tmpout)
+                    optfile = struct;
+                else
+                    optfile = jsondecode(tmpout);
+                end
+                fnfile = fieldnames(optfile);
+                optindnum = cellfun(@str2double, cellflat(regexp(fnfile,'\d+','match')));
+                if numel(optindnum)~=numel(fnfile)
+                    error("there should be one integer per optind, you may have an optind with an invalid name; name should be i followed by an integer")
+                end
+                if isempty(optindnum)
+                    fnfilenew = ['i' num2str(p)];
+                    optfile.(fnfilenew) = alltmp.(fntmp{p});
+                else
+                    maxoptind = max(optindnum);
+                    for w = 1:numel(fnfile)
+                        if w==numel(fnfile) && ~isequal(alltmp.(fntmp{p}), optfile.(fnfile{w})) %if current options don't match any in the roiopt file, append them to end as new option set
+                            fnfilenew = ['i' num2str(maxoptind+1)];
+                            maxoptind.(fnfilenew) = alltmp.(fntmp{p});
+                        end
                     end
                 end
+
             end
+            if newfile || newopts
+                txt = jsonencode(alltmp, PrettyPrint=true);
+                %remove white-spaces inside vectors and matrices
+                txt = regexprep(txt,',\s+(?=\d)',','); % , white-spaces digit
+                txt = regexprep(txt,',\s+(?=-)',','); % , white-spaces minussign
+                txt = regexprep(txt,'[\s+(?=\d)','['); % [ white-spaces digit
+                txt = regexprep(txt,'[\s+(?=-)','['); % [ white-spaces minussign
+                txt = regexprep(txt,'(?<=\d)\s+]',']'); % digit white-spaces ]
+                fprintf(fid,'%s',txt);
+            end
+            fclose(fid);
+
         end
-        if newfile || newopts
-            txt = jsonencode(alltmp, PrettyPrint=true);
-            %remove white-spaces inside vectors and matrices
-            txt = regexprep(txt,',\s+(?=\d)',','); % , white-spaces digit
-            txt = regexprep(txt,',\s+(?=-)',','); % , white-spaces minussign
-            txt = regexprep(txt,'[\s+(?=\d)','['); % [ white-spaces digit
-            txt = regexprep(txt,'[\s+(?=-)','['); % [ white-spaces minussign
-            txt = regexprep(txt,'(?<=\d)\s+]',']'); % digit white-spaces ]
-            fprintf(fid,'%s',txt);
-        end
-        fclose(fid);
 
     end
 

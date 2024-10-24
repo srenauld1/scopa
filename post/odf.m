@@ -150,6 +150,8 @@ d.ftv.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
+d.roi.regionex = d.mn.regionexdf;
+d.roi.maskname = 'all';
 d.roi.domm = 0; %do "morph manual"; if true, draw rois in an interactive plot, and save, (or load if already drawn and saved), if false, skip drawing
 d.roi.doma = 0; %do "morph auto"; if true, automatically segment drawn rois (or if none, full fov)
 d.roi.dofa = 0; %do "functional automated" (caiman extract.py); if true, load caiman rois with regionex in filename

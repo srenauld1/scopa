@@ -17,10 +17,10 @@ end
 o.spec.pthparent_local = '~/stacks';
 o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not recin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    o.spec.recdate = {'2023*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'*'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    o.spec.suffix = {'cmrg'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
     o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     o.spec.pth = '';
 elseif iscell(recin) || ischar(recin) %if input to a2p is not empty, and is not struct
@@ -52,9 +52,10 @@ regionex = {'default', 'fb_1', 'fb_2', 'pb', 'eb'}; %use 'default' to skip promp
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1]; %which channel to use
-o.sld.suffixplt = {}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
+o.sld.suffixplt = {'cmrg'}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
 
 o.sld.sp.dr = {[0,1; 2,3], [0,1; 2,3]', [0,1], [0,1]'}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
+o.sld.sp.dr = {[0,1]'}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
 o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
@@ -131,6 +132,8 @@ for k = 1:numel(allrecs)
         if startsWith(regionex{m}, {'fb', 'pb', 'default'})
 
             %some options are the same for all regionex (but same and different options must be put together within the regionex loop, given how odf works)
+            o(k).roi.regionex = regionex{m};
+
             o(k).roi.domm = 1; %do draw rois
             o(k).roi.doma = 1; %do automated morph rois
             o(k).roi.dofa = 1; %do functional rois (ciaman)
@@ -159,6 +162,7 @@ for k = 1:numel(allrecs)
                     o(k).roi.ma.numroi = 512; %use 512 automated roi (ma) for any regionex starting with 'fb' in recording group 2
                 end
             else
+                o(k).roi.mm.maskname = {'all'}; %name for masks drawn on the same regionex
                 o(k).roi.ma.numroi = 0; %skip automated roi for all other regionex, regardles of recording
             end
 
@@ -177,7 +181,7 @@ oldcarlo %don't comment this out, but it's just for carl
 
 o = fieldord(o); %recursively order alphabetically
 
-o = oexpand(o, 'roi');
+% o = oexpand(o, 'roi');
 
 [~, oflatfn] = structflat(o, 'prefix', 'o'); %get flattened fieldnames for user to see options struct organization more easily (does not get used); need prefix to make valid fieldnames in case nonscalar
 
