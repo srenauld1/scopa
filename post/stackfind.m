@@ -1,4 +1,4 @@
-function pth_all = filefind(opt)
+function pth_all = stackfind(opt)
 
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass prioritize_mat as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
@@ -67,18 +67,18 @@ end
 if isempty(validsuffix)
     validsuffix = glb('validsuffix');
     if isempty(validsuffix)
-        sprintf('no variable set for validsuffix, returned files may include more than you want if specifiers include wildcard')
+        fprintf("no variable set for validsuffix, returned files may include more than you want if specifiers include wildcard" + newline)
     end
 end
 
 if isempty(pth)
 
     if isempty(pthsib)
-        pth_parent = find_parent_path(pthparent_local, pthparent_o2);
+        pthparent = pthparentfind(pthparent_local, pthparent_o2);
     else
         if isfile(pthsib)
-            [pth_parent, ~, ~] = fileparts(pthsib);
-            pth_parent = [pth_parent filesep];
+            [pthparent, ~, ~] = fileparts(pthsib);
+            pthparent = [pthparent filesep];
             id = idmake(pthsib);
             recdate = id.recdate;
             fly = id.fly;
@@ -92,7 +92,7 @@ if isempty(pth)
 
     pth_prefix_all = [];
     for j = 1:numel(fspc.recdate)
-        pth_prefix_all_onespec = filefind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, pth_parent, validsuffix);
+        pth_prefix_all_onespec = stackfind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, pthparent, validsuffix);
         pth_prefix_all = cat(1, pth_prefix_all, vec(pth_prefix_all_onespec));
     end
 
@@ -111,10 +111,10 @@ end
 
 if isempty(pth_prefix_all)
     if isempty(pth)
-        fspcstr = sprintf("pth_parent: " + pth_parent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix);
+        fspcstr = sprintf("pthparent: " + pthparent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix);
         sprintf("WARNING, NO FILES FOUND WITH match '" + match + "' AND FILENAME SPECIFIERS:" + newline + fspcstr)
     else
-        sprintf("WARNING, NO FILES FOUND MATCHING INPUT PATHS OR PATH PATTERNS")
+        fprintf("WARNING, NO FILES FOUND MATCHING INPUT PATHS OR PATH PATTERNS" + newline)
     end
     pth_all = [];
 else
@@ -177,45 +177,8 @@ end
 end
 
 
-function pth_parent = find_parent_path(pthparent_local, pthparent_o2)
 
-pthparent_local = strrep(pthparent_local, '/', filesep);
-pthparent_local = strrep(pthparent_local, '\', filesep);
-if endsWith(pthparent_local, filesep)
-    pthparent_local = pthparent_local(1:end-1);
-end
-[~, fldr_parent_local, ~] = fileparts(pthparent_local);
-
-envname = getenv('HOSTNAME');
-if ~isempty(regexp( envname, 'compute-', 'once' ))
-    if isempty(pthparent_o2)
-        sprintf("O2 parent path not specified, using default path based on parent folder name")
-        pthenv = getpathenv();
-        spl = strsplit(pthenv, filesep);
-        username = cell2mat(spl(find(contains(spl, 'home'))+1));
-        if isempty(username)
-            error("scopa may not be in your O2 home folder, make sure to git clone scopa into your O2 home folder")
-        end
-        pth_parent = fullfile('/', 'n', 'scratch', 'users', username(1), username, fldr_parent_local);
-    else
-        if endsWith(pthparent_o2, filesep)
-            pth_parent = pthparent_o2(1:end-1);
-        end
-    end
-else
-    pth_parent = pthparent_local;
-end
-
-pth_parent = [pth_parent filesep];
-if ~isfolder(pth_parent)
-    error(sprintf("pth_parent '" + pth_parent + "' DOES NOT EXIST"))
-end
-
-
-end
-
-
-function pth_prefix_all = filefind_onespec(recdate, fly, trial, suffix, pth_parent, validsuffix)
+function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, pthparent, validsuffix)
 
 
 recdate = num2str(recdate); %just in case it's numeric, won't matter if not
@@ -224,7 +187,7 @@ trial = num2str(trial); %just in case it's numeric, won't matter if not
 
 
 %%SCOPA PATTERN, TIF AND MAT
-fn_pattern_tif = [pth_parent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
+fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
 valid_tif_fns = strcat(validsuffix, '_.tif');
 pth_all_tif = rdir(fn_pattern_tif);
 pth_all_tif = pth_all_tif(contains({pth_all_tif.name}, valid_tif_fns)); %in case wildcard suffix returns unwanted files
@@ -238,9 +201,9 @@ pth_all_mat = pth_all_mat(contains({pth_all_mat.name}, valid_mat_fns)); %in case
 %%FLYG RAW PATTERN, TIF AND MAT
 if strcmp(suffix, 'raw')
     if strcmp(trial, '*')
-        fn_pattern_flyg_raw_tif = [pth_parent '**' filesep recdate '-' fly '_*_trial_*_*.tif']; %double asterisk is 0 or more directories
+        fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_*_*.tif']; %double asterisk is 0 or more directories
     else
-        fn_pattern_flyg_raw_tif = [pth_parent '**' filesep recdate '-' fly '_*_trial_' sprintf( '%03s', trial ) '_*.tif']; %double asterisk is 0 or more directories
+        fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_' sprintf( '%03s', trial ) '_*.tif']; %double asterisk is 0 or more directories
     end
     pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
 
@@ -272,7 +235,7 @@ for k = 1:numel(pth_prefix_all)
         if isfile(tmptif)
             pth_all{k} = tmptif;
         else
-            error("there's might be a bug in filefind")
+            error("there's might be a bug in stackfind")
         end
     end
 end

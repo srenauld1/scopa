@@ -15,7 +15,7 @@ from helpers import stack_reshape_transpose_zero_type
 
 
 
-def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_only, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, makeplots, cluster_backend, use_cluster):
+def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -48,7 +48,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
             stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
             chanstr_seed = chanstr_primary
 
-        print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
+        print("REGION EXTRACTION (regionex) IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
@@ -76,7 +76,7 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
             
             for ii in index_extraction_param_set_new:
 
-                try: #try, since some param sets will error
+                if 1: #try, since some param sets will error
 
                     if extract_in_2d: #adjust images and some params for 2D EXTRACTION 
                         indz = np.arange(stackcrop_ex.shape[3])
@@ -105,7 +105,11 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm2 = None
                         Ain = None
                        
-                        opts_dict, opts_dict_morph, indices_ex, fnadd = optex(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING optex OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL optex SO EACH SLICE GETS THE SAME 
+                        opts_dict, opts_dict_morph, indices_ex = optex(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING optex OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL optex SO EACH SLICE GETS THE SAME 
+                        print("extraction params configured; index_extraction_param_set is " + str(ii))
+
+                        optid = 1
+                        
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time
@@ -151,12 +155,9 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=True) #use_residuals=True to include residuals in traces for dff computation
                         dff_residtrue = cnm2.estimates.F_dff 
 
-
                         if makeplots and cnm2.estimates.A.shape[-1]:
                             pth_results = pth_write_prefix + fnadd + '_' + str(iz) + '_OUT_FIT1.mov'
                             caiman_plots_all(cnm, opts, img, dims_spatial_ex, extract_in_2d, pth_results)
-
-                        if makeplots and cnm2.estimates.A.shape[-1]:
                             pth_results2 = pth_write_prefix + fnadd + '_' + str(iz) + '_OUT_FIT2.mov'
                             caiman_plots_all(cnm2, opts, img, dims_spatial_ex, extract_in_2d, pth_results2)
                         
@@ -241,11 +242,11 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         print("norois")
                         pth_mat_ex = pth_write_prefix + fnadd + '_rois_NOROIS_.mat'
 
-                except Exception as error:
+                # except Exception as error:
                     
-                    mdict = {}
-                    pth_mat_ex = pth_write_prefix + fnadd + '_rois_FAILURE_.mat'
-                    print("An exception occurred:", type(error).__name__, "-", error) 
+                #     mdict = {}
+                #     pth_mat_ex = pth_write_prefix + fnadd + '_rois_FAILURE_.mat'
+                #     print("An exception occurred:", type(error).__name__, "-", error) 
 
                 
                 sio.savemat(pth_mat_ex, mdict)
@@ -266,5 +267,5 @@ def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):
     stackcrop_ex = np.reshape(stackcrop_ex.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
     if stackcrop_ex.ndim==3: #if it's not volumetric
         stackcrop_ex = stackcrop_ex[...,np.newaxis] #add singleton 4th dim (z) to simplify code below
-    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION HAS SHAPE: \n" + str(stackcrop_ex.shape))
+    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION (regionex) HAS SHAPE: \n" + str(stackcrop_ex.shape))
     return stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex

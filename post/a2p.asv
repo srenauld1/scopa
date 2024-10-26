@@ -116,17 +116,22 @@ for k = 1:numel(oa) % loop over recordings
 
     % stackplt(stack, it=20.3, fdimnum=3) %view stack in various ways
 
-    %% create/load/select rois/responses for each optid
+    %% create/load/select rois/responses for each regionex
 
     if o.mn.doroi
         fnroi = fieldnames(o.roi);
         for m = 1:numel(fnroi) %for each regionex
+
             optid = fnroi{m};
-            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, pth.roi.(optid), stackmnthr, hrlr, o.roi(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+
+            %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, pth.roi.(optid), o.roi(optid));
+
         end
     end
 
     % save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
+
 
     %% feature extraction (e.g. bump), add to ts
 

@@ -1,26 +1,16 @@
 import numpy as np
 
 class map2params():
-    def __init__(self, index_extraction_param_set):
+    def __init__(self):
 
         self.params = {}
-        if index_extraction_param_set=='defaultset':
-            self.params['m2p_merge_thresh'] = [.9]
-            self.params['m2p_gsig_xy'] = [2] 
-            self.params['m2p_nb'] = [1]
-            self.params['SC_sigma'] = [1]
-            self.params['lambda_gnmf'] = [1]
-            self.params['perc_baseline_snmf'] = [20] 
-            self.params['max_iter_snmf'] = [1000]
-        elif index_extraction_param_set=='t5':
-            self.params['m2p_merge_thresh'] = [.9]
-            self.params['m2p_gsig'] = [1, 2, 3] #[2, 3, 4]
-            self.params['m2p_nb'] = [1, 2, 3]
-            self.params['SC_sigma'] = [1, 4]
-            self.params['lambda_gnmf'] = [1, 4]
-            self.params['perc_baseline_snmf'] = [20,40] #10, 20, 40]
-            self.params['max_iter_snmf'] = [1000]
-            
+        self.params['m2p_merge_thresh'] = [.9]
+        self.params['m2p_gsig_xy'] = [2] 
+        self.params['m2p_nb'] = [1]
+        self.params['SC_sigma'] = [1]
+        self.params['lambda_gnmf'] = [1]
+        self.params['perc_baseline_snmf'] = [20, 30] 
+        self.params['max_iter_snmf'] = [1000, 2000, 3000]
 
         self.map = []
         self.max_index = 1
@@ -42,5 +32,6 @@ class map2params():
         return None
 
     def map_index(self,index):
-        assert 0 <= index <= self.max_index
+        if index > self.max_index:
+            raise Exception("index_extraction_param_set is greater than total num paream sets")
         return self.map[index]

@@ -518,9 +518,16 @@ end
 %% globals
 
 if isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('validsuffix')) && isempty(glb('pltvis'))
-    pthparent = pthparentfind(o.spec.pthparent_local, o.spec.pthparent_o2);
+    pthparent = pthparentfind(d.mn.pthparent_local, d.mn.pthparent_o2);
     glb(pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, validsuffix=d.spec.validsuffix, pltvis=d.mn.pltvis); %set some globals, force update if they already have been set with first argument 1
 end
+
+if isempty(glb('pthparent'))
+    pthparent = pthparentfind(d.mn.pthparent_local, d.mn.pthparent_o2);
+    glb(pthparent = pthparent);
+end
+
+
 
 end
 

@@ -235,7 +235,7 @@ else
         end
     end
     if ndims(stack)>3
-        sprintf("you passed roipx as argument and a stack with numdims>3; \nautomatically averaging dimensions>3 to create 3d background image for roi overlay; \nyou can also pass 2d or 3d stack instead")
+        fprintf("you passed roipx as argument and a stack with numdims>3; automatically averaging dimensions>3 to create 3d background image for roi overlay; you can also pass 2d or 3d stack instead" + newline)
         tmp = size(stack);
         tmp = num2cell(tmp(1:3));
         stack = mean(reshape(stack, tmp{:}, []), 4);
@@ -250,7 +250,7 @@ else
     else
         kpir = ismember(ir, 1:numel(roipx));
         if any(kpir==0)
-            sprintf("you requested to plot some rois (ir) that don't exist, according to the roi pixel indices you passed as argument (roipx), so ignoring those rois")
+            fprintf("you requested to plot some rois (ir) that don't exist, according to the roi pixel indices you passed as argument (roipx), so ignoring those rois" + newline)
         end
         ir = ir(kpir);
         roi_loop_size = numel(ir);

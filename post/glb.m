@@ -70,7 +70,7 @@ elseif ischar(inp) %retrieving globals
     if isequal(inp,'all')
         outp = gset;
     elseif ~isfield(gset,inp)
-        sprintf("parameter " + inp + " has not yet been set as a global variable")
+        fprintf("parameter " + inp + " has not yet been set as a global variable" + newline)
         outp = [];
     else
         outp = gset.(inp);

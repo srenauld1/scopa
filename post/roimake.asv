@@ -77,9 +77,9 @@ if ~maskinput
         end
         if ~isempty(chancpmm) && numchan==2
             chanreceive = setxor(chancpmm, [1,2]);
-            fprintf("chancpmm is " + num2str(chancpmm) + "; COPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(chancpmm) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
+            fprintf("chancpmm is " + num2str(chancpmm) + "; " + newline + "COPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(chancpmm) + " ONTO CHANNEL " + num2str(chanreceive));
             if all(roimaskman_allchan{chancpmm}==1, 'all') && ~all(roimaskman_allchan{chanreceive}==1, 'all')
-                fprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones; you may not intend this" + newline);
+                sprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones; you may not intend this");
             end
             roimaskman_allchan(chanreceive) = roimaskman_allchan(chancpmm);
         end
@@ -116,9 +116,9 @@ for c = 1:numchan
                     roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
                 end
                 roicen = find_roi_centroids(roimaskman);
-                fprintf("WARNING,\n" + ...
+                sprintf("WARNING,\n" + ...
                     "if roisrt is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
-                    "since determining the long axis of extraction currently requires automated morph roi extraction" + newline)
+                    "since determining the long axis of extraction currently requires automated morph roi extraction")
             else
                 [roiwt, roicen, num_roim] = ...
                     roimauto(stackmnt_tmp, roimaskman, numroiauto, ...
@@ -134,7 +134,7 @@ for c = 1:numchan
 end
 if ~isempty(chancpma) && numchan==2
     chanreceive = setxor(chancpma, [1,2]);
-    fprintf("chancpmm is " + num2str(chancpma) + "; COPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
+    sprintf("chancpmm is " + num2str(chancpma) + "; \nCOPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive));
     roidat(chanreceive) = roidat(chancpma);
 end
 

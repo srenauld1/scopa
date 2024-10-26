@@ -41,7 +41,7 @@ odf is just a wrapper for odfscal; odfscal operates on scalar struct argument oi
 
 ----- cell array options and expansion -----
 
-when options appear as cell, each cell element is applied to a unique options set (this is called 'expansion', and is performed by function oexpand)
+when options appear as cell, each cell element is applied to a unique options set (this is called 'expansion', and is performed by function opt2id)
 any text option that can be nonscalar must be a string array (rather than a char cell array), so that it can be placed in a cell for expansion 
 most 
 
@@ -57,7 +57,7 @@ vbin names are similar to, or abbreviated forms of, their associated functions
 here is a complete list of vbins and functions they hold options for (see also section headers in odf)
 
     mn, a2p
-    spec, filefind   (called from odf)
+    spec, stackfind   (called from odf)
     daq, daqld   (called from a2p)
     sld, stackld   (called from a2p)
     ftv, ftvproc   (called from a2p)
@@ -132,7 +132,7 @@ currently, this is the only vbin that will hold copybins by default
     o.roi
 
 this is because the roi extraction part of the pipeline (functional extraction, and manual and automated morphological extraction) allows the user to identify subregions of the fov (regionex) to designate unique analysis
-if the user doesn't use any regionex, o.roi is given one copybin, named 'default', which will correspond to the entire fov
+if the user doesn't use any regionex, o.roi is given one copybin, named 'dflt', which will correspond to the entire fov
 
 in general, the user can apply this feature to generate more complex options structs, which might be useful for analyzing large batches of files, or multiple cell types
 

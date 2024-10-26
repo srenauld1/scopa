@@ -9,7 +9,7 @@ format is:
         ts.roi.optid.name (name=roi index ie ind1, ind2, . . . indN)
         ts.daq.optid.name (name=daq variable name, eg fv for forward velocity or g4pos for g4 bar position or t for timestamp)
         ts.feat.optid.name (name=extracted feature name, eg bumpang for bump mean angular position)
-    when options are not variable (e.g. daq variables are currently extracted with a hard-coded options set), optid is 'default'
+    when options are not variable (e.g. daq variables are currently extracted with a hard-coded options set), optid is 'dflt'
 tsget recovers timeseries from ts (since ts can be complex)
 mfit, feat, and pltx use tsget to simplify timeseries recovery, variable names, and file names
 
@@ -46,7 +46,7 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
 
 % setting mfit indv (independent variable) using tsget input struct
     tgtmp.domain = {'daq', 'roi'} %daq domain
-    tgtmp.optused = {'default' %daq variables extracted with default set of daq options 
+    tgtmp.optused = {'dflt' %daq variables extracted with default set of daq options 
     tgtmp.name = [] %all indices (all rois)
     tgtmp.group = 'name' %fit model to each output timeries 
     o.mfit.indv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
@@ -203,14 +203,14 @@ for fi = 1:numel(fn)
             regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
             if numel(unique(regionex_cat))~=1
                 error("tsuse cannot yet use multiple regionex across input vars; in future crop_stack will just have to loop over them and cat the regionex stacks in xy")
-                % tsuse.regionex = 'default';
+                % tsuse.regionex = 'dflt';
             end
         end
     end
 end
 
 if ~isfield(tsuse, 'regionex')
-    tsuse.regionex = 'default';
+    tsuse.regionex = 'dflt';
     tsuse.parsex = 'noparsex';
     tsuse.parsnorm = 'noparsnorm';
 end

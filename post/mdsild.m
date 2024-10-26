@@ -39,7 +39,7 @@ if isfield(md,'md_hires')
     md.md_hires.zerostack = optsldhr.zerostack;
     hires_struct_tmp = cell2struct(cellfun(@double,struct2cell(md.md_hires),'uni',false),fieldnames(md.md_hires),1); %make everything double bc python made uint64
     if ~isfield(hires_struct_tmp,'zwid')%do this after conversion to double
-        sprintf("zwid_hires NOT IN mdsi, COMPUTING/ADDING IT NOW")
+        fprintf("zwid_hires NOT IN mdsi, COMPUTING/ADDING IT NOW" + newline)
         hires_struct_tmp.zwid = hires_struct_tmp.zfov / hires_struct_tmp.numslice;
     end
     if ~isfield(hires_struct_tmp,'zstartpos')%do this after conversion to double
@@ -59,15 +59,15 @@ md = cell2struct(cellfun(@double,struct2cell(md),'uni',false),fieldnames(md),1);
 md.md_hires = hires_struct_tmp;
 
 if ~isfield(md,'xwid')%do this after conversion to double
-    sprintf("xwid NOT IN mdsi, COMPUTING/ADDING IT NOW")
+    fprintf("xwid NOT IN mdsi, COMPUTING/ADDING IT NOW" + newline)
     md.xwid = md.xfov / md.xpix;
 end
 if ~isfield(md,'ywid')%do this after conversion to double
-    sprintf("ywid NOT IN mdsi, COMPUTING/ADDING IT NOW")
+    fprintf("ywid NOT IN mdsi, COMPUTING/ADDING IT NOW" + newline)
     md.ywid = md.yfov / md.ypix;
 end
 if ~isfield(md,'zwid')%do this after conversion to double
-    sprintf("zwid NOT IN mdsi, COMPUTING/ADDING IT NOW")
+    fprintf("zwid NOT IN mdsi, COMPUTING/ADDING IT NOW" + newline)
     md.zwid = md.zfov / md.numslice;
 end
 if ~isfield(md,'zstartpos')%do this after conversion to double

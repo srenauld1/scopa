@@ -187,7 +187,7 @@ end
 
 
 numpk = numel(pkg);
-sprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol))
+fprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol) + newline)
 
 if numpk~=numvol
     error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
@@ -212,7 +212,7 @@ for ri = 1:numel(rsu)
     ftvdsrs(:,:,ri) = mean(ftvds(:,:,rsinds==rsu(ri)),3);
 end
 
-sprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)))
+fprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)) + newline)
 
 %% plot video before and after resampling
 
@@ -227,7 +227,7 @@ if doplt
 end
 
 save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
-sprintf("exiting downsample_fictrac_video")
+fprintf("exiting downsample_fictrac_video" + newline)
 
 
 
@@ -315,7 +315,7 @@ drops_numfr = ftvldiff(dropinds);
 num_drop_occurrences = numel(drops_numfr);
 drop_numfr_unique = unique(drops_numfr);
 
-sprintf("found " + num2str(num_drop_occurrences) + " frame drop events in vidLogFrames txt file, with unique drop lengths of " + mat2str(drop_numfr_unique) + " frames")
+fprintf("found " + num2str(num_drop_occurrences) + " frame drop events in vidLogFrames txt file, with unique drop lengths of " + mat2str(drop_numfr_unique) + " frames" + newline)
 
 
 
@@ -334,13 +334,13 @@ linesubstr2 = 'Frame';
 log_timestamps = {};
 log_framecounts = {};
 count = 0;
-sprintf("starting to extract frame times and indices from this fictrac log file: \n" + pth_log)
+fprintf("starting to extract frame times and indices from this fictrac log file: \n" + pth_log + newline)
 while ~feof(fid)
     str = fgetl(fid);
     if contains(str, linesubstr) && contains(str, linesubstr2)
         count = count+1;
         if count>vlend+1
-            sprintf("log file and vidlog file don't match; apparently not unusual")
+            fprintf("log file and vidlog file don't match; apparently not unusual" + newline)
         end
         log_timestamps(count) = textscan(str, '%f');
         log_framecounts(count) = textscan(str(strfind(str, 'Frame'):end), 'Frame %f');
@@ -357,7 +357,7 @@ end
 
 save(pth_log_parsed, 'log_timestamps', 'log_framecounts', '-v7.3', '-mat')
 
-sprintf("saved fictrac frame times and indices to this file: \n" + pth_log_parsed)
+fprintf("saved fictrac frame times and indices to this file: \n" + pth_log_parsed + newline)
 
 end
 

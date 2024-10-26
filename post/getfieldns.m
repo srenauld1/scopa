@@ -9,6 +9,9 @@ tmp = strsplit(field, '.');
 
 if numel(tmp)>1
     tmp1 = tmp{1};
+    % if strcmp(tmp1, '*')
+    %     tmp1 = fieldnames(s);
+    % end
     tmp2 = strjoin(tmp(2:end), '.');
     out = getfieldns([s.(tmp1)],tmp2);
 else

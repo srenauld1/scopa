@@ -60,7 +60,7 @@ end
 
 if numel(suffixplt)~=0
     if numel(dr)>numel(suffixplt)
-        fprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr" + newline)
+        sprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr")
         dr = dr(1:numel(suffixplt));
     elseif numel(dr)<numel(suffixplt)
         if numel(dr)==1
@@ -71,7 +71,7 @@ if numel(suffixplt)~=0
     end
 end
 if ~isempty(suffixplt) && ~ismember(suffixstack, suffixplt)
-    fprintf("note: suffixplt DOES NOT CONTAIN suffixstack" + newline)
+    sprintf("note: suffixplt DOES NOT CONTAIN suffixstack")
 end
 if numel(suffixplt)~=numel(unique(suffixplt)) %make sure there aren't accidental repeats
     error("you have at least one repeated suffixplt; there cannot be any repeated suffixplt")
@@ -95,6 +95,7 @@ indstmp = setxor(1:numel(dr), indssrc);
 indsnew = [indstmp(1:indsdst-1) indssrc indstmp(indsdst:end)];
 dr = dr(indsnew);
 
+indsmissing = [];
 cnt = 0;
 for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt, dr, and indsmissing
     pthtmp = stackfind(pthsib=pth_stack, suffix=suffixld{spi});
@@ -102,12 +103,11 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;
     else
-        if contains(suffixld{spi}, suffixplt)
-            suffixplt(strcmp(suffixld{spi}, suffixplt)) = [];
-            dr(spi) = [];
-            indsnew(spi) = [];
-        end
         suffixld(spi) = [];
+        if contains(suffixld{spi}, suffixplt) 
+        dr(spi) = [];
+        indsmissing = [indsmissing spi];
+        sprintf("WARNING, NO FILE FOUND WITH SUFFIX: " + suffixld{spi} + " WITH SAME folder, recdate, fly, and trial as sibling file " + pth_stack +  newline + "SKIPPING IT FOR PLOT")
     end
 end
 pth_stacks = flip(pth_stacks); %since spi was backwards above
@@ -115,8 +115,8 @@ pth_stacks = flip(pth_stacks); %since spi was backwards above
 %%  loop over suffixes, loading and concatenating
 
 
-stacktmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat when cell2mat below
-stackmntmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat when cell2mat below
+stacktmp = cell(numel(stackplt), 1); %make it cell column so first dim is cat when cell2mat below
+stackmntmp = cell(numel(pth_stacks), 1); %make it cell column so first dim is cat when cell2mat below
 
 
 cnt = 0;
@@ -186,6 +186,7 @@ end
 
 if plot_stack_gif
 
+    indsnew = indsnew(~ismember(indsnew, indsmissing));
     [~, plot_stack_order] = sort(indsnew);
 
     dr = dr(plot_stack_order);

@@ -116,7 +116,7 @@ if any(usehires) %for each recording, dohires if any regionex have usehires true
         end
     end
     if isempty(pth_tmp)
-        sprintf("WARNING, USER REQUESTED usehires FOR AT LEAST ONE REGIONEX BUT NO FILE WITH SUFFIX hires CAN BE FOUND")
+        fprintf("WARNING, USER REQUESTED usehires FOR AT LEAST ONE REGIONEX BUT NO FILE WITH SUFFIX hires CAN BE FOUND" + newline)
     else
         pth_hires_prefix = pth_tmp.name(1:end-4);
         pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];

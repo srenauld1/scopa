@@ -2,7 +2,7 @@ function hrlr_shifted = ...
     register_and_downsample_hires_in_z(lores, hires, ...
     hires_t, sindz, zshift, hrlr)
 
-%this was replaced by hiresrg3d
+%this was replaced by hiresrg
 
 %right now this is not automated, but hope to automate using image comparison across z shifts 
 %averaging chunks to downsample seems more appropriate than more

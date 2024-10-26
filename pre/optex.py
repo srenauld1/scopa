@@ -5,26 +5,30 @@ from map2params import map2params
 
 def optex(index_extraction_param_set = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
-    # this is not comprehensive, but is most options, and the options map2params are the most likely to require tuning, i think
-    # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims']
+    # below are most of the options for caiman cnmf
+    # the options in map2params are the most likely to require tuning
+    # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
     # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
-    # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object (but which may still be used in caiman functions)
+    # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
 
-    ### roi extraction params ###
+    ############ INDICES ############
+    
+    # use_indices = False # xyz indices to subset FOV; but scopa's regionex (id to crop_fov) is meant to replace this, so use_indices should always be false
+    # if use_indices: 
+    #     sly = slice(6, 51, 1)
+    #     slx = slice(40, 181, 1)
+    #     slz = slice(1, 9, 1)
+    #     indices_ex = [slx, sly, slz]
+    # else:
+    #     indices_ex = [slice(None), slice(None), slice(None)]
 
-    do_slices = False #my crop_fov is meant to replace this, so should always be false
-    if do_slices:
-        sly = slice(6, 51, 1)
-        slx = slice(40, 181, 1)
-        slz = slice(1, 9, 1)
-        indices_ex = [slx, sly, slz]
-    else:
-        indices_ex = [slice(None), slice(None), slice(None)]
+    indices_ex = [slice(None), slice(None), slice(None)] # xyz indices to subset FOV; but scopa's regionex (id to crop_fov) is meant to replace this, so this ca remain none
 
-    p = 0 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
+    ############ BASIC ############
+
     merge_thresh = 0.85
-    gSig_z = 1 # gSig in z dimension (ignored if extract_in_2d==True), anything below 1 will have same effect as 1, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1
-    gSig = [2, 2, gSig_z] #forced to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]            # radius (half-size) of average neurons (in pixels)
+    gSig_z = 1 # xyz radius (half-size) of average neurons (in pixels) (more or less roughly depending on method_init) in z dimension (ignored if extract_in_2d==True), anything below 1 will have same effect as 1, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1
+    gSig = [2, 2, gSig_z] #xyz radius (half-size) of average neurons (in pixels) of neuron (more or less roughly depending on method_init) forced to be odd so gsiz min is 3 (ie gsig 0.5 is same as 1)  # gSig = [3,3]          
 
     if index_extraction_param_set=='cnmfe':
         nb = 0 #num background components
@@ -34,60 +38,79 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
         center_psf = True  
         normalize_init = False
     else:
-        nb = 1 #num background components
+        nb = 4 #num background components
         only_init = False #only use the initialization for extraction (no alternating least squares for spatial and temporal refinement)
-        method_init = 'greedy_roi' #'greedy_roi' #'graph_nmf' #sparse_nmf 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources 
+        method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources 
         low_rank_background = True #True #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
         center_psf = False  #does this matter if not cnmfe?? 
         normalize_init = True
 
+    if two_channel_ex:
+        only_init = False
+
     update_background_components = False #usually have set to false 
     bas_nonneg = False #appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
 
-    fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
     decay_time = .2  # only used in deconvolution, approximate length of indicator tau off
-    if md['zfov']==0: #this occurs if it's a 2d stack (not volumetric); below the third element (hard coded 0.0) will be removed
+
+    fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
+    if md['zfov']==0: #md['zfov']==0 when stack is xyt (not volumetric xyzt); below, the third element (hard coded 0.0) will be removed
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], 0.0 ] #pixels per micron
     else:
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
+
+    ############ DOWNSAMPLING ############
 
     tsub = 1  # temporal downsampling
     ssub = 1  # spatial downsampling
     p_ssub = 1 #patch downsampling in space
     p_tsub = 1 #patch downsampling in time
 
+    ############ INITIALIZATION ############
 
-    #params for method_init sparse_nmf or graph_nmf
-    max_iter_snmf = 1000 #for method_init sparse_nmf or graph_nmf
-    perc_baseline_snmf = 20 #for method_init sparse_nmf or graph_nmf
+    # method_init sparse_nmf and graph_nmf
+    max_iter_snmf = 1000 
+    sigma_smooth_snmf_z = 0.5 #can be less than 1 and have effect, unlike gsig, make small if z are larger than neuron extent in z
+    sigma_smooth_snmf_t = 0.5 #smoothing in time before sparsenmf init
+    sigma_smooth_snmf = [sigma_smooth_snmf_t, gSig[0], gSig[1], sigma_smooth_snmf_z] #smoothing std prior to initialization in sparse_nmf method, default 0.5 0.5 0.5
+    perc_baseline_snmf = 20 
 
-    sigma_smooth_snmf_z = 0.5 #for method_init sparse_nmf or graph_nmf #can be less than 1 and have effect, unlike gsig, make small if z are larger than neuron extent in z
-    sigma_smooth_snmf_t = 0.5 #for method_init sparse_nmf or graph_nmf #smoothing in time before sparsenmf init
-    sigma_smooth_snmf = [sigma_smooth_snmf_t, gSig[0], gSig[1], sigma_smooth_snmf_z] #for method_init sparse_nmf or graph_nmf #smoothing std prior to initialization in sparse_nmf method, default 0.5 0.5 0.5
+    # method_init sparse_nmf
+    alpha_snmf = 0.5 #sparsity penalty, default 0.5
 
-    alpha_snmf = 0.5 #ONLY FOR method_init sparse_nmf . . . sparsity penalty, default 0.5
+    # method_init graph_nmf
+    lambda_gnmf = 1 #sparsity for method_init graphNMF
+    SC_sigma = 1 # std for SC kernel
+    SC_thr = 0    # threshold for affinity matrix
+    SC_normalize = True  # standardize entries prior to computing affinity matrix
+    SC_use_NN = False  # sparsify affinity matrix by using only nearest neighbors
+    SC_nnn = 20   # number of nearest neighbors to use if SC_use_NN = True
+    # SC_kernel = 'heat' #NOT TUNABLE NOW # kernel for graph affinity matrix
+    # tol = 1e-3 #NOT TUNABLE NOW
 
-    lambda_gnmf = 1 #ONLY FOR method_init graph_nmf . . .  sparsity for method_init graphNMF
-    SC_kernel = 'heat' #ONLY FOR method_init graph_nmf . . . #NOT TUNABLE NOW       # kernel for graph affinity matrix
-    SC_sigma = 1 #ONLY FOR method_init graph_nmf . . .              # std for SC kernel
-    SC_thr = 0   #ONLY FOR method_init graph_nmf . . .               # threshold for affinity matrix
-    SC_normalize = True  #ONLY FOR method_init graph_nmf . . .       # standardize entries prior to computing affinity matrix
-    SC_use_NN = False  #ONLY FOR method_init graph_nmf . . .         # sparsify affinity matrix by using only nearest neighbors
-    SC_nnn = 20      #ONLY FOR method_init graph_nmf . . .           # number of nearest neighbors to use if SC_use_NN = True
+    # method_init greedy_roi    
+    rolling_sum = True # only relevant for init method greedy_roi (RIGHT?)
 
+    ############ DECONVOLUTION ############
 
-    fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
-    ITER = 2                # (default is 2; old value=5) -- block coordinate descent iterations
+    p = 0 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
+    fudge_factor = 0.94        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
 
-    rolling_sum = True #think (?) only relevant for init method greedy_roi
+    ITER = 7                # (default is 2; old value=5) -- block coordinate descent iterations
+
+    ############ threshold_components (in update_spatial_components) ############
 
     #during refinement, in update_spatial, the following params are used in function threshold_components
     thr_method = 'nrg' #or 'max'
     maxthr = 0.1 #for  thr_method = 'max' keep pixels above this threshold
     nrgthr = 0.9999 #for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy
     extract_cc = True #true will throw away isolated pixels of some kind (cc means connected components)
+    se = np.ones((3,)*len(gSig), dtype=np.uint8)  #structuring element; put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
+    medw = (3,)*len(gSig)
 
-    #Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1))
+    ############ EVALUATION ############
+
+    # Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1))
     # and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
     # A component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
     # can turn off CNN part withy use_CNN = false
@@ -100,6 +123,12 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     cnn_lowest = 0  #0.1 default  # neurons with cnn probability lower than this value are rejected
     min_cnn_thr = 0 #0.9 default # if cnn classifier predicts below this value, reject
 
+
+
+    ############ DERIVE k, rf, AND stride ############
+
+    # derive k from gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
+    # roi_decimation_fac and stride_to_rf_ratio are not caiman params; they are params carl made to reduce param redundancy and simplify param specification while following caiman recommendations
     # stride_to_rf_ratio (along with gSig) is for automatic calculation of rf, stride, and k,
     # recommend stride_to_rf_ratio in approxoimate range 0.3 - 0.8 (must be 0 < stride_to_rf_ratio <=1)
     # smaller stride_to_rf_ratio means larger patch with smaller patch overlap (caiman mistakenly calls patch overlap "stride", when true stride is distance between patches)
@@ -113,32 +142,15 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     #   when stride_to_rf_ratio = 0.3, patch is ~7 times larger than neuron diameter, max(gsiz), and stride is 50% larger
     #   when stride_to_rf_ratio = 0.8, patch is ~3 times larger than neuron diameter, max(gsiz), and stride is still 50% larger
     
-    stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8
-    use_patch_size_threshold = 5000000000 #skip patch extraction if all dims are smaller than this 
-
-    if index_extraction_param_set != 'default' and index_extraction_param_set != 'cnmfe': #create param set whose index matches value in index_extraction_param_set
-        map_index_2_params = map2params(index_extraction_param_set)
-        print('indexing into param set')
-        merge_thresh, m2p_gsig_xy, nb, SC_sigma, lambda_gnmf, perc_baseline_snmf, max_iter_snmf = \
-            map_index_2_params.map_index(int(index_extraction_param_set))
-        gSig = [m2p_gsig_xy, m2p_gsig_xy, gSig_z]
-
-    if np.all(np.array(dims_spatial_ex)<use_patch_size_threshold): #dont bother with patches if FOV is small enough (but this should be adjusted for dirtier drivers)
-        do_patches = False
-    else:
-        do_patches = True
-
-
+    stride_to_rf_ratio = 0.3 #proportional to patch size, 0 to skip patches; if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
     if two_channel_ex:
-        do_patches = False
-        only_init = False
+        stride_to_rf_ratio = 0 #patches turned off when seeding functional rois with automatically segmented structural channel rois
 
-
-    gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
-
-    #determine k in automated way based on gSig, roi_decimation_fac, and stride_to_rf_ratio, while also satisfying caiman patch size recommendations
+    stride_to_rf_ratio = 0.3  #keep in approxoimate range 0.3 - 0.8, or 0 to skip patches
     roi_decimation_fac = 0.4  #1 is "space filling", caiman demo does not use this variable, but effectively their demo sets it at 0.33)
-    if do_patches: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+    
+    gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #put here at end to register any gSig change
+    if stride_to_rf_ratio: # PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
 
         if extract_in_2d==True:
             maxgsiz = np.max(gSiz[0:2])
@@ -147,7 +159,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
 
         rf = int(np.ceil((maxgsiz) / stride_to_rf_ratio)) + 1
         patchFW = rf*2 #patch full width, since rf is half
-        stride_cnmf = int(np.ceil(rf * stride_to_rf_ratio)) + 1
+        stride_patch = int(np.ceil(rf * stride_to_rf_ratio)) + 1
 
         if extract_in_2d==True:
             k = int(np.round( (patchFW*patchFW) / np.prod(gSiz[0:2])*roi_decimation_fac))  # number of components in each patch
@@ -157,32 +169,32 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
             else:
                 rfz = dims_spatial_ex[2]
             k = int(np.round( (patchFW*patchFW*rfz) / np.prod(gSiz)*roi_decimation_fac))  # number of components in each patch
-        indices_ex = [slice(None), slice(None), slice(None)]
-    else: # PROCESS THE WHOLE FOV AT ONCE
+        indices_ex = [slice(None), slice(None), slice(None)] #update this to none, in case it wasn't already, since it doens't work for patches
+    else: # PROCESS THE WHOLE FOV AT ONCE (no patches)
         rf = None # setting rf to none will run CNMF on the whole FOV
-        stride_cnmf = None       
+        stride_patch = None       
         k = int(np.round( np.prod(dims_spatial_ex) / np.prod(gSiz)*roi_decimation_fac))  # number of components in whole fov (the "whole fov patch")
 
     if index_extraction_param_set=='cnmfe':
         k = None #override k above if cnmfe
     
 
-    p_patch = p
-    nb_patch = nb
-    
-    if extract_in_2d==True:
-        dimstr = '2dex'
-        indices_ex = indices_ex[:-1] #change from 3d to 2d
-        dxy = dxy[:-1] #change from 3d to 2d
-        gSig = gSig[:-1] #change from 3d to 2d
-        gSiz = gSiz[:-1] #change from 3d to 2d
-        sigma_smooth_snmf = sigma_smooth_snmf[:-1] #change from 3d to 2d
-    else:
-        dimstr = "3dex"
+    ############ MISCELLANEOUS ############
 
-    se = np.ones((3,)*len(gSig), dtype=np.uint8)  #put here at end to register any gSig change #se = np.ones((3,3,1), dtype=np.uint8)
-    #medw = (3,)*len(gSig)
+    p_patch = p #patch p should match p
+    nb_patch = nb #should patch nb match nb (???)
     
+    if extract_in_2d==True: #change a few options from 3d to 2d (remove 3rd element)
+        indices_ex = indices_ex[:-1] 
+        dxy = dxy[:-1] 
+        gSig = gSig[:-1] 
+        gSiz = gSiz[:-1] 
+        se = se[:-1] 
+        medw = medw[:-1] 
+        sigma_smooth_snmf = sigma_smooth_snmf[:-1]
+
+    
+    ############ MORPHOLOGICAL SEGEMENTATION OPTIONS (FOR STRUCTURAL CHANNEL, USED TO SEED FUNCTIONAL CHANNEL) ############
 
     morph_se = se #structuring element; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
     morph_areamin = 2 #min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
@@ -195,15 +207,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
         morph_gsig = morph_gsig+1
 
 
-    fnadd = str(gSig[0]) + '_' + str(nb) + '_' + str(merge_thresh) \
-        + '_' + str(rf) + '_' + str(SC_sigma) + '_' + str(lambda_gnmf) + '_' + str(perc_baseline_snmf) \
-        + '_' + str(max_iter_snmf) + '_' + str(ITER) \
-        + '_' + str(k) + '_' + method_init.split('_')[0] + '_' + dimstr
-
-    if extract_in_2d is None: #it's none during motion correction, when we don't care about these params, rather than true/false
-        print("motion correction params configured")
-    else:
-        print("index_extraction_param_set is " + str(index_extraction_param_set) + " with filename string " + fnadd)
+    ############ DICTIONARY ############
 
     opts_dict = {
                 'fr': fr,
@@ -214,12 +218,12 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 'K': k,
                 'gSig': gSig,
                 'gSiz': gSiz,
-                'stride': stride_cnmf,
+                'stride': stride_patch,
                 'method_init': method_init,
                 'perc_baseline_snmf': perc_baseline_snmf,
                 'max_iter_snmf': max_iter_snmf,
                 'sigma_smooth_snmf': sigma_smooth_snmf,
-                'SC_kernel': SC_kernel, #NOT TUNABLE NOW       # kernel for graph affinity matrix
+                # 'SC_kernel': SC_kernel, #NOT TUNABLE NOW       # kernel for graph affinity matrix
                 'SC_sigma': SC_sigma,            # std for SC kernel
                 'SC_thr': SC_thr,                 # threshold for affinity matrix
                 'SC_normalize': SC_normalize,        # standardize entries prior to computing affinity matrix
@@ -251,15 +255,14 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 'cnn_lowest': cnn_lowest,
                 'ITER': ITER,
                 'fudge_factor': fudge_factor,
-                'cnn_lowest': cnn_lowest,
                 'update_background_components': update_background_components,
                 'low_rank_background' : low_rank_background,
                 'thr_method': thr_method,
                 'maxthr': maxthr,
                 'nrgthr': nrgthr,
-                'fnames': fnames,
-                #'medw': medw,
-                'extract_cc': extract_cc
+                'medw': medw,
+                'extract_cc': extract_cc,
+                'fnames': fnames
                 } 
 
     opts_dict_morph = {
@@ -271,9 +274,12 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 }
 
 
-    # # for reference here are the initialization defs for 3 methods, sparse_nmf apparently "has problems" according to gitter
+    ############ NOTES ON INITIALIZATION METHODS ############
 
-    # # greedyROI(stack, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
+    # for reference here are the initialization defs for 3 methods, 
+    # sparse_nmf "has problems" according to gitter, although it's worked for carl
+
+    # greedyROI(stack, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
     #           rolling_sum=False, rolling_length=100, seed_method='auto')
 
     # for graphnmf all these are tunable in cnmf params except remove_baseline, truncate, tol, and SC_kernel whose defaults are below
@@ -289,6 +295,6 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     #           remove_baseline=True, perc_baseline=20, nb=1, truncate=2)
 
 
-    return opts_dict, opts_dict_morph, indices_ex, fnadd
+    return opts_dict, opts_dict_morph, indices_ex
 
 

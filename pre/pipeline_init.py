@@ -167,8 +167,8 @@ for ri, _ in enumerate(pth_read_all):
         eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
-        extract(index_extraction_param_set, pth_prefix_all[ri], pth_read_all[ri], md, do_crop_only, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, makeplots, cluster_backend, use_cluster)
-          
+        extract(index_extraction_param_set, pth_prefix_all[ri], pth_read_all[ri], md, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, do_crop_only, makeplots, cluster_backend, use_cluster)
+
       if do_analysis:
         eng = matlab.engine.start_matlab()
         eng.addpath(eng.genpath(pth_scopa))
