@@ -21,7 +21,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     merge_thresh = 0.76 #threshold for merging components (merge_components in merging.py)
     normalize_init = True # init; variance norm by pixel over time befroe initialization;  prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always;
 
-    only_init = True #only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
+    only_init = False #only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
     if two_channel_ex:
         only_init = False
 
