@@ -5,11 +5,16 @@ from map2params import map2params
 
 def optex(index_extraction_param_set = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
-    # below are most of the options for caiman cnmf
+    # THE MOST IMPORTANT OPTIONS ARE UNDER HEADINGS "GENERAL" AND "INITIALIZATION"
+    # consider further adjustments if you cannot get good results with any adjustment in those sections
+
+    # below are many of the options for caiman source extraction with cnmf
+    # these are chosen as the most likely to require tuning
     # the options in map2params are the most likely to require tuning
     # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
     # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
     # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
+
 
     ############ GENERAL (USED IN FUNCTION CNMF, OR IN MULTIPLE FUNCTIONS WITHIN CNMF) ############
 
@@ -25,41 +30,44 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     if two_channel_ex:
         only_init = False
 
+    roidensity = 0.4  #used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
+    p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
+
 
     ############ INITIALIZATION ############
 
-    # method_init sparse_nmf and graph_nmf
+    #the set of initialization options that get used depends on how you set method_init above
+
+    # for method_init sparse_nmf and graph_nmf
     sigma_smooth_snmf_z = 0.5 #can be less than 1 and have effect, unlike gsig, make small if z are larger than neuron extent in z
     sigma_smooth_snmf_t = 0.5 #smoothing in time before sparsenmf init
     sigma_smooth_snmf = [sigma_smooth_snmf_t, gSig[0], gSig[1], sigma_smooth_snmf_z] #smoothing std prior to initialization in sparse_nmf method, default 0.5 0.5 0.5
-    perc_baseline_snmf = 20 
-    max_iter_snmf = 1000 
+    perc_baseline_snmf = 20 # default 20
+    max_iter_snmf = 500  #default 200 sparsenmf, 500 graphnmf
 
-    # method_init sparse_nmf only
-    alpha_snmf = 0.5 #sparsity penalty, default 0.5
+    # for method_init sparse_nmf only
+    alpha_snmf = 0.5 #default 0.5 sparsity penalty, 
 
-    # method_init graph_nmf only
-    lambda_gnmf = 1 #sparsity for method_init graphNMF
-    SC_sigma = 1 # std for SC kernel
-    SC_thr = 0    # threshold for affinity matrix
-    SC_normalize = True  # standardize entries prior to computing affinity matrix
-    SC_use_NN = False  # sparsify affinity matrix by using only nearest neighbors
-    SC_nnn = 20   # number of nearest neighbors to use if SC_use_NN = True
-    # SC_kernel = 'heat' #NOT TUNABLE NOW # kernel for graph affinity matrix
-    # tol = 1e-3 #NOT TUNABLE NOW
+    # for method_init graph_nmf only
+    lambda_gnmf = 1 #default 1; sparsity penalty for method_init graphNMF
+    SC_sigma = 1 # default 1; std for SC kernel
+    SC_thr = 0    # default 0; threshold for affinity matrix
+    SC_normalize = True  # default True; standardize entries prior to computing affinity matrix
+    SC_use_NN = False  # default False; sparsify affinity matrix by using only nearest neighbors
+    SC_nnn = 20   # default 20; number of nearest neighbors to use if SC_use_NN = True
 
-    # method_init greedy_roi only   
-    rolling_sum = True # Using rolling sum for initialization (RollingGreedyROI), instead of total sum
+    # for method_init greedy_roi only   
+    rolling_sum = False #default false Using rolling sum for initialization (RollingGreedyROI), instead of total sum
     rolling_length = 100 #default 100
 
 
     ############ UPDATE TEMPORAL AND DECONVOLUTION ############
 
-    p = 1 # order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
+    #p belongs in this section, but because it is so important, it was moved above under section "general" 
     p_patch = p #patch p should match p; why would it ever not?
     ITER = 3                # (default is 2; old value=5) -- block coordinate descent iterations
     bas_nonneg = False #clip negatives in deconvolution (not the same as clipping negatives in stack); appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
-    fudge_factor = 0.95        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
+    fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
 
 
     ############ UPDATE SPATIAL (esp. threshold_components ############
@@ -119,9 +127,8 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     p_tsub = 1 #patch downsampling in time
 
 
-    ############ DERIVE k, AND PATCH PARAMS rf and stride  ############
+    ############ DERIVE k, gSiz, AND PATCH PARAMS rf and stride  ############
     
-    roidensity = 0.4  #used to derive k; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
 
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #half-size of bounding box for each neuron; this is what caiman does to compute gsiz from gsig, just putting it here for transparency
     if not two_channel_ex: #patches turned off when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
@@ -220,7 +227,6 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 'perc_baseline_snmf': perc_baseline_snmf,
                 'max_iter_snmf': max_iter_snmf,
                 'sigma_smooth_snmf': sigma_smooth_snmf,
-                # 'SC_kernel': SC_kernel, #NOT TUNABLE NOW       # kernel for graph affinity matrix
                 'SC_sigma': SC_sigma,            # std for SC kernel
                 'SC_thr': SC_thr,                 # threshold for affinity matrix
                 'SC_normalize': SC_normalize,        # standardize entries prior to computing affinity matrix
@@ -228,7 +234,6 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 'SC_nnn': SC_nnn,                # number of nearest neighbors to use if SC_use_NN = True
                 'lambda_gnmf': lambda_gnmf, #for method_init graphNMF
                 'alpha_snmf': alpha_snmf, #for method_init sparseNMF
-                #'dims': dims,
                 'dxy': dxy,
                 'decay_time': decay_time,
                 'bas_nonneg': bas_nonneg,
@@ -239,7 +244,6 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 'rolling_length': rolling_length,
                 'only_init': only_init,
                 'normalize_init': normalize_init,
-                'center_psf': center_psf,  
                 'ssub': ssub,
                 'tsub': tsub,
                 'p_ssub': p_ssub,
@@ -289,8 +293,8 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     #          SC_nnn=20
 
     # for sparsenmf all these are tunable in cnmf params except remove_baseline and truncate, whose defaults are below
-    # # sparseNMF(Y_ds, nr, max_iter_snmf=500, alpha=10e2, sigma_smooth=(.5, .5, .5),
-    #           remove_baseline=True, perc_baseline=20, nb=1, truncate=2)
+    # # sparseNMF(Y_ds, nr, max_iter_snmf=200, alpha=0.5, sigma_smooth=(.5, .5, .5),
+    #          remove_baseline=True, perc_baseline=20, nb=1, truncate=2):
 
 
     return opts_dict, opts_dict_morph, indices_ex
