@@ -4,29 +4,23 @@ class map2params():
     def __init__(self):
 
         self.params = {}
-        self.params['m2p_merge_thresh'] = [.9]
-        self.params['m2p_gsig_xy'] = [2] 
-        self.params['m2p_nb'] = [1]
-        self.params['SC_sigma'] = [1]
-        self.params['lambda_gnmf'] = [1]
-        self.params['perc_baseline_snmf'] = [20, 30] 
-        self.params['max_iter_snmf'] = [1000, 2000, 3000]
 
-
-        ['gSig'] = [2, 2, 0.5]
-        ['method_init'] = 'graph_nmf'
-        ['nb'] = 1
-        ['update_background_components'] = True 
-        ['low_rank_background'] = True
-        ['merge_thresh'] = 0.85 
-        ['normalize_init'] = True 
-        ['only_init'] = False 
-        ['roidensity'] = 0.4 
-        ['p'] = 1
-        ['sigma_smooth_snmf'] = [0.5, gSig[0], gSig[1], gSig[2]]
-        ['perc_baseline_snmf'] = 20
-        ['max_iter_snmf'] = 500 
-        ['sparsity_penalty'] = 1
+        # "important" options used in main
+        self.params['gSig'] = [ [2, 2, 0.5] ] #list of lists
+        self.params['method_init'] = ['graph_nmf']
+        self.params['nb'] = [1]
+        self.params['update_background_components'] = [True] 
+        self.params['low_rank_background'] = [True]
+        self.params['merge_thresh'] = [0.85] 
+        self.params['normalize_init'] = [True] 
+        self.params['only_init'] = [False] 
+        self.params['roidensity'] = [0.4] 
+        self.params['p'] = [1]
+        # "important" initialization options for sparse_nmf and graph_nmf
+        self.params['sigma_smooth_snmf'] = [ [0.5, self.params['gSig'][0], self.params['gSig'][1], self.params['gSig'][2]] ] #list of lists
+        self.params['perc_baseline_snmf'] = [20]
+        self.params['max_iter_snmf'] = [500] 
+        self.params['sparsity_penalty'] = [1]
 
         self.map = []
         self.max_index = 1

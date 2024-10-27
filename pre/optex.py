@@ -5,8 +5,7 @@ from map2params import map2params
 
 def optex(index_extraction_param_set = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
-    # THE MOST IMPORTANT OPTIONS ARE UNDER HEADINGS "GENERAL" AND "INITIALIZATION"
-    # AND WITHIN THIS SET, THE MOST IMPORTANT OPTION ARE IN map2params.py
+    # THE MOST IMPORTANT OPTIONS ARE IN map2params.py (WHICH ARE ALL UNDER HEADINGS "GENERAL" AND "INITIALIZATION" BELOW)
     # consider further adjustments if you cannot get good results with any adjustment in those sections
 
     # below are most of the options for caiman source extraction with cnmf
@@ -21,7 +20,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
 
 
-    ############ GENERAL (USED IN FUNCTION CNMF, OR IN MULTIPLE FUNCTIONS WITHIN CNMF) ############
+    ############ GENERAL (USED IN MAIN EXTRACTION FUNCTION fit, in cnmf.py, OR IN MULTIPLE FUNCTIONS CALLED FROM fit) ############
 
     gSig = [2, 2, 0.5] # approximate xyz half-size, in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1, but since gSig is used to derive sigma_smooth_snmf, which is not clipped to 1, go ahead and use the real value; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels)      
     method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi  
@@ -34,7 +33,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     roidensity = 0.4  ##not a caiman option; used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
 
-    ############ INITIALIZATION ############
+    ############ INITIALIZATION (USED IN initialization.py) ############
 
     #the set of initialization options that get used depends on how you set method_init above
 
@@ -60,7 +59,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     rolling_length = 100 #default 100
 
 
-    ############ UPDATE TEMPORAL COMPONENTS AND DECONVOLUTION ############
+    ############ UPDATE TEMPORAL COMPONENTS AND DECONVOLUTION (USED IN temporal.py AND deconvolution.py) ############
 
     #p belongs in this section, but because it is so important, it was moved above under section "general" 
     p_patch = p #patch p should match p; why would it ever not?
@@ -69,7 +68,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
 
 
-    ############ UPDATE SPATIAL COMPONENTS (especially threshold_components) ############
+    ############ UPDATE SPATIAL COMPONENTS (USED IN spatial.py, specifically in function threshold_components) ############
 
     #during refinement, in update_spatial, the following params are used in function threshold_components
     thr_method = 'nrg' #or 'max'
@@ -80,7 +79,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     medw = (3,)*len(gSig)
 
 
-    ############ PATCHES ############
+    ############ PATCHES (USED IN cnmf.py AND map_reduce.py) ############
 
     #low_rank_background also has meaning for patches in run_CNMF_patches, see notes for low_rank_background above
     nb_patch = nb #should patch nb match nb? doens't seem like it has to
@@ -88,7 +87,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     stridefac = 2 #not a caiman option; how many times larger largest dim of stride is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches; caiman recommends at least 1 (at least neuron dia) (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
     
 
-    ############ QUALITY EVALUATION ############
+    ############ QUALITY EVALUATION (USED IN evaluate_components) ############
 
     # Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1))
     # and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
@@ -96,7 +95,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     # can turn off CNN part withy use_CNN = false
     # these values will result in no roi filtering
     decay_time = .2  # i can only find this used in components evaluation (and onacid), approximate length of indicator tau off
-    SNR_lowest = 0 #0.5#0  #0.5 default       # minimum SNR for accepted components
+    SNR_lowest = 0 #0.5#0  #0.5 default  # minimum SNR for accepted components
     min_SNR = 0 #0  #2.5 default    # accept components with that peak-SNR or higher
     rval_lowest = -1  # -1 default 0.6  # space correlation threshold
     rval_thr = 0 #0  # 0.8 default  # space correlation threshold
@@ -105,7 +104,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     min_cnn_thr = 0 #0.9 default # if cnn classifier predicts below this value, reject
 
     
-    ############ MORPHOLOGICAL SEGEMENTATION OPTIONS (FOR STRUCTURAL CHANNEL, USED TO SEED FUNCTIONAL CHANNEL) ############
+    ############ MORPHOLOGICAL SEGEMENTATION OPTIONS (USED IN extract_binary_masks_from_structural_channel, TO EXTRACT MORPHOLOGICAL ROIS THAT SEED FUNCTIONAL CHANNEL EXTRACTION) ############
 
     morph_se = se #structuring element; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
     morph_areamin = 2 #min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
@@ -128,46 +127,34 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
 
     ############ DERIVE k, gSiz, AND PATCH PARAMS rf and stride  ############
     
-
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #half-size of bounding box for each neuron; this is what caiman does to compute gsiz from gsig, just putting it here for transparency
-    if not two_channel_ex: #patches turned off when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
-
+    if two_channel_ex: #patches turned off (process whole fov at once) when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+        rf = None # setting rf to none will run CNMF on the whole FOV
+        stride_patch = None       
+        total_vox_ex = np.prod(dims_spatial_ex)
+    else:
         if extract_in_2d==True:
-            maxgsiz = np.max(gSiz[0:2])
+            gsiz_use = gSiz[0:2]
         else:
-            maxgsiz = np.max(gSiz)
-
+            gsiz_use = gSiz
+        maxgsiz = np.max(gsiz_use)
         rf = int(np.ceil((maxgsiz) * patchfac))
         patchFW = rf*2 #patch full width, since rf is half
         stride_patch = int(np.ceil((maxgsiz) * stridefac))
-
-        skippatch = 0
         if extract_in_2d==True:
-            k = int(np.round( (patchFW*patchFW) / np.prod(gSiz[0:2])*roidensity))  # number of components in each patch
-            if patchFW>=dims_spatial_ex[0] and patchFW>=dims_spatial_ex[1]:
-                skippatch = 1
+            total_vox_ex = patchFW*patchFW
         else:
             if patchFW<dims_spatial_ex[2]:
                 rfz = patchFW
             else:
                 rfz = dims_spatial_ex[2]
-            if patchFW>=dims_spatial_ex[0] and patchFW>=dims_spatial_ex[1] and rfz>=dims_spatial_ex[2]:
-                skippatch = 1
-            k = int(np.round( (patchFW*patchFW*rfz) / np.prod(gSiz)*roidensity))  # number of components in each patch
-        
-        if skippatch: #reset if it turns out the patch is same size as fov or bigger
-            rf = None # setting rf to none will run CNMF on the whole FOV
-            stride_patch = None       
-            k = int(np.round( np.prod(dims_spatial_ex) / np.prod(gSiz)*roidensity))  # number of components in whole fov (the "whole fov patch")
-    
-    else: # PROCESS THE WHOLE FOV AT ONCE (no patches)
+            total_vox_ex = patchFW*patchFW*rfz
+
+    if total_vox_ex>=np.prod(dims_spatial_ex): #reset rf and stride if it turns out the patch is same size as fov or bigger
         rf = None # setting rf to none will run CNMF on the whole FOV
         stride_patch = None       
-        k = int(np.round( np.prod(dims_spatial_ex) / np.prod(gSiz)*roidensity))  # number of components in whole fov (the "whole fov patch")
-
-    if method_init=='corr_pnr':
-        k = None #override k above if using corr_pnr (if in cnmfe mode, ie 1p mode)
-
+    
+    k = int(np.round( total_vox_ex / np.prod(gsiz_use)*roidensity))  #k is number of components in whole fov (the "whole fov patch")
 
     ############ DERIVED DATA PARAMS ############
 
@@ -203,6 +190,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     if method_init=='corr_pnr': #for 1p data, according to caiman . . . so does this mean lots of background activity?? 
         raise Exception("method_init 'corr_pnr' is for 1p data (data with busy background, aka high rank background); if you want to use it anyway, see required options changes below")
             #these changes are required for method_init=='corr_pnr':
+                # k = None # none if using corr_pnr (if in cnmfe mode, ie 1p mode)
                 # nb = 0 ##nb is used everywhere; num background components
                 # only_init = True #only use the initialization for extraction (no alternating least squares for spatial and temporal refinement)
                 # low_rank_background = None ##spatial, and patch; #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
