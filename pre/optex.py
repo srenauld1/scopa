@@ -1,11 +1,11 @@
 
 
 import numpy as np
-from map2params import map2params
+from map2opt import map2opt
 
-def optex(index_extraction_param_set = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
+def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
-    # THE MOST IMPORTANT OPTIONS ARE IN map2params.py (WHICH ARE ALL UNDER HEADINGS "GENERAL" AND "INITIALIZATION" BELOW)
+    # THE MOST IMPORTANT OPTIONS ARE IN map2opt.py (WHICH ARE ALL UNDER HEADINGS "GENERAL" AND "INITIALIZATION" BELOW)
     # consider further adjustments if you cannot get good results with any adjustment in those sections
 
     # below are most of the options for caiman source extraction with cnmf
@@ -13,8 +13,9 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
 
     # of the options below, only patchfac, stridefac, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option k)
 
-    # map2params let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2params
-    # are the most likely to require tuning
+    # map2opt let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2opt
+    # map2opt is only used if optex_setind is not 'default'; optex_setind specifies the index of the set of options created in map2opt
+    
     # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
     # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
     # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
@@ -32,6 +33,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     only_init = False #default false; only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
     roidensity = 0.4  ##not a caiman option; used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
+
 
     ############ INITIALIZATION (USED IN initialization.py) ############
 
@@ -168,6 +170,20 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     ############ INDICES TO SUBSET STACK (DON'T USE IN SCOPA) ############
     
     indices_ex = [slice(None), slice(None), slice(None)] # xyz indices to subset FOV; but scopa's regionex (id to crop_fov) is meant to replace this, so this ca remain none
+
+    ############ map2opt FOR SWEEPING THROUGH SETS OF "IMPORTANT" OPTIONS ############
+
+    if optex_setind is not 'default':
+        optsets = map2opt()
+        print('because optex_setind is not default, using option set index ' + str(optex_setind) + ' to update some options')
+        gSig, method_init, nb, update_background_components, \
+            low_rank_background, merge_thresh, normalize_init, \
+                only_init, roidensity, p, sigma_smooth_snmf_time, \
+                    perc_baseline_snmf, max_iter_snmf, sparsity_penalty \
+                        = optsets.map_index(int(optex_setind))
+        sigma_smooth_snmf[0] = sigma_smooth_snmf_time
+        alpha_snmf = sparsity_penalty 
+        lambda_gnmf = sparsity_penalty
 
     ############ CORRECT FOR 2D ############
 

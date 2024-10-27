@@ -40,7 +40,7 @@ if len(sys.argv)>1:
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed,
-                      do_crop_only, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, optex_setind, 
                       do_analysis, first_job] = \
     parse_command_line( folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix = pth_storage_prefix, 
                       do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pth_parsfile = pth_parsfile, scopatmpdir = scopatmpdir, 
@@ -49,7 +49,7 @@ if len(sys.argv)>1:
                       do_denoise = do_denoise, do_stitch = do_stitch, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
                       use_background_subtracted = use_background_subtracted, use_denoised = use_denoised, epoch_choose_denoise = epoch_choose_denoise, 
                       do_remove = do_remove, len_window_smooth_t_rsc_sec = len_window_smooth_t_rsc_sec, use_scannoise_removed = use_scannoise_removed, 
-                      do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, index_extraction_param_set = index_extraction_param_set, 
+                      do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, optex_setind = optex_setind, 
                       do_analysis = do_analysis, first_job = first_job)
 
 
@@ -167,7 +167,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
-        extract(index_extraction_param_set, pth_prefix_all[ri], pth_read_all[ri], md, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, do_crop_only, makeplots, cluster_backend, use_cluster)
+        extract(optex_setind, pth_prefix_all[ri], pth_read_all[ri], md, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, do_crop_only, makeplots, cluster_backend, use_cluster)
 
       if do_analysis:
         eng = matlab.engine.start_matlab()

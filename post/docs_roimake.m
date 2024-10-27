@@ -45,7 +45,7 @@ post:
 oset simplifies setting options (could be reproduced with csv or json)
 pipeline_init does not have oset 
 
-oset vectors are expanded (map2params) to create each o.roi.regionex 
+oset vectors are expanded (map2opt) to create each o.roi.regionex 
 regionex is name_subname_index
 name is arbitrary, name is associated with croplim; subname means the same croplim as name, but different regionex; index is opt set index  
 
@@ -54,7 +54,7 @@ the most recent options_.txt is searched for options matches (or regionex matche
 
 
 user can pass regionex and opts will populate, or pass opts and regionex will populate, but not both
-there is no reason to make separate map2params for roim and roif, because user will not want to loop through each separately 
+there is no reason to make separate map2opt for roim and roif, because user will not want to loop through each separately 
 if user has duplicate regionex (say, some run in python, some from a2p), the most recent param file is used as lookup
 set includes roim and roif opt, since roim seeds roif
 python runs of extract will write opts as options_cmex, for lookup when user runs a2p

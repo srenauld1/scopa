@@ -15,7 +15,7 @@ from helpers import stack_reshape_transpose_zero_type
 
 
 
-def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
+def extract(optex_setind, pth_prefix, pth_tif_read, md, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -64,17 +64,17 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, extract_in
             stackcrop_tmp = None
             
        
-            if isinstance(index_extraction_param_set, str):
-                index_extraction_param_set_new = [index_extraction_param_set] #if string, make it iterable with brackets
-            elif index_extraction_param_set<0: #if negative, initiate loop over extraction params here, range [0 - index_extraction_param_set]
+            if isinstance(optex_setind, str):
+                optex_setind_new = [optex_setind] #if string, make it iterable with brackets
+            elif optex_setind<0: #if negative, initiate loop over extraction options here, range [0 - optex_setind]
                 manual_start_ind = 0
-                index_extraction_param_set_new = np.arange(manual_start_ind, -index_extraction_param_set)
-            else: #if positive, just the one extraction param whose index matches index_extraction_param_set
-                index_extraction_param_set_new = [index_extraction_param_set]
+                optex_setind_new = np.arange(manual_start_ind, -optex_setind)
+            else: #if positive, just the one extraction param whose index matches optex_setind
+                optex_setind_new = [optex_setind]
                             
-            print("looping over the following index_extraction_param_set values, to index into extraction param sets " + str(index_extraction_param_set_new))
+            print("looping over the following optex_setind values, to index into extraction param sets " + str(optex_setind_new))
             
-            for ii in index_extraction_param_set_new:
+            for ii in optex_setind_new:
 
                 if 1: #try, since some param sets will error
 
@@ -105,8 +105,8 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, extract_in
                         cnm2 = None
                         Ain = None
                        
-                        opts_dict, opts_dict_morph, indices_ex = optex(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING optex OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL optex SO EACH SLICE GETS THE SAME 
-                        print("extraction params configured; index_extraction_param_set is " + str(ii))
+                        opts_dict, opts_dict_morph, indices_ex = optex(optex_setind = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING optex OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL optex SO EACH SLICE GETS THE SAME 
+                        print("extraction options configured; optex_setind is " + str(ii))
 
                         optid = 1
                         
