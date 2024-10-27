@@ -6,11 +6,16 @@ from map2params import map2params
 def optex(index_extraction_param_set = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
 
     # THE MOST IMPORTANT OPTIONS ARE UNDER HEADINGS "GENERAL" AND "INITIALIZATION"
+    # AND WITHIN THIS SET, THE MOST IMPORTANT OPTION ARE IN map2params.py
     # consider further adjustments if you cannot get good results with any adjustment in those sections
 
-    # below are many of the options for caiman source extraction with cnmf
+    # below are most of the options for caiman source extraction with cnmf
     # these are chosen as the most likely to require tuning
-    # the options in map2params are the most likely to require tuning
+
+    # of the options below, only patchfac, stridefac, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option k)
+
+    # map2params let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2params
+    # are the most likely to require tuning
     # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
     # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
     # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
@@ -18,38 +23,32 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
 
     ############ GENERAL (USED IN FUNCTION CNMF, OR IN MULTIPLE FUNCTIONS WITHIN CNMF) ############
 
-    gSig = [2, 2, 1] # approximate xyz radius (half-size), in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels)      
-    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf 'greedy_roi' python Caiman defaults to greedy_roi, looks for globular sources 
-    nb = 1 #nb is used everywhere; num background components
-    update_background_components = False #spatial; update background components during spatial phase
-    low_rank_background = True #spatial, and patch; and  #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
-    merge_thresh = 0.85 #threshold for merging components (merge_components in merging.py)
-    normalize_init = True # init; variance norm by pixel over time befroe initialization;  prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always;
-
-    only_init = False #only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
-    if two_channel_ex:
-        only_init = False
-
-    roidensity = 0.4  #used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
-    p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay, 2 for non-ionstantaneous rise and decay
-
+    gSig = [2, 2, 0.5] # approximate xyz half-size, in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1, but since gSig is used to derive sigma_smooth_snmf, which is not clipped to 1, go ahead and use the real value; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels)      
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi  
+    nb = 1 #nb is used everywhere; default 1; num background components
+    update_background_components = True #spatial; #default true; update background components during spatial phase
+    low_rank_background = True #spatial, and patch; #default true; and  #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
+    merge_thresh = 0.85 #merge_components; default 0.85; threshold for merging components
+    normalize_init = True # init; default true; variance norm by pixel over time befroe initialization;  prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always;
+    only_init = False #default false; only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
+    roidensity = 0.4  ##not a caiman option; used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
+    p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
 
     ############ INITIALIZATION ############
 
     #the set of initialization options that get used depends on how you set method_init above
 
     # for method_init sparse_nmf and graph_nmf
-    sigma_smooth_snmf_z = 0.5 #can be less than 1 and have effect, unlike gsig, make small if z are larger than neuron extent in z
-    sigma_smooth_snmf_t = 0.5 #smoothing in time before sparsenmf init
-    sigma_smooth_snmf = [sigma_smooth_snmf_t, gSig[0], gSig[1], sigma_smooth_snmf_z] #smoothing std prior to initialization in sparse_nmf method, default 0.5 0.5 0.5
+    sigma_smooth_snmf = [0.5, gSig[0], gSig[1], gSig[2]] # default 0.5 0.5 0.5 0.5; txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have an effect; consider z width, relative to xy width, when setting this 
     perc_baseline_snmf = 20 # default 20
     max_iter_snmf = 500  #default 200 sparsenmf, 500 graphnmf
+    sparsity_penalty = 1 #not a caiman option; used for both sparse_nmf (where it's called alpha_snmf) and graph_nmf (where it's called lambda_gnmf), but note default values for each are different, and they are used differently 
 
     # for method_init sparse_nmf only
-    alpha_snmf = 0.5 #default 0.5 sparsity penalty, 
+    alpha_snmf = sparsity_penalty #default 0.5; sparsity penalty for sparse_nmf, different than sparsity penalty in graph_nmf, so keeping it separate 
 
     # for method_init graph_nmf only
-    lambda_gnmf = 1 #default 1; sparsity penalty for method_init graphNMF
+    lambda_gnmf = sparsity_penalty #default 1; sparsity penalty for method_init graphNMF; different than sparsity penalty in sparse_nmf, so keeping it separate 
     SC_sigma = 1 # default 1; std for SC kernel
     SC_thr = 0    # default 0; threshold for affinity matrix
     SC_normalize = True  # default True; standardize entries prior to computing affinity matrix
@@ -61,7 +60,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     rolling_length = 100 #default 100
 
 
-    ############ UPDATE TEMPORAL AND DECONVOLUTION ############
+    ############ UPDATE TEMPORAL COMPONENTS AND DECONVOLUTION ############
 
     #p belongs in this section, but because it is so important, it was moved above under section "general" 
     p_patch = p #patch p should match p; why would it ever not?
@@ -70,7 +69,7 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
 
 
-    ############ UPDATE SPATIAL (esp. threshold_components ############
+    ############ UPDATE SPATIAL COMPONENTS (especially threshold_components) ############
 
     #during refinement, in update_spatial, the following params are used in function threshold_components
     thr_method = 'nrg' #or 'max'
@@ -85,8 +84,8 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
 
     #low_rank_background also has meaning for patches in run_CNMF_patches, see notes for low_rank_background above
     nb_patch = nb #should patch nb match nb? doens't seem like it has to
-    patchfac = 4 #how many times larger largest dim of patch is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches, or make it large to do one patch on the full fov (saqme as 0); caiman recommends 3-4 (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
-    stridefac = 2 #how many times larger largest dim of stride is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches; caiman recommends at least 1 (at least neuron dia) (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+    patchfac = 4 #not a caiman option; how many times larger largest dim of patch is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches, or make it large to do one patch on the full fov (saqme as 0); caiman recommends 3-4 (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+    stridefac = 2 #not a caiman option; how many times larger largest dim of stride is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches; caiman recommends at least 1 (at least neuron dia) (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
     
 
     ############ QUALITY EVALUATION ############
@@ -201,7 +200,6 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
         raise Exception("patchfac should be at least 3, and stridefac should be at least 1.5, according to caiman recommendations")
     if False in [tmp==slice(None) for tmp in indices_ex]:
         raise Exception("all indices_ex must be None in scopa because regionex replaces this functionality (basically)")
-    
     if method_init=='corr_pnr': #for 1p data, according to caiman . . . so does this mean lots of background activity?? 
         raise Exception("method_init 'corr_pnr' is for 1p data (data with busy background, aka high rank background); if you want to use it anyway, see required options changes below")
             #these changes are required for method_init=='corr_pnr':
@@ -210,6 +208,9 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 # low_rank_background = None ##spatial, and patch; #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
                 # center_psf = True  #initialization; True indicates centering the filtering kernel for background removal. This is useful for data with large background fluctuations.
                 # normalize_init = False #init; variance norm by pixel over time befroe initialization; prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always; 
+    if two_channel_ex and only_init==True:
+        print("warning, only_init is true but two_channel_ex is also true, so setting only_init to false")
+        only_init = False
 
     ############ ASSEMBLE OPTIONS DICTIONARIES ############
 
@@ -227,13 +228,13 @@ def optex(index_extraction_param_set = 'default', fnames = None, md = None, extr
                 'perc_baseline_snmf': perc_baseline_snmf,
                 'max_iter_snmf': max_iter_snmf,
                 'sigma_smooth_snmf': sigma_smooth_snmf,
-                'SC_sigma': SC_sigma,            # std for SC kernel
-                'SC_thr': SC_thr,                 # threshold for affinity matrix
-                'SC_normalize': SC_normalize,        # standardize entries prior to computing affinity matrix
-                'SC_use_NN': SC_use_NN,          # sparsify affinity matrix by using only nearest neighbors
-                'SC_nnn': SC_nnn,                # number of nearest neighbors to use if SC_use_NN = True
-                'lambda_gnmf': lambda_gnmf, #for method_init graphNMF
-                'alpha_snmf': alpha_snmf, #for method_init sparseNMF
+                'SC_sigma': SC_sigma,           
+                'SC_thr': SC_thr,               
+                'SC_normalize': SC_normalize,       
+                'SC_use_NN': SC_use_NN,   
+                'SC_nnn': SC_nnn,             
+                'lambda_gnmf': lambda_gnmf,
+                'alpha_snmf': alpha_snmf,
                 'dxy': dxy,
                 'decay_time': decay_time,
                 'bas_nonneg': bas_nonneg,
