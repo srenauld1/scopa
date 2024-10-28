@@ -13,43 +13,47 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
 
     # of the options below, only patchfac, stridefac, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option k)
 
-    # map2opt let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2opt
+    # map2opt (called below) let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2opt
     # map2opt is only used if optex_setind is not 'default'; optex_setind specifies the index of the set of options created in map2opt
+    # if optex_setind is 'default' then all the options below are used; if optex_setind is not default, then the values in map2opt are used for the options in map2opt, while anything not in map2opt gets its value here in optex
     
     # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
     # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
     # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
 
+    # downsampling options tsub, ssub, p_ssub, p_tsub have been omitted because extraction is never that slow at our typical resolutions (5-60 min per recording, just run on o2 if it's slow)
+
+    # input argument fnames is used to memmap a scopa regionex within caiman; fnames is automatically derived outside this function and just put in the options dict in here
 
     ############ GENERAL (USED IN MAIN EXTRACTION FUNCTION fit, in cnmf.py, OR IN MULTIPLE FUNCTIONS CALLED FROM fit) ############
 
     gSig = [2, 2, 0.5] # approximate xyz half-size, in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1, but since gSig is used to derive sigma_smooth_snmf, which is not clipped to 1, go ahead and use the real value; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels)      
-    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi  
-    nb = 1 #nb is used everywhere; default 1; num background components
-    update_background_components = True #spatial; #default true; update background components during spatial phase
+    nb = 2 #nb is used everywhere; default 1; num background components
     low_rank_background = True #spatial, and patch; #default true; and  #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
+    update_background_components = True #spatial; #default true; update background components during spatial phase
     merge_thresh = 0.85 #merge_components; default 0.85; threshold for merging components
+    only_init = True #default false; only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
     normalize_init = True # init; default true; variance norm by pixel over time befroe initialization;  prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always;
-    only_init = False #default false; only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
     roidensity = 0.4  ##not a caiman option; used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
 
 
     ############ INITIALIZATION (USED IN initialization.py) ############
 
-    #the set of initialization options that get used depends on how you set method_init above
+    #the set of initialization options that get used depends on how you set method_init
+
+    method_init = 'graph_nmf' #'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi  
 
     # for method_init sparse_nmf and graph_nmf
     sigma_smooth_snmf = [0.5, gSig[0], gSig[1], gSig[2]] # default 0.5 0.5 0.5 0.5; txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have an effect; consider z width, relative to xy width, when setting this 
     perc_baseline_snmf = 20 # default 20
     max_iter_snmf = 500  #default 200 sparsenmf, 500 graphnmf
-    sparsity_penalty = 1 #not a caiman option; used for both sparse_nmf (where it's called alpha_snmf) and graph_nmf (where it's called lambda_gnmf), but note default values for each are different, and they are used differently 
 
     # for method_init sparse_nmf only
-    alpha_snmf = sparsity_penalty #default 0.5; sparsity penalty for sparse_nmf, different than sparsity penalty in graph_nmf, so keeping it separate 
+    alpha_snmf = 0.5 #default 0.5; sparsity penalty for sparse_nmf, different than sparsity penalty in graph_nmf, so keeping it separate 
 
     # for method_init graph_nmf only
-    lambda_gnmf = sparsity_penalty #default 1; sparsity penalty for method_init graphNMF; different than sparsity penalty in sparse_nmf, so keeping it separate 
+    lambda_gnmf = 1 #default 1; sparsity penalty for method_init graphNMF; different than sparsity penalty in sparse_nmf, so keeping it separate 
     SC_sigma = 1 # default 1; std for SC kernel
     SC_thr = 0    # default 0; threshold for affinity matrix
     SC_normalize = True  # default True; standardize entries prior to computing affinity matrix
@@ -64,11 +68,9 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     ############ UPDATE TEMPORAL COMPONENTS AND DECONVOLUTION (USED IN temporal.py AND deconvolution.py) ############
 
     #p belongs in this section, but because it is so important, it was moved above under section "general" 
-    p_patch = p #patch p should match p; why would it ever not?
     ITER = 3                # (default is 2; old value=5) -- block coordinate descent iterations
     bas_nonneg = False #clip negatives in deconvolution (not the same as clipping negatives in stack); appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
     fudge_factor = 0.96        # (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
-
 
     ############ UPDATE SPATIAL COMPONENTS (USED IN spatial.py, specifically in function threshold_components) ############
 
@@ -84,19 +86,22 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     ############ PATCHES (USED IN cnmf.py AND map_reduce.py) ############
 
     #low_rank_background also has meaning for patches in run_CNMF_patches, see notes for low_rank_background above
-    nb_patch = nb #should patch nb match nb? doens't seem like it has to
     patchfac = 4 #not a caiman option; how many times larger largest dim of patch is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches, or make it large to do one patch on the full fov (saqme as 0); caiman recommends 3-4 (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
     stridefac = 2 #not a caiman option; how many times larger largest dim of stride is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches; caiman recommends at least 1 (at least neuron dia) (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+    nb_patch = nb #default matches nb; num background components per patch 
     
+    run_deconvolution_in_each_patch = False #this will only have effect if p is nonzero above
+    if run_deconvolution_in_each_patch and p>0:
+        p_patch = p # default is zero (ie do not run_deconvolution_in_each_patch); if nonzero, run deconvolution in each patch, rather than after merging patches, if nonzero
+    else:
+        p_patch = 0
 
     ############ QUALITY EVALUATION (USED IN evaluate_components) ############
 
-    # Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1))
-    # and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
-    # A component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
-    # can turn off CNN part withy use_CNN = false
-    # these values will result in no roi filtering
-    decay_time = .2  # i can only find this used in components evaluation (and onacid), approximate length of indicator tau off
+    # Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1)) and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
+    # in evaluate_components (called outside cnmf.fit), a component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
+    # can turn off CNN part withy use_CNN = false;
+    # these values below were set by carl as scopa defaults result in no roi filtering
     SNR_lowest = 0 #0.5#0  #0.5 default  # minimum SNR for accepted components
     min_SNR = 0 #0  #2.5 default    # accept components with that peak-SNR or higher
     rval_lowest = -1  # -1 default 0.6  # space correlation threshold
@@ -104,27 +109,15 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     use_cnn = False # True default # use the CNN classifier affects if 2 below params are used
     cnn_lowest = 0  #0.1 default  # neurons with cnn probability lower than this value are rejected
     min_cnn_thr = 0 #0.9 default # if cnn classifier predicts below this value, reject
+    decay_time = .2  # i can only find this used in components evaluation (and onacid), approximate length of indicator tau off
 
-    
     ############ MORPHOLOGICAL SEGEMENTATION OPTIONS (USED IN extract_binary_masks_from_structural_channel, TO EXTRACT MORPHOLOGICAL ROIS THAT SEED FUNCTIONAL CHANNEL EXTRACTION) ############
 
     morph_se = se #structuring element; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
     morph_areamin = 2 #min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
     morph_holemin = 0 #holes with smaller area (in pixels) will be filled in; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
     morph_expandmthd = 'closing' #closing or dilation; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-    morph_gsig = int(np.mean(gSig)) #must be odd and greater than 1; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-    if morph_gsig<3:
-        morph_gsig = 3
-    if not morph_gsig%2==1:
-        morph_gsig = morph_gsig+1
-
-
-    ############ DOWNSAMPLING ############
-
-    tsub = 1  # temporal downsampling
-    ssub = 1  # spatial downsampling
-    p_ssub = 1 #patch downsampling in space
-    p_tsub = 1 #patch downsampling in time
+    morph_gsig = int(np.mean(gSig)) #must be odd and greater than 1 (corrected in CHECK OPTIONS section below, if necessary); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
 
 
     ############ DERIVE k, gSiz, AND PATCH PARAMS rf and stride  ############
@@ -166,10 +159,14 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     else:
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
 
-    
+        
     ############ INDICES TO SUBSET STACK (DON'T USE IN SCOPA) ############
     
     indices_ex = [slice(None), slice(None), slice(None)] # xyz indices to subset FOV; but scopa's regionex (id to crop_fov) is meant to replace this, so this ca remain none
+
+
+    ############ DOWNSAMPLING OPTIONS ARE OMITTED IN SCOPA, SEE DOCS AT TOP ############
+
 
     ############ map2opt FOR SWEEPING THROUGH SETS OF "IMPORTANT" OPTIONS ############
 
@@ -215,44 +212,45 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     if two_channel_ex and only_init==True:
         print("warning, only_init is true but two_channel_ex is also true, so setting only_init to false")
         only_init = False
+    if morph_gsig<3:
+        morph_gsig = 3
+    if not morph_gsig%2==1:
+        morph_gsig = morph_gsig+1
+
 
     ############ ASSEMBLE OPTIONS DICTIONARIES ############
 
     opts_dict = {
-                'fr': fr,
-                'p': p,
-                'nb': nb,
-                'merge_thr': merge_thresh,
-                'rf': rf,
                 'K': k,
                 'gSig': gSig,
                 'gSiz': gSiz,
-                'stride': stride_patch,
+                'nb': nb,
+                'p': p,
+                'update_background_components': update_background_components,
+                'low_rank_background' : low_rank_background,
+                'merge_thr': merge_thresh,
+                'only_init': only_init,
+                'normalize_init': normalize_init,
                 'method_init': method_init,
                 'perc_baseline_snmf': perc_baseline_snmf,
                 'max_iter_snmf': max_iter_snmf,
                 'sigma_smooth_snmf': sigma_smooth_snmf,
+                'alpha_snmf': alpha_snmf,
+                'lambda_gnmf': lambda_gnmf,
                 'SC_sigma': SC_sigma,           
                 'SC_thr': SC_thr,               
                 'SC_normalize': SC_normalize,       
                 'SC_use_NN': SC_use_NN,   
                 'SC_nnn': SC_nnn,             
-                'lambda_gnmf': lambda_gnmf,
-                'alpha_snmf': alpha_snmf,
-                'dxy': dxy,
-                'decay_time': decay_time,
+                'ITER': ITER,
+                'fudge_factor': fudge_factor,
                 'bas_nonneg': bas_nonneg,
+                'rf': rf,
+                'stride': stride_patch,
                 'p_patch': p_patch,
                 'nb_patch': nb_patch,
-                'se': se,
                 'rolling_sum': rolling_sum,
                 'rolling_length': rolling_length,
-                'only_init': only_init,
-                'normalize_init': normalize_init,
-                'ssub': ssub,
-                'tsub': tsub,
-                'p_ssub': p_ssub,
-                'p_tsub': p_tsub,
                 'SNR_lowest': SNR_lowest,
                 'min_SNR': min_SNR,
                 'rval_thr': rval_thr,
@@ -260,15 +258,15 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
                 'use_cnn': use_cnn,
                 'min_cnn_thr': min_cnn_thr,
                 'cnn_lowest': cnn_lowest,
-                'ITER': ITER,
-                'fudge_factor': fudge_factor,
-                'update_background_components': update_background_components,
-                'low_rank_background' : low_rank_background,
+                'decay_time': decay_time,
                 'thr_method': thr_method,
                 'maxthr': maxthr,
                 'nrgthr': nrgthr,
+                'se': se,
                 'medw': medw,
                 'extract_cc': extract_cc,
+                'dxy': dxy,
+                'fr': fr,
                 'fnames': fnames
                 } 
 
@@ -281,27 +279,24 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
                 }
 
 
+    return opts_dict, opts_dict_morph, indices_ex
+
+
     ############ NOTES ON INITIALIZATION METHODS ############
 
     # for reference here are the initialization defs for 3 methods, 
     # sparse_nmf "has problems" according to gitter, although it's worked for carl
 
-    # greedyROI(stack, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1,
-    #           rolling_sum=False, rolling_length=100, seed_method='auto')
+    # greedy roi is best for globular sources
+        # greedyROI(stack, nr=30, gSig=[5, 5], gSiz=[11, 11], nIter=5, kernel=None, nb=1, rolling_sum=False, rolling_length=100, seed_method='auto')
 
     # for graphnmf all these are tunable in cnmf params except remove_baseline, truncate, tol, and SC_kernel whose defaults are below
     # note SC_kernel appears to be tunable because it's in params but it is not, heat is default
-    # # graphNMF(Y_ds, nr, max_iter_snmf=500, lambda_gnmf=1,
-    #          sigma_smooth=(.5, .5, .5), remove_baseline=True,
-    #          perc_baseline=20, nb=1, truncate=2, tol=1e-3, SC_kernel='heat',
-    #          SC_normalize=True, SC_thr=0, SC_sigma=1, SC_use_NN=False,
-    #          SC_nnn=20
+        # graphNMF(Y_ds, nr, max_iter_snmf=500, lambda_gnmf=1, sigma_smooth=(.5, .5, .5), remove_baseline=True, perc_baseline=20, nb=1, 
+        #       truncate=2, tol=1e-3, SC_kernel='heat', SC_normalize=True, SC_thr=0, SC_sigma=1, SC_use_NN=False, SC_nnn=20
 
     # for sparsenmf all these are tunable in cnmf params except remove_baseline and truncate, whose defaults are below
-    # # sparseNMF(Y_ds, nr, max_iter_snmf=200, alpha=0.5, sigma_smooth=(.5, .5, .5),
-    #          remove_baseline=True, perc_baseline=20, nb=1, truncate=2):
+        # # sparseNMF(Y_ds, nr, max_iter_snmf=200, alpha=0.5, sigma_smooth=(.5, .5, .5), remove_baseline=True, perc_baseline=20, nb=1, truncate=2):
 
-
-    return opts_dict, opts_dict_morph, indices_ex
 
 

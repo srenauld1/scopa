@@ -177,7 +177,7 @@ d.ma.doplt = 0;
 
 %% fa (roifmake: fa = "functional automated"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py)
 
-d.fa.morphin = 'cluster'; % how to use morph rois, seed (seed caiman rois with morph rois) or mask (zero everything in stack outside morph rois) or mean (average caiman rois within morph rois); for seed and mask, morph rois must exist before running caiman; for mean, caiman can run first or second
+d.fa.morphin_ddd = 'cluster'; % how to use morph rois, seed (seed caiman rois with morph rois) or mask (zero everything in stack outside morph rois) or mean (average caiman rois within morph rois); for seed and mask, morph rois must exist before running caiman; for mean, caiman can run first or second
 d.fa.minpixperreg = 3; % min pix in each distongiguous region, roi selection criterion
 d.fa.minroisz = 5; % pixels, roi selection criterion
 d.fa.maxroisz = 300; % pixels

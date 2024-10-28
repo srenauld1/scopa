@@ -136,7 +136,7 @@ for k = 1:numel(allrecs)
         o(k).roi.doma = 1; %do automated morph rois
         o(k).roi.dofa = 1; %do functional rois (ciaman)
         o(k).roi.doplt = 0;
-        
+
         o(k).roi.mm.chandraw = [1];
 
         o(k).roi.ma.chanauto = [1];
@@ -144,7 +144,7 @@ for k = 1:numel(allrecs)
         o(k).roi.ma.maskseg = 'uniform';
         o(k).roi.ma.do3d = 1;
 
-        o(k).roi.fa.morphin = {'seed'}; %which caiman roi extraction run to use (string lists extraction params)
+        o(k).roi.fa.morphin_ddd = {'seed'}; %which caiman roi extraction run to use (string lists extraction params)
 
         o(k).roi.nrm.wavp = []; %[0 50]; wavelet cwt periods to keep; seconds; carl uses [0 50] often to remove slow fluctuations; empty to skip
         o(k).roi.nrm.post = {'f', 'dff010020'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window

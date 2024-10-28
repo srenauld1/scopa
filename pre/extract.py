@@ -8,6 +8,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from optex import optex
+from optreduce import optreduce
 from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
 from separate_channels_when_two import separate_channels_when_two
@@ -108,6 +109,7 @@ def extract(optex_setind, pth_prefix, pth_tif_read, md, extract_in_2d, regionex,
                         opts_dict, opts_dict_morph, indices_ex = optex(optex_setind = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING optex OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL optex SO EACH SLICE GETS THE SAME 
                         print("extraction options configured; optex_setind is " + str(ii))
 
+                        ored = optreduce(opts_dict, opts_dict_morph, two_channel_ex=two_channel_ex)
                         optid = 1
                         
                         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
