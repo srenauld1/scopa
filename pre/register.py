@@ -152,7 +152,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             
         imwrite(pth_tif_write_tmp, stack_sub.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
     
-        opts_dict = optrg(register_in_2d = register_in_2d, fnames = pth_tif_write_tmp, min_mov = min_mov, md = md) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
+        opts_dict = optrg(md, register_in_2d, min_mov, fnames = pth_tif_write_tmp) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))

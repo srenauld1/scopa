@@ -2,8 +2,12 @@
 
 import numpy as np
 from map2opt import map2opt
+from optreduce import optreduce
+from optex2id import optex2id
+from dict_unique import dict_unique
 
-def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = None, dims_spatial_ex = 0, two_channel_ex = 0):
+
+def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optex, methodex, optex_sweep=0):
 
     # THE MOST IMPORTANT OPTIONS ARE IN map2opt.py (WHICH ARE ALL UNDER HEADINGS "GENERAL" AND "INITIALIZATION" BELOW)
     # consider further adjustments if you cannot get good results with any adjustment in those sections
@@ -11,19 +15,25 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     # below are most of the options for caiman source extraction with cnmf
     # these are chosen as the most likely to require tuning
 
-    # of the options below, only patchfac, stridefac, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option k)
+    # of the options below, only patchfac, stridefac, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option K)
 
+    # set scopa defaults above section heading "END SETTING SCOPA CAIMAN EXTRACTION DEFAULTS"
+    
+    # set options sweeps in map2opt
     # map2opt (called below) let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2opt
-    # map2opt is only used if optex_setind is not 'default'; optex_setind specifies the index of the set of options created in map2opt
-    # if optex_setind is 'default' then all the options below are used; if optex_setind is not default, then the values in map2opt are used for the options in map2opt, while anything not in map2opt gets its value here in optex
+    # map2opt is only used if optex_sweep is not 'default'; optex_sweep specifies the index of the set of options created in map2opt
+    # if optex_sweep is 'default' then all the options below are used; if optex_sweep is not default, then the values in map2opt are used for the options in map2opt, while anything not in map2opt gets its value here in optex
     
     # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
-    # opts_dict has params that are passed to cnmf.params.CNMFParams to create the caiman params object 
-    # opts_dict_morph has params that are not passed to cnmf.params.CNMFParams to create the caiman params object, but which may still be used in caiman functions
+    # opttmp (in section ASSEMBLE OPTIONS DICTIONARY) has all options set here in topex; most are passed to cnmf.params.CNMFParams to create the caiman params object for use in cnmf.fit; some are used in a couple other caiman functions (noted in comments)
 
     # downsampling options tsub, ssub, p_ssub, p_tsub have been omitted because extraction is never that slow at our typical resolutions (5-60 min per recording, just run on o2 if it's slow)
 
     # input argument fnames is used to memmap a scopa regionex within caiman; fnames is automatically derived outside this function and just put in the options dict in here
+
+    # INDICES TO SUBSET STACK (optional input to cnmf.fit) ARE OMITTED IN SCOPA
+    # DOWNSAMPLING OPTIONS ARE OMITTED IN SCOPA 
+
 
     ############ GENERAL (USED IN MAIN EXTRACTION FUNCTION fit, in cnmf.py, OR IN MULTIPLE FUNCTIONS CALLED FROM fit) ############
 
@@ -31,10 +41,10 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
     nb = 2 #nb is used everywhere; default 1; num background components
     low_rank_background = True #spatial, and patch; #default true; and  #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
     update_background_components = True #spatial; #default true; update background components during spatial phase
-    merge_thresh = 0.85 #merge_components; default 0.85; threshold for merging components
+    merge_thr = 0.85 #merge_components; default 0.85; threshold for merging components
     only_init = True #default false; only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
     normalize_init = True # init; default true; variance norm by pixel over time befroe initialization;  prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always;
-    roidensity = 0.4  ##not a caiman option; used to derive k (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
+    roidensity = 0.4  ##not a caiman option; used to derive K (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
     p = 1 #for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
 
 
@@ -113,29 +123,139 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
 
     ############ MORPHOLOGICAL SEGEMENTATION OPTIONS (USED IN extract_binary_masks_from_structural_channel, TO EXTRACT MORPHOLOGICAL ROIS THAT SEED FUNCTIONAL CHANNEL EXTRACTION) ############
 
-    morph_se = se #structuring element; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-    morph_areamin = 2 #min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-    morph_holemin = 0 #holes with smaller area (in pixels) will be filled in; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-    morph_expandmthd = 'closing' #closing or dilation; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-    morph_gsig = int(np.mean(gSig)) #must be odd and greater than 1 (corrected in CHECK OPTIONS section below, if necessary); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_selem = se #structuring element; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_min_area_size = 2 #min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_min_hole_size = 0 #holes with smaller area (in pixels) will be filled in; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_expand_method = 'closing' #closing or dilation; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+    morph_gSig = int(np.mean(gSig)) #must be odd and greater than 1 (corrected in CHECK OPTIONS section below, if necessary); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
 
 
-    ############ DERIVE k, gSiz, AND PATCH PARAMS rf and stride  ############
+
+    ############ END SETTING SCOPA CAIMAN EXTRACTION DEFAULTS WITH USER INPUT, THE REST IS AUTOMATED (DON'T FORGET TO SET OPTIONS IN map2opt IF optex_sweep==True) ############
+    ############ END SETTING SCOPA CAIMAN EXTRACTION DEFAULTS WITH USER INPUT, THE REST IS AUTOMATED (DON'T FORGET TO SET OPTIONS IN map2opt IF optex_sweep==True) ############
+    ############ END SETTING SCOPA CAIMAN EXTRACTION DEFAULTS WITH USER INPUT, THE REST IS AUTOMATED (DON'T FORGET TO SET OPTIONS IN map2opt IF optex_sweep==True) ############
+
+
+
+    ############ APPLY map2opt FOR SWEEPING THROUGH SETS OF OPTIONS  ############
+
+    num_optsets = 1
+    if optex_sweep==True:
+        print('optex_sweep is true, so creating all possible combinations of options in map2opt')
+        optsets = map2opt()
+        max_num_options_sets = 500 #error if you create more than this many options sets
+        if len(optsets.map)>max_num_options_sets:
+            raise Exception("WARNING, YOU HAVE CREATED MORE THAN " + str(max_num_options_sets) + " OPTIONS SETS, IF YOU REALLY WANT TO PROCEED WITH THIS NUMBER, COMMENT THIS EXCEPTION OR CHANGE max_num_options_sets")
+        num_optsets = len(optsets.map)
+
+    optall = []
+    for ind in np.arange(num_optsets):
+        
+        if optex_sweep==True: #update options listed in map2opt, using their value given index ind
+            gSig, method_init, nb, low_rank_background, update_background_components, merge_thr, normalize_init, \
+                only_init, roidensity, p, sigma_smooth_snmf_time, perc_baseline_snmf, max_iter_snmf, sparsity_penalty \
+                    = optsets.map[ind]
+            sigma_smooth_snmf[0] = sigma_smooth_snmf_time
+            alpha_snmf = sparsity_penalty 
+            lambda_gnmf = sparsity_penalty
+
+        [gSiz, rf, stride, K] = derive_gsiz_rf_stride_k(gSig, two_channel_ex, dims_spatial_ex, extract_in_2d, patchfac, stridefac, roidensity)
+        [fr, dxy] = derive_data_params(md)
+
+        ############ ASSEMBLE AND PROCESS OPTIONS DICTIONARY ############
+
+        opttmp = {
+                    #these are used in cnmf.fit
+                    'K': K,
+                    'gSig': gSig,
+                    'gSiz': gSiz,
+                    'nb': nb,
+                    'p': p,
+                    'update_background_components': update_background_components,
+                    'low_rank_background' : low_rank_background,
+                    'merge_thr': merge_thr,
+                    'only_init': only_init,
+                    'normalize_init': normalize_init,
+                    'method_init': method_init,
+                    'perc_baseline_snmf': perc_baseline_snmf,
+                    'max_iter_snmf': max_iter_snmf,
+                    'sigma_smooth_snmf': sigma_smooth_snmf,
+                    'alpha_snmf': alpha_snmf,
+                    'lambda_gnmf': lambda_gnmf,
+                    'SC_sigma': SC_sigma,           
+                    'SC_thr': SC_thr,               
+                    'SC_normalize': SC_normalize,       
+                    'SC_use_NN': SC_use_NN,   
+                    'SC_nnn': SC_nnn,             
+                    'ITER': ITER,
+                    'fudge_factor': fudge_factor,
+                    'bas_nonneg': bas_nonneg,
+                    'rf': rf,
+                    'stride': stride,
+                    'p_patch': p_patch,
+                    'nb_patch': nb_patch,
+                    'rolling_sum': rolling_sum,
+                    'rolling_length': rolling_length,
+                    'thr_method': thr_method,
+                    'maxthr': maxthr,
+                    'nrgthr': nrgthr,
+                    'se': se,
+                    'medw': medw,
+                    'extract_cc': extract_cc,
+                    'fnames': fnames,
+                    #these are used in evaluate_components (not cnmf.fit)
+                    'SNR_lowest': SNR_lowest,
+                    'min_SNR': min_SNR,
+                    'rval_thr': rval_thr,
+                    'rval_lowest': rval_lowest,
+                    'use_cnn': use_cnn,
+                    'min_cnn_thr': min_cnn_thr,
+                    'cnn_lowest': cnn_lowest,
+                    'decay_time': decay_time,
+                    #not sure where these are used, if at all
+                    'dxy': dxy,
+                    'fr': fr,
+                    #these are used in extract_binary_masks_from_structural_channel (not cnmf.fit)
+                    'morph_selem': morph_selem, 
+                    'morph_min_area_size': morph_min_area_size, 
+                    'morph_min_hole_size': morph_min_hole_size, 
+                    'morph_gSig': morph_gSig, 
+                    'morph_expand_method': morph_expand_method 
+                    } 
+        opttmp = correct_opts_if_2d(extract_in_2d, opttmp) #correct a few options if extracting in 2d (remove z)
+        opttmp = checkopt(two_channel_ex, opttmp) #check for problems in how options were set
+        optred = optreduce(opttmp, two_channel_ex=two_channel_ex) #get minimal effective set of options
+        optall.append(optred)
+    
+    optall = dict_unique(optall) #get unique set of effective sets of options
+    
+    ############ GET OPTID FROM OPTIONS FILE ############
+
+    optout = {}
+    for opt in optall:
+        optid = optex2id(opt, pth_optex)
+        optout[optid] = opt
+   
+    return optout
+
+
+def derive_gsiz_rf_stride_k(gSig, two_channel_ex, dims_spatial_ex, extract_in_2d, patchfac, stridefac, roidensity):
+    ############ DERIVE K, gSiz, AND PATCH PARAMS rf and stride  ############
     
     gSiz = [int(np.round(2*gstmp + 1)) for gstmp in gSig] #half-size of bounding box for each neuron; this is what caiman does to compute gsiz from gsig, just putting it here for transparency
+    if extract_in_2d==True:
+        gsiz_use = gSiz[0:2]
+    else:
+        gsiz_use = gSiz
     if two_channel_ex: #patches turned off (process whole fov at once) when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
         rf = None # setting rf to none will run CNMF on the whole FOV
-        stride_patch = None       
+        stride = None       
         total_vox_ex = np.prod(dims_spatial_ex)
     else:
-        if extract_in_2d==True:
-            gsiz_use = gSiz[0:2]
-        else:
-            gsiz_use = gSiz
         maxgsiz = np.max(gsiz_use)
         rf = int(np.ceil((maxgsiz) * patchfac))
         patchFW = rf*2 #patch full width, since rf is half
-        stride_patch = int(np.ceil((maxgsiz) * stridefac))
+        stride = int(np.ceil((maxgsiz) * stridefac))
         if extract_in_2d==True:
             total_vox_ex = patchFW*patchFW
         else:
@@ -147,139 +267,72 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
 
     if total_vox_ex>=np.prod(dims_spatial_ex): #reset rf and stride if it turns out the patch is same size as fov or bigger
         rf = None # setting rf to none will run CNMF on the whole FOV
-        stride_patch = None       
+        stride = None       
     
-    k = int(np.round( total_vox_ex / np.prod(gsiz_use)*roidensity))  #k is number of components in whole fov (the "whole fov patch")
+    K = int(np.round( total_vox_ex / np.prod(gsiz_use)*roidensity))  #K is number of components in whole fov (the "whole fov patch")
 
-    ############ DERIVED DATA PARAMS ############
+    return gSiz, rf, stride, K
+
+
+def derive_data_params(md):
+
+    ############ DERIVE DATA PARAMS FROM METADATA (md) ############
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
     if md['zfov']==0: #md['zfov']==0 when stack is xyt (not volumetric xyzt); below, the third element (hard coded 0.0) will be removed
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], 0.0 ] #pixels per micron
     else:
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
+    
+    return fr, dxy
 
         
-    ############ INDICES TO SUBSET STACK (DON'T USE IN SCOPA) ############
-    
-    indices_ex = [slice(None), slice(None), slice(None)] # xyz indices to subset FOV; but scopa's regionex (id to crop_fov) is meant to replace this, so this ca remain none
-
-
-    ############ DOWNSAMPLING OPTIONS ARE OMITTED IN SCOPA, SEE DOCS AT TOP ############
-
-
-    ############ map2opt FOR SWEEPING THROUGH SETS OF "IMPORTANT" OPTIONS ############
-
-    if optex_setind is not 'default':
-        optsets = map2opt()
-        print('because optex_setind is not default, using option set index ' + str(optex_setind) + ' to update some options')
-        gSig, method_init, nb, update_background_components, \
-            low_rank_background, merge_thresh, normalize_init, \
-                only_init, roidensity, p, sigma_smooth_snmf_time, \
-                    perc_baseline_snmf, max_iter_snmf, sparsity_penalty \
-                        = optsets.map_index(int(optex_setind))
-        sigma_smooth_snmf[0] = sigma_smooth_snmf_time
-        alpha_snmf = sparsity_penalty 
-        lambda_gnmf = sparsity_penalty
-
-    ############ CORRECT FOR 2D ############
+def correct_opts_if_2d(extract_in_2d, opttmp):
+    ############ CORRECT FOR 2D in-place############
 
     if extract_in_2d==True: #change a few options from 3d to 2d (remove 3rd element)
-        indices_ex = indices_ex[:-1] 
-        dxy = dxy[:-1] 
-        gSig = gSig[:-1] 
-        gSiz = gSiz[:-1] 
-        se = se[:,:,0]
-        medw = medw[:-1] 
-        sigma_smooth_snmf = sigma_smooth_snmf[:-1]
-        morph_se = morph_se[:,:,0]
+        opttmp['dxy'] = opttmp['dxy'][:-1] 
+        opttmp['gSig'] = opttmp['gSig'][:-1] 
+        opttmp['gSiz'] = opttmp['gSiz'][:-1] 
+        opttmp['se'] = opttmp['se'][:,:,0]
+        opttmp['medw'] = opttmp['medw'][:-1] 
+        opttmp['sigma_smooth_snmf'] = opttmp['sigma_smooth_snmf'][:-1]
+        opttmp['morph_selem'] = opttmp['morph_selem'][:,:,0]
 
-    ############ CHECK OPTIONS ############
+        return opttmp
 
-    if patchfac<3 or stridefac<1.5:
-        raise Exception("patchfac should be at least 3, and stridefac should be at least 1.5, according to caiman recommendations")
-    if False in [tmp==slice(None) for tmp in indices_ex]:
-        raise Exception("all indices_ex must be None in scopa because regionex replaces this functionality (basically)")
-    if method_init=='corr_pnr': #for 1p data, according to caiman . . . so does this mean lots of background activity?? 
+
+def checkopt(two_channel_ex, opttmp):
+    ############ CHECK OPTIONS FOR PROBLEMS ############
+
+    if opttmp['rf'] is not None and opttmp['rf']<np.max(opttmp['gSiz'])*3:
+        raise Exception("rf should be at least 3 times gSiz, according to caiman recommendations")
+    if opttmp['stride'] is not None and opttmp['stride']<np.max(opttmp['gSiz']):
+        raise Exception("stride should be at least equal to gSiz, according to caiman recommendations")
+    if opttmp['method_init']=='corr_pnr': #for 1p data, according to caiman . . . so does this mean lots of background activity?? 
         raise Exception("method_init 'corr_pnr' is for 1p data (data with busy background, aka high rank background); if you want to use it anyway, see required options changes below")
             #these changes are required for method_init=='corr_pnr':
-                # k = None # none if using corr_pnr (if in cnmfe mode, ie 1p mode)
+                # K = None # none if using corr_pnr (if in cnmfe mode, ie 1p mode)
                 # nb = 0 ##nb is used everywhere; num background components
                 # only_init = True #only use the initialization for extraction (no alternating least squares for spatial and temporal refinement)
                 # low_rank_background = None ##spatial, and patch; #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
                 # center_psf = True  #initialization; True indicates centering the filtering kernel for background removal. This is useful for data with large background fluctuations.
                 # normalize_init = False #init; variance norm by pixel over time befroe initialization; prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always; 
-    if two_channel_ex and only_init==True:
+    if two_channel_ex and opttmp['only_init']==True:
         print("warning, only_init is true but two_channel_ex is also true, so setting only_init to false")
-        only_init = False
-    if morph_gsig<3:
-        morph_gsig = 3
-    if not morph_gsig%2==1:
-        morph_gsig = morph_gsig+1
+        opttmp['only_init'] = False
+    if opttmp['morph_gSig']<3:
+        print("warning, morph_gSig is less than 3, setting it to 3")
+        opttmp['morph_gSig'] = 3
+    if not opttmp['morph_gSig']%2==1:
+        print("warning, morph_gSig is even, making it odd by adding 1")
+        opttmp['morph_gSig'] = opttmp['morph_gSig']+1
+    
+    return opttmp
 
 
-    ############ ASSEMBLE OPTIONS DICTIONARIES ############
 
-    opts_dict = {
-                'K': k,
-                'gSig': gSig,
-                'gSiz': gSiz,
-                'nb': nb,
-                'p': p,
-                'update_background_components': update_background_components,
-                'low_rank_background' : low_rank_background,
-                'merge_thr': merge_thresh,
-                'only_init': only_init,
-                'normalize_init': normalize_init,
-                'method_init': method_init,
-                'perc_baseline_snmf': perc_baseline_snmf,
-                'max_iter_snmf': max_iter_snmf,
-                'sigma_smooth_snmf': sigma_smooth_snmf,
-                'alpha_snmf': alpha_snmf,
-                'lambda_gnmf': lambda_gnmf,
-                'SC_sigma': SC_sigma,           
-                'SC_thr': SC_thr,               
-                'SC_normalize': SC_normalize,       
-                'SC_use_NN': SC_use_NN,   
-                'SC_nnn': SC_nnn,             
-                'ITER': ITER,
-                'fudge_factor': fudge_factor,
-                'bas_nonneg': bas_nonneg,
-                'rf': rf,
-                'stride': stride_patch,
-                'p_patch': p_patch,
-                'nb_patch': nb_patch,
-                'rolling_sum': rolling_sum,
-                'rolling_length': rolling_length,
-                'SNR_lowest': SNR_lowest,
-                'min_SNR': min_SNR,
-                'rval_thr': rval_thr,
-                'rval_lowest': rval_lowest,
-                'use_cnn': use_cnn,
-                'min_cnn_thr': min_cnn_thr,
-                'cnn_lowest': cnn_lowest,
-                'decay_time': decay_time,
-                'thr_method': thr_method,
-                'maxthr': maxthr,
-                'nrgthr': nrgthr,
-                'se': se,
-                'medw': medw,
-                'extract_cc': extract_cc,
-                'dxy': dxy,
-                'fr': fr,
-                'fnames': fnames
-                } 
-
-    opts_dict_morph = {
-                'morph_se': morph_se, 
-                'morph_areamin': morph_areamin, 
-                'morph_holemin': morph_holemin, 
-                'morph_gsig': morph_gsig, 
-                'morph_expandmthd': morph_expandmthd 
-                }
-
-
-    return opts_dict, opts_dict_morph, indices_ex
+    return optall
 
 
     ############ NOTES ON INITIALIZATION METHODS ############
@@ -297,6 +350,5 @@ def optex(optex_setind = 'default', fnames = None, md = None, extract_in_2d = No
 
     # for sparsenmf all these are tunable in cnmf params except remove_baseline and truncate, whose defaults are below
         # # sparseNMF(Y_ds, nr, max_iter_snmf=200, alpha=0.5, sigma_smooth=(.5, .5, .5), remove_baseline=True, perc_baseline=20, nb=1, truncate=2):
-
 
 

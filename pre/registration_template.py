@@ -61,7 +61,8 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
             if os.path.isfile(pth_regtemplate):
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
-                opts_dict = optrg(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #opts for motion correction (will also define for extraction, but extraction params are in redefined later call to optex)
+                minmovtmp = np.min(stack).astype('float32')
+                opts_dict = optrg(md, register_in_2d, minmovtmp) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
                 regtemplate = make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         

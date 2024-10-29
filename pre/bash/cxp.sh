@@ -77,7 +77,7 @@ USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise remov
 
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
-optex_setind=('default')
+optex_sweep=(1)  #0 uses options set in optex, 1 uses map2opt (called from optex) to create sets of options and sweep through all of them
 
 
 ############ SET PARAMS FOR RESOURCE REQUEST ############
@@ -155,7 +155,7 @@ pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
 pars["LEN_WINDOW_SMOOTH_T_RSC_SEC"]="${LEN_WINDOW_SMOOTH_T_RSC_SEC[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
-pars["optex_setind"]="${optex_setind[@]}"
+pars["optex_sweep"]="${optex_sweep[@]}"
 pars["FNIND_FN_PREFIX"]="${FNIND_FN_PREFIX[@]}"
 
 for key in "${!pars[@]}"; do

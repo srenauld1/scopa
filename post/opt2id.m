@@ -75,7 +75,7 @@ for k = 1:numel(vbin)
         fntmp = fieldnames(alltmp);
         for p = 1:numel(fntmp)
             oone = alltmp.(fntmp{p}); %single options set after expansion of cell arrays
-            ored = optreduce(oone, vbintmp); %options set without any redundancy (this goes to file)
+            optred = optreduce(oone, vbintmp); %options set without any redundancy (this goes to file)
             optid = fieldnames(optfile);
             optidnums = cellfun(@str2double, cellflat(regexp(optid,'\d+','match')));
             if ~isempty(optidnums) && ( numel(optidnums)~=numel(optid) || ~isequal(optidnums, 1:numel(optidnums)) )
@@ -83,14 +83,14 @@ for k = 1:numel(vbin)
             end
             if isempty(optidnums)
                 optidnew = 'i1';
-                optfile.(optidnew) = ored;
+                optfile.(optidnew) = optred;
                 optout.(optidnew) = oone;
             else
                 maxoptind = max(optidnums);
                 foundequal = 0;
                 numoptid = numel(optid);
                 for w = 1:numoptid
-                    if isequal(ored, optfile.(optid{w}))
+                    if isequal(optred, optfile.(optid{w}))
                         if foundequal
                             error("found multiple matches in opt file")
                         else
@@ -100,7 +100,7 @@ for k = 1:numel(vbin)
                     end
                     if w==numoptid && foundequal==0 %if current options don't match any in the roiopt file, append them to end as new option set
                         optidnew = ['i' num2str(maxoptind+1)];
-                        optfile.(optidnew) = ored;
+                        optfile.(optidnew) = optred;
                         optout.(optidnew) = oone;
                         optid = [optid; optidnew];
                     end

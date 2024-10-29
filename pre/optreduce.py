@@ -1,5 +1,5 @@
 
-def optreduce(opt, optmo, two_channel_ex = 0):
+def optreduce(opt, two_channel_ex = 0):
 
     #create a minimal set of options output from optex (the effective set), since option use depends on other options
     # here, scopa variables used in optex to derive caiman variables are not used; instead the derived caiman variables are used
@@ -57,7 +57,7 @@ def optreduce(opt, optmo, two_channel_ex = 0):
         ored['medw'] = opt['medw']
 
         #merging
-        ored['merge_thresh'] = opt['merge_thresh']
+        ored['merge_thr'] = opt['merge_thr']
 
 
     #patches
@@ -78,11 +78,24 @@ def optreduce(opt, optmo, two_channel_ex = 0):
         ored['min_cnn_thr'] = opt['min_cnn_thr']
 
     if two_channel_ex:
-        ored['morph_se'] = optmo['morph_se']
-        ored['morph_areamin'] = optmo['morph_areamin']
-        ored['morph_holemin'] = optmo['morph_holemin']
-        ored['morph_expandmthd'] = optmo['morph_expandmthd']
-        ored['morph_gsig'] = optmo['morph_gsig']
+        ored['morph_selem'] = opt['morph_selem']
+        ored['morph_min_area_size'] = opt['morph_min_area_size']
+        ored['morph_min_hole_size'] = opt['morph_min_hole_size']
+        ored['morph_expand_method'] = opt['morph_expand_method']
+        ored['morph_gSig'] = opt['morph_gSig']
+
+    ored = order_ored(ored) #recursively order alphabetically, ignoring case
 
 
     return ored
+
+
+def order_ored(dictionary):
+    result = {}
+    for m in sorted(dictionary.keys(), key=str.casefold):
+        v = dictionary[m]
+        if isinstance(v, dict):
+            result[m] = order_ored(v)
+        else:
+            result[m] = v
+    return result
