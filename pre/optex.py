@@ -141,7 +141,7 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optex,
 
     num_optsets = 1
     if optex_sweep==True:
-        print('optex_sweep is true, so creating all possible combinations of options in map2opt')
+        print('optex_sweep is true, so creating all possible combinations of the options defined in map2opt')
         optsets = map2opt()
         max_num_options_sets = 500 #error if you create more than this many options sets
         if len(optsets.map)>max_num_options_sets:
@@ -149,11 +149,11 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optex,
         num_optsets = len(optsets.map)
 
     optall = []
-    for ind in np.arange(num_optsets):
+    for ind in np.arange(num_optsets): #for each set of options (will be 1 if optex_sweep is false)
         
         if optex_sweep==True: #update options listed in map2opt, using their value given index ind
-            gSig, method_init, nb, low_rank_background, update_background_components, merge_thr, normalize_init, \
-                only_init, roidensity, p, sigma_smooth_snmf_time, perc_baseline_snmf, max_iter_snmf, sparsity_penalty \
+            gSig, nb, low_rank_background, update_background_components, merge_thr, only_init, normalize_init, \
+                roidensity, p, method_init, sigma_smooth_snmf_time, perc_baseline_snmf, max_iter_snmf, sparsity_penalty \
                     = optsets.map[ind]
             sigma_smooth_snmf[0] = sigma_smooth_snmf_time
             alpha_snmf = sparsity_penalty 
@@ -165,7 +165,7 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optex,
         ############ ASSEMBLE AND PROCESS OPTIONS DICTIONARY ############
 
         opttmp = {
-                    #these are used in cnmf.fit
+                    #these are used in cnmf.fit, here they are sorted by their calling functions, later they are sorted alphabetically
                     'K': K,
                     'gSig': gSig,
                     'gSiz': gSiz,
@@ -222,18 +222,19 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optex,
                     'morph_gSig': morph_gSig, 
                     'morph_expand_method': morph_expand_method 
                     } 
+        
         opttmp = correct_opts_if_2d(extract_in_2d, opttmp) #correct a few options if extracting in 2d (remove z)
         opttmp = checkopt(two_channel_ex, opttmp) #check for problems in how options were set
-        optred = optreduce(opttmp, two_channel_ex=two_channel_ex) #get minimal effective set of options
+        optred = optreduce(opttmp, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
         optall.append(optred)
     
-    optall = dict_unique(optall) #get unique set of effective sets of options
+    optall = dict_unique(optall) #remove options sets that are not unique
     
     ############ GET OPTID FROM OPTIONS FILE ############
 
     optout = {}
     for opt in optall:
-        optid = optex2id(opt, pth_optex)
+        optid = optex2id(opt, methodex, pth_optex)
         optout[optid] = opt
    
     return optout
@@ -329,10 +330,6 @@ def checkopt(two_channel_ex, opttmp):
         opttmp['morph_gSig'] = opttmp['morph_gSig']+1
     
     return opttmp
-
-
-
-    return optall
 
 
     ############ NOTES ON INITIALIZATION METHODS ############

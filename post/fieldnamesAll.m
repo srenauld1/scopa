@@ -41,12 +41,14 @@ try
         addParameter(p,'Type',"",@(x)validateattributes(x,{'char','string','cell'},{},mfilename,'Type'))
         addParameter(p,'Depth',0,@(x)validateattributes(x,{'numeric'},{'nonempty','nonnan','nonnegative','real','integer','finite','scalar'},mfilename,'Depth'))
         addParameter(p,'Prefix',"",@(x)validateattributes(x,{'char','string'},{},mfilename,'Prefix'));
+        addParameter(p,'delim',"",@(x)validateattributes(x,{'char','string'},{},mfilename,'delim'));
         
         parse(p,s,varargin{:})
         s      = p.Results.s;
         Class  = p.Results.Class;
         Type   = p.Results.Type;
         Depth  = p.Results.Depth;
+        delim  = p.Results.delim;
         
         %% Prepare inputs
         % --- Class -------------------------------------------------------
@@ -111,9 +113,9 @@ try
     IsScalar = sum(Size,2)==2 | matches(Classes,'char');
     
     %% Create valid and unique VariableNames
-    ValidVarName = replace(Fields0,'.','_');
-    ValidVarName = replace(ValidVarName,{'(',')'},'_');
-    ValidVarName = regexprep(ValidVarName,'_+','_');
+    ValidVarName = replace(Fields0,'.',delim);
+    ValidVarName = replace(ValidVarName,{'(',')'},delim);
+    ValidVarName = regexprep(ValidVarName,'_+',delim);
     ValidVarName = matlab.lang.makeValidName(ValidVarName);
     ValidVarName = matlab.lang.makeUniqueStrings(ValidVarName);
     

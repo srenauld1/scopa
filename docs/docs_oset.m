@@ -110,7 +110,7 @@ for brevity, only the deepest nesting of each unique branch is shown
     o.hires.sld.sp   (tsget called from within pltx called from a2p)
     o.roi.mm   (drawrois called from within roimake called from a2p)
     o.roi.ma   (roimauto called from within roimake called from a2p)
-    o.roi.fa   (roifmake called from within roimake called from a2p)
+    o.roi.qc   (roifmake called from within roimake called from a2p)
     o.roi.nrm   (respnorm called from within roimake called from a2p)
     o.roi.sp   (stackplt called from within roimake called from a2p)
     o.roi.imhsv   (hsvplt called from within roimake called from a2p)

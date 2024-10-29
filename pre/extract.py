@@ -71,8 +71,7 @@ def extract(optex_sweep, pth_prefix, pth_tif_read, pth_allrec, md, extract_in_2d
 
             print("looping over " + str(len(optall)) + " unique options sets")
             
-            k = 0
-            for optid,opt in optall.items():
+            for k, (optid, opt) in enumerate(optall.items()):
 
                 if 1: #try, since some param sets will error
 
@@ -251,7 +250,7 @@ def extract(optex_sweep, pth_prefix, pth_tif_read, pth_allrec, md, extract_in_2d
                     os.remove(pth_mmap_seed)
 
                 if dview is not None: cm.stop_server(dview=dview)
-                k+=1
+
 
 
 def parse_methodex(methodex):

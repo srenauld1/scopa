@@ -1,5 +1,5 @@
 
-def optreduce(opt, two_channel_ex = 0):
+def optreduce(opt, methodex):
 
     #create a minimal set of options output from optex (the effective set), since option use depends on other options
     # here, scopa variables used in optex to derive caiman variables are not used; instead the derived caiman variables are used
@@ -77,7 +77,7 @@ def optreduce(opt, two_channel_ex = 0):
         ored['cnn_lowest'] = opt['cnn_lowest']
         ored['min_cnn_thr'] = opt['min_cnn_thr']
 
-    if two_channel_ex:
+    if methodex.startswith('seed') and methodex.endswith('py'): #python automated morph roi extraction to seed functional extraction (not just two_channel_ex since seedeachpy is not two_channel_ex)
         ored['morph_selem'] = opt['morph_selem']
         ored['morph_min_area_size'] = opt['morph_min_area_size']
         ored['morph_min_hole_size'] = opt['morph_min_hole_size']

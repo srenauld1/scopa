@@ -24,7 +24,10 @@ for m = 1:numel(vbin)
                 if o.doma==0 && startsWith(fn{k}, 'ma_')
                     o = rmfield(o, fn{k});
                 end
-                if o.dofa==0 && startsWith(fn{k}, 'fa_')
+                if o.doqc==0 && startsWith(fn{k}, 'fa_')
+                    o = rmfield(o, fn{k});
+                end
+                if o.docm==0 && startsWith(fn{k}, 'cm_')
                     o = rmfield(o, fn{k});
                 end
             end
