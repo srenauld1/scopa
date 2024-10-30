@@ -21,6 +21,4 @@ if 0%dofindfiles && all(contains(getfieldns([o.id],'pth'), 'f91g_syt')) %overrid
     o.pltx(1).vnm.ts5{1} = {['resp.tms.mo*.imf_f_f_*']}; %if empty, do will be set to false
     o.carl.stimtype = 'drone';
     o.carl.feat = 'CON_51';
-    o.carl.pthparent_feat = '~/ds/data/rec';
-    o.carl.pth_template = '~/ds/data/stimuli';
 end

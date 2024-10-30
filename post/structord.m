@@ -1,0 +1,34 @@
+function s = structord(s, opt)
+
+arguments
+    s %struct to be ordered 
+    opt.vectype = []; %empty, row, or column; transpose any vector in s that is not vectype; skip if empty
+end
+vectype = opt.vectype;
+
+if numel(s)>1
+    for k = 1:numel(s) %for each index in nonscalar struct
+        [rind, cind] = ind2sub(size(s), k);
+        s(rind, cind) = structord(s(rind, cind), vectype=vectype);
+    end
+else
+    fn = fieldnames(s);
+    for k = 1:numel(fn)
+        if isstruct(s.(fn{k}))
+            s.(fn{k}) = structord(s.(fn{k}), vectype=vectype);
+        else
+            if ~isscalar(s.(fn{k}))
+                if strcmp(opt.vectype,'row') && iscolumn(s.(fn{k}))
+                    fprintf("converting column vector " + fn{k} + " to row vector because vectype is row" + newline)
+                    s.(fn{k}) = s.(fn{k}).';
+                elseif strcmp(opt.vectype,'column') && isrow(s.(fn{k}))
+                    fprintf("converting row vector " + fn{k} + " to column vector because vectype is column" + newline)
+                    s.(fn{k}) = s.(fn{k}).';
+                end
+            end
+        end
+    end
+    s = orderfields(s, natsortrows(fieldnames(s))); %natural sorting; not the same as orderfields(structin);
+end
+
+

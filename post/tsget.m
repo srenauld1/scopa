@@ -223,7 +223,7 @@ tsuse.fn_save_prefix = [pth_stack(1:end-4) tsuse.regionex '_' tsuse.parsex '_' t
 tsuse.fn_save_prefix_short = [pth_stack(1:end-4) '_fit' num2str(tsuse.choosecount)];
 
 
-tsuse = fieldord(tsuse);
+tsuse = structord(tsuse);
 
 if choosecount==size(fnflatcat, 2) %quit flag on final set of vnm (length of nonscalar struct)
     dochoose = 0;

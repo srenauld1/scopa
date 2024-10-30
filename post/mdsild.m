@@ -87,7 +87,7 @@ md.sampper = 1/md.volrate;
 
 md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcrop'";
 
-md = fieldord(md);
+md = structord(md, vectype='row');
 
 end
 

@@ -115,9 +115,11 @@ try
     %% Create valid and unique VariableNames
     ValidVarName = replace(Fields0,'.',delim);
     % original line to replce nonscalar index does not work for was this: ValidVarName = replace(ValidVarName,{'(',')'},delim);
-    ValidVarName = regexprep(ValidVarName, ['\((\d+)\)' delim], [delim '$1' delim]); %nonscalar index
+    ValidVarName = regexprep(ValidVarName, [delim '(\(\d+\))' delim], '$1.'); %nonscalar index
 
-    % ValidVarName = regexprep(ValidVarName,'_+',delim); %remove line that removes multiple underscore, since now default is double underscore to distinguish from single underscore variable names at "bottom" of nesting
+    ValidVarName = regexprep(ValidVarName, '([\d]+)', '($1)'); %nonscalar index
+
+    % ValidVarName = regexprep(ValidVarName,'_+',delim);
     ValidVarName = matlab.lang.makeValidName(ValidVarName);
     ValidVarName = matlab.lang.makeUniqueStrings(ValidVarName);
     

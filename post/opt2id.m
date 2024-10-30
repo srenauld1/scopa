@@ -20,10 +20,12 @@ for k = 1:numel(vbin)
         optfile = struct;
     end
 
+    optfile = structord(optfile, vectype='row');
+
     for j = 1:numel(o)
         vbinstruct = o(j).(vbintmp);
         fn = fieldnames(vbinstruct);
-        alltmp = struct;
+        optexpall = struct;
         for m = 1:numel(fn)
             copybintmp = fn{m};
             copybinstruct = vbinstruct.(copybintmp);
@@ -66,15 +68,15 @@ for k = 1:numel(vbin)
                 end
             end
 
-            alltmp = cell2struct([struct2cell(alltmp); struct2cell(tmp)], [fieldnames(alltmp); fieldnames(tmp)]); %combine
-            alltmp = fieldord(alltmp);
+            optexpall = cell2struct([struct2cell(optexpall); struct2cell(tmp)], [fieldnames(optexpall); fieldnames(tmp)]); %combine
+            optexpall = structord(optexpall, vectype='row');
 
         end
 
         optout = [];
-        fntmp = fieldnames(alltmp);
+        fntmp = fieldnames(optexpall);
         for p = 1:numel(fntmp)
-            oone = alltmp.(fntmp{p}); %single options set after expansion of cell arrays
+            oone = optexpall.(fntmp{p}); %single options set after expansion of cell arrays
             optred = optreduce(oone, vbintmp); %options set without any redundancy (this goes to file)
             optid = fieldnames(optfile);
             optidnums = cellfun(@str2double, cellflat(regexp(optid,'\d+','match')));
@@ -115,7 +117,7 @@ for k = 1:numel(vbin)
         o(j).(vbintmp) = optout;
     end
 
-    optfile = fieldord(optfile);
+    optfile = structord(optfile, vectype='row');
 
     txt = jsonencode(optfile, PrettyPrint=true);
     txt = regexprep(txt,',\s+(?=\d)',','); % , white-spaces digit remove
@@ -130,7 +132,7 @@ for k = 1:numel(vbin)
 
 end
 
-o = fieldord(o);
+o = structord(o, vectype='row');
 
 
 

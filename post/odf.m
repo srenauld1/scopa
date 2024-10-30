@@ -129,12 +129,12 @@ d.daq.doplt = 0; % if 1, will plot original and resampled timeseries in same fig
 
 %% sld (stackld: load, process stack)
 
-d.sld.chanuse = [1 2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
+d.sld.chanuse = [1, 2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
 d.sld.cropfb = 1; %crop flyback frames from each volume
 d.sld.zerostack = 1; %subtract min to make min zero
-d.sld.tcrop = [0 0]; %how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+d.sld.tcrop = [0, 0]; %how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.stackdtype = 'uint16';
-d.sld.smsdspace = [0 0 0]; %gaussian smooth stack in space (yxz); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smsdspace; each entry must be odd, or 0; [0 0 0] or empty to skip smoothing; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+d.sld.smsdspace = [0, 0, 0]; %gaussian smooth stack in space (yxz); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smsdspace; each entry must be odd, or 0; [0 0 0] or empty to skip smoothing; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
 d.sld.smsdtimesec = 0; %gaussian smooth stack in time; gaussian sd is smsdtime seconds; 0 to skip
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = [ %stack suffixes to plot together in stackplt gif, nonexistent or invalid suffixes are ignored; will be reordered from least to most processed (by suffix length)
@@ -198,7 +198,9 @@ d.cm.method_init = 'graph_nmf'; %'greedy_roi' #'graph_nmf' #sparse_nmf; default 
 d.cm.sigma_smooth_snmf_time = [0.5]; %first element of sigma_smooth_snmf, for smoothing in time before initialization; sigma_smooth_snmf default is [0.5, 0.5, 0.5, 0.5], which is txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have effect; consider z width, relative to xy width, when setting this; in optex, the xyz elements are assigned the same values as gSig
 d.cm.perc_baseline_snmf = [20]; % default 20; baseline percentile, removed from stack before initialization for method_init graph_nmf and sparse_nmf
 d.cm.max_iter_snmf = [500]; %default 500; number iterations in initialization for method_init graph_nmf and sparse_nmf)
-d.cm.sparsity_penalty = [1, 4]; %not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf);
+d.cm.sparsity_penalty = [1]; %not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf);
+
+
 
 
 %% qc (quality control rois)
@@ -302,8 +304,8 @@ d.tg.group = 'name';
 
 %% pltx (pltx: explore various components of experiment in interactive plots, e.g. brain images, timeseries, stimulus videos, scatterplots, fictive path, model components)
 
-d.pltx.vpmapl = [1 2 3 4]; %map of indices of each tg.v above to plot positions (on left axis)
-d.pltx.vpmapr = [5 6 7 8]; %map of indices of each tg.v above to plot positions (on right axis)
+d.pltx.vpmapl = [1, 2, 3, 4]; %map of indices of each tg.v above to plot positions (on left axis)
+d.pltx.vpmapr = [5, 6, 7, 8]; %map of indices of each tg.v above to plot positions (on right axis)
 
 d.pltx.lagsxy_sec = [0, 0, 1, 0]; %lags for interactive scatterplot;  %empty or zero to skip; scalar or vector; seconds of lag, rounded to nearest frame; repeated frames are omitted; to see all frames within range, bookend with zeros, eg [0, 1, 2, 0] is all samples in range 1-2 (done this way to prevent using cell, since cell sare for opt expansion)
 d.pltx.lagsz_sec = [0, 0, 1, 0]; %same as lagxy_sec, except z lags are applied for each xy lag (xy vars are lagged, then together lagged relative to z); will be automatically set to 0 if there is no z variable
@@ -314,7 +316,7 @@ d.pltx.epochinds = [1]; %cell array of vectors or scalars listing epochs (within
 
 d.pltx.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 d.pltx.it = []; %[3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-d.pltx.dr = [0,1];
+d.pltx.dr = [0, 1];
 d.pltx.doui = 1;
 
 %% hires (hiresld: load and register high-z-res stack if it exists)
@@ -342,9 +344,9 @@ d.tp.timeseries_numsegments = 3; %how many equispaced segments to display in set
 d.sp.it = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 d.sp.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 d.sp.ir = []; %scalar/vector; which rois to plot in ; empty to skip
-d.sp.roi_color = [1 0 0]; %color for rois, if shown
+d.sp.roi_color = [1, 0, 0]; %color for rois, if shown
 d.sp.roialpha = 0.3; %transparency for rois, if shown
-d.sp.dr = [0,1];
+d.sp.dr = [0, 1];
 
 %% imhsv (hsvplt and hsvcmp: make and plot hsv images)
 
@@ -357,9 +359,9 @@ d.imhsv.valnorm = 'relative';%val normalization method, same logic as huenorm
 d.imhsv.hrange_in_manual = []; %manual range for normalizing hue, prior to normalization to plot scale, whose max range is [0 1]), see hsvcmp
 d.imhsv.srange_in_manual = []; %manual range for normalizing sat, prior to normalization to plot scale, whose max range is [0 1]), see hsvcmp
 d.imhsv.vrange_in_manual = []; %manual range for normalizing val, prior to normalization to plot scale, whose max range is [0 1]), see hsvcmp
-d.imhsv.hrange_out_manual = [0 0.6]; %[0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see hsvcmp
-d.imhsv.srange_out_manual = [0 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see hsvcmp
-d.imhsv.vrange_out_manual = [0 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see hsvcmp
+d.imhsv.hrange_out_manual = [0, 0.6]; %[0.25 1]; %hue plot scale, whose max range is [0 1] hue hange around color circle, defaults to less than full circle for non-periodic plotting domain, but overwrites in plots_setup_hsv to [0 1] when plotting a periodic huefeature (e.g. von mises center, ie mdlname 'v' with huestr 'loc'), see hsvcmp
+d.imhsv.srange_out_manual = [0, 1]; %sat plot scale, whose max range is [0 1], if you want to force saturation you can reduce (e.g. [0 0.75] will force smaller range to max saturation, see hsvcmp
+d.imhsv.vrange_out_manual = [0, 1];  %val plot scale, whose max range is [0 1], if you want to force value you can reduce (e.g. [0 0.75] will force smaller range to max value, see hsvcmp
 d.imhsv.hueshift = 0; %0-1, circularly shift the hue map around the color circle for change to arbitrary color assignment, applied before any clipping due to, see hsvcmp, this works for periodic or non-periodic features assigned to hue
 d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores hue in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
@@ -492,7 +494,7 @@ end
 o.copybinprev = unique([oin.copybinprev, copybin]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
 
 o.id = idhold;
-o = fieldord(o);
+o = structord(o, vectype='row');
 
 
 %% find files

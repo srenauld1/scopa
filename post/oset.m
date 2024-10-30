@@ -52,9 +52,9 @@ regionex = {'dflt', 'fb', 'pb', 'eb'}; %use 'dflt' to skip prompt to define subs
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1]; %which channel to use
-o.sld.suffixplt = {'cmrg', 'bksb_cmrg', 'cmrg_dcdn'}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
+o.sld.suffixplt = {}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot
 
-o.sld.sp.dr = {[0,.5], [0 0.8], [0 0.9]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
+o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
 o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
@@ -123,7 +123,7 @@ for k = 1:numel(allrecs)
     if ismember(k, recgroup1)
         o(k).sld.chanuse = [2]; %use channel 2 in recgroup1, recordings from neither recgroup are unchanged from settings above (or from default, if none set above in oset)
     elseif ismember(k, recgroup2)
-        o(k).sld.chanuse = [1 2]; %use both channels in recgroup2, recordings from neither recgroup are unchanged from above (or from default, if none set above in oset)
+        o(k).sld.chanuse = [1, 2]; %use both channels in recgroup2, recordings from neither recgroup are unchanged from above (or from default, if none set above in oset)
     end
 
     %recording and roi specific
@@ -177,11 +177,11 @@ oldcarlo %don't comment this out, but it's just for carl
 
 %%%% organize %%%%
 
-o = fieldord(o); %recursively order alphabetically
+o = structord(o, vectype='row'); %recursively order alphabetically
 
 o = opt2id(o, 'roi');
 
-[~, oflatfn] = structflat(o, 'prefix', 'o'); %get flattened fieldnames for user to see options struct organization more easily (does not get used); need prefix to make valid fieldnames in case nonscalar
+[~, oflatfn] = structflat(o, prefix='o'); %get flattened fieldnames for user to see options struct organization more easily (does not get used); need prefix to make valid fieldnames in case nonscalar
 
 end
 

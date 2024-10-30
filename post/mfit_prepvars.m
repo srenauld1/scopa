@@ -146,5 +146,5 @@ fitin.pth_depvp_bin = pth_depvp_bin;
 fitin.pth_indvaug_bin = pth_indvaug_bin;
 
 
-fitin = fieldord(fitin);
+fitin = structord(fitin);
 

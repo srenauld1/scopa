@@ -165,7 +165,7 @@ end
 ax = rmfield(ax, 'xp');
 ax = rmfield(ax, 'yp');
 
-ax = fieldord(ax);
+ax = structord(ax);
 
 
 end

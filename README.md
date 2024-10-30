@@ -222,10 +222,11 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 https://github.com/flatironinstitute/CaImAn/blob/main
 
 
-############################## DENOISING ######################################
+############################## deepcad DENOISING ######################################
 
 --denoise.py, called from pipeline init when do_denoise==1
---the denoising requires motion corrected input tif (suffix cmrg_.tif)
+--deepcad denoising requires a gpu; you can run denoising jobs on O2 to use O2 GPUs
+--the denoising requires input tif stack; should be run on motion corrected stack (suffix cmrg_.tif)
 --denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
 --see additional documentation in denoise.py
 https://github.com/cabooster/DeepCAD-RT
