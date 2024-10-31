@@ -145,7 +145,7 @@ end
 daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
 daqinds.slice = [];
 daqinds.vol = [];
-if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
+if ~strcmp(useinds, 'none') && any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
     maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
     daqinds = daqindsmake(trialData.frameClock, trialData.Time, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre);
 else
