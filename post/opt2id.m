@@ -117,6 +117,8 @@ for k = 1:numel(vbin)
         o(j).(vbintmp) = optout;
     end
 
+    pthopt = '~/stacks/fool.txt';
+    optfile = odf;
     optfile = structord(optfile, vectype='row');
 
     txt = jsonencode(optfile, PrettyPrint=true);

@@ -53,8 +53,6 @@ def optreduce(opt, methodex):
         ored['maxthr'] = opt['maxthr']
         ored['nrgthr'] = opt['nrgthr']
         ored['extract_cc'] = opt['extract_cc']
-        ored['se'] = opt['se']
-        ored['medw'] = opt['medw']
 
         #merging
         ored['merge_thr'] = opt['merge_thr']
@@ -78,7 +76,6 @@ def optreduce(opt, methodex):
         ored['min_cnn_thr'] = opt['min_cnn_thr']
 
     if methodex.startswith('seed') and methodex.endswith('py'): #python automated morph roi extraction to seed functional extraction (not just two_channel_ex since seedeachpy is not two_channel_ex)
-        ored['morph_selem'] = opt['morph_selem']
         ored['morph_min_area_size'] = opt['morph_min_area_size']
         ored['morph_min_hole_size'] = opt['morph_min_hole_size']
         ored['morph_expand_method'] = opt['morph_expand_method']

@@ -62,10 +62,13 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     elif do_copyfiles==2: #copying out of O2
         pth_allrec = pth_compute
         pth_fldr_copydest_prefix = pth_storage
+
+    pth_optdf = pth_allrec + 'optdf.txt'
+    pth_optroi = pth_allrec + 'optroi.txt'
     
     print("\n\n\npth_storage is : \n" + pth_storage)
     print("pth_compute is : \n" + pth_compute)
     print("pth_allrec is : \n" + pth_allrec)
     print("pth_fldr_fnind is : \n" + pth_fldr_fnind)
 
-    return pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind
+    return pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi

@@ -159,22 +159,17 @@ dummyvec = nan(numposxmax, 1);
 %% plot vel
 
 allvelcat = cell2mat(allvelx');
-alltcat = [1:numel(allvelcat)]*mean(dt(j))/60/60;
+alltcat = [1:numel(allvelcat)]*mean(dt(j));
 
 hfg = figure;
 plot(alltcat, allvelcat)
-ylabel('forward velocity (mm/s)')
-xlabel('hours')
-fig2gif(hfg, 1, '~/walking/window/FicTracData/vel_all.gif')
-
+fig2gif(hfg, k, '~/walking/window/FicTracData/vel_all.gif')
 
 hfg = figure;
 hax = axes(Parent=hfg);
 hax.YLim = [minvelx maxvelx];
 hax.XLim = [minallt maxallt];
 hpl = plot(hax, dummyvec, dummyvec);
-ylabel('forward velocity (mm/s)')
-xlabel('hours')
 for k = 1:numel(allvelx)
     hpl.XData(1:numel(allvelx{k})) = allt{k};
     hpl.YData(1:numel(allvelx{k})) = allvelx{k};

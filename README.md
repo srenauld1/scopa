@@ -247,8 +247,6 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 --then, analysis of more precisely defined brain regions is done in 'post', where regions can be further split into arbitrary 2d, 3d, or 4d shapes
  --if multiple regionex are provided, the extraction part of the pipeline loops over these   
  --the extraction part of the pipeline also includes the option to loop over all possible combinations of any subset of extraction parameters, defined in map2opt.py
- --to do this, set optex_sweep to a negative value, and all param combinations up to that index are looped over 
- --if optex_sweep is positive, only that param set index is run (if 'default', onlt the default param set is run) 
 
  
 

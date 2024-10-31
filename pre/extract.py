@@ -15,7 +15,7 @@ from helpers import stack_reshape_transpose_zero_type
 
 
 
-def extract(optex_sweep, pth_prefix, pth_tif_read, pth_allrec, md, extract_in_2d, regionex, methodex, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, regionex, methodex, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -23,8 +23,6 @@ def extract(optex_sweep, pth_prefix, pth_tif_read, pth_allrec, md, extract_in_2d
 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
-
-    pth_optex = pth_allrec + 'optroi.txt'
 
     stack = imread(pth_tif_read)
 
@@ -67,7 +65,7 @@ def extract(optex_sweep, pth_prefix, pth_tif_read, pth_allrec, md, extract_in_2d
             stackcrop_tmp = None
             
 
-            optall, optid = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optex, methodex, optex_sweep=optex_sweep)
+            optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex)
 
             print("looping over " + str(len(optall)) + " unique options sets")
             
@@ -116,7 +114,7 @@ def extract(optex_sweep, pth_prefix, pth_tif_read, pth_allrec, md, extract_in_2d
                         if two_channel_ex: 
                             if morphinpy: 
                                 imseed = stackcrop_seed[:,:,:,iz].mean(0) #right now seed images are forced to be 2d so indexing by iz is fine; in future will need if 3d switch
-                                Ain = cm.base.rois.extract_binary_masks_from_structural_channel(imseed, min_area_size=opt['morph_min_area_size'], min_hole_size=opt['morph_min_hole_size'], gSig=opt['morph_gSig'], expand_method=opt['morph_expand_method'], selem=opt['morph_selem'])[0]
+                                Ain = cm.base.rois.extract_binary_masks_from_structural_channel(imseed, min_area_size=opt['morph_min_area_size'], min_hole_size=opt['morph_min_hole_size'], gSig=opt['morph_gSig'], expand_method=opt['morph_expand_method'])[0]
                                 # crd = plot_contours(Ain.astype('float32'), mR)
                             else:
                                 print("loading predefined seed mask")

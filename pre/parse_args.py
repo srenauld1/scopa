@@ -36,7 +36,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, optex_sweep, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job):
     
     CLI=argparse.ArgumentParser()
@@ -76,12 +76,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         nargs=1, 
         type=str,
         default=[pth_storage_prefix],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--optex_sweep",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
-        type=int,
-        default=[optex_sweep],  # default if nothing is provided
     )
     CLI.add_argument(
         "--regionex",  # name on the CLI - drop the `--` for positional/required parameters
@@ -288,7 +282,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.len_window_smooth_t_rsc_sec = pars.LEN_WINDOW_SMOOTH_T_RSC_SEC
         args.extract_in_2d = pars.EXTRACT_IN_2D
         args.regionex = pars.REGIONEX
-        args.optex_sweep = pars.OPTEX_SWEEP
 
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
@@ -367,8 +360,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         regionex = args.regionex #keep as list
 
-    optex_sweep = int(args.optex_sweep[0])
-
     do_analysis = int(args.do_analysis[0])
     first_job = int(args.first_job[0])
 
@@ -387,7 +378,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, optex_sweep, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job)
 
 

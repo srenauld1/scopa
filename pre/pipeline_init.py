@@ -40,7 +40,7 @@ if len(sys.argv)>1:
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed,
-                      do_crop_only, do_extract, extract_in_2d, regionex, optex_sweep, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job] = \
     parse_command_line( folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix = pth_storage_prefix, 
                       do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pth_parsfile = pth_parsfile, scopatmpdir = scopatmpdir, 
@@ -49,11 +49,11 @@ if len(sys.argv)>1:
                       do_denoise = do_denoise, do_stitch = do_stitch, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
                       use_background_subtracted = use_background_subtracted, use_denoised = use_denoised, epoch_choose_denoise = epoch_choose_denoise, 
                       do_remove = do_remove, len_window_smooth_t_rsc_sec = len_window_smooth_t_rsc_sec, use_scannoise_removed = use_scannoise_removed, 
-                      do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, optex_sweep = optex_sweep, 
+                      do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, 
                       do_analysis = do_analysis, first_job = first_job)
 
 
-[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
+[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_analysis > 1:
@@ -166,7 +166,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
-        extract(optex_sweep, pth_prefix_all[ri], pth_read_all[ri], pth_allrec, md, extract_in_2d, regionex, methodex, do_crop_only, makeplots, cluster_backend, use_cluster)
+        extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, regionex, methodex, do_crop_only, makeplots, cluster_backend, use_cluster)
 
       if do_analysis:
         eng = matlab.engine.start_matlab()
