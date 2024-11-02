@@ -19,7 +19,6 @@
     "stimtype": "drone"
   },
   "cm": {
-    "alpha_snmf": 0.5,
     "bas_nonneg": 0,
     "cnn_lowest": 0,
     "decay_time": 0.2,
@@ -28,7 +27,6 @@
     "fudge_factor": 0.96,
     "gSig": [2,2,0.5],
     "ITER": 3,
-    "lambda_gnmf": 1,
     "low_rank_background": true,
     "max_iter_snmf": 500,
     "maxthr": 0.1,
@@ -60,6 +58,7 @@
     "SC_use_NN": 0,
     "sigma_smooth_snmf_time": 0.5,
     "SNR_lowest": 0,
+    "sparsity_penalty": 0.5,
     "stridefac": 2,
     "thr_method": "nrg",
     "update_background_components": true,
@@ -180,7 +179,7 @@
     "fldrtmp": "scopatmp",
     "oldcarl": 0,
     "pltvis": 1,
-    "timestr": "2024110119452835"
+    "timestr": "2024110123475980"
   },
   "nrm": {
     "channorm": 0,

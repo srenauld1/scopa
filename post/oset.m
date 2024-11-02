@@ -127,10 +127,10 @@ for k = 1:numel(allrecs)
         %some options are the same for all regionex (but same and different options must be put together within the regionex loop, given how odf works)
         o(k).roi.regionex = regionex_tmp{m};
 
-        o(k).roi.domm = 1; %do draw rois
+        o(k).roi.domm = 0; %do draw rois
         o(k).roi.doma = 1; %do automated morph rois
         o(k).roi.docm = 1; %do caiman extraction
-        o(k).roi.doqc = 1; %do quality control on rois
+        o(k).roi.doqc = 0; %do quality control on rois
         o(k).roi.doplt = 0;
 
         o(k).roi.mm.chandraw = [1];
@@ -172,7 +172,7 @@ oldcarlo %don't comment this out, but it's just for carl
 
 %%%% organize %%%%
 
-o = structord(o, vectype='row'); %recursively order alphabetically
+o = structsort(o, vectype='row'); %recursively order alphabetically
 
 o = opt2id(o, 'roi');
 

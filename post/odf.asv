@@ -217,7 +217,7 @@ end
 o.copybinprev = unique([oin.copybinprev, copybin]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
 
 o.id = idhold;
-o = structord(o, vectype='row');
+o = structsort(o, vectype='row');
 
 
 %% find files

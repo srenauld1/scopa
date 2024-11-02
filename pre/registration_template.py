@@ -16,7 +16,7 @@ from im_montage import im_montage
 from plot_gif import plot_gif
 
 
-def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, stack_has_multiple_z_slices, makeplots):
+def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stack_has_multiple_z_slices, makeplots):
 
     # make or load registration template; sleep until it's available, if necessary (error after waiting 5 min)
 
@@ -62,7 +62,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
                 minmovtmp = np.min(stack).astype('float32')
-                opts_dict = optrg(md, register_in_2d, minmovtmp) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
+                opts_dict = optrg(md, register_in_2d, minmovtmp, stack_shape_space, max_shifts_prc = max_shifts_prc) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
                 regtemplate = make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
@@ -137,13 +137,13 @@ def make_registration_template(stack, stack_has_multiple_z_slices, register_in_2
     # later template is used by slice if registration is in 2d, or by volume if not  
     # note caiman template is 'movie' while this is 'array' . . . doesn't seem to matter
 
+
     register_regtemplate = 0 #WILSONLAB, CFRW, 240218, caiman default is register_2d_template=1; SWITCH OFF TEMPLATE REGISTER for 2d, IT CAN MAKE A BAD TEMPLATE FOR A NOISY MOVIE; there is no option to register 3d template in caiman yet
     use_caiman_default_template_frames = 0 #WILSONLAB, CFRW, 240218, caiman defualt is use_caiman_default_template_frames=1; 1 to use caiman's original, which is 10 equidistant frames in 2d template, 50 equidistant in 3d template; make 0 to make template from first num_template_frames frames
     num_template_frames_if_not_using_caiman_default_template_frames = 50 #if use_caiman_default_template_frames is false, how many initial frames of stack to use to make template
-    template_start_frame_if_not_using_caiman_default_template_frames = 0 #first frame of template if use_caiman_default_template_frames is false
+    template_start_frame_if_not_using_caiman_default_template_frames = int(np.floor(stack.shape[0]/2)) # was 0, switched to middle frame #first frame of template if use_caiman_default_template_frames is false
 
-    Ts = stack.shape[0]
-    # Ts = np.arange(T)[subidx].shape[0]
+    Ts = stack.shape[0] # Ts = np.arange(T)[subidx].shape[0]
          
     if use_caiman_default_template_frames:
         step = Ts // 10 if stack_has_multiple_z_slices else Ts // 50 #this is caiman's default 

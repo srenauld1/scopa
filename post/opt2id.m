@@ -79,15 +79,18 @@ for k = 1:numel(vbin)
             end
 
             optexpall = cell2struct([struct2cell(optexpall); struct2cell(tmp)], [fieldnames(optexpall); fieldnames(tmp)]); %combine
-            optexpall = structord(optexpall, vectype='row');
+            optexpall = structsort(optexpall, vectype='row');
 
         end
+
+        %%%%%%%% MATCH OR DERIVE OPTID FOR REDUCED OPTIONS %%%%%%%%
 
         optout = [];
         fntmp = fieldnames(optexpall);
         for p = 1:numel(fntmp)
             oone = optexpall.(fntmp{p}); %single options set after expansion of cell arrays
-            % oone = cmex_opt_derive(oone); %dont use cmex_opt_derive because it depends on stack and metadata, and we are before those get loaded
+            oone = structunflat(oone);
+            % oone = cmex_opt_derive(oone); %dont use cmex_opt_derive because it depends on stack and metadata, and we are before those get loaded (the python version of opt2id happens after they get loaded, so for symmetry i'm leaving that in as a comment 
             optred = optreduce(oone, vbintmp); %options set without any redundancy (this goes to file)
             optid = fieldnames(optfile);
             optidnums = cellfun(@str2double, cellflat(regexp(optid,'\d+','match')));
@@ -121,18 +124,15 @@ for k = 1:numel(vbin)
             end
         end
 
-        fno = fieldnames(optout);
-        for p = 1:numel(fno)
-            optout.(fno{p}) = structunflat(optout.(fno{p}));
-        end
         o(j).(vbintmp) = optout;
+    
     end
 
-    structtxtsv(o, pthopt)
+    structtxtsv(optout, pthopt); %write optout (the corrected vbin from o) to opt file (do not not the whole opt struct o)
 
 end
 
-o = structord(o, vectype='row');
+o = structsort(o, vectype='row');
 
 
 

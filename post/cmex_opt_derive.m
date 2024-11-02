@@ -1,8 +1,7 @@
 function opt = cmex_opt_derive(opt)
 
-two_channel_ex = 0;
-dims_spatial_ex = 0;
-extract_in_2d = 0;
+error("you should not be running this function, it will error because it relies on stack info, and at this point in the matlab pipeline the stack hasn't been loaded yet; it is here for reference because it matches optderive which is called within optex, and may one day be used in matlab")
+
 
 %%%%%%%%%%%% DERIVE main options K, gSiz, AND PATCH options rf, stride, and p_patch, and init options sigma_smooth_snmf, alpha_snmf, and lambda_gnmf, and also morph_gSig, fr, and dxy  %%%%%%%%%%%%
 

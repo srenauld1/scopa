@@ -18,7 +18,7 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc, register_presmoothed, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
    
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -80,6 +80,10 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
         stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'], clipneg=clipneg)
+    
+
+    stack_shape = stack.shape
+    stack_shape_space = stack_shape[1:]
 
     if makeplots:
         #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack))
@@ -118,7 +122,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 
-    regtemplate = choose_registration_template(stack, md, registration_template_group_id, pth_allrec, pth_prefix, register_in_2d, stack_has_multiple_z_slices, makeplots) #if making a template, use stack rather than stack_secondary
+    regtemplate = choose_registration_template(stack, md, registration_template_group_id, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stack_has_multiple_z_slices, makeplots) #if making a template, use stack rather than stack_secondary
         
     ########################## REGISTRATION (CAIMAN NORMCORRE) ##########################
 
@@ -129,7 +133,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     else:
         indz = [indzall] #all slices in one list (not 2d)
 
-    stack_shape = stack.shape
+
     countz = 0
     for iz in indz: #for each slice (or all slices if register_in_2d = false)
 
@@ -138,7 +142,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             stack_sub = stack[:,:,:,iz]
             print("DOING 2d registration FOR SLICE " + str(iz))
         else: # for 3d registration keep all z slices (for now, until implement z ranges)
-            stack_sub = stack #can't .copy() for some reason (but that's fine as long as you don't modify stack_sub)
+            stack_sub = stack #can't .copy() for some reason (but that's fine as long as you don't modify stack_sub, which we dont)
             if stack_has_multiple_z_slices:
                 print("DOING 3D REGISTRATION FOR ALL SLICES")
             else:
@@ -151,8 +155,8 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
             
         imwrite(pth_tif_write_tmp, stack_sub.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
-    
-        opts_dict = optrg(md, register_in_2d, min_mov, fnames = pth_tif_write_tmp) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
+
+        opts_dict = optrg(md, register_in_2d, min_mov, stack_shape_space, fnames = pth_tif_write_tmp, max_shifts_prc = max_shifts_prc) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
         opts = cnmf.params.CNMFParams(params_dict=opts_dict)
 
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))

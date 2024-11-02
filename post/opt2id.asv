@@ -79,7 +79,7 @@ for k = 1:numel(vbin)
             end
 
             optexpall = cell2struct([struct2cell(optexpall); struct2cell(tmp)], [fieldnames(optexpall); fieldnames(tmp)]); %combine
-            optexpall = structord(optexpall, vectype='row');
+            optexpall = structsort(optexpall, vectype='row');
 
         end
 
@@ -132,7 +132,7 @@ for k = 1:numel(vbin)
 
 end
 
-o = structord(o, vectype='row');
+o = structsort(o, vectype='row');
 
 
 

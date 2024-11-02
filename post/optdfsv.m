@@ -128,10 +128,9 @@ d.cm.perc_baseline_snmf = [20]; % default 20; baseline percentile, removed from 
 d.cm.max_iter_snmf = [500]; %default 500; number iterations in initialization for method_init graph_nmf and sparse_nmf)
 
 % for method_init sparse_nmf only
-d.cm.alpha_snmf = 0.5; %default 0.5; sparsity penalty for sparse_nmf, different than sparsity penalty in graph_nmf, so keeping it separate
+d.cm.sparsity_penalty = 0.5; %not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf); note these have different defaults in caiman (alpha_snmf is 0.5, lambda_gnmf is 1)
 
 % for method_init graph_nmf only
-d.cm.lambda_gnmf = 1; %default 1; sparsity penalty for method_init graphNMF; different than sparsity penalty in sparse_nmf, so keeping it separate
 d.cm.SC_sigma = 1; % default 1; std for SC kernel
 d.cm.SC_thr = 0; % default 0; threshold for affinity matrix
 d.cm.SC_normalize = 1; % default True; standardize entries prior to computing affinity matrix
@@ -180,7 +179,6 @@ d.cm.decay_time = .2; % i can only find this used in components evaluation (and 
 d.cm.morph_min_area_size = 2; %min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
 d.cm.morph_min_hole_size = 0; %holes with smaller area (in pixels) will be filled in; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
 d.cm.morph_expand_method = 'closing'; %closing or dilation; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
-
 
 
 %% qc (quality control rois)

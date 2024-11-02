@@ -167,7 +167,7 @@ pth.featsave = pth_feat_save;
 pth.parent_feat = pthparent_feat;
 pth.template = pth_template;
 
-pth = structord(pth);
+pth = structsort(pth);
 
 
 

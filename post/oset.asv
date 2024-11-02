@@ -176,7 +176,7 @@ oldcarlo %don't comment this out, but it's just for carl
 
 %%%% organize %%%%
 
-o = structord(o); %recursively order alphabetically
+o = structsort(o); %recursively order alphabetically
 
 o = opt2id(o, 'roi');
 

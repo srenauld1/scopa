@@ -1,4 +1,3 @@
-from dict_ord import dict_ord
 
 def optreduce(opt, two_channel_ex):
 
@@ -83,8 +82,6 @@ def optreduce(opt, two_channel_ex):
         ored['morph_min_area_size'] = opt['morph_min_area_size']
         ored['morph_min_hole_size'] = opt['morph_min_hole_size']
         ored['morph_expand_method'] = opt['morph_expand_method']
-
-    ored = dict_ord(ored) #recursively order alphabetically, ignoring case
 
 
     return ored

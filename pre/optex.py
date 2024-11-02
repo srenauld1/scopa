@@ -3,6 +3,7 @@
 import numpy as np
 from map2opt import map2opt
 from optreduce import optreduce
+from dictsort import dictsort
 from optex2id import optex2id
 from dict_unique import dict_unique
 import json
@@ -69,6 +70,7 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
             opt_oneset = opt2dfix(opt_oneset)
 
         optred = optreduce(opt_oneset, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
+        optred = dictsort(optred) #recursively order alphabetically, ignoring case
         optredall.append(optred)
     
     optredall = dict_unique(optredall) #remove redundant reduced options sets 
