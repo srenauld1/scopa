@@ -11,6 +11,8 @@ import json
 
 def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, regionex, maskname):
 
+    # options = {k: v for k, v in locals().items() if v is not None}
+
     ############ SET OPTIONS IN YOU WANT TO OVERWRITE DEFAULTS IN DICT otmp, USE LISTS TO EXPAND INTO ALL COMBINATIONS; IF ALL OPTIONS IN otmp ARE SINGLE ELEMENTS, THEN THERE WILL ONLY BE ONE OPTIONS SET  ############
     
     otmp = {}
