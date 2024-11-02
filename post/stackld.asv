@@ -60,7 +60,7 @@ end
 
 if numel(suffixplt)~=0
     if numel(dr)>numel(suffixplt)
-        sprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr")
+        fprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr" + newline)
         dr = dr(1:numel(suffixplt));
     elseif numel(dr)<numel(suffixplt)
         if numel(dr)==1
@@ -71,7 +71,7 @@ if numel(suffixplt)~=0
     end
 end
 if ~isempty(suffixplt) && ~ismember(suffixstack, suffixplt)
-    sprintf("note: suffixplt DOES NOT CONTAIN suffixstack")
+    fprintf("note: suffixplt DOES NOT CONTAIN suffixstack" + newline)
 end
 if numel(suffixplt)~=numel(unique(suffixplt)) %make sure there aren't accidental repeats
     error("you have at least one repeated suffixplt; there cannot be any repeated suffixplt")
@@ -84,7 +84,7 @@ if isempty(suffixplt)
     suffixld = suffixstack;
 else
     plot_stack_gif = 1;
-    if contains(suffixstack, suffixplt)
+    if any(strcmp(suffixstack, suffixplt))
         suffixld = [setxor(suffixstack, suffixplt, 'stable') suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
     else
         suffixld = [suffixplt suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
@@ -95,7 +95,6 @@ indstmp = setxor(1:numel(dr), indssrc);
 indsnew = [indstmp(1:indsdst-1) indssrc indstmp(indsdst:end)];
 dr = dr(indsnew);
 
-indsmissing = [];
 cnt = 0;
 for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt, dr, and indsmissing
     pthtmp = stackfind(pthsib=pth_stack, suffix=suffixld{spi});
@@ -103,11 +102,12 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;
     else
+        if any(strcmp(suffixld{spi}, suffixplt))
+            suffixplt(strcmp(suffixld{spi}, suffixplt)) = [];
+            dr(spi) = [];
+            indsnew(spi) = [];
+        end
         suffixld(spi) = [];
-        if contains(suffixld{spi}, suffixplt) 
-        dr(spi) = [];
-        indsmissing = [indsmissing spi];
-        sprintf("WARNING, NO FILE FOUND WITH SUFFIX: " + suffixld{spi} + " WITH SAME folder, recdate, fly, and trial as sibling file " + pth_stack +  newline + "SKIPPING IT FOR PLOT")
     end
 end
 pth_stacks = flip(pth_stacks); %since spi was backwards above
@@ -115,8 +115,8 @@ pth_stacks = flip(pth_stacks); %since spi was backwards above
 %%  loop over suffixes, loading and concatenating
 
 
-stacktmp = cell(numel(stackplt), 1); %make it cell column so first dim is cat when cell2mat below
-stackmntmp = cell(numel(pth_stacks), 1); %make it cell column so first dim is cat when cell2mat below
+stacktmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat when cell2mat below
+stackmntmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat when cell2mat below
 
 
 cnt = 0;
@@ -162,7 +162,7 @@ for spi = 1:numel(pth_stacks)
         end
     end
 
-    if plot_stack_gif && contains(suffixld{spi}, suffixplt)
+    if plot_stack_gif && contains(suffixld{spi}, suffixplt)  any(strcmp(suffixstack, suffixplt))
 
         cnt = cnt+1;
 
@@ -171,8 +171,8 @@ for spi = 1:numel(pth_stacks)
             [it, itstr] = indsmake(it, indsall=size(stack,4), label_prefix='t', strdelim=': ', printmax=20);
         end
 
-        stacktmp{cnt} = stack(:,:,iz,it,:);
-        stackmntmp{cnt} = mean(stack, 4, 'native');
+        stacktmp{cnt, 1} = stack(:,:,iz,it,:); %make sure it's indexed into first dimension
+        stackmntmp{cnt, 1} = mean(stack, 4, 'native');  %make sure it's indexed into first dimension
 
         if ~strcmp(pth_stack, pth_stacks{spi})
             stack = []; %remove unless it's the stack for analysis outside this function
@@ -186,7 +186,6 @@ end
 
 if plot_stack_gif
 
-    indsnew = indsnew(~ismember(indsnew, indsmissing));
     [~, plot_stack_order] = sort(indsnew);
 
     dr = dr(plot_stack_order);
@@ -201,7 +200,9 @@ if plot_stack_gif
     index_labels{4} = it; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
 
     numchan = unique(cellfun(@(x) size(x,5), stacktmp)); %must be the same for each stack, will error if not
-    if numel(numchan)==1
+    if numel(numchan)~=1
+        error("all stacks must have same number of channels")
+    else
         for k = numel(stacktmp):-1:1 %backwards so you don't have to allocate another 
             for m = numchan:-1:1 %backwards so you don't have to allocate another 
                 stacktmp{k,m} = stacktmp{k}(:,:,:,:,m);

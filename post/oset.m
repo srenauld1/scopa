@@ -46,8 +46,8 @@ regionex_tmp = {'dflt', 'fb', 'pb', 'eb'}; %use 'dflt' to skip prompt to define 
 
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
-o.sld.chanuse = [1]; %which channel to use
-o.sld.suffixplt = {'cmrg'}; %which stacks to plot in gif (in stackld) for comparison; empty to skip plot; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you want all stacks converted, list them here and get a comparison plot for free)
+o.sld.chanuse = [1]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
+o.sld.suffixplt = {'cmrg', 'cmrg_dcdn'}; %suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); empty to skip plot; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you want all stacks converted, list them here and get a comparison plot for free)
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
@@ -109,16 +109,13 @@ o = odf(o, files=dofindfiles); %set all above options and find files (unless ose
 %%%% create distinct options (or not) for different found recordings, and different regionex %%%%
 
 allrecs = getfieldns(o, 'id.recdate');
-recgroup1 = find(contains(allrecs, '202306')); %index of all found files in june of 2022
-recgroup2 = find(contains(allrecs, '202409')); %index of all found files in september of 2021
+recgroup1 = find(contains(allrecs, '202206')); %index of all found files in june of 2022
 
 for k = 1:numel(allrecs)
 
     %recording specific, unrelated to roi
     if ismember(k, recgroup1)
         o(k).sld.chanuse = [2]; %use channel 2 in recgroup1, recordings from neither recgroup are unchanged from settings above (or from default, if none set above in oset)
-    elseif ismember(k, recgroup2)
-        o(k).sld.chanuse = [1, 2]; %use both channels in recgroup2, recordings from neither recgroup are unchanged from above (or from default, if none set above in oset)
     end
 
     %recording and roi specific

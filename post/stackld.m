@@ -84,7 +84,7 @@ if isempty(suffixplt)
     suffixld = suffixstack;
 else
     plot_stack_gif = 1;
-    if contains(suffixstack, suffixplt)
+    if any(strcmp(suffixstack, suffixplt))
         suffixld = [setxor(suffixstack, suffixplt, 'stable') suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
     else
         suffixld = [suffixplt suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
@@ -102,7 +102,7 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
         cnt = cnt+1;
         pth_stacks(cnt) = pthtmp;
     else
-        if contains(suffixld{spi}, suffixplt)
+        if any(strcmp(suffixld{spi}, suffixplt))
             suffixplt(strcmp(suffixld{spi}, suffixplt)) = [];
             dr(spi) = [];
             indsnew(spi) = [];
@@ -162,7 +162,7 @@ for spi = 1:numel(pth_stacks)
         end
     end
 
-    if plot_stack_gif && contains(suffixld{spi}, suffixplt)
+    if plot_stack_gif && any(strcmp(suffixld{spi}, suffixplt))
 
         cnt = cnt+1;
 
@@ -171,8 +171,8 @@ for spi = 1:numel(pth_stacks)
             [it, itstr] = indsmake(it, indsall=size(stack,4), label_prefix='t', strdelim=': ', printmax=20);
         end
 
-        stacktmp{cnt} = stack(:,:,iz,it,:);
-        stackmntmp{cnt} = mean(stack, 4, 'native');
+        stacktmp{cnt, 1} = stack(:,:,iz,it,:); %make sure it's indexed into first dimension
+        stackmntmp{cnt, 1} = mean(stack, 4, 'native');  %make sure it's indexed into first dimension
 
         if ~strcmp(pth_stack, pth_stacks{spi})
             stack = []; %remove unless it's the stack for analysis outside this function
@@ -200,7 +200,9 @@ if plot_stack_gif
     index_labels{4} = it; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
 
     numchan = unique(cellfun(@(x) size(x,5), stacktmp)); %must be the same for each stack, will error if not
-    if numel(numchan)==1
+    if numel(numchan)~=1
+        error("all stacks must have same number of channels")
+    else
         for k = numel(stacktmp):-1:1 %backwards so you don't have to allocate another 
             for m = numchan:-1:1 %backwards so you don't have to allocate another 
                 stacktmp{k,m} = stacktmp{k}(:,:,:,:,m);
