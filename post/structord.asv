@@ -21,17 +21,12 @@ else
         else
             if isscalar(s.(fn{k}))
                 if nocells && iscell(s.(fn{k}))
-                    s.(fn{k}) = s.(fn{k}){1}; %if nocells, remove from cell if scalar
+                    s.(fn{k}) = s.(fn{k}){1}; %remove from cell if scalar
                 end
             else
                 if nocells && iscell(s.(fn{k}))
-                    if all(cellfun(@ischar,s.(fn{k})))
-                        s.(fn{k}) = convertCharsToStrings(s.(fn{k})); %if nocells, make char cell array a string array
-                    elseif all(cellfun(@isstring,s.(fn{k})))
-                        s.(fn{k}) = string(s.(fn{k})); %if nocells, make string cell array a string array
-                    else
-                        error("nocell option is true, so no cells are allowed in struct except string and char, which are converted to string arrays")
-                    end
+                    if ischar(s.(fn{k}))
+                    s.(fn{k}) = s.(fn{k}){1}; %remove from cell if scalar
                 end
                 if strcmp(opt.vectype,'row') && iscolumn(s.(fn{k}))
                     fprintf("converting column vector " + fn{k} + " to row vector because vectype is row" + newline)

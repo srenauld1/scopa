@@ -53,7 +53,7 @@ if len(sys.argv)>1:
                       do_analysis = do_analysis, first_job = first_job)
 
 
-[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
+[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_analysis > 1:
@@ -117,11 +117,6 @@ if not do_copyfiles:
   elif do_remove or do_analysis:
     import matlab.engine
     import io
-    from pathlib import Path
-    pp = Path(currscriptdir).parts #split path
-    pp_splitind = pp.index('scopa') + 1
-    pth_scopa = os.path.join(*pp[:pp_splitind]) + '/'
-
 
 
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
@@ -166,7 +161,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
-        extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, regionex, methodex, do_crop_only, makeplots, cluster_backend, use_cluster)
+        extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)
 
       if do_analysis:
         eng = matlab.engine.start_matlab()

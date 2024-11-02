@@ -40,12 +40,7 @@ o.mn.dopop = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
 
-% o=odf(o, files=2);
-% o=odf(o, files=0);
-% o=odf(o, files=1);
-% o=odf(o, files=2);
-% o=odf(o, files=0);
-regionex = {'dflt', 'fb', 'pb', 'eb'}; %use 'dflt' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'dflt', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex_tmp = {'dflt', 'fb', 'pb', 'eb'}; %use 'dflt' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'dflt', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 %%%% some simple option specification %%%%
 
@@ -127,10 +122,10 @@ for k = 1:numel(allrecs)
     end
 
     %recording and roi specific
-    for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
+    for m = 1:numel(regionex_tmp) %create different copybin within o.roi for each regionex, to analyze them differently
 
         %some options are the same for all regionex (but same and different options must be put together within the regionex loop, given how odf works)
-        o(k).roi.regionex = regionex{m};
+        o(k).roi.regionex = regionex_tmp{m};
 
         o(k).roi.domm = 1; %do draw rois
         o(k).roi.doma = 1; %do automated morph rois
@@ -154,7 +149,7 @@ for k = 1:numel(allrecs)
         o(k).roi.nrm.post = {'f', 'dff010020'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
 
         %some options are different, depending on regionex
-        if strcmp(regionex{m}, 'fb')
+        if strcmp(regionex_tmp{m}, 'fb')
             o(k).roi.mm.maskname = {'left', 'right'}; %name for masks drawn on the same regionex
             if ismember(k, recgroup1)
                 o(k).roi.ma.numroi = 256; %use 256 automated roi (ma) for any regionex starting with 'fb' in recording group 1
@@ -165,7 +160,7 @@ for k = 1:numel(allrecs)
             o(k).roi.ma.numroi = 0; %skip automated roi for all other regionex, regardles of recording
         end
 
-        o(k) = odf(o(k), {'roi'}, regionex{m}, files=2); %use files=2 to keep id field untouched (keep found files)
+        o(k) = odf(o(k), {'roi'}, regionex_tmp{m}, files=2); %use files=2 to keep id field untouched (keep found files)
 
     end
 

@@ -65,6 +65,6 @@ options
     some formatting is lost because of jsonencode/jsondecode, and consider syntax changes in matlab/python; current defaults are easily dealt with; use 0/1 instead of true/false, don't use multidimensional text defaults, convert char to string when necessary (done automatically in scopa); but careful adding defaults
 
 expansion
-    for consistency, all text arrays are string, since cell is for expansion
+    for consistency, all text arrays are string
 
 %}

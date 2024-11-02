@@ -37,11 +37,17 @@ for m = 1:numel(vbin)
                     o = rmfield(o, fn{k});
                 end
             end
+            if any(startsWith(fn, 'cm_')) %also remove doplt, since that's irrelevant to the data
+                o = cmex_reduce(o);
+            end
+
 
         case 'mfit'
 
         case 'feat'
 
     end
+
+end
 
 end

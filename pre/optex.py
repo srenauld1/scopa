@@ -8,11 +8,12 @@ from dict_unique import dict_unique
 import json
 
 
-def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex):
+def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, regionex, maskname):
 
     ############ SET OPTIONS IN YOU WANT TO OVERWRITE DEFAULTS IN DICT otmp, USE LISTS TO EXPAND INTO ALL COMBINATIONS; IF ALL OPTIONS IN otmp ARE SINGLE ELEMENTS, THEN THERE WILL ONLY BE ONE OPTIONS SET  ############
     
     otmp = {}
+    
     otmp['gSig'] = [ [2, 2, 0.5], [4, 4, 1] ] #list of lists; z (3rd element) ignored if extract_in_2d; 
     otmp['nb'] = [1,2] 
     otmp['low_rank_background'] = [1, 0]
@@ -29,6 +30,12 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     otmp['max_iter_snmf'] = [500] 
     otmp['sparsity_penalty'] = [1, 4] #not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf)
 
+    # also assign a few options that are set or derived outside optex (not for user input)
+    otmp['fnames'] = [ fnames ]
+    otmp['regionex'] = [ regionex ] 
+    otmp['methodex'] = [ methodex ] 
+    otmp['maskname'] = [ maskname ] 
+
     ############ READ DEFAULT OPTIONS AND OVERWRITE WITH ANY ABOVE IN otmp ############
 
     with open(pth_optdf, 'r') as file:
@@ -43,6 +50,8 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
             notlist[k] = 1
             otmp[k] = [otmp[k]]
 
+
+
     ############ EXPAND OPTIONS (APPLY map2opt TO CREATE ALL COMBINATIONS OF OPTIONS), THEN GET MINIMAL EFFECTIVE SET  ############
 
     optsets = map2opt(otmp)
@@ -56,9 +65,10 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
         for key,val in zip(optsets.order, opt_oneset_list):
             opt_oneset[key] = val
 
-        opt_oneset = derive_some_options(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opt_oneset)        
-        opt_oneset = optcheck(two_channel_ex, extract_in_2d, opt_oneset) #check for problems in how options were set
-        optred = optreduce(opt_oneset, methodex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
+        if extract_in_2d: #change some options from 3d to 2d (remove 3rd element), do this before optreduce, in case redundancy without 3rd element
+            opt_oneset = opt2dfix(opt_oneset)
+
+        optred = optreduce(opt_oneset, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
         optredall.append(optred)
     
     optredall = dict_unique(optredall) #remove redundant reduced options sets 
@@ -67,83 +77,94 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
 
     optout = {}
     for opt_oneset in optredall:
-        optid = optex2id(opt_oneset, methodex, pth_optroi)
-        optout[optid] = opt_oneset
+        optid = optex2id(opt_oneset, pth_optroi)
+
+        optout[optid] = optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opt_oneset)        
+        optout[optid] = optcheck(two_channel_ex, extract_in_2d, optout[optid]) #check for problems in how options were set
    
     return optout
 
 
-def derive_some_options(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opttmp):
+
+
+def opt2dfix(opt_oneset):
+    
+    #right now there's only one param to correct (used to be more)
+    opt_oneset['gSig'] = opt_oneset['gSig'][:-1] 
+    
+    return opt_oneset
+
+
+def optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opt):
     
     ############ DERIVE main options K, gSiz, AND PATCH options rf, stride, and p_patch, and init options sigma_smooth_snmf, alpha_snmf, and lambda_gnmf, and also morph_gSig, fr, and dxy  ############
     
-    opttmp['sigma_smooth_snmf'] = [ opttmp['sigma_smooth_snmf_time'] ] + opttmp['gSig']
-    opttmp ['alpha_snmf'] = opttmp['sparsity_penalty']
-    opttmp['lambda_gnmf'] = opttmp['sparsity_penalty']
+    if opt['method_init']=='graph_nmf' or opt['method_init']=='sparse_nmf':
+        opt['sigma_smooth_snmf'] = [ opt['sigma_smooth_snmf_time'] ] + opt['gSig']
+        opt['alpha_snmf'] = opt['sparsity_penalty']
+        opt['lambda_gnmf'] = opt['sparsity_penalty']
 
-    opttmp['gSiz'] = [int(np.round(2*gstmp + 1)) for gstmp in ['gSig']] #half-size of bounding box for each neuron; this is what caiman does to compute gsiz from gsig, just putting it here for transparency
+    opt['gSiz'] = [int(np.round(2*gstmp + 1)) for gstmp in opt['gSig']] #half-size of bounding box for each neuron; this is what caiman does to compute gsiz from gsig, just putting it here for transparency
     if extract_in_2d:
-        gsiz_use = opttmp['gSiz'][0:2]
+        gsiz_use = opt['gSiz'][0:2]
     else:
-        gsiz_use = opttmp['gSiz']
-    if two_channel_ex: #patches turned off (process whole fov at once) when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
-        opttmp['rf'] = None # setting rf to none will run CNMF on the whole FOV
-        opttmp['stride'] = None       
-        total_vox_ex = np.prod(dims_spatial_ex)
+        gsiz_use = opt['gSiz']
+    
+    if two_channel_ex or opt['patchfac']==0: #patches turned off (process whole regionex at once) when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+        opt['rf'] = None # setting rf to none will run CNMF on the whole regionex
+        opt['stride'] = None       
+        total_vox_ex = np.prod(dims_spatial_ex) #total_vox_ex is in whole regionex if no patches
     else:
         maxgsiz = np.max(gsiz_use)
-        opttmp['rf'] = int(np.ceil((maxgsiz) * opttmp['patchfac']))
+        opt['rf'] = int(np.ceil(maxgsiz * opt['patchfac']))
         patchFW = ['rf']*2 #patch full width, since rf is half
-        opttmp['stride'] = int(np.ceil((maxgsiz) * opttmp['stridefac']))
+        opt['stride'] = int(np.ceil(maxgsiz * opt['stridefac']))
         if extract_in_2d:
-            total_vox_ex = patchFW*patchFW
+            total_vox_ex = patchFW*patchFW #total_vox_ex is num vox per patch , if patches
         else:
             if patchFW<dims_spatial_ex[2]:
                 rfz = patchFW
             else:
                 rfz = dims_spatial_ex[2]
-            total_vox_ex = patchFW*patchFW*rfz
+            total_vox_ex = patchFW*patchFW*rfz #total_vox_ex is num vox per patch , if patches
 
-    if total_vox_ex>=np.prod(dims_spatial_ex): #reset rf and stride if it turns out the patch is same size as fov or bigger
-        opttmp['rf'] = None # setting rf to none will run CNMF on the whole FOV
-        opttmp['stride'] = None       
+        if total_vox_ex>=np.prod(dims_spatial_ex): #reset total_vox_ex and rf and stride if it turns out the patch is same size as regionex or bigger
+            raise Exception("total number voxels in patch is greater than total num voxels in regionex (or full fov, if regionex is dflt); originally this reverted patch to empty, but this means accurate patch options cannot be set in optroi.txt, since if this reverted to empty it would break the isomorphism between input options and derived options;")
+            total_vox_ex = np.prod(dims_spatial_ex)
+            opt['rf'] = None # setting rf to none will run CNMF on the whole regionex
+            opt['stride'] = None       
+        
+    opt['K'] = int(np.round( total_vox_ex / np.prod(gsiz_use)*opt['roidensity']))  #K is number of components in patch, or whole regionex if rf is none (no patches)
+
+    if opt['only_init']==False: # opt below wont exist in reduced opt (passed into this function) unless only init is false
+        if opt['p']!=0 and opt['deconvolution_in_each_patch']:
+            opt['p_patch'] = opt['p'] # default is zero (ie do not deconvolution_in_each_patch); if nonzero, run deconvolution in each patch, rather than after merging patches, if nonzero
+        else:
+            opt['p_patch'] = 0
     
-    K = int(np.round( total_vox_ex / np.prod(gsiz_use)*opttmp['roidensity']))  #K is number of components in whole fov (the "whole fov patch")
+    opt['morph_gSig'] = int(np.mean(opt['gSig'])) #must be odd and greater than 1; only used for cm.base.rois.extract_binary_masks_from_structural_channel (were it's called gSig), which is only used in two_channel_ex when automated structural rois seed the other channel
+    if opt['morph_gSig']<3:
+       opt['morph_gSig'] = 3
+    if opt['morph_gSig']%2!=1:
+       opt ['morph_gSig'] = opt['morph_gSig'] + 1
 
-    if opttmp['run_deconvolution_in_each_patch'] and opttmp['p']>0:
-        opttmp['p_patch'] = p # default is zero (ie do not run_deconvolution_in_each_patch); if nonzero, run deconvolution in each patch, rather than after merging patches, if nonzero
+    opt['fr'] = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
+    if extract_in_2d: 
+        opt['dxy'] = [md['xpix']/md['xfov'], md['ypix']/md['yfov'] ] #pixels per micron
     else:
-        opttmp['p_patch'] = 0
+        opt['dxy'] = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
     
-    opttmp['morph_gSig'] = int(np.mean(opttmp['gSig'])) #must be odd and greater than 1; only used for cm.base.rois.extract_binary_masks_from_structural_channel (were it's called gSig), which is only used in two_channel_ex when automated structural rois seed the other channel
-    if opttmp['morph_gSig']<3:
-       opttmp['morph_gSig'] = 3
-    if opttmp['morph_gSig']%2!=1:
-       opttmp ['morph_gSig'] = opttmp['morph_gSig'] + 1
+    return opt
 
-    opttmp['fr'] = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
-    if md['zfov']==0: #md['zfov']==0 when stack is xyt (not volumetric xyzt); below, the third element (hard coded 0.0) will be removed
-        opttmp['dxy'] = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], 0.0 ] #pixels per micron
-    else:
-        opttmp['dxy'] = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
-    
-    return opttmp
-
-def optcheck(two_channel_ex, extract_in_2d, opttmp):
+def optcheck(two_channel_ex, opt):
     
     ############ CHECK OPTIONS FOR PROBLEMS ############
 
-    if extract_in_2d: #change a few options from 3d to 2d (remove 3rd element)
-        opttmp['dxy'] = opttmp['dxy'][:-1] 
-        opttmp['gSig'] = opttmp['gSig'][:-1] 
-        opttmp['gSiz'] = opttmp['gSiz'][:-1] 
-        opttmp['sigma_smooth_snmf'] = opttmp['sigma_smooth_snmf'][:-1]
-
-    if opttmp['rf'] is not None and opttmp['rf']<np.max(opttmp['gSiz'])*3:
+    if opt['rf'] is not None and opt['rf']<np.max(opt['gSiz'])*3:
         raise Exception("rf should be at least 3 times gSiz, according to caiman recommendations")
-    if opttmp['stride'] is not None and opttmp['stride']<np.max(opttmp['gSiz']):
+    if opt['stride'] is not None and opt['stride']<np.max(opt['gSiz']):
         raise Exception("stride should be at least equal to gSiz, according to caiman recommendations")
-    if opttmp['method_init']=='corr_pnr': #for 1p data, according to caiman . . . so does this mean lots of background activity?? 
+    if opt['method_init']=='corr_pnr': #for 1p data, according to caiman . . . so does this mean lots of background activity?? 
         raise Exception("method_init 'corr_pnr' is for 1p data (data with busy background, aka high rank background); if you want to use it anyway, see required options changes below")
             #these changes are required for method_init=='corr_pnr':
                 # K = None # none if using corr_pnr (if in cnmfe mode, ie 1p mode)
@@ -152,14 +173,14 @@ def optcheck(two_channel_ex, extract_in_2d, opttmp):
                 # low_rank_background = None ##spatial, and patch; #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
                 # center_psf = 1  #initialization; True indicates centering the filtering kernel for background removal. This is useful for data with large background fluctuations.
                 # normalize_init = 0 #init; variance norm by pixel over time befroe initialization; prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always; 
-    if two_channel_ex and opttmp['only_init']:
+    if two_channel_ex and opt['only_init']:
         raise Exception("only_init must be false if two_channel_ex is true")
-    if opttmp['morph_gSig']<3:
+    if opt['morph_gSig']<3:
         raise Exception("warning, morph_gSig must be greater than or equal to 3 (and odd)")
-    if not opttmp['morph_gSig']%2==1:
+    if not opt['morph_gSig']%2==1:
         raise Exception("warning, morph_gSig must be odd (and greater than or equalt o 3)")
     
-    return opttmp
+    return opt
 
 
     ############ NOTES ON INITIALIZATION METHODS ############

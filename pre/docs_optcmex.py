@@ -4,7 +4,7 @@
 # below are most of the options for caiman source extraction with cnmf
 # these are chosen as the most likely to require tuning
 
-# of the options below, only patchfac, stridefac, run_deconvolution_in_each_patch, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option K, and run_deconvolution_in_each_patch is used to derive p_patch)
+# of the options below, only patchfac, stridefac, deconvolution_in_each_patch, and roidensity are not caiman options (patchfac and stridefac are proportional to / used to derive caiman options rf and strides, while roidensity is used to derive caiman option K, and deconvolution_in_each_patch is used to derive p_patch)
 
 # set scopa defaults above section heading "END SETTING SCOPA CAIMAN EXTRACTION DEFAULTS"
 
@@ -84,7 +84,7 @@ extract_cc = 1 #true will throw away isolated pixels of some kind (cc means conn
 patchfac = 4 #not a caiman option; how many times larger largest dim of patch is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches, or make it large to do one patch on the full fov (saqme as 0); caiman recommends 3-4 (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
 stridefac = 2 #not a caiman option; how many times larger largest dim of stride is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches; caiman recommends at least 1 (at least neuron dia) (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
 nb_patch = nb #default matches nb; num background components per patch 
-run_deconvolution_in_each_patch = 0 #not a caiman param but used to derive p_patch; this will only have effect if p is nonzero above
+deconvolution_in_each_patch = 0 #not a caiman param but used to derive p_patch; this will only have effect if p is nonzero above
 
 
 ############ QUALITY EVALUATION (USED IN evaluate_components) ############
@@ -141,8 +141,8 @@ if total_vox_ex>=np.prod(dims_spatial_ex): #reset rf and stride if it turns out 
 
 K = int(np.round( total_vox_ex / np.prod(gsiz_use)*roidensity))  #K is number of components in whole fov (the "whole fov patch")
 
-if run_deconvolution_in_each_patch and p>0:
-    p_patch = p # default is zero (ie do not run_deconvolution_in_each_patch); if nonzero, run deconvolution in each patch, rather than after merging patches, if nonzero
+if deconvolution_in_each_patch and p>0:
+    p_patch = p # default is zero (ie do not deconvolution_in_each_patch); if nonzero, run deconvolution in each patch, rather than after merging patches, if nonzero
 else:
     p_patch = 0
 

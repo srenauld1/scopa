@@ -24,7 +24,7 @@ do_register = 0 #caiman normCorre registration
 clipneg = 1 #unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed; set clipneg to 1 to clip negative values to 0; set clipneg to 0 to not do this; (accurate offset is best obtained using autoread checkbox in scanimage); if you do not check 'subtract_offset' then negative values should not exist
 discard_channel_reg = None #None, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
-register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  
+register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
 halfwidth_window_bgsub = 0 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
 len_window_smooth_t_mcp_sec = 0 #0.8 #smoothing window length, uses 1d gaussian with std that is (by default) one-tenth len_window_smooth_t_mcp_sec - 1 (since gaussian window radius is truncated at 5 std), (len_window_smooth_t_mcp_sec = 0 skips smoothing)
 register_presmoothed = 0 # if 1, and if len_window_smooth_t_mcp_sec!=0, register the presmoothed stack to the smoothed stack and discard the smoothed stack, if 0 and if len_window_smooth_t_mcp_sec!=0, just register the smoothed stack and use that going formward  
@@ -52,6 +52,7 @@ do_extract = 1 #caiman source extraction
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 methodex = 'seed21py' #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 regionex = ['pnew3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
+maskname = ['dflt']
 
 do_analysis = 0 #matlab analysis 'post', various functions in a2p.m
 

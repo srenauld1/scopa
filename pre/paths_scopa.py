@@ -4,11 +4,15 @@ import os
 import sys
 from pathlib import Path
 
-def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
+def make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
 
     print("sys.path[0] returns: \n" + sys.path[0])
+
+    pp = Path(currscriptdir).parts #split path
+    pp_splitind = pp.index('scopa') + 1
+    pth_scopa = os.path.join(*pp[:pp_splitind]) + '/'
 
     if scopatmpdir:
         pth_scopatmpdir = scopatmpdir
@@ -63,7 +67,7 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
         pth_allrec = pth_compute
         pth_fldr_copydest_prefix = pth_storage
 
-    pth_optdf = pth_allrec + 'optdf.txt'
+    pth_optdf = pth_scopa + 'optdf.txt'
     pth_optroi = pth_allrec + 'optroi.txt'
     
     print("\n\n\npth_storage is : \n" + pth_storage)
@@ -71,4 +75,4 @@ def make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_f
     print("pth_allrec is : \n" + pth_allrec)
     print("pth_fldr_fnind is : \n" + pth_fldr_fnind)
 
-    return pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi
+    return pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi

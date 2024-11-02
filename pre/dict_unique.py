@@ -2,12 +2,30 @@ import numpy as np
 
 def dict_unique(din, dout=None):
 
-    #get list of unique options dicts (using this loop because terser lines failed)
+    #get list of unique dicts, from list of dicts din (if dout is None), or from two list of dicts din and dout (using this loop because terser lines failed)
     
     newdout = 0
     if dout is None:
         newdout = 1
-        dout = [{}]
+        dout = [{}] #list of empty dict
+    elif isinstance(dout, dict):
+        dout2 = []
+        nestflag = 0
+        for key in dout:
+            if isinstance(dout[key], dict): #convert dicts of dicts to list of dicts
+                nestflag = 1
+                dout2.append(dout[key])
+            else:
+                if nestflag:
+                    raise Exception("dout is a dict of lists, but should be a dict, or a dict of dicts")
+        if nestflag:
+            dout = dout2
+        else:
+            dout = [dout]
+
+
+    if not isinstance(din, list):
+        din = [din]
 
     for k in np.arange(len(din)):
         foundmatch = 0

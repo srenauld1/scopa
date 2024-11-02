@@ -1,0 +1,286 @@
+{
+  "bump": {
+    "domain": "all",
+    "domaintype": "functional",
+    "doplt": 0,
+    "mthd": "pva",
+    "numcluster_for_bump_domain_resample": 16,
+    "omitnan": 1,
+    "resample_smoothfac": 1,
+    "rescale_clusters": 1,
+    "slopelensec": 5,
+    "slopeord": 2,
+    "smoothwindow_sec": 0.2
+  },
+  "carl": {
+    "feat": "CON_51",
+    "pth_template": "~/ds/data/stimuli",
+    "pthparent_feat": "~/ds/data/rec",
+    "stimtype": "drone"
+  },
+  "cm": {
+    "alpha_snmf": 0.5,
+    "bas_nonneg": 0,
+    "cnn_lowest": 0,
+    "decay_time": 0.2,
+    "deconvolution_in_each_patch": 0,
+    "extract_cc": 1,
+    "fudge_factor": 0.96,
+    "gSig": [2,2,0.5],
+    "ITER": 3,
+    "lambda_gnmf": 1,
+    "low_rank_background": true,
+    "max_iter_snmf": 500,
+    "maxthr": 0.1,
+    "merge_thr": 0.85,
+    "method_init": "graph_nmf",
+    "methodex": "1",
+    "min_cnn_thr": 0,
+    "min_SNR": 0,
+    "morph_expand_method": "closing",
+    "morph_min_area_size": 2,
+    "morph_min_hole_size": 0,
+    "nb": 1,
+    "nb_patch": 1,
+    "normalize_init": true,
+    "nrgthr": 0.9999,
+    "only_init": false,
+    "p": 0,
+    "patchfac": 4,
+    "perc_baseline_snmf": 20,
+    "roidensity": 0.4,
+    "rolling_length": 100,
+    "rolling_sum": 0,
+    "rval_lowest": -1,
+    "rval_thr": 0,
+    "SC_nnn": 20,
+    "SC_normalize": 1,
+    "SC_sigma": 1,
+    "SC_thr": 0,
+    "SC_use_NN": 0,
+    "sigma_smooth_snmf_time": 0.5,
+    "SNR_lowest": 0,
+    "stridefac": 2,
+    "thr_method": "nrg",
+    "update_background_components": true,
+    "use_cnn": 0
+  },
+  "daq": {
+    "balldia": 9,
+    "doplt": 0,
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "toballscale": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "tounwrap": [
+      "ficTracIntSide'",
+      "ficTracIntForward"
+    ],
+    "tozero": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "use_carls_epochs": 1,
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": "ftcam",
+    "vcircular": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "g4panels"
+    ],
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0
+  },
+  "ftv": {
+    "doplt": 0,
+    "num_periodic_peaks_defining_laser_oscillations": 10,
+    "numpix_to_extract_laser_timeseries": 10,
+    "smsdspace": 2,
+    "smsdtime": 6
+  },
+  "hires": {
+    "disttype": "monomodal",
+    "doplt": 0,
+    "regtype": "rigid",
+    "use_caiman_on_hires": 0
+  },
+  "imhsv": {
+    "fg": "allrois",
+    "hrange_in_manual": [],
+    "hrange_out_manual": [0,0.6],
+    "huenorm": "native",
+    "hueshift": 0,
+    "huestr": "",
+    "ignorehue": 0,
+    "ignoresat": 0,
+    "ignoreval": 0,
+    "mdlname": "",
+    "satnorm": "relative",
+    "srange_in_manual": [],
+    "srange_out_manual": [0,1],
+    "valnorm": "relative",
+    "vrange_in_manual": [],
+    "vrange_out_manual": [0,1]
+  },
+  "ma": {
+    "celsz": 8,
+    "chanauto": 1,
+    "do3d": 1,
+    "doplt": 0,
+    "edgesig": [2.8284271247461903,2.8284271247461903,2.8284271247461903],
+    "edgethr": [0.1,0.7],
+    "maskmake": "nonzero",
+    "maskseg": "uniform",
+    "numroi": 128,
+    "usehires": 0
+  },
+  "mfit": {
+    "doplt": 0,
+    "epochinds": 1,
+    "excludeopts": "",
+    "keep_transition_zones": 0,
+    "mdl_lag_sec": 0,
+    "mdl_length_sec": 2,
+    "mdlname": "fnet_A01_sh16",
+    "normalize_depv": "minmaxcnt",
+    "normalize_indv": "minmaxcnt",
+    "num_synthetic_depv": 0,
+    "omit_time_from_savemodel_datestr": 1,
+    "optim_hist_save_iter_spacing": 2,
+    "slvrg": "globalsearch",
+    "slvrl": "fmincon",
+    "smoothdepv": 0,
+    "smoothindv": 0,
+    "use_saved_model": 1,
+    "validation_fold": 6,
+    "validation_split_style": "boutsamples"
+  },
+  "mm": {
+    "chancp": 1,
+    "chandraw": 1,
+    "maskname": "dflt"
+  },
+  "mn": {
+    "dodaq": 0,
+    "dofit": 0,
+    "doftv": 0,
+    "dopltx": 0,
+    "dopop": 0,
+    "doroi": 0,
+    "fldrtmp": "scopatmp",
+    "oldcarl": 0,
+    "pltvis": 1,
+    "timestr": "2024110119452835"
+  },
+  "nrm": {
+    "channorm": 0,
+    "degdtr": 0,
+    "doplt": 0,
+    "post": "f",
+    "pre": "f",
+    "wavp": []
+  },
+  "pltx": {
+    "doui": 1,
+    "dr": [0,1],
+    "epochinds": 1,
+    "it": [],
+    "iz": [],
+    "lags_to_plot": "best",
+    "lagsxy_sec": [0,0,1,0],
+    "lagsz_sec": [0,0,1,0],
+    "plot_z_as_color": 1,
+    "vpmapl": [1,2,3,4],
+    "vpmapr": [5,6,7,8]
+  },
+  "pop": {
+    "id": []
+  },
+  "qc": {
+    "doplt": 0,
+    "inmaskthr": 0.5,
+    "maxregperroi": 4,
+    "maxroisz": 300,
+    "minpixperreg": [
+      "2",
+      "3"
+    ],
+    "minroisz": 5
+  },
+  "roi": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 0,
+    "doplt": 0,
+    "doqc": 0,
+    "regionex": "dflt"
+  },
+  "sld": {
+    "chanuse": [1,2],
+    "cropfb": 1,
+    "dostats": 0,
+    "smsdspace": [0,0,0],
+    "smsdtimesec": 0,
+    "stackdtype": "uint16",
+    "suffixplt": [],
+    "tcrop": [0,0],
+    "zerostack": 1
+  },
+  "sp": {
+    "dr": [0,1],
+    "ir": [],
+    "it": 50.3,
+    "iz": [],
+    "roi_color": [1,0,0],
+    "roialpha": 0.3
+  },
+  "spec": {
+    "fly": [
+      "*"
+    ],
+    "match": "each",
+    "pth": "",
+    "pthparent_local": "~/stacks",
+    "pthparent_o2": "",
+    "recdate": [
+      "*"
+    ],
+    "suffix": [
+      "raw"
+    ],
+    "trial": [
+      "*"
+    ],
+    "validsuffix": [
+      "raw",
+      "cmrg",
+      "cmrg_dcdn",
+      "bksb_cmrg",
+      "bksb_cmrg_dcdn",
+      "bksb_cmrg_dcdn_nosn"
+    ]
+  },
+  "tg": {
+    "domain": [],
+    "group": "name",
+    "name": [],
+    "optused": []
+  },
+  "tp": {
+    "max_tinds": 1000,
+    "maxnumroiplot": 100,
+    "predlot_norm": "each",
+    "sort_method": "unbiased",
+    "timeseries_numsegments": 3
+  }
+}

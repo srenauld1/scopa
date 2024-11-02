@@ -13,7 +13,7 @@ if isempty(optsldhr)
     optsldhr = odf('sld');
 end
 
-md = jsondecode(fileread(pth_md)); %convert scanimage metadata dict written to txt file by json.dumps in read_save_metadata.py
+md = structtxtld(pth_md);
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];

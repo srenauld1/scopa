@@ -71,14 +71,15 @@ if isempty(validsuffix)
     end
 end
 
+
 if isempty(pth)
 
     if isempty(pthsib)
         pthparent = pthparentfind(pthparent_local, pthparent_o2);
     else
         if isfile(pthsib)
-            [pthparent, ~, ~] = fileparts(pthsib);
-            pthparent = [pthparent filesep];
+            pthparent = fileparts(pthsib);
+            pthparent = [pthparent{1} filesep];
             id = idmake(pthsib);
             recdate = id.recdate;
             fly = id.fly;

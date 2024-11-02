@@ -1,26 +1,32 @@
 function o = opt2id(o, vbin)
 
 arguments
-    o
-    vbin
+    o %options struct 
+    vbin %vbin to recover id (and expand)
 end
 
 if ~iscell(vbin)
     vbin = {vbin};
 end
 
+id_capable_vbin = {'roi', 'mfit', 'feat'}; %only these vbin can be expanded and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
+
 for k = 1:numel(vbin)
 
     vbintmp = vbin{k};
 
+    if ~any(strcmp(vbintmp, id_capable_vbin))
+        error(sprintf("option module (vbin) " + vbintmp + " does not support mapping between options sets and option ids (opt2id)"))
+    end
+
     pthopt = [glb('pthparent') 'opt' vbintmp '.txt'];
     if isfile(pthopt)
-        optfile = jsondecode(fileread(pthopt));
+        optfile = structtxtld(pthopt, nocells=1);
     else
         optfile = struct;
     end
 
-    optfile = structord(optfile, vectype='row');
+    %%%%%%%% EXPAND OPTIONS %%%%%%%%
 
     for j = 1:numel(o)
         vbinstruct = o(j).(vbintmp);
@@ -31,7 +37,8 @@ for k = 1:numel(vbin)
             copybinstruct = vbinstruct.(copybintmp);
             optflat = structflat(copybinstruct); % prefix=copybintmp);
             fnflat = fieldnames(optflat);
-            % if any(~cellfun(@isempty, regexp(fnflat,'_[\d]*_')))
+
+            % if any(~cellfun(@isempty, regexp(fnflat,[delim '(\d+)' delim])))
             %     error("cannot use nonscalar structs in o")
             % end
 
@@ -42,13 +49,16 @@ for k = 1:numel(vbin)
             for p = 1:numel(fnflat)
                 tmpset = fieldnames(tmp);
                 optidnums = numel(tmpset);
-                if iscell(optflat.(fnflat{p})) && numel(optflat.(fnflat{p}))>1
+                tmpval = optflat.(fnflat{p});
+                if isstring(tmpval) && numel(tmpval)>1
+                    error("string arrays are not allowed in vbin that can undergo expansion / optid mapping; strings must be scalar, or in cell arrays (to be expanded)")
+                elseif iscell(tmpval) && numel(tmpval)>1
                     expandinds(p) = 1;
-                    for w = 1:numel(optflat.(fnflat{p}))
+                    for w = 1:numel(tmpval)
                         for ww = 1:optidnums
                             newind = ww+numel(optidnums)*(w-1);
                             fnnew = [copybintmp '_' num2str(newind)];
-                            tmp.(fnnew).(fnflat{p}) = optflat.(fnflat{p}){w};
+                            tmp.(fnnew).(fnflat{p}) = tmpval{w};
                         end
                     end
                 end
@@ -77,6 +87,7 @@ for k = 1:numel(vbin)
         fntmp = fieldnames(optexpall);
         for p = 1:numel(fntmp)
             oone = optexpall.(fntmp{p}); %single options set after expansion of cell arrays
+            % oone = cmex_opt_derive(oone); %dont use cmex_opt_derive because it depends on stack and metadata, and we are before those get loaded
             optred = optreduce(oone, vbintmp); %options set without any redundancy (this goes to file)
             optid = fieldnames(optfile);
             optidnums = cellfun(@str2double, cellflat(regexp(optid,'\d+','match')));
@@ -117,20 +128,7 @@ for k = 1:numel(vbin)
         o(j).(vbintmp) = optout;
     end
 
-    pthopt = '~/stacks/fool.txt';
-    optfile = odf;
-    optfile = structord(optfile, vectype='row');
-
-    txt = jsonencode(optfile, PrettyPrint=true);
-    txt = regexprep(txt,',\s+(?=\d)',','); % , white-spaces digit remove
-    txt = regexprep(txt,',\s+(?=-)',','); % , white-spaces minussign remove
-    txt = regexprep(txt,'[\s+(?=\d)','['); % [ white-spaces digit remove
-    txt = regexprep(txt,'[\s+(?=-)','['); % [ white-spaces minussign remove
-    txt = regexprep(txt,'(?<=\d)\s+]',']'); % digit white-spaces ] remove
-
-    fid = fopen(pthopt, 'w');
-    fprintf(fid,'%s',txt);
-    fclose(fid);
+    structtxtsv(o, pthopt)
 
 end
 

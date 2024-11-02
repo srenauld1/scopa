@@ -1,3 +1,5 @@
+import numpy as np
+
 def optrg(md, register_in_2d, min_mov, fnames = None):
 
     ### registration options ###
@@ -18,13 +20,13 @@ def optrg(md, register_in_2d, min_mov, fnames = None):
         is3D = False #if not 3d, register each slice . . . 
         strides = (24, 24) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
         overlaps = (12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch overlap
-        max_shifts = (8, 8) #max allowed shifts (in patch if piecewise, or whole fov if not) 
+        max_shifts = (8, 8) #max allowed shifts (in patch if piecewise, or whole fov if not)l; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image), in case the fov drifts; this way the correlation uses a constant region of image; but if your image drifts a lot, this has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift, and the extent to which minimizing max_shifts matters depends on snr
         gSig_filt = None #(3,3)
     else:
         is3D = True
         strides = (12, 12, 12) #ignored if pw_rigid==False, otherwise this is piecewise patch stride 
         overlaps = (8, 8, 8)#ignored if pw_rigid==False, otherwise this is piecewise patch overlap
-        max_shifts = (4, 4, 4) #max allowed shifts (in patch if piecewise, or whole fov if not) 
+        max_shifts = (8, 8, 8) #max allowed shifts (in patch if piecewise, or whole fov if not) ; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image), in case the fov drifts; this way the correlation uses a constant region of image; but if your image drifts a lot, this has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift, and the extent to which minimizing max_shifts matters depends on snr
         gSig_filt = None #(3,3,3)#(3,3,3) #(3,3,3)
 
     fr = md['volrate'] #0.6193  #9.8465 frame period so 1000 / (9.8465 *(113+51)) # approximate frame rate of data - CONFIRMED FPS
@@ -32,6 +34,10 @@ def optrg(md, register_in_2d, min_mov, fnames = None):
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], 0.0 ] #pixels per micron
     else:
         dxy = [md['xpix']/md['xfov'], md['ypix']/md['yfov'], md['numslice']/md['zfov']] #pixels per micron
+    
+    if not register_in_2d:
+        if np.ptp(dxy)>np.min(dxy):
+            raise Exception("you are trying to do 3d registration on a stack with at least one voxel width that is at least double the smallest dimension's voxel width (most likely, z width is greater than x and y); consider 2d registration instead; but if you want to proceed with 3d registration, comment this exception and run again")
 
     opts_dict = {
                 'strides': strides,    # start a new patch for pw-rigid motion correction every x pixels

@@ -1,7 +1,13 @@
+function optdfsv(pthopt)
 
+arguments
+    pthopt = []
+end
 
-
-%% spec (stackfind: find files matching recording specifications, called below)
+pthscopa = getpathscopa();
+if isempty(pthopt)
+    pthopt = [pthscopa 'optdf.txt'];
+end
 
 d.spec.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
@@ -13,12 +19,11 @@ d.spec.trial = {'*'}; %cell array of char, can use wildcards
 d.spec.suffix = {'raw'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
 d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 
-
 %% mn (ap2: main pipeline control in a2p)
 
 d.mn.dodaq = 0; %process daq data
 d.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
-d.mn.doroi = 0; %do roi extraction 
+d.mn.doroi = 0; %do roi extraction
 d.mn.dopop = 0; %compute population features (o.pop below)
 d.mn.dofit = 0; %model fitting (o.mfit below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
@@ -104,7 +109,7 @@ d.ma.doplt = 0;
 
 %% cm (roifmake: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in optex)
 
-% MAIN 
+% MAIN
 d.cm.methodex = '1'; %'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=true
 d.cm.gSig = [2, 2, 0.5]; %approximate xyz half-size, in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1, but since gSig is used to derive sigma_smooth_snmf, which is not clipped to 1, go ahead and use the real value; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels); z (3rd element) ignored if extract_in_2d;
 d.cm.nb = 1; %nb is used everywhere; default 1; num background components
@@ -117,8 +122,8 @@ d.cm.roidensity = 0.4; %not a caiman option; used to derive K (approximate numbe
 d.cm.p = 0; %for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
 
 % INITIALIZATION
-d.cm.method_init = 'graph_nmf'; %'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi  
-d.cm.sigma_smooth_snmf = [0.5, 0.5, 0.5, 0.5]; %first element of sigma_smooth_snmf, for smoothing in time before initialization; sigma_smooth_snmf default is [0.5, 0.5, 0.5, 0.5], which is txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have effect; consider z width, relative to xy width, when setting this; in optex, the xyz elements are assigned the same values as gSig
+d.cm.method_init = 'graph_nmf'; %'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi
+d.cm.sigma_smooth_snmf_time = 0.5; %first element of sigma_smooth_snmf, for smoothing in time before initialization; sigma_smooth_snmf default is [0.5, 0.5, 0.5, 0.5], which is txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have effect; consider z width, relative to xy width, when setting this; in optex, the xyz elements are assigned the same values as gSig
 d.cm.perc_baseline_snmf = [20]; % default 20; baseline percentile, removed from stack before initialization for method_init graph_nmf and sparse_nmf
 d.cm.max_iter_snmf = [500]; %default 500; number iterations in initialization for method_init graph_nmf and sparse_nmf)
 
@@ -180,7 +185,7 @@ d.cm.morph_expand_method = 'closing'; %closing or dilation; only used for cm.bas
 
 %% qc (quality control rois)
 
-d.qc.minpixperreg = 3; % min pix in each distongiguous region, roi selection criterion
+d.qc.minpixperreg = ["2", "3"]; % min pix in each distongiguous region, roi selection criterion
 d.qc.minroisz = 5; % pixels, roi selection criterion
 d.qc.maxroisz = 300; % pixels
 d.qc.maxregperroi = 4; % for discontiguous rois
@@ -193,12 +198,12 @@ d.qc.doplt = 0; %plot roi overlay
 % options for response extraction/normalization of roi responses
 % all normalizations are applied to individual vector timeseries
 % normalization strings are listed below; they can be combined arbitrarily and if combined, will be applied left to right order (eg 'nnbox' applies 'nn' then 'box'):
-    % 'f': no normalization
-    % 'dffuuuvvv': sliding window dff, uuu is percentile to compute f0 for each window, vvv is sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries, not a sliding window (e.g. dff010008 is 10th percentile over 8-seconde sliding window)
-    % 'rscxxxyyy': rescale, sending xxx percentile to 0, yyy percentile to 1 (eg rsc000100 is same as default matlab rescale function)
-    % 'z': zscore
-    % 'nn': nonnegative (subtract min)
-    % 'box': box-cox
+% 'f': no normalization
+% 'dffuuuvvv': sliding window dff, uuu is percentile to compute f0 for each window, vvv is sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries, not a sliding window (e.g. dff010008 is 10th percentile over 8-seconde sliding window)
+% 'rscxxxyyy': rescale, sending xxx percentile to 0, yyy percentile to 1 (eg rsc000100 is same as default matlab rescale function)
+% 'z': zscore
+% 'nn': nonnegative (subtract min)
+% 'box': box-cox
 
 d.nrm.pre = 'f'; %must have at least one string, compsed of syllables above; % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
 d.nrm.post = 'f'; %must have at least one string, compsed of syllables above; postcluster normalization is applied after clustering (ie to each roi)
@@ -348,3 +353,8 @@ d.carl.stimtype = 'drone';
 d.carl.feat = 'CON_51';
 d.carl.pthparent_feat = '~/ds/data/rec';
 d.carl.pth_template = '~/ds/data/stimuli';
+
+%% write options to file
+
+fprintf("writing default options to: " + pthopt + newline)
+structtxtsv(d, pthopt)

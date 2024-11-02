@@ -1,11 +1,16 @@
+from dict_ord import dict_ord
 
-def optreduce(opt, methodex):
+def optreduce(opt, two_channel_ex):
 
     #create a minimal set of options output from optex (the effective set), since option use depends on other options
     # here, scopa variables used in optex to derive caiman variables are not used; instead the derived caiman variables are used
 
     ored = {}
 
+
+    ored['methodex'] = opt['methodex'] #not a caiman param
+    ored['regionex'] = opt['regionex'] #not a caiman param
+    ored['maskname'] = opt['maskname'] #not a caiman param
 
     ored['gSig'] = opt['gSig']
     ored['nb'] = opt['nb']
@@ -14,7 +19,7 @@ def optreduce(opt, methodex):
     ored['normalize_init'] = opt['normalize_init']
     ored['only_init'] = opt['only_init']
 
-    ored['K'] = opt['K'] #derived from roi_density
+    ored['roidensity'] = opt['roidensity'] #used to derive K
 
     #init
     ored['method_init'] = opt['method_init']
@@ -24,13 +29,11 @@ def optreduce(opt, methodex):
             ored['rolling_sum'] = opt['rolling_sum']
             ored['rolling_length'] = opt['rolling_length']
     elif opt['method_init']=='graph_nmf' or opt['method_init']=='sparse_nmf':
-        ored['sigma_smooth_snmf'] = opt['sigma_smooth_snmf']
+        ored['sigma_smooth_snmf_time'] = opt['sigma_smooth_snmf_time'] #used to derive sigma_smooth_snmf
         ored['perc_baseline_snmf'] = opt['perc_baseline_snmf']
         ored['max_iter_snmf'] = opt['max_iter_snmf']
-        if opt['method_init']=='sparse_nmf':
-            ored['alpha_snmf'] = opt['alpha_snmf']
-        elif opt['method_init']=='graph_nmf':
-            ored['lambda_gnmf'] = opt['lambda_gnmf']
+        ored['sparsity_penalty'] = opt['sparsity_penalty'] #assigned to alpha_snmf or lambda_gnmf
+        if opt['method_init']=='graph_nmf':
             ored['SC_sigma'] = opt['SC_sigma']
             ored['SC_thr'] = opt['SC_thr']
             ored['SC_normalize'] = opt['SC_normalize']
@@ -59,15 +62,16 @@ def optreduce(opt, methodex):
 
 
     #patches
-    if opt['rf'] is not None:
-        ored['rf'] = opt['rf'] #derived from patchfac
-        ored['stride'] = opt['stride'] #derived from stridefac
+    if not two_channel_ex and opt['patchfac']!=0: # originally if opt['rf'] is not None: but we don't know rf until derive_some_options, later
+        ored['patchfac'] = opt['patchfac'] #used to derive rf
+        ored['stridefac'] = opt['stridefac'] #used to derive stride
         if opt['low_rank_background']==True:
             ored['nb_patch'] = 0
         else:
             ored['nb_patch'] = opt['nb_patch']
         if opt['p']!=0:
-            ored['p_patch'] = opt['p_patch']
+            opt['deconvolution_in_each_patch'] # this is used to derive ored['p_patch'] = opt['p_patch']
+
 
     #evaluation
     if opt['use_cnn']==True:
@@ -75,24 +79,13 @@ def optreduce(opt, methodex):
         ored['cnn_lowest'] = opt['cnn_lowest']
         ored['min_cnn_thr'] = opt['min_cnn_thr']
 
-    if methodex.startswith('seed') and methodex.endswith('py'): #python automated morph roi extraction to seed functional extraction (not just two_channel_ex since seedeachpy is not two_channel_ex)
+    if opt['methodex'].startswith('seed') and opt['methodex'].endswith('py'): #python automated morph roi extraction to seed functional extraction (not just two_channel_ex since seedeachpy is not two_channel_ex)
         ored['morph_min_area_size'] = opt['morph_min_area_size']
         ored['morph_min_hole_size'] = opt['morph_min_hole_size']
         ored['morph_expand_method'] = opt['morph_expand_method']
-        ored['morph_gSig'] = opt['morph_gSig']
 
-    ored = order_ored(ored) #recursively order alphabetically, ignoring case
+    ored = dict_ord(ored) #recursively order alphabetically, ignoring case
 
 
     return ored
 
-
-def order_ored(dictionary):
-    result = {}
-    for m in sorted(dictionary.keys(), key=str.casefold):
-        v = dictionary[m]
-        if isinstance(v, dict):
-            result[m] = order_ored(v)
-        else:
-            result[m] = v
-    return result

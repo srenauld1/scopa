@@ -7,6 +7,11 @@ arguments
     recin = [] %optional; full path to recording (char or cell, wildcards allowed matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
 end
 
+"DEAL WITH NONES, AND DTYPES"
+
+"make sure defaults don't have derived quantities"
+
+
 clear glb %clear globals
 
 oa = oset(recin); % set options; oa stands for o all (ie all recordings)

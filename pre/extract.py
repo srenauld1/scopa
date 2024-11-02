@@ -15,7 +15,7 @@ from helpers import stack_reshape_transpose_zero_type
 
 
 
-def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, regionex, methodex, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -39,21 +39,21 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
             raise Exception("two-channel extraction is currently not written for 3d extraction")
 
 
-    for rx in regionex:
+    for rgn in regionex:
         
         print("STARTINNG ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
-        stackcrop_tmp, limits_str = crop_fov(stack, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+        stackcrop_tmp, limits_str = crop_fov(stack, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
         chanstr_ex = chanstr_secondary
         if two_channel_ex:
-            stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+            stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
             chanstr_seed = chanstr_primary
 
-        print("REGION EXTRACTION (regionex) IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
+        print("REGION EXTRACTION (regionex) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
-            pth_write_prefix = pth_tif_read[:-4] + rx + '_' + limits_str + chanstr_ex + '_cmex'
+            pth_write_prefix = pth_tif_read[:-4] + rgn + '_' + limits_str + chanstr_ex + '_cmex'
             pth_tif_write_tmp = pth_write_prefix + '_tmp_.tif'
             if two_channel_ex: #stackcrop_tmp_secondary becomes stackcrop_ex and stackcrop_tmp becomes stackcrop_seed
                 stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp_secondary, pth_tif_write_tmp, dview)
@@ -65,7 +65,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
             stackcrop_tmp = None
             
 
-            optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex)
+            optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
 
             print("looping over " + str(len(optall)) + " unique options sets")
             
@@ -105,10 +105,10 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
                         cnmfpars = cnmf.params.CNMFParams(params_dict=opt)
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time
-                            print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF REGIONEX '" + rx + "'" )
+                            print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF REGIONEX '" + rgn + "'" )
                             img = stackcrop_ex[:,:,:,iz]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
-                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGIONEX '" + rx + "'" )
+                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGIONEX '" + rgn + "'" )
                             img = stackcrop_ex #can't .copy() for some reason (but that's fine as long as you don't modify img)
 
                         if two_channel_ex: 
