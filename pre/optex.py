@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from map2opt import map2opt
+from distlist import distlist
 from optreduce import optreduce
 from dictsort import dictsort
 from optex2id import optex2id
@@ -13,33 +13,43 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
 
     # options = {k: v for k, v in locals().items() if v is not None}
 
-    ############ SET OPTIONS IN YOU WANT TO OVERWRITE DEFAULTS IN DICT otmp, USE LISTS TO EXPAND INTO ALL COMBINATIONS; IF ALL OPTIONS IN otmp ARE SINGLE ELEMENTS, THEN THERE WILL ONLY BE ONE OPTIONS SET  ############
-    
-    otmp = {}
-    
-    otmp['gSig'] = [ [2, 2, 0.5], [4, 4, 1] ] #list of lists; z (3rd element) ignored if extract_in_2d; 
-    otmp['nb'] = [1,2] 
-    otmp['low_rank_background'] = [1, 0]
-    otmp['update_background_components'] = [1] 
-    otmp['merge_thr'] = [0.85] 
-    otmp['only_init'] = [0] 
-    otmp['normalize_init'] = [1] 
-    otmp['roidensity'] = [0.4, 0.8]  #not a caiman param, but used to derive caiman param K
-    otmp['p'] = [0, 1]
+    ############ SET OPTIONS IN YOU WANT TO OVERWRITE DEFAULTS IN DICT olist, USE LISTS TO EXPAND INTO ALL COMBINATIONS; IF ALL OPTIONS IN olist ARE SINGLE ELEMENTS, THEN THERE WILL ONLY BE ONE OPTIONS SET  ############
+    # olist hold carl's favorite options (each in a list) for tuning caiman roi extraction;
+    # each option here is also an option optdf, which are default options read from the default options file, optdf.txt file; if an option is a list in optdf, it must be a list of lists in olist
+    # options in olist will overwrite their counterparts in optdf
+    # lists are distributed into all possible combinations (using listdist) and extract.py loops over these options sets, so you can see how extraction is affected by varying these params; 
+    # any params from optex can be used here, these are just my favorite because they seem to have the largest effect, and/or are most variable across recordings 
+    # after optlist is applied/distributed, optreduce will remove any options that aren't used (since option use depend on options themselves), then dict_unique will remove any repeat sets, 
+    # then optex2id finds a unique ID by checking all options sets that have ever been run (using file optroi.txt) and assigns an ID to each option set currently in use (if it's never been used it gets a new ID and is appended to optroi.txt)
+    # then optderive derives a few caiman options from the options the user specifies, some of which are not direct caiman options, but solely used in optderive (since, in my opinion, some caiman options are best used this way, ie options that can be made invalid or poor because of changes to the data, eg K, number of neurons, is derived because it depends o much of the data size (regionex size) and whether you are using patches)
+    # then optcheck makes sure there are no problems with the options 
+    # all this also occurs in oset.m, in the matlab part of the scopa pipeline (so user can run caiman extraction from matlab, or from python); running from matlab gives the user more option-specification flexibility
 
-    otmp['method_init'] = ['graph_nmf', 'sparse_nmf', 'greedy_roi']
-    otmp['sigma_smooth_snmf_time'] = [0.5] #first element of sigma_smooth_snmf, for smoothing in time before initialization; in optex, the xyz elements are assigned the same values as gSig 
-    otmp['perc_baseline_snmf'] = [20]
-    otmp['max_iter_snmf'] = [500] 
-    otmp['sparsity_penalty'] = [1, 4] #not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf)
+    olist = {}
+    
+    olist['gSig'] = [ [2, 2, 0.5], [4, 4, 1] ] #list of lists; z (3rd element) ignored if extract_in_2d; 
+    olist['nb'] = [1,2] 
+    olist['low_rank_background'] = [1, 0]
+    olist['update_background_components'] = [1] 
+    olist['merge_thr'] = [0.85] 
+    olist['only_init'] = [0] 
+    olist['normalize_init'] = [1] 
+    olist['roidensity'] = [0.4, 0.8]  #not a caiman param, but used to derive caiman param K
+    olist['p'] = [0, 1]
+
+    olist['method_init'] = ['graph_nmf', 'sparse_nmf', 'greedy_roi']
+    olist['sigma_smooth_snmf_time'] = [0.5] #first element of sigma_smooth_snmf, for smoothing in time before initialization; in optex, the xyz elements are assigned the same values as gSig 
+    olist['perc_baseline_snmf'] = [20]
+    olist['max_iter_snmf'] = [500] 
+    olist['sparsity_penalty'] = [1, 4] #not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf)
 
     # also assign a few options that are set or derived outside optex (not for user input)
-    otmp['fnames'] = [ fnames ]
-    otmp['regionex'] = [ regionex ] 
-    otmp['methodex'] = [ methodex ] 
-    otmp['maskname'] = [ maskname ] 
+    olist['fnames'] = [ fnames ]
+    olist['regionex'] = [ regionex ] 
+    olist['methodex'] = [ methodex ] 
+    olist['maskname'] = [ maskname ] 
 
-    ############ READ DEFAULT OPTIONS AND OVERWRITE WITH ANY ABOVE IN otmp ############
+    ############ READ DEFAULT OPTIONS AND OVERWRITE WITH ANY ABOVE IN olist ############
 
     with open(pth_optdf, 'r') as file:
         optdf = json.loads(file.read())
@@ -47,17 +57,17 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
 
     notlist = {}
     for k,v in optdf.items():
-        if k not in otmp:
-            otmp[k] = v
-        if not isinstance(otmp[k], list):
+        if k not in olist:
+            olist[k] = v
+        if not isinstance(olist[k], list):
             notlist[k] = 1
-            otmp[k] = [otmp[k]]
+            olist[k] = [olist[k]]
 
 
 
-    ############ EXPAND OPTIONS (APPLY map2opt TO CREATE ALL COMBINATIONS OF OPTIONS), THEN GET MINIMAL EFFECTIVE SET  ############
+    ############ DISTRIBUTE OPTIONS IN LISTS (APPLY distlist TO CREATE ALL COMBINATIONS OF OPTIONS), THEN GET MINIMAL EFFECTIVE SET  ############
 
-    optsets = map2opt(otmp)
+    optsets = distlist(olist)
     max_num_options_sets = 500 #error if you create more than this many options sets
     if len(optsets.map)>max_num_options_sets:
         raise Exception("WARNING, YOU HAVE CREATED MORE THAN " + str(max_num_options_sets) + " OPTIONS SETS, IF YOU REALLY WANT TO PROCEED WITH THIS NUMBER, COMMENT THIS EXCEPTION OR CHANGE max_num_options_sets")
