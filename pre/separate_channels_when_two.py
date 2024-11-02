@@ -29,13 +29,12 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
 
                 if discard_channel is not None:
                     chan_primary = np.setxor1d([1,2], discard_channel)
-                    # chanstr_primary = '_chn' + str(chan_primary) #if you set chanstr_primary to nonempty when discard_channel is not none, later the index will be wrong since the output stack has only one channel  
+                    # chanstr_primary = '_chn' + str(chan_primary) #if you set chanstr_primary to nonempty when discard_channel is not none, later the index will be wrong since the output stack has only one channel  (only if it's channel 2, right?)
                     stack = stack[:,:,chan_primary[0]-1,:,:].squeeze()
-                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(chan_primary[0]-1))
+                    print("STACK HAS 2 CHANNELS, BUT discard_channel IS SET TO " + str(discard_channel) + ", SO DISCARDING CHANNEL " + str(discard_channel) + " AND KEEPING CHANNEL " + str(chan_primary[0]))
                 else:
                     use_two_channels = 1
-                    chan_secondary = np.setxor1d([1,2], chan_primary)
-                    chan_secondary = chan_secondary[0]
+                    chan_secondary = np.setxor1d([1,2], chan_primary)[0]
                     chanstr_primary = '_chn' + str(chan_primary)
                     chanstr_secondary = '_chn' + str(chan_secondary)
                     stack_secondary = stack[:, :, chan_secondary-1, :, :].squeeze()
@@ -50,6 +49,7 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
                 stack = stack[:, :, md['channel_save'][0]-1, :, :].squeeze()
             print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN read_save_metadata.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
 
+    #output chan_primary (which is also an input) in case it gets updated if there are two channels and discard_channel is not None
         
-    return stack, stack_secondary, use_two_channels, chan_secondary, chanstr_primary, chanstr_secondary
+    return stack, stack_secondary, use_two_channels, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary
     

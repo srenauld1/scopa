@@ -27,7 +27,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
     stack = imread(pth_tif_read)
 
     discard_channel_ex, chan_primary_when_two_ex, morphinpy = parse_methodex(methodex)
-    stack, stack_secondary, two_channel_ex, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
+    stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
 
     stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     print("STACK HAS SHAPE: \n" + str(stack.shape))

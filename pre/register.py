@@ -45,7 +45,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             register_in_2d = 1
             print("stack does not have multiple slices but register_in_2d is set to false, changing register_in_2d to true now")
 
-    stack, stack_secondary, two_channel_reg, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
+    stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
 
     if two_channel_reg and register_presmoothed:
         raise Exception("two_channel_reg and register_presmoothed cannot both be true; since you have a 2-channel stack, you can set discard_channel_reg to 1 or 2, or set register_presmoothed to 0")
@@ -58,7 +58,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
     if two_channel_reg:
-        print("SINCE STACK HAS 2 CHANNELS AND chan_primary IS SET TO " + str(chan_primary_when_two_reg) + ", WILL REGISTER CHANNEL " + str(chan_secondary) + " USING SHIFTS FROM CHANNEL " + str(chan_primary_when_two_reg) )
+        print("SINCE STACK HAS 2 CHANNELS AND chan_primary IS SET TO " + chanstr_primary + ", WILL REGISTER CHANNEL " + chanstr_secondary + " USING SHIFTS FROM CHANNEL " + chanstr_primary )
         pth_tif_write_secondary = pth_tif_write.replace(chanstr_primary, chanstr_secondary) #only used if two_channel_reg==1 (ie if there are two channels and discard_channel_reg=None)
         pth_tif_write_secondary_tmp_prefix = pth_tif_write_secondary[:-4] + 'tmp'
     else:
@@ -117,7 +117,7 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
     ########################## WRITE SECONDARY TMP STACK IF two_channel_reg ##########################
 
     if two_channel_reg: #write secondary stack (secondary channel in this case) to be registered to primary stack (this after smoothing, in case secondary channel needs it)
-        msgstr = 'STACK CHANNEL ' + str(chan_secondary)
+        msgstr = 'STACK CHANNEL ' + chanstr_secondary
         pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack_secondary, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr)
 
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
@@ -183,10 +183,10 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
             stack = None
             if two_channel_reg: #OVERWRITE STACK TO SAVE MEMORY SINCE WE'RE AT THE END, AND ONLY PLOTTING IS LEFT
                 stack_allchan = np.zeros((stack_shape[0], stack_shape[1], stack_shape[2], stack_shape[3], 2), dtype=stack_dtype)
-                stack_allchan[:,:,:,:,chan_primary_when_two_reg-1] = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_primary-1] = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
                 stack_allchan[:,:,:,:,chan_secondary-1] = stitch_registered_slices(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
                 if makeplots:
-                    plot_gif(stack_allchan[:,:,:,:,chan_primary_when_two_reg-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan[:,:,:,:,chan_primary-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
                     plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
             else:
                 stack_allchan = stitch_registered_slices(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz

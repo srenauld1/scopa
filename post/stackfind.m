@@ -79,7 +79,10 @@ if isempty(pth)
     else
         if isfile(pthsib)
             pthparent = fileparts(pthsib);
-            pthparent = [pthparent{1} filesep];
+            if iscell(pthparent) %this was a cell once but i can't remember how that's possible
+                pthparent = pthparent{1};
+            end
+            pthparent = [pthparent filesep];
             id = idmake(pthsib);
             recdate = id.recdate;
             fly = id.fly;

@@ -9,7 +9,7 @@ end
 
 "DEAL WITH NONES, AND DTYPES"
 
-"make sure defaults don't have derived quantities"
+"make sure defaults don't have derived values"
 
 
 clear glb %clear globals

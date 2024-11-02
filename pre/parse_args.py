@@ -321,7 +321,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         recording_index = args.recording_index #keep as list
     if recording_index != ['all']:
-        recording_index = [int(ri) for ri in recording_index] #convert to int if not 'all'
+        recording_index = [int(tmp) for tmp in recording_index] #convert to int if not 'all'
 
     file_matching_style = args.file_matching_style[0] 
 
@@ -334,7 +334,13 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     register_in_2d = int(args.register_in_2d[0])
     halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
     len_window_smooth_t_mcp_sec = float(args.len_window_smooth_t_mcp_sec[0])
-    max_shifts_prc = float(args.max_shifts_prc[0])
+
+    if isinstance(args.max_shifts_prc[0], list):
+        max_shifts_prc = args.max_shifts_prc[0] #keep as list
+    else:
+        max_shifts_prc = args.max_shifts_prc #keep as list
+    max_shifts_prc = [float(tmp) for tmp in max_shifts_prc]
+
     do_denoise = int(args.do_denoise[0])
     do_stitch = int(args.do_stitch[0])
     denoise_volume = int(args.denoise_volume[0])
@@ -344,7 +350,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         denoise_slice_index = args.denoise_slice_index #keep as list
     if denoise_slice_index != ['all']:
-        denoise_slice_index = [int(ri) for ri in denoise_slice_index] #convert to int if not 'all'
+        denoise_slice_index = [int(tmp) for tmp in denoise_slice_index] #convert to int if not 'all'
 
     num_epochs_denoise = int(args.num_epochs_denoise[0])
 
@@ -356,7 +362,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         epoch_choose_denoise = args.epoch_choose_denoise[0] #keep as list
     else:
         epoch_choose_denoise = args.epoch_choose_denoise #keep as list
-    epoch_choose_denoise = [int(ri) for ri in epoch_choose_denoise] #make sure int
+    epoch_choose_denoise = [int(tmp) for tmp in epoch_choose_denoise] #make sure int
     
     do_remove = int(args.do_remove[0])
     len_window_smooth_t_rsc_sec = float(args.len_window_smooth_t_rsc_sec[0])
@@ -374,11 +380,12 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
     print("\n\n\nPARSED THESE COMMAND LINE AND/OR PARAM FILE ARGUMENTS:")
 
+    whitespaces_three = '   '
     loccop = locals().copy()
     loccop = dictsort(loccop)
     for k,v in loccop.items():
         if not k.startswith('_') and k!='loccop' and k!='CLI' and k!='args' and k!='pars' and k!='In' and k!='Out' and not hasattr(v, '__call__'):
-            print(k,'=',v)
+            print(whitespaces_three, k, '=', v)
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
