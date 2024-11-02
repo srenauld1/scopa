@@ -47,7 +47,7 @@ regionex_tmp = {'dflt', 'fb', 'pb', 'eb'}; %use 'dflt' to skip prompt to define 
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
-o.sld.suffixplt = {'cmrg', 'cmrg_dcdn'}; %suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); empty to skip plot; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you want all stacks converted, list them here and get a comparison plot for free)
+o.sld.suffixplt = {}; %suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); empty to skip plot; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you want all stacks converted, list them here and get a comparison plot for free)
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
