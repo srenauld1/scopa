@@ -380,6 +380,8 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
     print("\n\n\nPARSED THESE COMMAND LINE AND/OR PARAM FILE ARGUMENTS:")
 
+    # options = {k: v for k, v in locals().items() if v is not None} #example turn locals into dict
+
     whitespaces_three = '   '
     loccop = locals().copy()
     loccop = dictsort(loccop)

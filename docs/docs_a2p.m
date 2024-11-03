@@ -67,4 +67,8 @@ options
 expansion
     for consistency, all text arrays are string, since cell is for expansion
 
+python part is less complex, more for batches, more for pre
+matlab part is more interactive, more complex options, more for post 
+many parts can cross over 
+
 %}

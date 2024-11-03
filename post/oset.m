@@ -1,4 +1,4 @@
-function [o, oflatfn] = oset(recin)
+function [o, oflat] = oset(recin)
 
 % edit docs_oset.m
 
@@ -20,7 +20,7 @@ if isempty(recin) %if you're running a2p without input arguments (ie if recin is
     o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    o.spec.suffix = {'raw'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
     o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     o.spec.pth = '';
 elseif iscell(recin) || ischar(recin) %if input to a2p is not empty, and is not struct
@@ -80,8 +80,7 @@ o.mfit.tg.name = {'vf', 'vy'}; %variable name within domain; cell to expand
 o.mfit.tg.group = [];
 o=odf(o, 'mfit.tg', 'indv'); %put in copybin 'indv'
 
-%set depv
-%make a struct with opts from o.roi; output will be roi created with those options; anything not listed takes default (in odf); anything nonexisting causes error
+% to set depv, make a struct with opts from o.roi; output will be roi created with those options; anything not listed takes default (in odf); anything nonexisting causes error
 roitmp.mm.chandraw = [2];
 roitmp.ma.numroi = {256, 512}; %cell to expand
 
@@ -171,9 +170,9 @@ oldcarlo %don't comment this out, but it's just for carl
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
-% o = opt2id(o, 'roi');
+o = opt2id(o, 'roi');
 
-[~, oflatfn] = structflat(o, prefix='o'); %get flattened fieldnames for user to see options struct organization more easily (does not get used); need prefix to make valid fieldnames in case nonscalar
+oflat = structflat(o, prefix='o'); %get flattened struct for user to see options struct organization more easily (oflat does not get used); need prefix to make valid fieldnames in case nonscalar
 
 end
 

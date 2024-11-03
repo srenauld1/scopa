@@ -13,7 +13,11 @@ if isempty(optsldhr)
     optsldhr = odf('sld');
 end
 
-md = structtxtld(pth_md);
+if isfile(pth_md)
+    md = structtxtld(pth_md);
+else
+    error("pth_md (mdsild.txt) does not exist; you need to run registration; there, mdsild.txt will be created from the raw scanimage output file")
+end
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];

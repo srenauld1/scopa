@@ -1,5 +1,9 @@
 function o = opt2id(o, vbin)
 
+% python optex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
+% this function starts at distribute, and derive and check require data, so only happen in python, not here 
+% (so here we just do distribute, reduce, sort, unique, ID) 
+
 arguments
     o %options struct 
     vbin %vbin to recover id (and expand)
@@ -88,10 +92,11 @@ for k = 1:numel(vbin)
         optout = [];
         fntmp = fieldnames(optexpall);
         for p = 1:numel(fntmp)
+            
             oone = optexpall.(fntmp{p}); %single options set after expansion of cell arrays
             oone = structunflat(oone);
-            % oone = cmex_opt_derive(oone); %dont use cmex_opt_derive because it depends on stack and metadata, and we are before those get loaded (the python version of opt2id happens after they get loaded, so for symmetry i'm leaving that in as a comment 
             optred = optreduce(oone, vbintmp); %options set without any redundancy (this goes to file)
+            
             optid = fieldnames(optfile);
             optidnums = cellfun(@str2double, cellflat(regexp(optid,'\d+','match')));
             if ~isempty(optidnums) && ( numel(optidnums)~=numel(optid) || ~isequal(optidnums, 1:numel(optidnums)) )
@@ -100,7 +105,7 @@ for k = 1:numel(vbin)
             if isempty(optidnums)
                 optidnew = 'i1';
                 optfile.(optidnew) = optred;
-                optout.(optidnew) = oone;
+                optout.(optidnew) = optred;
             else
                 maxoptind = max(optidnums);
                 foundequal = 0;
@@ -117,7 +122,7 @@ for k = 1:numel(vbin)
                     if w==numoptid && foundequal==0 %if current options don't match any in the roiopt file, append them to end as new option set
                         optidnew = ['i' num2str(maxoptind+1)];
                         optfile.(optidnew) = optred;
-                        optout.(optidnew) = oone;
+                        optout.(optidnew) = optred;
                         optid = [optid; optidnew];
                     end
                 end
@@ -128,7 +133,7 @@ for k = 1:numel(vbin)
     
     end
 
-    structtxtsv(optout, pthopt); %write optout (the corrected vbin from o) to opt file (do not not the whole opt struct o)
+    structtxtsv(optfile, pthopt); %write optout (the corrected vbin from o) to opt file (do not not the whole opt struct o)
 
 end
 
