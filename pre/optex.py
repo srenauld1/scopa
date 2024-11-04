@@ -66,6 +66,10 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     optlist['methodex'] = [ methodex ] 
     optlist['maskname'] = [ maskname ] 
 
+    optlist['domm'] = [ 0 ] #false if not calling extract from matlab
+    optlist['doma'] = [ 0 ] #false if not calling extract from matlab
+    optlist['docm'] = [ 1 ] #true whether calling extract from matlab or not
+    optlist['doqc'] = [ 0 ] #false if not calling extract from matlab
 
     ############ DISTRIBUTE OPTIONS IN LISTS (APPLY distlist TO CREATE ALL COMBINATIONS OF OPTIONS) ############
 
@@ -150,7 +154,7 @@ def optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opt):
             total_vox_ex = patchFW*patchFW*rfz #total_vox_ex is num vox per patch , if patches
 
         if total_vox_ex>=np.prod(dims_spatial_ex): #reset total_vox_ex and rf and stride if it turns out the patch is same size as regionex or bigger
-            raise Exception("total number voxels in patch is greater than total num voxels in regionex (or full fov, if regionex is dflt); originally this reverted patch to empty, but this means accurate patch options cannot be set in optroi.txt, since if this reverted to empty it would break the isomorphism between input options and derived options;")
+            raise Exception("total number voxels in patch is greater than total num voxels in regionex (or full fov, if regionex is 'none'); originally this reverted patch to empty, but this means accurate patch options cannot be set in optroi.txt, since if this reverted to empty it would break the isomorphism between input options and derived options;")
             total_vox_ex = np.prod(dims_spatial_ex)
             opt['rf'] = None # setting rf to none will run CNMF on the whole regionex
             opt['stride'] = None       

@@ -6,7 +6,7 @@ function [stack, zstartsub, hrlrsub, hiresmntsub, croplim] = ...
 
 regionexdf = glb('regionexdf');
 if isempty(regionexdf)
-    regionexdf = 'dflt'; %if you haven't set the global
+    regionexdf = 'none'; %if you haven't set the global
 end
 
 if ~exist('usehires', 'var')

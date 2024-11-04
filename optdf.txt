@@ -81,7 +81,7 @@
       "ficTracIntSide",
       "ficTracIntForward"
     ],
-    "use_carls_epochs": 1,
+    "use_carls_epochs": 0,
     "usefbf": 1,
     "usefbl": 1,
     "useinds": "none",
@@ -167,7 +167,7 @@
   "mm": {
     "chancp": 1,
     "chandraw": 1,
-    "maskname": "dflt"
+    "maskname": "'none'"
   },
   "mn": {
     "dodaq": 0,
@@ -179,7 +179,7 @@
     "fldrtmp": "scopatmp",
     "oldcarl": 0,
     "pltvis": 1,
-    "timestr": "2024110123475980"
+    "timestr": "2024110312384660"
   },
   "nrm": {
     "channorm": 0,
@@ -210,10 +210,7 @@
     "inmaskthr": 0.5,
     "maxregperroi": 4,
     "maxroisz": 300,
-    "minpixperreg": [
-      "2",
-      "3"
-    ],
+    "minpixperreg": 3,
     "minroisz": 5
   },
   "roi": {
@@ -222,7 +219,7 @@
     "domm": 0,
     "doplt": 0,
     "doqc": 0,
-    "regionex": "dflt"
+    "regionex": "'none'"
   },
   "sld": {
     "chanuse": [1,2],

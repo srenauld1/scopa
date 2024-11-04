@@ -7,6 +7,11 @@ arguments
     recin = [] %optional; full path to recording (char or cell, wildcards allowed matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
 end
 
+"DEAL WITH NONES, AND DTYPES"
+
+"make sure defaults don't have derived values"
+
+
 clear glb %clear globals
 
 oa = oset(recin); % set options; oa stands for o all (ie all recordings)
@@ -116,22 +121,17 @@ for k = 1:numel(oa) % loop over recordings
 
     % stackplt(stack, it=20.3, fdimnum=3) %view stack in various ways
 
-    %% create/load/select rois/responses for each regionex
+    %% create/load/select rois/responses for each optid
 
     if o.mn.doroi
         fnroi = fieldnames(o.roi);
-        for m = 1:numel(fnroi) %for each regionex
-
+        for m = 1:numel(fnroi) %for each optid
             optid = fnroi{m};
-
-            %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
-            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, pth.roi.(optid), o.roi(optid));
-
+            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, pth.roi.(optid), stackmnthr, hrlr, o.roi(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
     % save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
-
 
     %% feature extraction (e.g. bump), add to ts
 

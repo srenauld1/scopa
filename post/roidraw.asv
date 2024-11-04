@@ -1,30 +1,71 @@
-function roimaskman_all_roi_all_z = drawrois(stack, regionex, pth_tmpfiles, flag_limit_one_manual_roi)
+function roimaskman_allchan = roidraw(stack, pth_roim, regionex, opt)
+
+chandraw = opt.chandraw;
+chancp = opt.chancp;
+maskname = opt.maskname;
+
+numchan = size(stack,5);
+
+roimaskman_allchan = repmat({ones(size(stack,1), size(stack,2), size(stack,3), 'logical')}, [numchan, 1]);
+
+for c = 1:numchan
+    if ismember(c,chandraw)
+        fninsert = ['_' maskname '_chn' num2str(c) '_roiman_'];
+        pth_maskman = insertBefore(pth_roim, '.mat', fninsert);
+        try
+            roiman = struct2cell(load(pth_maskman));
+            roiman = roiman{1};
+            if all(roiman(:)==1)
+                fprintf("WARNING, MASK MANUAL CHANNEL" + num2str(c) + " IS ALL ONES FOR REGION: " + regionex + newline)
+            end
+        catch
+            flag_limit_one_manual_roi = 0;
+            if numroiauto>1
+                flag_limit_one_manual_roi = 1;
+            end
+            roiman = roidraw_onechan(stack(:,:,:,:,c), regionex, flag_limit_one_manual_roi);
+            save(pth_maskman, 'roiman', '-v7.3', '-mat')
+        end
+        roimaskman_allchan{c} = roiman;
+    end
+end
+if ~isempty(chancp) && numchan==2
+    chanreceive = setxor(chancp, [1,2]);
+    fprintf("chancp is " + num2str(chancp) + "; COPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(chancp) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
+    if all(roimaskman_allchan{chancp}==1, 'all') && ~all(roimaskman_allchan{chanreceive}==1, 'all')
+        fprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones; you may not intend this" + newline);
+    end
+    roimaskman_allchan(chanreceive) = roimaskman_allchan(chancp);
+end
 
 
-assert(ndims(stack)==4)
+end
+
+
+function roimaskman_all_roi_all_z = roidraw_onechan(stack, regionex, pth_tmpfiles, flag_limit_one_manual_roi)
+
+
+if ndims(stack)~=4
+    error("stack in roidraw must be 4-dimensional (yxzt); use singleton z if not volumetric")
+end
 
 regionex_reformat = strrep(regionex, '_', ' ');
 
-%% make mean zt (2d), and mean t versions of input stack (3d)
+%% make mean zt (2d), and mean t (3d) versions of input stack
 
-clip_prctile = [0 100]; %[0 100] does not change contrast
-scalefac = 1;
-ignore_zeros = 1; %don't include zeros in percentile for contrast adjustment
-numdim_out = 2; %number of dimensions of output image
-filename_gif = []; %filename to save image, empty to skip
-
-stack_mnzt = stackimprep(stack, numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+stack = stackmn(stack, numdim_out); %take mean of trailing dims until stack is 2d
+stack_mnzt = stackclip(stack, clip=[0 100], rescale=1, skipzero=1);
 
 stackmnt = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'single');
 for szi = 1:size(stack, 3)
-    stackmnt(:,:,szi) = stackimprep(stack(:,:,szi,:), numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
+    stackmnt(:,:,szi) = stackclip(stack(:,:,szi,:), numdim_out, clip_prctile, scalefac, ignore_zeros, filename_gif);
 end
 
 %% show mean zt and decide if you still want to draw rois
 
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
-    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');  %fullscreen makes it docked on O2
+    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');  %fullscreen makes it docked on O2 matlab proxy app
 else
     hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked');
 end
@@ -106,7 +147,7 @@ if draw_manual
                     roicount = roicount + 1;
                 end
                 roimaskman_tmp2(:) = 0;
-                
+
                 if flag_limit_one_manual_roi || flag_one_image %limited to one roi
                     flag_quit_all_rois = 1;
                 end

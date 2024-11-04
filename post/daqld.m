@@ -94,6 +94,16 @@ if isempty(trialnum)
 else
     trial = num2str(trialnum);
 end
+if ~isstring(vnormal)
+    vnormal = string(vnormal);
+end
+if ~isstring(vcircular)
+    vcircular = string(vcircular);
+end
+if ~isstring(vcategorical)
+    vcategorical = string(vcategorical);
+end
+
 
 if isempty(pth_daq)
     if isempty(pth_fldr)

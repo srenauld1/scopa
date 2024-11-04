@@ -42,6 +42,7 @@ wavp = opt.wavp;
 autoopts = opt.ma;
 normopts = opt.nrm;
 
+pth_roim_prefix = pth_roim(1:end-4);
 numchan = size(stack,5);
 
 stackmnt = mean(stack, 4, 'native');
@@ -50,12 +51,13 @@ stackmnt = mean(stack, 4, 'native');
 
 [stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, md.zstartpos, o.id.recid, pth.fldr, md.sz_crop, ma.usehires, stackmnthr, hrlr);
 
-
 %% draw rois (polygons/polyhedra)
 
 if domm && ~maskinput
-    roimaskman_allchan = roidraw(stack, pth_roim, regionex, opt.mm);
+
 end
+
+
 
 
 %% make morphological roi mask (from manual mask plus automated mask, or just manual mask, or just automated mask), and compute some roi info and save in struct roidat

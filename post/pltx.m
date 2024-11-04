@@ -41,7 +41,7 @@ xwid = widyxz(2);
 zwid = widyxz(3);
 
 "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
-"TODO: MENU, FULL DRAWROIS, MERGE ALL A2P PLOTTING (MODULAR SUBPLOTS FOR SPECIALIZATION)"
+"TODO: MENU, FULL roidraw, MERGE ALL A2P PLOTTING (MODULAR SUBPLOTS FOR SPECIALIZATION)"
 
 % scatterplot
 %   scatterplot of 2 or 3 timeseries the lag with the greatest correlation coefficient

@@ -11,13 +11,13 @@ nocells = opt.nocells;
 if numel(s)>1
     for k = 1:numel(s) %for each index in nonscalar struct
         [rind, cind] = ind2sub(size(s), k);
-        s(rind, cind) = structsort(s(rind, cind), vectype=vectype);
+        s(rind, cind) = structsort(s(rind, cind), vectype=vectype, nocells=nocells);
     end
 else
     fn = fieldnames(s);
     for k = 1:numel(fn)
         if isstruct(s.(fn{k}))
-            s.(fn{k}) = structsort(s.(fn{k}), vectype=vectype);
+            s.(fn{k}) = structsort(s.(fn{k}), vectype=vectype, nocells=nocells);
         else
             if isscalar(s.(fn{k}))
                 if nocells && iscell(s.(fn{k}))

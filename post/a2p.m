@@ -119,72 +119,49 @@ for k = 1:numel(oa) % loop over recordings
         [stackmnthr, hrlr] = hiresld(ids.recid, pth, stack, md, o.hires);
     end
 
-    % stackplt(stack, it=20.3, fdimnum=3) %view stack in various ways
-
     %% create/load/select rois/responses for each optid
 
     if o.mn.doroi
-        fnroi = fieldnames(o.roi);
-        for m = 1:numel(fnroi) %for each regionex
-            optid = fnroi{m};
-            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, pth.roi.(optid), stackmnthr, hrlr, o.roi(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+        fn = fieldnames(o.roi);
+        for m = 1:numel(fn) %for each optid
+            optid = fn{m};
+            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, pth.roi.(optid), stackmnthr, hrlr, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
-
-    % save([pth.fldr 'ts.mat'], 'ts', '-v7.3', '-mat') %save timeseries struct 'ts' before adding modeling timeseries to it below
 
     %% feature extraction (e.g. bump), add to ts
 
     if o.mn.dopop
-        pffn = fieldnames(o.pop);
-        for pfi = 1:numel(pffn)
-            ts = popcmp(pffn{pfi}, ts, stack, roidat, o.pop.(pffn{pfi}), md, pth, ids.recid);
+        fn = fieldnames(o.pop);
+        for m = 1:numel(fn)
+            ts = popcmp(fn{m}, ts, stack, roidat, o.pop.(fn{m}), md, pth, ids.recid);
         end
     end
 
     %% model
 
     if o.mn.dofit
-        for si = 1:numel(o.mfit)
-            dochoose = 1;
-            cnt = 0;
-            while dochoose
-
-                cnt = cnt + 1;
-                [fitin, dochoose] = tsget(o.mfit(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.mfit, pth.stack, cnt, dochoose); %select indv/depv for fit using input options
-                stacksub = stackcrop(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
-
-                fitin = mfit(stacksub, fitin, roidat.(fitin.regionex).(fitin.parsex), md, o.mfit(si)); %fit model using any available timeseries
-
-            end
+        fn = fieldnames(o.mfit);
+        for m = 1:numel(fn)
+            fitin = mfit(stacksub, fitin, roidat.(fitin.regionex).(fitin.parsex), md, o.mfit(si)); %fit model using any available timeseries
         end
     end
 
-
-    %% interactive plots 
+    %% interactive plots
 
     if o.mn.dopltx
-        for si = 1:numel(o.pltx)
-            dochoose = 1;
-            cnt = 0;
-            while dochoose
-
-                cnt = cnt + 1;
-                [fitin, dochoose] = tsget(o.pltx(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.pltx, pth.stack, cnt, dochoose);
-                [stacksub, zstartsub] = stackcrop(stack, fitin.regionex, md.zstartpos, ids.recid, pth.fldr); %crop stack for plotting fov/rois
-
-                pltx(stacksub, fitin.vars, o.pltx(si).doui,  ...
-                    fitin.vnm, o.pltx(si).vpmap, o.pltx(si).epochinds, ...
-                    o.pltx(si).lagsxy_sec, o.pltx(si).lagsz_sec, o.pltx(si).lags_to_plot, ...
-                    o.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), ts.t, md.sampper, zstartsub, ...
-                    ts.epochinds, o.pltx(si).gifvis, o.pltx(si).iz, o.pltx(si).it, ...
-                    o.pltx(si).dr, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
-                    pth.mroi_interactive.(fitin.regionex), o.roi.nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)
-
-
-            end
+        fn = fieldnames(o.pltx);
+        for m = 1:numel(fn)
+            pltx(stacksub, fitin.vars, o.pltx(si).doui,  ...
+                fitin.vnm, o.pltx(si).vpmap, o.pltx(si).epochinds, ...
+                o.pltx(si).lagsxy_sec, o.pltx(si).lagsz_sec, o.pltx(si).lags_to_plot, ...
+                o.pltx(si).plot_z_as_color, roidat.(fitin.regionex).(fitin.parsex), ts.t, md.sampper, zstartsub, ...
+                ts.epochinds, o.pltx(si).gifvis, o.pltx(si).iz, o.pltx(si).it, ...
+                o.pltx(si).dr, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
+                pth.mroi_interactive.(fitin.regionex), o.roi.nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)
         end
     end
+
 
 end
 

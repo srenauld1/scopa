@@ -76,16 +76,16 @@ d.ftv.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
-d.roi.regionex = 'dflt'; %default regionex name 'dflt' automatically gets fullfov croplim; user is not prompted to create one in this case
+d.roi.regionex = 'none'; %default regionex name 'none' automatically gets fullfov croplim; user is not prompted to create one in this case
 d.roi.domm = 0; %do "morph manual"; if true, draw rois in an interactive plot, and save, (or load if already drawn and saved), if false, skip drawing
 d.roi.doma = 0; %do "morph auto"; if true, automatically segment drawn rois (or if none, full fov)
 d.roi.docm = 0; %do caiman extract.py; if true, load caiman rois with regionex in filename
 d.roi.doqc = 0; %do quality control (remove bad rois)
 d.roi.doplt = 0; %do plots
 
-%% mm (drawrois: mm = "morphological manual")
+%% mm (roidraw: mm = "morphological manual")
 
-d.mm.maskname = ['dflt']; %empty to skip; string array of names for roi mask(s) drawn on the same regionex
+d.mm.maskname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same regionex
 d.mm.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
 d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatenated with any other rois on that channel, ie does not overwrite); this is not automatically done with un-drawn channel because user may not want drawn rois for one channel
 

@@ -48,7 +48,7 @@ d.daq.tounwrap = ["ficTracIntSide'", "ficTracIntForward"]; % define which vars t
 d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to zero (force to start at 0)
 d.daq.voltmin = 0; % daq voltage min; need to find this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
-d.daq.use_carls_epochs = 1; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial; vector is created in socket code to control stimulus state, then saved at end of experiment; for old recordings file was not saved, so use_carls_epochs recreates that vector in the same way the socket code did
+d.daq.use_carls_epochs = 0; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial; vector is created in socket code to control stimulus state, then saved at end of experiment; for old recordings file was not saved, so use_carls_epochs recreates that vector in the same way the socket code did
 d.daq.doplt = 0; % if 1, will plot original and resampled timeseries in same figure, overlain, by default partitioned into 20 segments, one on each frame of a gif
 
 
@@ -81,16 +81,16 @@ d.ftv.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
-d.roi.regionex = 'dflt'; %default regionex name 'dflt' automatically gets fullfov croplim; user is not prompted to create one in this case
+d.roi.regionex = 'none'; %default regionex name 'none' automatically gets fullfov croplim; user is not prompted to create one in this case
 d.roi.domm = 0; %do "morph manual"; if true, draw rois in an interactive plot, and save, (or load if already drawn and saved), if false, skip drawing
 d.roi.doma = 0; %do "morph auto"; if true, automatically segment drawn rois (or if none, full fov)
 d.roi.docm = 0; %do caiman extract.py; if true, load caiman rois with regionex in filename
 d.roi.doqc = 0; %do quality control (remove bad rois)
 d.roi.doplt = 0; %do plots
 
-%% mm (drawrois: mm = "morphological manual")
+%% mm (roidraw: mm = "morphological manual")
 
-d.mm.maskname = ['dflt']; %empty to skip; string array of names for roi mask(s) drawn on the same regionex
+d.mm.maskname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same regionex
 d.mm.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
 d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatenated with any other rois on that channel, ie does not overwrite); this is not automatically done with un-drawn channel because user may not want drawn rois for one channel
 
@@ -109,8 +109,21 @@ d.ma.doplt = 0;
 
 %% cm (roifmake: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in optex)
 
+%{
+methodex:
+    '1' (channel 1 only), 
+    '2' (channel 2 only), 
+    '12' (channel 1 and 2 independently), 
+    'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 
+    'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 
+    'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 
+    'seed12py' (inverse of seed21py), 
+    'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 
+    'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=true
+%}
+
 % MAIN
-d.cm.methodex = '1'; %'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=true
+d.cm.methodex = '1'; %see notes on methodex above
 d.cm.gSig = [2, 2, 0.5]; %approximate xyz half-size, in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1, but since gSig is used to derive sigma_smooth_snmf, which is not clipped to 1, go ahead and use the real value; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels); z (3rd element) ignored if extract_in_2d;
 d.cm.nb = 1; %nb is used everywhere; default 1; num background components
 d.cm.low_rank_background = true; % spatial, and patch; #default true; and  #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
@@ -183,7 +196,7 @@ d.cm.morph_expand_method = 'closing'; %closing or dilation; only used for cm.bas
 
 %% qc (quality control rois)
 
-d.qc.minpixperreg = ["2", "3"]; % min pix in each distongiguous region, roi selection criterion
+d.qc.minpixperreg = 3; % min pix in each distongiguous region, roi selection criterion
 d.qc.minroisz = 5; % pixels, roi selection criterion
 d.qc.maxroisz = 300; % pixels
 d.qc.maxregperroi = 4; % for discontiguous rois
@@ -193,15 +206,16 @@ d.qc.doplt = 0; %plot roi overlay
 
 %% nrm (roits: extract and/or normalize roi timeseries)
 
-% options for response extraction/normalization of roi responses
+% options for extraction/normalization of roi signals
+% standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.pre and nrm.post, 
 % all normalizations are applied to individual vector timeseries
-% normalization strings are listed below; they can be combined arbitrarily and if combined, will be applied left to right order (eg 'nnbox' applies 'nn' then 'box'):
-% 'f': no normalization
-% 'dffuuuvvv': sliding window dff, uuu is percentile to compute f0 for each window, vvv is sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries, not a sliding window (e.g. dff010008 is 10th percentile over 8-seconde sliding window)
-% 'rscxxxyyy': rescale, sending xxx percentile to 0, yyy percentile to 1 (eg rsc000100 is same as default matlab rescale function)
-% 'z': zscore
-% 'nn': nonnegative (subtract min)
-% 'box': box-cox
+% normalization strings are listed below; they can be combined arbitrarily; if combined, they are applied left to right order (eg 'nnbox' applies 'nn' then 'box'):
+    % 'f': no normalization
+    % 'dffuuuvvv': dff; vvv is sliding window length in seconds over which f0 is computed; if vvv is 000, f0 is computed across the entire timeseries, not a sliding window; uuu is percentile to compute f0 for each window (e.g. dff010008 is 10th percentile over 8-seconde sliding window, dff001000 is 1st percentile over entire timeseries)
+    % 'rscxxxyyy': rescale, sending xxx percentile to 0, yyy percentile to 1 (eg rsc000100 is same as default matlab rescale function)
+    % 'z': zscore
+    % 'nn': nonnegative (subtract min)
+    % 'box': box-cox
 
 d.nrm.pre = 'f'; %must have at least one string, compsed of syllables above; % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
 d.nrm.post = 'f'; %must have at least one string, compsed of syllables above; postcluster normalization is applied after clustering (ie to each roi)
@@ -222,18 +236,6 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 % if o.bump.domaintypeis 'functional', these preferred headings are used as the angle, and o.bump.mfit.tg.v1 as the magnitude, in computing pva
 % if the regionex in o.bump.mfit.tg.v1 is in o.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
 % if o.bump.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
-
-% o.bump.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
-%this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
-%the selected timeseries will be assigned to depv
-%selecting indv uses the same approach
-%depv and indv are matched at the outer cell level
-%at the inner cell level, there can be multiple field specifiers (fieldspec)
-%each fieldspec is a char array, composed of segments separated by comma with space (', '), each segment matching the name of a field at a different level under struct 'ts'
-%depv and indv are composed of all timeseries matching fieldspecs
-%if multiple matches, depv is concatenated along second dim (time), since currently mfit fits single timeseries
-%if multiple matches, indv is concatenated along first dim (not time), since mfit can accept multidimensional independent variable
-% o.bump.mfit(1).indv{1} = {['vis, angsd']};
 
 %options for computing bump
 d.bump.mthd = 'pva'; %'pva' for vector average
@@ -299,10 +301,12 @@ d.pltx.doui = 1;
 
 %% hires (hiresld: load and register high-z-res stack if it exists)
 
-%options for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set o.roi.ma.use_hires=1 to use
-%options below, in vbin hires, are for registering the hires stack to the regular stack;
-% hires registration is done in matlab rather than in caiman, but should be switched over to caiman
+% options for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
+% hires stack is only used in making morphological rois, set o.roi.ma.use_hires=1 to use
+% options below, in vbin hires, are for registering the hires stack to the regular stack;
+% hires registration is done in matlab rather than in caiman because it matches an unregistered stack to a registered stack with different z resolution
+% this is different enough from caiman's available pipeline's, and simple enough to do with matlab imregtform and imwarp, that it made sense at the time; 
+% but now it seems simpler to just do the same thing in caiman with scikit warp as part of register.py (TODO)
 
 d.hires.disttype = 'monomodal'; % multimodal monomodal, used in stackrg3d from within hiresrg
 d.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in stackrg3d from within hiresrg
