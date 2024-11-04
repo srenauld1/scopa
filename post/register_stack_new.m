@@ -1,18 +1,16 @@
-function stackreg = register_stack_new(stack, pthsv)
+function stackreg = stackrg_test(stack, pthsv)
 
 arguments
     stack
     pthsv = []
 end
 
-%THIS IS JUST EXPLORATORY
+%this function is exploratory
 
 if isempty(pthsv)
     pthsv = pthauto(suffix='.gif', usetime=1);
 end
 
-
-%% preprocess and downsample hires_ds stack to match template stack size
 
 template = median(stack,4);
 
@@ -20,19 +18,6 @@ template = template - min(template(:));
 stack = stack - min(stack(:));
 
 stack = stack(:,:,:,1:100);
-
-% template = single(template);
-% stack = single(stack);
-% 
-% dopad = 0;
-% if dopad
-%     template = padarray(template, [0 0 1], 0, 'both');
-%     stack = padarray(stack, [0 0 1], 0, 'both');
-% end
-% 
-% template(template~=0) = rescale(template(template~=0));
-% stack(stack~=0) = rescale(stack(stack~=0)); %only rescale nonzeros in case of mask
-
 
 
 % smsdspace = 0.5;
@@ -74,12 +59,11 @@ end
 %% 
 
 
-disttype = 'monomodal';
 disttype = 'multimodal';
 regtype = 'rigid';
 
 for k = 1:size(stack,4)
-    [stackreg(:,:,:,k), tform] = register_one_stack_to_another_in_3d(stack(:,:,:,k), template, disttype, regtype);
+    [stackreg(:,:,:,k), tform] = stackrg3d(stack(:,:,:,k), template, disttype, regtype);
     vsh(1).Data = stackreg(:,:,:,k);
     vsh(2).Data = template;
     fig2gif(vwr.Parent, k, pthsv)
@@ -106,9 +90,9 @@ if doplt
     volshow(template,Parent=vwr,RenderingStyle="Isosurface",IsosurfaceValue=0.1, ...
         Colormap=[1 0 1],Alphamap=0.1);
     %
-    % stackplt(stack_hires_mnt_reg, pthgif=[pthsv(1:end-4) 'stack_hires_mnt_reg.gif'])
+    % stackplt(stackmnthr_reg, pthgif=[pthsv(1:end-4) 'stackmnthr_reg.gif'])
     %
-    % regplot = stack_hires_mnt_reg;
+    % regplot = stackmnthr_reg;
     % pct = prctile(regplot(:), 98);
     % regplot(regplot>pct) = pct;
     %

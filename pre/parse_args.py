@@ -1,6 +1,7 @@
 
 
 import argparse
+from dictsort import dictsort
 
 
 class parse_pars_file():
@@ -32,11 +33,11 @@ class parse_pars_file():
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, 
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc,   
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job):
     
     CLI=argparse.ArgumentParser()
@@ -78,12 +79,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[pth_storage_prefix],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--index_extraction_param_set",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  # 0 or more values expected => creates a list
-        type=str,
-        default=[index_extraction_param_set],  # default if nothing is provided
-    )
-    CLI.add_argument(
         "--regionex",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*",  # 0 or more values expected => creates a list
         type=str,
@@ -118,6 +113,12 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         nargs=1, 
         type=float,
         default=[len_window_smooth_t_mcp_sec],  # default if nothing is provided
+    )
+    CLI.add_argument(
+        "--max_shifts_prc",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1, 
+        type=float,
+        default=[max_shifts_prc],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
@@ -278,6 +279,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.register_in_2d = pars.REGISTER_IN_2D
         args.halfwidth_window_bgsub = pars.HALFWIDTH_WINDOW_BGSUB
         args.len_window_smooth_t_mcp_sec = pars.LEN_WINDOW_SMOOTH_T_MCP_SEC
+        args.max_shifts_prc = pars.MAX_SHIFTS_PRC
         args.denoise_volume = pars.DENOISE_VOLUME
         args.denoise_slice_index = pars.DENOISE_SLICE_INDEX
         args.num_epochs_denoise = pars.NUM_EPOCHS_DENOISE
@@ -288,7 +290,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.len_window_smooth_t_rsc_sec = pars.LEN_WINDOW_SMOOTH_T_RSC_SEC
         args.extract_in_2d = pars.EXTRACT_IN_2D
         args.regionex = pars.REGIONEX
-        args.index_extraction_param_set = pars.INDEX_EXTRACTION_PARAM_SET
 
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
@@ -320,7 +321,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         recording_index = args.recording_index #keep as list
     if recording_index != ['all']:
-        recording_index = [int(ri) for ri in recording_index] #convert to int if not 'all'
+        recording_index = [int(tmp) for tmp in recording_index] #convert to int if not 'all'
 
     file_matching_style = args.file_matching_style[0] 
 
@@ -333,6 +334,13 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     register_in_2d = int(args.register_in_2d[0])
     halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
     len_window_smooth_t_mcp_sec = float(args.len_window_smooth_t_mcp_sec[0])
+
+    if isinstance(args.max_shifts_prc[0], list):
+        max_shifts_prc = args.max_shifts_prc[0] #keep as list
+    else:
+        max_shifts_prc = args.max_shifts_prc #keep as list
+    max_shifts_prc = [float(tmp) for tmp in max_shifts_prc]
+
     do_denoise = int(args.do_denoise[0])
     do_stitch = int(args.do_stitch[0])
     denoise_volume = int(args.denoise_volume[0])
@@ -342,7 +350,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         denoise_slice_index = args.denoise_slice_index #keep as list
     if denoise_slice_index != ['all']:
-        denoise_slice_index = [int(ri) for ri in denoise_slice_index] #convert to int if not 'all'
+        denoise_slice_index = [int(tmp) for tmp in denoise_slice_index] #convert to int if not 'all'
 
     num_epochs_denoise = int(args.num_epochs_denoise[0])
 
@@ -354,7 +362,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         epoch_choose_denoise = args.epoch_choose_denoise[0] #keep as list
     else:
         epoch_choose_denoise = args.epoch_choose_denoise #keep as list
-    epoch_choose_denoise = [int(ri) for ri in epoch_choose_denoise] #make sure int
+    epoch_choose_denoise = [int(tmp) for tmp in epoch_choose_denoise] #make sure int
     
     do_remove = int(args.do_remove[0])
     len_window_smooth_t_rsc_sec = float(args.len_window_smooth_t_rsc_sec[0])
@@ -367,29 +375,28 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         regionex = args.regionex #keep as list
 
-    index_extraction_param_set = args.index_extraction_param_set[0] 
-    if index_extraction_param_set != 'default' and index_extraction_param_set != 'defaultset':
-        index_extraction_param_set = int(index_extraction_param_set) #convert to int if not 'default'
-
     do_analysis = int(args.do_analysis[0])
     first_job = int(args.first_job[0])
 
-    print("\n\n\nparsed these command line and/or param file arguments")
+    print("\n\n\nPARSED THESE COMMAND LINE AND/OR PARAM FILE ARGUMENTS:")
 
-    localscopy = locals().copy()
-    for k,v in localscopy.items():
-        if not k.startswith('_') and k!='localscopy' and k!='CLI' and k!='args' and k!='pars' and k!='In' and k!='Out' and not hasattr(v, '__call__'):
-            print(k,'=',v)
+    # options = {k: v for k, v in locals().items() if v is not None} #example turn locals into dict
 
+    whitespaces_three = '   '
+    loccop = locals().copy()
+    loccop = dictsort(loccop)
+    for k,v in loccop.items():
+        if not k.startswith('_') and k!='loccop' and k!='CLI' and k!='args' and k!='pars' and k!='In' and k!='Out' and not hasattr(v, '__call__'):
+            print(whitespaces_three, k, '=', v)
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, 
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc,  
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job)
 
 

@@ -1,28 +1,28 @@
-function [stack_hires_mnt, map_hires_lores] = hiresld(recid, pth, stack, md, opts_hires)
+function [stackmnthr, hrlr] = hiresld(recid, pth, stack, md, opts_hires)
 
 
 %% if using a high-z-res stack also, map low resolution z indices to to high resolution z indices
 
 pth_hires_tif = [pth.hires_prefix '.tif'];
 
-pixdist_z_lr = md.zwid;
+pixdist_z_lr = md.widyxz(3);
 pos_lr_cntrs = compute_z_centers(pixdist_z_lr, md.numslice );
-pixdist_z_hr = md.md_hires.zwid;
+pixdist_z_hr = md.md_hires.widyxz(3);
 pos_hr_cntrs = compute_z_centers(pixdist_z_hr, md.md_hires.sz_o(3) );
 
-map_hires_lores = [];
+hrlr = [];
 for phri = 1:length(pos_hr_cntrs)
     mapindy = find(pos_hr_cntrs(phri)>pos_lr_cntrs-pixdist_z_lr/2 & pos_hr_cntrs(phri)<pos_lr_cntrs+pixdist_z_lr/2);
     if ~isempty(mapindy)
-        map_hires_lores(phri) = mapindy;
+        hrlr(phri) = mapindy;
     else
-        map_hires_lores(phri) = nan; %for any hires slices out of lores range
+        hrlr(phri) = nan; %for any hires slices out of lores range
     end
 end
 
 lores_z_out_of_bounds = find(pos_lr_cntrs+pixdist_z_lr/2>max(pos_hr_cntrs)+pixdist_z_hr/2); %lores slice indices whose end is beyond the last hires z end (but we only care about this for registering hires, not for using registered hires)
-hires_z_out_of_bounds = find(map_hires_lores==lores_z_out_of_bounds); %remove all hires for the lores out of bounds to not have any partial correspondance slices
-map_hires_lores(hires_z_out_of_bounds) = [];
+hires_z_out_of_bounds = find(hrlr==lores_z_out_of_bounds); %remove all hires for the lores out of bounds to not have any partial correspondance slices
+hrlr(hires_z_out_of_bounds) = [];
 
 
 %% try to load registered hires stack, or if it doesn't exist, register it to the lores stack (hires is registered to lores in matlab, not python)
@@ -30,12 +30,14 @@ map_hires_lores(hires_z_out_of_bounds) = [];
 
 try
  
-    stack_hires_mnt = struct2cell(load(pth.hires_mat_matreg)); %load registered stack, if it exists
-    stack_hires_mnt = stack_hires_mnt{1};
+    stackmnthr = struct2cell(load(pth.hires_mat_matreg)); %load registered stack, if it exists
+    stackmnthr = stackmnthr{1};
 
 catch
 
     try
+
+        error("warning, you are attempting to use deprecated hires registration code; register hires in caiman instead")
 
         lores_z_for_hires_map = setxor(lores_z_out_of_bounds, 1:size(stack, 3)); %crop here so the hires registration is correct
         stack_lores_mnt = rescale(mean(stack(:,:,lores_z_for_hires_map,:),4)); %rescale makes it a double, good for hires registration, may not be quite the same as stackmnt in a2p since lores_z_for_hires_map is applied here (using only z that match hires and lores)
@@ -47,10 +49,10 @@ catch
         stack_hires = stackld(md.md_hires.sz_o, md.md_hires.numslice_withflyback, pth2, opts_hires.ld, recid);
 
         stack_hires(:,:,hires_z_out_of_bounds,:) = [];
-        stack_hires_mnt = rescale(mean(stack_hires, 4));
+        stackmnthr = rescale(mean(stack_hires, 4));
 
-        stack_hires_mnt = register_3d_hires_to_3d_lores(stack_hires_mnt, ...
-            pth.hires_mat_matreg, stack_lores_mnt, map_hires_lores, opts_hires);
+        stackmnthr = hiresrg(stackmnthr, ...
+            pth.hires_mat_matreg, stack_lores_mnt, hrlr, opts_hires);
 
     catch
 
@@ -69,17 +71,17 @@ if opts_hires.use_caiman_on_hires % load caiman rois extracted from hires if the
         "IF YOU WANT TO USE CAIMAN ROI EXTRACTION ON THIS HIRES REGISTERED TIF, \n" + ...
         "YOU COULD INSERT A CALL TO pipeline_init.py HERE \n" + ...
         "BUT YOU HAVE TO ADAPT THE PYTHON CODE TO OPERATE ON FILES WITH STRING hires \n" + ...
-        "AND YOU HAVE TO ADAPT register_3d_hires_to_3d_lores TO OUTPUT THE REGISTERED FULL 4D HIRES, \n" + ...
-        "RATHER THAN THE CURRENT OUTPUT, WHICH IS REGISTERED TEMPORAL AVERAGE stack_hires_mnt \n" + ...
+        "AND YOU HAVE TO ADAPT hiresrg TO OUTPUT THE REGISTERED FULL 4D HIRES, \n" + ...
+        "RATHER THAN THE CURRENT OUTPUT, WHICH IS REGISTERED TEMPORAL AVERAGE stackmnthr \n" + ...
         "CURRENTLY HIRES IS JUST USED FOR ANATOMY, SO TEMPORAL AVERAGE IS FINE, \n" + ...
         "THE CODE ISN'T WRITTEN FOR HIRES FUNCTIONAL ROI EXTRACTION \n" + ...
         "YOU CAN USE update_tif BELOW TO WRITE THIS 4D ARRAY TO TIF TO USE IN CAIMAN, \n" + ...
         "ALL OF THESE REQUIRED CHANGES WOULD BE SMALL, AND IS ON THE TODO LIST"))
 
-    fntmp = rdir(pth.froi_hires);
+    fntmp = rdir(pth.roif_hires);
     if ~isempty(fntmp)
-        pth.froi_hires = fntmp.name;
-        roimask_hires = struct2cell(load(pth.froi_hires));
+        pth.roif_hires = fntmp.name;
+        roimask_hires = struct2cell(load(pth.roif_hires));
         roimask_hires = roimask_hires{1};
     else
         disp("WRITING HI RES REGISTERED TIF FOR CAIMAN EXTRACTION")
@@ -93,12 +95,12 @@ if opts_hires.use_caiman_on_hires % load caiman rois extracted from hires if the
     %mask hires by caiman-extracted hires rois
     roimasks_hires_all = sum(roimask_hires, 4);
     roimasks_hires_all(roimasks_hires_all~=0) = 1;
-    stack_hires_mnt = stack_hires_mnt.*roimasks_hires_all;
+    stackmnthr = stackmnthr.*roimasks_hires_all;
 
 end
 
 
-if ndims(stack_hires_mnt)~=3
-    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stack_hires_mnt TO BE 3D"))
+if ndims(stackmnthr)~=3
+    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES stackmnthr TO BE 3D"))
 end
 

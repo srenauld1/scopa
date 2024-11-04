@@ -2,7 +2,7 @@ function todoshow()
 
 
 disp("MAKE TIME ALWAYS 2ND DIM")
-disp("FIX DIFFERENT MROI OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS")
+disp("FIX DIFFERENT roi OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS")
 disp("CAN STACK REMAIN INT16?? zero in uint16 is nice though")
 disp("MAKE ALL INDICES CONSISTENTLY REPRESENT START, CENTER, OR END . . . daq starts at 0, so maybe do start indexed, but singleton 0 indexed samples don't tell you width; but currently default daq downsampling makes time represent center, since it takeds average")
 disp("make hemisphere option (eg option to analyze left or right or both)")
@@ -19,6 +19,8 @@ disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("fix hard coded, field-dependent nesting in vnm")
+fprintf("FOR NORMAL AND CIRCULAR VARIABLES, CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS LOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING (IF THEY ARE INCLUDED WITH usefbf=1)" + newline)
+
 pause(2)
 
 end

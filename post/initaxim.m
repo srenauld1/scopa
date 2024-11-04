@@ -1,0 +1,130 @@
+function hgroup = initaxim(hfg, ax, stack, opt)
+
+arguments
+    hfg
+    ax struct
+    stack
+    opt.stackp = [] %hack for rgb image for now
+    opt.cmap double = gray(256) %cmap or 'rgb'
+    opt.txtvar = []
+    opt.dr = [0,1]
+    opt.sector_ind = 1
+    opt.subplot_ind = 1:size(stack,3)
+    opt.widfac = 1
+    opt.htfac = 1
+    opt.fontsz = [6 11 15]
+    opt.axorder char = 'rm'
+    opt.dool = 0
+    opt.doui = 0
+end
+
+stackp = opt.stackp;
+cmap = opt.cmap;
+txtvar = opt.txtvar;
+dr = opt.dr;
+sector_ind = opt.sector_ind;
+subplot_ind = opt.subplot_ind;
+widfac = opt.widfac;
+htfac = opt.htfac;
+fontsz = opt.fontsz;
+axorder = opt.axorder;
+dool = opt.dool;
+doui = opt.doui;
+
+if ~isempty(stackp)
+    stack = stackp;
+    stackp = [];
+end
+
+numsubplot = numel(subplot_ind);
+fontsmall = fontsz(1);
+fontmedium = fontsz(2);
+fontlarge = fontsz(3);
+
+numxpix = size(stack,2);
+numypix = size(stack,1);
+numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
+numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
+dummyim = nan(numypix, numxpix);
+
+imroi = zeros(numypix, numxpix, 3, 'single'); %make ones here, so only alphadata has to change later (showing the ones where the roi is located, scaled by alphafac)
+imroialpha = zeros(numypix, numxpix, 'single');
+
+stackmin = double(min(stack(:)));
+stackmax = double(max(stack(:)));
+stackrange = stackmax-stackmin;
+
+
+for j = 1:numsubplot
+
+    hax{j} = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
+    hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
+    hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac);
+    hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac);
+    hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
+    hax{j}.XLim = [1 numxpix]; %why do this instead of axis image or dataaspectratio 1 1 1????
+    hax{j}.YLim = [1 numypix];%why do this instead of axis image or dataaspectratio 1 1 1 ????
+    hax{j}.CLim = stackrange*dr+stackmin;
+    hax{j}.Toolbar.Visible = 'off';
+
+    colormap(hax{j}, cmap);
+    % hax{j}.XLabel.String = xlab;
+    % hax{j}.YLabel.String = ylab;
+    axis off
+    axis ij
+
+    hold(hax{j}, 'on')
+
+    hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
+    hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
+
+
+    if dool
+        hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
+    else
+        hol = [];
+    end
+
+    if doui
+        if dool
+            hpl{j}.ButtonDownFcn = 'callbacks for this image are assigned to overlay image with handle hol';
+            hol{j}.ButtonDownFcn = @(src,evnt)uiclickim(src,evnt);
+            hol{j}.PickableParts = 'visible';
+            hol{j}.HitTest = 'on';
+        else
+            hpl{j}.ButtonDownFcn = @(src,evnt)uiclickim(src,evnt);
+            hpl{j}.PickableParts = 'visible';
+            hpl{j}.HitTest = 'on';
+        end
+    end
+
+
+    hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');
+    hlny{j} = yline(hax{j}, nan, 'w', 'LineStyle', 'none');
+    if ~isempty(txtvar)
+        htx{j} = text(hax{j}, size(stack, 2), size(stack, 1), num2str(txtvar(j), 4), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
+    else
+        htx{j} = [];
+    end
+    htx{j}.PickableParts = 'none'; %so you can capture click on image beneath the text
+    htx{j}.HorizontalAlignment = 'right';
+    htx{j}.VerticalAlignment = 'bottom';
+
+    hold(hax{j}, 'off')
+
+end
+
+
+hgroup.hax = hax;
+hgroup.hpl = hpl;
+hgroup.hol = hol;
+hgroup.hlnx = hlnx;
+hgroup.hlny = hlny;
+hgroup.htx = htx;
+
+
+end
+
+
+

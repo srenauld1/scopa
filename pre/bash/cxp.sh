@@ -44,12 +44,12 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 #matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 
-#BASH LISTS BELOW MUST BE SINGLE-QUOTED, SPACE-DELIMITED, ENCLOSED BY PARENTHESES (this prevents asterisk * from causing problems) 
+#BASH LISTS BELOW MUST BE SPACE-DELIMITED, ENCLOSED BY PARENTHESES, AND IF QUOTED, USING SINGLE-QUOTES (all this prevents asterisk * from causing problems) 
 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20240911')
+RECDATE=('20240907')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -60,9 +60,10 @@ FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from R
 
 REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-REGISTER_IN_2D=(0) #register each z slice independently
+REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 LEN_WINDOW_SMOOTH_T_MCP_SEC=(0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
+MAX_SHIFTS_PRC=(10 10 10) #empty to skip; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
@@ -77,7 +78,6 @@ USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise remov
 
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
-INDEX_EXTRACTION_PARAM_SET=('default')
 
 
 ############ SET PARAMS FOR RESOURCE REQUEST ############
@@ -145,6 +145,7 @@ pars["REGISTRATION_TEMPLATE_GROUP_ID"]="${REGISTRATION_TEMPLATE_GROUP_ID[@]}"
 pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
 pars["HALFWIDTH_WINDOW_BGSUB"]="${HALFWIDTH_WINDOW_BGSUB[@]}"
 pars["LEN_WINDOW_SMOOTH_T_MCP_SEC"]="${LEN_WINDOW_SMOOTH_T_MCP_SEC[@]}"
+pars["MAX_SHIFTS_PRC"]="${MAX_SHIFTS_PRC[@]}"
 pars["DENOISE_VOLUME"]="${DENOISE_VOLUME[@]}"
 pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"
 pars["NUM_EPOCHS_DENOISE"]="${NUM_EPOCHS_DENOISE[@]}"
@@ -155,7 +156,6 @@ pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
 pars["LEN_WINDOW_SMOOTH_T_RSC_SEC"]="${LEN_WINDOW_SMOOTH_T_RSC_SEC[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
-pars["INDEX_EXTRACTION_PARAM_SET"]="${INDEX_EXTRACTION_PARAM_SET[@]}"
 pars["FNIND_FN_PREFIX"]="${FNIND_FN_PREFIX[@]}"
 
 for key in "${!pars[@]}"; do

@@ -11,17 +11,17 @@
         save('~/stacks/muk.mat', 'kpstim2', '-v7.3', '-mat')
         % tsplt(kpstim, y2=kpstim2/2, xseg=30, ymatch=1);
 
-        rsp2 = reshape(stackcrop(:,:,:,:,1), [], size(stackcrop, 4));
+        rsp2 = reshape(stacksub(:,:,:,:,1), [], size(stacksub, 4));
         [~, pwr] = wavflt(rsp2, t=ts.t, wavp=[0 5]);
 
-        respstd = std(reshape(stackcrop(:,:,:,:,1), [], size(stackcrop, 4)), 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
+        respstd = std(reshape(stacksub(:,:,:,:,1), [], size(stacksub, 4)), 1, 2); %making 2nd argument 1 normalizes by n, making it 0 normalizes by n-1
 
         imhsv = [];
         imhsv.fg = 'pixels';
         imhsv = default_hsv_opts(imhsv);
         imhsv = plots_setup_hsv(imhsv);
 
-        stackmnt = mean(stackcrop(:,:,:,:,1), 4);
+        stackmnt = mean(stacksub(:,:,:,:,1), 4);
         roipxall = num2cell(1:numel(stackmnt));
 
         pwrind = 1;

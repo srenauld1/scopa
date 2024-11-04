@@ -36,24 +36,24 @@ if len(sys.argv)>1:
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, 
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc,  
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed,
-                      do_crop_only, do_extract, extract_in_2d, regionex, index_extraction_param_set, 
+                      do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job] = \
     parse_command_line( folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix = pth_storage_prefix, 
                       do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pth_parsfile = pth_parsfile, scopatmpdir = scopatmpdir, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, recording_index = recording_index, file_matching_style = file_matching_style,
-                      registration_template_group_id = registration_template_group_id, do_register = do_register, register_in_2d = register_in_2d, halfwidth_window_bgsub = halfwidth_window_bgsub, len_window_smooth_t_mcp_sec = len_window_smooth_t_mcp_sec,  
+                      registration_template_group_id = registration_template_group_id, do_register = do_register, register_in_2d = register_in_2d, halfwidth_window_bgsub = halfwidth_window_bgsub, len_window_smooth_t_mcp_sec = len_window_smooth_t_mcp_sec, max_shifts_prc = max_shifts_prc,  
                       do_denoise = do_denoise, do_stitch = do_stitch, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
                       use_background_subtracted = use_background_subtracted, use_denoised = use_denoised, epoch_choose_denoise = epoch_choose_denoise, 
                       do_remove = do_remove, len_window_smooth_t_rsc_sec = len_window_smooth_t_rsc_sec, use_scannoise_removed = use_scannoise_removed, 
-                      do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, index_extraction_param_set = index_extraction_param_set, 
+                      do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, 
                       do_analysis = do_analysis, first_job = first_job)
 
 
-[pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind] = make_paths(do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
+[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_analysis > 1:
@@ -117,11 +117,6 @@ if not do_copyfiles:
   elif do_remove or do_analysis:
     import matlab.engine
     import io
-    from pathlib import Path
-    pp = Path(currscriptdir).parts #split path
-    pp_splitind = pp.index('scopa') + 1
-    pth_scopa = os.path.join(*pp[:pp_splitind]) + '/'
-
 
 
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
@@ -140,15 +135,14 @@ for ri, _ in enumerate(pth_read_all):
       print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_read_all[ri] + "\nLOADING SCANIMAGE METADATA FROM THIS FILE: \n" + pth_md_all[ri]) 
 
       with open(pth_md_all[ri], 'r') as file:
-        md = file.read()
-      md = json.loads(md)
+        md = json.loads(file.read())
 
       if do_register:
           try: #spatial_downsample_fictrac_video is not essential, so putting in a try block
             spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           except Exception as err:
             print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, register_presmoothed, cluster_backend, use_cluster, makeplots)
+          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc, register_presmoothed, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
         chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
@@ -167,8 +161,8 @@ for ri, _ in enumerate(pth_read_all):
         eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
-        extract(index_extraction_param_set, pth_prefix_all[ri], pth_read_all[ri], md, do_crop_only, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, makeplots, cluster_backend, use_cluster)
-          
+        extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)
+
       if do_analysis:
         eng = matlab.engine.start_matlab()
         eng.addpath(eng.genpath(pth_scopa))

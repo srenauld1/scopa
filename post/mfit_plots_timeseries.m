@@ -50,10 +50,10 @@ bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim
 
 
 
-ax = figarr({[numrows_ts, numcolumns_ts], [numrows_ts2, numcolumns_ts2]}, margins_subplot, margins_fig, splitdim, splitfrac);
+ax = figarr({[numrows_ts, numcolumns_ts], [numrows_ts2, numcolumns_ts2]}, marginssp=marginssp, marginsfig=marginsfig, splitdim=splitdim, splitfrac=splitfrac);
 
 %title string
-htx = text( 0.02, 1-margins_fig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+htx = text( 0.02, 1-marginsfig/2, '', 'FontSize', fontsmall, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
 tittmp = strsplit(filename_save(1:end-4), '/');
 htx.String = strrep(tittmp{end}, '_', ' ');
 
@@ -102,7 +102,7 @@ for ri = 1:numroi_plot %for each unit
             if framecount==1 %if on the first frame
 
                 sectorind = 1;
-                hax{nsi} = axes( 'Parent', hfg, 'Position', [ax(sectorind).rowmajor.xp(nsi), ax(sectorind).rowmajor.yp(nsi), ax(sectorind).xe(1), ax(sectorind).ye(1)] ); %make the subplot
+                hax{nsi} = axes( 'Parent', hfg, 'Position', [ax(sectorind).rm.xp(nsi), ax(sectorind).rm.yp(nsi), ax(sectorind).xe(1), ax(sectorind).ye(1)] ); %make the subplot
                 hold(hax{nsi}, 'on')
                 % yyaxis left
                 hpl{nsi} = plot(hax{nsi}, depvrow{nsi}(ri,:), 'Color', color_depv, 'LineStyle', '-');
@@ -190,7 +190,7 @@ for ri = 1:numroi_plot %for each unit
             sectorind = 2;
             for tffi = 1:supp.num_total_model_functions
                 tffi2 = tffi + supp.starting_hax;
-                hax{tffi2} = axes( 'Parent', hfg, 'Position', [ax(sectorind).rowmajor.xp(tffi), ax(sectorind).rowmajor.yp(tffi), ax(sectorind).xe(1), ax(sectorind).ye(1)] ); %make the subplot
+                hax{tffi2} = axes( 'Parent', hfg, 'Position', [ax(sectorind).rm.xp(tffi), ax(sectorind).rm.yp(tffi), ax(sectorind).xe(1), ax(sectorind).ye(1)] ); %make the subplot
             end
         end
         supp.framecount = framecount;

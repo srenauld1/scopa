@@ -11,12 +11,12 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 
-from configs import configs
+from optrg import optrg
 from im_montage import im_montage
 from plot_gif import plot_gif
 
 
-def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, stack_has_multiple_z_slices, makeplots):
+def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stack_has_multiple_z_slices, makeplots):
 
     # make or load registration template; sleep until it's available, if necessary (error after waiting 5 min)
 
@@ -61,7 +61,8 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
             if os.path.isfile(pth_regtemplate):
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
-                opts_dict, _, _, _ = configs(register_in_2d = register_in_2d, min_mov = np.min(stack).astype('float32'), md = md) #configs for motion correction (will also define for extraction, but extraction params are in redefined later call to configs)
+                minmovtmp = np.min(stack).astype('float32')
+                opts_dict = optrg(md, register_in_2d, minmovtmp, stack_shape_space, max_shifts_prc = max_shifts_prc) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
                 regtemplate = make_registration_template(stack, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
@@ -135,24 +136,25 @@ def make_registration_template(stack, stack_has_multiple_z_slices, register_in_2
     # by default in 4d if stack is 4d, in 3d if stack is 3d
     # later template is used by slice if registration is in 2d, or by volume if not  
     # note caiman template is 'movie' while this is 'array' . . . doesn't seem to matter
-    
-    #two hard-coded params for now
-    register_regtemplate = 0 #WILSONLAB, CFRW, 240218, SWITCH OFF regtemplate REGISTER, IT CAN MAKE A BAD regtemplate FOR A NOISY MOVIE 
-    use_different_number_frames_in_2d_and_3d_regtemplates = 0 #WILSONLAB, CFRW, 240218, 0 TO MAKE 2D AND 3D HAVE SAME regtemplate NUM FRAMES (SET TO 1 FOR ORIGINAL)
 
-    Ts = stack.shape[0]
-    # Ts = np.arange(T)[subidx].shape[0]
-    
-    if use_different_number_frames_in_2d_and_3d_regtemplates and stack_has_multiple_z_slices:
-        goal_frames_in_regtemplate = 10
-    else: 
-        goal_frames_in_regtemplate = 50
 
-    step = Ts // goal_frames_in_regtemplate 
-    
-    time_slicer = slice(subidx.start, subidx.stop, step + 1)
+    register_regtemplate = 0 #WILSONLAB, CFRW, 240218, caiman default is register_2d_template=1; SWITCH OFF TEMPLATE REGISTER for 2d, IT CAN MAKE A BAD TEMPLATE FOR A NOISY MOVIE; there is no option to register 3d template in caiman yet
+    use_caiman_default_template_frames = 0 #WILSONLAB, CFRW, 240218, caiman defualt is use_caiman_default_template_frames=1; 1 to use caiman's original, which is 10 equidistant frames in 2d template, 50 equidistant in 3d template; make 0 to make template from first num_template_frames frames
+    num_template_frames_if_not_using_caiman_default_template_frames = 50 #if use_caiman_default_template_frames is false, how many initial frames of stack to use to make template
+    template_start_frame_if_not_using_caiman_default_template_frames = int(np.floor(stack.shape[0]/2)) # was 0, switched to middle frame #first frame of template if use_caiman_default_template_frames is false
 
-    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in configs (default does not use these)
+    Ts = stack.shape[0] # Ts = np.arange(T)[subidx].shape[0]
+         
+    if use_caiman_default_template_frames:
+        step = Ts // 10 if stack_has_multiple_z_slices else Ts // 50 #this is caiman's default 
+        time_slicer = slice(subidx.start, subidx.stop, step + 1)
+    else:
+        if subidx.start is not None or subidx.stop is not None:
+            raise Exception("you are using use_caiman_default_template_frames=0 but have also passed t indices; do one or the other")
+        time_slicer = slice(0+template_start_frame_if_not_using_caiman_default_template_frames, num_template_frames_if_not_using_caiman_default_template_frames+template_start_frame_if_not_using_caiman_default_template_frames, 1) #first num_template_frames_if_not_using_caiman_default_template_frames frames
+
+
+    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in optrg (default does not use these)
         if stack_has_multiple_z_slices:
             stack = stack[time_slicer, indices[0], indices[1], :]
         else:
@@ -164,8 +166,7 @@ def make_registration_template(stack, stack_has_multiple_z_slices, register_in_2
     stack = stack.astype('float32') #convert to float after subsampling
 
     if gSig_filt is not None:
-        # stack = cm.movie(np.array([high_pass_filter_space(m_, gSig_filt) for m_ in stack]))
-        raise Exception("exception intended for 1p data")
+        stack = cm.movie(np.array([cm.motion_correction.high_pass_filter_space(m_, gSig_filt) for m_ in stack]))
     
     if stack_has_multiple_z_slices: #previously was if is3D:     
         regtemplate = cm.motion_correction.bin_median_3d(stack) # motion_correct_3d has not been implemented in 'movies' yet - instead initialize to just median image
@@ -180,5 +181,6 @@ def make_registration_template(stack, stack_has_multiple_z_slices, register_in_2
 
     print("created registration regtemplate, writing to: " + pth_regtemplate)
     imwrite(pth_regtemplate, regtemplate, bigtiff=True, photometric='minisblack') #write as tif
+
 
     return regtemplate

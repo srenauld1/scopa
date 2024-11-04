@@ -5,7 +5,7 @@ arguments
     indsin {mustBeNumeric} = []
     opt.indsall {mustBeNumeric} = []
     opt.label_prefix char = ''
-    opt.strdelim char = '-';
+    opt.strdelim char = ':';
     opt.printmax = 20
 end
 
@@ -53,9 +53,9 @@ elseif mod(indsin, 1)~=0
     segspacing = floor(numel(indsall)/numseg);
     inds = [1:seglength]+segspacing*([1:numseg]'-1)+segspacing-seglength;
     for j = 1:size(inds,1)
-        indslab{j} = [num2str(inds(j,1)) 'to' num2str(inds(j,end))];
+        indslab{j} = [num2str(inds(j,1)) '-' num2str(inds(j,end))];
     end
-    indslab = strjoin(indslab, '-');
+    indslab = strjoin(indslab, ': ');
     inds = vec(inds.');
     if numel(inds)>numel(indsall) | any(inds<0)
         sprintf("seglength*numseg exceeds num inds, plotting all inds")
@@ -69,9 +69,9 @@ inds = inds(:)';
 
 %regardless of what happens above, apply this as an additional step
 if isequal(inds, min(inds):max(inds))
-    indslab = [num2str(min(inds)) 'to' num2str(max(inds))];
+    indslab = [num2str(min(inds)) '-' num2str(max(inds))];
 elseif isequal(sort(inds), min(inds):max(inds))
-    indslab = [num2str(min(inds)) 'to' num2str(max(inds)) 'unsorted'];
+    indslab = [num2str(min(inds)) '-' num2str(max(inds)) 'unsorted'];
 else
     if ~fractional_indsin
         if numel(inds)<printmax

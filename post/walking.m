@@ -5,13 +5,15 @@ clc
 
 format long
 
-maxsec = 300;
-minsec = 90;
-numnumelfac = 0.95;
+maxsec = 1e9; %ignore trials longer than maxsec
+minsec = -1;  %ignore trials shorter than minsec
+numel_thresh = 0; %ignore trials shorter than this fraction of the max trial length in the found pool of trials
 slopelensec = 0.5;
 slopeord = 2;
 ball_radius = 4.5;
+
 limfac = 1;
+axord = 'cm';
 gifvis = 'on';
 figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 fontmedium = 12;
@@ -25,6 +27,7 @@ numgoodinds = 86;
 numax = 5;
 nbin = 20;
 plotpaths = 0;
+plot_cumstat = 0;
 
 
 if doall
@@ -36,12 +39,15 @@ end
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 parent_path = '~/walking/';
-pthprefix = [parent_path '**/walking' pthinsert '/FicTracData/**/'];
+subfolder = 'window';
+pthpat = [parent_path '**' filesep subfolder pthinsert filesep 'FicTracData' filesep '*dat'];
 pthgif_paths = [parent_path 'paths_' timestr  '.gif'];
 pthgif_stats = [parent_path 'stats_' timestr  '.gif'];
 pthgif_hists = [parent_path 'hists_' timestr  '.gif'];
 
-fnp = rdir([pthprefix '**' filesep '*dat']);
+pthgif_vel = ['~/walking/window/FicTracData/' 'vel_' timestr  '.gif'];
+
+fnp = rdir(pthpat);
 for j = 1:numel(fnp)
     fn{j} = fnp(j).name;
 end
@@ -70,7 +76,7 @@ numposxmin = min(cellfun(@numel, allposx));
 
 count = 0;
 for j = 1:numel(allposx)
-    if numel(allposx{j})>numposxmax*numnumelfac && allt{j}(end)>minsec*1e3
+    if numel(allposx{j})>numposxmax*numel_thresh && allt{j}(end)>minsec*1e3
         count = count+1;
         slopelen_samp = round(slopelensec/dt(j));
 
@@ -85,7 +91,7 @@ for j = 1:numel(allposx)
         % allintxgood{count} = allintx{j}*ball_radius;
         % allintygood{count} = allinty{j}*ball_radius;
 
-        allvelx{count} = tsdv('circular', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %same as (smoothed) alldrlygood
+        allvelx{count} = tsdv('circular', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
         cumvelxtmp = cumsum(allvelx{count});
         cumvelx(count) = cumvelxtmp(end);
 
@@ -97,7 +103,7 @@ for j = 1:numel(allposx)
         cumvelxthreshtmp = cumsum(allvelxthresh{count});
         cumvelxthresh2(count) = cumvelxthreshtmp(end);
 
-        allvely{count} = tsdv('circular', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %same as (smoothed) -alldrlxgood
+        allvely{count} = tsdv('circular', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
         cumvelytmp = cumsum(allvely{count});
         cumvely(count) = cumvelytmp(end);
 
@@ -144,16 +150,48 @@ maxvely = max(cell2mat(cellfun(@max, allvely, 'UniformOutput', false)), [], 'omi
 minvelall = min([minvelx, minvely]);
 maxvelall = max([maxvelx, maxvely]);
 
+minallt = min(cell2mat(cellfun(@min, allt, 'UniformOutput', false)), [], 'omitmissing');
+maxallt = max(cell2mat(cellfun(@max, allt, 'UniformOutput', false)), [], 'omitmissing');
+
+dummyvec = nan(numposxmax, 1);
+
+
+%% plot vel
+
+allvelcat = cell2mat(allvelx');
+alltcat = [1:numel(allvelcat)]*mean(dt(j))/60/60;
+
+hfg = figure;
+plot(alltcat, allvelcat)
+ylabel('forward velocity (mm/s)')
+xlabel('hours')
+fig2gif(hfg, 1, '~/walking/window/FicTracData/vel_all.gif')
+
+
+hfg = figure;
+hax = axes(Parent=hfg);
+hax.YLim = [minvelx maxvelx];
+hax.XLim = [minallt maxallt];
+hpl = plot(hax, dummyvec, dummyvec);
+ylabel('forward velocity (mm/s)')
+xlabel('hours')
+for k = 1:numel(allvelx)
+    hpl.XData(1:numel(allvelx{k})) = allt{k};
+    hpl.YData(1:numel(allvelx{k})) = allvelx{k};
+    fig2gif(hfg, k, pthgif_vel)
+end
+
+%% plot something else 
+
 % figure; plot(allvely{j}); yyaxis right; plot(-alldrlxgood{j});
 % figure; plot(allvelx{j}); yyaxis right; plot(alldrlygood{j});
 % figure; plot(cumsum(allvelx{j})); yyaxis right; plot(allintxgood{j});
 
-dummyvec = nan(numposxmax, 1);
 
-subplot_layout = {[6,4]};
-margins_subplot = 0.05;
-margins_fig = 0.05;
-ax = figarr(subplot_layout, margins_subplot, margins_fig);
+layout = {[6,4]};
+marginssp = 0.05;
+marginsfig = 0.05;
+ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig);
 
 
 hfg = figure;
@@ -172,24 +210,25 @@ htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment
 
 sector_ind = 1;
 for axcount = 1:numax
+
     hax{axcount} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
     if axcount==1
         subplot_pos_ind = 2;
         widthfac = 2;
         heightfac = 2;
-        hax{axcount}.InnerPosition(1) = ax(sector_ind).xp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(2) = ax(sector_ind).yp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(1) = ax(sector_ind).(axord).xp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(sector_ind).(axord).yp(subplot_pos_ind);
         hax{axcount}.InnerPosition(3) = ax(sector_ind).ye(widthfac);
         hax{axcount}.InnerPosition(4) = ax(sector_ind).ye(heightfac);
     else
         subplot_pos_ind = axcount+1;
         widthfac = 4;
         heightfac = 1;
-        hax{axcount}.InnerPosition(1) = ax(sector_ind).xp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(2) = ax(sector_ind).yp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(3) = ax(sector_ind).xe(widthfac);
-        hax{axcount}.InnerPosition(4) = ax(sector_ind).ye(heightfac);
+        hax{axcount}.InnerPosition(1) = ax(sector_ind).(axord).xp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(sector_ind).(axord).yp(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(sector_ind).(axord).xe(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(sector_ind).(axord).ye(heightfac);
     end
 
     hold(hax{axcount}, 'on')
@@ -211,6 +250,9 @@ for axcount = 1:numax
     hold(hax{axcount}, 'off')
 
 end
+
+
+%% paths 
 
 if plotpaths
     for j = 1:numel(allposxgood)
@@ -257,124 +299,128 @@ if plotpaths
         fig2gif(hfg, j, pthgif_paths)
     end
 end
-%%
 
-numrecs = numel(cumdistend);
-if numrecs~=numgoodinds
-    indies = randperm(numrecs-numgoodinds, numgoodinds)+numgoodinds-1;
-else
-    indies = [];
+%% stats
+
+if plot_cumstat
+    numrecs = numel(cumdistend);
+    if numrecs~=numgoodinds
+        indies = randperm(numrecs-numgoodinds, numgoodinds)+numgoodinds-1;
+    else
+        indies = [];
+    end
+    cumdistend_sort = [sort(cumdistend(1:numgoodinds), 'descend') sort(cumdistend(indies), 'descend')];
+    cumvelx_sort = [sort(cumvelx(1:numgoodinds), 'descend') sort(cumvelx(indies), 'descend')];
+    cumvely_sort = [sort(cumvely(1:numgoodinds), 'descend') sort(cumvely(indies), 'descend')];
+    cumvelxthresh_sort = [sort(cumvelxthresh(1:numgoodinds), 'descend') sort(cumvelxthresh(indies), 'descend')];
+    cumvelythresh_sort = [sort(cumvelythresh(1:numgoodinds), 'descend') sort(cumvelythresh(indies), 'descend')];
+    cumvelxthresh2_sort = [sort(cumvelxthresh2(1:numgoodinds), 'descend') sort(cumvelxthresh2(indies), 'descend')];
+    cumvelythresh2_sort = [sort(cumvelythresh2(1:numgoodinds), 'descend') sort(cumvelythresh2(indies), 'descend')];
+
+
+
+    hfg = figure;
+
+    spl = subplot(2,4,1); hold on;
+    plot(spl, cumdistend_sort);
+    title("total distance (not trip vector magnitude), sorted") %cumdistend2
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+    spl = subplot(2,4,2); hold on;
+    plot(spl, cumvelx_sort);
+    title("sum of forward velocities, sorted")
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+    spl = subplot(2,4,6); hold on;
+    plot(spl, cumvely_sort);
+    title("sum of side velocities, sorted")
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+    spl = subplot(2,4,3); hold on;
+    plot(spl, cumvelxthresh_sort);
+    title("sum of forward velocities > +/- 3 mm/s, sorted")
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+    spl = subplot(2,4,7); hold on;
+    plot(spl, cumvelythresh_sort);
+    title("sum of side velocities > +/- 3 mm/s, sorted")
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+    spl = subplot(2,4,4); hold on;
+    plot(spl, cumvelxthresh2_sort);
+    title("sum of forward velocities > +/- 5 mm/s, sorted")
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+
+    spl = subplot(2,4,8); hold on;
+    plot(spl, cumvelythresh2_sort);
+    title("sum of side velocities > 5 +/- mm/s, sorted")
+    ylm = ylim;
+    patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
+    fig2gif(hfg, 1, pthgif_stats)
+
+
+
+    cumdistend_sort = cumdistend(1:numgoodinds);
+    cumdistend_sort_o = cumdistend(indies);
+    cumvelx_sort = cumvelx(1:numgoodinds);
+    cumvelx_sort_o = cumvelx(indies);
+    cumvely_sort = cumvely(1:numgoodinds);
+    cumvely_sort_o = cumvely(indies);
+    cumvelxthresh_sort = cumvelxthresh(1:numgoodinds);
+    cumvelxthresh_sort_o = cumvelxthresh(indies);
+    cumvelythresh_sort = cumvelythresh(1:numgoodinds);
+    cumvelythresh_sort_o = cumvelythresh(indies);
+    cumvelxthresh2_sort = cumvelxthresh2(1:numgoodinds);
+    cumvelxthresh2_sort_o = cumvelxthresh2(indies);
+    cumvelythresh2_sort = cumvelythresh2(1:numgoodinds);
+    cumvelythresh2_sort_o = cumvelythresh2(indies);
+
+
+
+    hfg = figure;
+
+    spl = subplot(2,4,1); hold on;
+    histogram(spl, cumdistend_sort, nbin);
+    histogram(spl, cumdistend_sort_o, nbin);
+    title("total distance (not trip vector magnitude)") %cumdistend2
+
+    spl = subplot(2,4,2); hold on;
+    histogram(spl, cumvelx_sort, nbin);
+    histogram(spl, cumvelx_sort_o, nbin);
+    title("sum of forward velocities")
+
+    spl = subplot(2,4,6); hold on;
+    histogram(spl, cumvely_sort, nbin);
+    histogram(spl, cumvely_sort_o, nbin);
+    title("sum of side velocities")
+
+    spl = subplot(2,4,3); hold on;
+    histogram(spl, cumvelxthresh_sort, nbin);
+    histogram(spl, cumvelxthresh_sort_o, nbin);
+    title("sum of forward velocities > +/- 3 mm/s")
+
+    spl = subplot(2,4,7); hold on;
+    histogram(spl, cumvelythresh_sort, nbin);
+    histogram(spl, cumvelythresh_sort_o, nbin);
+    title("sum of side velocities > +/- 3 mm/s")
+
+    spl = subplot(2,4,4); hold on;
+    histogram(spl, cumvelxthresh2_sort, nbin);
+    histogram(spl, cumvelxthresh2_sort_o, nbin);
+    title("sum of forward velocities > +/- 5 mm/s")
+
+    spl = subplot(2,4,8); hold on;
+    histogram(spl, cumvelythresh2_sort, nbin);
+    histogram(spl, cumvelythresh2_sort_o, nbin);
+    title("sum of side velocities > 5 +/- mm/s")
+
 end
-cumdistend_sort = [sort(cumdistend(1:numgoodinds), 'descend') sort(cumdistend(indies), 'descend')];
-cumvelx_sort = [sort(cumvelx(1:numgoodinds), 'descend') sort(cumvelx(indies), 'descend')];
-cumvely_sort = [sort(cumvely(1:numgoodinds), 'descend') sort(cumvely(indies), 'descend')];
-cumvelxthresh_sort = [sort(cumvelxthresh(1:numgoodinds), 'descend') sort(cumvelxthresh(indies), 'descend')];
-cumvelythresh_sort = [sort(cumvelythresh(1:numgoodinds), 'descend') sort(cumvelythresh(indies), 'descend')];
-cumvelxthresh2_sort = [sort(cumvelxthresh2(1:numgoodinds), 'descend') sort(cumvelxthresh2(indies), 'descend')];
-cumvelythresh2_sort = [sort(cumvelythresh2(1:numgoodinds), 'descend') sort(cumvelythresh2(indies), 'descend')];
-
-
-
-hfg = figure;
-
-spl = subplot(2,4,1); hold on;
-plot(spl, cumdistend_sort);
-title("total distance (not trip vector magnitude), sorted") %cumdistend2
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-
-spl = subplot(2,4,2); hold on;
-plot(spl, cumvelx_sort);
-title("sum of forward velocities, sorted")
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-
-spl = subplot(2,4,6); hold on;
-plot(spl, cumvely_sort);
-title("sum of side velocities, sorted")
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-
-spl = subplot(2,4,3); hold on;
-plot(spl, cumvelxthresh_sort);
-title("sum of forward velocities > +/- 3 mm/s, sorted")
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-
-spl = subplot(2,4,7); hold on;
-plot(spl, cumvelythresh_sort);
-title("sum of side velocities > +/- 3 mm/s, sorted")
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-
-spl = subplot(2,4,4); hold on;
-plot(spl, cumvelxthresh2_sort);
-title("sum of forward velocities > +/- 5 mm/s, sorted")
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-
-spl = subplot(2,4,8); hold on;
-plot(spl, cumvelythresh2_sort);
-title("sum of side velocities > 5 +/- mm/s, sorted")
-ylm = ylim;
-patch(spl, [1 numgoodinds numgoodinds 1], [ylm(1) ylm(1) ylm(2) ylm(2)], 'm', 'EdgeColor', 'none', 'FaceAlpha', patchalpha);
-fig2gif(hfg, 1, pthgif_stats)
-
-
-
-cumdistend_sort = cumdistend(1:numgoodinds);
-cumdistend_sort_o = cumdistend(indies);
-cumvelx_sort = cumvelx(1:numgoodinds);
-cumvelx_sort_o = cumvelx(indies);
-cumvely_sort = cumvely(1:numgoodinds);
-cumvely_sort_o = cumvely(indies);
-cumvelxthresh_sort = cumvelxthresh(1:numgoodinds);
-cumvelxthresh_sort_o = cumvelxthresh(indies);
-cumvelythresh_sort = cumvelythresh(1:numgoodinds);
-cumvelythresh_sort_o = cumvelythresh(indies);
-cumvelxthresh2_sort = cumvelxthresh2(1:numgoodinds);
-cumvelxthresh2_sort_o = cumvelxthresh2(indies);
-cumvelythresh2_sort = cumvelythresh2(1:numgoodinds);
-cumvelythresh2_sort_o = cumvelythresh2(indies);
-
-
-
-hfg = figure;
-
-spl = subplot(2,4,1); hold on;
-histogram(spl, cumdistend_sort, nbin);
-histogram(spl, cumdistend_sort_o, nbin);
-title("total distance (not trip vector magnitude)") %cumdistend2
-
-spl = subplot(2,4,2); hold on;
-histogram(spl, cumvelx_sort, nbin);
-histogram(spl, cumvelx_sort_o, nbin);
-title("sum of forward velocities")
-
-spl = subplot(2,4,6); hold on;
-histogram(spl, cumvely_sort, nbin);
-histogram(spl, cumvely_sort_o, nbin);
-title("sum of side velocities")
-
-spl = subplot(2,4,3); hold on;
-histogram(spl, cumvelxthresh_sort, nbin);
-histogram(spl, cumvelxthresh_sort_o, nbin);
-title("sum of forward velocities > +/- 3 mm/s")
-
-spl = subplot(2,4,7); hold on;
-histogram(spl, cumvelythresh_sort, nbin);
-histogram(spl, cumvelythresh_sort_o, nbin);
-title("sum of side velocities > +/- 3 mm/s")
-
-spl = subplot(2,4,4); hold on;
-histogram(spl, cumvelxthresh2_sort, nbin);
-histogram(spl, cumvelxthresh2_sort_o, nbin);
-title("sum of forward velocities > +/- 5 mm/s")
-
-spl = subplot(2,4,8); hold on;
-histogram(spl, cumvelythresh2_sort, nbin);
-histogram(spl, cumvelythresh2_sort_o, nbin);
-title("sum of side velocities > 5 +/- mm/s")
 
 fig2gif(hfg, 1, pthgif_hists)
 

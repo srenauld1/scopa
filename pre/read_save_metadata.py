@@ -9,6 +9,7 @@ import json
 def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
 
     mdt = {}
+    mdthr = {}
 
     print("READING METADATA") #use ScanImageTiffReader to read metadata (strange ping because scanimage tif headers are not saved as json)
 
@@ -18,23 +19,24 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
 
             if pth_hires:
                 meta_hires = ScanImageTiffReader(pth_hires).metadata()
-                mdt['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                mdt['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
-                mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
-                mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta_hires)[0])
-                mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta_hires)[0])
-                mdt['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta_hires)[0])
-                mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
-                mdt['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
+                mdthr['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
+                mdthr['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
+                mdthr['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
+                mdthr['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
+                mdthr['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta_hires)[0])
+                mdthr['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta_hires)[0])
+                mdthr['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta_hires)[0])
+                mdthr['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
+                mdthr['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
                 fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
-                mdt['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
-                mdt['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta_hires)[0])
-                mdt['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta_hires)[0].replace(";",","))
-                mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
-                mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta_hires)[0])
-                mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
+                mdthr['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
+                mdthr['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
+                mdthr['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta_hires)[0])
+                mdthr['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta_hires)[0].replace(";",","))
+                mdthr['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
+                mdthr['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta_hires)[0])
+                mdthr['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
+                mdthr['channelOffsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta)[0].replace(" ",",").replace(";",","))
 
 
             meta = ScanImageTiffReader(pth_readfile).metadata()    #tiffile might be able to read metadata
@@ -62,6 +64,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
                 mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
             mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
             mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta)[0])
+            mdt['channelOffsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta)[0].replace(" ",",").replace(";",","))
         
         else: #for raw imaging files that are not saved by scanimage (eg carl's old project with Leica data)
 
@@ -81,6 +84,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
             mdt['flyback'] = 0
             mdt['zwid'] = 0
             mdt['zstartpos'] = 0
+            mdt['channelOffsets'] = 0
 
     except:
         
@@ -102,25 +106,27 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
             'framerate': mdt['framerate'],
             'volrate': mdt['volrate'], 
             'channel_save': mdt['channel_save'],
-            'channel_active': mdt['channel_active']}
+            'channel_active': mdt['channel_active'],
+            'channelOffsets': mdt['channelOffsets']}
     
     if pth_hires:
-        md_hires = {'numvol': mdt['numvol'],
-                    'numslice_withflyback': mdt['numslice_withflyback'],
-                    'numslice': mdt['numslice'],
-                    'xpix': mdt['xpix'],
-                    'ypix': mdt['ypix'],
-                    'flyback': mdt['flyback'],
-                    'dims': mdt['dims'],
-                    'xfov': mdt['xfov'],
-                    'yfov': mdt['yfov'],
-                    'zwid': mdt['zwid'],
-                    'zstartpos': mdt['zstartpos'],
-                    'zfov': mdt['zfov'],
-                    'framerate': mdt['framerate'],
-                    'volrate': mdt['volrate'], 
-                    'channel_save': mdt['channel_save'],
-                    'channel_active': mdt['channel_active']}
+        md_hires = {'numvol': mdthr['numvol'],
+                    'numslice_withflyback': mdthr['numslice_withflyback'],
+                    'numslice': mdthr['numslice'],
+                    'xpix': mdthr['xpix'],
+                    'ypix': mdthr['ypix'],
+                    'flyback': mdthr['flyback'],
+                    'dims': mdthr['dims'],
+                    'xfov': mdthr['xfov'],
+                    'yfov': mdthr['yfov'],
+                    'zwid': mdthr['zwid'],
+                    'zstartpos': mdthr['zstartpos'],
+                    'zfov': mdthr['zfov'],
+                    'framerate': mdthr['framerate'],
+                    'volrate': mdthr['volrate'], 
+                    'channel_save': mdthr['channel_save'],
+                    'channel_active': mdthr['channel_active'],
+                    'channelOffsets': mdthr['channelOffsets']}
         md['md_hires'] = md_hires
     
     
@@ -132,7 +138,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
 
 
     with open(pth_md, 'w') as file: 
-        file.write(json.dumps(md))
+        file.write(json.dumps(md, sort_keys=True, indent=4))
 
 
 
@@ -141,6 +147,8 @@ def convert_md_file(pth_md, pth_md_old, pth_md_mat_old): #convert old metadatafi
     md = np.load(pth_md_old, allow_pickle='TRUE').item()
 
     if not 'channel_save' in md or not 'channel_active' in md:
+        # md['channel_save'] = 1
+        # md['channel_active'] = 1
         raise Exception("your metadata file is old and does not have channel information, rerun registration so channel information can be saved in the new metadata file")
 
     with open(pth_md, 'w') as file: 

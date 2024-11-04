@@ -7,7 +7,7 @@ from tifffile.tifffile import imwrite, imread
 
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
-from configs import configs
+from optex import optex
 from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
 from separate_channels_when_two import separate_channels_when_two
@@ -15,7 +15,7 @@ from helpers import stack_reshape_transpose_zero_type
 
 
 
-def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_only, extract_in_2d, regionex, discard_channel_ex, chan_primary_when_two_ex, makeplots, cluster_backend, use_cluster):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -26,7 +26,8 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
 
     stack = imread(pth_tif_read)
 
-    stack, stack_secondary, two_channel_ex, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
+    discard_channel_ex, chan_primary_when_two_ex, morphinpy = parse_methodex(methodex)
+    stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
 
     stack = stack_reshape_transpose_zero_type(stack, md['dims'])
     print("STACK HAS SHAPE: \n" + str(stack.shape))
@@ -38,21 +39,21 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
             raise Exception("two-channel extraction is currently not written for 3d extraction")
 
 
-    for rx in regionex:
+    for rgn in regionex:
         
         print("STARTINNG ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
-        stackcrop_tmp, limits_str = crop_fov(stack, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+        stackcrop_tmp, limits_str = crop_fov(stack, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
         chanstr_ex = chanstr_secondary
         if two_channel_ex:
-            stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rx, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+            stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
             chanstr_seed = chanstr_primary
 
-        print("REGION EXTRACTION IS NAMED: \n" + rx + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
+        print("REGION EXTRACTION (regionex) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
-            pth_write_prefix = pth_tif_read[:-4] + rx + '_' + limits_str + chanstr_ex + '_cmex'
+            pth_write_prefix = pth_tif_read[:-4] + rgn + '_' + limits_str + chanstr_ex + '_cmex'
             pth_tif_write_tmp = pth_write_prefix + '_tmp_.tif'
             if two_channel_ex: #stackcrop_tmp_secondary becomes stackcrop_ex and stackcrop_tmp becomes stackcrop_seed
                 stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp_secondary, pth_tif_write_tmp, dview)
@@ -63,20 +64,14 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                 stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp, pth_tif_write_tmp, dview)
             stackcrop_tmp = None
             
-       
-            if isinstance(index_extraction_param_set, str):
-                index_extraction_param_set_new = [index_extraction_param_set] #if string, make it iterable with brackets
-            elif index_extraction_param_set<0: #if negative, initiate loop over extraction params here, range [0 - index_extraction_param_set]
-                manual_start_ind = 0
-                index_extraction_param_set_new = np.arange(manual_start_ind, -index_extraction_param_set)
-            else: #if positive, just the one extraction param whose index matches index_extraction_param_set
-                index_extraction_param_set_new = [index_extraction_param_set]
-                            
-            print("looping over the following index_extraction_param_set values, to index into extraction param sets " + str(index_extraction_param_set_new))
-            
-            for ii in index_extraction_param_set_new:
 
-                try: #try, since some param sets will error
+            optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
+
+            print("looping over " + str(len(optall)) + " unique options sets")
+            
+            for k, (optid, opt) in enumerate(optall.items()):
+
+                if 1: #try, since some param sets will error
 
                     if extract_in_2d: #adjust images and some params for 2D EXTRACTION 
                         indz = np.arange(stackcrop_ex.shape[3])
@@ -105,31 +100,32 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm2 = None
                         Ain = None
                        
-                        opts_dict, opts_dict_morph, indices_ex, fnadd = configs(index_extraction_param_set = ii, fnames = pth_mmap_ex, md = md, extract_in_2d = extract_in_2d, dims_spatial_ex = dims_spatial_ex, two_channel_ex = two_channel_ex) # FOR SOME REASON CALLING configs OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME CONFIG PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL CONFIGS SO EACH SLICE GETS THE SAME 
-                        opts = cnmf.params.CNMFParams(params_dict=opts_dict)
+                        print("extracting rois with options set index " + str(k) + ", and optid " + str(optid))
+                        
+                        cnmfpars = cnmf.params.CNMFParams(params_dict=opt)
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time
-                            print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF REGIONEX '" + rx + "'" )
+                            print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF REGIONEX '" + rgn + "'" )
                             img = stackcrop_ex[:,:,:,iz]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
-                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGIONEX '" + rx + "'" )
+                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGIONEX '" + rgn + "'" )
                             img = stackcrop_ex #can't .copy() for some reason (but that's fine as long as you don't modify img)
 
                         if two_channel_ex: 
-                            imseed = stackcrop_seed[:,:,:,iz].mean(0) #right now seed images are forced to be 2d so indexing by iz is fine; in future will need if 3d switch
-                            morphauto = 1 #for now only morphauto exists, but to load masks instead of using extract_binary_masks_from_structural_channel, do it with if switch here (eg if morphauto=0 enter drawing function or load drawn rois)
-                            if morphauto: 
-                                Ain = cm.base.rois.extract_binary_masks_from_structural_channel(imseed, min_area_size=opts_dict_morph['morph_areamin'], min_hole_size=opts_dict_morph['morph_holemin'], gSig=opts_dict_morph['morph_gsig'], expand_method=opts_dict_morph['morph_expandmthd'], selem=opts_dict_morph['morph_se'])[0]
+                            if morphinpy: 
+                                imseed = stackcrop_seed[:,:,:,iz].mean(0) #right now seed images are forced to be 2d so indexing by iz is fine; in future will need if 3d switch
+                                Ain = cm.base.rois.extract_binary_masks_from_structural_channel(imseed, min_area_size=opt['morph_min_area_size'], min_hole_size=opt['morph_min_hole_size'], gSig=opt['morph_gSig'], expand_method=opt['morph_expand_method'])[0]
                                 # crd = plot_contours(Ain.astype('float32'), mR)
                             else:
-                                print("MANUALLY DRAWN ROIS TO SEED FUNCTIONAL ROI EXTRACTION IS NOT WRITTEN YET BUT ROI DRAWING FUNCTION OR ROI LOADING FUNCTION SHOULD BE INSERTED HERE")
+                                print("loading predefined seed mask")
+                                Ain = load_seed_mask(optid)
 
                         if use_cluster:
                             if 'dview' in locals(): cm.stop_server(dview=dview)
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
-                        cnm = cnmf.CNMF(n_processes, params=opts, dview=dview, Ain=Ain)
-                        cnm = cnm.fit(img, indices = indices_ex)
+                        cnm = cnmf.CNMF(n_processes, params=cnmfpars, dview=dview, Ain=Ain)
+                        cnm = cnm.fit(img) #scopa doens't use optional input to fit, indices; instead uses regionex
 
                         cnm.estimates.evaluate_components(img, cnm.params, dview=dview)
                         print(('NUM GOOD ROIS ' + str(len(cnm.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm.estimates.idx_components_bad))))
@@ -151,14 +147,11 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                         cnm2.estimates.detrend_df_f(detrend_only=False, flag_auto=True, use_residuals=True) #use_residuals=True to include residuals in traces for dff computation
                         dff_residtrue = cnm2.estimates.F_dff 
 
-
                         if makeplots and cnm2.estimates.A.shape[-1]:
                             pth_results = pth_write_prefix + fnadd + '_' + str(iz) + '_OUT_FIT1.mov'
-                            caiman_plots_all(cnm, opts, img, dims_spatial_ex, extract_in_2d, pth_results)
-
-                        if makeplots and cnm2.estimates.A.shape[-1]:
+                            caiman_plots_all(cnm, cnmfpars, img, dims_spatial_ex, extract_in_2d, pth_results)
                             pth_results2 = pth_write_prefix + fnadd + '_' + str(iz) + '_OUT_FIT2.mov'
-                            caiman_plots_all(cnm2, opts, img, dims_spatial_ex, extract_in_2d, pth_results2)
+                            caiman_plots_all(cnm2, cnmfpars, img, dims_spatial_ex, extract_in_2d, pth_results2)
                         
 
                         numroi_slice = cnm2.estimates.A.shape[-1]
@@ -234,18 +227,18 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                     #mdict['idxbad'] = stack_idx_bad
                     
                     if np.any(cma):
-                        pth_mat_ex = pth_write_prefix + fnadd + '_rois_.mat'
+                        pth_mat_ex = pth_write_prefix + optid + '_rois_.mat'
 
                     else:
                         mdict = {}
                         print("norois")
-                        pth_mat_ex = pth_write_prefix + fnadd + '_rois_NOROIS_.mat'
+                        pth_mat_ex = pth_write_prefix + optid + '_rois_NOROIS_.mat'
 
-                except Exception as error:
+                # except Exception as error:
                     
-                    mdict = {}
-                    pth_mat_ex = pth_write_prefix + fnadd + '_rois_FAILURE_.mat'
-                    print("An exception occurred:", type(error).__name__, "-", error) 
+                #     mdict = {}
+                #     pth_mat_ex = pth_write_prefix + fnadd + '_rois_FAILURE_.mat'
+                #     print("An exception occurred:", type(error).__name__, "-", error) 
 
                 
                 sio.savemat(pth_mat_ex, mdict)
@@ -257,6 +250,41 @@ def extract(index_extraction_param_set, pth_prefix, pth_tif_read, md, do_crop_on
                 if dview is not None: cm.stop_server(dview=dview)
 
 
+
+def parse_methodex(methodex):
+    
+    chan_primary_when_two_ex = None #irrelevant unless methodex starts with 'seed'
+    morphinpy = 0
+    if methodex=='1':
+        discard_channel_ex = 2 #just in case 
+    elif methodex=='2':
+        discard_channel_ex = 1 #just in case 
+    else:
+        discard_channel_ex = None
+        if methodex=='12':
+            raise Exception('12 not supported yet')
+        elif methodex.startswith('seed'):
+            if 'each' in methodex:
+                raise Exception('seedeachpy and seedeachmat not supported yet')
+            else:
+                if '12' in methodex:
+                    chan_primary_when_two_ex = 1
+                elif '21' in methodex:
+                    chan_primary_when_two_ex = 2
+                else:
+                    raise Exception('seed methodex must contain each, 12, or 21')
+            if methodex.endswith('py'):
+                morphinpy = 1
+            elif methodex.endswith('mat'):
+                morphinpy = 0
+            else:
+                raise Exception('seed methodex must end in py or mat')
+        else:
+            raise Exception('methodex must be 1, 2, 12, or start with seed')
+
+    return discard_channel_ex, chan_primary_when_two_ex, morphinpy
+
+
 def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):
     imwrite(pth_tif_write_tmp, stackcrop_ex.squeeze(), bigtiff=True, photometric='minisblack') #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
     basename_memap = pth_tif_write_tmp.split('/')[-1][:-4]
@@ -266,5 +294,6 @@ def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):
     stackcrop_ex = np.reshape(stackcrop_ex.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
     if stackcrop_ex.ndim==3: #if it's not volumetric
         stackcrop_ex = stackcrop_ex[...,np.newaxis] #add singleton 4th dim (z) to simplify code below
-    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION HAS SHAPE: \n" + str(stackcrop_ex.shape))
+    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION (regionex) HAS SHAPE: \n" + str(stackcrop_ex.shape))
     return stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex
+

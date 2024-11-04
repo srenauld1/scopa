@@ -222,10 +222,11 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 https://github.com/flatironinstitute/CaImAn/blob/main
 
 
-############################## DENOISING ######################################
+############################## deepcad DENOISING ######################################
 
 --denoise.py, called from pipeline init when do_denoise==1
---the denoising requires motion corrected input tif (suffix cmrg_.tif)
+--deepcad denoising requires a gpu; you can run denoising jobs on O2 to use O2 GPUs
+--the denoising requires input tif stack; should be run on motion corrected stack (suffix cmrg_.tif)
 --denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
 --see additional documentation in denoise.py
 https://github.com/cabooster/DeepCAD-RT
@@ -245,9 +246,7 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 --so, here, regionex is meant to separately run extraction on regions requiring different extraction params, and/or to run the extraction faster (ie if all extraction_regions amount to less data than the full fov)  
 --then, analysis of more precisely defined brain regions is done in 'post', where regions can be further split into arbitrary 2d, 3d, or 4d shapes
  --if multiple regionex are provided, the extraction part of the pipeline loops over these   
- --the extraction part of the pipeline also includes the option to loop over all possible combinations of any subset of extraction parameters, defined in map2params.py
- --to do this, set index_extraction_param_set to a negative value, and all param combinations up to that index are looped over 
- --if index_extraction_param_set is positive, only that param set index is run (if 'default', onlt the default param set is run) 
+ --the extraction part of the pipeline also includes the option to loop over all possible combinations of any subset of extraction parameters, defined in map2opt.py
 
  
 

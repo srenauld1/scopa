@@ -18,14 +18,15 @@ pthspre = supp.pthspre;
 filename_save = [pthspre '_' num2str(ri) '_' datestr(now, 30) '_testpred.gif'];
 nrows = supp.num_total_model_functions + 3; 
 ncols = 1;
-margins_subplot = 0.05;
-margins_fig = 0.05;
-ax = figarr([nrows, ncols], margins_subplot, margins_fig);
+layout = [nrows, ncols];
+marginssp = 0.05;
+marginsfig = 0.05;
+ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig);
 
 widfac = 1;
 htfac = 1;
 hfg = figure; sgtitle({'1st fig: predicted (red) and measured (black) and ind var (blue if shown), all samples'; ['2nd fig: same, but first ' num2str(numel(tinds)) ' samples']; '3rd fig: model params'; 'below 3rd fig: model comps'})
-for k = 1:numel(ax.rowmajor.xp)
+for k = 1:numel(ax.rm.xp)
     if k==1 || k==4
         dummyvec = nan(numel(depv),1);
     elseif k==2
@@ -33,7 +34,7 @@ for k = 1:numel(ax.rowmajor.xp)
     elseif k==3
         dummyvec = nan(numel(ft),1);
     end
-    hax{k} = axes('Parent', hfg, 'Position', [ax.rowmajor.xp(k), ax.rowmajor.yp(k), ax.xe(widfac), ax.ye(htfac)]); 
+    hax{k} = axes('Parent', hfg, 'Position', [ax.rm.xp(k), ax.rm.yp(k), ax.xe(widfac), ax.ye(htfac)]); 
     yyaxis left; 
     hp1{k} = plot(hax{k},dummyvec, 'k-'); hold(hax{k}, 'on'); hp2{k} = plot(hax{k},dummyvec, 'r-'); 
     hax{k}.YAxis(1).Color = [0 0 0];

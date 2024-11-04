@@ -8,10 +8,12 @@ import mat73
 
 
 
-def stack_reshape_transpose_zero_type(stack, dims):
+def stack_reshape_transpose_zero_type(stack, dims, clipneg=0):
 
     stack = stack.reshape(dims[0], dims[1], dims[2], dims[3])
     stack = np.transpose(stack, (0, 3, 2, 1)) #put in order t x y z 
+    if clipneg: #if you use autoread offset in scanimage, negatives should be noise and can be removed
+        stack[stack<0] = 0
     mnmv = np.min(stack)
     stack -= mnmv #make movie nonnegative then convert to uint16 (not sure this matters for caiman, but useful further ahead)
     stack = stack.astype('uint16')

@@ -79,9 +79,6 @@ usefbf = opt.usefbf;
 doplt = opt.doplt;
 idxreg = opt.idxreg;
 
-
-sprintf("FOR NORMAL AND CIRCULAR VARIABLES, CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS LOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING (IF THEY ARE INCLUDED WITH usefbf=1)")
-
 if isempty(recdatenum)
     recdate = '*';
 else
@@ -148,11 +145,11 @@ end
 daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
 daqinds.slice = [];
 daqinds.vol = [];
-if any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
+if ~strcmp(useinds, 'none') && any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
     maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
     daqinds = daqindsmake(trialData.frameClock, trialData.Time, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre);
 else
-    sprintf("frame clock not on daq, or user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices")
+    fprintf("frame clock not on daq, or user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
 end
 
 %%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
@@ -223,7 +220,7 @@ for si = 1:num_resamples
                 trialData.(daqvarname) = trialData.(daqvarname)-starttime; %zero imaging starttime in case daq ran in the background
             end
             if ~strcmp(trialData.Properties.VariableNames, daqvarname)
-                sprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it")
+                fprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it" + newline)
             else
 
                 [ tmp, tmp_dv ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, sampper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);

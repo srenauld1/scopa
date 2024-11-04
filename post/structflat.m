@@ -37,6 +37,8 @@ function [s1, fn, fnex] = structflat(s,varargin)
 %   Released under the BSD license.
 %
 % See also fieldnamesAll, matlab.lang.makeValidName, matlab.lang.makeUniqueStrings
+
+
 try
     
     %% Check input
@@ -57,6 +59,14 @@ try
     
     % Get all Unmatched parameters for sub fuctions
     varargin = namedargs2cell(p.Unmatched);
+    if isfield(p.Unmatched, 'delim')
+        delim = p.Unmatched.delim;
+    else
+        varargin{end+1} = 'delim';
+        varargin{end+1} = '__';
+        delim = '__';
+        % fprintf("RUNNING STRUCTFLAT USING DEFAULT DELIM, DOUBLE UNDERSCORE, BECAUSE USER DIDN'T PASS NAME-VALUE ARGUMENT 'delim'; " + newline + "DOUBLE UNDERSCORE IS DEFAULT BECAUSE SINGLE UNDERSCORE IS COMMON IN VARIABLE NAMES, SO DOUBLE UNDERSCORE WILL DISTINGUISH NESTED STRUCTS FROM VARIABLES WITH SINGLE UNDERSCORE" + newline)
+    end
     
     if numel(s)>1 && isempty(Prefix)
         error("for nonscalar struct input to structflat, you must also pass prefix argument to make flattened fieldnames valid (this is a temporary solution)")
@@ -69,7 +79,7 @@ try
     if isempty(tab)
         s1 = struct();
     else
-        [s1,fn,fnex] = convertStruct(s,tab,Prefix);
+        [s1,fn,fnex] = convertStruct(s,tab,Prefix,delim);
     end
 catch ME
     ME = MException('MATLAB:flattenStruct','%s',ME.message);
@@ -77,7 +87,7 @@ catch ME
 end
 end
 % --- convertStruct -------------------------------------------------------
-function [out,varnm,fnex] = convertStruct(s,tab,prefix) %#ok<*INUSL>
+function [out,varnm,fnex] = convertStruct(s,tab,prefix,delim) %#ok<*INUSL>
 % Function convert struct to table
 %% Check inputs
 if nargin<3 || isempty(prefix)
@@ -93,7 +103,7 @@ else
         end
         
         prefix = strtrim(prefix);
-        prefix = replace(prefix,'.','_');
+        prefix = replace(prefix,'.',delim);
         prefix = matlab.lang.makeValidName(prefix,'Prefix','x');
     end
 end
@@ -104,7 +114,7 @@ varnm = convertStringsToChars(regexprep(tab.Field, '^s.', prefix));
 if ischar(varnm) %in case it's just one varnm, will be char; put in cell to prevent error below
     varnm = {varnm};
 end
-varnmval = replace(tab.ValidVarName,'s_',prefix);
+varnmval = replace(tab.ValidVarName,['s' delim],prefix);
 
 %% Create struct
 nn = numel(fn);

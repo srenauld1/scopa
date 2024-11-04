@@ -1,5 +1,5 @@
 
-function pltexp_key_press_fcn(hfg, event, varargin)
+function pltexp_uikeypress(hfg, event, varargin)
 
 pth_tmpfiles = varargin{1};
 

@@ -1,13 +1,13 @@
-function pltx(stack, vars, letui, labs, vpmap, ...
+function pltx(stack, vars, doui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roidat, ti, sampper, zstartpos, epochinds_ts_i, gifvis, ...
     iz, it, dr, pthgif_prefix_short, pthgif_prefix, ...
-    pth_mroi_interactive, normopt, xwid, ywid, zwid, opt)
+    pth_roim_interactive, normopt, widyxz, opt)
 
 arguments
     stack = []
     vars = []
-    letui = []
+    doui = []
     labs = []
     vpmap = []
     epochinds_all = []
@@ -26,11 +26,9 @@ arguments
     dr = []
     pthgif_prefix_short = []
     pthgif_prefix = []
-    pth_mroi_interactive = []
+    pth_roim_interactive = []
     normopt = []
-    xwid = []
-    ywid = []
-    zwid = []
+    widyxz = []
     opt.vid = []
     opt.stimvid = []
 end
@@ -38,6 +36,9 @@ end
 vid = opt.vid;
 stimvid = opt.stimvid;
 
+ywid = widyxz(1);
+xwid = widyxz(2);
+zwid = widyxz(3);
 
 "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
 "TODO: MENU, FULL DRAWROIS, MERGE ALL A2P PLOTTING (MODULAR SUBPLOTS FOR SPECIALIZATION)"
@@ -92,12 +93,11 @@ clear pltexp_scat_prepvars %clear persistent variable within
 
 %% arrange figure, choose colors
 
-subplot_layout = {[4,4], stack(:,:,:,:,1)};
-margins_subplot = [0.05,0.005];
-margins_fig = [0.07,0.05];
-splitdim = 'y';
+layout = {[4,4], stack(:,:,:,:,1)};
+marginssp = [0.05,0.005];
+marginsfig = [0.07,0.05];
 splitfrac = 0.55;
-ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig, splitfrac=splitfrac);
 
 cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 cols(1,:) = cols(4,:);
@@ -176,7 +176,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sampper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sampper, pth_roim_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -248,11 +248,11 @@ while plotloop %loop is turned off if no user input
                     hndls = struct;
                     framecount = 0;
 
-                    hndls = init_fig(hndls, letui, gifvis);
+                    hndls = initfig(hndls, doui, gifvis);
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    hndls.st = init_axes_stack(hndls.hfg, ax, letui, stack, stackp, cmap, zstartpos, dr, sector_ind);
+                    hndls.st = initaxim(hndls.hfg, ax, doui, stack, stackp, cmap, zstartpos, dr, sector_ind);
 
 
 
@@ -260,7 +260,7 @@ while plotloop %loop is turned off if no user input
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    hndls.ts = init_axes_timeseries(hndls.hfg, ax, letui, numsamp_tslong_this_gif, vpmapflat_axid_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    hndls.ts = initaxts(hndls.hfg, ax, doui, numsamp_tslong_this_gif, vpmapflat_axid_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
 
 
    
@@ -273,7 +273,7 @@ while plotloop %loop is turned off if no user input
                     display_range_vid = [0 1];
                     letui_vid = 1;
                     txtvar_vid = [];
-                    hndls.vid = init_axes_stack(hndls.hfg, ax, letui_vid, vid, [], cmap, txtvar_vid, display_range_vid, sector_ind, subplot_ind, widfac, htfac);
+                    hndls.vid = initaxim(hndls.hfg, ax, letui_vid, vid, [], cmap, txtvar_vid, display_range_vid, sector_ind, subplot_ind, widfac, htfac);
 
                 end
 
@@ -282,14 +282,14 @@ while plotloop %loop is turned off if no user input
                     subplot_ind = 14;
                     widfac = 1;
                     htfac = 1;
-                    hndls.sc = init_axes_scatter(hndls.hfg, ax, letui, scatter_type, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
+                    hndls.sc = initaxsc(hndls.hfg, ax, doui, scatter_type, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
                 end
 
 
                 %%%% PLOT AXES %%%%
                 [hndls, framecount, cb] = axplt(hndls, stack, stackp, vid, ...
                     framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
-                    roialpha, roipixindp, pthgif, figure_title, varsz, letui, ...
+                    roialpha, roipixindp, pthgif, figure_title, varsz, doui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
                     ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd, vidrot);
 

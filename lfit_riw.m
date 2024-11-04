@@ -53,7 +53,7 @@ doplt = opt.doplt;
 
 gifvis = 'on';
 fontmedium = 12;
-axord = 'rowmajor';
+axord = 'rm';
 crosshair_width = 2;
 xtralimfac = 0.03;
 numtickx = 4;
@@ -266,12 +266,11 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     %%%%%%%%%%% SETUP AXES %%%%%%%%%%%
 
-    subplot_layout = {[4,4], imhsv};
-    margins_subplot = [0.05,0.005];
-    margins_fig = [0.07,0.05];
-    splitdim = 'y';
+    layout = {[4,4], imhsv};
+    marginssp = [0.05,0.005];
+    marginsfig = [0.07,0.05];
     splitfrac = 0.5;
-    ax = figarr(subplot_layout, margins_subplot, margins_fig, splitdim, splitfrac);
+    ax = figarr(layout=layout, marginssp=marginssp, marginsfig=marginsfig, splitfrac=splitfrac);
 
 
     hfg = figure;

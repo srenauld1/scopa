@@ -16,6 +16,9 @@ function respout = respnorm(respin, normtype_all, sampper)
 % 'box' : box-cox transformation
 % for example
 
+if ~iscell(normtype_all)
+    normtype_all = {normtype_all};
+end
 
 for nti = 1:length(normtype_all)
 
@@ -44,6 +47,9 @@ for nti = 1:length(normtype_all)
                 f0_pct = sscanf(patmatch(4:6), '%d');
                 winlen = sscanf(patmatch(7:9), '%d');
                 if winlen
+                    if isempty(sampper)
+                        error("sampper (sample period) must not be empty if using a dff window")
+                    end
                     winlen = round(winlen / sampper);
                     f0 = RankOrderFilter(tmp, winlen, f0_pct); %moving baseline
                 else

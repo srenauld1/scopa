@@ -36,7 +36,7 @@ for k = 1:labloopnum
     end
 end
 
-pout = fieldord(pout); 
+pout = structsort(pout); 
 
 
 function pout = parsupdate_recursive(pin, pout)

@@ -1,5 +1,5 @@
 
-function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, sampper, pth_mroi_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, sampper, pth_roim_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp)
 
 "WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN uiapply "
 
@@ -24,7 +24,7 @@ try
                     error("v must match cnt")
                 end
 
-                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_mroi_interactive); % cb.delete.roicen{cb.val.v}
+                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_roim_interactive); % cb.delete.roicen{cb.val.v}
                 roipx = cat(1, roipx, roipixind_new);
                 disp("warning, hard coding parsex and parsnorm, fix this now")
                 labs{j} = {['resp.fullfov.moex_interactive.in_imf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of tsget
@@ -75,7 +75,7 @@ varcombos = make_varcombos(vars);
 end
 
 
-function [roipx, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_mroi_interactive)
+function [roipx, resp] = make_ui_roi(roicen, newroicen_all, xwid, ywid, zwid, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_roim_interactive)
 
 if ~isempty(roicen)
     if zwid==0
@@ -101,10 +101,11 @@ else
     end
 
 
-    otmp = odf('nofile'); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function; use 'nofile' option to skip the file searching because all we need is the mroi substruct 
-    % otmp.mroi.wavp = [0.3 0.6];
+    otmp = odf('nofile'); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function; use 'nofile' option to skip the file searching because all we need is the roi substruct 
+    % otmp.roi.nrm.wavp = [0.3 0.6];
     
-    [roidat_new, resp] = mroimake(stack, otmp.mroi, ti, sampper, [], [], [], pth_mroi_interactive, [], [], [], [], [], roimaskman);
+    error("fix roimake inputs here")
+    [roidat_new, resp] = roimake(stack, otmp.roi, ti, sampper, [], [], [], pth_roim_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
     hardcodenorm = 'imf_f_f_n';
     resp = channel_combine_struct(resp);
