@@ -47,9 +47,9 @@ arguments
     opt.recdatenum = [] %if not passed, or empty, will be set to '*' for daq file search
     opt.flynum = [] %if not passed, or empty, will be set to '*' for daq file search
     opt.trialnum = [] %if not passed, or empty, will be set to '*' for daq file search
-    opt.pth_fldr = '' %can pass pth_fldr instead of pth_daq and/or pth_daqrs
-    opt.pth_daq char = '' %path to daq data from experiment; can pass pth_fldr, and optional recdatenum, flynum, trialnum instead of pth_daq and/or pth_daqrs
-    opt.pth_daqrs char = '' %save path for resampled daq data; can pass pth_fldr instead of pth_daq and/or pth_daqrs
+    opt.dirstack = '' %can pass dirstack instead of pth_daq and/or pth_daqrs
+    opt.pth_daq char = '' %path to daq data from experiment; can pass dirstack, and optional recdatenum, flynum, trialnum instead of pth_daq and/or pth_daqrs
+    opt.pth_daqrs char = '' %save path for resampled daq data; can pass dirstack instead of pth_daq and/or pth_daqrs
     opt.slopelensec {mustBeNumeric} = 0.2 %slope length (seconds) for computing derivative of each daq variable
     opt.slopeord {mustBeNumeric} = 2 %slope order for computing derivative of each daq variable (should just stay 2)
     opt.useinds = 'none' %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
@@ -68,7 +68,7 @@ tozero = opt.tozero;
 recdatenum = opt.recdatenum;
 flynum = opt.flynum;
 trialnum = opt.trialnum;
-pth_fldr = opt.pth_fldr;
+dirstack = opt.dirstack;
 pth_daq = opt.pth_daq;
 pth_daqrs = opt.pth_daqrs;
 slopelensec = opt.slopelensec;
@@ -106,19 +106,19 @@ end
 
 
 if isempty(pth_daq)
-    if isempty(pth_fldr)
-        error(sprintf("pth_fldr cannot be empty if pth_daq is empty"))
+    if isempty(dirstack)
+        error(sprintf("dirstack cannot be empty if pth_daq is empty"))
     end
-    pth_daq_pat = [pth_fldr recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
+    pth_daq_pat = [dirstack recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
     pth_daq = rdir(pth_daq_pat);
     pth_daq = pth_daq.name;
 end
 
 if isempty(pth_daqrs)
-    if isempty(pth_fldr)
-        error(sprintf("pth_fldr cannot be empty if pth_daqrs is empty"))
+    if isempty(dirstack)
+        error(sprintf("dirstack cannot be empty if pth_daqrs is empty"))
     end
-    pth_daqrs = [pth_fldr num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum) '_daqrs_.mat'];
+    pth_daqrs = [dirstack num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum) '_daqrs_.mat'];
 end
 
 pthfigpre = pth_daqrs(1:end-4);

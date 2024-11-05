@@ -1,10 +1,5 @@
 
-%see what happens to registration template when brain drifts and you are using defaults in caiman / normcorre
-%python caiman and matlab normcorre are doing the same thing for rigid registration, essentially
-%this demo uses matlab normcorre
-%so if you have drift, consider making upd_template false in matlab normcorre
-%or in python caiman, using carl's modifications to built template from local set of frames
-
+%this demo does not accurately recreate normcorre templates;  
 
 clear all
 close all
@@ -16,7 +11,7 @@ iz = 5;
 fnstack = '/Users/wienecke/stacks/20241008-3_MBON09_no_jump/oldrawnofb.mat';
 [expDir, cfn] = fileparts(fnstack);
 
-glb(pthfldr = [expDir '/'])
+glb(dirstack = [expDir '/'])
 
 iz = 5; %z index
 

@@ -1,15 +1,15 @@
-function imout = filter_movie_frequency_domain_1d_2(imin, keepfreq, fldr, doplt)
+function imout = filter_movie_frequency_domain_1d_2(stack, keepfreq, dirstack, doplt)
 
-imin = double(imin);
+stack = double(stack);
 
 Ts = 1;                                                             % Sampling Interval
 Fs = 1/Ts;                                                          % Sampling Frequency
 Fn = Fs/2;                                                          % Nyquist Frequency
-L = size(imin,1);                                                   % Length Of ‘data’ Vector
+L = size(stack,1);                                                   % Length Of ‘data’ Vector
 t = 1:L*Ts;
 %t = linspace(0, 1, L)*Ts;% Time Vector
 
-FTdataall = fft(imin)./L;                                               % Fourier Transform
+FTdataall = fft(stack)./L;                                               % Fourier Transform
 Fv = linspace(0, 1, fix(L/2)+1)*Fn;                                 % Frequency Vector (One-Sided FFT)
 Iv = 1:length (Fv);                                                 % Index Vector
 Ivkf = 1:keepfreq;                                                      % 8First keepfreq FFT Frequencies
@@ -21,10 +21,10 @@ if doplt
     figure;
 end
 
-imout = zeros(size(imin));
+imout = zeros(size(stack));
 for indi = 1:size(FTdataall, 2)
 
-    data = imin(:,indi);
+    data = stack(:,indi);
     b_filt = fir1(FLen, Fkfth/Fn, chebwin(FLen+1,30));                                       % Design FIR Filter
     imout(:,indi) = fftfilt(b_filt, data);
 

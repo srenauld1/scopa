@@ -2,7 +2,6 @@
   "bump": {
     "domain": "all",
     "domaintype": "functional",
-    "doplt": 0,
     "mthd": "pva",
     "numcluster_for_bump_domain_resample": 16,
     "omitnan": 1,
@@ -66,7 +65,6 @@
   },
   "daq": {
     "balldia": 9,
-    "doplt": 0,
     "slopelensec": 0.4,
     "slopeord": 2,
     "toballscale": [
@@ -101,7 +99,6 @@
     "voltmin": 0
   },
   "ftv": {
-    "doplt": 0,
     "num_periodic_peaks_defining_laser_oscillations": 10,
     "numpix_to_extract_laser_timeseries": 10,
     "smsdspace": 2,
@@ -109,7 +106,6 @@
   },
   "hires": {
     "disttype": "monomodal",
-    "doplt": 0,
     "regtype": "rigid",
     "use_caiman_on_hires": 0
   },
@@ -135,8 +131,7 @@
     "celsz": 8,
     "chanauto": 1,
     "do3d": 1,
-    "doplt": 0,
-    "edgesig": [2.8284271247461903,2.8284271247461903,2.8284271247461903],
+    "edgesig": [3,3,3],
     "edgethr": [0.1,0.7],
     "maskmake": "nonzero",
     "maskseg": "uniform",
@@ -144,7 +139,6 @@
     "usehires": 0
   },
   "mfit": {
-    "doplt": 0,
     "epochinds": 1,
     "excludeopts": "",
     "keep_transition_zones": 0,
@@ -167,24 +161,32 @@
   "mm": {
     "chancp": 1,
     "chandraw": 1,
-    "maskname": "'none'"
+    "maskname": "none"
   },
   "mn": {
+    "dirtmp": "scopatmp",
     "dodaq": 0,
     "dofit": 0,
     "doftv": 0,
     "dopltx": 0,
     "dopop": 0,
     "doroi": 0,
-    "fldrtmp": "scopatmp",
     "oldcarl": 0,
+    "plt": [
+      "daq",
+      "sld",
+      "ftv",
+      "roi",
+      "bump",
+      "mfit",
+      "hires"
+    ],
     "pltvis": 1,
-    "timestr": "2024110312384660"
+    "timestr": "2024110419211888"
   },
   "nrm": {
     "channorm": 0,
     "degdtr": 0,
-    "doplt": 0,
     "post": "f",
     "pre": "f",
     "wavp": []
@@ -206,7 +208,6 @@
     "id": []
   },
   "qc": {
-    "doplt": 0,
     "inmaskthr": 0.5,
     "maxregperroi": 4,
     "maxroisz": 300,
@@ -217,9 +218,8 @@
     "docm": 0,
     "doma": 0,
     "domm": 0,
-    "doplt": 0,
     "doqc": 0,
-    "regionex": "'none'"
+    "regionex": "none"
   },
   "sld": {
     "chanuse": [1,2],
@@ -228,7 +228,14 @@
     "smsdspace": [0,0,0],
     "smsdtimesec": 0,
     "stackdtype": "uint16",
-    "suffixplt": [],
+    "suffixplt": [
+      "raw",
+      "cmrg",
+      "cmrg_dcdn",
+      "bksb_cmrg",
+      "bksb_cmrg_dcdn",
+      "bksb_cmrg_dcdn_nosn"
+    ],
     "tcrop": [0,0],
     "zerostack": 1
   },
@@ -254,16 +261,16 @@
     "suffix": [
       "raw"
     ],
-    "trial": [
-      "*"
-    ],
-    "validsuffix": [
+    "suffixvalid": [
       "raw",
       "cmrg",
       "cmrg_dcdn",
       "bksb_cmrg",
       "bksb_cmrg_dcdn",
       "bksb_cmrg_dcdn_nosn"
+    ],
+    "trial": [
+      "*"
     ]
   },
   "tg": {

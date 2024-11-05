@@ -49,7 +49,6 @@ smsdtimesec = opt.smsdtimesec; %smooth the stack in time, 0 to skip
 dostats = opt.dostats;
 dr = opt.dr;
 imrate = opt.imrate;
-doplt = opt.doplt;
 
 if isempty(doplt)
     if isempty(glb('plt'))
@@ -57,10 +56,6 @@ if isempty(doplt)
     else
         doplt = glb('doplt');
     end
-end
-if ~doplt
-    fprintf("in stackld, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted")
-    suffixplt = [];
 end
 
 id = idmake(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
@@ -72,7 +67,7 @@ if ~iscell(suffixstack)
     suffixstack = {suffixstack};
 end
 
-if numel(suffixplt)~=0
+if doplt || numel(suffixplt)~=0
     if numel(dr)>numel(suffixplt)
         fprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr" + newline)
         dr = dr(1:numel(suffixplt));

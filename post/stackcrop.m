@@ -1,5 +1,5 @@
 function [stack, zstartsub, hrlrsub, hiresmntsub, croplim] = ...
-    stackcrop(stack, regionex, zstartpos, recid, fldr, sz, ...
+    stackcrop(stack, regionex, zstartpos, recid, dirstack, sz, ...
     usehires, stackmnthr, hrlr )
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
@@ -25,10 +25,10 @@ else
     regionex_nounderscore = spl{1};
     numchan = size(stack,5);
 
-    [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore, numchan); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
+    [croplim, croplimstr] = load_croplim(dirstack, recid, regionex_nounderscore, numchan); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     
     if isempty(croplim)
-        [croplim, croplimstr] = croplimmake(stack, sz(4), fldr, recid, regionex, regionex_nounderscore, numchan);
+        [croplim, croplimstr] = croplimmake(stack, sz(4), dirstack, recid, regionex, regionex_nounderscore, numchan);
     end
     
     stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10))); %as of 240426, this is the only time in a2p.m you need to convert uint16 stack to single

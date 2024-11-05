@@ -303,8 +303,8 @@ entrypoint is a2p.m
 #functional rois are clustered
 #some
 
-#note remove_scan_noise should ideally only occur prior to
-#caiman roi extraction, but this pipeline allows the user to run remove_scan_noise afterwards 
+#note scannoiserm should ideally only occur prior to
+#caiman roi extraction, but this pipeline allows the user to run scannoiserm afterwards 
 #(need to fix this so the user has the option to use nosn suffix stack for roi extraction)
 
 #rval documentation The algorithm also measures the reliability of the spatial mask by comparing the filters in A

@@ -1,4 +1,4 @@
-function [epochs, epochinds, vis] = g4epochld(t, pth_epochinfo, vis, fldr, ids, sampper, daqrs, use_carls_epochs)
+function [epochs, epochinds, vis] = g4epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial) 
 % if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
@@ -75,7 +75,7 @@ catch
                 %ylim(hax, [min(daqrs.g4panels{1}(:)) - abs(min(daqrs.g4panels{1}(:)))*0.3, max(daqrs.g4panels{1}(:)) + abs(max(daqrs.g4panels{1}(:)))*0.3])
 
                 title([criter(fmsai) ft_misoffset_sec ft_misoffset_sec])
-                fig2gif(hfg, cnt, [fldr 'misoffset_.gif'])
+                fig2gif(hfg, cnt, [dirstack 'misoffset_.gif'])
 
                 if fmsai==numel(ft_misoffset_sec_all)
                     critd = movingslope(criter, 20, 2, sampper);
@@ -105,7 +105,7 @@ catch
             cnt = cnt+1;
             plot(hax, daqrs.g4panels{1}(epochinds==uei(tei)))
             title(['final offset, epoch ' num2str(uei(tei))])
-            fig2gif(hfg, cnt, [fldr 'offset_final.gif'])
+            fig2gif(hfg, cnt, [dirstack 'offset_final.gif'])
         end
 
     end

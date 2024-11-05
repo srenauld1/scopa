@@ -39,7 +39,7 @@ end
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 parent_path = '~/walking/';
-subfolder = 'window';
+subfolder = 'window2';
 pthpat = [parent_path '**' filesep subfolder pthinsert filesep 'FicTracData' filesep '*dat'];
 pthgif_paths = [parent_path 'paths_' timestr  '.gif'];
 pthgif_stats = [parent_path 'stats_' timestr  '.gif'];
@@ -163,6 +163,7 @@ alltcat = [1:numel(allvelcat)]*mean(dt(j))/60/60;
 
 hfg = figure;
 plot(alltcat, allvelcat)
+ylim([-5 20])
 ylabel('forward velocity (mm/s)')
 xlabel('hours')
 fig2gif(hfg, 1, '~/walking/window/FicTracData/vel_all.gif')

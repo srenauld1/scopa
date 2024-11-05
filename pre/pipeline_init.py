@@ -158,7 +158,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.addpath(eng.genpath(pth_scopa))
         mtlout = io.StringIO()
         mtlerr = io.StringIO()
-        eng.remove_scan_noise(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
+        eng.scannoiserm(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
         extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)

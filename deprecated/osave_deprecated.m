@@ -5,7 +5,7 @@ function osave(o)
 % this way filenames don't have to contain options, instead they can just share a timestring id with the options txt filename, for lookup when making figures, etc)
 % some complex structure is lost in the txt file (e.g. if there are nested cells, they get flattened, although there are no nested cells in default o right now), since i'm not sure it's necessary yet
 
-[tmp, ~, ~] = fileparts(o.id.pth);
+[tmp, ~, ~] = fileparts(o.id.pthstack);
 filesv = [o.id.recid '_' glb('timestr') '_options_.txt'];
 pthsv = fullfile(tmp, filesv);
 if numel(o)>1

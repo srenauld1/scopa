@@ -3,7 +3,7 @@ function osave(o)
 % save all options (struct o, flattened) as txt file (with timestring id)
 % this way filenames don't have to contain options, instead they can just share a timestring id with the options txt filename, for lookup when making figures, etc)
 
-[tmp, ~, ~] = fileparts(o.id.pth);
+[tmp, ~, ~] = fileparts(o.id.pthstack);
 filesv = [o.id.recid '_' glb('timestr') '_options_.txt'];
 pthsv = fullfile(tmp, filesv);
 if numel(o)>1

@@ -50,7 +50,7 @@ if files %if files==1, oin must be scalar
     end
     o = odfscal(oin, vbin, copybin, files, pthscopa, pthopt); %odfs is for scalar struct o
 else %otherwise, oin can be nonscalar
-    if ( numel(oin)>1 && any(~cellfun(@isempty, getfieldns(oin,'id.pth'))) ) || ( isfield(oin, 'id') && isfield(oin.id, 'pth') )
+    if ( numel(oin)>1 && any(~cellfun(@isempty, getfieldns(oin,'id.pthstack'))) ) || ( isfield(oin, 'id') && isfield(oin.id, 'pth') )
         files=2;
     end
     if isempty(oin)
@@ -237,7 +237,7 @@ if files==1
     fprintf("RUNNING odf with files==1, SEARCHING FOR FILES" + newline)
 
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
-        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, validsuffix=o.spec.validsuffix, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, match=o.spec.match); %find files matching spec
+        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixvalid=o.spec.suffixvalid, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, match=o.spec.match); %find files matching spec
     else
         rectmp = stackfind(pth=o.spec.pth); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
         if isempty(rectmp)
@@ -267,9 +267,9 @@ end
 
 %% globals
 
-if isempty(glb('pthscopa')) && isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('validsuffix')) && isempty(glb('pltvis'))
+if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthscopa')) && isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('pltvis'))
     pthparent = pthparentfind(oin.spec.pthparent_local, oin.spec.pthparent_o2);
-    glb(pthscopa=pthscopa, pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, validsuffix=d.spec.validsuffix, pltvis=d.mn.pltvis); %set some globals, force update if they already have been set with first argument 1
+    glb(pthscopa=pthscopa, pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, pltvis=d.mn.pltvis, plt=d.mn.plt); %set some globals, force update if they already have been set with first argument 1
 end
 
 end

@@ -24,13 +24,13 @@ for k = 1:numel(oa) % loop over recordings
 
     pth = fnmake(o);
 
-    glb(1, pthfldr=pth.fldr); %set/update data folder path as global
+    glb(1, dirstack=pth.dirstack); %set/update data folder path as global
 
     %% load metadata
 
     md = mdsild(pth.md, o.sld, o.hires.sld);
 
-    % md_flyg = mdflygld(ids, pth.mdflyg, pth.fldr, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
+    % md_flyg = mdflygld(ids, pth.mdflyg, pth.dirstack, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md
 
     %% load daq / stim
@@ -73,7 +73,7 @@ for k = 1:numel(oa) % loop over recordings
                     doplt=o.daq.doplt);
             end
             [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
-            [md.epochs, ts.epochinds, ts.vis] = g4epochld(ts.t, pth.epochinfo, ts.vis, pth.fldr, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
+            [md.epochs, ts.epochinds, ts.vis] = g4epochld(ts.t, pth.epochinfo, ts.vis, pth.dirstack, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
             [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
         end
 

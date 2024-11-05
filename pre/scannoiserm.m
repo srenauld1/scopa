@@ -1,8 +1,8 @@
 
-function remove_scan_noise(pth_stack_tif, len_window_smooth_t_rsc_sec)
+function scannoiserm(pth_stack_tif, len_window_smooth_t_rsc_sec)
 
 
-sprintf("\n\n\nENTERING remove_scan_noise.m")
+sprintf("\n\n\nENTERING scannoiserm.m")
 
 %pth_stack_tif is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
 
@@ -20,7 +20,7 @@ dimorder = [1,2,3,4];%for plotting, if makeplots
 
 display(['processing : ' pth_stack_tif] )
 
-[fldr, filnam, ~] = fileparts(pth_stack_tif);
+[dirstack, filnam, ~] = fileparts(pth_stack_tif);
 
 if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(regexp(filnam, regexptranslate('wildcard', '_trial')))
     error(sprintf("ERROR, \nTHIS FUNCTION IS NOT WRITTEN FOR STACKS WITH FLYBACK " + ...
@@ -30,7 +30,7 @@ if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(reg
         "TO MAKE THEM AS THEY APPEAR IN stackld.m"))
 end
 
-fldr = [fldr filesep];
+dirstack = [dirstack filesep];
 spl = strjoin(strsplit(filnam, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
 spl = strsplit(spl, '_'); %then separate by underscore
 
@@ -46,7 +46,7 @@ recid = [num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
 pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
 pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
-pth_md = [fldr recid '_mdsi_.txt'];
+pth_md = [dirstack recid '_mdsi_.txt'];
 
 md = mdsild(pth_md);
 sz = single([md.ypix md.xpix md.numslice md.numvol_o]);
@@ -75,7 +75,7 @@ else
 end
 
 figtitle_prefix = [recid '_' suffix '_' dr_str '_' smooth_str];
-filename_prefix = [fldr figtitle_prefix '_' izstr '_' itstr ];
+filename_prefix = [dirstack figtitle_prefix '_' izstr '_' itstr ];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 

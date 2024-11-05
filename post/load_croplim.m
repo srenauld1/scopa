@@ -1,11 +1,11 @@
-function [croplim, croplimstr] = load_croplim(fldr, recid, regionex_nounderscore, numchan )
+function [croplim, croplimstr] = load_croplim(dirstack, recid, regionex_nounderscore, numchan )
 
 if ~exist('numchan', 'var') || isempty(numchan)
     numchan = 1;
 end
 
 
-pthcroplimall = rdir([fldr recid '_' regionex_nounderscore '_*_croplim_.*']); %croplim file can be mat of npy, just need to read filename for croplim info 
+pthcroplimall = rdir([dirstack recid '_' regionex_nounderscore '_*_croplim_.*']); %croplim file can be mat of npy, just need to read filename for croplim info 
 
 if isempty(pthcroplimall)
     sprintf("NO CROPLIM FILE FOR REGIONEX: " + regionex_nounderscore + ", YOU WILL BE PROMPTED TO DEFINE CROPLIM ")

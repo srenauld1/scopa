@@ -20,7 +20,6 @@ if isempty(roimaskman_allchan)
     doma = opt.doma;
     docm = opt.docm;
     doqc = opt.doqc;
-    numroiauto = opt.ma.numroi;
     doplt = opt.doplt;
 else
     if ~iscell(roimaskman_allchan)
@@ -34,13 +33,6 @@ else
     numroiauto = 0;
     doplt = 0; %skip plots if passing in roimaskman_allchan
 end
-chandraw = opt.mm.chandraw;
-chancpmm = opt.chancpmm;
-channorm = opt.channorm;
-degdtr = opt.degdtr;
-wavp = opt.wavp;
-autoopts = opt.ma;
-normopts = opt.nrm;
 
 numchan = size(stack,5);
 
@@ -48,7 +40,7 @@ stackmnt = mean(stack, 4, 'native');
 
 %% crop movie to regionex cuboid
 
-[stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, md.zstartpos, o.id.recid, pth.fldr, md.sz_crop, ma.usehires, stackmnthr, hrlr);
+[stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, md.zstartpos, o.id.recid, pth.dirstack, md.sz_crop, ma.usehires, stackmnthr, hrlr);
 
 
 %% draw rois (polygons/polyhedra)

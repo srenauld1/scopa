@@ -11,7 +11,7 @@ switch fid
             while dochoose
                 cnt = cnt + 1;
                 [fitin, dochoose] = tsget(opts.mfit(si).vnm, ts, ts.t, pth.tsuse_nms_prefix.(fid), pth.stack, cnt, dochoose);  %select indv/depv for fit using input params
-                stacksub = stackcrop(stack, fitin.regionex, md.zstartpos, recid, pth.fldr); %crop stack based on regionex of the depv (stack for plots, not model)
+                stacksub = stackcrop(stack, fitin.regionex, md.zstartpos, recid, pth.dirstack); %crop stack based on regionex of the depv (stack for plots, not model)
                 ts.(fid).(fitin.regionex).(fitin.parsex).(fitin.parsnorm) = bumpcmp(stacksub, fitin, roidat.(fitin.regionex).(fitin.parsex), opts, md, fitin.regionex, si); %fit bump
             end
         end

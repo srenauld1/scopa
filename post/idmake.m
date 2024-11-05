@@ -1,4 +1,4 @@
-function ids = idmake(pthstacks)
+function id = idmake(pthstacks)
 
 arguments
     pthstacks
@@ -12,8 +12,11 @@ for k = 1:numel(pthstacks)
 
     pthstacktmp = pthstacks{k};
 
-    [fldr, fnin, ~] = fileparts(pthstacktmp);
-    fldr = [fldr filesep];
+    [dirstack, fnin, ~] = fileparts(pthstacktmp);
+    dirstack = [dirstack filesep];
+
+    tmp = strsplit(dirstack, filesep);
+    dirparent = [strjoin(tmp(1:end-2), filesep) filesep];
 
     spl = strjoin(strsplit(fnin, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
     spl = strsplit(spl, '_'); %then separate by underscore
@@ -40,18 +43,19 @@ for k = 1:numel(pthstacks)
     datefly_hyphen = [recdate '-' fly];
     recid = [recdate '_' fly '_' trial];
 
-    ids(k).recdate = recdate;
-    ids(k).fly = fly;
-    ids(k).trial = trial;
-    ids(k).suffix = suffix;
+    id(k).recdate = recdate;
+    id(k).fly = fly;
+    id(k).trial = trial;
+    id(k).suffix = suffix;
 
-    ids(k).recdatenum = recdatenum;
-    ids(k).flynum = flynum;
-    ids(k).trialnum = trialnum;
-    ids(k).recid = recid;
-    ids(k).datefly_hyphen = datefly_hyphen; %for some flyg files
+    id(k).recdatenum = recdatenum;
+    id(k).flynum = flynum;
+    id(k).trialnum = trialnum;
+    id(k).recid = recid;
+    id(k).datefly_hyphen = datefly_hyphen; %for some flyg files
 
-    ids(k).fldr = fldr;
-    ids(k).pth = pthstacktmp;
+    id(k).dirstack = dirstack;
+    id(k).dirparent = dirparent;
+    id(k).pthstack = pthstacktmp;
 
 end

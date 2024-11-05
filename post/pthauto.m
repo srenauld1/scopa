@@ -1,7 +1,7 @@
 function pthsv = pthauto(opt)
 
 arguments
-    opt.glob = 'pthfldr'
+    opt.glob = 'dirstack'
     opt.suffix = ''
     opt.usetime = 1
     opt.usefun = 1
@@ -15,8 +15,8 @@ if numel(callstack) >= 2
 else
     fcnnm = 'unknownfunction';
 end
-pthfldr = glb(opt.glob);
-if isempty(pthfldr)
+dirstack = glb(opt.glob);
+if isempty(dirstack)
     vnm = inputname(1);
     error(sprintf("global variable " + opt.glob + " has not been set" + newline + "and a save path was not passed as argument into function " + fcnnm + newline + "do one or the other"))
 end
@@ -34,6 +34,6 @@ infix = [fndefault infix];
 if ~startsWith(opt.suffix, '_')
     opt.suffix = ['_' opt.suffix];
 end
-pthsv = [pthfldr infix opt.suffix];
+pthsv = [dirstack infix opt.suffix];
 
 end

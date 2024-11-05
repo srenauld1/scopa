@@ -20,7 +20,7 @@ if isempty(recin) %if you're running a2p without input arguments (ie if recin is
     o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in validsuffix
+    o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     o.spec.pth = '';
 elseif iscell(recin) || ischar(recin) %if input to a2p is not empty, and is not struct
@@ -39,6 +39,8 @@ o.mn.doroi = 1; %make/load/process rois?
 o.mn.dopop = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
+% o.mn.plt = []; % string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots 
+o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
 regionex_tmp = {'none', 'fb', 'pb', 'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
@@ -47,14 +49,13 @@ regionex_tmp = {'none', 'fb', 'pb', 'eb'}; %use 'none' to skip prompt to define 
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
-o.sld.suffixplt = {}; %suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); empty to skip plot; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you want all stacks converted, list them here and get a comparison plot for free)
+%o.sld.suffixplt = ["raw", "cmrg", "cmrg_dcdn"]; %string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
 o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
 o.ftv.smsdspace = 2;
-o.ftv.doplt = 1;
 
 %%%% two params for carl but don't remove these yet %%%%
 
@@ -127,7 +128,6 @@ for k = 1:numel(allrecs)
         o(k).roi.doma = 1; %do automated morph rois
         o(k).roi.docm = 1; %do caiman extraction
         o(k).roi.doqc = 1; %do quality control on rois
-        o(k).roi.doplt = 1;
 
         o(k).roi.mm.chandraw = [1];
 

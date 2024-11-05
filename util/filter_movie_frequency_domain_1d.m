@@ -1,16 +1,17 @@
-function imout = filter_movie_frequency_domain_1d(imin, fldr, doplt)
+function imout = filter_movie_frequency_domain_1d(stack, dirstack, doplt)
 
+error("somewhat deprecated function")
 numfreqtozero = 50;
 
-imin = double(imin);
-fd = fft(imin); % Discrete Fourier-transform of your data
+stack = double(stack);
+fd = fft(stack); % Discrete Fourier-transform of your data
 
 doplt = 1;
-imout = zeros(size(imin));
-for indi = 1:size(imin, 2)
+imout = zeros(size(stack));
+for indi = 1:size(stack, 2)
 
 
-    imint = imin(:,indi);
+    stackt = stack(:,indi);
     fdt = fd(:,indi);
     % idx = flip(1:length(fdt));
     [~,idx] = sort(abs(fdt),'descend'); % Sort in descending order, this makes indexing simpler
@@ -32,7 +33,7 @@ for indi = 1:size(imin, 2)
         subplot(4,2,3)
         plot(log(abs(fdtt)))
         subplot(4,2,5)
-        plot(imint)
+        plot(stackt)
         subplot(4,2,7)
         plot(ifd)
     end
@@ -46,7 +47,7 @@ for indi = 1:size(imin, 2)
         subplot(4,2,4)
         plot(log(abs(fdtt)))      % Yup, they're gone.
         subplot(4,2,6)
-        plot(imint)
+        plot(stackt)
         subplot(4,2,8)
         plot(ifd)
     end
@@ -56,7 +57,7 @@ end
 
 if 0
 
-    imf = fftshift(fft(imin, [], 2));
+    imf = fftshift(fft(stack, [], 2));
     %%
 
     imfm = abs(imf); %keep magnitude discard phase
@@ -72,21 +73,21 @@ if 0
 
     %imff = imf .* filt;
     imout = single(real(ifft(ifftshift(imff)))); %inverse shift then inverse transform (to go back to spatial domain), then real component to remove residual imaginary components remaining because of floating point error
-    imout = reshape(imout, size(imin));
+    imout = reshape(imout, size(stack));
 
 
     if doplt
 
         plotindz = 1:500;
-        imfm = reshape(imfm, size(imin));
-        imff = reshape(imff, size(imin));
+        imfm = reshape(imfm, size(stack));
+        imff = reshape(imff, size(stack));
 
 
         %%
 
         swapdim = 1;
         ncol = 128;
-        pthgif = [fldr '/imout.gif'];
+        pthgif = [dirstack '/imout.gif'];
         hfg = figure;
         for mmi = 1:300
             plot(imfm_log(:,mmi))
@@ -94,16 +95,16 @@ if 0
         end
         %%
 
-        stackplt(rescale(imin(:,1:30)), pthgif=[fldr '/imout.gif'])
+        stackplt(rescale(stack(:,1:30)), pthgif=[dirstack '/imout.gif'])
 
 
         catstack = cat(1, ...
-            rescale(imin(:,:,plotindz)), ...
+            rescale(stack(:,:,plotindz)), ...
             rescale(log(abs(imfm(:,:,plotindz)))), ...
             rescale(log(abs(imff(:,:,plotindz)))), ...
             rescale(imout(:,:,plotindz)));
 
-        stackplt( catstack, pthgif=[fldr '/finalcat.gif'])
+        stackplt( catstack, pthgif=[dirstack '/finalcat.gif'])
 
     end
 end
