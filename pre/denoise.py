@@ -104,7 +104,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     
     print("\n\n\nENTERING denoise.py")
 
-    patch_t_sec = 20 #20 seconds is just a guess 
+    patch_t_sec = 10 #20 seconds is just a guess 
     padinc = 5 #this is probably pointless and can probably be zero 
 
     stack_size_t = dims[0]

@@ -21,11 +21,11 @@
 
 ##TO USE cxp.sh, CLONE SCOPA REPO INTO YOUR HOME DIR ON O2 
 
-#set variables that control which jobs are done
+#variables with names in all capital letters are passed into pipeline_init, where they overwrite default values of their lowercase counterparts in default_params_batch.py
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
+do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
 do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_analysis)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
@@ -47,11 +47,11 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 #BASH LISTS BELOW MUST BE SPACE-DELIMITED, ENCLOSED BY PARENTHESES, AND IF QUOTED, USING SINGLE-QUOTES (all this prevents asterisk * from causing problems) 
 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
-PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
+PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/Wenyi/') 
 
-RECDATE=('20240907' '23*')
-FLY=('*')
-TRIAL=('*')
+RECDATE=('20241102')
+FLY=('1')
+TRIAL=('1')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
@@ -67,7 +67,7 @@ MAX_SHIFTS_PRC=(10 10 10) #empty to skip; unit percentage of FOV in each dimensi
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
-NUM_EPOCHS_DENOISE=(10) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
+NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward in the pipeline, chosen epoch's z slices stitched into stack and saved as tif with suffix dcdn (in stc.sbatch, called by do_stich); one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); will overwrite existing dcdn stack if you run on same data more than once 
 
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
@@ -80,31 +80,40 @@ EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
 
 
-############ SET PARAMS FOR RESOURCE REQUEST ############
+############ SET PARAMS FOR GPU RESOURCE REQUEST ############
 
-#gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
-# gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
-# gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
-#gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
-gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
-#gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision)
-# gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
-# this one same as on gpu_requeue so work out which to use ---> gpu_to_use=teslaM40:1,vram:12G #2nd fastest on gpu partition (also 24G) (double precision)
+gpustr=a100_80 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
-
-if [ "$gpu_to_use" == teslaM40:1,vram:12G ]; then 
-    gpu_partition=gpu_requeue
-    gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
-elif [ "$gpu_to_use" == rtx6000:1,vram:24G ]; then 
-    gpu_partition=gpu_requeue
-    gpu_time=4:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
-elif [ "$gpu_to_use" == teslaV100s:1,vram:32G ]; then 
+if [ "$gpustr" == a100_80 ]; then 
+    gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
+    gpu_partition=gpu_quad 
+    gpu_time=5:00:00
+elif [ "$gpustr" == a100_40_mig ]; then 
+    gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
+    gpu_partition=gpu_quad 
+    gpu_time=4:30:00 #untested, 
+elif [ "$gpustr" == v100_32 ]; then 
+    gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
     gpu_partition=gpu_quad 
     gpu_time=9:00:00
-elif [ "$gpu_to_use" == a100:1,vram:80G ]; then 
-    gpu_partition=gpu_quad 
-    gpu_time=4:30:00
-fi
+elif [ "$gpustr" == a100_40 ]; then 
+    gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
+    gpu_partition=gpu_requeue
+    gpu_time=4:00:00 #time untested on requeue, maybe similar to time for a100_80 on quad partition?
+elif [ "$gpustr" == rtx6000_24 ]; then 
+    gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
+    gpu_partition=gpu_requeue
+    gpu_time=4:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+elif [ "$gpustr" == m40_12 ]; then 
+    gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision), there's also one on gpu partition (also 24 gb, double precision), where it's the 2nd fastest, but running on gpu_requeue is preferred method on scopa
+    gpu_partition=gpu_requeue
+    gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
+elif [ "$gpustr" == v100_16 ]; then 
+    gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
+    gpu_partition=gpu
+    gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
+fi   
+
 
 
 ############ CREATE PREFIX FOR TXT FILES THAT WILL MAP FOUND FILENAMES TO PARALLEL JOB INDICES ############
@@ -173,7 +182,6 @@ if [ "$do_register" == 1 ]; then
 fi
 if [ "$do_denoise" == 1 ]; then
     sbatch_job_name_sequence+=(dnp.sbatch)
-    # sbatch_job_name_sequence+=(stc.sbatch)
 fi
 if [ "$do_stitch" == 1 ]; then
     sbatch_job_name_sequence+=(stc.sbatch)
@@ -223,18 +231,18 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=00:30:00
                 ntasks_str=1
                 if [ "${HALFWIDTH_WINDOW_BGSUB[@]}" == 0 ]; then #use less memory if no bg subtraction
-                    cpus_per_task_str=5
-                    mem_per_cpu_str=3G
+                    cpus_per_task_str=1
+                    mem_per_cpu_str=15G
                 else #use more memory if using bg subtraction
-                    cpus_per_task_str=5
-                    mem_per_cpu_str=7G
+                    cpus_per_task_str=1
+                    mem_per_cpu_str=35G
                 fi
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then #do_denoise
                 partition_str=$gpu_partition #use transfer partition if do_copyfiles==1 or 2
                 time_str=$gpu_time
                 ntasks_str=1
-                cpus_per_task_str=2
-                mem_per_cpu_str=6G
+                cpus_per_task_str=1
+                mem_per_cpu_str=50G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 
@@ -249,8 +257,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=11:40:00 #11:40:00
                 ntasks_str=1
-                cpus_per_task_str=5
-                mem_per_cpu_str=12G
+                cpus_per_task_str=1
+                mem_per_cpu_str=60G
             elif [ "$sbatch_job_name" == exp.sbatch ]; then #do_extract
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=01:30:00
@@ -261,8 +269,8 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=02:00:00
                 ntasks_str=1
-                cpus_per_task_str=5
-                mem_per_cpu_str=10G
+                cpus_per_task_str=1
+                mem_per_cpu_str=50G
             fi
         fi
 
