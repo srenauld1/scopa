@@ -194,7 +194,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     # num_frames_of_each_tif_to_denoise_for_visualization_during_training = 1000 if stack_size_t>1010 else int(stack_size_t) #NEEDS TO BE AT LEAST PATCH_T TO PREVENT ERROR; for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     num_workers = 0             # if you use Windows system, set this to 0.
-    save_test_images_per_epoch = True  # whether to save result images after each epoch
+    save_test_images_per_epoch = False  # whether to save result images after each epoch; set to False to save memory, and because scopa creates reference GIF files per slice, per epoch during do_stitch (when not on GPU)
     num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised
 
     denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16
