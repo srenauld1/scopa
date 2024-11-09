@@ -191,10 +191,9 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     select_img_num = 1e10 # number of frames to take from the beginning of each stack for training (make Lt or greater to use all frames)
     intensity_scale_factor = 1 # the factor for image intensity scaling
     num_frames_of_each_tif_to_denoise_for_visualization_during_training = patch_t + 10 #NEEDS TO BE AT LEAST PATCH_T TO PREVENT ERROR; for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
-    # num_frames_of_each_tif_to_denoise_for_visualization_during_training = 1000 if stack_size_t>1010 else int(stack_size_t) #NEEDS TO BE AT LEAST PATCH_T TO PREVENT ERROR; for the optional inference visualization if save_test_images_per_epoch or visualize_images_per_epoch is True, and the code defaults to taking this number after the first 50 frames for display/save
     GPU = '0'                   # the index of GPU you will use (e.g. '0', '0,1', '0,1,2')
     num_workers = 0             # if you use Windows system, set this to 0.
-    save_test_images_per_epoch = True  # whether to save result images after each epoch; set to False to save memory, and because scopa creates reference GIF files per slice, per epoch during do_stitch (when not on GPU)
+    save_denoised_stack = True  #keep this true to save denoised stack for do_stitch to operate on; whether to save result images after each epoch of testing (not training; originasl deepcad code applies this to train and test, but carl commented out training epoch reference image saving, since that is done in do_stitch later, per epoch per slice); 
     num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised
 
     denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16
@@ -275,7 +274,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
                 'GPU': GPU,                                    # GPU index
                 'num_workers': num_workers,                    # if you use Windows system, set this to 0.
                 'visualize_images_per_epoch': False,                       # whether to show result images after each epoch
-                'save_test_images_per_epoch': save_test_images_per_epoch,  # whether to save result images after each epoch
+                'save_test_images_per_epoch': False,  # false by default because scopa do_stitch creates these later; these are just reference images saved during training; whether to save result images after each epoch of training (this is not the final denoised data, that is the same variable in the testing dict below)
                 'colab_display': True #if colab_display is true and save_test_images_per_epoch is false, it will error between training and testing
             }
 
@@ -343,7 +342,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
                 'GPU': GPU,                         # GPU index
                 'num_workers': num_workers,         # if you use Windows system, set this to 0.
                 'visualize_images_per_epoch': False, # whether to display inference performance after each epoch
-                'save_test_images_per_epoch': save_test_images_per_epoch, # whether to save inference image after each epoch in pth path
+                'save_test_images_per_epoch': save_denoised_stack, # whether to save denoised stack
                 'colab_display': True #if colab_display is true and save_test_images_per_epoch is false, it will error between training and testing
             }
 

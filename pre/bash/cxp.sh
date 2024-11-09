@@ -242,7 +242,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=$gpu_time
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=50G
+                mem_per_cpu_str=55G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 
@@ -252,7 +252,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=00:25:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=12G
+                mem_per_cpu_str=24G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=11:40:00 #11:40:00
