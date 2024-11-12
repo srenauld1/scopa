@@ -35,8 +35,8 @@ end
 files = opt.files;
 pthopt = opt.pthopt;
 
-if isstring(oin) || isstring(vbin) || isstring(vbin)
-    error('you may have attempted to pass "files" name-value argument, without some of the other non-name-value arguments, but misspelled "files" it or used the wrong term;')
+if isstring(oin) || isstring(vbin) || isstring(copybin) %these will be char unless there's a mistake
+    error('you may have attempted to pass "files" name-value argument, without some of the other non-name-value arguments, but misspelled "files" or used the wrong term altogether')
 end
 
 pthscopa = getpathscopa();
@@ -267,9 +267,10 @@ end
 
 %% globals
 
-if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthscopa')) && isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('pltvis'))
+if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthscopa')) && isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('pltvis')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
     pthparent = pthparentfind(oin.spec.pthparent_local, oin.spec.pthparent_o2);
-    glb(pthscopa=pthscopa, pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, pltvis=d.mn.pltvis, plt=d.mn.plt); %set some globals, force update if they already have been set with first argument 1
+    xyscreen = pxscreenget;
+    glb(pthscopa=pthscopa, pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, pltvis=o.mn.pltvis, plt=o.mn.plt, dmstackdf=o.mn.dmstackdf, xyscreen=xyscreen); %set some globals, force update if they already have been set with first argument 1
 end
 
 end

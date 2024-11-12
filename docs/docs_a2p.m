@@ -51,7 +51,7 @@ utility functions (and visualization functions):
     oset: set options
     odf: invoke default options, overwriting defaults with input
     tsget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)
-    figarr: arrange subplots, including automatically arranging frames of imaging stack to optimally fill available space while maintaining aspect ratio 
+    axarr: arrange subplots, including automatically arranging frames of imaging stack to optimally fill available space while maintaining aspect ratio 
 
 
 abbreviations

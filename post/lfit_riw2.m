@@ -53,7 +53,6 @@ doplt = opt.doplt;
 
 gifvis = 'on';
 fontmedium = 12;
-axord = 'rm';
 crosshair_width = 2;
 xtralimfac = 0.03;
 numtickx = 4;
@@ -268,24 +267,17 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     %%%%%%%%%%% SETUP AXES %%%%%%%%%%%
 
     layout = {[3,4]};
-    marginssp = [0.05];
-    marginsfig = [0.07];
+    marginax = [0.05];
+    marginfg = [0.07];
     splitfrac = 1;
-    ax = figarr(layout=layout, marginssp=marginssp, marginsfig=marginsfig, splitfrac=splitfrac);
+    ax = axarr(layout=layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac);
 
+    [dms,arat] = pxscreenget();
 
-
-    hfg = figure;
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-
-    figsidelength = 0.75;
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis, 'Position', [0, 0, 1, 1]);
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
+    szf = 0.75;
+    szftmp = figsz(szf);
+    hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
+    hfg.Position = [0 0 szftmp];
 
     haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
@@ -293,10 +285,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 1; widthfac = 4; heightfac = 1;
     ts1.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts1.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    ts1.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    ts1.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    ts1.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    ts1.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts1.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts1.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts1.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts1.hax, 'on');
     % yyaxis left;
     ts1.hpl = plot(ts1.hax, t, nanresp);
@@ -311,10 +303,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 5; widthfac = 4; heightfac = 1;
     ts2.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts2.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    ts2.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    ts2.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    ts2.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    ts2.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts2.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts2.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts2.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts2.hax, 'on');
     % yyaxis left;
     ts2.hpl = plot(ts2.hax, t, stim1, color=[0.8500    0.3250    0.0980]);
@@ -329,10 +321,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 9; widthfac = 4; heightfac = 1;
     ts3.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts3.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    ts3.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    ts3.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    ts3.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    ts3.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts3.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts3.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts3.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts3.hax, 'on');
     % yyaxis left;
     ts3.hpl = plot(ts3.hax, t, stim2, color=[0.9290    0.6940    0.1250]);

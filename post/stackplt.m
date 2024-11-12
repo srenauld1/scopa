@@ -13,12 +13,10 @@ arguments
     opt.cmap = gray(256) %colormap or 'rgb' if stack is truecolor (final dim length 3 . . . can be any numeric type)
     opt.title_prefix char = ''
     opt.index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
-    opt.figsidelength = 0.75 %figure size as proportion of your available screen small dimension (cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
-    opt.axord char = 'rm'
+    opt.szf = 1 %% scalar denoting fig size; 0-1 makes square until 1 makes largest square fig for your screen, sz 1-2 fills larger dimension until 2 is fullscreen
     opt.numcolorsgif = 128
-    opt.fdimnum = 2; %how many dims to display on a each frame
-    opt.dimorder = []; %dim order from left to right, top to bottom, first to last frame (y,x,z,t,pmt,colorchannel)
-    opt.stackdims = 'yxztck'
+    opt.dmplt = []; %dim order; 1 and 2 are rows and columns of each image, respectively, >2 are subplots with standard matlab arrangement (left to right, top to bottom); dimensions in parentheses are put in separate frames of gif; dimensions in dmstack, but not dmplt, are averaged; for example, if dmstack='yxztc' and dmplt='xyc(t)': each frame has c images, each image is x by y (row by column), there are t frames in the gif, and for all images z has been averaged, and there is no k dimension  
+    opt.dmstack = [] %input stack dimensions; make empty for default (yxztck)
     opt.dr = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.iy = [];
     opt.ix = [];
@@ -29,60 +27,35 @@ arguments
     opt.doui = 0;
     opt.dool = 0;
     opt.stackjust = 'center' %how to justify stack image; center, minimize, none
-    opt.marginsfig = 0.05;
-    opt.marginssp = 0.01;
+    opt.marginfg = 0.05;
+    opt.marginax = 0.01;
     opt.fontsz = 10;
 end
 
-eval(structvars(opt).'); %turn opt into local variables with the same name as opt fields
+eval(structvars(opt).'); %turn opt into local variables with the same name as opt fields; using this function because there are so many here
 
-if iscell(stack)
-    szin = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
-else
-    szin = size(stack); %taking first cell because below code makes sure all stacks are same size, if multiple
-end
+[stack, dmstackdf] = stackperm(stack, dmstack);
 
-stackdims_default = 'yxztck';
-if isequal(stackdims, stackdims_default)
-    stackdims = stackdims_default(1:numel(szin));
-end
-if numel(stackdims)~=numel(szin)
-    error("stackdims length must match ndims(stack)")
-end
-if isempty(stackdims)
-    stackdims = stackdims_default;
-end
-for k = 1:numel(stackdims)
-    loc(k) = strfind(stackdims_default, stackdims(k));
-end
-sznew = num2cell(ones(numel(szin), 1));
-if numel(unique(loc))~=numel(loc)
-    error("there cannot be repeated stackdims")
-end
-for k = 1:numel(loc)
-    sznew{loc(k)} = szin(k);
-end
-if ~isequal(vec(cell2mat(sznew)), vec(szin))
-    if iscell(stack)
-        for k = 1:numel(stack)
-            stack{k} = reshape(stack{k}, sznew{:});
-        end
-        szin = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
-    else
-        stack = reshape(stack, sznew{:});
-        szin = size(stack); %taking first cell because below code makes sure all stacks are same size, if multiple
-    end
-end
-
-
+dimlabels = vec(num2cell(dmstackdf)); %c is scanimage channel and k is rgb channel
+maxnumdims = numel(dmstackdf);
+max_num_inds_to_print = 20;
+max_num_im_per_frame = 60;
+max_num_gif_frames = 2000;
 
 if isempty(pthgif)
     pthgif = pthauto(suffix='.gif', usetime=1);
 end
 
-if isempty(dimorder)
-    dimorder = 1:numel(szin); %for now only one dim order allowed, so just take from first cell if stack is a cell
+if iscell(stack)
+    if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
+        error("all stacks (each cell element) must be the same size")
+    end
+    szin = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
+else
+    szin = size(stack); %taking first cell because below code makes sure all stacks are same size, if multiple
 end
+
+
 
 index_labels_opt = cell(1,6);
 if ~isempty(opt.iy)
@@ -152,13 +125,39 @@ if strcmp(cmap, 'rgb')
     error("don't pass truecolor stack yet, testing still")
 end
 
+
+%% dmplt
+
+
+if isempty(dmplt)
+    dmplt = dmstackdf; %for now only one dim order allowed, so just take from first cell if stack is a cell
+else
+    dmfrtmp = cell2mat(regexp(dmplt, '(\([a-z]*\))', 'match'));
+    dmfr = '';
+    if ~isempty(dmfrtmp)
+        dmfr = erase(dmfrtmp, {'(', ')'});
+        dmplt = erase(dmplt, dmfrtmp);
+    end
+end
+fdimnum = numel(dmplt);
+dmplt = [dmplt dmfr];
+
+dimorder_eachframe = zeros(1, numel(dmplt));
+for k = 1:numel(dmplt)
+    dimorder_eachframe(k) = strfind(dmstackdf, dmplt(k));
+end
+dimorder = [dimorder_eachframe setxor(dimorder_eachframe, 1:numel(dmstackdf))];
+dmav = setxor(1:numel(dimorder_eachframe), 1:numel(dmstackdf));
+
+stack = permute(stack, dimorder);
+
+if ~isempty(dmav) %do this after applying any indices
+    stack = mean(stack, dmav, 'native');
+end
+
+
 %% check vars
 
-dimlabels = vec(num2cell(stackdims_default)); %c is scanimage channel and k is rgb channel
-maxnumdims = 6;
-max_num_inds_to_print = 20;
-max_num_im_per_frame = 60;
-max_num_gif_frames = 2000;
 
 if ~iscell(dr)
     if numel(dr)~=2
@@ -264,6 +263,9 @@ end
 
 numdims = ndims(stack);
 
+if numel(opt.ix)==1 && size(stack,2)==1 && numdims<=1 %if x became singleton because of iz argument
+    numdims = numdims+1;
+end
 if numel(opt.iz)==1 && size(stack,3)==1 && numdims<=2 %if z became singleton because of iz argument
     numdims = numdims+1;
 end
@@ -290,9 +292,9 @@ end
 if fdimnum>numdims
     error("fdimnum must not exceed numdims")
 end
-if ~isequal(sort(dimorder), 1:numdims)
-    error("dimorder must contain all integers 1 to numdims")
-end
+% if ~isequal(sort(dimorder), 1:numdims)
+%     error("dimorder must contain all integers 1 to numdims; dmstack may be incorrectly set")
+% end
 
 
 if ~isempty(intersect(find(~cellfun(@isempty, index_labels)), find(~cellfun(@isempty, index_labels_opt)))) % any(~cellfun(@isempty, index_labels_opt))
@@ -311,8 +313,9 @@ end
 
 %% prep images
 
-dimorder = [dimorder [1:num_missing_dims]+numel(dimorder)];
-stack = permute(stack, dimorder);
+% dimorder = [dimorder [1:num_missing_dims]+numel(dimorder)];
+% stack = permute(stack, dimorder);
+
 dimlabels = dimlabels(dimorder);
 index_labels = index_labels(dimorder);
 index_labels = index_labels';
@@ -375,8 +378,8 @@ end
 
 %% init subplots
 
-ax = figarr(stack, marginssp=marginssp, marginsfig=marginsfig);
-h = initfig(fontsz=fontsz);
+ax = axarr(stack, marginax=marginax, marginfg=marginfg, stackjust=stackjust);
+h = initfig(fontsz=fontsz, szf=szf);
 h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap);
 
 %% plot

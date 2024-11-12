@@ -16,9 +16,9 @@ tmp = [pp(:) qq(:)];
 
 numrows = 4;
 numcolumns = 1;
-marginsfig = 0.05;
-marginssp = 0.05;
-[axx, axy, axw, axh] = figarr(numrows,numcolumns,marginsfig,marginssp);
+marginfg = 0.05;
+marginax = 0.05;
+[axx, axy, axw, axh] = axarr(numrows,numcolumns,marginfg,marginax);
 
 ylm = [min(depv(:)) max(depv(:))];
 ylm = [min(depv(:))-range(ylm)*0.1 max(depv(:))+range(ylm)*0.1 ];

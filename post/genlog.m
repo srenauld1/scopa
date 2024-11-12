@@ -2,16 +2,10 @@ function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(fun
 
 if doplt
     fontmedium = 12;
-    figsidelength = 0.5; %proportion of your screen occupied by fig
-    hfg = figure; %hold on;
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', 'on') ;
-    if aspect_screen>1
-        hfg.Position = [0.4 0.2 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0.4 0.2 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
+    szf = 0.5; 
+    szftmp = figsz(szf);
+    hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', 'on', 'WindowStyle', 'normal');
+    hfg.Position = [0 0 szftmp];
     bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     htx = text( 0.2, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
     hax = axes( 'Parent', hfg, 'Position', [0.1, 0.1, 0.8, 0.8] );

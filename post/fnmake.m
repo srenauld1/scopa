@@ -94,7 +94,11 @@ pth_epochinfo = [dirstack recid '_epochinfo_.mat'];
 
 fntmp = fieldnames(o.roi);
 for k = 1:numel(fntmp)
-    usehires(k) = o.roi.(fntmp{k}).ma.usehires; %gets updated to numeric struct, fieldname usehires
+    if isfield(o.roi.(fntmp{k}), 'ma')
+        usehires(k) = o.roi.(fntmp{k}).ma.usehires; %gets updated to numeric struct, fieldname usehires
+    else
+        usehires(k) = 0;
+    end
 end
 
 pth_hires_prefix = [];

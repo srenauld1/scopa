@@ -1,6 +1,6 @@
 function inp = rescale_to_range(inp, source, target, skipnan, dim)
 
-%rescale inp from source to target
+% rescale inp from source to target (source and target can be arrays, in which case limits are extracted, or limits themselves)
 % normal rescale would use inp as source, and target of [0 1]
 
 arguments
@@ -13,6 +13,30 @@ end
 
 if dim~=1
     error("right now dim must be 1")
+end
+
+inp_cell = 0;
+nanpad = 0;
+if iscell(inp)
+    inp_cell = 1;
+    if ~all(cellfun(@isvector, inp))
+        error("if input argument inp is a cell, each element must be a vector")
+    end
+    if ~isvector(inp)
+        error("if input argument inp is a cell, it must be a vector (n,1) or (1,n)")
+    end
+    if numel(inp)>1 && all(cellfun(@(x) isequal(size(inp{1}), size(x)), inp(2:end)))
+        inp = tscell2mat(inp);
+    else
+        nanpad = 1;
+        inp = inp(:); %make sure it's a column vector
+        numelmax = max(cellfun(@numel, inp));
+        for k = 1:numel(inp) %insert nan padding to convert cell to mat
+            padlen{k} = numelmax-numel(inp{k});
+            inp{k} = padarray(inp{k}(:), padlen{k}, nan, 'post');
+        end
+        inp = tscell2mat(inp);
+    end
 end
 
 if size(source, 1)~=size(inp,1)
@@ -59,10 +83,10 @@ if ~isvector(inp)
     end
 end
 
-for j = 1:size(inp, dim)
+for k = 1:size(inp, dim)
 
     C = repmat({':'},1,ndims(inp));
-    C{dim} = j;
+    C{dim} = k;
 
     inptmp = inp(C{:});
     tgttmp = target(C{:});
@@ -92,3 +116,11 @@ for j = 1:size(inp, dim)
 end
 
 
+if inp_cell
+    inp = tsmat2cell(inp); %return inp to original form
+    if nanpad %remove nan padding
+        for k = 1:numel(inp)
+            inp{k} = inp{k}(1:end-padlen{k});
+        end
+    end
+end

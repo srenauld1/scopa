@@ -5,7 +5,7 @@ function mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
 "EVERYTHING IN mfit_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
-%it may not appear to be a square, but it is, as long as figsidelength does not exceed
+%it may not appear to be a square, but it is, as long as szf does not exceed
 %proportion of your screen's drawing area in its smaller dimension,
 % which i've been unable to find programmatically so i recommend staying under 0.75
 
@@ -66,8 +66,8 @@ opts.plt.depv_alpha = 1;
 opts.plt.pred_alpha = 0.7;
 
 opts.plt.numcolumns_ts = 1;
-opts.plt.marginsfig = 0.04;
-opts.plt.marginssp = 0.02;
+opts.plt.marginfg = 0.04;
+opts.plt.marginax = 0.02;
 opts.plt.splitdim = 'x';
 opts.plt.splitfrac = 0.7;
 opts.plt.fontsmall = 6;

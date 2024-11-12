@@ -2,7 +2,7 @@
 function [croplim, croplimstr] = croplimmake(stack, sz_t, dirstack, recid, regionex, regionex_nounderscore, numchan)
 
 if numchan==2
-    sprintf("averaging both channels to create the images for defining croplim")
+    fprintf("averaging both channels to create the images for defining croplim" + newline)
 end
 
 stackmnt = mean(stack, [4 5], 'native'); %averaging 
@@ -35,9 +35,10 @@ if define_xy_lim
     title_prefix = ['THIS IS THE MEAN OF SELECTED Z SLICES . . . NOW DRAW A SINGLE POLYGON AND ITS BOUNDING BOX WILL BE THE XY LIMITS FOR REGIONS PREFIXED WITH "' regionex_nounderscore '"'];
 
     flag_croplim = 1;
-    flag_one_image = 1;
-    flag_limit_one_manual_roi = 1;
-    roi_cropxy = drawrois_oneimage(stackmntz, regionex_nounderscore, title_prefix, flag_one_image, flag_limit_one_manual_roi, flag_croplim);
+    flag_oneim = 1;
+    flag_oneroi = 1;
+    flag_allz = 0;
+    roi_cropxy = roidraw_onefig(stackmntz, regionex_nounderscore, title_prefix, flag_oneim, flag_oneroi, flag_allz, flag_croplim);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end

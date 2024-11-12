@@ -1,0 +1,341 @@
+function [maskroi, flag_quit_one_roi, flag_quit_all_rois, ircum] = ...
+    roidraw_onefig(stack, regionex, title_prefix, flag_oneim, flag_single_roi_per_stack, ...
+    flag_allz, flag_croplim, ir, roialpha, cmap, fontsize, remove_overlap)
+
+arguments
+    stack
+    regionex = 'none'
+    title_prefix = ''
+    flag_oneim = 0 %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
+    flag_single_roi_per_stack = 0 %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
+    flag_allz = 0
+    flag_croplim = 0
+    ir = 1
+    opt.roialpha = 0.33
+    opt.cmap = []
+    opt.fontsize = 12
+    opt.remove_overlap = 0 %0 allows overlapping rois, 1 to remove all pixels in overlapping rois
+end
+roialpha = opt.roialpha;
+cmap = opt.cmap;
+fontsize = opt.fontsize;
+remove_overlap = opt.remove_overlap;
+
+if flag_allz && flag_croplim
+    error("flag_allz and flag_croplim cannot both be true")
+end
+
+indnz = stack~=0; %eventually would be nice to have option to rescale everything but zero (zero is mask)
+
+h = stackplt(stack, doui=1, fdimnum=ndims(stack), stackjust='center', szf=1);
+
+if ~iscell(title_prefix)
+    title_prefix = {title_prefix};
+end
+h.httl.String = title_prefix;
+h.httl.FontSize = fontsize;
+
+if flag_oneim && ~flag_croplim
+    ttltmp = {'THIS IS THE ONLY Z (OR Z MEAN)'};
+    h.httl.String = cat(1, h.httl.String, ttltmp);
+end
+
+if flag_croplim
+    ttltmp = {'YOU MUST DRAW A SINGLE CONTIGUOUS ROI ON THIS IMAGE'};
+elseif flag_allz
+    ttltmp = { [...
+        'q: QUIT DRAWING,   ', ...
+        'r: NEXT ROI,   ', ...
+        's: NEXT SLICE,   ', ...
+        'o: REMOVE CURRENT ROI OVERLAP,   ', ...
+        'up/down: RESCALE CONTRAST,   ', ...
+        %'backspoace: UNDO LAST POLYGON  ', ...
+        ]};
+end
+h.httl.String = cat(1, h.httl.String, ttltmp);
+
+if ~flag_allz %discontiguous is default if allz displayed
+    ttltmp = {'d/e: ENTER/EXIT XY DISCONTIGUOUS MODE'};
+    h.httl.String = strcat(ttltmp, ttltmp);
+end
+
+ndt = numel(h.httl.String); %number of lines in title initially
+
+numrows = size(stack,1);
+numcols = size(stack,2);
+irtmp = 1; %roi index for this figure
+numrois_est = 200; % preallocate this many ROIs
+maskroi = zeros( numrows, numcols, numrois_est, 'single');
+maskroi_tmp = zeros( numrows, numcols, numrois_est, 'single');
+
+if isempty(cmap)
+    cmap = distinguishable_colors(numrois_est);
+end
+
+if flag_allz || (flag_oneim && ~flag_single_roi_per_stack)
+    flag_single_roi_per_image = 0;
+else
+    flag_single_roi_per_image = 1;
+end
+
+flag_do = 0;
+flag_undo = 0;
+flag_exit_this_figure = 0;
+flag_quit_one_roi = 0;
+flag_quit_all_rois = 0;
+flag_roi_drawn = 0;
+tmpFrame = [];
+scalefac = 1;
+flag_allow_rescale = 1;
+flag_base_message = 1;
+flag_xy_discontiguous = 0;
+flag_prequit = 0;
+tmp_ind = 1;
+imfocus = [];
+
+while true
+
+    tmp = [];
+    if ~isempty(h.hfg.UserData) %capture key press on figure callback
+        tmp = h.hfg.UserData;
+        h.hfg.UserData = [];
+    end
+
+    if isempty(imfocus) %capture axis click to start roi draw
+        for k = 1:numel(h.st.hpl)
+            if ~isempty(h.st.hpl{k}.UserData)
+                imfocus = [imfocus k];
+                flag_do = 1;
+            end
+            % h.st.hpl{k}.UserData = [];
+        end
+    end
+
+    if numel(imfocus)>1
+        error("only one image can have focus at a time")
+    end
+
+
+    pause(0.01);
+
+
+    if ~isempty(tmp)
+        flag_base_message = 0;
+    end
+
+
+    if flag_allow_rescale
+        if strcmpi(tmp, 'uparrow') || strcmpi(tmp, 'downarrow')
+            if strcmpi(tmp, 'uparrow')
+                tmpd = -0.1;
+            else
+                tmpd = 0.1;
+            end
+            scalefac = scalefac + tmpd;
+            for k = 1:numel(h.st.hpl)
+                clim = h.st.hax{k}.CLim(2) + h.st.hax{k}.CLim(2)*tmpd;
+                if clim<h.st.hax{k}.CLim(1)
+                    clim = h.st.hax{k}.CLim(1);
+                end
+                h.st.hax{k}.CLim(2) = clim;
+            end
+            h.httl.String{ndt+1} = ['RESCALED CONTRAST ' num2str(-1*round((scalefac - 1)*100)) ' %'];
+        end
+    end
+
+    if flag_do
+        h.httl.String{ndt+1} = ['DRAW NOW ON IMAGE ' num2str(imfocus) ' (CLICK=PLACE VERTEX, DRAG=ADJUST, DOUBLE-CLICK=FINISH)'];
+        if flag_allz
+            h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR REGION "' regionex '"'];
+        elseif flag_croplim
+            h.httl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR REGION "' regionex '"'];
+        else
+            if flag_oneim
+                if flag_single_roi_per_stack
+                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
+                else
+                    h.httl.String{ndt+3} = ['EACH POLYGON, AND EACH UNION OF XY DISCONTIGUOUS SUBROIS, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex '"'];
+                end
+            else
+                if flag_single_roi_per_stack
+                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
+                else
+                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS CYCLE THROUGH THE STACK WILL COMPRISE ROI # ' num2str(ircumcurr) ' FOR REGION "' regionex '"'];
+                end
+            end
+        end
+        h.httl.String{ndt} = [];
+        flag_do = 0;
+        flag_allow_rescale = 0;
+        flag_base_message = 1;
+        h.st.hax{imfocus};
+        tmpFrame = roipoly;
+    end
+
+
+    if strcmpi(tmp, 's') && ~flag_croplim && ~flag_allz %&& ~flag_oneim
+        flag_exit_this_figure = 1;
+        tmpone = 'PRESSED "s", QUITTING THIS IMAGE';
+        h.httl.String{ndt+1} = tmpone;
+
+    elseif strcmpi(tmp, 'r') && ~flag_croplim && ~flag_allz
+        flag_quit_one_roi = 1;
+        tmpone = 'PRESSED "r", QUITTING THIS ROI';
+        h.httl.String{ndt+1} = tmpone;
+
+    elseif  strcmpi(tmp, 'q') %&& ~flag_croplim
+        flag_quit_all_rois = 1;
+        tmpone = 'PRESSED "q", QUITTING ALL ROIS';
+        h.httl.String{ndt+1} = tmpone;
+
+    elseif strcmpi(tmp, 'backspace') && irtmp>1
+        % flag_undo = 1;
+        % h.httl.String{ndt+2} = 'PRESSED "backspace", REMOVED LAST ROI';
+
+    elseif strcmpi(tmp, 'd')
+        if flag_xy_discontiguous==0 && ~flag_croplim && ~flag_allz
+            flag_xy_discontiguous = 1;
+            h.httl.String{ndt+2} = 'ALLOWING DISCONTIGUOUS ROI, PRESS "e" TO EXIT DISCONTIGUOUS MODE';
+        end
+
+    elseif strcmpi(tmp, 'e') && ~flag_croplim && ~flag_allz % pressed e
+        if flag_xy_discontiguous==1
+            flag_xy_discontiguous = 0;
+            if tmp_ind>1
+                flag_roi_drawn = 1;
+                maskroi(:, :, irtmp) = logical(sum(maskroi_tmp, 3));
+                irtmp = irtmp + 1;
+                maskroi_tmp(:) = 0;
+                tmp_ind = 1;
+            end
+            h.httl.String{ndt+2} = 'EXITED DISCONTIGUOUS MODE, RETURN WITH "d"';
+        end
+
+
+    elseif strcmpi(tmp, 'c') %remove pixels in current roi that belong to any other rois
+        maskroi_cum = logical(sum(maskroi(:, :, 1:irtmp-2), 3));
+        maskroi_curr = logical(maskroi(:, :, irtmp-1));
+        maskroi_sum = maskroi_cum + maskroi_curr;
+        maskroi_remove = maskroi_sum>1;
+        maskroi_curr(maskroi_remove) = 0;
+        maskroi(:, :, irtmp-1) = maskroi_curr;
+        [rw,cl]=ind2sub([size(maskroi, 1) size(maskroi, 2)], find(sum(maskroi, 3)>1));
+        for cli = 1:length(cl)
+            maskroi(rw(cli), cl(cli), :) = 0; %do it this way
+        end
+    end
+
+
+    if flag_roi_drawn
+        if flag_single_roi_per_image
+            if strcmp(h.httl.String{ndt+1}, 'SELECT IMAGE WITH CLICK')
+                xtmp{1} = 'SELECT IMAGE WITH CLICK';
+                % h.httl.String{ndt+1} = 'YOU ARE LIMITED TO ONE POLYGON ON THIS IMAGE, PRESS "backspace" TO REDO IT, OR NAVIGATE WITH "q", "r" or "s"';
+                tmpone = 'YOU HAVE DRAWN THE ONLY ROI OR SUBROI ALLOWED ON THIS IMAGE';
+                h.httl.String{ndt+1} = tmpone;
+            end
+            xtmp{2} = h.httl.String{ndt+2};
+            xtmp{3} = h.httl.String{ndt+2};
+            h.httl.String{ndt+2} = '';
+            h.httl.String{ndt+3} = '';
+            flag_do = 0;
+            % flag_prequit = 1;
+            % flag_quit_all_rois = 1;
+            flag_exit_this_figure = 1;
+        else
+            h.httl.String{ndt+1} = 'SELECT IMAGE WITH CLICK';
+        end
+    end
+
+
+    if flag_exit_this_figure || ...
+            flag_quit_all_rois
+        h.httl.String{1} = "QUITTING IN 1 SEC";
+        h.httl.String{ndt+1} = tmpone;
+        h.httl.String{ndt+2} = '';
+        h.httl.String{ndt+3} = '';
+        pause(1)
+        break;
+    end
+
+    if ~isempty(tmpFrame)
+        maskroi_tmp(:,:,tmp_ind) = tmpFrame;
+        tmpFrame = [];
+        for k = 1:numel(h.st.hax)
+            if ~isempty(h.st.hpl{k}.UserData)
+                h.st.hol{k} = alphamask( maskroi_tmp(:, :, tmp_ind ), cmap(irtmp, :), roialpha, h.st.hax{k}, pickable=0); %this displays the roi/background overlay, outputs overlay object hol; pickable=0 to keep image pickable (not overlay)
+                h.st.hpl{k}.UserData = [];
+                h.st.hpl{k}.BusyAction = 'queue';
+            end
+        end
+        imfocus = [];
+
+        if flag_xy_discontiguous || flag_allz
+            tmp_ind = tmp_ind+1;
+        else
+            flag_roi_drawn = 1;
+            maskroi(:, :, irtmp) = maskroi_tmp(:,:,tmp_ind);
+            irtmp = irtmp + 1;
+        end
+    end
+
+    % if flag_undo
+    %     flag_undo = 0;
+    %     if flag_prequit
+    %         h.httl.String{ndt+1} = xtmp{1};
+    %         h.httl.String{ndt+2} = xtmp{2};
+    %         h.httl.String{ndt+3} = xtmp{3};
+    %         flag_prequit = 0;
+    %     end
+    %     irtmp = irtmp - 1;
+    %     maskroi(:, :, irtmp) = zeros( [numrows, numcols] );
+    %     tmpFrame = [];
+    %     h.st.hpl = alphamask( maskroi_tmp(:, :, tmp_ind ), cmap(irtmp, :), 0.33, h.st.hpl.Parent ); %this displays the roi/background overlay
+    % end
+
+    if flag_base_message
+        if flag_undo==0
+            h.httl.String{ndt+1} = 'SELECT IMAGE WITH CLICK';
+        end
+    end
+
+    ircumcurr = ir + irtmp; %rois drawn when entering this function, plus current roi draw index (which is one more than current drawn index)
+
+end
+
+
+
+
+if any(maskroi(:))
+
+    irtmp = irtmp-1;
+    ircum = ircumcurr-1;
+    maskroi = maskroi(:, :, 1:irtmp);
+
+    if remove_overlap %remove overlapping pixels
+        [rw,cl]=ind2sub([size(maskroi, 1) size(maskroi, 2)], find(sum(maskroi, 3)>1));
+        for cli = 1:length(cl)
+            maskroi(rw(cli), cl(cli), :) = 0; %why do it this way?
+        end
+    end
+
+    %remove rois with zero pixels
+    ma = zeros(1, size(maskroi,3));
+    for bi = 1:size(maskroi,3)
+        ma(bi)=sum(vec(maskroi(:,:,bi)));
+    end
+    maskroi(:,:,[find(~ma)]) = [];
+
+    maskroi = logical(maskroi);
+
+else
+
+    maskroi = zeros( numrows, numcols);
+
+end
+
+close(h.hfg);
+
+
+end
+

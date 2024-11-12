@@ -30,7 +30,7 @@ arguments
     opt.dostats = 0
     opt.dr = []
     opt.imrate = []
-    opt.doplt = 0
+    opt.doplt = []
 end
 
 suffixplt = opt.suffixplt;
@@ -51,17 +51,17 @@ dr = opt.dr;
 imrate = opt.imrate;
 doplt = opt.doplt;
 
+suffixplt = convertStringsToChars(suffixplt);
+
 if isempty(doplt)
-    if isempty(glb('plt'))
-        doplt = 0;
-    else
-        doplt = glb('doplt');
-    end
+    doplt = any(strcmp('sld', glb('plt')));
 end
+
 if ~doplt
-    fprintf("in stackld, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted")
+    fprintf("in stackld, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted" + newline)
     suffixplt = [];
 end
+
 
 id = idmake(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 suffixstack = id.suffix;
@@ -72,7 +72,7 @@ if ~iscell(suffixstack)
     suffixstack = {suffixstack};
 end
 
-if numel(suffixplt)~=0
+if ~isempty(suffixplt)
     if numel(dr)>numel(suffixplt)
         fprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr" + newline)
         dr = dr(1:numel(suffixplt));
@@ -93,11 +93,9 @@ end
 
 indssrc = find(strcmp(suffixstack, suffixplt));
 if isempty(suffixplt)
-    plot_stack_gif = 0;
     dr = dr(1);
     suffixld = suffixstack;
 else
-    plot_stack_gif = 1;
     if any(strcmp(suffixstack, suffixplt))
         suffixld = [setxor(suffixstack, suffixplt, 'stable') suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackld without having to hold plot stacks in memory)
     else
@@ -125,6 +123,11 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
     end
 end
 pth_stacks = flip(pth_stacks); %since spi was backwards above
+
+if isempty(suffixplt) %if it's empty after looking for files, set doplt to 0
+    fprintf(newline + "in stackld, suffixplt is empty (either because the user made it empty, or none of the stacks listed in suffixplt were found), so doplt is now set to 0, regardless of how it was set entering stackld" + newline)
+    doplt = 0;
+end
 
 %%  loop over suffixes, loading and concatenating
 
@@ -176,7 +179,7 @@ for spi = 1:numel(pth_stacks)
         end
     end
 
-    if plot_stack_gif && any(strcmp(suffixld{spi}, suffixplt))
+    if doplt && any(strcmp(suffixld{spi}, suffixplt))
 
         cnt = cnt+1;
 
@@ -198,7 +201,7 @@ end
 
 %% plot
 
-if plot_stack_gif
+if doplt
 
     [~, plot_stack_order] = sort(indsnew);
 
@@ -235,7 +238,7 @@ if plot_stack_gif
         stacktmp, ...
         pthgif=[filename_prefix '_.gif'], ...
         dr=dr, ...
-        fdimnum=3, ...
+        dmplt='yxz(t)', ...
         dimorder=[1:ndims(stacktmp{1})], ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
@@ -245,7 +248,7 @@ if plot_stack_gif
         stackmntmp, ...
         pthgif=[filename_prefix '_meant_.gif'], ...
         dr=dr, ...
-        fdimnum=3, ...
+        dmplt='yxz', ...
         dimorder=[1:ndims(stackmntmp{1})], ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels([1:ndims(stackmntmp{1})]) ...

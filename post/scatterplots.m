@@ -33,11 +33,11 @@ switch roi_type
 end
 
 layout = {[4,4], stack};
-marginssp = [0.05, 0];
-marginsfig = 0.05;
+marginax = [0.05, 0];
+marginfg = 0.05;
 splitdim = 'x';
 splitfrac = 0.65;
-ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig, splitdim=splitdim, splitfrac=splitfrac);
+ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitdim=splitdim, splitfrac=splitfrac);
 
 
 [varsx, varsy, varsz] = convert_to_single_precision(varsx, varsy, varsz);
@@ -47,7 +47,7 @@ labsx = check_labels(labsx, varsx);
 labsy = check_labels(labsy, varsy);
 labsz = check_labels(labsz, varsz);
 
-[lims, numsamp_max] = find_axis_limits(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i);
+[lims, numsamp_max] = axlim_old(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i);
 
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
@@ -178,7 +178,7 @@ end
 
 end
 
-function [lims, numsamp_max] = find_axis_limits(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i)
+function [lims, numsamp_max] = axlim_old(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i)
 
 rngx = range(varsx, 2);
 rngy = range(varsy, 2);
@@ -186,15 +186,15 @@ rngz = range(varsz, 2);
 lims.x.each = [min(varsx, [], 2, 'omitmissing'), max(varsx, [], 2, 'omitmissing')];
 lims.y.each = [min(varsy, [], 2, 'omitmissing'), max(varsy, [], 2, 'omitmissing')];
 lims.z.each = [min(varsz, [], 2, 'omitmissing'), max(varsz, [], 2, 'omitmissing')];
-lims.x.each_xtra = [lims.x.each(:,1) - rngx*axisroomfac, lims.x.each(:,2) + rngx*axisroomfac];
-lims.y.each_xtra = [lims.y.each(:,1) - rngy*axisroomfac, lims.y.each(:,2) + rngy*axisroomfac];
-lims.z.each_xtra = [lims.z.each(:,1) - rngz*axisroomfac, lims.z.each(:,2) + rngz*axisroomfac];
+lims.x.eachxtra = [lims.x.each(:,1) - rngx*axisroomfac, lims.x.each(:,2) + rngx*axisroomfac];
+lims.y.eachxtra = [lims.y.each(:,1) - rngy*axisroomfac, lims.y.each(:,2) + rngy*axisroomfac];
+lims.z.eachxtra = [lims.z.each(:,1) - rngz*axisroomfac, lims.z.each(:,2) + rngz*axisroomfac];
 lims.x.all = [min(lims.x.each, [], 'all', 'omitmissing'), max(lims.x.each, [], 'all', 'omitmissing')];
 lims.y.all = [min(lims.y.each, [], 'all', 'omitmissing'), max(lims.y.each, [], 'all', 'omitmissing')];
 lims.z.all = [min(lims.z.each, [], 'all', 'omitmissing'), max(lims.z.each, [], 'all', 'omitmissing')];
-lims.x.all_xtra = [min(lims.x.each_xtra, [], 'all', 'omitmissing'), max(lims.x.each_xtra, [], 'all', 'omitmissing')];
-lims.y.all_xtra = [min(lims.y.each_xtra, [], 'all', 'omitmissing'), max(lims.y.each_xtra, [], 'all', 'omitmissing')];
-lims.z.all_xtra = [min(lims.z.each_xtra, [], 'all', 'omitmissing'), max(lims.z.each_xtra, [], 'all', 'omitmissing')];
+lims.x.allxtra = [min(lims.x.eachxtra, [], 'all', 'omitmissing'), max(lims.x.eachxtra, [], 'all', 'omitmissing')];
+lims.y.allxtra = [min(lims.y.eachxtra, [], 'all', 'omitmissing'), max(lims.y.eachxtra, [], 'all', 'omitmissing')];
+lims.z.allxtra = [min(lims.z.eachxtra, [], 'all', 'omitmissing'), max(lims.z.eachxtra, [], 'all', 'omitmissing')];
 lims.t = [];
 lims.r = [];
 lims.t2 = [];
@@ -533,18 +533,13 @@ dummyvec_lag = nan(numlags, 1);
 
 if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
 
-    hfg = figure;
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-    figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
 
+    [dms,arat] = pxscreenget();
+    szf = 0.75; 
 
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
+    szftmp = figsz(szf);
+    hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
+    hfg.Position = [0 0 szftmp];
     haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
@@ -556,10 +551,10 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     width_multiplier = 2.8;
     height_multiplier = 1;
     haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    haxbr.InnerPosition(1) = ax(sector_ind).xp(spind);
-    haxbr.InnerPosition(2) = ax(sector_ind).yp(spind);
-    haxbr.InnerPosition(3) = ax(sector_ind).xe(width_multiplier);
-    haxbr.InnerPosition(4) = ax(sector_ind).ye(height_multiplier);
+    haxbr.InnerPosition(1) = ax(sector_ind).x(spind);
+    haxbr.InnerPosition(2) = ax(sector_ind).y(spind);
+    haxbr.InnerPosition(3) = ax(sector_ind).w(width_multiplier);
+    haxbr.InnerPosition(4) = ax(sector_ind).h(height_multiplier);
     hold(haxbr, 'on')
 
     hplbr = bar(haxbr, dummyvec_lag, dummyvec_lag);
@@ -585,10 +580,10 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
     height_multiplier = 0.8;
 
     haxts = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    haxts.InnerPosition(1) = ax(sector_ind).xp(spind);
-    haxts.InnerPosition(2) = ax(sector_ind).yp(spind);
-    haxts.InnerPosition(3) = ax(sector_ind).xe(width_multiplier);
-    haxts.InnerPosition(4) = ax(sector_ind).ye(height_multiplier);
+    haxts.InnerPosition(1) = ax(sector_ind).x(spind);
+    haxts.InnerPosition(2) = ax(sector_ind).y(spind);
+    haxts.InnerPosition(3) = ax(sector_ind).w(width_multiplier);
+    haxts.InnerPosition(4) = ax(sector_ind).h(height_multiplier);
 
     hold(haxts, 'on')
     yyaxis left
@@ -628,10 +623,10 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
             spind_new = sub2ind([ax(sector_ind).numrows, ax(sector_ind).numcolumns], rit, cit);
 
             haxfov{spind} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-            haxfov{spind}.InnerPosition(1) = ax(sector_ind).xp(spind);
-            haxfov{spind}.InnerPosition(2) = ax(sector_ind).yp(spind);
-            haxfov{spind}.InnerPosition(3) = ax(sector_ind).xe(width_multiplier);
-            haxfov{spind}.InnerPosition(4) = ax(sector_ind).ye(height_multiplier);
+            haxfov{spind}.InnerPosition(1) = ax(sector_ind).x(spind);
+            haxfov{spind}.InnerPosition(2) = ax(sector_ind).y(spind);
+            haxfov{spind}.InnerPosition(3) = ax(sector_ind).w(width_multiplier);
+            haxfov{spind}.InnerPosition(4) = ax(sector_ind).h(height_multiplier);
 
             hold(haxfov{spind}, 'on');
 
@@ -652,7 +647,7 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
 
     else %if there are no roi variables
 
-        htx = text( ax(sector_ind).xp(1), ax(sector_ind).yp(1), 'NO ROI DATA, SKIPPING FOV PLOTS', 'FontSize', fontmedium, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+        htx = text( ax(sector_ind).x(1), ax(sector_ind).y(1), 'NO ROI DATA, SKIPPING FOV PLOTS', 'FontSize', fontmedium, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
 
         haxfov = [];
         hplfov = [];
@@ -687,8 +682,8 @@ spind = 7;
 width_multiplier = 3;
 height_multiplier = 3;
 
-tmp_x_extent = ax(sector_ind).xe(width_multiplier);
-tmp_y_extent = ax(sector_ind).ye(height_multiplier);
+tmp_x_extent = ax(sector_ind).w(width_multiplier);
+tmp_y_extent = ax(sector_ind).h(height_multiplier);
 minextent = min(tmp_x_extent, tmp_y_extent); %force this axis to be square, without
 
 switch scatter_type
@@ -703,8 +698,8 @@ switch scatter_type
         end
 
         haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        haxscc.InnerPosition(1) = ax(sector_ind).xp(spind);
-        haxscc.InnerPosition(2) = ax(sector_ind).yp(spind);
+        haxscc.InnerPosition(1) = ax(sector_ind).x(spind);
+        haxscc.InnerPosition(2) = ax(sector_ind).y(spind);
         haxscc.InnerPosition(3) = minextent; %do this rather than plotBoxAspectRatio to ensure shorter axis is used
         haxscc.InnerPosition(4) = minextent; %do this rather than plotBoxAspectRatio to ensure shorter axis is used
 
@@ -737,8 +732,8 @@ switch scatter_type
         end
 
         haxscp = polaraxes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        haxscp.InnerPosition(1) = ax(sector_ind).xp(spind);
-        haxscp.InnerPosition(2) = ax(sector_ind).yp(spind);
+        haxscp.InnerPosition(1) = ax(sector_ind).x(spind);
+        haxscp.InnerPosition(2) = ax(sector_ind).y(spind);
         haxscp.InnerPosition(3) = minextent;
         haxscp.InnerPosition(4) = minextent;
 
@@ -943,7 +938,7 @@ for lagind = laginds_to_plot
         hndls.haxscp.ThetaAxis.Label.String = ['\color{blue} Theta:' labt];
         hndls.haxscp.RAxis.Label.String = ['\color{red} Rho: ' labr];
         if strcmp(ylim_constancy, 'eachvar')
-            hndls.haxscp.RLim = lims.y.each_xtra(yi,:);
+            hndls.haxscp.RLim = lims.y.eachxtra(yi,:);
             hndls.haxscp.RTick = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
             hndls.haxscp.RTickLabel = [];
             % for tti = 1:numel(hndls.haxscp.RTick)
@@ -954,7 +949,7 @@ for lagind = laginds_to_plot
         if isempty(regexp(labt, ' CUE yaw'))
             hndls.hpllnp.LineStyle = 'none';
         else
-            hndls.hpllnp.RData = [lims.y.each(yi,2) lims.y.each_xtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
+            hndls.hpllnp.RData = [lims.y.each(yi,2) lims.y.eachxtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
             hndls.hpllnp.LineStyle = '-';
         end
 
@@ -975,8 +970,8 @@ for lagind = laginds_to_plot
     hndls.hplts2.YData = ploty{lagind};
     hndls.haxts.XLabel.String = ['\color{blue} ' labx '    \color{red}' laby];
     if strcmp(ylim_constancy, 'eachvar')
-        hndls.haxts.YAxis(1).Limits = lims.x.each_xtra(xi,:);
-        hndls.haxts.YAxis(2).Limits = lims.y.each_xtra(yi,:);
+        hndls.haxts.YAxis(1).Limits = lims.x.eachxtra(xi,:);
+        hndls.haxts.YAxis(2).Limits = lims.y.eachxtra(yi,:);
         hndls.haxts.YAxis(1).TickValues = sort([0, lims.x.each(xi,1), lims.x.each(xi,2)]);
         hndls.haxts.YAxis(2).TickValues = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
         hndls.haxts.YAxis(1).TickLabels = [];

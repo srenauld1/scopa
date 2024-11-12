@@ -26,6 +26,8 @@ trial = opt.trial;
 suffix = opt.suffix;
 match = opt.match;
 
+suffixvalid = convertStringsToChars(suffixvalid);
+
 if ~isempty(pth) && ~isempty(pthsib)
     error("cannot use pth and pthsib inputs at the same time")
 end
@@ -64,10 +66,10 @@ end
 if isempty(suffix)
     suffix = '*';
 end
-if isempty(suffixvalid)
+if isempty(suffixvalid) || sum(strlength(suffixvalid))==0 %sum(strlength(suffixvalid))==0 will test for empty char or string
     suffixvalid = glb('suffixvalid');
     if isempty(suffixvalid)
-        fprintf("no variable set for suffixvalid, returned files may include more than you want if specifiers include wildcard" + newline)
+        error("no variable set for suffixvalid, returned files may include more than you want if specifiers include wildcard, so you must set suffixvalid" + newline)
     end
 end
 

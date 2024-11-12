@@ -1,4 +1,4 @@
-function [roidat, resp] = roimake(stack, t, sampper, widyxz, pth_roim, stackmnthr, hrlr, opt, roimaskman_allchan)
+function [roidat, resp] = roimake(stack, t, sampper, widyxz, zstartpos, sz_crop, pth_dirstack, recid, pth_roim, stackmnthr, hrlr, opt, roimaskman_allchan)
 
 % see docs_roimake.m
 
@@ -7,6 +7,10 @@ arguments
     t
     sampper
     widyxz
+    zstartpos
+    sz_crop
+    pth_dirstack
+    recid
     pth_roim
     stackmnthr
     hrlr
@@ -20,7 +24,9 @@ if isempty(roimaskman_allchan)
     doma = opt.doma;
     docm = opt.docm;
     doqc = opt.doqc;
-    doplt = opt.doplt;
+    if ~isfield(opt, 'doplt') || (isfield(opt, 'doplt') && isempty(opt.doplt))
+        doplt = any(strcmp('roi', glb('plt')));
+    end
 else
     if ~iscell(roimaskman_allchan)
         roimaskman_allchan = {roimaskman_allchan};
@@ -33,6 +39,17 @@ else
     numroiauto = 0;
     doplt = 0; %skip plots if passing in roimaskman_allchan
 end
+regionex = opt.regionex;
+
+if isfield(opt, 'ma')
+    usehires = opt.ma.usehires;
+    numroiauto = opt.ma.numroi;
+else
+    numroiauto = 0;
+    usehires = 0;
+end
+
+pthpre = erase(pth_roim, '.mat');
 
 numchan = size(stack,5);
 
@@ -40,87 +57,93 @@ stackmnt = mean(stack, 4, 'native');
 
 %% crop movie to regionex cuboid
 
-[stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, md.zstartpos, o.id.recid, pth.dirstack, md.sz_crop, ma.usehires, stackmnthr, hrlr);
+[stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop, usehires, stackmnthr, hrlr);
 
 
 %% draw rois (polygons/polyhedra)
 
 if domm && ~maskinput
-    roimaskman_allchan = roidraw(stack, pth_roim, regionex, opt.mm);
+    if numroiauto>1
+        oneroi = 1;
+    else
+        oneroi = 0;
+    end
+    roimaskman_allchan = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chandraw=opt.mm.chandraw, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
 end
 
 
 %% make morphological roi mask (from manual mask plus automated mask, or just manual mask, or just automated mask), and compute some roi info and save in struct roidat
 
-
-for c = 1:numchan
-    if ismember(c,autoopts.chan)
-        roimaskman = roimaskman_allchan{c};
-        stackmnt_tmp = stackmnt(:,:,:,:,c);
-        num_roim_manual = size(roimaskman, 4);
-        pth_roimdat = [pth_roim_prefix 'chn' num2str(c) '_roimdat_.mat'];
-        try
-            load(pth_roimdat, 'roidat');
-        catch
-            if num_roim_manual>1 || numroiauto==0
-                num_roim = num_roim_manual;
-                if numroiauto>0
-                    error(sprintf(['ERROR \n' ...
-                        'num_roim_manual is greater than one AND numroiauto is greater than zero \n' ...
-                        'DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
-                        'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
+if doma
+    for c = 1:numchan
+        if ismember(c,autoopts.chan)
+            roimaskman = roimaskman_allchan{c};
+            stackmnt_tmp = stackmnt(:,:,:,:,c);
+            num_roim_manual = size(roimaskman, 4);
+            pth_roimdat = [pth_roim_prefix 'chn' num2str(c) '_roimdat_.mat'];
+            try
+                load(pth_roimdat, 'roidat');
+            catch
+                if num_roim_manual>1 || numroiauto==0
+                    num_roim = num_roim_manual;
+                    if numroiauto>0
+                        error(sprintf(['ERROR \n' ...
+                            'num_roim_manual is greater than one AND numroiauto is greater than zero \n' ...
+                            'DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
+                            'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
+                    end
+                    roiwt = zeros(num_roim, numel(sum(roimaskman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+                    for mi = 1:num_roim
+                        tmp = roimaskman(:,:,:,mi);
+                        [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
+                        roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+                    end
+                    roicen = find_roi_centroids(roimaskman);
+                    fprintf("WARNING,\n" + ...
+                        "if roisrt is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
+                        "since determining the long axis of extraction currently requires automated morph roi extraction" + newline)
+                else
+                    [roiwt, roicen, num_roim] = ...
+                        roimauto(stackmnt_tmp, roimaskman, numroiauto, ...
+                        widyxz, stackmnthr, hrlr, pth_roim_prefix, ...
+                        regionex, imhsv, doplt, autoopts);
                 end
-                roiwt = zeros(num_roim, numel(sum(roimaskman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-                for mi = 1:num_roim
-                    tmp = roimaskman(:,:,:,mi);
-                    [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-                    roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+                roidat = roidatmake(stack, roiwt, roicen, num_roim);
+                if ~maskinput
+                    save(pth_roimdat, 'roidat', '-mat', '-v7.3');
                 end
-                roicen = find_roi_centroids(roimaskman);
-                fprintf("WARNING,\n" + ...
-                    "if roisrt is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
-                    "since determining the long axis of extraction currently requires automated morph roi extraction" + newline)
-            else
-                [roiwt, roicen, num_roim] = ...
-                    roimauto(stackmnt_tmp, roimaskman, numroiauto, ...
-                    widyxz, stackmnthr, hrlr, pth_roim_prefix, ...
-                    regionex, imhsv, doplt, autoopts);
-            end
-            roidat = roidatmake(stack, roiwt, roicen, num_roim);
-            if ~maskinput
-                save(pth_roimdat, 'roidat', '-mat', '-v7.3');
             end
         end
     end
+    if ~isempty(chancpma) && numchan==2
+        chanreceive = setxor(chancpma, [1,2]);
+        fprintf("chancpmm is " + num2str(chancpma) + "; COPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
+        roidat(chanreceive) = roidat(chancpma);
+    end
 end
-if ~isempty(chancpma) && numchan==2
-    chanreceive = setxor(chancpma, [1,2]);
-    fprintf("chancpmm is " + num2str(chancpma) + "; COPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
-    roidat(chanreceive) = roidat(chancpma);
-end
-
 
 
 %% load/select functional (caiman) roi responses
 
-roifmake(...
-    stack, ...
-    pth_roif, ...
-    roitype, ...
-    minpixperreg = minpixperreg, ...
-    minroisz = minroisz, ...
-    maxroisz = maxroisz, ...
-    maxregperroi = maxregperroi, ...
-    inmaskthr = inmaskthr, ...
-    numbins = numbins, ...
-    roisrt = roisrt, ...
-    ir = ir, ...
-    doplt = doplt, ...
-    tcrop = tcrop, ...
-    roicen = roidat.roicen, ...
-    mask_allroi = roidat.mask_allroi ...
-    )
-
+if docm
+    roifmake(...
+        stack, ...
+        pth_roif, ...
+        roitype, ...
+        minpixperreg = minpixperreg, ...
+        minroisz = minroisz, ...
+        maxroisz = maxroisz, ...
+        maxregperroi = maxregperroi, ...
+        inmaskthr = inmaskthr, ...
+        numbins = numbins, ...
+        roisrt = roisrt, ...
+        ir = ir, ...
+        doplt = doplt, ...
+        tcrop = tcrop, ...
+        roicen = roidat.roicen, ...
+        mask_allroi = roidat.mask_allroi ...
+        )
+end
 
 %% compute roi responses
 

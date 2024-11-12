@@ -4,35 +4,21 @@ arguments
     opt.hndls = struct
     opt.doui = 1
     opt.gifvis = 'on'
-    opt.figsidelength = 0.75
+    opt.szf = 1
     opt.fontsz = 8
 end
 hndls = opt.hndls;
 doui = opt.doui;
 gifvis = opt.gifvis;
-figsidelength = opt.figsidelength;
+szf = opt.szf;
 fontsz = opt.fontsz;
+
 
 if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
 
-    hfg = figure;
-
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-
-    % envname = getenv('HOSTNAME');
-    % if ~isempty(regexp( envname, 'compute-', 'once' ))
-    %     hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked', 'Color', 'white', 'visible', gifvis);
-    % else
-    %     hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen', 'Color', 'white', 'visible', gifvis);
-    % end
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
-
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
+    szftmp = figsz(szf);
+    hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
+    hfg.Position = [0 0 szftmp];
 
     if doui
         hfg.KeyPressFcn = @(src,evnt)uikeypress(src,evnt);

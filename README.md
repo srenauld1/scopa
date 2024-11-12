@@ -23,6 +23,28 @@ limitations:
 --does not use virmen (should be easy to allow though)
 --very little population analysis (mostly single roi)
 
+############################## O2 PATHS FOR PYTHON PACKAGES  ######################################
+
+WHEN YOU USE SCOPA ON O2 FOR REGISTRATION OR ROI FUNCTIONAL EXTRACTION, IT USES caiman CODE ON THE WILSON LAB SHARED DIRECTORY IN /n/data1
+the environment is called caiman, and the caiman repository (where changes you make will affect anybody using scopa for registration and/or functional roi extraction) is located here: 
+   
+           /n/data1/hms/neurobio/wilson/caiman
+
+        note this is not the path i expected scopa to be using, but for some reason it is
+        this is the path where I thought the caiman code was located, ie the path being invoked (apparently not being invoked) in mcp.sbatch and exp.sbatch . . . it turns out the final 'caiman' directory in this path doesn't exist:
+                /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/lib/python3.11/site-packages/caiman
+        however, the following directory does exist (same as above, but the conda env is named caiman3 instead of caiman), but it is not being used  
+                /n/data1/hms/neurobio/wilson/miniforge3/envs/caiman3/lib/python3.11/site-packages/caiman
+        for clarity, i need to figure out why the caiman code is getting called from the first location, even though that path is not named in any sbatch file
+
+
+WHEN YOU USE SCOPA ON O2 FOR DENOISING, IT USES deepcad CODE ON THE WILSON LAB SHARED DIRECTORY IN /n/data1
+the environment is called deepcad, and the deepcad repository (where changes you make will affect anybody using scopa for denoising) is located here 
+
+     /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad/lib/python3.9/site-packages/deepcad
+
+
+
 ############################## GENERAL ######################################
 
 analysis pipeline for volumetric (xyzt) 2p imaging while presenting visual stimuli with G4 panels and measuring locomotion with fictrac
@@ -152,7 +174,7 @@ for caiman registration or source extraction:
                 conda activate caiman
 
 
-for deepcad denoising (if you want to step into deepcad code during VSCode debugging, make "justMyCode": false in launch.json):
+for deepcad denoising; if you want to step into deepcad code during VSCode debugging, make "justMyCode": false in launch.json; in VS code be sure to select set interpreter at workspace level, and choose deepcad (if you're using the shared wilson environment, which is named deepcad):
 
         Additional modules to be preloaded:
                 gcc/9.2.0 python/3.9.14 cuda/11.7

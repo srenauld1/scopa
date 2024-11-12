@@ -61,6 +61,16 @@ if iscell(inp) %setting globals
     end
     for k = 1:2:numel(inp)
         if ~isfield(gset, char(inp{k})) || update
+            if ~ischar(inp{k+1}) && ~isscalar(inp{k+1})
+                strtmp = mat2str(inp{k+1});
+            else
+                strtmp = inp{k+1};
+            end
+            if ischar(strtmp) && ~isstring(inp{k+1})
+                fprintf("setting global variable '" + char(inp{k}) + "' to '" + strtmp + "'" + newline)
+            else
+                fprintf("setting global variable '" + char(inp{k}) + "' to " + strtmp + newline)
+            end
             gset.(char(inp{k})) = inp{k+1};
         else
             error(sprintf("you are trying to set global variable '" + char(inp{k}) + "' after it's already been set; \nmake first argument 1 to update global variable(s), \nor clear glb to clear all global variables before attempting to set"))
@@ -74,6 +84,7 @@ elseif ischar(inp) %retrieving globals
         outp = [];
     else
         outp = gset.(inp);
+        fprintf("getting global variable '" + inp + "'" + newline)
     end
 end
 

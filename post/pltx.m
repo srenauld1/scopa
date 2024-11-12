@@ -94,10 +94,10 @@ clear pltexp_scat_prepvars %clear persistent variable within
 %% arrange figure, choose colors
 
 layout = {[4,4], stack(:,:,:,:,1)};
-marginssp = [0.05,0.005];
-marginsfig = [0.07,0.05];
+marginax = [0.05,0.005];
+marginfg = [0.07,0.05];
 splitfrac = 0.55;
-ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig, splitfrac=splitfrac);
+ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac);
 
 cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 cols(1,:) = cols(4,:);
@@ -147,7 +147,7 @@ labs(cellfun(@isempty, labs)) = {{''}}; %make empty labels 'novar' for now
 for j = 1:numel(vars)
     vars{j} = convert_to_single_precision(vars{j});
     labs{j} = check_labels(labs{j}, vars{j});
-    lims{j} = find_yaxis_limits(vars{j}, yaxisroomfac);
+    lims{j} = axlim(vars{j}, roomfac=yaxisroomfac);
 end
 
 [vpmapflat, vpmapflat_axid] = translate_vpmap(vpmap);

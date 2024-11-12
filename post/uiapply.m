@@ -67,7 +67,7 @@ catch ME
 end
 
 for j = 1:numel(vars)
-    lims{j} = find_yaxis_limits(vars{j}, yaxisroomfac);
+    lims{j} = axlim(vars{j}, roomfac=yaxisroomfac);
 end
 
 varcombos = make_varcombos(vars);

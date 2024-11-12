@@ -30,7 +30,7 @@ hackindvdim = 1; %haven't yet expanded this plotting function for multidimension
 pred_linewidth = 0.5;
 pred_transparency = 1;
 numsampnan = 10;
-figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
+szf = 0.75;
 mkrsz = 5;
 r_val_dummy_single = 0.5;
 fontsmall = 8;
@@ -44,10 +44,7 @@ supp_line_width = 2;
 num_grayscales_bg = 256; %arbitrary
 
 
-hfg = figure;
-aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-close(hfg)
-
+[dms,arat] = pxscreenget();
 
 
 %% positions/sizes for detail plots on bottom (one row per epoch)
@@ -65,7 +62,7 @@ end
 numcolumnsbottom = 5; %really number grid lines in which the plots are arranged
 numplotsbottom = numrowsbottom*numcolumnsbottom;
 
-% [xbot2, ybot2, wbot2, hbot2] = figarr([numrowsbottom, numcolumnsbottom], marginsfig=marginsfig, marginsbottom=marginsbottom);
+% [xbot2, ybot2, wbot2, hbot2] = axarr([numrowsbottom, numcolumnsbottom], marginfg=marginfg, marginsbottom=marginsbottom);
 
 bottomregionminx = 0+marginsbottom+leftmost_extra_margin;
 bottomregionmaxx = 1-marginsbottom;
@@ -215,12 +212,9 @@ tittmp = strsplit(filename_save(1:end-4), '/');
 figure_title = strrep(tittmp{end}, '_', ' ');
 
 
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
-if aspect_screen>1
-    hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-else
-    hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-end
+szftmp = figsz(szf);
+hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
+hfg.Position = [0 0 szftmp];
 bgax = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', ...
     'XLim', [0, 1], 'YLim', [0, 1] ) ;
 htx = text( 0.02, 0.99, '', 'FontSize', fontmedium, ...

@@ -1,24 +1,8 @@
 function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
     num_periodic_peaks_defining_laser_oscillations, smsdspace, ...
-    numpix_to_extract_laser_timeseries, smsdtime, doplt, pth_dat, pth_vidlog, pth_log)
+    numpix_to_extract_laser_timeseries, smsdtime, pth_dat, pth_vidlog, pth_log, opt)
 
-arguments
-    pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
-    pth_vidrs char %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
-    numvol double %number of imaging volumes
-    imrate double %imaging rate (average,approximate)
-    num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-    smsdspace double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-    numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-    smsdtime double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    doplt = 0 %0 skips plots, 1 plots and saves, 2 saves but does not display 
-    pth_dat char = '' %fictrac .dat file
-    pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
-    pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime
-end
-
-
-% NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)   
+% NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
 
 % align fictrac video to imaging data using oscillations of the laser on fictrac video
 % save and output the aligned, temporally resampled video
@@ -44,6 +28,28 @@ end
 % this would require little change to this code except applying findpeaks to the inverse laser timeseries, 
 % error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data, 
 % and because the fictrac video is currently only used for visualization
+
+
+arguments
+    pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
+    pth_vidrs char %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
+    numvol double %number of imaging volumes
+    imrate double %imaging rate (average,approximate)
+    num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+    smsdspace double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+    numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
+    smsdtime double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+    pth_dat char = '' %fictrac .dat file
+    pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
+    pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime
+    opt.doplt = [] %0 skips plots, 1 plots and saves, 2 saves but does not display
+end
+doplt = opt.doplt;
+
+
+if isempty(doplt)
+    doplt = any(strcmp('ftv', glb('plt')));
+end
 
 if doplt==1
     gifvis = 'on';
@@ -179,7 +185,7 @@ if doplt
     titlein = 'laser oscillation with peaks (ideally imaging volumes) marked in red';
     yconst = 1;
     mkr2 = 'o';
-    ymatch = 1;
+    ylimtype = 'each';
     tsplt(laser_ts_smoothed, y2=peaks_timeseries, pthgif=pth_gif, segx=segx, titlein=titlein, yconst=yconst, ymatch=ymatch, mkr2=mkr2)
 end
 

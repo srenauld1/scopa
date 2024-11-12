@@ -2,7 +2,7 @@
 function model_plots(fitin, roidat, stack, opts, pth_fitdata_prefix)
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
-%it may not appear to be a square, but it is, as long as figsidelength does not exceed
+%it may not appear to be a square, but it is, as long as szf does not exceed
 %proportion of your screen's drawing area in its smaller dimension,
 % which i've been unable to find programmatically so i recommend staying under 0.75
 

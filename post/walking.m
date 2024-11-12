@@ -13,9 +13,8 @@ slopeord = 2;
 ball_radius = 4.5;
 
 limfac = 1;
-axord = 'cm';
 gifvis = 'on';
-figsidelength = 0.75; %figure size as proportion of your available screen small dimension (i cannot find the available size of your monitor bc it is not same as full size, so to be safe, keep this under 0.75 to prevent overfilling / causing nonsquare aspect)
+szf = 0.75; 
 fontmedium = 12;
 threshmagvel = 5; %mm/s
 threshmagvel2 = 3; %mm/s
@@ -45,7 +44,6 @@ pthgif_paths = [parent_path 'paths_' timestr  '.gif'];
 pthgif_stats = [parent_path 'stats_' timestr  '.gif'];
 pthgif_hists = [parent_path 'hists_' timestr  '.gif'];
 
-pthgif_vel = ['~/walking/window/FicTracData/' 'vel_' timestr  '.gif'];
 
 fnp = rdir(pthpat);
 for j = 1:numel(fnp)
@@ -53,6 +51,8 @@ for j = 1:numel(fnp)
 end
 fn = unique(fn);
 fn = natsortfiles(fn);
+pthdir = fileparts(fn{1});
+
 
 for j = 1:numel(fn)
     ft = readFictracCSV(fn{j});
@@ -64,6 +64,7 @@ for j = 1:numel(fn)
     allt{j} = tmpt(tmpt<maxsec*1e3);
     % alldrlx{j} = ft.deltaRotationVectorLabX(tmpt<maxsec*1e3);
     % alldrly{j} = ft.deltaRotationVectorLabY(tmpt<maxsec*1e3);
+    allheading{j} = ft.heading(tmpt<maxsec*1e3);
     allposx{j} = ft.posX(tmpt<maxsec*1e3);
     allposy{j} = ft.posY(tmpt<maxsec*1e3);
     allintx{j} = ft.intX(tmpt<maxsec*1e3);
@@ -143,6 +144,8 @@ maxposy = max(cell2mat(cellfun(@max, allposygood, 'UniformOutput', false)), [], 
 % maxinty = max(cellfun(@max, allinty));
 
 
+minheading = min(cell2mat(cellfun(@min, allheading, 'UniformOutput', false)), [], 'omitmissing');
+maxheading = max(cell2mat(cellfun(@max, allheading, 'UniformOutput', false)), [], 'omitmissing');
 minvelx = min(cell2mat(cellfun(@min, allvelx, 'UniformOutput', false)), [], 'omitmissing');
 maxvelx = max(cell2mat(cellfun(@max, allvelx, 'UniformOutput', false)), [], 'omitmissing');
 minvely = min(cell2mat(cellfun(@min, allvely, 'UniformOutput', false)), [], 'omitmissing');
@@ -158,15 +161,25 @@ dummyvec = nan(numposxmax, 1);
 
 %% plot vel
 
-allvelcat = cell2mat(allvelx');
-alltcat = [1:numel(allvelcat)]*mean(dt(j))/60/60;
+allvelxcat = cell2mat(allvelx');
+allvelycat = cell2mat(allvely');
+allheadingcat = cell2mat(allheading');
+alltcat = [1:numel(allvelxcat)]*mean(dt(j))/60/60;
 
 hfg = figure;
-plot(alltcat, allvelcat)
+plot(alltcat, allvelxcat)
 ylim([-5 20])
 ylabel('forward velocity (mm/s)')
 xlabel('hours')
-fig2gif(hfg, 1, '~/walking/window/FicTracData/vel_all.gif')
+savefig([pthdir 'vel_all.fig'])
+fig2gif(hfg, 1, [pthdir 'vel_all.gif'])
+
+hfg = figure;
+plot(alltcat, allheadingcat)
+ylim([-5 20])
+ylabel('heading (mm/s)')
+xlabel('hours')
+fig2gif(hfg, 1, [pthdir 'heading_all.gif'])
 
 
 hfg = figure;
@@ -178,8 +191,21 @@ ylabel('forward velocity (mm/s)')
 xlabel('hours')
 for k = 1:numel(allvelx)
     hpl.XData(1:numel(allvelx{k})) = allt{k};
+    hpl.YData(1:numel(allvelx{k})) = allheading{k};
+    fig2gif(hfg, k, [pthdir 'head_alleach.gif'])
+end
+
+hfg = figure;
+hax = axes(Parent=hfg);
+hax.YLim = [minvelx maxvelx];
+hax.XLim = [minallt maxallt];
+hpl = plot(hax, dummyvec, dummyvec);
+ylabel('forward velocity (mm/s)')
+xlabel('hours')
+for k = 1:numel(allvelx)
+    hpl.XData(1:numel(allvelx{k})) = allt{k};
     hpl.YData(1:numel(allvelx{k})) = allvelx{k};
-    fig2gif(hfg, k, pthgif_vel)
+    fig2gif(hfg, k, [pthdir 'vel_alleach.gif'])
 end
 
 %% plot something else 
@@ -190,22 +216,17 @@ end
 
 
 layout = {[6,4]};
-marginssp = 0.05;
-marginsfig = 0.05;
-ax = figarr(layout, marginssp=marginssp, marginsfig=marginsfig);
+marginax = 0.05;
+marginfg = 0.05;
+ax = axarr(layout, marginax=marginax, marginfg=marginfg);
 
 
-hfg = figure;
-aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-close(hfg)
+[dms,arat] = pxscreenget();
 
+szftmp = figsz(szf);
+hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
+hfg.Position = [0 0 szftmp];
 
-hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis) ;
-if aspect_screen>1
-    hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-else
-    hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-end
 haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
 htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
@@ -218,18 +239,18 @@ for axcount = 1:numax
         subplot_pos_ind = 2;
         widthfac = 2;
         heightfac = 2;
-        hax{axcount}.InnerPosition(1) = ax(sector_ind).(axord).xp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(2) = ax(sector_ind).(axord).yp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(3) = ax(sector_ind).ye(widthfac);
-        hax{axcount}.InnerPosition(4) = ax(sector_ind).ye(heightfac);
+        hax{axcount}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(sector_ind).h(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(sector_ind).h(heightfac);
     else
         subplot_pos_ind = axcount+1;
         widthfac = 4;
         heightfac = 1;
-        hax{axcount}.InnerPosition(1) = ax(sector_ind).(axord).xp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(2) = ax(sector_ind).(axord).yp(subplot_pos_ind);
-        hax{axcount}.InnerPosition(3) = ax(sector_ind).(axord).xe(widthfac);
-        hax{axcount}.InnerPosition(4) = ax(sector_ind).(axord).ye(heightfac);
+        hax{axcount}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(sector_ind).colmaj.w(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(sector_ind).colmaj.h(heightfac);
     end
 
     hold(hax{axcount}, 'on')

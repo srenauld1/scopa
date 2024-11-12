@@ -1,6 +1,7 @@
 
 % params for carl's old project; not set if you're not carl (if you don't have a recording folder with substring 'f91g_syt')
 
+o = odf(o, {'carl', 'hires.sld.sp'}, files=2); %files=2 to not change anything in subfield id
 
 if 0%dofindfiles && all(contains(getfieldns([o.id],'pth'), 'f91g_syt')) %override some options for carl's old project (files contain substring f91g_syt)
     if numel(o)>1

@@ -1,11 +1,12 @@
-function stackmn(stack, numdimout)
+function stack = stackmn(stack, opt)
 
 % average trailing dimensions of stack until ndims(stack)=numdimout; maintains data type
 
 arguments
     stack
-    numdimout = 2
+    opt.numdimout = 2
 end
+numdimout = opt.numdimout;
 
 numdimin = ndims(stack);
 for i = 1:abs(numdimout-numdimin)

@@ -1,11 +1,11 @@
 function [maskroi, flag_quit_one_roi, flag_quit_all_rois] = ...
-    drawrois_oneimage(stack, pth_tmpfiles, regionex, title_prefix, ...
-    flag_one_image, flag_single_roi_per_stack, flag_croplim)
+    roidraw_oneim(stack, regionex, title_prefix, ...
+    flag_oneim, flag_single_roi_per_stack, flag_croplim)
 
 fontsize = 15;
 
-if ~exist('flag_one_image', 'var')
-    flag_one_image = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
+if ~exist('flag_oneim', 'var')
+    flag_oneim = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
 end
 if ~exist('flag_single_roi_per_stack', 'var')
     flag_single_roi_per_stack = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
@@ -20,23 +20,16 @@ end
 stack_rsc = stack;
 indnz = stack~=0;
 
-envname = getenv('HOSTNAME');
-if ~isempty(regexp( envname, 'compute-', 'once' ))
-    hfg = figure( 'Units', 'Normalized', 'Windowstyle', 'docked');
-else
-    hfg = figure( 'Units', 'Normalized', 'WindowState', 'fullscreen');
-end
+h = stackplt(stack, doui=1, fdimnum=ndims(stack), stackjust='minimize');
 
-set(hfg, 'KeyPressFcn', @(src,evnt)roi_uikeypress(src,evnt,pth_tmpfiles));
+h.httl.String = {title_prefix};
+h.httl.FontSize = fontsize;
+ndt = numel(h.httl.String);
 
-him = imshow(stack, 'InitialMagnification', 'fit');
-axis image
 
-title({title_prefix}, 'FontSize', fontsize);
-
-if flag_one_image && ~flag_croplim
+if flag_oneim && ~flag_croplim
     tmptitle = {'THIS IS THE ONLY IMAGE IN THE STACK, OR THE MEAN Z IMAGE'};
-    hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
+    h.httl.String = cat(1, h.httl.String, tmptitle);
 end
 
 if flag_croplim
@@ -50,7 +43,7 @@ else
         'PRESS "d" TO DRAW A ROI THAT IS DISCONTIGUOUS IN THIS IMAGE (ROI CAN BE CONTINUED ON OTHER SLICES, IF THEY EXIST)', ...
         };
 end
-hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
+h.httl.String = cat(1, h.httl.String, tmptitle);
 
 tmptitle = {'PRESS "up / down arrow" TO RESCALE CONTRAST'};
 hfg.Children.Title.String = cat(1, hfg.Children.Title.String, tmptitle);
@@ -64,10 +57,7 @@ maskroi_tmp = zeros( numrows, numcols, numrois_est);
 
 cmap = distinguishable_colors(numrois_est);
 
-delete([pth_tmpfiles 'tmp_roi_flag_.bin']) %try delete first in case you errored in the middle of drawing last time
-delete([pth_tmpfiles 'tmp_scaleshift_.bin']) %try delete first in case you errored in the middle of drawing last time
-
-if flag_one_image && ~flag_single_roi_per_stack
+if flag_oneim && ~flag_single_roi_per_stack
     flag_single_roi_per_image = 0;
 else
     flag_single_roi_per_image = 1;
@@ -110,7 +100,7 @@ while true
         if flag_croplim
             him.Parent.XLabel.String{3} = ['THE BOUNDING BOX OF THE ONE POLYGON YOU DRAW WILL COMPRISE THE XY LIMITS FOR REGION "' regionex '"'];
         else
-            if flag_one_image
+            if flag_oneim
                 if flag_single_roi_per_stack
                     him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
                 else
@@ -138,7 +128,7 @@ while true
         fclose('all');
         delete([pth_tmpfiles 'tmp_roi_flag_.bin'])
         flag_base_message = 0;
-        if tmpflag==1 && ~flag_croplim %&& ~flag_one_image
+        if tmpflag==1 && ~flag_croplim %&& ~flag_oneim
             flag_exit_this_figure = 1;
             tmpone = 'PRESSED "s", SKIPPING THIS IMAGE';
             him.Parent.XLabel.String{1} = tmpone;

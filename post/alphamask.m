@@ -1,4 +1,13 @@
-function hOVM = alphamask(bwMask, colour, transparency, axHandle)
+function hOVM = alphamask(bwMask, colour, transparency, axHandle, opt)
+
+arguments
+    bwMask
+    colour
+    transparency
+    axHandle
+    opt.pickable = 0 %added to original by CFRW; if 1, the overlay will be on top and input image on bottom will not be pickable; default 0 prevents this (makes overlay non-pickable)
+end
+
 % ALPHAMASK:  Overlay image with semi-transparent mask
 %
 % Overlays a semi-transparent mask over an image.  By default the 
@@ -39,4 +48,10 @@ rgbI = cat(3, colour(1)*ones(size(bwMask)), colour(2)*ones(size(bwMask)), colour
 hold on,
 hOVM = imshow(rgbI, 'Parent', axHandle);
 set(hOVM, 'AlphaData', bwMask*transparency);       % use mask values as alpha channel of overlay
+if opt.pickable
+    hOVM.PickableParts = 'visible';
+else
+    hOVM.PickableParts = 'none';
+end
+
 hold off;

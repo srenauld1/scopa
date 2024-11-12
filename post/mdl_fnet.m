@@ -6,8 +6,8 @@ function [outtmpall, hax, out2] = mdl_fnet(pars, indv, supp, optin)
 %plotting currently is one layer per frame, with units as rows and functions as columns; for each function, plots show input, output, transfer function, and params
 
 make_figure = 0; %0 to not make figure (during optimization), 1 to make and save here, 2 if plotting on axes that are passed in as argument (and not saving here)
-marginsfig = 0.03; %if not passing in figure
-marginssp = 0.06; %if not passing in figure
+marginfg = 0.03; %if not passing in figure
+marginax = 0.06; %if not passing in figure
 extra_xlim_fac = 0.1;%if not passing in figure
 fontsmall = 8;
 outflag = 0; %made 1 if making figures; flag to make some functions output an extra variable for plotting
@@ -71,7 +71,7 @@ for k = 1:supp.num_unit_total %loop over all units, indexing into input/output a
                 newaxes = 1;
                 numrows_plot = num_unit_curr_layer;
                 numcolumns_plot = max_num_fun_curr_layer;
-                [hfg, hax, htx] = mdl_figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, marginsfig, marginssp, fontsmall);
+                [hfg, hax, htx] = mdl_figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, marginfg, marginax, fontsmall);
             end
         end
     end

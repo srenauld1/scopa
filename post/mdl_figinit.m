@@ -1,6 +1,6 @@
-function [hfg, hax, htx] = mdl_figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, marginsfig, marginssp, sizefont)
+function [hfg, hax, htx] = mdl_figinit(hfg, hax, htx, numrows_plot, numcolumns_plot, marginfg, marginax, sizefont)
 
-[axx, axy, axw, axh] = figarr(numrows_plot, numcolumns_plot, marginsfig, marginssp);
+[axx, axy, axw, axh] = axarr(numrows_plot, numcolumns_plot, marginfg, marginax);
 
 if isempty(hax)
     hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', 'on') ;

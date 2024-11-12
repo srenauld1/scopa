@@ -29,15 +29,15 @@ daqvarout_dv = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
 
 if doplt
 
-    numseg = 20; 
+    xseg = 20; 
 
     titlein = [daqvarname '_original_v_resample_' num2str(dt) 'sec_norescale'];
     pth_fig = [pthfigpre titlein '_.gif'];
-    tsplt(daqvarin, y2=daqvarout, xseg=numseg, titlein=titlein, pthgif=pth_fig)
+    tsplt(daqvarin, y2=daqvarout, xseg=xseg, titlein=titlein, pthgif=pth_fig)
 
     titlein = [daqvarname '_original_v_dv_resample_' num2str(dt) 'sec_slopelen_' num2str(slopelensec) 'sec_norescale'];
     pth_fig = [pthfigpre titlein '_.gif'];
-    tsplt(daqvarin, y2=daqvarout_dv, xseg=numseg, titlein=titlein, pthgif=pth_fig)
+    tsplt(daqvarin, y2=daqvarout_dv, xseg=xseg, titlein=titlein, pthgif=pth_fig)
 
 end
 

@@ -33,6 +33,7 @@ d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS
 d.mn.oldcarl = 0; %run with some settings for carl's old project
 d.mn.plt = ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"]; %list of subroutines that get plots (all by default)
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
+d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 
 %% daq (daqld: load, process daq)
 

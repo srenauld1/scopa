@@ -10,16 +10,16 @@ two_channel_ex = 1;
 %% remove large submodules if they don't have do true
 
 
-if o.domm==0
+if o.domm==0 && isfield(o, 'mm')
     o = rmfield(o, 'mm');
 end
-if o.doma==0
+if o.doma==0 && isfield(o, 'ma')
     o = rmfield(o, 'ma');
 end
-if o.doqc==0
+if o.doqc==0 && isfield(o, 'qc')
     o = rmfield(o, 'qc');
 end
-if o.docm==0
+if o.docm==0 && isfield(o, 'cm')
     o = rmfield(o, 'cm');
 end
 

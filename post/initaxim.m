@@ -1,4 +1,4 @@
-function hgroup = initaxim(hfg, ax, stack, opt)
+function h = initaxim(hfg, ax, stack, opt)
 
 arguments
     hfg
@@ -13,7 +13,7 @@ arguments
     opt.widfac = 1
     opt.htfac = 1
     opt.fontsz = [6 11 15]
-    opt.axorder char = 'rm'
+    opt.colmaj = 0
     opt.dool = 0
     opt.doui = 0
 end
@@ -27,7 +27,7 @@ subplot_ind = opt.subplot_ind;
 widfac = opt.widfac;
 htfac = opt.htfac;
 fontsz = opt.fontsz;
-axorder = opt.axorder;
+colmaj = opt.colmaj;
 dool = opt.dool;
 doui = opt.doui;
 
@@ -58,10 +58,15 @@ stackrange = stackmax-stackmin;
 for j = 1:numsubplot
 
     hax{j} = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
-    hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
-    hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac);
-    hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac);
+    if colmaj
+        hax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+        hax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+    else
+        hax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+        hax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+    end
+    hax{j}.InnerPosition(3) = ax(sector_ind).w(widfac);
+    hax{j}.InnerPosition(4) = ax(sector_ind).h(htfac);
     hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
     hax{j}.XLim = [1 numxpix]; %why do this instead of axis image or dataaspectratio 1 1 1????
     hax{j}.YLim = [1 numypix];%why do this instead of axis image or dataaspectratio 1 1 1 ????
@@ -116,12 +121,12 @@ for j = 1:numsubplot
 end
 
 
-hgroup.hax = hax;
-hgroup.hpl = hpl;
-hgroup.hol = hol;
-hgroup.hlnx = hlnx;
-hgroup.hlny = hlny;
-hgroup.htx = htx;
+h.hax = hax;
+h.hpl = hpl;
+h.hol = hol;
+h.hlnx = hlnx;
+h.hlny = hlny;
+h.htx = htx;
 
 
 end

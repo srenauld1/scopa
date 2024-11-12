@@ -147,7 +147,7 @@ while tloop
             hndls.sc.hax{1}.ThetaAxis.Label.String = ['\color{blue} Theta:' labp_sc{1}];
             hndls.sc.hax{1}.RAxis.Label.String = ['\color{red} Rho: ' labp_sc{2}];
             % if strcmp(ylim_constancy, 'eachvar')
-            %     hndls.sc.hax{1}.RLim = lims.y.each_xtra(yi,:);
+            %     hndls.sc.hax{1}.RLim = lims.y.eachxtra(yi,:);
             %     hndls.sc.hax{1}.RTick = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
             %     hndls.sc.hax{1}.RTickLabel = [];
             %     % for tti = 1:numel(hndls.sc.hax.RTick)
@@ -158,7 +158,7 @@ while tloop
             % if isempty(regexp(labp_sc{1}, ' CUE yaw'))
             %     hndls.sc.hln{1}.LineStyle = 'none';
             % else
-            %     hndls.sc.hln{1}.RData = [lims.y.each(yi,2) lims.y.each_xtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data
+            %     hndls.sc.hln{1}.RData = [lims.y.each(yi,2) lims.y.eachxtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data
             %     hndls.sc.hln{1}.LineStyle = '-';
             % end
 

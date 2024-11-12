@@ -34,10 +34,10 @@ else
                     end
                 end
                 if strcmp(opt.vectype,'row') && iscolumn(s.(fn{k}))
-                    fprintf("converting column vector " + fn{k} + " to row vector because vectype is row" + newline)
+                    %fprintf("converting column vector " + fn{k} + " to row vector because vectype is row" + newline)
                     s.(fn{k}) = s.(fn{k}).';
                 elseif strcmp(opt.vectype,'column') && isrow(s.(fn{k}))
-                    fprintf("converting row vector " + fn{k} + " to column vector because vectype is column" + newline)
+                    %fprintf("converting row vector " + fn{k} + " to column vector because vectype is column" + newline)
                     s.(fn{k}) = s.(fn{k}).';
                 end
             end

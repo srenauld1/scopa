@@ -1,4 +1,4 @@
-function hgroup = initaxts(hfg, ax, doui, numsamp, vpmapflat_axid, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, axorder)
+function hgroup = initaxts(hfg, ax, doui, numsamp, vpmapflat_axid, ti, lims, ticklab, labs, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries, fontsz, colmaj)
 
 arguments
     hfg
@@ -17,7 +17,7 @@ arguments
     htfac = 1
     rescale_timeseries = 1
     fontsz = [6 8 12]
-    axorder char = 'rm'
+    colmaj = 0
 end
 
 numchan = max(cell2mat(cellfun(@(x) size(x,3), ticklab, 'UniformOutput', false)));
@@ -46,10 +46,15 @@ for j = 1:numsubplot
 
     hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
-    hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
-    hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
-    hax{j}.InnerPosition(3) = ax(sector_ind).xe(widfac(j));
-    hax{j}.InnerPosition(4) = ax(sector_ind).ye(htfac(j));
+    if colmaj
+        hax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+        hax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+    else
+        hax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+        hax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+    end
+    hax{j}.InnerPosition(3) = ax(sector_ind).w(widfac(j));
+    hax{j}.InnerPosition(4) = ax(sector_ind).h(htfac(j));
 
     hax{j}.Toolbar.Visible = 'off';
 
@@ -104,8 +109,8 @@ for j = 1:numsubplot
         hax{j}.YAxis(fi).FontWeight = 'bold';
 
         if rescale_timeseries
-            hax{j}.YAxis(fi).Limits = lims{k}.rescale_xtra(:,:,1);
-            hax{j}.YAxis(fi).TickValues = lims{k}.rescale(:,:,1);
+            hax{j}.YAxis(fi).Limits = lims{k}.rsxtra(:,:,1);
+            hax{j}.YAxis(fi).TickValues = lims{k}.rs(:,:,1);
         else
             error("rescale_timeseries is currently required")
         end

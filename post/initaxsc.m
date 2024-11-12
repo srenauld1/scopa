@@ -1,4 +1,4 @@
-function hgroup = initaxsc(hfg, ax, doui, scatter_type, mkrsz, blindspot, numsamp, numlags, actual_lags_xy_sec, plot_z_as_color, labs, cols, sector_ind, subplot_ind, widfac, htfac, fontsz, axorder)
+function hgroup = initaxsc(hfg, ax, doui, scatter_type, mkrsz, blindspot, numsamp, numlags, actual_lags_xy_sec, plot_z_as_color, labs, cols, sector_ind, subplot_ind, widfac, htfac, fontsz, colmaj)
 
 arguments
     hfg
@@ -18,7 +18,7 @@ arguments
     widfac = 1
     htfac = 1
     fontsz = [6 8 12]
-    axorder char = 'rm'
+    colmaj = 0
 end
 
 do_bar = 0;
@@ -48,8 +48,8 @@ br = [];
 
 for j = 1:numsubplot
 
-    tmp_x_extent = ax(sector_ind).xe(widfac(j));
-    tmp_y_extent = ax(sector_ind).ye(htfac(j));
+    tmp_x_extent = ax(sector_ind).w(widfac(j));
+    tmp_y_extent = ax(sector_ind).h(htfac(j));
     newextent = max(tmp_x_extent, tmp_y_extent); %force this axis to be square, without
 
     switch scatter_type
@@ -58,8 +58,13 @@ for j = 1:numsubplot
 
             hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
-            hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
-            hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
+            if colmaj
+                hax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+                hax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+            else
+                hax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+                hax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+            end
             hax{j}.InnerPosition(3) = newextent;
             hax{j}.InnerPosition(4) = newextent;
 
@@ -94,8 +99,13 @@ for j = 1:numsubplot
 
             hax{j} = polaraxes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
 
-            hax{j}.InnerPosition(1) = ax(sector_ind).(axorder).xp(subplot_ind(j));
-            hax{j}.InnerPosition(2) = ax(sector_ind).(axorder).yp(subplot_ind(j));
+            if colmaj
+                hax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+                hax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+            else
+                hax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+                hax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+            end
             hax{j}.InnerPosition(3) = newextent;
             hax{j}.InnerPosition(4) = newextent;
 

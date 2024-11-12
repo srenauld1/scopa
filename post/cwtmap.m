@@ -9,7 +9,7 @@
         kpstim2 = smoothdata(kpstim, 'gaussian', 20, 'omitnan');
         kpstim2 = logical(kpstim2);
         save('~/stacks/muk.mat', 'kpstim2', '-v7.3', '-mat')
-        % tsplt(kpstim, y2=kpstim2/2, xseg=30, ymatch=1);
+        % tsplt(kpstim, y2=kpstim2/2, xseg=30, ylimtype='each');
 
         rsp2 = reshape(stacksub(:,:,:,:,1), [], size(stacksub, 4));
         [~, pwr] = wavflt(rsp2, t=ts.t, wavp=[0 5]);

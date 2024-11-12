@@ -1,0 +1,113 @@
+function [o, oflat] = oset(recin)
+
+% EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)
+% edit docs_oset.m
+
+arguments
+    recin = [] %recin can be empty, or not passed as argument, and will search for file using fspc* below; recin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, pass recin as 'nofile'
+end
+
+if strcmp(recin, 'nofile') %if the only input to oset is 'nofile', will do everything but skip searching for files (and skip setting globals)
+    dofindfiles = 0;
+else
+    dofindfiles = 1;
+end
+
+%%%% user-defined recording specifiers (if no input to a2p) %%%%
+
+o.spec.pthparent_local = '~/stacks';
+o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
+if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not recin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
+    o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+    o.spec.pth = '';
+elseif iscell(recin) || ischar(recin) %if input to a2p is not empty, and is not struct
+    if strcmp(recin, 'nofile') %if input to oset is just 'nofile', skip file search part (but set all options otherwise); 'nofile' is not a valid input to a2p, but is a valid input to oset (so the user can query all options from anywhere in a2p without having to redefine found files, which can be slow and also confounding
+        o.spec.pth = '';
+    else % if input to a2p is char or cell of file paths with optional wildcards, find files matching those paths
+        o.spec.pth = recin;
+    end
+end
+
+%%%% dos %%%%
+
+o.mn.dodaq = 1; %process daq timeseries?
+o.mn.doftv = 0; %process fictrac video?
+o.mn.doroi = 1; %make/load/process rois?
+o.mn.dopop = 0; %compute bump?
+o.mn.dofit = 0; %fit model?
+o.mn.dopltx = 0; %enter pltx for summary interactive plots?
+% o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
+
+regionex_tmp = {'none', 'fb', 'pb', 'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+
+%%%% some simple option specification %%%%
+
+o.daq.useinds = 'none'; %how to resample daq timeseries
+
+o.sld.chanuse = [1 2]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt); nonexistent channels liste
+o.sld.suffixplt = [""]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
+
+o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
+o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
+
+o.ftv.smsdspace = 2;
+
+
+%%%% create o for the first time for the simple options specified thusfar %%%%
+
+o = odf(o, files=dofindfiles); %set all above options and find files (unless oset input recin is 'nofile')
+
+
+%%%% create distinct options (or not) for different found recordings, and different regionex %%%%
+
+allrecs = getfieldns(o, 'id.recdate');
+
+for k = 1:numel(allrecs)
+
+    o(k).roi.regionex = regionex_tmp{m};
+
+    o(k).roi.domm = 1; %do draw rois
+    o(k).roi.doma = 0; %do automated morph rois
+    o(k).roi.docm = 0; %do caiman extraction
+    o(k).roi.doqc = 0; %do quality control on rois
+
+    o(k).roi.mm.chandraw = [1];
+
+    o(k).roi.nrm.post = {'dff010020'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
+
+    o(k) = odf(o(k), {'roi'}, regionex_tmp{m}, files=2); %use files=2 to keep id field untouched (keep found files)
+
+end
+
+%%%% options for carl's old project %%%%
+
+oldcarlo %don't comment this out, but it's just for carl
+
+%%%% organize %%%%
+
+o = structsort(o, vectype='row'); %recursively order alphabetically
+
+o = opt2id(o, 'roi');
+
+oflat = structflat(o, prefix='o'); %get flattened struct for user to see options struct organization more easily (oflat does not get used); need prefix to make valid fieldnames in case nonscalar
+
+end
+
+
+
+
+
+
+
+
+
+
+
+
+

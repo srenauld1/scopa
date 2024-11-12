@@ -53,7 +53,6 @@ doplt = opt.doplt;
 
 gifvis = 'on';
 fontmedium = 12;
-axord = 'rm';
 crosshair_width = 3;
 xtralimfac = 0.03;
 numtickx = 4;
@@ -305,23 +304,17 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     %%%%%%%%%%% SETUP AXES %%%%%%%%%%%
 
     layout = {[2,4], imhsv};
-    marginssp = [0.05,0.005];
-    marginsfig = [0.07,0.05];
+    marginax = [0.05,0.005];
+    marginfg = [0.07,0.05];
     splitfrac = 0.55;
-    ax = figarr(layout=layout, marginssp=marginssp, marginsfig=marginsfig, splitfrac=splitfrac);
+    ax = axarr(layout=layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac);
 
+    [dms,arat] = pxscreenget();
 
-    hfg = figure;
-    aspect_screen = hfg.Parent.ScreenSize(3) / hfg.Parent.ScreenSize(4); %get screen aspect ratio
-    close(hfg)
-
-    figsidelength = 0.75;
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis, 'Position', [0, 0, 1, 1]);
-    if aspect_screen>1
-        hfg.Position = [0 0 figsidelength/aspect_screen figsidelength]; %make square inner size (excludes top menu bar), plot in bottom left
-    else
-        hfg.Position = [0 0 figsidelength figsidelength/aspect_screen]; %make square inner size (excludes top menu bar), plot in bottom left
-    end
+    szf = 0.75;
+    szftmp = figsz(szf);
+    hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
+    hfg.Position = [0 0 szftmp];
 
     haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
     htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
@@ -331,10 +324,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     for j = 1:size(imhsv, 3)
 
         st.hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        st.hax{j}.InnerPosition(1) = ax(sectorind).(axord).xp(j);
-        st.hax{j}.InnerPosition(2) = ax(sectorind).(axord).yp(j);
-        st.hax{j}.InnerPosition(3) = ax(sectorind).xe(1);
-        st.hax{j}.InnerPosition(4) = ax(sectorind).ye(1);
+        st.hax{j}.InnerPosition(1) = ax(sectorind).x(j);
+        st.hax{j}.InnerPosition(2) = ax(sectorind).y(j);
+        st.hax{j}.InnerPosition(3) = ax(sectorind).w(1);
+        st.hax{j}.InnerPosition(4) = ax(sectorind).h(1);
         st.hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
         st.hax{j}.XLim = [1 numxpix];
         st.hax{j}.YLim = [1 numypix];
@@ -352,10 +345,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 1; widthfac = 4; heightfac = 1;
     ts.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    ts.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    ts.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    ts.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    ts.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts.hax, 'on');
     yyaxis left;
     ts.hpl = plot(ts.hax, t, nanresp);
@@ -370,10 +363,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 5; widthfac = 1; heightfac = 1;
     sc.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    sc.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    sc.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    sc.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    sc.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    sc.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    sc.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    sc.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    sc.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     sc.hpl = scatter(sc.hax, stim, nanresp, 2.5, 'filled');
     sc.hax.PlotBoxAspectRatio = [1 1 1];
     [sc.hax.XAxis] = axismod(sc.hax.XAxis, stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
@@ -382,10 +375,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 6; widthfac = 1; heightfac = 1;
     pt.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    pt.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    pt.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    pt.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    pt.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    pt.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    pt.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    pt.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    pt.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     pt.hpl = patch(pt.hax, nanresp, nanresp, nanresp, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
     if ~isempty(flypos.x)
         pt.hpl.XData = [flypos.x(1:end-1) nan]; %need the nan to make patch work
@@ -400,10 +393,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     sectorind = 1; spi = 7; widthfac = 2; heightfac = 1;
     ts2.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts2.hax.InnerPosition(1) = ax(sectorind).(axord).xp(spi);
-    ts2.hax.InnerPosition(2) = ax(sectorind).(axord).yp(spi);
-    ts2.hax.InnerPosition(3) = ax(sectorind).xe(widthfac);
-    ts2.hax.InnerPosition(4) = ax(sectorind).ye(heightfac);
+    ts2.hax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts2.hax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts2.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts2.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts2.hax, 'on');
     yyaxis left;
     ts2.hpl = plot(ts2.hax, tsub, nanresp(it));
