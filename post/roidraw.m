@@ -1,4 +1,4 @@
-function roimaskman_allchan = roidraw(stack, opt)
+function [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, opt)
 
 arguments
     stack
@@ -66,6 +66,16 @@ if ~isempty(chancp) && numchan==2
     end
     roimaskman_allchan(chanreceive) = roimaskman_allchan(chancp);
 end
+
+
+num_roim = size(roimaskman_allchan{c}, 4);
+roiwt = zeros(num_roim, numel(sum(roimaskman_allchan{c}, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+for mi = 1:num_roim
+    tmp = roimaskman_allchan{c}(:,:,:,mi);
+    [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
+    roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+end
+roicen = find_roi_centroids(roimaskman_allchan{c});
 
 
 end
@@ -174,7 +184,11 @@ if draw_manual
                         roimaskman_all_roi_all_z(:,:,:,ir) = roimaskman_tmp2(:,:,ir);
                     end
                 else
-                    roimaskman_all_roi_all_z(:,:,:,ir) = roimaskman_tmp2;
+                    if flag_allz
+                        roimaskman_all_roi_all_z = roimaskman_tmp2;
+                    else
+                        roimaskman_all_roi_all_z(:,:,:,ir) = roimaskman_tmp2;
+                    end
                     ir = ir + 1;
                 end
                 roimaskman_tmp2(:) = 0;

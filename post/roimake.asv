@@ -1,6 +1,6 @@
 function [roidat, resp] = roimake(stack, t, sampper, widyxz, zstartpos, sz_crop, pth_dirstack, recid, pth_roim, stackmnthr, hrlr, opt, roimaskman_allchan)
 
-% see docs_roimake.m           
+% see docs_roimake.m
 
 arguments
     stack
@@ -24,7 +24,7 @@ if isempty(roimaskman_allchan)
     doma = opt.doma;
     docm = opt.docm;
     doqc = opt.doqc;
-    if isfield(opt, 'doplt') && isempty(opt.doplt)
+    if ~isfield(opt, 'doplt') || (isfield(opt, 'doplt') && isempty(opt.doplt))
         doplt = any(strcmp('roi', glb('plt')));
     end
 else
@@ -43,7 +43,9 @@ regionex = opt.regionex;
 
 if isfield(opt, 'ma')
     usehires = opt.ma.usehires;
+    numroiauto = opt.ma.numroi;
 else
+    numroiauto = 0;
     usehires = 0;
 end
 
@@ -61,27 +63,23 @@ stackmnt = mean(stack, 4, 'native');
 %% draw rois (polygons/polyhedra)
 
 if domm && ~maskinput
-    if opt.ma.numroi>1
+    if numroiauto>1
         oneroi = 1;
     else
         oneroi = 0;
     end
-    roimaskman_allchan = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chandraw=opt.mm.chandraw, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chandraw=opt.mm.chandraw, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
 end
 
 
 %% make morphological roi mask (from manual mask plus automated mask, or just manual mask, or just automated mask), and compute some roi info and save in struct roidat
 
-
-for c = 1:numchan
-    if ismember(c,autoopts.chan)
-        roimaskman = roimaskman_allchan{c};
-        stackmnt_tmp = stackmnt(:,:,:,:,c);
-        num_roim_manual = size(roimaskman, 4);
-        pth_roimdat = [pth_roim_prefix 'chn' num2str(c) '_roimdat_.mat'];
-        try
-            load(pth_roimdat, 'roidat');
-        catch
+if doma
+    for c = 1:numchan
+        if ismember(c,autoopts.chan)
+            roimaskman = roimaskman_allchan{c};
+            stackmnt_tmp = stackmnt(:,:,:,:,c);
+            num_roim_manual = size(roimaskman, 4);
             if num_roim_manual>1 || numroiauto==0
                 num_roim = num_roim_manual;
                 if numroiauto>0
@@ -103,52 +101,60 @@ for c = 1:numchan
             else
                 [roiwt, roicen, num_roim] = ...
                     roimauto(stackmnt_tmp, roimaskman, numroiauto, ...
-                    widyxz, stackmnthr, hrlr, pth_roim_prefix, ...
+                    widyxz, stackmnthr, hrlr, pthpre, ...
                     regionex, imhsv, doplt, autoopts);
-            end
-            roidat = roidatmake(stack, roiwt, roicen, num_roim);
-            if ~maskinput
-                save(pth_roimdat, 'roidat', '-mat', '-v7.3');
             end
         end
     end
-end
-if ~isempty(chancpma) && numchan==2
-    chanreceive = setxor(chancpma, [1,2]);
-    fprintf("chancpmm is " + num2str(chancpma) + "; COPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
-    roidat(chanreceive) = roidat(chancpma);
+    if ~isempty(chancpma) && numchan==2
+        chanreceive = setxor(chancpma, [1,2]);
+        fprintf("chancpmm is " + num2str(chancpma) + "; COPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
+        roidat(chanreceive) = roidat(chancpma);
+    end
 end
 
-
+for c = 1:numchan
+    pth_roimdat = [pthpre 'chn' num2str(c) '_roimdat_.mat'];
+    try
+        load(pth_roimdat, 'roidat');
+    catch
+        roidat = roidatmake(stack, roiwt, roicen, num_roim);
+        if ~maskinput
+            save(pth_roimdat, 'roidat', '-mat', '-v7.3');
+        end
+    end
+end
 
 %% load/select functional (caiman) roi responses
 
-roifmake(...
-    stack, ...
-    pth_roif, ...
-    roitype, ...
-    minpixperreg = minpixperreg, ...
-    minroisz = minroisz, ...
-    maxroisz = maxroisz, ...
-    maxregperroi = maxregperroi, ...
-    inmaskthr = inmaskthr, ...
-    numbins = numbins, ...
-    roisrt = roisrt, ...
-    ir = ir, ...
-    doplt = doplt, ...
-    tcrop = tcrop, ...
-    roicen = roidat.roicen, ...
-    mask_allroi = roidat.mask_allroi ...
-    )
-
+if docm
+    roifmake(...
+        stack, ...
+        pth_roif, ...
+        roitype, ...
+        minpixperreg = minpixperreg, ...
+        minroisz = minroisz, ...
+        maxroisz = maxroisz, ...
+        maxregperroi = maxregperroi, ...
+        inmaskthr = inmaskthr, ...
+        numbins = numbins, ...
+        roisrt = roisrt, ...
+        ir = ir, ...
+        doplt = doplt, ...
+        tcrop = tcrop, ...
+        roicen = roidat.roicen, ...
+        mask_allroi = roidat.mask_allroi ...
+        )
+end
 
 %% compute roi responses
 
-pth_morphroits = [pth_roim_prefix '_resp_.mat']; %don't need channel infix here
+
+pth_morphroits = [pthpre '_resp_.mat']; %don't need channel infix here
 try
     load(pth_morphroits, 'resp')
 catch
-    resp = roits(stack, roiwt=roidat(c).roiwt, normpre=normpre, normpost=normpost, sampper=sampper, wavp=wavp, degdtr=degdtr, channorm=channorm, t=t, pthpre=pth_roim_prefix, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    resp = roits(stack, roiwt=roidat.roiwt, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=wavp, degdtr=degdtr, channorm=channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
     if ~maskinput
         save(pth_morphroits, 'resp', '-v7.3', '-mat')
     end
@@ -162,11 +168,11 @@ if doplt %all these are at imaging resolution
     imhsv = plots_setup_hsv(imhsv);
     hueft = [1:num_roim]';
     hsvmap = hsvcmp(imhsv, hueft=hueft);
-    pthhsv = [pth_roim_prefix 'hsvfov_.gif'];
+    pthhsv = [pthpre 'hsvfov_.gif'];
     plotchannel = 1;
     hsvplt(imhsv, stackmnt(:,:,:,:,plotchannel), hsvmap, roipx, roiwt, dohsv, pthhsv);
 
-    ptholay = [pth_roim_prefix 'roioverlay_.gif'];
+    ptholay = [pthpre 'roioverlay_.gif'];
     gifvis = 'on';
     plotchannel = 1;
     stackplt(stackmnt(:,:,:,:,plotchannel), pthgif=ptholay, gifvis=gifvis, roipx=roipx, ir=roiol.ir, roicols=roiol.roicol, roialpha=roiol.roialpha) %include roipx as argument to plot roi overlay
@@ -195,7 +201,7 @@ if doplt %all these are at imaging resolution
     set(gca,'CameraViewAngle',8)
     rotinc = 30;
     views = -180:rotinc:180;
-    pthgif = [pth_roim_prefix 'huerois_3dspin_.gif'];
+    pthgif = [pthpre 'huerois_3dspin_.gif'];
     for framecount = 1:length(views) - 1
         view(views(framecount)+2, 20)
         fig2gif(hfg, framecount, pthgif)
@@ -205,20 +211,20 @@ if doplt %all these are at imaging resolution
 
     %mask overlay
     overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(mean(stack, 4), 0, 1));
-    stackplt( overlayarray, pthgif=[pth_roim_prefix 'maskallroi_overlay_.gif'])
+    stackplt( overlayarray, pthgif=[pthpre 'maskallroi_overlay_.gif'])
 
     %manual roi mask
-    stackplt(roimaskman, pthgif=[pth_roim_prefix 'roimaskman_.gif'])
+    stackplt(roimaskman, pthgif=[pthpre 'roimaskman_.gif'])
 
     %mask all rois (without stack background)
-    stackplt(mask_allroi, pthgif=[pth_roim_prefix 'maskallroi_.gif'])
+    stackplt(mask_allroi, pthgif=[pthpre 'maskallroi_.gif'])
 
     % %3d surface plot
     % kbnd = boundary([maskx,masky,maskz]);
     % figure;
     % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
     % axis image
-    % saveas( gcf, [pth_roim_prefix 'maskallroi_surface_.png'])
+    % saveas( gcf, [pthpre 'maskallroi_surface_.png'])
 
 
 end

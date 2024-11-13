@@ -129,11 +129,11 @@ end
 %% dmplt
 
 
+dmfr = '';
 if isempty(dmplt)
     dmplt = dmstackdf; %for now only one dim order allowed, so just take from first cell if stack is a cell
 else
     dmfrtmp = cell2mat(regexp(dmplt, '(\([a-z]*\))', 'match'));
-    dmfr = '';
     if ~isempty(dmfrtmp)
         dmfr = erase(dmfrtmp, {'(', ')'});
         dmplt = erase(dmplt, dmfrtmp);
