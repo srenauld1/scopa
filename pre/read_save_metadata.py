@@ -21,34 +21,46 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
                 meta_hires = ScanImageTiffReader(pth_hires).metadata()
                 mdthr['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
                 mdthr['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                mdthr['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
-                mdthr['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
+                
                 mdthr['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta_hires)[0])
+                mdthr['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
+                mdthr['flyback'] = mdthr['numslice_withflyback'] - mdthr['numslice']
+                try:
+                    mdthr['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
+                except:
+                    print("USING OLD SCANIMAGE VERSION METADATA PATTERNS FOR HIRES METADATA")
+                    mdthr['numvol'] = int(re.findall( 'numVolumes = (.*)', meta_hires)[0])
+            
                 mdthr['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta_hires)[0])
                 mdthr['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta_hires)[0])
-                mdthr['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
-                mdthr['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
+                mdthr['dims'] = [mdthr['numvol'], mdthr['numslice_withflyback'] - mdthr['flyback'], mdthr['ypix'], mdthr['xpix']]
                 fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
                 mdthr['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
                 mdthr['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
                 mdthr['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta_hires)[0])
                 mdthr['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta_hires)[0].replace(";",","))
-                mdthr['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
+                mdthr['zfov'] = mdthr['zstartpos'][-1] + mdthr['zwid'] - mdthr['zstartpos'][0]
                 mdthr['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta_hires)[0])
                 mdthr['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
-                mdthr['channelOffsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta)[0].replace(" ",",").replace(";",","))
+                mdthr['channelOffsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
 
 
             meta = ScanImageTiffReader(pth_readfile).metadata()    #tiffile might be able to read metadata
             
             mdt['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))
-            mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
-            mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
+
             mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
+            mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
+            mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
+            try:
+                mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
+            except:
+                print("USING OLD SCANIMAGE VERSION METADATA PATTERNS FOR HIRES METADATA")
+                mdt['numvol'] = int(re.findall( 'numVolumes = (.*)', meta)[0])
+            
             mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta)[0])
             mdt['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta)[0])
-            mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
             mdt['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
             fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta)[0].replace(" ",",").replace(";",","))
             mdt['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
