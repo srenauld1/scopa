@@ -56,9 +56,9 @@ for c = 1:numchan
             roiman = roidraw_onechan(stack(:,:,:,:,c), regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap);
             save(pth_maskman, 'roiman', '-v7.3', '-mat')
         end
-        num_roim(c) = size(roiman, 4);
-        roiwt{c} = zeros(num_roim, numel(sum(roiman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-        for mi = 1:num_roim
+        num_roim{c} = size(roiman, 4);
+        roiwt{c} = zeros(num_roim{c}, numel(sum(roiman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+        for mi = 1:num_roim{c}
             tmp = roiman(:,:,:,mi);
             [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
             roiwt{c}(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
@@ -74,6 +74,9 @@ if ~isempty(chancp) && numchan==2
         fprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones; you may not intend this" + newline);
     end
     roiman_allchan(chanreceive) = roiman_allchan(chancp);
+    num_roim(chanreceive) = num_roim(chancp);
+    roiwt(chanreceive) = roiwt(chancp);
+    roicen(chanreceive) = roicen(chancp);
 end
 
 

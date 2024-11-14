@@ -108,12 +108,20 @@ end
 
 %% compute roi responses (and normalize)
 
-pth_morphroits = [pthpre '_resp_.mat']; %don't need channel infix here
+pth_morphroits = [pthpre '_resp_.mat']; 
 try
     load(pth_morphroits, 'resp')
 catch
-    for k = 1:numel(roiwt)
-        resp = roits(stack, roiwt=roiwt{k}, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    resp = cell(numchan,1);
+    for c = 1:numchan
+        if ~isempty(roiwt{c})
+            resptmp = roits(stack(:,:,:,:,c), roiwt=roiwt{c}, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+            fn = fieldnames(resptmp);
+            if numel(fn)>1
+                error("there should only be one field because all params have been distributed and assigned optid")
+            end
+            resp{c} = resptmp.(fn{1}); %each channel
+        end
     end
     if ~maskinput
         save(pth_morphroits, 'resp', '-v7.3', '-mat')
@@ -123,15 +131,13 @@ end
 
 %% assemble roi data into struct
 
-for c = 1:numchan
-    pth_roimdat = [pthpre 'chn' num2str(c) '_roimdat_.mat'];
-    try
-        load(pth_roimdat, 'roidat');
-    catch
-        roidat = roidatmake(stack, roiwt, roicen, num_roim);
-        if ~maskinput
-            save(pth_roimdat, 'roidat', '-mat', '-v7.3');
-        end
+pth_roimdat = [pthpre '_roimdat_.mat'];
+try
+    load(pth_roimdat, 'roidat');
+catch
+    roidat = roidatmake(stack, roiwt, roicen, num_roim);
+    if ~maskinput
+        save(pth_roimdat, 'roidat', '-mat', '-v7.3');
     end
 end
 

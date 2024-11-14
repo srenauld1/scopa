@@ -1,5 +1,21 @@
 function roidat = roidatmake(stack, roiwt, roicen, num_roim)
 
+numchan = size(stack,5);
+roidat = cell(numchan, 1);
+for c = 1:numchan
+    if ~isempty(roiwt{c})
+        roidat{c} = roidatmake_onechan(stack(:,:,:,:,c), roiwt{c}, roicen{c}, num_roim{c});
+    end
+end
+
+
+end
+
+
+
+function roidat = roidatmake_onechan(stack, roiwt, roicen, num_roim)
+
+
 mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');
 
 roipx = cell(num_roim, 1);

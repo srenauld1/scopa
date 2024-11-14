@@ -66,7 +66,7 @@ if domm && ~maskinput
     else
         oneroi = 0;
     end
-    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chandraw=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
 end
 
 
@@ -75,15 +75,8 @@ end
 if doma
     for c = 1:numchan
         if ismember(c,opt.ma.chan)
-            stackmnt_tmp = stackmnt(:,:,:,:,c);
-            num_roim_manual = size(roimaskman_allchan{c}, 4);
             if ~isequal(numroiauto, 0)
-                if num_roim_manual>1
-                    error(sprintf("num_roim_manual is greater than one AND numroiauto is greater than zero" + newline + ...
-                        "DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN" + newline + ...
-                        "OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS" + newline))
-                end
-                [roiwt, roicen, num_roim] = roimauto(stackmnt_tmp, roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, imhsv, doplt, opt.ma);
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stackmnt(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, imhsv, doplt, opt.ma);
             end
         end
     end
@@ -92,7 +85,7 @@ end
 %% load/select functional (caiman) roi responses
 
 if docm
-    error("for now, for caiman extracticall extract.py from pipeline_init; soon can run it from matlab a2p")
+    error("for now, for caiman extraction, run pipeline_init with do_extract=1; soon you will be able to run it from here, as option in a2p")
     roifmake(...
         stack, ...
         pth_roif, ...
@@ -119,7 +112,17 @@ pth_morphroits = [pthpre '_resp_.mat']; %don't need channel infix here
 try
     load(pth_morphroits, 'resp')
 catch
-    resp = roits(stack, roiwt=roiwt, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    resp = cell(numchan,1);
+    for c = 1:numchan
+        if ~isempty(roiwt{c})
+            resptmp = roits(stack(:,:,:,:,c), roiwt=roiwt{c}, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+            fn = fieldnames(resptmp);
+            if numel(fn)>1
+                error("there should only be one field because all params have been distributed and assigned optid")
+            end
+            resp{c} = resptmp.(fn{1}); %each channel
+        end
+    end
     if ~maskinput
         save(pth_morphroits, 'resp', '-v7.3', '-mat')
     end
@@ -128,15 +131,13 @@ end
 
 %% assemble roi data into struct
 
-for c = 1:numchan
-    pth_roimdat = [pthpre 'chn' num2str(c) '_roimdat_.mat'];
-    try
-        load(pth_roimdat, 'roidat');
-    catch
-        roidat = roidatmake(stack, roiwt, roicen, num_roim);
-        if ~maskinput
-            save(pth_roimdat, 'roidat', '-mat', '-v7.3');
-        end
+pth_roimdat = [pthpre '_roimdat_.mat'];
+try
+    load(pth_roimdat, 'roidat');
+catch
+    roidat = roidatmake(stack, roiwt, roicen, num_roim);
+    if ~maskinput
+        save(pth_roimdat, 'roidat', '-mat', '-v7.3');
     end
 end
 
@@ -209,9 +210,9 @@ if doplt %all these are at imaging resolution
 
 end
 
-if ~doma && strcmp(roisrt, morph_long_axis)
-    fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because doma is false" + newline)
-end
+% if ~doma && strcmp(roisrt, morph_long_axis)
+%     fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because doma is false" + newline)
+% end
 
 end
 
