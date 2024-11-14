@@ -1,9 +1,6 @@
 
-function [roiwt, roicen, numroifinal] = ...
-    roimauto(stackmnt, roimaskman, ...
-    numroiinit, widyxz, stack_hires, ...
-    hrlr, pth_roim_prefix, ...
-    regionex, imhsv, doplt, opts)
+function [roiwt, roicen, numroifinal] = roimauto(stackmnt, roimaskman, numroiinit, ...
+    widyxz, stack_hires, hrlr, pth_roim_prefix, regionex, imhsv, doplt, opts)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -23,17 +20,27 @@ ywid = widyxz(1);
 xwid = widyxz(2);
 zwid = widyxz(3);
 
-%% preprocess stackmnt, make mean stackmnt
 
-if ~isa(stackmnt, 'single')
-    stackmnt = single(stackmnt);
-end
+
+%% preprocess stackmnt, make mean stackmnt
 
 if ~exist('roimaskman', 'var') || isempty(roimaskman)
     roimaskman = 1;
 end
 
-stackmnt = rescale(stackmnt); %if there's a 4th dim, it's time so collapse it  . . . instead of mean could try zscore, or max, prctile, etc converts to double, also don't change this variable because you need it below
+num_roim_manual = size(roimaskman, 4);
+
+if num_roim_manual>1
+    error(sprintf("num_roim_manual is greater than one AND numroiauto is greater than zero" + newline + ...
+        "DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN" + newline + ...
+        "OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS" + newline))
+end
+
+if ~isa(stackmnt, 'single')
+    stackmnt = single(stackmnt);
+end
+
+stackmnt = rescale(stackmnt); 
 numel_stackmnt = numel(stackmnt);
 
 if do3d==1 && size(stackmnt, 3)==1 %if z dim is singleton

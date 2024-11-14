@@ -27,6 +27,9 @@ suffix = opt.suffix;
 match = opt.match;
 
 suffixvalid = convertStringsToChars(suffixvalid);
+if ~isempty(suffixvalid) && ~iscell(suffixvalid)
+    suffixvalid = {suffixvalid};
+end
 
 if ~isempty(pth) && ~isempty(pthsib)
     error("cannot use pth and pthsib inputs at the same time")

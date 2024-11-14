@@ -1,4 +1,4 @@
-function [maskroi, flag_quit_one_roi, flag_quit_all_rois, ircum] = ...
+function [maskroi, flag_quit_one_roi, flag_quit_all_rois, ircumcurr] = ...
     roidraw_onefig(stack, regionex, title_prefix, flag_oneim, ...
     flag_single_roi_per_stack, flag_allz, flag_croplim, ir, opt)
 
@@ -50,7 +50,6 @@ elseif flag_allz
     ttltmp = { [...
         'q: QUIT DRAWING,   ', ...
         'r: NEXT ROI,   ', ...
-        's: NEXT SLICE,   ', ...
         'up/down: RESCALE CONTRAST,   ', ...
         % 'o: REMOVE CURRENT ROI OVERLAP,   ', ...
         %'backspoace: UNDO LAST POLYGON  ', ...
@@ -59,7 +58,9 @@ end
 h.httl.String = cat(1, h.httl.String, ttltmp);
 
 if ~flag_allz %discontiguous is default if allz displayed
-    ttltmp = {'d/e: ENTER/EXIT XY DISCONTIGUOUS MODE'};
+    ttltmp = { [...
+        's: NEXT SLICE,   ', ...
+        'd/e: ENTER/EXIT XY DISCONTIGUOUS MODE']};
     h.httl.String = strcat(ttltmp, ttltmp);
 end
 
@@ -73,7 +74,7 @@ if numdimstack==2
     maskroi = zeros( numrows, numcols, numrois_est, 'single');
     maskroi_tmp = zeros( numrows, numcols, numrois_est, 'single');
 elseif numdimstack==3
-    numslice = size(stack,2);
+    numslice = size(stack,3);
     maskroi = zeros( numrows, numcols, numslice, numrois_est, 'single');
     maskroi_tmp = zeros( numrows, numcols, numslice, numrois_est, 'single');
 end
@@ -107,8 +108,6 @@ imfocus = [];
 
 
 while true
-
-    ircumcurr = ir + irtmp-1;
 
     tmp = [];
     if ~isempty(h.hfg.UserData) %capture key press on figure callback
@@ -176,7 +175,7 @@ while true
                 end
             end
         end
-        h.httl.String{ndt} = [];
+        % h.httl.String{ndt} = [];
         flag_do = 0;
         flag_allow_rescale = 0;
         flag_base_message = 1;
@@ -195,7 +194,7 @@ while true
         flag_quit_one_roi = 1;
         tmpone = 'PRESSED "r", QUITTING THIS ROI';
         h.httl.String{ndt+1} = tmpone;
-        if tmp_ind>1
+        if 1 % tmp_ind>1
             flag_roi_drawn = 1;
             if numdimstack==2
                 maskroi(:, :, irtmp) = logical(sum(maskroi_tmp, 3));
@@ -211,6 +210,17 @@ while true
         flag_quit_all_rois = 1;
         tmpone = 'PRESSED "q", QUITTING ALL ROIS';
         h.httl.String{ndt+1} = tmpone;
+        if 1 % tmp_ind>1
+            flag_roi_drawn = 1;
+            if numdimstack==2
+                maskroi(:, :, irtmp) = logical(sum(maskroi_tmp, 3));
+            elseif numdimstack==3
+                maskroi(:, :, :, irtmp) = logical(sum(maskroi_tmp, 4));
+            end
+            irtmp = irtmp + 1;
+            maskroi_tmp(:) = 0;
+            tmp_ind = 1;
+        end
 
     elseif strcmpi(tmp, 'backspace') && irtmp>1
         % flag_undo = 1;
@@ -240,18 +250,19 @@ while true
         end
 
 
-    % elseif strcmpi(tmp, 'o') && irtmp>20000 %remove pixels in current roi that belong to any other rois
-    %     maskroi_cum = logical(sum(maskroi(:, :, 1:irtmp-2), 3));
-    %     maskroi_curr = logical(maskroi(:, :, irtmp-1));
-    %     maskroi_sum = maskroi_cum + maskroi_curr;
-    %     maskroi_remove = maskroi_sum>1;
-    %     maskroi_curr(maskroi_remove) = 0;
-    %     maskroi(:, :, irtmp-1) = maskroi_curr;
-    %     [rw,cl]=ind2sub([size(maskroi, 1) size(maskroi, 2)], find(sum(maskroi, 3)>1));
-    %     for cli = 1:length(cl)
-    %         maskroi(rw(cli), cl(cli), :) = 0; %do it this way
-    %     end
-    % end
+        % elseif strcmpi(tmp, 'o') && irtmp>20000 %remove pixels in current roi that belong to any other rois
+        %     maskroi_cum = logical(sum(maskroi(:, :, 1:irtmp-2), 3));
+        %     maskroi_curr = logical(maskroi(:, :, irtmp-1));
+        %     maskroi_sum = maskroi_cum + maskroi_curr;
+        %     maskroi_remove = maskroi_sum>1;
+        %     maskroi_curr(maskroi_remove) = 0;
+        %     maskroi(:, :, irtmp-1) = maskroi_curr;
+        %     [rw,cl]=ind2sub([size(maskroi, 1) size(maskroi, 2)], find(sum(maskroi, 3)>1));
+        %     for cli = 1:length(cl)
+        %         maskroi(rw(cli), cl(cli), :) = 0; %do it this way
+        %     end
+
+    end
 
 
     if flag_roi_drawn
@@ -343,6 +354,8 @@ while true
         end
     end
 
+    ircumcurr = ir + irtmp-1;
+
     pause(0.01);
 
 end
@@ -352,8 +365,6 @@ end
 
 if any(maskroi(:))
 
-    irtmp = irtmp-1;
-    ircum = ircumcurr-1;
     if numdimstack==2
         maskroi = maskroi(:, :, 1:irtmp);
         if remove_overlap %remove overlapping pixels
@@ -362,30 +373,37 @@ if any(maskroi(:))
                 maskroi(rw(cli), cl(cli), :) = 0; %why do it this way?
             end
         end
+        %remove rois with zero pixels
+        ma = zeros(1, size(maskroi,3));
+        for bi = 1:size(maskroi,3)
+            ma(bi)=sum(vec(maskroi(:,:,bi)));
+        end
+        maskroi(:,:,[find(~ma)]) = [];
     elseif numdimstack==3
         maskroi = maskroi(:, :, :, 1:irtmp);
         if remove_overlap %remove overlapping pixels
-            [rw,cl]=ind2sub([size(maskroi, 1) size(maskroi, 2) size(maskroi, 2)], find(sum(maskroi, 3)>1));
+            [rw,cl,zs]=ind2sub([size(maskroi, 1) size(maskroi, 2) size(maskroi, 3)], find(sum(maskroi, 4)>1));
             for cli = 1:length(cl)
-                maskroi(rw(cli), cl(cli), :) = 0; %why do it this way?
+                maskroi(rw(cli), cl(cli), zs(cli), :) = 0; %why do it this way?
             end
         end
+        %remove rois with zero pixels
+        ma = zeros(1, size(maskroi,4));
+        for bi = 1:size(maskroi,4)
+            ma(bi)=sum(vec(maskroi(:,:,:,bi)));
+        end
+        maskroi(:,:,:,[find(~ma)]) = [];
     end
-
-
-
-    %remove rois with zero pixels
-    ma = zeros(1, size(maskroi,3));
-    for bi = 1:size(maskroi,3)
-        ma(bi)=sum(vec(maskroi(:,:,bi)));
-    end
-    maskroi(:,:,[find(~ma)]) = [];
 
     maskroi = logical(maskroi);
 
 else
 
-    maskroi = zeros( numrows, numcols);
+    if numdimstack==2
+        maskroi = zeros( numrows, numcols);
+    elseif numdimstack==3
+        maskroi = zeros( numrows, numcols, numslice);
+    end
 
 end
 

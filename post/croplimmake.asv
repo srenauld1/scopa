@@ -38,8 +38,8 @@ if define_xy_lim
     flag_oneim = 1;
     flag_oneroi = 1;
     flag_allz = 0;
-    draw_on_meanzt = 1;
-    roi_cropxy = roidraw_onefig(stackmntz, regionex_nounderscore, flag_oneim, flag_oneroi, flag_allz, flag_croplim, draw_on_meanzt, title_prefix=title_prefix);
+    draw_on_meanzt = 0;
+    roi_cropxy = roidraw_onefig(stackmntz, regionex_nounderscore, flag_oneim, flag_oneroi, flag_allz, flag_croplim, ir, title_prefix=title_prefix);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end

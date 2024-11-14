@@ -18,7 +18,7 @@ end
 o.spec.pthparent_local = '~/stacks';
 o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not recin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    o.spec.recdate = {'20240907'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.recdate = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
@@ -35,14 +35,13 @@ end
 %%%% dos %%%%
 
 o.mn.dodaq = 1; %process daq timeseries?
-o.mn.doftv = 1; %process fictrac video?
+o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
 o.mn.dopop = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
-% o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
-
 regionex_tmp = {'none', 'fb', 'pb', 'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 %%%% some simple option specification %%%%
@@ -50,7 +49,7 @@ regionex_tmp = {'none', 'fb', 'pb', 'eb'}; %use 'none' to skip prompt to define 
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1 2]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
-o.sld.suffixplt = [""]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
+o.sld.suffixplt = ["cmrg_dcdn"]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
@@ -78,7 +77,7 @@ o.mfit.tg.group = [];
 o=odf(o, 'mfit.tg', 'indv'); %put in copybin 'indv'
 
 % to set depv, make a struct with opts from o.roi; output will be roi created with those options; anything not listed takes default (in odf); anything nonexisting causes error
-roitmp.mm.chandraw = [2];
+roitmp.mm.chan = [2];
 roitmp.ma.numroi = {256, 512}; %cell to expand
 
 o.mfit.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
@@ -121,11 +120,11 @@ for k = 1:numel(allrecs)
         o(k).roi.regionex = regionex_tmp{m};
 
         o(k).roi.domm = 1; %do draw rois
-        o(k).roi.doma = 1; %do automated morph rois
+        o(k).roi.doma = 0; %do automated morph rois
         o(k).roi.docm = 0; %do caiman extraction
         o(k).roi.doqc = 0; %do quality control on rois
 
-        o(k).roi.mm.chandraw = [1];
+        o(k).roi.mm.chan = [1];
 
         o(k).roi.ma.chanauto = [1];
         o(k).roi.ma.numroi = 0; %for auto morph roi extraction (after optional mask draw)
@@ -138,7 +137,7 @@ for k = 1:numel(allrecs)
         o(k).roi.qc.minroisz = 10; 
 
         o(k).roi.nrm.wavp = []; %[0 50]; wavelet cwt periods to keep; seconds; carl uses [0 50] often to remove slow fluctuations; empty to skip
-        o(k).roi.nrm.post = {'f', 'dff010020'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
+        o(k).roi.nrm.post = {'f'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
 
         %some options are different, depending on regionex
         if strcmp(regionex_tmp{m}, 'fb')

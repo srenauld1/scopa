@@ -50,9 +50,7 @@ else
 end
 
 pthpre = erase(pth_roim, '.mat');
-
 numchan = size(stack,5);
-
 stackmnt = mean(stack, 4, 'native');
 
 %% crop movie to regionex cuboid
@@ -68,7 +66,7 @@ if domm && ~maskinput
     else
         oneroi = 0;
     end
-    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chandraw=opt.mm.chandraw, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
 end
 
 
@@ -76,51 +74,10 @@ end
 
 if doma
     for c = 1:numchan
-        if ismember(c,autoopts.chan)
-            roimaskman = roimaskman_allchan{c};
-            stackmnt_tmp = stackmnt(:,:,:,:,c);
-            num_roim_manual = size(roimaskman, 4);
-            if num_roim_manual>1 || numroiauto==0
-                num_roim = num_roim_manual;
-                if numroiauto>0
-                    error(sprintf(['ERROR \n' ...
-                        'num_roim_manual is greater than one AND numroiauto is greater than zero \n' ...
-                        'DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN, \n' ...
-                        'OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS']))
-                end
-                roiwt = zeros(num_roim, numel(sum(roimaskman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-                for mi = 1:num_roim
-                    tmp = roimaskman(:,:,:,mi);
-                    [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-                    roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
-                end
-                roicen = find_roi_centroids(roimaskman);
-                fprintf("WARNING,\n" + ...
-                    "if roisrt is 'morph_long_axis', rois will be sorted by drawn roi index, not morph long axis, \n" + ...
-                    "since determining the long axis of extraction currently requires automated morph roi extraction" + newline)
-            else
-                [roiwt, roicen, num_roim] = ...
-                    roimauto(stackmnt_tmp, roimaskman, numroiauto, ...
-                    widyxz, stackmnthr, hrlr, pthpre, ...
-                    regionex, imhsv, doplt, autoopts);
+        if ismember(c,opt.ma.chan)
+            if ~isequal(numroiauto, 0)
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stackmnt(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, imhsv, doplt, opt.ma);
             end
-        end
-    end
-    if ~isempty(chancpma) && numchan==2
-        chanreceive = setxor(chancpma, [1,2]);
-        fprintf("chancpmm is " + num2str(chancpma) + "; COPYING ROI INFO FROM CHANNEL " + num2str(chancpma) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
-        roidat(chanreceive) = roidat(chancpma);
-    end
-end
-
-for c = 1:numchan
-    pth_roimdat = [pthpre 'chn' num2str(c) '_roimdat_.mat'];
-    try
-        load(pth_roimdat, 'roidat');
-    catch
-        roidat = roidatmake(stack, roiwt, roicen, num_roim);
-        if ~maskinput
-            save(pth_roimdat, 'roidat', '-mat', '-v7.3');
         end
     end
 end
@@ -128,6 +85,7 @@ end
 %% load/select functional (caiman) roi responses
 
 if docm
+    error("for now, for caiman extraction, run pipeline_init with do_extract=1; soon you will be able to run it from here, as option in a2p")
     roifmake(...
         stack, ...
         pth_roif, ...
@@ -147,16 +105,33 @@ if docm
         )
 end
 
-%% compute roi responses
 
+%% compute roi responses (and normalize)
 
 pth_morphroits = [pthpre '_resp_.mat']; %don't need channel infix here
 try
     load(pth_morphroits, 'resp')
 catch
-    resp = roits(stack, roiwt=roidat.roiwt, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    for k = 1:numel(roiwt)
+        resp = roits(stack, roiwt=roiwt{k}, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+    end
     if ~maskinput
         save(pth_morphroits, 'resp', '-v7.3', '-mat')
+    end
+end
+
+
+%% assemble roi data into struct
+
+for c = 1:numchan
+    pth_roimdat = [pthpre 'chn' num2str(c) '_roimdat_.mat'];
+    try
+        load(pth_roimdat, 'roidat');
+    catch
+        roidat = roidatmake(stack, roiwt, roicen, num_roim);
+        if ~maskinput
+            save(pth_roimdat, 'roidat', '-mat', '-v7.3');
+        end
     end
 end
 
@@ -228,6 +203,10 @@ if doplt %all these are at imaging resolution
 
 
 end
+
+% if ~doma && strcmp(roisrt, morph_long_axis)
+%     fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because doma is false" + newline)
+% end
 
 end
 

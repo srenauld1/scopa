@@ -1,21 +1,23 @@
 function [maskroi, flag_quit_one_roi, flag_quit_all_rois, ircumcurr] = ...
-    roidraw_onefig(stack, regionex, title_prefix, flag_oneim, ...
-    flag_single_roi_per_stack, flag_allz, flag_croplim, ir, opt)
+    roidraw_onefig(stack, flag_oneim, ...
+    flag_single_roi_per_stack, flag_allz, flag_croplim, draw_on_meanzt, ir, szi, opt)
 
 arguments
     stack
-    regionex = 'none'
-    title_prefix = ''
     flag_oneim = 0 %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
     flag_single_roi_per_stack = 0 %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
     flag_allz = 0
     flag_croplim = 0
+    draw_on_meanzt = 0
     ir = 1
+    szi = 1
+    opt.title_prefix = ''
     opt.roialpha = 0.33
     opt.cmap = []
     opt.fontsize = 12
     opt.remove_overlap = 0 %0 allows overlapping rois, 1 to remove all pixels in overlapping rois
 end
+title_prefix = opt.title_prefix;
 roialpha = opt.roialpha;
 cmap = opt.cmap;
 fontsize = opt.fontsize;
@@ -33,10 +35,21 @@ dmplt = dmplt(1:numdimstack);
 
 h = stackplt(stack, doui=1, dmplt=dmplt, stackjust='center', szf=1);
 
-if ~iscell(title_prefix)
-    title_prefix = {title_prefix};
+if flag_single_roi_per_stack
+    ttltmp = [title_prefix ', T MEAN, ' titleadd(flag_oneim, draw_on_meanzt, szi), '; DRAW THE ONE AND ONLY ROI ALLOWED ON THIS IMAGE'];
+else
+    if flag_oneim
+        ttltmp = [title_prefix ', T MEAN, ' titleadd(flag_oneim, draw_on_meanzt, szi), '; DRAW ALL ROIS ON THIS IMAGE '];
+    else
+        if flag_allz
+            ttltmp = [title_prefix ', T MEAN, ALL Z; DRAW ROI #' num2str(ir) ' ON THESE IMAGES'];
+        else
+            ttltmp = [title_prefix ', T MEAN, ' titleadd(flag_oneim, draw_on_meanzt, szi), '; DRAW ALL OR PART OF ROI #' num2str(ir) ' ON THIS IMAGE'];
+        end
+    end
 end
-h.httl.String = title_prefix;
+
+h.httl.String = {ttltmp};
 h.httl.FontSize = fontsize;
 
 if flag_oneim && ~flag_croplim
@@ -50,7 +63,6 @@ elseif flag_allz
     ttltmp = { [...
         'q: QUIT DRAWING,   ', ...
         'r: NEXT ROI,   ', ...
-        's: NEXT SLICE,   ', ...
         'up/down: RESCALE CONTRAST,   ', ...
         % 'o: REMOVE CURRENT ROI OVERLAP,   ', ...
         %'backspoace: UNDO LAST POLYGON  ', ...
@@ -59,7 +71,10 @@ end
 h.httl.String = cat(1, h.httl.String, ttltmp);
 
 if ~flag_allz %discontiguous is default if allz displayed
-    ttltmp = {'d/e: ENTER/EXIT XY DISCONTIGUOUS MODE'};
+    ttltmp = { [...
+        's: NEXT SLICE,   ', ...
+        'd/e: ENTER/EXIT XY DISCONTIGUOUS MODE', ...
+        ]};
     h.httl.String = strcat(ttltmp, ttltmp);
 end
 
@@ -102,9 +117,6 @@ flag_xy_discontiguous = 0;
 flag_prequit = 0;
 tmp_ind = 1;
 imfocus = [];
-
-% ircumcurr = ir + irtmp; %rois drawn when entering this function, plus current roi draw index (which is one more than current drawn index)
-
 
 while true
 
@@ -156,25 +168,25 @@ while true
     if flag_do
         h.httl.String{ndt+1} = ['DRAW NOW ON IMAGE ' num2str(imfocus) ' (CLICK=PLACE VERTEX, DRAG=ADJUST, DOUBLE-CLICK=FINISH)'];
         if flag_allz
-            h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR REGION "' regionex '"'];
+            h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
         elseif flag_croplim
-            h.httl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR REGION "' regionex '"'];
+            h.httl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR ' title_prefix];
         else
             if flag_oneim
                 if flag_single_roi_per_stack
-                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
+                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
                 else
-                    h.httl.String{ndt+3} = ['EACH POLYGON, AND EACH UNION OF XY DISCONTIGUOUS SUBROIS, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex '"'];
+                    h.httl.String{ndt+3} = ['EACH POLYGON, AND EACH UNION OF XY DISCONTIGUOUS SUBROIS, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR ' title_prefix];
                 end
             else
                 if flag_single_roi_per_stack
-                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
+                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR ' title_prefix];
                 else
-                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS CYCLE THROUGH THE STACK WILL COMPRISE ROI # ' num2str(ircumcurr) ' FOR REGION "' regionex '"'];
+                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS CYCLE THROUGH THE STACK WILL COMPRISE ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
                 end
             end
         end
-        h.httl.String{ndt} = [];
+        % h.httl.String{ndt} = [];
         flag_do = 0;
         flag_allow_rescale = 0;
         flag_base_message = 1;
@@ -411,3 +423,18 @@ close(h.hfg);
 
 end
 
+
+
+
+function out = titleadd(flag_oneim, draw_on_meanzt, szi)
+
+if draw_on_meanzt
+    out = 'Z MEAN';
+else
+    out = ['Z #' num2str(szi)];
+    if flag_oneim
+        out = ['Z ' num2str(szi) '(ONLY Z)'];
+    end
+end
+
+end

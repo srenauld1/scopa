@@ -159,8 +159,8 @@
     "validation_split_style": "boutsamples"
   },
   "mm": {
+    "chan": 1,
     "chancp": 1,
-    "chandraw": 1,
     "maskname": "none"
   },
   "mn": {
@@ -183,7 +183,7 @@
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024111215475293"
+    "timestr": "2024111319213992"
   },
   "nrm": {
     "channorm": 0,

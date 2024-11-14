@@ -220,23 +220,6 @@ o.id = idhold;
 o = structsort(o, vectype='row');
 
 
-
-
-%% globals
-
-if isempty(glb('pthscopa')) && isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
-    pthparent = pthparentfind(oin.spec.pthparent_local, oin.spec.pthparent_o2);
-    xyscreen = pxscreenget;
-    glb(pthscopa=pthscopa, pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen); %set some globals, force update if they already have been set with first argument 1
-end
-
-if isempty(glb('pltvis')) && isempty(glb('plt')) %these globals can be set by user input (don't have to be)
-    if ( isfield(o, 'mn') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-        glb(pltvis=o.mn.pltvis, plt=o.mn.plt)
-    end
-end
-
-
 %% find files
 
 
@@ -281,6 +264,17 @@ elseif files==2
 end
 
 
+
+%% globals
+
+if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthscopa')) && isempty(glb('pthparent')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('pltvis')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
+    pthparent = pthparentfind(oin.spec.pthparent_local, oin.spec.pthparent_o2);
+    xyscreen = pxscreenget;
+    glb(pthscopa=pthscopa, pthparent=pthparent, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen); %set some globals, force update if they already have been set with first argument 1
+end
+
+
+pltvis=o.mn.pltvis, plt=o.mn.plt, 
 
 end
 

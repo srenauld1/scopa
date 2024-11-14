@@ -83,7 +83,7 @@ for k = 1:numel(allrecs)
         o(k).roi.docm = 0; %do caiman extraction
         o(k).roi.doqc = 0; %do quality control on rois
 
-        o(k).roi.mm.chandraw = [1];
+        o(k).roi.mm.chan = [1];
 
         o(k).roi.nrm.post = {'dff005000'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
 

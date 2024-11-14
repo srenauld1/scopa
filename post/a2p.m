@@ -9,8 +9,7 @@ end
 
 clear glb %clear globals
 
-%oa = oset(recin); % set options; oa stands for o all (ie all recordings)
-oa = oset_sr(recin); % set options; oa stands for o all (ie all recordings)
+oa = oset(recin); % set options; oa stands for o all (ie all recordings)
 
 for k = 1:numel(oa) % loop over recordings
 

@@ -149,10 +149,16 @@ end
 dimorder = [dimorder_eachframe setxor(dimorder_eachframe, 1:numel(dmstackdf))];
 dmav = setxor(1:numel(dimorder_eachframe), 1:numel(dmstackdf));
 
-stack = permute(stack, dimorder);
-
-if ~isempty(dmav) %do this after applying any indices
-    stack = mean(stack, dmav, 'native');
+if iscell(stack)
+    stack = cellfun(@(x,y) permute(x,y), stack, repelem(numel(stack), {dimorder}));
+    if ~isempty(dmav) %do this after applying any indices
+        stack = cellfun(@(x) mean(x,y,'native'), stack, repelem(numel(stack), {dmav}));
+    end
+else
+    stack = permute(stack, dimorder);
+    if ~isempty(dmav) %do this after applying any indices
+        stack = mean(stack, dmav, 'native');
+    end
 end
 
 

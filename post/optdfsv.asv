@@ -85,7 +85,7 @@ d.roi.doqc = 0; %do quality control (remove bad rois)
 %% mm (roidraw: mm = "morphological manual")
 
 d.mm.maskname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same regionex
-d.mm.chandraw = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
+d.mm.chan = [1]; %which channel(s) to use as background for roi drawing; 'both' will draw on sum
 d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatenated with any other rois on that channel, ie does not overwrite); this is not automatically done with un-drawn channel because user may not want drawn rois for one channel
 
 %% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))

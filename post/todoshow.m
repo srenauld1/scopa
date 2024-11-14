@@ -20,7 +20,7 @@ disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("IS THERE RECORD OF ORIGINAL Z IN ROI??????")
 disp("fix hard coded, field-dependent nesting in vnm")
 fprintf("FOR NORMAL AND CIRCULAR VARIABLES, CONSIDER A SWITCH FROM MEAN TO INTERP NEAREST WHEN THERE ARE MANY FLYBACK FRAMES, OR WHEN VOLRTE IS LOW, SINCE INCLUDING THOSE IS IN MEAN IS MISLEADING (IF THEY ARE INCLUDED WITH usefbf=1)" + newline)
-
+fprintf("empty in oset invokles defaults becausde it's the same as not existing, do we want that?")
 pause(2)
 
 end
