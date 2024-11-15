@@ -44,7 +44,7 @@ if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
 
-if files %if files==1, oin must be scalar
+if files==1 %if files==1, oin must be scalar
     if numel(oin)>1
         error("if files==1, oin must be scalar")
     end
