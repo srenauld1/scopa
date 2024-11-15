@@ -34,7 +34,7 @@ end
 
 %%%% dos %%%%
 
-o.mn.dodaq = 1; %process daq timeseries?
+o.mn.dodaq = 0; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
 o.mn.dopop = 0; %compute bump?

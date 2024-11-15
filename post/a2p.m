@@ -9,7 +9,7 @@ end
 
 clear glb %clear globals
 
-oa = oset(recin); % set options; oa stands for o all (ie all recordings)
+oa = oset_sr(recin); % set options; oa stands for o all (ie all recordings)
 
 for k = 1:numel(oa) % loop over recordings
 
@@ -118,7 +118,12 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
             optid = fn{m};
-            [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, md.sz_crop, pth.dirstack, o.id.recid, pth.roi.(optid), stackmnthr, hrlr, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            try
+                load([pth.dirstack 'ts_' optid '.mat'])
+            catch
+                [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, md.sz_crop, pth.dirstack, o.id.recid, pth.roi.(optid), stackmnthr, hrlr, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+                save([pth.dirstack 'ts_' optid '.mat'], 'ts',  '-v7.3', '-mat'); %save ts
+            end
         end
     end
 

@@ -131,14 +131,14 @@ end
 
 dmfr = '';
 if isempty(dmplt)
-    dmplt = dmstackdf; %for now only one dim order allowed, so just take from first cell if stack is a cell
-else
-    dmfrtmp = cell2mat(regexp(dmplt, '(\([a-z]*\))', 'match'));
-    if ~isempty(dmfrtmp)
-        dmfr = erase(dmfrtmp, {'(', ')'});
-        dmplt = erase(dmplt, dmfrtmp);
-    end
+    dmplt = [dmstackdf(1:3) '(' dmstackdf(4:end) ')'];
 end
+dmfrtmp = cell2mat(regexp(dmplt, '(\([a-z]*\))', 'match'));
+if ~isempty(dmfrtmp)
+    dmfr = erase(dmfrtmp, {'(', ')'});
+    dmplt = erase(dmplt, dmfrtmp);
+end
+
 fdimnum = numel(dmplt);
 dmplt = [dmplt dmfr];
 

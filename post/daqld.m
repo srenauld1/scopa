@@ -111,7 +111,7 @@ end
 
 if isempty(pth_daq)
     if isempty(dirstack)
-        error(sprintf("dirstack cannot be empty if pth_daq is empty"))
+        error(sprintf("dirstack cannot be empty if pth_daq is empty; pth_daq may be empty because you don't have the daq file, or it's named with inavlid format"))
     end
     pth_daq_pat = [dirstack recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
     pth_daq = rdir(pth_daq_pat);

@@ -11,8 +11,8 @@ fnind_fn_prefix = '' #string, the job id (before any underscore if arrayed) for 
 pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 scopatmpdir = '' #string, keep empty
 
-recdate = ['20240919'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['7'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+recdate = ['20240408'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['*'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
@@ -21,7 +21,7 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 registration_template_group_id = [''] #empty string to skip; list of strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
 do_register = 1 #caiman normCorre registration 
-clipneg = 1 #unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed; set clipneg to 1 to clip negative values to 0; set clipneg to 0 to not do this; (accurate offset is best obtained using autoread checkbox in scanimage); if you do not check 'subtract_offset' then negative values should not exist
+clipneg = 0 #unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed; set clipneg to 1 to clip negative values to 0; set clipneg to 0 to not do this; (accurate offset is best obtained using autoread checkbox in scanimage); if you do not check 'subtract_offset' then negative values should not exist
 discard_channel_reg = 2 #None, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
