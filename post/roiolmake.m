@@ -72,6 +72,9 @@ end
 
 function [imroi, imalpha] = roiolmake_each(pixind_oneroi, imroi, imalpha, col, alp)
 
+if numel(pixind_oneroi(:))>numel(imroi)
+    error("number roi pixels exceeds number image pixels")
+end
 imroi(:) = 0;
 imalpha(:) = 0;
 pixind_oneroi_rgb = pixind_oneroi(:)+numel(imalpha)*([1:3]-1);

@@ -183,7 +183,7 @@
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024111414473625"
+    "timestr": "2024111517330015"
   },
   "nrm": {
     "channorm": 0,
@@ -224,6 +224,7 @@
   },
   "sld": {
     "chanuse": [1,2],
+    "clip": [0,1],
     "cropfb": 1,
     "dostats": 0,
     "smsdspace": [0,0,0],

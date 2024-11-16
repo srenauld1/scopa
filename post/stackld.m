@@ -23,6 +23,7 @@ arguments
     opt.tcrop = [0 0]
     opt.cropfb = 0
     opt.zerostack = 0
+    opt.clip = []
     opt.it = -50;
     opt.iz = []
     opt.smsdspace
@@ -42,6 +43,7 @@ chanuse = opt.chanuse;
 tcrop = opt.tcrop;
 cropfb = opt.cropfb;
 zerostack = opt.zerostack;
+clip = opt.clip;
 it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 smsdspace = opt.smsdspace;
@@ -153,9 +155,7 @@ for spi = 1:numel(pth_stacks)
             numslice_withflyback=numslice_withflyback, ...
             channel_save=channel_save,...
             cropfb=cropfb, ...
-            tcrop=tcrop, ...
-            zerostack=zerostack, ...
-            output_datatype=stackdtype);
+            tcrop=tcrop);
     else
         error("pth_stacks must end with tif or mat");
     end
@@ -169,19 +169,19 @@ for spi = 1:numel(pth_stacks)
             pthsv_prefix=pth_stacks{spi}(1:end-4))
     end
 
-    if smsdtimesec
-        smsdtime = smsdtimesec*imrate;
-        smsd = [smsdspace smsdtime];
-    else
-        smsd = smsdspace;
+    if ~isempty(clip)
+        stack = stackclip(stack, clip=clip);
+    end
+    if zerostack
+        stack = stack - min(stack, [], [1 2 3 4], 'omitmissing'); %subtract min for each channel
+    end
+    if ~isa(stack, stackdtype)
+        stack = stacktype(stack, stackdtype);
+    end
+    if any(smsdspace) || any(smsdtimesec)
+        stacksmooth(stack, method='gaussian', smsdspace=smsdspace, smsdtime=smsdtimesec, imrate=imrate)
     end
 
-    for m = 1:numel(smsd)
-        if smsd(m)
-            %FOR NOW HACKING THIS WITH DTYPE CONVERSION TO UINT16, BUT NEED TO JUST MULTIPLY BY A GAUSSIAN TO DO THIS DTYPE FLEXIBLY
-            stack = uint16(smoothdata(stack, m, 'gaussian', smsd(m)));
-        end
-    end
 
     if doplt && any(strcmp(suffixld{spi}, suffixplt))
 
@@ -223,26 +223,13 @@ if doplt
     numchan = unique(cellfun(@(x) size(x,5), stacktmp)); %must be the same for each stack, will error if not
     if numel(numchan)~=1
         error("all stacks must have same number of channels")
-    else
-        for k = numel(stacktmp):-1:1 %backwards so you don't have to allocate another 
-            for m = numchan:-1:1 %backwards so you don't have to allocate another 
-                stacktmp{k,m} = stacktmp{k}(:,:,:,:,m);
-                stackmntmp{k,m} = stackmntmp{k}(:,:,:,:,m);
-            end
-        end
     end
 
-    if numchan==2
-        if numel(dr)~=numel(stacktmp)
-            dr = repelem(dr, 2); %since we separated channels into different cells
-        end
-    end
 
     stackplt( ...
         stacktmp, ...
         pthgif=[filename_prefix '_.gif'], ...
         dr=dr, ...
-        dmplt='yxz(t)', ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
         )
@@ -251,7 +238,6 @@ if doplt
         stackmntmp, ...
         pthgif=[filename_prefix '_meant_.gif'], ...
         dr=dr, ...
-        dmplt='yxz', ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels([1:ndims(stackmntmp{1})]) ...
         )

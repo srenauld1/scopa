@@ -1,13 +1,13 @@
-function stack = stacktype_change(stack, output_datatype)
+function stack = stacktype(stack, output_datatype)
 
 if ~isa(stack, output_datatype)
-    stackmin = min(stack(:));
+    stackmin = min(stack, [], [1 2 3 4], 'omitmissing');
     if stackmin < 0 && startsWith(output_datatype, 'u')
-        stack = stack - double(stackmin);
-        sprintf("STACK MIN IS NEGATIVE; SUBTRACTING MIN TO ZERO STACK BEFORE CONVERTING TO output_datatype " + output_datatype + " TO PREVENT LOWER CLIPPING")
+        stack = stack - stackmin; %subtract min for each channel
+        error("stack minimum is negative, and stackdtype is " + output_datatype + "; data type conversion would clip negative values in original data type; consider subtracting min (zerostack=1), or clipping negatives yourself (clipneg=1)")
     end
     stackmax = max(stack(:)); %find max after possible zeroing
-    if stackmax > intmax(output_datatype)
+    if startsWith(output_datatype, 'u') && stackmax > intmax(output_datatype)
         error("ERROR, CONVERTING TO output_datatype " + output_datatype + " WILL CAUSE UPPER CLIPPING, CHANGE output_datatype")
     end
     switch output_datatype

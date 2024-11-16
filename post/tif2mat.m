@@ -7,11 +7,9 @@ arguments
     pth_stack_tif
     opt.sz_yxzt = [] % known size of stack, dim order yxzt
     opt.numslice_withflyback = []
-    opt.channel_save = 1
+    opt.channel_save = 1 %saved channels
     opt.chanuse = [1 2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
     opt.cropfb = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
-    opt.zerostack = 1 %subtract min to make min zero
-    opt.output_datatype = 'uint16'
     opt.tcrop = [0, 0] %num frames to crop from [start, end]
     opt.inds_y_read_from = []
     opt.inds_x_read_from = []
@@ -26,8 +24,6 @@ sz_yxzt = opt.sz_yxzt;
 channel_save = opt.channel_save;
 chanuse = opt.chanuse;
 cropfb = opt.cropfb;
-zerostack = opt.zerostack;
-output_datatype = opt.output_datatype;
 tcrop = opt.tcrop;
 inds_y_read_from = opt.inds_y_read_from;
 inds_x_read_from = opt.inds_x_read_from;
@@ -100,29 +96,18 @@ if ndims(stack)==3
 else
 
     keepinds_t = tcrop(1)+1:sz_yxzt(4)-tcrop(2);
-    if ~isequal(keepinds_t, 1:size(stack,4)) && ~isempty(keepinds_t)
+    if ~isequal(keepinds_t, 1:size(stack,5)) && ~isempty(keepinds_t)
         stack = stack(:,:,:,:,keepinds_t);
     end
 
     chanuse = intersect(channel_save, chanuse); %ignore requested channels that don't exist
-    stack = stack(:,:,chanuse,:,:);
+    if ~isequal(chanuse, 1:size(stack,3))
+        stack = stack(:,:,chanuse,:,:);
+    end
 
 end
 
-stackmin = min(stack(:));
-
-if zerostack==0 && stackmin<0 && ( strcmp(output_datatype, 'uint16') || strcmp(output_datatype, 'uint32') || strcmp(output_datatype, 'uint64') )
-    sprintf("WARNING, zerostack==0, but stack min is less than zero, and output_datatype is " + output_datatype + "; forcing zerostack to be true to prevent lower clipping of unsigned integer output datatype")
-    zerostack = 1;
-end
-
-if zerostack
-    stack = stack - stackmin;
-end
-
-stack = stacktype_change(stack, output_datatype);
-
-if ndims(stack)~=3 %do this after type conversion in case stack is large
+if ndims(stack)~=3 
     stack = permute(stack, [1 2 4 5 3]);
 end
 

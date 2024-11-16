@@ -23,6 +23,7 @@ arguments
     opt.tcrop = [0 0]
     opt.cropfb = 0
     opt.zerostack = 0
+    opt.clip = []
     opt.it = -50;
     opt.iz = []
     opt.smsdspace
@@ -42,6 +43,7 @@ chanuse = opt.chanuse;
 tcrop = opt.tcrop;
 cropfb = opt.cropfb;
 zerostack = opt.zerostack;
+clip = opt.clip;
 it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 smsdspace = opt.smsdspace;
@@ -51,17 +53,20 @@ dr = opt.dr;
 imrate = opt.imrate;
 doplt = opt.doplt;
 
+suffixplt = convertStringsToChars(suffixplt);
+if ~isempty(suffixplt) && ~iscell(suffixplt)
+    suffixplt = {suffixplt};
+end
+
 if isempty(doplt)
     doplt = any(strcmp('sld', glb('plt')));
 end
+
 if ~doplt
     fprintf("in stackld, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted" + newline)
     suffixplt = [];
 end
-if isempty(suffixplt)
-    fprintf("in stackld, suffixplt is empty, so doplt is now set to 0, regardless of how it was set entering stackld" + newline)
-    doplt = 0;
-end
+
 
 id = idmake(pth_stack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 suffixstack = id.suffix;
@@ -124,6 +129,11 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
 end
 pth_stacks = flip(pth_stacks); %since spi was backwards above
 
+if isempty(suffixplt) %if it's empty after looking for files, set doplt to 0
+    fprintf(newline + "in stackld, suffixplt is empty (either because the user made it empty, or none of the stacks listed in suffixplt were found), so doplt is now set to 0, regardless of how it was set entering stackld" + newline)
+    doplt = 0;
+end
+
 %%  loop over suffixes, loading and concatenating
 
 
@@ -137,6 +147,7 @@ for spi = 1:numel(pth_stacks)
     if endsWith(pth_stacks{spi}, '.mat')
         stack = struct2cell(load(pth_stacks{spi})); %make sure loaded stack is named 'stack'
         stack = stack{1};
+        chanuse(chanuse>size(stack,5)) = []; %remove 2 if it doesn't exist
         stack = stack(:,:,:,:,chanuse);
     elseif endsWith(pth_stacks{spi}, '.tif')
         stack = tif2mat(pth_stacks{spi}, ...
@@ -144,9 +155,7 @@ for spi = 1:numel(pth_stacks)
             numslice_withflyback=numslice_withflyback, ...
             channel_save=channel_save,...
             cropfb=cropfb, ...
-            tcrop=tcrop, ...
-            zerostack=zerostack, ...
-            output_datatype=stackdtype);
+            tcrop=tcrop);
     else
         error("pth_stacks must end with tif or mat");
     end
@@ -160,19 +169,19 @@ for spi = 1:numel(pth_stacks)
             pthsv_prefix=pth_stacks{spi}(1:end-4))
     end
 
-    if smsdtimesec
-        smsdtime = smsdtimesec*imrate;
-        smsd = [smsdspace smsdtime];
-    else
-        smsd = smsdspace;
+    if ~isempty(clip)
+        stack = stackclip(stack, clip=clip);
+    end
+    if zerostack
+        stack = stack - min(stack, [], [1 2 3 4], 'omitmissing'); %subtract min for each channel
+    end
+    if ~isa(stack, stackdtype)
+        stack = stacktype(stack, stackdtype);
+    end
+    if any(smsdspace) || any(smsdtimesec)
+        stacksmooth(stack, method='gaussian', smsdspace=smsdspace, smsdtime=smsdtimesec, imrate=imrate)
     end
 
-    for m = 1:numel(smsd)
-        if smsd(m)
-            %FOR NOW HACKING THIS WITH DTYPE CONVERSION TO UINT16, BUT NEED TO JUST MULTIPLY BY A GAUSSIAN TO DO THIS DTYPE FLEXIBLY
-            stack = uint16(smoothdata(stack, m, 'gaussian', smsd(m)));
-        end
-    end
 
     if doplt && any(strcmp(suffixld{spi}, suffixplt))
 
@@ -214,27 +223,13 @@ if doplt
     numchan = unique(cellfun(@(x) size(x,5), stacktmp)); %must be the same for each stack, will error if not
     if numel(numchan)~=1
         error("all stacks must have same number of channels")
-    else
-        for k = numel(stacktmp):-1:1 %backwards so you don't have to allocate another 
-            for m = numchan:-1:1 %backwards so you don't have to allocate another 
-                stacktmp{k,m} = stacktmp{k}(:,:,:,:,m);
-                stackmntmp{k,m} = stackmntmp{k}(:,:,:,:,m);
-            end
-        end
     end
 
-    if numchan==2
-        if numel(dr)~=numel(stacktmp)
-            dr = repelem(dr, 2); %since we separated channels into different cells
-        end
-    end
 
     stackplt( ...
         stacktmp, ...
         pthgif=[filename_prefix '_.gif'], ...
         dr=dr, ...
-        fdimnum=3, ...
-        dimorder=[1:ndims(stacktmp{1})], ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
         )
@@ -243,8 +238,6 @@ if doplt
         stackmntmp, ...
         pthgif=[filename_prefix '_meant_.gif'], ...
         dr=dr, ...
-        fdimnum=3, ...
-        dimorder=[1:ndims(stackmntmp{1})], ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels([1:ndims(stackmntmp{1})]) ...
         )
