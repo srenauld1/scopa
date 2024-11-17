@@ -101,7 +101,7 @@
   "ftv": {
     "num_periodic_peaks_defining_laser_oscillations": 10,
     "numpix_to_extract_laser_timeseries": 10,
-    "smsdspace": 2,
+    "smlenpx": 2,
     "smsdtime": 6
   },
   "hires": {
@@ -183,7 +183,7 @@
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024111517330015"
+    "timestr": "2024111621303241"
   },
   "nrm": {
     "channorm": 0,
@@ -227,8 +227,8 @@
     "clip": [0,1],
     "cropfb": 1,
     "dostats": 0,
-    "smsdspace": [0,0,0],
-    "smsdtimesec": 0,
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
     "stackdtype": "uint16",
     "suffixplt": [
       "raw",

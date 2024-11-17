@@ -20,8 +20,8 @@ stack = stack - min(stack(:));
 stack = stack(:,:,:,1:100);
 
 
-% smsdspace = 0.5;
-% if smsdspace
+% smlenpx = 0.5;
+% if smlenpx
 %     for tind = 1:size(stack,4)
 %         stack(:,:,:,tind) = smooth3(stack(:,:,:,tind), 'gaussian', [3 3 3], 0.65);
 %     end

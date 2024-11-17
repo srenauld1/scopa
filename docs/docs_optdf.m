@@ -54,8 +54,8 @@ d.sld.cropfb = 1; %crop flyback frames from each volume
 d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.tcrop = [0, 0]; %how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.stackdtype = 'uint16';
-d.sld.smsdspace = [0, 0, 0]; %gaussian smooth stack in space (yxz); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smsdspace; each entry must be odd, or 0; [0 0 0] or empty to skip smoothing; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
-d.sld.smsdtimesec = 0; %gaussian smooth stack in time; gaussian sd is smsdtime seconds; 0 to skip
+d.sld.smlenpx = [0, 0, 0]; %gaussian smooth stack in space (yxz); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; each entry must be odd, or 0; [0 0 0] or empty to skip smoothing; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+d.sld.smlensec = 0; %gaussian smooth stack in time; gaussian sd is smsdtime seconds; 0 to skip
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = [ %stack suffixes to plot together in stackplt gif, nonexistent or invalid suffixes are ignored; will be reordered from least to most processed (by suffix length)
     %"raw", ...
@@ -69,7 +69,7 @@ d.sld.suffixplt = [ %stack suffixes to plot together in stackplt gif, nonexisten
 %% ftv (ftvproc: load, align, resample fictrac video if not on daq)
 
 d.ftv.num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-d.ftv.smsdspace = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+d.ftv.smlenpx = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
 d.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
 d.ftv.smsdtime = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
 d.ftv.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display

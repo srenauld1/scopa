@@ -3,12 +3,12 @@ function stack = stacksmooth(stack, opt)
 arguments
     stack
     opt.method = 'gaussian'
-    opt.smsdspace = []
+    opt.smlenpx = []
     opt.smsdtime = []
     opt.imrate = []
 end
 method = opt.method;
-smsdspace = opt.smsdspace;
+smlenpx = opt.smlenpx;
 smsdtime = opt.smsdtime;
 imrate = opt.imrate;
 
@@ -16,11 +16,11 @@ if isempty(imrate)
     imrate = 1; %if empty, interpret smsdtime as samples
 end
 
-if isempty(smsdspace)
-    smsdspace = [0 0 0];
+if isempty(smlenpx)
+    smlenpx = [0 0 0];
 else
-    if numel(smsdspace)~=3 && ~isvector(smsdspace)
-        error("smsdspace must be 3-element vector")
+    if numel(smlenpx)~=3 && ~isvector(smlenpx)
+        error("smlenpx must be 3-element vector")
     end
 end
 
@@ -33,7 +33,7 @@ else
 end
 
 smsdtime = smsdtime*imrate;
-smsd = [smsdspace smsdtime];
+smsd = [smlenpx smsdtime];
 dtype = class(stack);
 
 numchan = size(stack, 5);

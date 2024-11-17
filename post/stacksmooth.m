@@ -7,12 +7,12 @@ arguments
     opt.window = []
     opt.smsdtime = []
     opt.imrate = []
-    opt.smsdspace = []
+    opt.smlenpx = []
 end
 dim = opt.dim;
 method = opt.method;
 window = opt.window;
-smsdspace = opt.smsdspace;
+smlenpx = opt.smlenpx;
 smsdtime = opt.smsdtime;
 imrate = opt.imrate;
 
@@ -27,9 +27,9 @@ end
 
     if smsdtime
         smsdtime = smsdtime*imrate;
-        smsd = [smsdspace smsdtime];
+        smsd = [smlenpx smsdtime];
     else
-        smsd = smsdspace;
+        smsd = smlenpx;
     end
 
     for m = 1:numel(smsd)

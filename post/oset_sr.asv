@@ -56,7 +56,7 @@ o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one 
 o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
 o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
-o.ftv.smsdspace = 2;
+o.ftv.smlenpx = 2;
 
 
 %%%% create o for the first time for the simple options specified thusfar %%%%

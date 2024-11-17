@@ -26,8 +26,8 @@ arguments
     opt.clip = []
     opt.it = -50;
     opt.iz = []
-    opt.smsdspace
-    opt.smsdtimesec = []
+    opt.smlenpx
+    opt.smlensec = []
     opt.dostats = 0
     opt.dr = []
     opt.imrate = []
@@ -46,8 +46,8 @@ zerostack = opt.zerostack;
 clip = opt.clip;
 it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
-smsdspace = opt.smsdspace;
-smsdtimesec = opt.smsdtimesec; %smooth the stack in time, 0 to skip
+smlenpx = opt.smlenpx;
+smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
 dostats = opt.dostats;
 dr = opt.dr;
 imrate = opt.imrate;
@@ -178,8 +178,8 @@ for spi = 1:numel(pth_stacks)
     if ~isa(stack, stackdtype)
         stack = stacktype(stack, stackdtype);
     end
-    if any(smsdspace) || any(smsdtimesec)
-        stack = stacksmooth(stack, method='movmedian', smsdspace=smsdspace, smsdtime=smsdtimesec, imrate=imrate);
+    if any(smlenpx) || any(smlensec)
+        stack = stacksmooth(stack, method='movmedian', smlenpx=smlenpx, smsdtime=smlensec, imrate=imrate);
     end
 
 
