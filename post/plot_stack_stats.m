@@ -9,7 +9,7 @@ arguments
     opt.pthsv_prefix = []
 end
 
-sprintf("this function is very old and needs to be updated")
+fprintf("function plot_stack_stats is very old and needs to be updated")
 
 mask = opt.mask;
 iz = opt.iz;

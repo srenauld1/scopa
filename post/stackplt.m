@@ -358,7 +358,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
             end
 
             h.st.hpl{j}.CData = stack(:,:,j,k);
-            if ~isempty(roipx) %&& k==1 %if there are roi variables
+            if ~isempty(roipx) %if there are roi variables
                 frameol = mod(k-1, szolz)+1;
                 h.st.hol{j}.CData = squeeze(imroi(:,:,j,frameol,:)); %squeeze to make it 3d (2d plus color channel)
                 h.st.hol{j}.AlphaData = imalpha(:,:,j,frameol);

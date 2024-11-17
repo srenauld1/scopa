@@ -1,4 +1,4 @@
-function stacksmooth(stack, opt)
+function stack = stacksmooth(stack, opt)
 
 arguments
     stack
