@@ -1,11 +1,14 @@
 function h = initaxim(hfg, ax, stack, opt)
 
+%init axes for images 
+
 arguments
     hfg
     ax struct
     stack
+    opt.ydir = 'reverse' %default reverses y for images because we typically think of them top-to-bottom 
     opt.stackp = [] %hack for rgb image for now
-    opt.cmap double = gray(256) %cmap or 'rgb'
+    opt.cmap = gray(256) %cmap or 'rgb'
     opt.txtvar = []
     opt.dr = [0,1]
     opt.sector_ind = 1
@@ -17,7 +20,7 @@ arguments
     opt.dool = 0
     opt.doui = 0
 end
-
+ydir = opt.ydir;
 stackp = opt.stackp;
 cmap = opt.cmap;
 txtvar = opt.txtvar;
@@ -58,6 +61,8 @@ stackrange = stackmax-stackmin;
 for j = 1:numsubplot
 
     hax{j} = axes('Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+    hold(hax{j}, 'on')
+
     if colmaj
         hax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
         hax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
@@ -73,20 +78,18 @@ for j = 1:numsubplot
     hax{j}.CLim = stackrange*dr+stackmin;
     hax{j}.Toolbar.Visible = 'off';
 
-    colormap(hax{j}, cmap);
     % hax{j}.XLabel.String = xlab;
     % hax{j}.YLabel.String = ylab;
-    axis off
-    axis ij
 
-    hold(hax{j}, 'on')
+    hax{j}.Colormap = cmap;
+    hax{j}.Visible = 'off';
+    hax{j}.YDir = ydir;
 
-    hpl{j} = image(hax{j}, 'CData', dummyim); %dummy_index_dim5=1 will work to initialize for roi_type pixel and roi
-    hpl{j}.CDataMapping = 'scaled'; %this way, full range of any data type will be mapped to cmap range
-
+    hpl{j} = image(hax{j}, 'CData', dummyim); 
+    hpl{j}.CDataMapping = 'scaled'; %scaled maps full range of any data type to colormap range
 
     if dool
-        hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha);
+        hol{j} = image(hax{j}, 'CData', imroi, 'AlphaData', imroialpha); %overlay image, color and alpha (e.g. for rois)
     else
         hol = [];
     end

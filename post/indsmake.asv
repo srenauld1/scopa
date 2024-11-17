@@ -5,15 +5,14 @@ arguments
     indsin {mustBeNumeric} = []
     opt.indsall {mustBeNumeric} = []
     opt.label_prefix char = ''
-    opt.delimprefix char = ': '; %colon with whitespace 
-    opt.delimvec char = ',';
+    opt.delimprefix char = ':';
+    opt.delimvec char = ':';
     opt.printmax = 20
 end
 
 indsall = opt.indsall;
 printmax = opt.printmax;
 label_prefix = opt.label_prefix;
-delimprefix = opt.delimprefix;
 delimvec = opt.delimvec;
 
 
@@ -43,8 +42,6 @@ elseif indsin<0
     else
         inds = 1:numel(indsall);
     end
-elseif all(isnan(indsin))
-    inds = indsin;
 elseif mod(indsin, 1)~=0
     fractional_indsin = 1;
     if numel(indsin)>1 || indsin<0
@@ -87,7 +84,7 @@ else
 end
 
 if ~isempty(label_prefix)
-    indslab = [label_prefix delimprefix indslab];
+    indslab = [label_prefix delimvec indslab];
 end
 
 end

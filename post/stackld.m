@@ -188,8 +188,8 @@ for spi = 1:numel(pth_stacks)
         cnt = cnt+1;
 
         if cnt==1
-            [iz, izstr] = indsmake(iz, indsall=size(stack,3), label_prefix='z', strdelim=': ', printmax=20);
-            [it, itstr] = indsmake(it, indsall=size(stack,4), label_prefix='t', strdelim=': ', printmax=20);
+            [iz, izstr] = indsmake(iz, indsall=size(stack,3), label_prefix='z');
+            [it, itstr] = indsmake(it, indsall=size(stack,4), label_prefix='t');
         end
 
         stacktmp{cnt, 1} = stack(:,:,iz,it,:); %make sure it's indexed into first dimension

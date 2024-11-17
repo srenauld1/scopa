@@ -36,6 +36,10 @@ eval(structvars(opt).'); %bad practice; turn opt into local variables with the s
 
 clear roiolmake %to clear the persistent variable within
 
+if isempty(pthgif)
+    pthgif = pthauto(suffix='.gif', usetime=1);
+end
+
 if ~exist('dmstackdf', 'var') || isempty(dmstackdf)
     dmstackdf = glb('dmstackdf');
     if isempty(dmstackdf)
@@ -44,9 +48,10 @@ if ~exist('dmstackdf', 'var') || isempty(dmstackdf)
     end
 end
 
+
 dimlabels = vec(num2cell(dmstackdf)); 
 maxnumdims = numel(dmstackdf);
-max_num_inds_to_print = 20;
+max_num_inds_to_print = 10;
 max_num_im_per_frame = 60;
 max_num_gif_frames = 2000;
 
@@ -59,44 +64,41 @@ end
 if strcmp(cmap, 'rgb') && size(stack, ndims(stack))~=3
     error("last dimension must be length 3 if cmap argument is 'rgb'")
 end
-if ~isempty(dmstack) && ( ~ischar(dmstack) || any(~ismember(unique(dmstack), [dmstackdf '()'])) )
-    error("dmstack must a char vector, only contain the following characters: " + [dmstackdf '()'])
+if ~isempty(dmstack) && ( ~ischar(dmstack) || ~isequal(numel(erase(dmstack, {'(', ')'})), numel(unique(erase(dmstack, {'(', ')'})))) || any(~ismember(unique(dmstack), [dmstackdf '()'])) )
+    error("dmstack must a char vector, without repeats, and can only contain the following characters: " + [dmstackdf '()'])
 end
-if ~isempty(dmplt) && ( ~ischar(dmplt) || any(~ismember(unique(dmplt), [dmstackdf '()'])) )
-    error("dmstack must be a char vector, and only contain the following characters: " + [dmstackdf '()'])
+if ~isempty(dmplt) && ( ~ischar(dmplt) || ~isequal(numel(erase(dmplt, {'(', ')'})), numel(unique(erase(dmplt, {'(', ')'})))) || any(~ismember(unique(dmplt), [dmstackdf '()'])) )
+    error("dmstack must be a char vector, without repeats, and can only contain the following characters: " + [dmstackdf '()'])
 end
 if iscell(stack) && ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
     error("all stacks (each cell element) must be the same size")
 end
 
-if isempty(pthgif)
-    pthgif = pthauto(suffix='.gif', usetime=1);
-end
 
-
-%% put stack into default order and applying any input indexing
+%% put stack into default order and apply any input indexing
 
 stack = stackperm(stack, dmstack, dmstackdf);
-stack_oneframe = stack(:,:,:,1,1,1);
-szdfo = size(stack);
 
-index_labels_opt = cell(1,6);
-[stack, iy, index_labels_opt] = stackind(stack, iy, index_labels_opt, dmstackdf);
-[stack, ix, index_labels_opt] = stackind(stack, ix, index_labels_opt, dmstackdf);
-[stack, iz, index_labels_opt] = stackind(stack, iz, index_labels_opt, dmstackdf);
-[stack, it, index_labels_opt] = stackind(stack, it, index_labels_opt, dmstackdf);
-[stack, ic, index_labels_opt] = stackind(stack, ic, index_labels_opt, dmstackdf);
-[stack, ik, index_labels_opt] = stackind(stack, ik, index_labels_opt, dmstackdf);
+if iscell(stack)
+    stack_oneframe = stack{1}(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
+    szdfo = size(stack{1});
+else
+    stack_oneframe = stack(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
+    szdfo = size(stack);
+end
+
+[stack, index_labels_opt] = stackind(stack, opt, dmstackdf);
 
 
-%% dmplt (put stack into user-input plot order
+%% dmplt (put stack into user-input plot order)
 
 
 if isempty(dmplt)
-    dmplt = 'yxcz(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
+    dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
 end
 dmfrtmp = cell2mat(regexp(dmplt, '(\([a-z]*\))', 'match'));
 if isempty(dmfrtmp)
+    dm_acrossframes = []; %this is not used in this case, if dmfrtmp is empty, it's just here for clarity
     dm_eachframe = dmplt;
     dmplt_all = dm_eachframe;
 else
@@ -105,7 +107,7 @@ else
     dmplt_all = [dm_eachframe dm_acrossframes];
 end
 
-fdimnum = numel(dm_eachframe);
+numdim_eachframe = numel(dm_eachframe);
 
 dimorder_notaveraged = zeros(1, numel(dmplt_all));
 for k = 1:numel(dmplt_all)
@@ -117,15 +119,23 @@ dimorder_averaged = setxor(1:numel(dimorder_notaveraged), 1:numel(dmstackdf));
 if iscell(stack)
     for k = 1:numel(stack)
         stack{k} = permute(stack{k}, dimorder);
+        dimorder_averaged_nontrivial = dimorder_averaged(size(stack{1},dimorder_averaged)~=1); %do this after indexing and permuting, but before averaging
         if ~isempty(dimorder_averaged) %do this after applying any indices
             stack{k} = mean(stack{k}, dimorder_averaged, 'native');
         end
     end
 else
     stack = permute(stack, dimorder);
+    dimorder_averaged_nontrivial = dimorder_averaged(size(stack,dimorder_averaged)~=1); %do this after indexing and permuting, but before averaging
     if ~isempty(dimorder_averaged) %do this after applying any indices
         stack = mean(stack, dimorder_averaged, 'native');
     end
+end
+
+if isequal(dm_eachframe(1), 'x') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim 
+    ydir = 'normal'; 
+else
+    ydir = 'reverse'; 
 end
 
 
@@ -192,13 +202,13 @@ if isempty(roipx)
     dool = 0;
     roi_loop_size = 1;
     if isempty(ir)
-        roi_message = ', roi-NaN';
+        roi_message = ', roi: NaN';
     else
-        roi_message = ', roi-not plotting roi without pixinds roi argument';
+        roi_message = ', roi: not plotting roi without pixinds roi argument';
     end
 else
     dool = 1;
-    if any(~ismember(dmplt_all(1:3), 'yxz'))
+    if ( numel(dmplt_all)>3 && any(~ismember(dmplt_all(1:3), 'yxz')) ) || ( numel(dmplt_all)<=3 && any(~ismember(dmplt_all, 'yxz')) )
         error("roipx currently only supports xyz as first 3 dimensions, in any order, in frame or across frames") 
     end
     if ~isempty([ix iy iz])
@@ -232,14 +242,14 @@ end
 %% reshape stack into per-gif-frame and across-gif-frame images
 
 sztmp = size(stack);
-if fdimnum>numel(sztmp)
-    fdimnum = numel(sztmp);
+if numdim_eachframe>numel(sztmp)
+    numdim_eachframe = numel(sztmp);
 end
-sz_framedims = sztmp(1:fdimnum);
-sz_framedims = num2cell([sz_framedims(1:2) prod(sz_framedims(3:fdimnum))]);
-stack = reshape(stack, sz_framedims{:}, []); %collapse fdimnum into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
+sz_framedims = sztmp(1:numdim_eachframe);
+sz_framedims = num2cell([sz_framedims(1:2) prod(sz_framedims(3:numdim_eachframe))]);
+stack = reshape(stack, sz_framedims{:}, []); %collapse numdim_eachframe into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
 
-numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
+numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if numdim_eachframe==2)
 numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
 
 if numim_per_frame>max_num_gif_frames
@@ -265,29 +275,36 @@ else
     index_labels = index_labels_opt;
 end
 dimlabels = dimlabels(dimorder);
-index_labels = transpose(index_labels(dimorder));
+index_labels = index_labels(dimorder);
+
+
+index_labels_avg = cell(numel(index_labels), 1);
+for k = 1:numel(dimorder_averaged_nontrivial) %averaged dimensions 
+    il = dimorder_averaged_nontrivial(k);
+    [~, index_labels_avg{il}] = indsmake(index_labels{il}, indsall=index_labels{il}, label_prefix=dimlabels{il}, printmax=max_num_inds_to_print);
+end
+
+index_labels_tmp = index_labels(1:numdim_eachframe); %labels that are the same on every frame
+for k = 1:numel(index_labels_tmp)
+    [~, index_labels_tmp{k}] = indsmake(index_labels_tmp{k}, indsall=index_labels_tmp{k}, label_prefix=dimlabels{k}, printmax=max_num_inds_to_print);
+end
+lab_framestable = index_labels_tmp;
+
+dims_after_permute_changing_across_frames = numdim_eachframe+1:maxnumdims;
+lab_framechange = index_labels(dims_after_permute_changing_across_frames); %labels that can change on each frame
+lab_framechange_numel = cellfun(@numel, lab_framechange);
 
 dr_str = vec(cellfun(@num2str, dr, 'UniformOutput', false))';
 dr_str = cellfun(@(x,y,z) regexprep(x,y,z), dr_str, repelem({' +'}, numel(dr_str)), repelem({'-'}, numel(dr_str)), 'UniformOutput', false);
-dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
-dr_str = ['dr: ' strjoin(dr_str, ' AND ')];
-
-lab_framestable = {dr_str};
-index_labels_tmp = index_labels(1:fdimnum); %labels that are the same on every frame
-for li = 1:numel(index_labels_tmp)
-    [~, index_labels_tmp{li}] = indsmake(index_labels_tmp{li}, indsall=index_labels_tmp{li}, label_prefix=dimlabels{li}, printmax=max_num_inds_to_print);
-end
-lab_framestable = cat(1, lab_framestable, index_labels_tmp);
-dims_changing_across_frames = fdimnum+1:maxnumdims;
-lab_framechange = index_labels(dims_changing_across_frames); %labels that can change on each frame
-lab_framechange_numel = cellfun(@numel, lab_framechange);
+% dr_str = cellfun(@(x,y,z) strrep(x,y,z), dr_str, repelem({'.'}, numel(dr_str)), repelem({'p'}, numel(dr_str)), 'UniformOutput', false);
+dr_str = [', dr: ' strjoin(dr_str, ' AND ')];
 
 cnt = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if isempty(roipx)
         roinum_title = roi_message;
     else
-        roinum_title = [', roi-' num2str(ir(ri))];
+        roinum_title = [', roi: ' num2str(ir(ri))];
     end
     for k = 1:numframes
         cnt = cnt+1;
@@ -296,10 +313,12 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         subtmp = subtmp(1:numel(lab_framechange));
         labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
         labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
-        labtmp = cellfun(@horzcat, dimlabels(dims_changing_across_frames), repelem({': '}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
+        labtmp = cellfun(@horzcat, dimlabels(dims_after_permute_changing_across_frames), repelem({': '}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
         titlesuffix = cat(1, lab_framestable(:), labtmp(:));
+        titlesuffix(dimorder_averaged_nontrivial) = index_labels_avg(dimorder_averaged_nontrivial); %update index labels for any dimensions that are changing across frames and that have been non-trivially averaged (so that they are stable showing the averaged indices on every gif frame)
+        titlesuffix(dimorder_averaged_nontrivial) = insertAfter(titlesuffix(dimorder_averaged_nontrivial), ':', '(avg)');
         titlesuffix = strjoin(titlesuffix, ', ');
-        titlesuffix = [titlesuffix roinum_title];
+        titlesuffix = [titlesuffix, roinum_title, dr_str];
         titlenew{cnt} = {strrep(title_prefix, '_', ' '); titlesuffix};
     end
 end
@@ -308,7 +327,7 @@ end
 
 ax = axarr(stack, marginax=marginax, marginfg=marginfg, stackjust=stackjust);
 h = initfig(fontsz=fontsz, szf=szf);
-h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap);
+h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
 
 %% plot
 
@@ -322,17 +341,17 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         dimorder_ol = [dimorder(1:ndims(stack_oneframe)) ndims(stack_oneframe)+1];
 
         imroi = permute(imroi, dimorder_ol);
-        imroi = reshape(imroi, sz_framedims_ol{:}, [], size(imroi, ndims(imroi))); %collapse fdimnum into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
+        imroi = reshape(imroi, sz_framedims_ol{:}, [], size(imroi, ndims(imroi))); %collapse numdim_eachframe into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
 
         imalpha = permute(imalpha, dimorder_ol(1:end-1));
-        imalpha = reshape(imalpha, sz_framedims_ol{:}, []); %collapse fdimnum into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
+        imalpha = reshape(imalpha, sz_framedims_ol{:}, []); %collapse numdim_eachframe into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim
 
         szolz = size(imroi,4);
 
     end
-    for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after fdimnum
+    for k = 1:numframes %for each figure/gif frame, which is collapsed dimensions after numdim_eachframe
         cnt = cnt+1;
-        for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
+        for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if numdim_eachframe==2)
 
             if k==1
                 h.st.hax{j}.CLim = clim_tmp;
