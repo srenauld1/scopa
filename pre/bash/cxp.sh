@@ -62,7 +62,7 @@ REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimit
 
 REGISTER_IN_2D=(1) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
-LEN_WINDOW_SMOOTH_T_MCP_SEC=(0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
+SMLENPX_MCP=(0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
 MAX_SHIFTS_PRC=(10 10 10) #empty to skip; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
@@ -73,7 +73,7 @@ EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_D
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
 USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif); if it doesn't exist, won't error
 
-LEN_WINDOW_SMOOTH_T_RSC_SEC=(0) #seconds, gaussian temporal smoothing window length in scannoiserm (only used if do_remove=1)
+SMLENPX_RSC=(0) #seconds, gaussian temporal smoothing window length in scannoiserm (only used if do_remove=1)
 USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
 
 EXTRACT_IN_2D=(1)
@@ -153,7 +153,7 @@ pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 pars["REGISTRATION_TEMPLATE_GROUP_ID"]="${REGISTRATION_TEMPLATE_GROUP_ID[@]}"
 pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
 pars["HALFWIDTH_WINDOW_BGSUB"]="${HALFWIDTH_WINDOW_BGSUB[@]}"
-pars["LEN_WINDOW_SMOOTH_T_MCP_SEC"]="${LEN_WINDOW_SMOOTH_T_MCP_SEC[@]}"
+pars["SMLENPX_MCP"]="${SMLENPX_MCP[@]}"
 pars["MAX_SHIFTS_PRC"]="${MAX_SHIFTS_PRC[@]}"
 pars["DENOISE_VOLUME"]="${DENOISE_VOLUME[@]}"
 pars["DENOISE_SLICE_INDEX"]="${DENOISE_SLICE_INDEX[@]}"
@@ -162,7 +162,7 @@ pars["USE_BACKGROUND_SUBTRACTED"]="${USE_BACKGROUND_SUBTRACTED[@]}"
 pars["USE_DENOISED"]="${USE_DENOISED[@]}"
 pars["USE_SCANNOISE_REMOVED"]="${USE_SCANNOISE_REMOVED[@]}"
 pars["EPOCH_CHOOSE_DENOISE"]="${EPOCH_CHOOSE_DENOISE[@]}"
-pars["LEN_WINDOW_SMOOTH_T_RSC_SEC"]="${LEN_WINDOW_SMOOTH_T_RSC_SEC[@]}"
+pars["SMLENPX_RSC"]="${SMLENPX_RSC[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
 pars["REGIONEX"]="${REGIONEX[@]}"
 pars["FNIND_FN_PREFIX"]="${FNIND_FN_PREFIX[@]}"

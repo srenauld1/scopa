@@ -36,11 +36,11 @@ end
 
 o.mn.dodaq = 0; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
-o.mn.doroi = 1; %make/load/process rois?
+o.mn.doroi = 0; %make/load/process rois?
 o.mn.dopop = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
-o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+%o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 regionex_tmp = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
@@ -49,11 +49,11 @@ regionex_tmp = {'none'}; %use 'none' to skip prompt to define substack (will ent
 o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1 2]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
-o.sld.suffixplt = ["cmrg_dcdn"]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
+o.sld.suffixplt = ["raw", "cmrg"]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
 o.sld.clip = -1; %[lower upper] quantiles, or -1 to clip negatives 
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
-o.sld.sp.it = [150:200]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.it = [1:400]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
 o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
 o.ftv.smlenpx = 2;

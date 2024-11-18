@@ -33,10 +33,10 @@ class parse_pars_file():
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc,   
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc,   
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
+                      do_remove, smlenpx_rsc, use_scannoise_removed, 
                       do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job):
     
@@ -109,10 +109,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[register_in_2d],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--len_window_smooth_t_mcp_sec",  # name on the CLI - drop the `--` for positional/required parameters
+        "--smlenpx_mcp",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=float,
-        default=[len_window_smooth_t_mcp_sec],  # default if nothing is provided
+        default=[smlenpx_mcp],  # default if nothing is provided
     )
     CLI.add_argument(
         "--max_shifts_prc",  # name on the CLI - drop the `--` for positional/required parameters
@@ -163,10 +163,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[do_remove],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--len_window_smooth_t_rsc_sec",  # name on the CLI - drop the `--` for positional/required parameters
+        "--smlenpx_rsc",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=float,
-        default=[len_window_smooth_t_rsc_sec],  # default if nothing is provided
+        default=[smlenpx_rsc],  # default if nothing is provided
     )
     CLI.add_argument(
         "--do_crop_only",  # name on the CLI - drop the `--` for positional/required parameters
@@ -278,7 +278,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.registration_template_group_id = pars.REGISTRATION_TEMPLATE_GROUP_ID
         args.register_in_2d = pars.REGISTER_IN_2D
         args.halfwidth_window_bgsub = pars.HALFWIDTH_WINDOW_BGSUB
-        args.len_window_smooth_t_mcp_sec = pars.LEN_WINDOW_SMOOTH_T_MCP_SEC
+        args.smlenpx_mcp = pars.SMLENPX_MCP
         args.max_shifts_prc = pars.MAX_SHIFTS_PRC
         args.denoise_volume = pars.DENOISE_VOLUME
         args.denoise_slice_index = pars.DENOISE_SLICE_INDEX
@@ -287,7 +287,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.use_denoised = pars.USE_DENOISED
         args.use_scannoise_removed = pars.USE_SCANNOISE_REMOVED
         args.epoch_choose_denoise = pars.EPOCH_CHOOSE_DENOISE
-        args.len_window_smooth_t_rsc_sec = pars.LEN_WINDOW_SMOOTH_T_RSC_SEC
+        args.smlenpx_rsc = pars.SMLENPX_RSC
         args.extract_in_2d = pars.EXTRACT_IN_2D
         args.regionex = pars.REGIONEX
 
@@ -333,7 +333,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     do_register = int(args.do_register[0])
     register_in_2d = int(args.register_in_2d[0])
     halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
-    len_window_smooth_t_mcp_sec = float(args.len_window_smooth_t_mcp_sec[0])
+    smlenpx_mcp = float(args.smlenpx_mcp[0])
 
     if isinstance(args.max_shifts_prc[0], list):
         max_shifts_prc = args.max_shifts_prc[0] #keep as list
@@ -365,7 +365,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     epoch_choose_denoise = [int(tmp) for tmp in epoch_choose_denoise] #make sure int
     
     do_remove = int(args.do_remove[0])
-    len_window_smooth_t_rsc_sec = float(args.len_window_smooth_t_rsc_sec[0])
+    smlenpx_rsc = float(args.smlenpx_rsc[0])
     do_crop_only = int(args.do_crop_only[0])
     do_extract = int(args.do_extract[0])
     extract_in_2d = int(args.extract_in_2d[0])
@@ -392,10 +392,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc,  
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc,  
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed, 
+                      do_remove, smlenpx_rsc, use_scannoise_removed, 
                       do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job)
 

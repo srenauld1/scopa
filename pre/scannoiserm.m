@@ -1,5 +1,5 @@
 
-function scannoiserm(pth_stack_tif, len_window_smooth_t_rsc_sec)
+function scannoiserm(pth_stack_tif, smlenpx_rsc)
 
 
 sprintf("\n\n\nENTERING scannoiserm.m")
@@ -66,9 +66,9 @@ else
     dr_str = ['DR' num2str(dr(1)) 'to' num2str(dr(2))];
 end
 
-if len_window_smooth_t_rsc_sec
-    smooth_str = [strrep(num2str(len_window_smooth_t_rsc_sec), '.', 'p') 'secSmooth'];
-    len_window_smooth_t_rsc_samp = len_window_smooth_t_rsc_sec / sampper; %does not need to be rounded for smoothdata
+if smlenpx_rsc
+    smooth_str = [strrep(num2str(smlenpx_rsc), '.', 'p') 'secSmooth'];
+    len_window_smooth_t_rsc_samp = smlenpx_rsc / sampper; %does not need to be rounded for smoothdata
 else
     smooth_str = 'nosmooth';
     len_window_smooth_t_rsc_samp = 0;

@@ -11,15 +11,15 @@ from z_stitch import stitch_registered_slices
 from registration_template import choose_registration_template
 from separate_channels_when_two import separate_channels_when_two
 from subtract_background import subtract_background
-from scipy.ndimage import gaussian_filter as smooth_movie
+from stacksmooth import stacksmooth
 from im_montage import im_montage
 from plot_gif import plot_gif
 from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_group_id, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc, register_presmoothed, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
-   
+def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, register_presmoothed, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
     ########################## LOAD / PREP STACK ##########################
@@ -109,10 +109,10 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     ########################## TEMPORAL SMOOTHING ##########################
 
-    if len_window_smooth_t_mcp_sec: 
-        stack = smooth_stack(stack, len_window_smooth_t_mcp_sec, md['volrate'], md['dims'][0])
+    if np.any(smlenpx_mcp): 
+        stack = stacksmooth(stack, smlenpx_mcp, md['volrate'], md['dims'][0])
         if two_channel_reg:
-            stack_secondary = smooth_stack(stack_secondary, len_window_smooth_t_mcp_sec, md['volrate'], md['dims'][0])
+            stack_secondary = stacksmooth(stack_secondary, smlenpx_mcp, md['volrate'], md['dims'][0])
 
     ########################## WRITE SECONDARY TMP STACK IF two_channel_reg ##########################
 
@@ -122,6 +122,8 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, registration_template_gro
 
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 
+    if scopatmplt:
+        registration_template_group_id = [ pth_prefix.split('/')[-1] + '_' + pth_prefix.split('/')[-2] ]
     regtemplate = choose_registration_template(stack, md, registration_template_group_id, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stack_has_multiple_z_slices, makeplots) #if making a template, use stack rather than stack_secondary
         
     ########################## REGISTRATION (CAIMAN NORMCORRE) ##########################
@@ -220,25 +222,6 @@ def cropflyback(stack, dims, flyback):
 
 
 
-def smooth_stack(stack, len_window_smooth_t_mcp_sec, volrate, length_t):
-      
-
-        print("TEMPORALLY SMOOTHING STACK BEFORE REGISTRATION")
-
-        dimtmp_presmooth = stack.shape
-        numsigma_smooth_prereg = 5.0 #truncate gaussian filter after this many stds
-        sampper = 1/volrate
-        len_window_smooth_t_mcp_samp = len_window_smooth_t_mcp_sec / sampper #smooth might require int, cant remember 
-        sigma_smooth_prereg = (len_window_smooth_t_mcp_samp - 1) / numsigma_smooth_prereg / 2
-        if len(stack.shape)==3:
-            stack = smooth_movie(stack, sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=(1,2))
-        elif len(stack.shape)==4:
-            stack = smooth_movie(stack, sigma=(0.0,0.5,0.5,0.5), mode='reflect', truncate=numsigma_smooth_prereg, axes=(0,1,2,3))
-        #plot_gif(stack, '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
-        # stack = smooth_movie(stack.reshape(length_t, -1), sigma=sigma_smooth_prereg, mode='reflect', truncate=numsigma_smooth_prereg, axes=0)
-        # stack = stack.reshape(dimtmp_presmooth)
-
-        return stack
 
 
 def write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr):

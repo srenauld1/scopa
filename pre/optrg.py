@@ -24,10 +24,14 @@ def optrg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None,
     use_cuda = False # flag for using a GPU; for now this is always false, maybe determine if gpu exists in future; registration is not slow enough for me to care though
 
     # some options that are good to modify 
-    niter_rig = 2 #default 1; number registration iterations (regardles of pw_rigid, or is3d); template is updated as bin_median of registered stack from each iteration 
+    niter_rig = 5 #default 1; number registration iterations (regardles of pw_rigid, or is3d); template is updated as bin_median of registered stack from each iteration 
     shifts_opencv = False #automatically false if is3D==true, or if pw_rigid = True . . . so true only works for rigid 2d registration . . . true uses intercubic interp (faster but smoother), false uses fourier; keeping this false means it will always be applied as specified
     border_nan = 'copy' #(True, False, 'copy', 'min'); default is true; Specifies how to deal with borders (where imaginary comes into frame after applying shifts) true uses nan, false uses 0, 'min' uses min value along first shift dimension, 'copy' copies nearest value along first shift dimension
-    num_splits_time = 10 #default is 14 (for rigid and nonrigid); below, num_splits_time is applied to both splits_els (nonrigid) and splits_rig (rigid); num_splits_time is for paralellization, number of frames for each parallel batch; within each split frames are processed one at a time; this is not important unless you think your registration is taking too long
+    
+    numsec_batch = 20
+    numsamp_batch = numsec_batch*md['volrate']
+    
+    num_splits_time = int(md['numvol']/numsamp_batch) #default is 14 (for rigid and nonrigid); below, num_splits_time is applied to both splits_els (nonrigid) and splits_rig (rigid); num_splits_time is for paralellization, number of frames for each parallel batch; within each split frames are processed one at a time; this is not important unless you think your registration is taking too long
     
     if register_in_2d:
         is3D = False #if not 3d, register each slice . . . 
@@ -45,6 +49,13 @@ def optrg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None,
         else:
             max_shifts = [int(np.round(stack_shape_space[ind]*val/100)) for ind,val in enumerate(tuple(max_shifts_prc))]
             print("\nuser specified nonempty value of " + str(max_shifts_prc) + " for max_shifts_prc; \nusing all 3 (xyz) values of max_shifts_prc to set max_shifts to: " + str(max_shifts) + "\nif your fov drifts more than this many pixels in xy, set max_shifts_prc to a larger number; \nset it just large enough to capture drift, but not too large because that removes signal in the correlation")
+
+        if max_shifts[2]==0:
+            if stack_shape_space[2]<4:
+                raise Exception("max z shifts for stack with fewer than 4 slices is 1; do you really want this?")
+            else:
+                print("\changing z max_shifts for 3d registration from 0 to 1")
+                max_shifts[2]=1
 
 
     #a few options that are only relevant for nonrigid registration (if pw_rigid=True), which may not ever be necessary for fly brains (??)
@@ -80,9 +91,9 @@ def optrg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None,
     ## CHECK OPTIONS FOR PROBLEMS ##
     if not nonneg_movie:
         raise Exception("scopa makes stack nonnegative by default, so nonneg_movie should always be true; in general though i don't think this is very important")
-    if not register_in_2d:
-        if np.ptp(dxy)>np.min(dxy):
-            raise Exception("you are trying to do 3d registration on a stack with at least one voxel width that is at least double the smallest dimension's voxel width (most likely, z width is greater than x and y); consider 2d registration instead; but if you want to proceed with 3d registration, comment this exception and run again")
+    # if not register_in_2d:
+    #     if np.ptp(dxy)>np.min(dxy):
+    #         raise Exception("you are trying to do 3d registration on a stack with at least one voxel width that is at least double the smallest dimension's voxel width (most likely, z width is greater than x and y); consider 2d registration instead; but if you want to proceed with 3d registration, comment this exception and run again")
     if pw_rigid==True:
         raise Exception("you are trying to run non-rigid registration with pw_rigid=True; the options in scopa have not been optimized for nonrigid registration; it may work well, but it is not well tested")
     if (is3D or pw_rigid) and shifts_opencv:

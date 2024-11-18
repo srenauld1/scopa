@@ -36,19 +36,19 @@ if len(sys.argv)>1:
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc,  
+                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc,  
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, len_window_smooth_t_rsc_sec, use_scannoise_removed,
+                      do_remove, smlenpx_rsc, use_scannoise_removed,
                       do_crop_only, do_extract, extract_in_2d, regionex, 
                       do_analysis, first_job] = \
     parse_command_line( folder_with_all_recordings_on_storage_and_compute_filesystems = folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix = pth_storage_prefix, 
                       do_copyfiles = do_copyfiles, fnind_fn_prefix = fnind_fn_prefix, pth_parsfile = pth_parsfile, scopatmpdir = scopatmpdir, 
                       recdate = recdate, fly = fly, trial = trial, folder_substring = folder_substring, recording_index = recording_index, file_matching_style = file_matching_style,
-                      registration_template_group_id = registration_template_group_id, do_register = do_register, register_in_2d = register_in_2d, halfwidth_window_bgsub = halfwidth_window_bgsub, len_window_smooth_t_mcp_sec = len_window_smooth_t_mcp_sec, max_shifts_prc = max_shifts_prc,  
+                      registration_template_group_id = registration_template_group_id, do_register = do_register, register_in_2d = register_in_2d, halfwidth_window_bgsub = halfwidth_window_bgsub, smlenpx_mcp = smlenpx_mcp, max_shifts_prc = max_shifts_prc,  
                       do_denoise = do_denoise, do_stitch = do_stitch, denoise_volume = denoise_volume, denoise_slice_index = denoise_slice_index, num_epochs_denoise = num_epochs_denoise, 
                       use_background_subtracted = use_background_subtracted, use_denoised = use_denoised, epoch_choose_denoise = epoch_choose_denoise, 
-                      do_remove = do_remove, len_window_smooth_t_rsc_sec = len_window_smooth_t_rsc_sec, use_scannoise_removed = use_scannoise_removed, 
+                      do_remove = do_remove, smlenpx_rsc = smlenpx_rsc, use_scannoise_removed = use_scannoise_removed, 
                       do_crop_only = do_crop_only, do_extract = do_extract, extract_in_2d = extract_in_2d, regionex = regionex, 
                       do_analysis = do_analysis, first_job = first_job)
 
@@ -67,9 +67,9 @@ else:
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range) . . . IS THIS STILL TRUE?")
 
-if len_window_smooth_t_mcp_sec and not register_presmoothed:
+if smlenpx_mcp and not register_presmoothed:
     register_presmoothed = 0
-    print("register_presmoothed IS TRUE BUT len_window_smooth_t_mcp_sec IS 0, SETTING register_presmoothed TO FALSE")
+    print("register_presmoothed IS TRUE BUT smlenpx_mcp IS 0, SETTING register_presmoothed TO FALSE")
 
 if not do_copyfiles:
 
@@ -142,7 +142,7 @@ for ri, _ in enumerate(pth_read_all):
             spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           except Exception as err:
             print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, registration_template_group_id, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, len_window_smooth_t_mcp_sec, max_shifts_prc, register_presmoothed, cluster_backend, use_cluster, makeplots)
+          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, register_presmoothed, registration_template_group_id, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
         chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
@@ -158,7 +158,7 @@ for ri, _ in enumerate(pth_read_all):
         eng.addpath(eng.genpath(pth_scopa))
         mtlout = io.StringIO()
         mtlerr = io.StringIO()
-        eng.scannoiserm(pth_read_all[ri], len_window_smooth_t_rsc_sec, stdout=mtlout, stderr=mtlerr, nargout=0)
+        eng.scannoiserm(pth_read_all[ri], smlenpx_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
 
       if do_extract or do_crop_only:
         extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)

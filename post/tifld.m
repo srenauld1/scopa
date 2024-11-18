@@ -49,7 +49,7 @@ end
 if stack_size_is_known %put these warnings before call to TIFFStack because it can be slow, good to know in advance (if you know size_read_from)
     
     if ~all(inds_y_read_from >= 1 & inds_y_read_from <= size_read_from(1))
-        error("REQUESTED inds_x_reaa2d_from are not subset of available stack")
+        error("REQUESTED inds_y_read_from are not subset of available stack")
     end
     if ~all(inds_x_read_from >= 1 & inds_x_read_from <= size_read_from(2))
         error("REQUESTED inds_x_read_from are not subset of available stack")
@@ -58,10 +58,10 @@ if stack_size_is_known %put these warnings before call to TIFFStack because it c
         error("REQUESTED inds_c_read_from are not subset of available stack")
     end
     if ~all(inds_z_read_from >= 1 & inds_z_read_from <= size_read_from(4))
-        error("REQUESTED inds_x_read_from are not subset of available stack")
+        error("REQUESTED inds_z_read_from are not subset of available stack")
     end
     if ~all(inds_t_read_from >= 1 & inds_t_read_from <= size_read_from(5))
-        error("REQUESTED inds_x_read_from are not subset of available stack")
+        error("REQUESTED inds_t_read_from are not subset of available stack")
     end
         
     fullsize_c_read_from = size_read_from(3);
