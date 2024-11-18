@@ -2,8 +2,7 @@ function stack = stacktype(stack, output_datatype)
 
 if ~isa(stack, output_datatype)
     stackmin = min(stack, [], [1 2 3 4], 'omitmissing');
-    if stackmin < 0 && startsWith(output_datatype, 'u')
-        stack = stack - stackmin; %subtract min for each channel
+    if any(stackmin < 0) && startsWith(output_datatype, 'u')
         error("stack minimum is negative, and stackdtype is " + output_datatype + "; data type conversion would clip negative values in original data type; consider subtracting min (zerostack=1), or clipping negatives yourself (clipneg=1)")
     end
     stackmax = max(stack(:)); %find max after possible zeroing
