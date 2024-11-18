@@ -127,6 +127,7 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
         suffixld(spi) = [];
     end
 end
+pth_stacks = flip(pth_stacks); %since spi was backwards above, and pth_stacks was indexed with a loop increment cnt
 
 if isempty(suffixplt) %if it's empty after looking for files, set doplt to 0
     fprintf(newline + "in stackld, suffixplt is empty (either because the user made it empty, or none of the stacks listed in suffixplt were found), so doplt is now set to 0, regardless of how it was set entering stackld" + newline)

@@ -24,7 +24,7 @@ def optrg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None,
     use_cuda = False # flag for using a GPU; for now this is always false, maybe determine if gpu exists in future; registration is not slow enough for me to care though
 
     # some options that are good to modify 
-    niter_rig = 5 #default 1; number registration iterations (regardles of pw_rigid, or is3d); template is updated as bin_median of registered stack from each iteration 
+    niter_rig = 1 #default 1; number registration iterations (regardles of pw_rigid, or is3d); template is updated as bin_median of registered stack from each iteration 
     shifts_opencv = False #automatically false if is3D==true, or if pw_rigid = True . . . so true only works for rigid 2d registration . . . true uses intercubic interp (faster but smoother), false uses fourier; keeping this false means it will always be applied as specified
     border_nan = 'copy' #(True, False, 'copy', 'min'); default is true; Specifies how to deal with borders (where imaginary comes into frame after applying shifts) true uses nan, false uses 0, 'min' uses min value along first shift dimension, 'copy' copies nearest value along first shift dimension
     
