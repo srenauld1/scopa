@@ -147,8 +147,8 @@ for spi = 1:numel(pth_stacks)
     if endsWith(pth_stacks{spi}, '.mat')
         stack = struct2cell(load(pth_stacks{spi})); %make sure loaded stack is named 'stack'
         stack = stack{1};
-        chanuse(chanuse>size(stack,5)) = []; %remove 2 if it doesn't exist
-        stack = stack(:,:,:,:,chanuse);
+        chanusetmp = chanuse(chanuse<=size(stack,5)); %only use requested channels that exist, if you request one channel that doesn't exist this will error
+        stack = stack(:,:,:,:,chanusetmp);
     elseif endsWith(pth_stacks{spi}, '.tif')
         stack = tif2mat(pth_stacks{spi}, ...
             sz_yxzt=sz, ...
@@ -209,6 +209,7 @@ if doplt
 
     [~, plot_stack_order] = sort(indsnew);
 
+    stacktmp = stacktmp(plot_stack_order);
     dr = dr(plot_stack_order);
 
     fn_suffix_insert = strjoin(suffixplt, '_AND_');
@@ -220,9 +221,14 @@ if doplt
     index_labels{3} = iz; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
     index_labels{4} = it; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
 
-    numchan = unique(cellfun(@(x) size(x,5), stacktmp)); %must be the same for each stack, will error if not
-    if numel(numchan)~=1
-        error("all stacks must have same number of channels")
+    numchan = cellfun(@(x) size(x,5), stacktmp);
+    if numel(unique(numchan))~=1
+        if numchan(strcmp(suffixplt, 'raw'))==2 && any(numchan(~strcmp(suffixplt, 'raw'))==1)
+            fprintf("you may have discarded a channel in creating some stacks besides raw, removing channel 2 from the temporary raw plotting stack so it can be plotted with any single-channel stack" + newline)
+            stacktmp{strcmp(suffixplt, 'raw')} = stacktmp{strcmp(suffixplt, 'raw')}(:,:,:,:,1);
+        else
+            error("all stacks must have same number of channels")
+        end
     end
 
 
