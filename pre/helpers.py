@@ -8,12 +8,29 @@ import mat73
 
 
 
-def stack_reshape_transpose_zero_type(stack, dims, clipneg=0):
+def stack_reshape_transpose_clip_zero_type(stack, dims, clip=0):
 
     stack = stack.reshape(dims[0], dims[1], dims[2], dims[3])
     stack = np.transpose(stack, (0, 3, 2, 1)) #put in order t x y z 
-    if clipneg: #if you use autoread offset in scanimage, negatives should be noise and can be removed
-        stack[stack<0] = 0
+    
+    if isinstance(clip, int):
+        clip = [clip]
+    if any(el for el in clip):
+        if clip==[-1]: #if you use autoread offset and subtract offset in scanimage, and your stack is not extremely noisy, negatives should be mostly noise and can be removed
+            stack[stack<0] = 0
+        elif len(clip)==2:
+            if clip[0]==-1:
+                minnew = 0
+            else:
+                minnew = np.quantile(stack, clip[0]) #index minnew into chan in case you want to see these values for each channel
+            maxnew = np.quantile(stack, clip[1]) #index maxnew into chan in case you want to see these values for each channel
+            idx = stack<minnew
+            stack[idx] = minnew
+            idx = stack>maxnew
+            stack[idx] = maxnew
+        else:
+            raise Exception("to apply clipping, clip must be 2 element list or [-1], or to skip clipping, clip should be [0] or []")
+
     mnmv = np.min(stack)
     stack -= mnmv #make movie nonnegative then convert to uint16 (not sure this matters for caiman, but useful further ahead)
     stack = stack.astype('uint16')

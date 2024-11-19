@@ -169,7 +169,7 @@ for spi = 1:numel(pth_stacks)
             pthsv_prefix=pth_stacks{spi}(1:end-4))
     end
 
-    if ~isempty(clip)
+    if any(clip)
         stack = stackclip(stack, clip=clip);
     end
     if zerostack
@@ -231,11 +231,15 @@ if doplt
         end
     end
 
+    for k = 1:numel(index_labels{4})
+        tmp(k,:) = cat(2, index_labels{4}(k), shifts(k,:));
+    end
+    index_labels{4} = tmp;
 
     stackplt( ...
         stacktmp, ...
         pthgif=[filename_prefix '_.gif'], ...
-        dr=dr, ...
+        dr={[0 1], [0.6 1]}, ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
         )

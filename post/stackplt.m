@@ -310,8 +310,12 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         cnt = cnt+1;
         [i1,i2,i3,i4,i5,i6]=ind2sub(lab_framechange_numel(:)', k); %subscript of frame in all possible dimensions
         subtmp = [i1,i2,i3,i4,i5,i6];
-        subtmp = subtmp(1:numel(lab_framechange));
-        labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
+        subtmp = subtmp(1:numel(lab_framechange),1);
+        labtmp = cell(numel(lab_framechange),1);
+        for m = 1:numel(lab_framechange)
+            labtmp{m} = lab_framechange{m}(subtmp(m),:);
+        end
+        % labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
         labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
         labtmp = cellfun(@horzcat, dimlabels(dims_after_permute_changing_across_frames), repelem({': '}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
         titlesuffix = cat(1, lab_framestable(:), labtmp(:));

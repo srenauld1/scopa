@@ -2,11 +2,11 @@
 import numpy as np
 import os
 from tifffile.tifffile import imwrite, imread
-
+import scipy.io as sio
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from optrg import optrg
-from helpers import tracefunc, stack_reshape_transpose_zero_type 
+from helpers import tracefunc, stack_reshape_transpose_clip_zero_type 
 from z_stitch import stitch_registered_slices 
 from registration_template import choose_registration_template
 from separate_channels_when_two import separate_channels_when_two
@@ -18,7 +18,7 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clipneg, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, register_presmoothed, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, register_presmoothed, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
 
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -73,13 +73,13 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clipneg, disc
     phoff = bidiphase_compute(stack[::bidiphase_frame_increment,...]) #compute bidirectional phase offset, can be zero 
     if phoff:
         bidiphase_shift(stack, phoff) #correct any bidirectional phase offset if nonzero
-    stack = stack_reshape_transpose_zero_type(stack, md['dims'], clipneg=clipneg)
+    stack = stack_reshape_transpose_clip_zero_type(stack, md['dims'], clip=clip)
     if two_channel_reg:
         stack_secondary = cropflyback(stack_secondary, md['dims'], md['flyback'])
         phoff = bidiphase_compute(stack_secondary[::bidiphase_frame_increment,...])
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
-        stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'], clipneg=clipneg)
+        stack_secondary = stack_reshape_transpose_clip_zero_type(stack_secondary, md['dims'], clip=clip)
     
 
     stack_shape = stack.shape
@@ -100,6 +100,15 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clipneg, disc
         if two_channel_reg:
             stack_secondary = subtract_background(stack_secondary, halfwidth_window_bgsub, pth_prefix, makeplots, indzall)
 
+    clip_values_outside_original_range = 1 #CFRW WILSONLAB 20241023 CLIP VALUES OUTSIDE ORIGINAL DATA RANGE; INTERPOLATION WHEN APPLYING SHIFTS CAN INTRODUCE THESE VALUES; ORIGINAL MATLAB NORMCORRE DID THIS BUT PYTHON CAIMAN DOES NOT
+    if clip_values_outside_original_range:
+        #DON'T ALLOW REGISTER PREMOOTHED FALSE ANYMORE! OTHERWISE REDO THIS FOR SMOOTHED IF IT CAN BE FALSE 
+        limax = tuple(np.arange(1,np.ndim(stack)))
+        immn = np.min(stack, axis=limax)
+        immx = np.max(stack, axis=limax)
+        if two_channel_reg:
+            immn_secondary = np.min(stack_secondary, axis=limax)
+            immx_secondary = np.max(stack_secondary, axis=limax)
 
     ########################## WRITE SECONDARY TMP STACK IF register_presmoothed ##########################
 
@@ -163,9 +172,19 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clipneg, disc
 
         mc = cm.motion_correction.MotionCorrect([pth_tif_write_tmp], dview=dview, **opts.get_group('motion'))
         mc.motion_correct(save_movie=True, template = regtemplate_sub)
+
+        mdict = {}
+        mdict['shifts'] = mc.shifts_rig
+        mdict['templates_rig'] = mc.templates_rig
+        mdict['max_shifts'] = mc.max_shifts
+        pth_mat_rg = pth_tif_write[:-4] + 'reginfo.mat'
+        sio.savemat(pth_mat_rg, mdict)
+
         input_for_save_memmap_primary = mc.mmap_file #name this input_for_save_memmap caiman's save_memmap can take memmap file or ndarray as argument
         if two_channel_reg or register_presmoothed: #apply shifts learned from smoothed movie to the raw movie (if you don't want smoothed movie ultimately)
+            
             tmp = mc.apply_shifts_movie(pth_tif_write_secondary_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass nd array to save_memmap below
+            
             os.remove(pth_tif_write_secondary_tmp[countz])
             if two_channel_reg: #save the first registered stack, so rename input_for_save_memmap so it's not overwritten by the other stack channel (which is registered wth apply_shifts_movie, and which gets named input_for_save_memmap); if register_presmoothed, we discard the first registered stack (which is a smoothed stack)
                 input_for_save_memmap_secondary = [tmp] #so must pass nd array to save_memmap below
@@ -196,6 +215,15 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clipneg, disc
                     plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
                     #plot_gif(smooth_movie(stack_allchan, sigma=(1.2,1.2), axes=(1,2)), '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
             
+            if clip_values_outside_original_range:
+                stack_shape_final = stack_allchan.shape
+                stack_allchan = stack_allchan.reshape(len(immn), -1)
+                for cnt, (frame,newmin,newmx) in enumerate(zip(stack_allchan,immn,immx)):
+                    frame[frame<newmin] = newmin
+                    frame[frame>newmx] = newmx
+                    stack_allchan[cnt,:] = frame
+                stack_allchan = np.reshape(stack_allchan, stack_shape_final)
+
             write_registered_stack(stack_allchan, pth_tif_write_allchan)
 
         countz = countz + 1

@@ -50,11 +50,11 @@ o.daq.useinds = 'none'; %how to resample daq timeseries
 
 o.sld.chanuse = [1 2]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
 o.sld.suffixplt = ["raw", "cmrg"]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
-o.sld.clip = -1; %[lower upper] quantiles, or -1 to clip negatives 
+o.sld.clip = 0; %[lower upper] quantiles, or -1 to clip negatives 
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
-o.sld.sp.it = [1:400]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
-o.sld.sp.iz = []; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
+o.sld.sp.it = [100.6]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.iz = [2,3]; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
 o.ftv.smlenpx = 2;
 

@@ -21,7 +21,7 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 
 do_register = 0 #caiman normCorre registration 
 scopatmplt = 1 #1 to use scopa template
-clipneg = 1 #unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed; set clipneg to 1 to clip negative values to 0; set clipneg to 0 to not do this; (accurate offset is best obtained using autoread checkbox in scanimage); if you do not check 'subtract_offset' then negative values should not exist
+clip = [-1, 0.99] #[] or 0 to skip clip; [-1] to set negatives to 0, or [lower upper] quantiles to clip, or [-1 upper], which will set negatives to 0, and clip upper quantile; unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed (assuming you "autoread" pmt offset and "subtract offset" ); 
 discard_channel_reg = None #none, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 register_in_2d = 1 #one z slice at a time, for 4d data, ignored if 3d data  

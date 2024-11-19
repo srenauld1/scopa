@@ -11,7 +11,7 @@ from optex import optex
 from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
 from separate_channels_when_two import separate_channels_when_two
-from helpers import stack_reshape_transpose_zero_type
+from helpers import stack_reshape_transpose_clip_zero_type
 
 
 
@@ -29,11 +29,11 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
     discard_channel_ex, chan_primary_when_two_ex, morphinpy = parse_methodex(methodex)
     stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
 
-    stack = stack_reshape_transpose_zero_type(stack, md['dims'])
+    stack = stack_reshape_transpose_clip_zero_type(stack, md['dims'])
     print("STACK HAS SHAPE: \n" + str(stack.shape))
     if two_channel_ex:
         if extract_in_2d:
-            stack_secondary = stack_reshape_transpose_zero_type(stack_secondary, md['dims'])
+            stack_secondary = stack_reshape_transpose_clip_zero_type(stack_secondary, md['dims'])
             print("STACK SECONDARY HAS SHAPE: \n" + str(stack_secondary.shape))
         else:
             raise Exception("two-channel extraction is currently not written for 3d extraction")

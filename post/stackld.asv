@@ -169,7 +169,7 @@ for spi = 1:numel(pth_stacks)
             pthsv_prefix=pth_stacks{spi}(1:end-4))
     end
 
-    if ~isempty(clip)
+    if any(clip)
         stack = stackclip(stack, clip=clip);
     end
     if zerostack
@@ -223,17 +223,23 @@ if doplt
 
     numchan = cellfun(@(x) size(x,5), stacktmp);
     if numel(unique(numchan))~=1
-        if strcmp(suffixplt, 'raw')
-        fprintf("you may have discarded a channel in creating " + filnam + fnext + " trying to load again, this time as single channel" + newline)
-
-        error("all stacks must have same number of channels")
+        if numchan(strcmp(suffixplt, 'raw'))==2 && any(numchan(~strcmp(suffixplt, 'raw'))==1)
+            fprintf("you may have discarded a channel in creating some stacks besides raw, removing channel 2 from the temporary raw plotting stack so it can be plotted with any single-channel stack" + newline)
+            stacktmp{strcmp(suffixplt, 'raw')} = stacktmp{strcmp(suffixplt, 'raw')}(:,:,:,:,1);
+        else
+            error("all stacks must have same number of channels")
+        end
     end
 
+    for k = 1:numel(index_labels{4})
+        tmp(k,:) = cat(2, index_labels{4}(k), shifts(k,:));
+    end
+    index_labels{4} = tmp;
 
     stackplt( ...
         stacktmp, ...
         pthgif=[filename_prefix '_.gif'], ...
-        dr=dr, ...
+        dr={[0 1], [0.6 1]}, ...
         title_prefix=figtitle_prefix, ...
         index_labels=index_labels ...
         )
