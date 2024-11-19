@@ -18,7 +18,7 @@ def stacksmooth(stack, smlenpx, volrate, numframe):
         smax = []
         for k,tmp in enumerate(smlenpx):
             if tmp!=0:
-                smlentmp.append(tmp)
+                smlentmp.append(int(tmp))
                 smsd.append((tmp-1)/numsmsd)
                 smax.append(k+1)
 
