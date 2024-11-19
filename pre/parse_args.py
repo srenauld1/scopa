@@ -333,7 +333,12 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     do_register = int(args.do_register[0])
     register_in_2d = int(args.register_in_2d[0])
     halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
-    smlenpx_mcp = float(args.smlenpx_mcp[0])
+
+    if isinstance(args.smlenpx_mcp[0], list):
+        smlenpx_mcp = args.smlenpx_mcp[0] #keep as list
+    else:
+        smlenpx_mcp = args.smlenpx_mcp #keep as list
+    smlenpx_mcp = [float(tmp) for tmp in smlenpx_mcp]
 
     if isinstance(args.max_shifts_prc[0], list):
         max_shifts_prc = args.max_shifts_prc[0] #keep as list
