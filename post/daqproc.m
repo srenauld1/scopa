@@ -33,7 +33,7 @@ if doplt
 
     titlein = [daqvarname '_original_v_resample_' num2str(dt) 'sec_norescale'];
     pth_fig = [pthfigpre titlein '_.gif'];
-    tsplt(daqvarin, y2=daqvarout, xseg=xseg, titlein=titlein, pthgif=pth_fig)
+    tsplt(1:numel(daqvarin), daqvarin, 1:numel(daqvarout), daqvarout, xseg=xseg, titlein=titlein, pthgif=pth_fig)
 
     titlein = [daqvarname '_original_v_dv_resample_' num2str(dt) 'sec_slopelen_' num2str(slopelensec) 'sec_norescale'];
     pth_fig = [pthfigpre titlein '_.gif'];

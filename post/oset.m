@@ -21,8 +21,8 @@ if isempty(recin) %if you're running a2p without input arguments (ie if recin is
     o.spec.recdate = {'20240606'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'raw'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
-    o.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+    o.spec.suffix = {'cmrg'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    o.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     o.spec.pth = '';
 elseif iscell(recin) || ischar(recin) %if input to a2p is not empty, and is not struct
     if strcmp(recin, 'nofile') %if input to oset is just 'nofile', skip file search part (but set all options otherwise); 'nofile' is not a valid input to a2p, but is a valid input to oset (so the user can query all options from anywhere in a2p without having to redefine found files, which can be slow and also confounding
@@ -36,7 +36,7 @@ end
 
 o.mn.dodaq = 0; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
-o.mn.doroi = 0; %make/load/process rois?
+o.mn.doroi = 1; %make/load/process rois?
 o.mn.dopop = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
@@ -51,10 +51,11 @@ o.daq.useinds = 'none'; %how to resample daq timeseries
 o.sld.chanuse = [1 2]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
 o.sld.suffixplt = ["raw", "cmrg"]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
 o.sld.clip = 0; %[lower upper] quantiles, or -1 to clip negatives 
+o.sld.smlenpx = [0, 0, 0];
 
 o.sld.sp.dr = {[0,1]}; %display range for stacks listed in o.sld.suffixplt; one vector for all, or can do one for each o.sld.suffixplt; if you have more vectors than suffixplt, will take first numel(suffixplt)
-o.sld.sp.it = [100.6]; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
-o.sld.sp.iz = [2,3]; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
+o.sld.sp.it = []; % t indices for gif of stack(s) o.sld.suffixplt; see indsmake for nonstandard syntax options
+o.sld.sp.iz = [2, 3]; %z indices for gif of stack(s) (o.sld.suffixplt); see indsmake for nonstandard syntax options
 
 o.ftv.smlenpx = 2;
 
@@ -121,14 +122,14 @@ for k = 1:numel(allrecs)
         o(k).roi.regionex = regionex_tmp{m};
 
         o(k).roi.domm = 1; %do draw rois
-        o(k).roi.doma = 0; %do automated morph rois
+        o(k).roi.doma = 1; %do automated morph rois
         o(k).roi.docm = 0; %do caiman extraction
         o(k).roi.doqc = 0; %do quality control on rois
 
         o(k).roi.mm.chan = [1];
 
-        o(k).roi.ma.chanauto = [1];
-        o(k).roi.ma.numroi = 0; %for auto morph roi extraction (after optional mask draw)
+        o(k).roi.ma.chan = [1];
+        o(k).roi.ma.numroi = 1024; %for auto morph roi extraction (after optional mask draw)
         o(k).roi.ma.maskseg = 'uniform';
         o(k).roi.ma.do3d = 1;
 
@@ -138,18 +139,15 @@ for k = 1:numel(allrecs)
         o(k).roi.qc.minroisz = 10; 
 
         o(k).roi.nrm.wavp = []; %[0 50]; wavelet cwt periods to keep; seconds; carl uses [0 50] often to remove slow fluctuations; empty to skip
+        o(k).roi.nrm.degdtr = [2];
         o(k).roi.nrm.post = {'f'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
 
         %some options are different, depending on regionex
         if strcmp(regionex_tmp{m}, 'fb')
-            o(k).roi.mm.maskname = {'left', 'right'}; %name for masks drawn on the same regionex
+            o(k).roi.mm.maskname = {'none'}; %name for masks drawn on the same regionex
             if ismember(k, recgroup1)
                 o(k).roi.ma.numroi = 256; %use 256 automated roi (ma) for any regionex starting with 'fb' in recording group 1
-            else
-                o(k).roi.ma.numroi = 512; %use 512 automated roi (ma) for any regionex starting with 'fb' in recording group 2
             end
-        else
-            o(k).roi.ma.numroi = 0; %skip automated roi for all other regionex, regardles of recording
         end
 
         o(k) = odf(o(k), {'roi'}, regionex_tmp{m}, files=2); %use files=2 to keep id field untouched (keep found files)

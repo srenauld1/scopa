@@ -12,6 +12,10 @@ smlenpx = opt.smlenpx;
 smsdtime = opt.smsdtime;
 imrate = opt.imrate;
 
+if ~iscell(method)
+    method = {method};
+end
+
 if isempty(imrate)
     imrate = 1; %if empty, interpret smsdtime as samples
 end
@@ -38,20 +42,22 @@ dtype = class(stack);
 
 numchan = size(stack, 5);
 
-for c = 1:numchan %do one channel at a time to keep temporary double output from crashing matlab if stack is big 2-channel
-    for m = 1:numel(smsd)
-        if smsd(m) %in case stack is large, looping over each dimension and converting dtype as we go
-            switch dtype
-                case 'int16'
-                    stack(:,:,:,:,c) = int16(smoothdata(stack(:,:,:,:,c), m, method, smsd(m)));
-                case 'uint16'
-                    stack(:,:,:,:,c) = uint16(smoothdata(stack(:,:,:,:,c), m, method, smsd(m)));
-                case 'single'
-                    stack(:,:,:,:,c) = single(smoothdata(stack(:,:,:,:,c), m, method, smsd(m)));
-                case 'double'
-                    stack(:,:,:,:,c) = smoothdata(stack(:,:,:,:,c), m, method, smsd(m));
-                otherwise
-                    error("stacksmooth only supports uint16, int16, single, and double")
+for m = 1:numel(method)
+    for c = 1:numchan %do one channel at a time to keep temporary double output from crashing matlab if stack is big 2-channel
+        for w = 1:numel(smsd)
+            if smsd(w) %in case stack is large, looping over each dimension and converting dtype as we go
+                switch dtype
+                    case 'int16'
+                        stack(:,:,:,:,c) = int16(smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w)));
+                    case 'uint16'
+                        stack(:,:,:,:,c) = uint16(smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w)));
+                    case 'single'
+                        stack(:,:,:,:,c) = single(smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w)));
+                    case 'double'
+                        stack(:,:,:,:,c) = smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w));
+                    otherwise
+                        error("stacksmooth only supports uint16, int16, single, and double")
+                end
             end
         end
     end

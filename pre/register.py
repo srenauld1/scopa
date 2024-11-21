@@ -18,7 +18,7 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, register_presmoothed, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
 
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -47,9 +47,6 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
 
     stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
 
-    if two_channel_reg and register_presmoothed:
-        raise Exception("two_channel_reg and register_presmoothed cannot both be true; since you have a 2-channel stack, you can set discard_channel_reg to 1 or 2, or set register_presmoothed to 0")
-        
     if halfwidth_window_bgsub:
         pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in choose_files (make this more reliable)
     else:
@@ -63,8 +60,14 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
         pth_tif_write_secondary_tmp_prefix = pth_tif_write_secondary[:-4] + 'tmp'
     else:
         pth_tif_write_secondary = []  
-        if register_presmoothed:
-            pth_tif_write_secondary_tmp_prefix = pth_tif_write[:-4] + '_presmoothed_tmp'
+    
+    if np.any(smlenpx_mcp): 
+        register_presmoothed = 1
+        pth_tif_write_presmoothed_tmp_prefix = pth_tif_write[:-4] + 'presmoothed_tmp'
+    else:
+        register_presmoothed = 0
+        pth_tif_write_presmoothed_tmp_prefix = []
+
 
 
     stack = cropflyback(stack, md['dims'], md['flyback'])
@@ -100,34 +103,35 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
         if two_channel_reg:
             stack_secondary = subtract_background(stack_secondary, halfwidth_window_bgsub, pth_prefix, makeplots, indzall)
 
-    clip_values_outside_original_range = 1 #CFRW WILSONLAB 20241023 CLIP VALUES OUTSIDE ORIGINAL DATA RANGE; INTERPOLATION WHEN APPLYING SHIFTS CAN INTRODUCE THESE VALUES; ORIGINAL MATLAB NORMCORRE DID THIS BUT PYTHON CAIMAN DOES NOT
-    if clip_values_outside_original_range:
-        #DON'T ALLOW REGISTER PREMOOTHED FALSE ANYMORE! OTHERWISE REDO THIS FOR SMOOTHED IF IT CAN BE FALSE 
+    if clipinterp:
         limax = tuple(np.arange(1,np.ndim(stack)))
         immn = np.min(stack, axis=limax)
         immx = np.max(stack, axis=limax)
+        immn2 = []
+        immx2 = []
         if two_channel_reg:
-            immn_secondary = np.min(stack_secondary, axis=limax)
-            immx_secondary = np.max(stack_secondary, axis=limax)
+            immn2 = np.min(stack_secondary, axis=limax)
+            immx2 = np.max(stack_secondary, axis=limax)
+
 
     ########################## WRITE SECONDARY TMP STACK IF register_presmoothed ##########################
 
-    if register_presmoothed: #write secondary stack (presmoothed movie in this case) to be registered to primary stack 
+    if register_presmoothed:
         msgstr = 'PRESMOOTHED STACK'
-        pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr)
-
-    ########################## TEMPORAL SMOOTHING ##########################
-
-    if np.any(smlenpx_mcp): 
-        stack = stacksmooth(stack, smlenpx_mcp, md['volrate'], md['dims'][0])
-        if two_channel_reg:
-            stack_secondary = stacksmooth(stack_secondary, smlenpx_mcp, md['volrate'], md['dims'][0])
+        pth_tif_write_presmothed_tmp = write_supp_stack(stack, pth_tif_write_presmoothed_tmp_prefix, register_in_2d, indzall, msgstr)
 
     ########################## WRITE SECONDARY TMP STACK IF two_channel_reg ##########################
 
     if two_channel_reg: #write secondary stack (secondary channel in this case) to be registered to primary stack (this after smoothing, in case secondary channel needs it)
         msgstr = 'STACK CHANNEL ' + chanstr_secondary
-        pth_tif_write_secondary_tmp = write_secondary_tmp_stack(stack_secondary, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr)
+        pth_tif_write_secondary_tmp = write_supp_stack(stack_secondary, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr)
+
+    ########################## SPATIAL SMOOTHING FOR BOOSTING SNR TO COMPUTE SHIFTS (BUT NOT TO KEEP IN REGISTERED STACK) ##########################
+
+    if register_presmoothed:
+        stack = stacksmooth(stack, smlenpx_mcp, md['volrate'], md['dims'][0])
+        # if independent_channel_reg and register_presmoothed: 
+        #     stack_secondary = stacksmooth(stack_secondary, smlenpx_mcp, md['volrate'], md['dims'][0])
 
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 
@@ -180,22 +184,22 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
         pth_mat_rg = pth_tif_write[:-4] + 'reginfo.mat'
         sio.savemat(pth_mat_rg, mdict)
 
-        input_for_save_memmap_primary = mc.mmap_file #name this input_for_save_memmap caiman's save_memmap can take memmap file or ndarray as argument
-        if two_channel_reg or register_presmoothed: #apply shifts learned from smoothed movie to the raw movie (if you don't want smoothed movie ultimately)
-            
-            tmp = mc.apply_shifts_movie(pth_tif_write_secondary_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass nd array to save_memmap below
-            
-            os.remove(pth_tif_write_secondary_tmp[countz])
-            if two_channel_reg: #save the first registered stack, so rename input_for_save_memmap so it's not overwritten by the other stack channel (which is registered wth apply_shifts_movie, and which gets named input_for_save_memmap); if register_presmoothed, we discard the first registered stack (which is a smoothed stack)
-                input_for_save_memmap_secondary = [tmp] #so must pass nd array to save_memmap below
-            elif register_presmoothed: 
-                input_for_save_memmap_primary = [tmp] #update name so presmoothed gets saved but not presmoothed 
 
-        os.remove(pth_tif_write_tmp)        
+        os.remove(pth_tif_write_tmp)   
+        if register_presmoothed: #apply shifts learned from smoothed movie to the raw movie (if you don't want smoothed movie ultimately)
+            tmp = mc.apply_shifts_movie(pth_tif_write_presmothed_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass nd array to save_memmap below
+            input_for_save_memmap_primary = [tmp] #update name so presmoothed gets saved but not presmoothed 
+        else:
+            input_for_save_memmap_primary = mc.mmap_file #name this input_for_save_memmap caiman's save_memmap can take memmap file or ndarray as argument
         memmap2stackwrite(iz, input_for_save_memmap_primary, pth_tif_write, register_in_2d, mc, dview)
-        os.remove(mc.mmap_file[0]) #remove the mmap file in F order 
+        os.remove(mc.mmap_file[0]) #remove the mmap file in F order      
+        
         if two_channel_reg:
+            tmp = mc.apply_shifts_movie(pth_tif_write_secondary_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass nd array to save_memmap below
+            os.remove(pth_tif_write_secondary_tmp[countz])
+            input_for_save_memmap_secondary = [tmp] #so must pass nd array to save_memmap below
             memmap2stackwrite(iz, input_for_save_memmap_secondary, pth_tif_write_secondary, register_in_2d, mc, dview)
+
 
         if (register_in_2d and iz==indz[-1]) or not register_in_2d: #on final slice, if register_in_2d, or if 3d register
 
@@ -215,13 +219,22 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
                     plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
                     #plot_gif(smooth_movie(stack_allchan, sigma=(1.2,1.2), axes=(1,2)), '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
             
-            if clip_values_outside_original_range:
+            if clipinterp:
                 stack_shape_final = stack_allchan.shape
-                stack_allchan = stack_allchan.reshape(len(immn), -1)
-                for cnt, (frame,newmin,newmx) in enumerate(zip(stack_allchan,immn,immx)):
-                    frame[frame<newmin] = newmin
-                    frame[frame>newmx] = newmx
-                    stack_allchan[cnt,:] = frame
+                if two_channel_reg:
+                    stack_allchan = stack_allchan.reshape(len(immn), -1, 2)
+                else:
+                    stack_allchan = stack_allchan.reshape(len(immn), -1, 1)
+                for chn in np.arange(stack_allchan.shape[-1]):
+                    for cnt, (frame,newmin,newmx,newmin2,newmx2) in enumerate(zip(stack_allchan[:,:,chn],immn,immx,immn2,immx2)):
+                        if chn==0: #chn==0 is channel 1
+                            frame[frame<newmin] = newmin
+                            frame[frame>newmx] = newmx
+                        elif chn==1: #chn==1 is channel 2
+                            frame[frame<newmin2] = newmin2
+                            frame[frame>newmx2] = newmx2
+                        stack_allchan[cnt,:,chn] = frame
+
                 stack_allchan = np.reshape(stack_allchan, stack_shape_final)
 
             write_registered_stack(stack_allchan, pth_tif_write_allchan)
@@ -230,16 +243,12 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
 
 
 
-################################ HELPER FUNCTIONS ######################################################################################################
+################################ HELPER FUNCTIONS FOR REGISTRATION ######################################################################################################
 ########################################################################################################################################################
 ########################################################################################################################################################
 ########################################################################################################################################################
 ########################################################################################################################################################
 ########################################################################################################################################################
-########################################################################################################################################################
-########################################################################################################################################################
-########################################################################################################################################################
-
 
 def cropflyback(stack, dims, flyback):
     stack = stack.reshape(dims[0], dims[1]+flyback, dims[2], dims[3])
@@ -250,25 +259,25 @@ def cropflyback(stack, dims, flyback):
 
 
 
-
-
-def write_secondary_tmp_stack(stack, pth_tif_write_secondary_tmp_prefix, register_in_2d, indzall, msgstr):
+def write_supp_stack(stack, pth_tif_write_supp_prefix, register_in_2d, indzall, msgstr):
 
     if register_in_2d: #for 2d registration write one secondary stack z at a time
-        pth_tif_write_secondary_tmp = ['']*len(indzall)
+        pth_tif_write_supp_tmp = ['']*len(indzall)
         for zind in indzall: #for every z slice 
             print("WRITING " + msgstr + " SLICE " + str(zind) + " FOR SECONDARY REGISTRATION AFTER PRIMARY REGISTRATION")
-            pth_tif_write_secondary_tmp[zind] = pth_tif_write_secondary_tmp_prefix + '_' + str(zind) + '_.tif'
-            imwrite(pth_tif_write_secondary_tmp[zind], stack[:,:,:,zind].squeeze(), bigtiff=True, photometric='minisblack') 
+            pth_tif_write_supp_tmp[zind] = pth_tif_write_supp_prefix + '_' + str(zind) + '_.tif'
+            imwrite(pth_tif_write_supp_tmp[zind], stack[:,:,:,zind].squeeze(), bigtiff=True, photometric='minisblack') 
     else:  
         print("WRITING ALL " + msgstr + " SLICES FOR SECONDARY REGISTRATION AFTER PRIMARY REGISTRATION" )
-        pth_tif_write_secondary_tmp = [pth_tif_write_secondary_tmp_prefix + '_all_.tif']
-        imwrite(pth_tif_write_secondary_tmp[0], stack.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
+        pth_tif_write_supp_tmp = [pth_tif_write_supp_prefix + '_all_.tif']
+        imwrite(pth_tif_write_supp_tmp[0], stack.squeeze(), bigtiff=True, photometric='minisblack') #write as t x y z (z might be singleton for non-volumetric data, so squeeze)
 
-    return pth_tif_write_secondary_tmp    
+    return pth_tif_write_supp_tmp    
 
 
 def write_registered_stack(stack, pth_tif_write):
+
+    print("WRITING FINAL REGISTERED STACK")
 
     stack_shape = stack.shape
     print(stack_shape)

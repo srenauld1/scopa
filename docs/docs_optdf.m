@@ -91,7 +91,7 @@ d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatena
 
 %% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))
 
-d.ma.chanauto = 1; %which channel for auto roi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
+d.ma.chan = 1; %which channel for auto roi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
 d.ma.numroi = 128; %partition regionex into num_roim_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
 d.ma.usehires = 0; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 d.ma.maskmake = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'

@@ -123,10 +123,13 @@ for k = 1:numel(oa) % loop over recordings
                 load([pth.prefix 'ts_' optid '.mat'])
             catch
                 [roidat.(optid), ts.resp.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, md.sz_crop, pth.dirstack, o.id.recid, pth.roi.(optid), stackmnthr, hrlr, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
-                save([pth.prefix 'ts_' optid '.mat'], 'ts',  '-v7.3', '-mat'); %save ts
+                % save([pth.prefix 'ts_' optid '.mat'], 'ts',  '-v7.3', '-mat'); %save ts
             end
         end
     end
+
+
+    lfit(ts.ball.forvel, ts.resp.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
 
     %% feature extraction (e.g. bump), add to ts
 

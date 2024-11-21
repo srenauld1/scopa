@@ -178,8 +178,9 @@ for spi = 1:numel(pth_stacks)
     if ~isa(stack, stackdtype)
         stack = stacktype(stack, stackdtype);
     end
+    stack=stack(:,:,:,1:100);
     if any(smlenpx) || any(smlensec)
-        stack = stacksmooth(stack, method='movmedian', smlenpx=smlenpx, smsdtime=smlensec, imrate=imrate);
+        stack = stacksmooth(stack, method={'gaussian', 'movmedian'}, smlenpx=smlenpx, smsdtime=smlensec, imrate=imrate);
     end
 
 
@@ -231,16 +232,21 @@ if doplt
         end
     end
 
-    for k = 1:numel(index_labels{4})
-        tmp(k,:) = cat(2, index_labels{4}(k), shifts(k,:));
+    if exist('shifts', 'var')
+        shifts_yxz = shifts;
+        shifts_yxz(:,1) = shifts(:,2);
+        shifts_yxz(:,2) = shifts(:,1);
+        figtitle_suffix = shifts_yxz;
+    else
+        figtitle_suffix = [];
     end
-    index_labels{4} = tmp;
 
     stackplt( ...
         stacktmp, ...
         pthgif=[filename_prefix '_.gif'], ...
-        dr={[0 1], [0.6 1]}, ...
+        dr=dr, ...
         title_prefix=figtitle_prefix, ...
+        title_suffix=figtitle_suffix, ...
         index_labels=index_labels ...
         )
 

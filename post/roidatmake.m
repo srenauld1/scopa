@@ -64,6 +64,7 @@ roidat.roinumpix = [];
 roidat.roipixvals_binned = [];
 roidat.roipixvals_edges = [];
 roidat.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipx)
+roidat.stackmnt = mean(stack,4, 'single'); %roi timeseries are single precision, so this can be too, it won't be very big
 
 roidat = orderfields(roidat);
 

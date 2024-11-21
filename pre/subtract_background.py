@@ -43,8 +43,8 @@ def subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, zi
 
 class bgremover:
 
-    def __init__(self, img, pth_save_prefix, patchhalfwidth=24, dimorder='tyx'):
-        self.half_wid = int(patchhalfwidth)
+    def __init__(self, img, pth_save_prefix, bglenpx=3, dimorder='tyx'):
+        self.half_wid = int(bglenpx/2)
         self.pth_save_prefix = pth_save_prefix
         if dimorder=='tyx':
             self.img = img

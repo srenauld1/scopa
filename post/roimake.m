@@ -76,7 +76,7 @@ if doma
     for c = 1:numchan
         if ismember(c,opt.ma.chan)
             if ~isequal(numroiauto, 0)
-                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stackmnt(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, imhsv, doplt, opt.ma);
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stackmnt(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, doplt, opt.ma);
             end
         end
     end

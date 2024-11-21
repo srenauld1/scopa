@@ -71,8 +71,10 @@ matlab_dimorder_char = 'yxz';
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
 pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
 
-stack = stack(:,:,:,:,chanuse);
-stackmnt = mean(stack, 4, 'native');
+if size(stack,5)~=1 %don't index if channel dimension is singleton, it will create a (potentially large) temporary variable within this function pointlessly
+    stack = stack(:,:,:,:,chanuse);
+end
+stackmnt = single(mean(stack, 4));
 
 numxpix = size(stackmnt,2);
 numypix = size(stackmnt,1);
@@ -111,8 +113,6 @@ numsamp = size(resp,2);
 
 %% compute correlation after applying lags
 
-[lagsec_actual, lagsamp, zero_lag_index, numlag] = compute_lags(t, lagsec); %actual lags depend on epoch (samples you're using)
-
 runfit = 1;
 if usesaved
     try
@@ -124,6 +124,7 @@ end
 
 
 if runfit
+    [lagsec_actual, lagsamp, zero_lag_index, numlag] = compute_lags(t, lagsec); %actual lags depend on epoch (samples you're using)
     slope_lagall = zeros(numroi, numlag, 'single');
     rsq_lagall = zeros(numroi, numlag, 'single');
     p_lagall = zeros(numroi, numlag, 'single');
@@ -194,9 +195,10 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
         crosshair = cellfun(@round, roicen, 'UniformOutput', false); %will this take it out of bounds? should not
     end
 
-    imhsv.ignoresat = 1;
-    imhsv.ignoreval = 0;
-    imhsv = default_hsv_opts(imhsv);
+    opttmp.imhsv.ignoresat = 1;
+    opttmp.imhsv.ignoreval = 0;
+    opttmp = odf(opttmp, 'imhsv');
+    imhsv = opttmp.imhsv;
     imhsv = plots_setup_hsv(imhsv);
 
     if pixfit
@@ -307,9 +309,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     marginax = [0.05,0.005];
     marginfg = [0.07,0.05];
     splitfrac = 0.55;
-    ax = axarr(layout=layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac);
-
-    [dms,arat] = pxscreenget();
+    ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitdim='y', splitfrac=splitfrac);
 
     szf = 0.75;
     szftmp = figsz(szf);

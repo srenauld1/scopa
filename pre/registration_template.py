@@ -147,10 +147,10 @@ def make_registration_template(stack, volrate, stack_has_multiple_z_slices, regi
     register_regtemplate = 0 #WILSONLAB, CFRW, 240218, caiman default is register_2d_template=1; SWITCH OFF TEMPLATE REGISTER for 2d, IT CAN MAKE A BAD TEMPLATE FOR A NOISY MOVIE; there is no option to register 3d template in caiman yet
     use_caiman_default_template_frames = 0 #WILSONLAB, CFRW, 240218, caiman defualt is use_caiman_default_template_frames=1; 1 to use caiman's original, which is 10 equidistant frames in 2d template, 50 equidistant in 3d template; make 0 to make template from first num_template_frames frames
     num_seconds_template_if_not_using_caiman_default_template = 7
+    start_frame_template_if_not_using_caiman_default_template_frames = int(np.floor(stack.shape[0]/2)) # was 0, switched to middle frame #first frame of template if use_caiman_default_template_frames is fals
     windowlen_sec_mean = 0.75
 
     num_frames_template_if_not_using_caiman_default_template_frames = int(num_seconds_template_if_not_using_caiman_default_template*volrate) #if use_caiman_default_template_frames is false, how many initial frames of stack to use to make template
-    start_frame_tamplate_if_not_using_caiman_default_template_frames = int(np.floor(stack.shape[0]/2)) # was 0, switched to middle frame #first frame of template if use_caiman_default_template_frames is fals
     windowlen_mean = int(windowlen_sec_mean*volrate) #must be int, >=1, if greater than T (num template frames), window=T; average every windowlen_mean frames of template, then take median of result, and that is template (2d or 3d); median is taken over resulting num windows, num windows is int(T // windowlen_mean)
 
     Ts = stack.shape[0] # Ts = np.arange(T)[subidx].shape[0]
@@ -161,14 +161,14 @@ def make_registration_template(stack, volrate, stack_has_multiple_z_slices, regi
     else:
         if subidx.start is not None or subidx.stop is not None:
             raise Exception("you are using use_caiman_default_template_frames=0 but have also passed t indices; do one or the other")
-        time_slicer = slice(0+start_frame_tamplate_if_not_using_caiman_default_template_frames, num_frames_template_if_not_using_caiman_default_template_frames+start_frame_tamplate_if_not_using_caiman_default_template_frames, 1) #first num_frames_template_if_not_using_caiman_default_template_frames frames
+        time_slicer = slice(0+start_frame_template_if_not_using_caiman_default_template_frames, num_frames_template_if_not_using_caiman_default_template_frames+start_frame_template_if_not_using_caiman_default_template_frames, 1) #first num_frames_template_if_not_using_caiman_default_template_frames frames
 
 
     if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in optrg (default does not use these)
         if stack_has_multiple_z_slices:
             stack = stack[time_slicer, indices[0], indices[1], :]
         else:
-            stack = stack[time_slicer, indices[0], indices[1]]
+            stack = stack[time_slicer, indices[0], indices[1]].squeeze()
     else:
         stack = stack[time_slicer, indices[0], indices[1], indices[2]]
 

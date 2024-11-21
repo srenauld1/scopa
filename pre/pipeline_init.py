@@ -67,10 +67,6 @@ else:
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range) . . . IS THIS STILL TRUE?")
 
-if smlenpx_mcp and not register_presmoothed:
-    register_presmoothed = 0
-    print("register_presmoothed IS TRUE BUT smlenpx_mcp IS 0, SETTING register_presmoothed TO FALSE")
-
 if not do_copyfiles:
 
   import numpy as np
@@ -142,7 +138,7 @@ for ri, _ in enumerate(pth_read_all):
             spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
           except Exception as err:
             print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, register_presmoothed, registration_template_group_id, cluster_backend, use_cluster, makeplots)
+          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
 
       if do_denoise:
         chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 

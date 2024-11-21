@@ -139,7 +139,10 @@ for k = 1:length(fnin)
             error("for raw pixel input, all pixels should be goodinds")
         end
 
-        tmp2d = tmp2d(goodinds, :);
+        if ~isempty(goodinds) && ~all(goodinds)
+            tmp2d = tmp2d(goodinds, :);
+        end
+
         if nowt
             roiwt_tmp = 1;
         else
@@ -147,7 +150,19 @@ for k = 1:length(fnin)
         end
 
         if ~isempty(tmp2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
-            resp2.f = roiwt_tmp * tmp2d ./ sum(roiwt_tmp,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
+            varsz = whos('tmp2d');
+            numseg = ceil(varsz.bytes/1e9);
+            if numseg>1 %do mtimes (convert to single) in segments to not crash ram
+                resp2.f = zeros(size(roiwt_tmp,1), size(tmp2d,2), 'single');
+                seglen = ceil(size(tmp2d,2)/numseg);
+                for w = 1:numseg %if integer, do it one frame at a time in case stack is big you want to avoid converting the whole thing at once; it's slower but tolerable and better than crashing ram
+                    idx = [1:seglen]+seglen*(w-1);
+                    idx(idx>size(tmp2d,2)) = [];
+                    resp2.f(:,idx) = roiwt_tmp * single(tmp2d(:,idx)) ./ sum(roiwt_tmp,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
+                end
+            else
+                resp2.f = roiwt_tmp * single(tmp2d) ./ sum(roiwt_tmp,2); %default no normalization, this is the summed fluorescence in each roi, normalized by total intensity
+            end
         else
             resp2.f = nan;
         end

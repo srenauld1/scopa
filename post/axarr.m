@@ -173,7 +173,11 @@ for fi = 1:numel(fn)
         if strcmp(fn{fi}, 'stack')
             [ax, maxpos] = arrange_subplots_stack(subplot_layout_struct.(fn{fi}), marginfg, marginax, splitfrac, startpos);
         else
-            [ax.([fn{fi} 'p']), ax.([fn{fi} 'e']), maxpos.(fn{fi})] = arrange_subplots_onedim(subplot_layout_struct.(fn{fi}), marginfg.(fn{fi}), marginax, splitfrac.(fn{fi}), startpos.(fn{fi}));
+            if strcmp(fn{fi}, 'x')
+                [ax.x, ax.w, maxpos.(fn{fi})] = arrange_subplots_onedim(subplot_layout_struct.(fn{fi}), marginfg.(fn{fi}), marginax, splitfrac.(fn{fi}), startpos.(fn{fi}));
+            elseif strcmp(fn{fi}, 'y')
+                [ax.y, ax.h, maxpos.(fn{fi})] = arrange_subplots_onedim(subplot_layout_struct.(fn{fi}), marginfg.(fn{fi}), marginax, splitfrac.(fn{fi}), startpos.(fn{fi}));
+            end
         end
     end
 end

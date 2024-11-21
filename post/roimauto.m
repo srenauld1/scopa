@@ -1,6 +1,6 @@
 
 function [roiwt, roicen, numroifinal] = roimauto(stackmnt, roimaskman, numroiinit, ...
-    widyxz, stack_hires, hrlr, pth_roim_prefix, regionex, imhsv, doplt, opts)
+    widyxz, stack_hires, hrlr, pth_roim_prefix, regionex, doplt, opts)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -431,12 +431,12 @@ if doplt
         stackplt(premask, pthgif=filename_olay, gifvis=gifvis, roipx=roipixind_upsamp) %include roipx as argument to plot roi overlay
 
 
-        %hsv gif, each slice, each roi a different hue
-        imhsv = plots_setup_hsv(imhsv);
-        hue_feature = [1:numroifinal]';
-        hsvmap = hsvcmp(imhsv, hue_feature);
-        filename_hsv = [pth_roim_prefix 'hsvfov_upsamp_.gif'];
-        hsvimg_upsamp = hsvplt(imhsv, premask, hsvmap, roipixind_upsamp, roiwt_upsamp, filename_hsv);
+        % %hsv gif, each slice, each roi a different hue
+        % imhsv = plots_setup_hsv(imhsv);
+        % hue_feature = [1:numroifinal]';
+        % hsvmap = hsvcmp(imhsv, hue_feature);
+        % filename_hsv = [pth_roim_prefix 'hsvfov_upsamp_.gif'];
+        % hsvimg_upsamp = hsvplt(imhsv, premask, hsvmap, roipixind_upsamp, roiwt_upsamp, filename_hsv);
 
 
         %3d scatter plot

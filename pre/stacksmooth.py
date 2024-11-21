@@ -32,6 +32,6 @@ def stacksmooth(stack, smlenpx, volrate, numframe):
         # stack = gflt(stack, sigma=smsdt, mode='reflect', truncate=numsmsd, axes=0)
         # stack = mdflt(stack, size=smlensamp, axes=0)
 
-        #plot_gif(stack, '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,40,1))
+        #plot_gif(stack, '/Users/wienecke/stacks/presm.gif', indsz=slice(2,3,1), indst=slice(0,100,1))
 
         return stack

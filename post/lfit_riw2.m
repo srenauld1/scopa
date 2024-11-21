@@ -58,7 +58,7 @@ xtralimfac = 0.03;
 numtickx = 4;
 numticky = 2;
 
-stim2 = stim(2,:);
+% stim2 = stim(2,:);
 stim1 = stim(1,:);
 
 assert(isvector(stim1))

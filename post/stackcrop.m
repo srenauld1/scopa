@@ -17,7 +17,7 @@ end
 if strcmp(regionex, regionexdf) 
 
     croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4), 1, size(stack, 5)];
-    stack = single(stack);
+    % stack = single(stack);
 
 else
 
@@ -31,7 +31,8 @@ else
         [croplim, croplimstr] = croplimmake(stack, sz(4), dirstack, recid, regionex, regionex_nounderscore, numchan);
     end
     
-    stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10))); %previously converted to single here, not sure why
+    % stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10))); %previously converted to single here, not sure why
+    stack = stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10)); %previously converted to single here, not sure why
 
 end
 

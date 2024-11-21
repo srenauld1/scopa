@@ -41,6 +41,7 @@ axpos = opt.axpos;
 minsampperseg = opt.minsampperseg;
 maxnumts = opt.maxnumts;
 
+error("don't use this function it's being edited")
 
 if isempty(xall)
     if mod(numel(ts),2)~=0
@@ -105,24 +106,24 @@ end
 
 default_xtrue = 0;
 if isempty(xall)
-        % if k==1
-        %     if isempty(x{k})
-        %         default_xtrue = 1;
-        %         xtrue = 1:numel(y{k});
-        %     else
-        %         xtrue = x{k};
-        %     end
-        % end
-        % if isempty(x{k})
-        %     x{k} = linspace(1, numel(y{k}), numel(xtrue)); %for k==2, this will not change anything, but anything after might
-        %     y{k} = interp1(1:numel(y{k}), y{k}, x{k}, 'linear');
-        % else
-        %     x{k} = linspace(1, numel(y{k}), numel(xtrue)); %for k==2, this will not change anything, but anything after might
-        %     y{k} = interp1(1:numel(y{k}), y{k}, x{k}, 'linear');
-        % end
-        xaxis_true_lims = [0 1];
-        limx = axlim(x, limtype='all', roomfac=0);
-        x = rescale_to_range(x, limx, xaxis_true_lims);
+    % if k==1
+    %     if isempty(x{k})
+    %         default_xtrue = 1;
+    %         xtrue = 1:numel(y{k});
+    %     else
+    %         xtrue = x{k};
+    %     end
+    % end
+    % if isempty(x{k})
+    %     x{k} = linspace(1, numel(y{k}), numel(xtrue)); %for k==2, this will not change anything, but anything after might
+    %     y{k} = interp1(1:numel(y{k}), y{k}, x{k}, 'linear');
+    % else
+    %     x{k} = linspace(1, numel(y{k}), numel(xtrue)); %for k==2, this will not change anything, but anything after might
+    %     y{k} = interp1(1:numel(y{k}), y{k}, x{k}, 'linear');
+    % end
+    xaxis_true_lims = [0 1];
+    limx = axlim(x, limtype='all', roomfac=0);
+    x = rescale_to_range(x, limx, xaxis_true_lims);
     for k = 1:numel(y)
         y{k} = interp1(1:numel(y{k}), y{k}, linspace(1, numel(y{k}), numel(xtrue)), 'linear');
         tsx{k} = x{k};
