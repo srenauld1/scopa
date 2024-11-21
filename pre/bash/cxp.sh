@@ -67,7 +67,7 @@ MAX_SHIFTS_PRC=(10 10 0) #xyz percentages; 0 will be made 1 pixel; unit percenta
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
-NUM_EPOCHS_DENOISE=(7) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
+NUM_EPOCHS_DENOISE=(5) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
 EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward in the pipeline, chosen epoch's z slices stitched into stack and saved as tif with suffix dcdn (in stc.sbatch, called by do_stich); one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); will overwrite existing dcdn stack if you run on same data more than once 
 
 USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
@@ -82,7 +82,7 @@ REGIONEX=('fullfov')
 
 ############ SET PARAMS FOR GPU RESOURCE REQUEST ############
 
-gpustr=rtx6000_24 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
+gpustr=a100_80 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
 if [ "$gpustr" == a100_80 ]; then 
     gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
@@ -232,7 +232,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 ntasks_str=1
                 if [ "${HALFWIDTH_WINDOW_BGSUB[@]}" == 0 ]; then #use less memory if no bg subtraction
                     cpus_per_task_str=1
-                    mem_per_cpu_str=25G
+                    mem_per_cpu_str=35G
                 else #use more memory if using bg subtraction
                     cpus_per_task_str=1
                     mem_per_cpu_str=35G
@@ -242,7 +242,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=$gpu_time
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=15G
+                mem_per_cpu_str=55G
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 
@@ -252,7 +252,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=00:25:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=15G
+                mem_per_cpu_str=25G
             elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=11:40:00 #11:40:00
@@ -270,7 +270,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 time_str=01:00:00
                 ntasks_str=1
                 cpus_per_task_str=1
-                mem_per_cpu_str=20G
+                mem_per_cpu_str=50G
             fi
         fi
 
