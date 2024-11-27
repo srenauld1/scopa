@@ -99,13 +99,13 @@ else
     trial = num2str(trialnum);
 end
 if ~isstring(vnormal)
-    vnormal = string(vnormal); %could also convert to char here 
+    vnormal = string(vnormal); %could also convert to char here
 end
 if ~isstring(vcircular)
-    vcircular = string(vcircular);%could also convert to char here 
+    vcircular = string(vcircular);%could also convert to char here
 end
 if ~isstring(vcategorical)
-    vcategorical = string(vcategorical);%could also convert to char here 
+    vcategorical = string(vcategorical);%could also convert to char here
 end
 
 
@@ -125,150 +125,161 @@ if isempty(pth_daqrs)
     pth_daqrs = [dirstack num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum) '_daqrs_.mat'];
 end
 
-pthfigpre = pth_daqrs(1:end-4);
+if isfile(pth_daqrs)
+ 
+    load(pth_daqrs, 'daqrs')
 
-daqvars_bytype.normal = vnormal;
-daqvars_bytype.circular = vcircular;
-daqvars_bytype.categorical = vcategorical;
-
-%% load daqdata
-
-load(pth_daq, 'trialData', 'outputData')
-trialData = timetable2table(trialData);
-
-if exist('outputData', 'var') && outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
-    "TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING)"
-    firstsamp = find(trialData.frameClock, 1, 'first');
-    lastsamp = find(trialData.frameClock, 1, 'last');
-    if strcmp(idxreg, 'start')
-        starttime = trialData.Time(firstsamp);
-    elseif strcmp(idxreg, 'end')
-        starttime = trialData.Time(firstsamp-1);
-    elseif strcmp(idxreg, 'center')
-        starttime = (trialData.Time(firstsamp) - trialData.Time(firstsamp-1) ) / 2;
-    end
-    trialData = trialData(firstsamp:lastsamp, :);
 else
-    starttime = trialData.Time(1);
-end
 
-%% define inds for downsampling
+    fprintf("daqrs file '" + pth_daqrs + "' does not exist; making daqrs now" + newline)
 
-%%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%%
 
-daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
-daqinds.slice = [];
-daqinds.vol = [];
-if ~strcmp(useinds, 'none') && any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
-    maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
-    daqinds = daqindsmake(trialData.frameClock, trialData.Time, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre);
-else
-    fprintf("frame clock not on daq, or user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
-end
+    pthfigpre = pth_daqrs(1:end-4);
 
-%%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
+    daqvars_bytype.normal = vnormal;
+    daqvars_bytype.circular = vcircular;
+    daqvars_bytype.categorical = vcategorical;
 
-if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
-    daqinds.vol = [];
-end
-if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
-    daqinds.slice = [];
-end
-if isnumeric(useinds)
-    if any(~ismember(useinds(useinds~=0), daqinds.slice))
-        error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
-    end
-    if all(useinds==0) %useinds=0 is same as useinds='vol'
-        daqinds.slice = [];
+    %% load daqdata
+
+    load(pth_daq, 'trialData', 'outputData')
+    trialData = timetable2table(trialData);
+
+    if exist('outputData', 'var') && outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
+        "TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING)"
+        firstsamp = find(trialData.frameClock, 1, 'first');
+        lastsamp = find(trialData.frameClock, 1, 'last');
+        if strcmp(idxreg, 'start')
+            starttime = trialData.Time(firstsamp);
+        elseif strcmp(idxreg, 'end')
+            starttime = trialData.Time(firstsamp-1);
+        elseif strcmp(idxreg, 'center')
+            starttime = (trialData.Time(firstsamp) - trialData.Time(firstsamp-1) ) / 2;
+        end
+        trialData = trialData(firstsamp:lastsamp, :);
     else
-        daqinds.slice(~ismember(daqinds.slice, useinds)) = 0;
+        starttime = trialData.Time(1);
     end
-    if ~ismember(0, useinds)
+
+    %% define inds for downsampling
+
+    %%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%%
+
+    daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
+    daqinds.slice = [];
+    daqinds.vol = [];
+    if ~strcmp(useinds, 'none') && any(strcmp(trialData.Properties.VariableNames, 'frameClock')) %cannot run daqindsmake without frameClock
+        maxtplot = 2; %first maxtplot seconds to plot daqinds in daqindsmake
+        daqinds = daqindsmake(trialData.frameClock, trialData.Time, usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, maxtplot, pthfigpre);
+    else
+        fprintf("frame clock not on daq, or user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
+    end
+
+    %%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
+
+    if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
         daqinds.vol = [];
     end
-end
-if isempty(daqinds.vol)
-    include_volume_resample = 0;
-else
-    include_volume_resample = 1;
-end
-if strcmp(useinds, 'none')
-    include_volume_approx_resample = 1;
-else
-    include_volume_approx_resample = 0;
-end
-
-
-%% make/save resampled daqdata
-
-
-sliceinds_unique = unique(daqinds.slice(daqinds.slice~=0));
-num_unique_sliceinds = numel(sliceinds_unique);
-num_resamples = num_unique_sliceinds + include_volume_resample + include_volume_approx_resample; %resample for each slice remaining in sliceinds, and and another for volume (if it volinds remains)
-daqrs = table();
-for si = 1:num_resamples
-
-    newrow = table();
-    newrow.recdatenum = {recdatenum};
-    newrow.flynum = {flynum};
-    newrow.trialnum = {trialnum};
-    if strcmp(useinds, 'none')
-        resample_inds = [];
-        newrow.methodrs = {'volume_approx'};
-    else
-        if si<num_unique_sliceinds+1
-            resample_inds = bin2ind(daqinds.slice==sliceinds_unique(si)); %each slice
-            newrow.methodrs = {['slice' num2str(sliceinds_unique(si))]};
+    if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
+        daqinds.slice = [];
+    end
+    if isnumeric(useinds)
+        if any(~ismember(useinds(useinds~=0), daqinds.slice))
+            error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
+        end
+        if all(useinds==0) %useinds=0 is same as useinds='vol'
+            daqinds.slice = [];
         else
-            resample_inds = daqinds.vol;
-            newrow.methodrs = {'volume'};
+            daqinds.slice(~ismember(daqinds.slice, useinds)) = 0;
+        end
+        if ~ismember(0, useinds)
+            daqinds.vol = [];
         end
     end
+    if isempty(daqinds.vol)
+        include_volume_resample = 0;
+    else
+        include_volume_resample = 1;
+    end
+    if strcmp(useinds, 'none')
+        include_volume_approx_resample = 1;
+    else
+        include_volume_approx_resample = 0;
+    end
 
-    fn = fieldnames(daqvars_bytype);
-    for fni = 1:numel(fn)
-        daqvartype = fn{fni};
-        for ii = 1:numel(daqvars_bytype.(daqvartype))
-            daqvarname = daqvars_bytype.(daqvartype){ii};
-            if strcmp(daqvarname, 'Time')
-                trialData.(daqvarname) = trialData.(daqvarname)-starttime; %zero imaging starttime in case daq ran in the background
-            end
-            if ~strcmp(trialData.Properties.VariableNames, daqvarname)
-                fprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it" + newline)
+
+    %% make/save resampled daqdata
+
+
+    sliceinds_unique = unique(daqinds.slice(daqinds.slice~=0));
+    num_unique_sliceinds = numel(sliceinds_unique);
+    num_resamples = num_unique_sliceinds + include_volume_resample + include_volume_approx_resample; %resample for each slice remaining in sliceinds, and and another for volume (if it volinds remains)
+    daqrs = table();
+    for si = 1:num_resamples
+
+        newrow = table();
+        newrow.recdatenum = {recdatenum};
+        newrow.flynum = {flynum};
+        newrow.trialnum = {trialnum};
+        if strcmp(useinds, 'none')
+            resample_inds = [];
+            newrow.methodrs = {'volume_approx'};
+        else
+            if si<num_unique_sliceinds+1
+                resample_inds = bin2ind(daqinds.slice==sliceinds_unique(si)); %each slice
+                newrow.methodrs = {['slice' num2str(sliceinds_unique(si))]};
             else
-
-                [ tmp, tmp_dv ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, sampper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
-
-                if any(strcmp(daqvars_bytype.(daqvartype){ii}, tounwrap))
-                    tmp = unwrap(tmp); %convert to mm (not for tmp_dv)
-                end
-                if any(strcmp(daqvars_bytype.(daqvartype){ii}, tozero))
-                    tmp = tmp - tmp(1); %convert to mm (not for tmp_dv)
-                end
-                if any(strcmp(daqvars_bytype.(daqvartype){ii}, toballscale))
-                    tmp = tmp*balldia/2; %convert to mm
-                    tmp_dv = tmp_dv*balldia/2; %convert to mm
-                end
-                if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_dv'
-                    tmp_dv = tmp_dv / sampper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
-                end
-                if strcmp(daqvarname, 'Time') && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
-                    tmp(1) = 0;
-                    tmp_dv(1) = tmp(2) - tmp(1); %also update first diff, not that it matters
-                end
-                if isrow(tmp) %each daq var must be column; will be column for useinds 'none', will be row for useinds 'all' and 'vol'
-                    tmp = tmp';
-                end
-                newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes
-                newrow.([daqvarname '_dv']) = {tmp_dv}; %put in cell, then table, for variable sizes
+                resample_inds = daqinds.vol;
+                newrow.methodrs = {'volume'};
             end
         end
+
+        fn = fieldnames(daqvars_bytype);
+        for fni = 1:numel(fn)
+            daqvartype = fn{fni};
+            for ii = 1:numel(daqvars_bytype.(daqvartype))
+                daqvarname = daqvars_bytype.(daqvartype){ii};
+                if strcmp(daqvarname, 'Time')
+                    trialData.(daqvarname) = trialData.(daqvarname)-starttime; %zero imaging starttime in case daq ran in the background
+                end
+                if ~strcmp(trialData.Properties.VariableNames, daqvarname)
+                    fprintf("warning, daq does not have variable named '" + daqvarname + "', skipping it" + newline)
+                else
+
+                    [ tmp, tmp_dv ] = daqproc(daqvartype, daqvarname, trialData.(daqvarname), numvol, resample_inds, sampper, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt);
+
+                    if any(strcmp(daqvars_bytype.(daqvartype){ii}, tounwrap))
+                        tmp = unwrap(tmp); %convert to mm (not for tmp_dv)
+                    end
+                    if any(strcmp(daqvars_bytype.(daqvartype){ii}, tozero))
+                        tmp = tmp - tmp(1); %convert to mm (not for tmp_dv)
+                    end
+                    if any(strcmp(daqvars_bytype.(daqvartype){ii}, toballscale))
+                        tmp = tmp*balldia/2; %convert to mm
+                        tmp_dv = tmp_dv*balldia/2; %convert to mm
+                    end
+                    if ~strcmp(daqvarname, 'Time') %we don't care to create 'Time_dv'
+                        tmp_dv = tmp_dv / sampper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
+                    end
+                    if strcmp(daqvarname, 'Time') && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
+                        tmp(1) = 0;
+                        tmp_dv(1) = tmp(2) - tmp(1); %also update first diff, not that it matters
+                    end
+                    if isrow(tmp) %each daq var must be column; will be column for useinds 'none', will be row for useinds 'all' and 'vol'
+                        tmp = tmp';
+                    end
+                    newrow.(daqvarname) = {tmp}; %put in cell, then table, for variable sizes
+                    newrow.([daqvarname '_dv']) = {tmp_dv}; %put in cell, then table, for variable sizes
+                end
+            end
+        end
+        daqrs = [daqrs; newrow];
     end
-    daqrs = [daqrs; newrow];
+
+    save(pth_daqrs, 'daqrs', '-v7.3', '-mat');
+
+
 end
-
-save(pth_daqrs, 'daqrs', '-v7.3', '-mat');
-
 
 
 

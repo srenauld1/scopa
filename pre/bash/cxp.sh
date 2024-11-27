@@ -27,10 +27,10 @@
 
 do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
-do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_analysis)
+do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_ap2)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
-do_analysis=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
+do_ap2=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
 do_copyfiles_sequence=(0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind; if this bash variable can be turned into a list of vectors, then cxp will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
@@ -49,10 +49,10 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20241117')
+RECDATE=('20241123')
 FLY=('*')
-TRIAL=('*')
-FOLDER_SUBSTRING=('fb8c') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
+TRIAL=('5')
+FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 
@@ -63,7 +63,7 @@ REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimit
 REGISTER_IN_2D=(0) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 SMLENPX_MCP=(5 5 0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
-MAX_SHIFTS_PRC=(10 10 0) #xyz percentages; 0 will be made 1 pixel; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
+MAX_SHIFTS_PRC=(15 15 15) #xyz percentages; 0 will be made 1 pixel; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
@@ -79,6 +79,32 @@ USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise remov
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
 
+
+############ SET PARAMS FOR CPU RESOURCE REQUEST ############
+
+time_register=18:00:00
+cpu_per_task_register=1
+mem_per_cpu_register=60G
+
+time_denoise=18:00:00
+cpu_per_task_denoise=1
+mem_per_cpu_denoise=60G
+
+time_stitch=18:00:00
+cpu_per_task_stitch=1
+mem_per_cpu_stitch=60G
+
+time_extract=18:00:00
+cpu_per_task_extract=1
+mem_per_cpu_extract=60G
+
+time_remove=18:00:00
+cpu_per_task_remove=1
+mem_per_cpu_remove=60G
+
+time_a2p=18:00:00
+cpu_per_task_a2p=1
+mem_per_cpu_a2p=60G
 
 ############ SET PARAMS FOR GPU RESOURCE REQUEST ############
 
@@ -113,6 +139,7 @@ elif [ "$gpustr" == v100_16 ]; then
     gpu_partition=gpu
     gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 fi   
+
 
 
 
@@ -192,7 +219,7 @@ fi
 if [ "$do_extract" == 1 ]; then
     sbatch_job_name_sequence+=(exp.sbatch)
 fi
-if [ "$do_analysis" == 1 ]; then
+if [ "$do_ap2" == 1 ]; then
     sbatch_job_name_sequence+=(a2p.sbatch)
 fi
 
@@ -228,11 +255,11 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
             if [ "$sbatch_job_name" == mcp.sbatch ]; then #do_register
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=01:10:00
+                time_str=$time_register
                 ntasks_str=1
                 if [ "${HALFWIDTH_WINDOW_BGSUB[@]}" == 0 ]; then #use less memory if no bg subtraction
-                    cpus_per_task_str=1
-                    mem_per_cpu_str=35G
+                    cpus_per_task_str=$cpu_per_task_register
+                    mem_per_cpu_str=$mem_per_cpu_register
                 else #use more memory if using bg subtraction
                     cpus_per_task_str=1
                     mem_per_cpu_str=35G
@@ -265,7 +292,7 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                 ntasks_str=1
                 cpus_per_task_str=1
                 mem_per_cpu_str=20G
-            elif [ "$sbatch_job_name" == a2p.sbatch ]; then  #do_analysis
+            elif [ "$sbatch_job_name" == a2p.sbatch ]; then  #do_ap2
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
                 time_str=01:00:00
                 ntasks_str=1

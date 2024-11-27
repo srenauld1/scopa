@@ -13,6 +13,10 @@ if ~iscell(vbin)
     vbin = {vbin};
 end
 
+if ~isfield(o, 'filled') || o.filled~=1
+    error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
+end
+
 id_capable_vbin = {'roi', 'mfit', 'feat'}; %only these vbin can be expanded and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
 
 for k = 1:numel(vbin)

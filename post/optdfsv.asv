@@ -9,6 +9,19 @@ if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
 
+d.copybin = ""; %these do not require defaults, they get added to options struct during its creation to mark creation state
+
+d.nest = [ % all vbins (first line) and nested vbins (2nd line) currently supported; options struct will make sure all of these are populated before existing oset 
+    "spec", "mn", "daq", "sld", "ftv", "roi", "carl","hires",
+    "mm", "ma", "cm", "qc", "nrm", "imhsv",  "tp", "sp",  "tg", "bump"
+    "pop", , "mfit", "tg", "pltx", 
+    "sld.sp", "pop.bump", "mfit.tg", "mfit.sp", "mfit.tp", "pltx.tg", "hires.sld.sp", "roi.mm", "roi.ma", "roi.qc",  "roi.nrm", "roi.sp", "roi.imhsv"
+    ];
+d.filled = 0;
+d.id = [];
+
+%% spec
+
 d.spec.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 d.spec.suffixvalid = ["raw", "cmrg", "cmrg_dcdn", "bksb_cmrg", "bksb_cmrg_dcdn", "bksb_cmrg_dcdn_nosn"]; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
@@ -44,8 +57,8 @@ d.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 d.daq.slopelensec = 0.4; % window numel used to fit slope (to compute daq variable derivatives (eg velocities)
 d.daq.slopeord = 2; % order of polynomial used to fit local slope; this should probably just remain 2
 d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "g4panels"]; % list circular daq variables you want to process
-d.daq.vcategorical = ["ftcam"]; % list categorical daq variables you want to process
+d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels"]; % list circular daq variables you want to process
+d.daq.vcategorical = ["ftcam", "cameraFrameClock"]; % list categorical daq variables you want to process
 d.daq.toballscale = ["ficTracIntSide", "ficTracIntForward"]; % define which vars to rescale from radians to mm
 d.daq.tounwrap = ["ficTracIntSide'", "ficTracIntForward"]; % define which vars to unwrap
 d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to zero (force to start at 0)
@@ -268,7 +281,7 @@ d.mfit.optim_hist_save_iter_spacing = 2;
 %% tg (tsget: choose timeseries using string matching of flattened struct ts)
 
 d.tg.domain = [];
-d.tg.optused = [];
+d.tg.optused = struct; %empty struct default
 d.tg.name = [];
 d.tg.group = 'name';
 

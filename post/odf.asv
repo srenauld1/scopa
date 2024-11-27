@@ -266,10 +266,12 @@ o = structsort(o, vectype='row');
 if fill==1
 
     dnestflat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.nest, repelem({'.'}, numel(d.nest)), 'un', false)));
+
     if any(ismember(copybinprev, dnestflat))
         error('copybin names cannot match any vbin names')
     end
 
+    o.filled = 1;
     oflat = structflat(o);
     fnoflat = fieldnames(oflat);
     fnoflat_before_copybin_all = [];
@@ -300,21 +302,18 @@ if fill==1
         end
     end
 
-    for k = 1:numel(d.nest) %doesn't matter if these get updated in loop but fnoflat doesn't (right?)
+    for k = 1:numel(d.nest)
         if all(cellfun(@isempty, regexp(d.nest{k}, strcat('^', strrep(fnoflat_before_copybin_all, '__', '.'))))) %if d.nest{k} is not any vbin with copybin from above
-            expr = ['^' strrep(d.nest{k}, '.', '__')];
-            mtch = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr, 'match')));
+            expr = strcat('^', fnoflat_before_copybin{w}, '__', copybinprev{m}, dnest_after_copybin);
+            mtch = mtch_cb(~cellfun(@isempty, regexp(fnoflat, d.nest, 'match')));
             if isempty(mtch)
-                o = odf(o, d.nest{k}, files=2);
+                newnest = strrep(strrep(expr, '__', '.'), '^', ''); %replace double underscore with period, and remove leading carot
+                o = odf(o, newnest, files=2);
             end
         end
     end
 
-    o.filled = 1; %mark options struct as filled (complete) 
 
-
-    % now set some globals
-    
     if isempty(glb('pthscopa')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
         xyscreen = pxscreenget;
         glb(pthscopa=pthscopa, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen); %set some globals, force update if they already have been set with first argument 1

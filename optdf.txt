@@ -63,6 +63,7 @@
     "update_background_components": true,
     "use_cnn": 0
   },
+  "copybin": "",
   "daq": {
     "balldia": 9,
     "slopelensec": 0.4,
@@ -83,11 +84,15 @@
     "usefbf": 1,
     "usefbl": 1,
     "useinds": "none",
-    "vcategorical": "ftcam",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock"
+    ],
     "vcircular": [
       "ficTracIntSide",
       "ficTracIntForward",
       "ficTracYaw",
+      "ficTracHeading",
       "g4panels"
     ],
     "vnormal": [
@@ -98,6 +103,7 @@
     "voltmax": 10,
     "voltmin": 0
   },
+  "filled": 0,
   "ftv": {
     "num_periodic_peaks_defining_laser_oscillations": 10,
     "numpix_to_extract_laser_timeseries": 10,
@@ -109,6 +115,7 @@
     "regtype": "rigid",
     "use_caiman_on_hires": 0
   },
+  "id": [],
   "imhsv": {
     "fg": "allrois",
     "hrange_in_manual": [],
@@ -183,8 +190,34 @@
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024111921340212"
+    "timestr": "2024112618204864"
   },
+  "nest": [
+    "spec",
+    "mn",
+    "daq",
+    "sld",
+    "ftv",
+    "roi",
+    "hires",
+    "pop",
+    "mfit",
+    "pltx",
+    "carl",
+    "sld.sp",
+    "pop.bump",
+    "mfit.tg",
+    "mfit.sp",
+    "mfit.tp",
+    "pltx.tg",
+    "hires.sld.sp",
+    "roi.mm",
+    "roi.ma",
+    "roi.qc",
+    "roi.nrm",
+    "roi.sp",
+    "roi.imhsv"
+  ],
   "nrm": {
     "channorm": 0,
     "degdtr": 0,
@@ -279,7 +312,7 @@
     "domain": [],
     "group": "name",
     "name": [],
-    "optused": []
+    "optused": {}
   },
   "tp": {
     "max_tinds": 1000,

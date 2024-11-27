@@ -221,7 +221,7 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 % if o.bump.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 % o.bump.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
-%this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.resp.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
+%this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.roi.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
 %the selected timeseries will be assigned to depv
 %selecting indv uses the same approach
 %depv and indv are matched at the outer cell level

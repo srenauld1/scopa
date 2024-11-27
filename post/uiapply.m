@@ -105,7 +105,7 @@ else
     % otmp.roi.nrm.wavp = [0.3 0.6];
     
     error("fix roimake inputs here")
-    [roidat_new, resp] = roimake(stack, otmp.roi, ti, sampper, [], [], [], pth_roim_interactive, [], [], [], [], [], roimaskman);
+    [resp, roidat_new] = roimake(stack, otmp.roi, ti, sampper, [], [], [], pth_roim_interactive, [], [], [], [], [], roimaskman);
     hardcodechan = 1;
     hardcodenorm = 'imf_f_f_n';
     resp = channel_combine_struct(resp);

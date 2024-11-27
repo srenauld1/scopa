@@ -56,6 +56,7 @@ options set here (ie options with defaults defined in odf) are only used in the 
 vbin names are similar to, or abbreviated forms of, their associated functions
 here is a complete list of vbins and functions they hold options for (see also section headers in odf)
 
+
     mn, a2p
     spec, stackfind   (called from odf)
     daq, daqld   (called from a2p)

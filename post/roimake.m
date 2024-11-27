@@ -1,4 +1,4 @@
-function [roidat, resp] = roimake(stack, t, sampper, widyxz, zstartpos, sz_crop, pth_dirstack, recid, pth_roim, stackmnthr, hrlr, opt, roimaskman_allchan)
+function [resp, roidat] = roimake(stack, t, sampper, widyxz, zstartpos, sz_crop, pth_dirstack, recid, pth_roim, stackmnthr, hrlr, opt, roimaskman_allchan)
 
 % see docs_roimake.m
 
