@@ -5,7 +5,7 @@ function o = odf(oin, vbin, copybin, opt)
 
 odf is just a wrapper for odfscal; odfscal operates on scalar struct argument oin; odf just loops over elements of oin
 
-WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS CONFUSING;
+WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS UGLY AND CONFUSING;
 note the docs in oset are also about odf, and are much more extensive than the docs here
 odf is intended to help the user easily set a potentially complex set of pipeline options (see function oset, where odf is called)
 
@@ -314,7 +314,7 @@ if fill==1
 
 
     % now set some globals
-    
+
     if isempty(glb('pthscopa')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
         xyscreen = pxscreenget;
         glb(pthscopa=pthscopa, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen); %set some globals, force update if they already have been set with first argument 1

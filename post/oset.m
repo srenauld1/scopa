@@ -88,8 +88,6 @@ o.mfit.tg.name = [];  %empty for all
 o.mfit.tg.group = [];
 o=odf(o, 'mfit.tg', 'depv'); %put in copybin 'depv'
 
-o.hires.disttype = 'kuk'
-
 %%%% pltx (interactive plots) %%%%
 
 o.pltx.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
@@ -99,17 +97,14 @@ o.pltx.tg.group = 'name';  %interactive plots using all variables matching this 
 o.pltx.lagsxy_sec = [0, 0, 1, 0]; %lags for interactive scatterplot; vector, or if you want all within range, bookend with zeros ([0 1 2 0] is range 1-2)
 o.pltx.lagsz_sec = [0, 0, 1, 0]; %lags for interactive scatterplot; vector, or if you want all within range, bookend with zeros ([0 1 2 0] is range 1-2)
 
-%%%% create o for the first time for the simple options specified thusfar %%%%
+%%%% set more options and find files %%%%
 
 o = odf(o, files=dofindfiles); %set all above options and find files (unless oset input recin is 'nofile')
 
 
 %%%% create distinct options (or not) for different found recordings, and different regionex %%%%
 
-allrecs = getfieldns(o, 'id.recdate');
-recgroup1 = find(contains(getfieldns([o.id],'pthstack'), 'f91g_syt')) ; %index of all found files containing string 'f91g_syt'
-
-for k = 1:numel(allrecs)
+for k = 1:numel(o)
     for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
 
             o(k).roi.regionex = regionex{m};
@@ -136,18 +131,20 @@ for k = 1:numel(allrecs)
             o(k).roi.nrm.degdtr = [2];
             o(k).roi.nrm.post = {'f'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
 
-            if ismember(k, recgroup1) && any(strcmp(regionex{m}, {'tm', 't5'}))
-                o(k).mn.oldcarl = 1;
-                o(k).mn.dodaq = 0; %process daq data
-                o(k).mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
-                o(k).mn.dopop = 0; %compute population features (o.pop below)
-                o(k).mn.dofit = 0; %model fitting (o.mfit below)
-                o(k).mn.dopltx = 1; %plot experiment (o.pltx below)
-                o(k).sld.tcrop = [4, 2]; % how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-                o(k).mfit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
-                o(k).mfit.mdl_length_sec = 1.25;
-                o(k).carl.stimtype = 'drone';
-                o(k).carl.feat = 'CON_51';
+            if contains(o(k).id.pthstack, 'f91g_syt')
+                if any(strcmp(regionex{m}, {'tm', 't5'}))
+                    o(k).mn.oldcarl = 1;
+                    o(k).mn.dodaq = 0; %process daq data
+                    o(k).mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
+                    o(k).mn.dopop = 0; %compute population features (o.pop below)
+                    o(k).mn.dofit = 0; %model fitting (o.mfit below)
+                    o(k).mn.dopltx = 1; %plot experiment (o.pltx below)
+                    o(k).sld.tcrop = [4, 2]; % how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+                    o(k).mfit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
+                    o(k).mfit.mdl_length_sec = 1.25;
+                    o(k).carl.stimtype = 'drone';
+                    o(k).carl.feat = 'CON_51';
+                end
             end
 
             o(k) = odf(o(k), {'roi'}, regionex{m}, files=2); %use files=2 to keep id field untouched (keep found files)
