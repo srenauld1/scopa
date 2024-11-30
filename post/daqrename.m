@@ -8,25 +8,25 @@ ball = [];
 vis = [];
 ti = [];
 
-if strcmp('Time',nms)
+if any(strcmp('Time',nms))
     ti = single(daqrs.Time{1}(:)');
 end
-if strcmp('g4panels',nms)
+if any(strcmp('g4panels',nms))
     vis.yaw = single(daqrs.g4panels{1}(:)');
     vis.yawvel = single(daqrs.g4panels_dv{1}(:)');
 end
-if strcmp('ficTracIntForward',nms)
+if any(strcmp('ficTracIntForward',nms))
     ball.intfor = single(daqrs.ficTracIntForward{1}(:)');
     ball.forvel = single(daqrs.ficTracIntForward_dv{1}(:)');
 end
-if strcmp('ficTracIntSide',nms)
+if any(strcmp('ficTracIntSide',nms))
     ball.intside = single(daqrs.ficTracIntSide{1}(:)');
     ball.sidevel = single(daqrs.ficTracIntSide_dv{1}(:)');
 end
-if strcmp('ficTracYaw',nms)
+if any(strcmp('ficTracYaw',nms))
     ball.yaw = single(daqrs.ficTracYaw{1}(:)');
     ball.yawvel = single(daqrs.ficTracYaw_dv{1}(:)');
-elseif strcmp('ficTracHeading',nms)
+elseif any(strcmp('ficTracHeading',nms))
     ball.yaw = single(daqrs.ficTracHeading{1}(:)');
     ball.yawvel = single(daqrs.ficTracHeading_dv{1}(:)');
 end

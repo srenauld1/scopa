@@ -5,7 +5,7 @@ if numchan==2
     fprintf("averaging both channels to create the images for defining croplim" + newline)
 end
 
-stackmnt = mean(stack, [4 5], 'native'); %averaging 
+stackmnt = single(mean(stack, [4 5])); %native is slow and not necessary for mean t
 
 %% first define z limits
 
@@ -39,7 +39,7 @@ if define_xy_lim
     flag_oneroi = 1;
     flag_allz = 0;
     draw_on_meanzt = 1;
-    roi_cropxy = roidraw_onefig(stackmntz, regionex_nounderscore, flag_oneim, flag_oneroi, flag_allz, flag_croplim, draw_on_meanzt, title_prefix=title_prefix);
+    roi_cropxy = roidraw_onefig(stackmntz, flag_oneim, flag_oneroi, flag_allz, flag_croplim, draw_on_meanzt, title_prefix=title_prefix);
     if ~any(roi_cropxy(:))
         roi_cropxy = ones(size(roi_cropxy));
     end

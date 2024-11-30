@@ -1,4 +1,4 @@
-function fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix)
+function fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix, epochinds_ts_i)
 
 %don't unpack fitin.vars.indvp and fitin.vars.depvp from struct in case they're large (they can be updated below, which would double memory)
 
@@ -6,7 +6,6 @@ num_dim_indvp = fitin.num_dim_indvp;
 num_samp_indvp = fitin.num_samp_indvp;
 num_dim_depvp = fitin.num_dim_depvp;
 num_samp_depvp = fitin.num_samp_depvp;
-epochinds_ts_i = ts.epochinds;
 sampper = md.sampper;
 
 time_dimension = find(size(fitin.vars.indvp)==num_samp_indvp);
@@ -119,6 +118,17 @@ fitin.stats.depvp_lim_alldim = [fitin.stats.depvp_min_alldim fitin.stats.depvp_m
 fitin.stats.depvp_extreme_alldim = max(abs(fitin.vars.depvp(:)));
 fitin.stats.depvp_mean_alldim = mean(fitin.vars.depvp(:), "omitmissing");
 fitin.stats.depvp_std_alldim = std(fitin.vars.depvp(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
+
+%recompute these after optional normalization before assigning to fitin.stats
+indvp_mean_eachdim = mean(fitin.vars.indvp, 2, 'omitmissing');
+indvp_std_eachdim = std(fitin.vars.indvp, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
+indvp_min_eachdim = min(fitin.vars.indvp, [], 2, 'omitmissing');
+indvp_max_eachdim = max(fitin.vars.indvp, [], 2, 'omitmissing');
+
+depvp_mean_eachdim = mean(fitin.vars.depvp, 2, 'omitmissing');
+depvp_std_eachdim = std(fitin.vars.depvp, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
+depvp_min_eachdim = min(fitin.vars.depvp, [], 2, 'omitmissing');
+depvp_max_eachdim = max(fitin.vars.depvp, [], 2, 'omitmissing');
 
 fitin.stats.indvp_mean_eachdim = indvp_mean_eachdim;
 fitin.stats.indvp_std_eachdim = indvp_std_eachdim;

@@ -18,9 +18,9 @@ end
 o.spec.pthparent_local = '~/stacks';
 o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not recin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    o.spec.recdate = {'20241117'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.recdate = {'20241123'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.trial = {'1'}; %cell array of char (or scalar char), can use wildcards
     o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     o.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     o.spec.pth = '';
@@ -37,16 +37,17 @@ end
 o.mn.dodaq = 1; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
-o.mn.dopop = 0; %compute bump?
+o.mn.dobmp = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
-o.mn.dopltx = 1; %enter pltx for summary interactive plots?
+o.mn.dopltx = 0; %enter pltx for summary interactive plots?
 o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bump", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
-regionex = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 %%%% some simple option specification %%%%
 
 o.daq.useinds = 'none'; %how to resample daq timeseries
+o.daq.use_carls_epochs = 1;
 
 o.sld.chanuse = [1 2]; %which channel to use in stack denoted by o.spec.suffix, (also applied to any stacks listed in o.sld.suffixplt)
 o.sld.suffixplt = ["cmrg_dcdn"]; %comment this out to plot/convert all available stacks; or list suffixes to plot as string array, or [""] to skip; string array of suffixes denoting which stacks to plot in gif (in stackld) for comparison (can be 1 or 2 channel); default is all stacks that exist, all channels; ignored if o.mn.plt does not contain "sld", or if o.sld.suffixplt is empty; the stack specified in o.spec.suffix gets converted from tif to mat and saved, and so do the stacks listed here in o.sld.suffixplt; any stack not listed in o.spec.suffix or o.sld.suffixplt will not get converted from tif to mat (so if you always want all stacks converted and plotted, just use default suffixplt by leaving this commented out)
@@ -61,11 +62,11 @@ o.ftv.smlenpx = 2;
 
 %%%% compute bump %%%%
 
-o.pop.bump.domaintype = 'functional';
-o.pop.bump.mfit.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
-o.pop.bump.mfit.tg.optused = [];  %interactive plots using all variables matching this string as timeseries two
-o.pop.bump.mfit.tg.name = [];  %interactive plots using all variables matching this string as timeseries two
-o.pop.bump.mfit.tg.group = 'name';  %interactive plots using all variables matching this string as timeseries two
+o.bmp.domaintype = 'functional';
+o.bmp.mfit.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mfit.tg.optused = [];  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mfit.tg.name = [];  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mfit.tg.group = 'name';  %interactive plots using all variables matching this string as timeseries two
 
 %%%% fit model %%%%
 
@@ -87,6 +88,12 @@ o.mfit.tg.optused = roitmp;  %interactive plots using all variables matching thi
 o.mfit.tg.name = [];  %empty for all
 o.mfit.tg.group = [];
 o=odf(o, 'mfit.tg', 'depv'); %put in copybin 'depv'
+
+o.opl.Display = 'iter-detailed';
+o.opl.FiniteDifferenceType = 'central';
+o.opl.MaxFunctionEvaluations = Inf;
+o.opl.MaxIterations = 1000;
+o.opl.OutputFcn = [];
 
 %%%% pltx (interactive plots) %%%%
 
@@ -115,32 +122,41 @@ for k = 1:numel(o)
             o(k).roi.doqc = 0; %do quality control on rois
 
             o(k).roi.mm.chan = [1];
-            o(k).roi.mm.maskname = {'none'}; %name for masks drawn on the same regionex
 
             o(k).roi.ma.chan = [1];
             o(k).roi.ma.numroi = 512; %for auto morph roi extraction (after optional mask draw)
             o(k).roi.ma.maskseg = 'uniform';
-            o(k).roi.ma.do3d = 0;
-
-            o(k).roi.cm.methodex = '1'; %caiman extraction method
-            o(k).roi.cm.p = 0; %caiman extraction param
-
-            o(k).roi.qc.minroisz = 10;
+            o(k).roi.ma.do3d = 1;
 
             o(k).roi.nrm.wavp = []; %[0 50]; wavelet cwt periods to keep; seconds; carl uses [0 50] often to remove slow fluctuations; empty to skip
             o(k).roi.nrm.degdtr = [2];
             o(k).roi.nrm.post = {'f'}; %how to normalize roi responses; 'f' is raw, 'dff010020' is dff with f as 10th percentile over 20-sec sliding window
 
-            if contains(o(k).id.pthstack, 'f91g_syt')
+            if contains(o(k).id.pthstack, '2024112')
+                o(k).roi.nrm.post = {'rsc000100'}; 
+                if any(strcmp(regionex{m}, {'eb'}))
+                    o(k).roi.domm = 0; 
+                    o(k).roi.ma.numroi = 64; 
+                    o(k).roi.ma.maskmake = 'edge'; 
+                    o(k).bmp.mfit.mdlname = 'fnet_v'; 
+                    o(k).bmp.mfit.mdl_length_sec = 0;
+                    o(k).bmp.mfit.epochinds = 4;
+                    o(k).bmp.mfit.normalize_indv = 'none';
+
+                elseif any(strcmp(regionex{m}, {'no', 'ga'}))
+                    o(k).roi.doma = 0;
+                    o(k).roi.mm.maskname = {'left', 'right'}; 
+                end
+            elseif startsWith(o(k).id.pthstack, '22')
                 if any(strcmp(regionex{m}, {'tm', 't5'}))
                     o(k).mn.oldcarl = 1;
-                    o(k).mn.dodaq = 0; %process daq data
-                    o(k).mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
-                    o(k).mn.dopop = 0; %compute population features (o.pop below)
-                    o(k).mn.dofit = 0; %model fitting (o.mfit below)
-                    o(k).mn.dopltx = 1; %plot experiment (o.pltx below)
-                    o(k).sld.tcrop = [4, 2]; % how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-                    o(k).mfit.mdl_lag_sec = 1; %how many samples indv precedes depv for model fit . . . for now, only nonnegative integers (0 to lenfit_samp - 1)
+                    o(k).mn.dodaq = 0; 
+                    o(k).mn.doftv = 0; 
+                    o(k).mn.dobmp = 0; 
+                    o(k).mn.dofit = 0; 
+                    o(k).mn.dopltx = 1; 
+                    o(k).sld.tcrop = [4, 2]; 
+                    o(k).mfit.mdl_lag_sec = 1; 
                     o(k).mfit.mdl_length_sec = 1.25;
                     o(k).carl.stimtype = 'drone';
                     o(k).carl.feat = 'CON_51';

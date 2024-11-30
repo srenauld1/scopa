@@ -277,7 +277,7 @@ if fill==1
         expr_cb = ['__' copybinprev{m} '__']; %double underscore is default for flattened options struct, keeping them seperate to make it clear, and maybe turn them into global variable
         mtch_cb = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr_cb, 'match')));
         if ~isempty(mtch_cb)
-            if any(cellfun(@numel, regexp(mtch_cb, copybinprev{m}))>1)
+            if any(cellfun(@numel, regexp(mtch_cb, ['__' copybinprev{m} '__']))>1)
                 error("there is a repeated copybin, this is currently not supported")
             end
             fnoflat_before_copybin = unique(extractBefore(mtch_cb, ['__' copybinprev{m}]));

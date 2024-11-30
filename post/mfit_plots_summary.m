@@ -1,9 +1,9 @@
 function mfit_plots_summary(fitin, opts, roidat, stackmean)
 
 plt = opts.plt;
-supp = fitin.opop.supp;
+supp = fitin.op.supp;
 
-mdl = fitin.opop.mdl;
+mdl = fitin.op.mdl;
 num_dim_depvp = fitin.num_dim_depvp;
 
 normalize_depv = opts.normalize_depv;

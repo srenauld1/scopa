@@ -143,10 +143,10 @@ for fi = 1:num_fun
         x0_tmp = [1,1,1,0];
     elseif strcmp(fnet_onefun, 'v')
         fnet.funh{fi} = @fun_vonmises;
-        lbnd_tmp = [-inf,-inf,-inf,-inf];
-        ubnd_tmp = [inf,inf,inf,inf];
-        x0_tmp = [con_genlog_asympleft(3),8,0,0];
-        x0_tmp = [0,0,0,0];
+        lbnd_tmp = [-inf,0,-pi,-inf];
+        ubnd_tmp = [inf,inf,pi,inf];
+        % x0_tmp = [con_genlog_asympleft(3),8,0,0];
+        x0_tmp = [1,0.1,0,0];
     elseif strcmp(fnet_onefun, 'n')
         fnet.funh{fi} = @fun_sin;
         lbnd_tmp = [-inf,-inf,-inf,-inf];

@@ -114,14 +114,25 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
-    lfit(ts.ball.forvel, ts.roi.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
+    % lfit(ts.ball.forvel, ts.roi.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
 
     %% feature extraction (e.g. bump), add to ts
 
-    if o.mn.dopop
-        fn = fieldnames(o.pop);
+    if o.mn.dobmp
+        o.bmptmp.i1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; %temporary hack until opt2id for bmp
+        fn = fieldnames(o.bmp);
         for m = 1:numel(fn)
-            ts.pop = popcmp(fn{m}, ts, stack, roidat, o.pop.(fn{m}), md, pth, ids.recid);
+            
+            optid = fn{m};
+            opoptmp = o.bmp.(optid);
+            roidattmp = roidat.i17{1};
+            regionex = 'eb';
+            indvp = ts.vis.yaw;
+            depvp = ts.roi.i17{1};
+            fn_save_prefix = '~/stacks/20241123_1_D05_syt7f_018_syt7f/20241123_1_1_cmrg_dcdn_testfits';
+
+            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, opoptmp, md, ts.epochinds, pth.dirstack, o.id.recid, fn_save_prefix); %fit bump
+
         end
     end
 

@@ -1,4 +1,4 @@
-function [mdl, optimp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
+function [mdl, opp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
 
 padlen_sec = 4;
 
@@ -70,14 +70,14 @@ supp.mdlname = mdlname;
 
 mdl = @mdl_fnet;
 
-optimp.lb = double(lbnd);
-optimp.ub = double(ubnd);
-optimp.x0 = double(x0);
-optimp.Aineq = double(linineq_A);
-optimp.bineq = double(linineq_b);
+opp.lb = double(lbnd);
+opp.ub = double(ubnd);
+opp.x0 = double(x0);
+opp.Aineq = double(linineq_A);
+opp.bineq = double(linineq_b);
 
 
-optimp.nonlcon = [];
+opp.nonlcon = [];
 
 allpind = [supp.fnet.pind];
 supp.pind_Lfree = allpind(strcmp([supp.fnet.funstr], 'f'));
@@ -88,7 +88,7 @@ supp.pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
 %
 % if ~freeformflag %set up nonlinear constraint for freeform linear function
 % 
-%     optimp.nonlcon = [];
+%     opp.nonlcon = [];
 % 
 % else
 % 
@@ -99,7 +99,7 @@ supp.pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
 %     allpind = [supp.fnet.pind];
 %     supp.pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
 % 
-%     % optimp.nonlcon = @nlcon_fnet;
+%     % opp.nonlcon = @nlcon_fnet;
 % 
 % end
 

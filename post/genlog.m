@@ -77,11 +77,11 @@ elseif strcmp(func, 'vonmises')
                     countz = countz + 1;
 
                     % original von mises
-                    % out = V(vi)*exp(M(mi)*cos(x-Q(qi)))+C(ci);
+                    out = V(vi)*exp(M(mi)*cos(x-Q(qi)))+C(ci);
                     
-                    % version that allows amp control (expresses first param as amp and k)
-                    newamp = V(vi) / ( exp(M(mi)) - exp(-M(mi)) );
-                    out = newamp * exp(M(mi)*cos(x-Q(qi)))+C(ci);
+                    % % version that allows amp control (expresses first param as amp and k) - is it equal to original??
+                    % newamp = V(vi) / ( exp(M(mi)) - exp(-M(mi)) );
+                    % out = newamp * exp(M(mi)*cos(x-Q(qi)))+C(ci);
 
                     % 
                     % out_all{countz} = out;

@@ -13,7 +13,7 @@ if ~iscell(vbin)
     vbin = {vbin};
 end
 
-if ~isfield(o, 'filled') || o.filled~=1
+if any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o, 'filled'))~=1)
     error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
 end
 

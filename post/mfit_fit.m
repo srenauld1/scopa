@@ -1,39 +1,43 @@
 function [ft, pred, mse_train, mse_val] = mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
-    validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, opop, depvmin, depvmax, pth_fitdata)
+    validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
 
 
 % rng default
 
+do_nonlinear_constraint = 0;
+
 if optim_hist_save_iter_spacing
-    histfit = init_optim_hist(opop.optiml.MaxIterations, opop.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
-    opop.optimg.OutputFcn = @outfcn_global;
-    opop.optiml.OutputFcn = @outfcn_local;
+    histfit = init_optim_hist(op.opp.options.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
+    op.opg.OutputFcn = @outfcn_global;
+    op.opp.options.OutputFcn = @outfcn_local;
 end
 
 if startsWith(mdlname, 'svd')
-    opop.optimp.objective = @objective_svd;
+    op.opp.objective = @objective_svd;
 else
-    if strcmp(opop.optimp.solver, 'fmincon')
-        % opop.optimp.objective = @(pars) sum(( depv - opop.mdl(pars, indv, supp) ).^2); %sum of squared error; fmincon requires objective objective to define loss explicitly
-        opop.optimp.objective = @(pars) mse( depv, opop.mdl(pars, indv, supp)); %mse; fmincon requires objective objective to define loss explicitly
+    if strcmp(op.opp.solver, 'fmincon')
+        % op.opp.objective = @(pars) sum(( depv - op.mdl(pars, indv, supp) ).^2); %sum of squared error; fmincon requires objective objective to define loss explicitly
+        op.opp.objective = @(pars) mse( depv, op.mdl(pars, indv, supp)); %mse; fmincon requires objective objective to define loss explicitly
     else
-        opop.optimp.objective = opop.mdl; %fmincon requires objective objective to define loss explicitly
+        op.opp.objective = op.mdl; %fmincon requires objective objective to define loss explicitly
     end
 end
 
-
-if isfield(supp, 'pind_Lfree') && ~isempty(supp.pind_Lfree) || isfield(supp, 'pind_vonmises') && ~isempty(supp.pind_vonmises)
-    opop.optimp.nonlcon = @nlcon_fnet;
+if do_nonlinear_constraint
+    if isfield(supp, 'pind_Lfree') && ~isempty(supp.pind_Lfree) || isfield(supp, 'pind_vonmises') && ~isempty(supp.pind_vonmises)
+        op.opp.nonlcon = @nlcon_fnet;
+    end
 end
 
 %% fit model, predict response
 
+
 if startsWith(mdlname, 'svd')
-    ft = opop.optimp.objective( indv, depv, supp.pvar);
+    ft = op.opp.objective( indv, depv, supp.pvar);
     %mdl_toy %synthetic data toy
 else
-    [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(opop.optimg, opop.optimp); %ft are fit params
-    %[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(optimp.objective, x0, [], [], [], [], lbnd, ubnd, [], optimp.options); %example single run of local solver
+    [ft, fval_gs, exitflag_gs, output_gs, solutions_gs] = run(op.opg, op.opp); %ft are fit params
+    %[ftl, fvall, exfll, outl, laml, gradl, herssl] = fmincon(opp.objective, x0, [], [], [], [], lbnd, ubnd, [], opp.options); %example single run of local solver
 end
 
 
@@ -45,11 +49,11 @@ if startsWith(mdlname, 'svd')
     pred(sampinds_indvdepv_train) = indv*ft;
     mse_train = mse(depv, pred(sampinds_indvdepv_train));
 else
-    [pred(sampinds_indvdepv_train), mse_train] = mfit_predict(ft, indv, depv, opop.mdl, supp);
+    [pred(sampinds_indvdepv_train), mse_train] = mfit_predict(ft, indv, depv, op.mdl, supp);
 end
 
 if validation_fold %if doing validation
-    [pred(sampinds_indvdepv_val), mse_val] = mfit_predict(ft, indv_val, depv_val, opop.mdl, supp);
+    [pred(sampinds_indvdepv_val), mse_val] = mfit_predict(ft, indv_val, depv_val, op.mdl, supp);
 else
     mse_val = nan;
 end
@@ -66,9 +70,10 @@ end
 
 %% save optimization history
 
-savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
-parsave(savepath, histfit) %save histfit, must use separate function
-
+if optim_hist_save_iter_spacing
+    savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+    parsave(savepath, histfit) %save histfit, must use separate function
+end
 
 %% constraint function
 

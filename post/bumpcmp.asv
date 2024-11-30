@@ -1,25 +1,22 @@
-function bump = bumpcmp(stack, indvp, depvp, regionex, roidat, bumpopts, md, epochinds_ts_i, pth_dirstack, recid, fn_save_prefix)
+function bump = bumpcmp(stack, fitin, roidat, fitopts, md, regionex)
 
 
 %% params
 
-mthd = bumpopts.mthd; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
-domaintype = bumpopts.domaintype; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-domain = bumpopts.domain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
-slopeord = bumpopts.slopeord; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-slopelensec = bumpopts.slopelensec; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-smoothwindow_sec = bumpopts.smoothwindow_sec; %full width of gaussian smoothing window (5 times std)
-rescale_clusters = bumpopts.rescale_clusters; %just before computing bump, rescale each cluster's timeseries to range 0-1
-numcluster_for_bump_domain_resample = bumpopts.numcluster_for_bump_domain_resample;
-resample_smoothfac = bumpopts.resample_smoothfac;
-omitnan_bump = bumpopts.omitnan;
+mthd = fitopts.mthd; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
+domaintype = fitopts.domaintype; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+domain = fitopts.domain; %'all', 'right', 'left', 'larger', 'weighted', 'random'
+slopeord = fitopts.slopeord; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+slopelensec = fitopts.slopelensec; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+smoothwindow_sec = fitopts.smoothwindow_sec; %full width of gaussian smoothing window (5 times std)
+rescale_clusters = fitopts.rescale_clusters; %just before computing bump, rescale each cluster's timeseries to range 0-1
+numcluster_for_bump_domain_resample = fitopts.numcluster_for_bump_domain_resample;
+resample_smoothfac = fitopts.resample_smoothfac;
+omitnan_bump = fitopts.omitnan;
+doplt = fitopts.doplt;
 
-fitopts = bumpopts.mfit;
+fn_save_prefix = fitin.fn_save_prefix;
 
-
-doplt = 0;
-
-stack = stackcrop(stack, regionex, md.zstartpos, recid, pth_dirstack, md.sz_crop);
 
 
 %% define domain (functionally or morphologically)
@@ -27,7 +24,7 @@ stack = stackcrop(stack, regionex, md.zstartpos, recid, pth_dirstack, md.sz_crop
 if numcluster_for_bump_domain_resample
     numcluster = numcluster_for_bump_domain_resample;
 else
-    numcluster = size(depvp, 1);
+    numcluster = size(fitin.vars.depvp, 1);
 end
 
 if numcluster==1
@@ -38,13 +35,13 @@ end
 
 if strcmp(domaintype, 'functional')
 
-    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, regionex, indvp, depvp, fn_save_prefix, roidat, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplt, epochinds_ts_i);
+    [resp_cl, domaintmp] = map_rois_to_head_direction(stack, fitin, roidat, md, fitopts, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplt);
 
 elseif strcmp(domaintype, 'morphological') %morphological domain
 
     domaintmp = mod(linspace(0,4*pi,numcluster+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
     domaintmp = domaintmp(1:end-1);
-    resp_cl = depvp; %no downsampling for morphological domain
+    resp_cl = fitin.vars.depvp; %no downsampling for morphological domain
 
 end
 
@@ -117,7 +114,7 @@ for fi = 1:length(domain)
     end
 
     bumpvel = tsdv('circular', mu, slopelensec, slopeord, md.sampper);
-    offset = circ_dist_nan(indvp.', mu);
+    offset = circ_dist_nan(fitin.vars.indvp.', mu);
 
     [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point
     i2 = ii' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
@@ -149,10 +146,10 @@ if doplt
 
         mutmp = bmp.(fn{fni}).mu;
 
-        figure; plot(mutmp); yyaxis right; plot(indvp)
+        figure; plot(mutmp); yyaxis right; plot(fitin.vars.indvp)
         saveas( gcf, [fn_save_prefix '_bump_v_visang_' fn{fni} '_.png'])
 
-        figure; plot(unwrap(mutmp)); yyaxis right; plot(unwrap(indvp))
+        figure; plot(unwrap(mutmp)); yyaxis right; plot(unwrap(fitin.vars.indvp))
         saveas( gcf, [fn_save_prefix '_bump_v_visang_uw_' fn{fni} '.png'])
 
     end

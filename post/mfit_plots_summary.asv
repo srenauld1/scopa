@@ -1,9 +1,9 @@
 function model_plots_summary(fitin, opts, roidat, stackmean)
 
 plt = fitin.plt;
-supp = fitin.opop.supp;
+supp = fitin.op.supp;
 
-mdl = fitin.opop.optimp.mdl;
+mdl = fitin.op.opp.mdl;
 num_dim_depvp = fitin.num_dim_depvp;
 
 normalize_depv = opts.normalize_depv;

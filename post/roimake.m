@@ -36,8 +36,7 @@ else
     doma = 0;
     docm = 0;
     doqc = 0;
-    numroiauto = 0;
-    doplt = 0; %skip plots if passing in roimaskman_allchan
+    doplt = 0; 
 end
 regionex = opt.regionex;
 
@@ -51,7 +50,6 @@ end
 
 pthpre = erase(pth_roim, '.mat');
 numchan = size(stack,5);
-stackmnt = mean(stack, 4, 'native');
 
 %% crop movie to regionex cuboid
 
@@ -60,13 +58,17 @@ stackmnt = mean(stack, 4, 'native');
 
 %% draw rois (polygons/polyhedra)
 
-if domm && ~maskinput
+if domm
     if numroiauto>1
         oneroi = 1;
     else
         oneroi = 0;
     end
     [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+else
+    if ~maskinput
+        roimaskman_allchan = cell(numchan,1); %make it empty if you didn't draw or pass in mask
+    end
 end
 
 
@@ -76,7 +78,7 @@ if doma
     for c = 1:numchan
         if ismember(c,opt.ma.chan)
             if ~isequal(numroiauto, 0)
-                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stackmnt(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, doplt, opt.ma);
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, doplt, opt.ma);
             end
         end
     end
@@ -145,6 +147,8 @@ end
 %% plots
 
 if doplt %all these are at imaging resolution
+
+    stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
 
     imhsv = plots_setup_hsv(imhsv);
     hueft = [1:num_roim]';

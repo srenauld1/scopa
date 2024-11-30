@@ -67,7 +67,7 @@ here is a complete list of vbins and functions they hold options for (see also s
     roif, roifmake   (called from a2p)
     nrm, roits   (called from roimake and roifmake)
     pop, popcmp   (called from a2p)
-    bump, bumpcmp   (called from popcmp)
+    bmp, bumpcmp   (called from popcmp)
     mfit, mfit   (called from a2p)
     tg, tsget   (called from, bumpcmp, mfit, and pltx)
     pltx, pltx   (called from a2p)
@@ -103,7 +103,7 @@ these nested vbins will be set in o, by user or by default
 for brevity, only the deepest nesting of each unique branch is shown
 
     o.sld.sp   (stackplt called from within stackld called from a2p)
-    o.pop.bump   (bumpcmp called from within popcmp called from a2p)
+    o.bmp   (bumpcmp called from within popcmp called from a2p)
     o.mfit.tg   (tsget called from within mfit called from a2p)
     o.mfit.sp   (stackplt called from within mfit called from a2p)
     o.mfit.tp   (tsplt called from within mfit called from a2p)

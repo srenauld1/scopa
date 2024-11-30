@@ -1,4 +1,4 @@
-function fitin = mfit(stack, indvp, depvp, fn_save_prefix, roidat, md, opts, epochinds_ts_i, pltstr, pixfitflag)
+function fitin = mfit(stack, fitin, roidat, md, opts, pixfitflag, pltstr, epochinds_ts_i)
 
 % for docs, see file mfit_notes.m
 
@@ -6,8 +6,8 @@ function fitin = mfit(stack, indvp, depvp, fn_save_prefix, roidat, md, opts, epo
 % the unintuitive thing that needs to be changed is that depvp first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim), 
 % while for indvp, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether tsget should output vector depvp (and input them to this function mfit)  
 
-% indvp
-% depvp
+% fitin.vars.indvp
+% fitin.vars.depvp
 % fitin.num_dim_indvp
 % fitin.num_samp_indvp
 % fitin.num_dim_depvp
@@ -20,9 +20,6 @@ function fitin = mfit(stack, indvp, depvp, fn_save_prefix, roidat, md, opts, epo
 %   within mfit_epochs is mfit_fit with the actual fit 
 
 %% check some inputs and prepare save path
-
-fitin.vars.indvp = indvp; indvp = [];
-fitin.vars.depvp = depvp; depvp = [];
 
 opts.hsv_background = "";
 
@@ -54,7 +51,6 @@ else
     end
 end
 
-fitin.fn_save_prefix = fn_save_prefix;
 pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.mdlname '_' num2str(opts.mdl_length_sec) '_' num2str(opts.mdl_lag_sec) pixfitflagstr];
 pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
 

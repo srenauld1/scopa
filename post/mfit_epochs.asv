@@ -15,8 +15,8 @@ num_samp_mdl = fitin.num_samp_mdl;
 num_samp_lag = fitin.num_samp_lag;
 pth_indvaug_bin = fitin.pth_indvaug_bin;
 pth_depvp_bin = fitin.pth_depvp_bin;
-supp = fitin.opop.supp;
-opop = fitin.opop;
+supp = fitin.op.supp;
+op = fitin.op;
 
 if numel(epochinds)==1
     epochinds_str = ['e_' num2str(epochinds)];
@@ -58,12 +58,11 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     %% create synthetic data to test optimization (optional)
 
-    ftsyn = [];
     if num_synthetic_depv %if not 0, replace depv_allrois with synthetic data
         dofit = 1; %always do fit if synthesizing data anew
-        doplots_syn = 0; %plot synthetic vs real data
+        doplots_syn = 1; %plot synthetic vs real data
         plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
-        [depv_allrois, num_dim_depvp, ftsyn] = mfit_synthesize_depv(supp.pthspre, supp, opop.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, opop.optimp, plot_syn_against_single_depv);
+        [depv_allrois, num_dim_depvp, ftsyn] = mfit_synthesize_depv(supp.pthspre, supp, op.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, op.opp, plot_syn_against_single_depv, opts.normalize_depv);
     end
 
     %% fit model
@@ -91,14 +90,10 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                 [ ft(ri,:), pred(:,ri), gof(ri), gof_val(ri) ] = ...
                     mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, ...
                     mdlname, validation_fold, indv_val, depv_val, sampinds_indvdepv_train, ...
-                    sampinds_indvdepv_val, num_samp_total, supp, opop, ...
+                    sampinds_indvdepv_val, num_samp_total, supp, op, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
-                %% 
-                
-                tinds = 300:700;
-                mfit_plot_single_mdl(ri, opop.mdl, supp, depv, pred(:, ri), ft(ri,:), indv, ftsyn, opts.normalize_depv, tinds) %this only works within for not parfor
-            %% 
             
+                mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
             end
         end
         toc
@@ -107,6 +102,8 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     end
 
+
+    mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.normalize_depv) 
 
     %% compute some fit metrics to be used later
 

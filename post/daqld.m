@@ -82,7 +82,6 @@ idxreg = opt.idxreg;
 if isempty(doplt)
     doplt = any(strcmp('daq', glb('plt')));
 end
-
 if isempty(recdatenum)
     recdate = '*';
 else
@@ -109,15 +108,6 @@ if ~isstring(vcategorical)
 end
 
 
-if isempty(pth_daq)
-    if isempty(dirstack)
-        error(sprintf("dirstack cannot be empty if pth_daq is empty; pth_daq may be empty because you don't have the daq file, or it's named with inavlid format"))
-    end
-    pth_daq_pat = [dirstack recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
-    pth_daq = rdir(pth_daq_pat);
-    pth_daq = pth_daq.name;
-end
-
 if isempty(pth_daqrs)
     if isempty(dirstack)
         error(sprintf("dirstack cannot be empty if pth_daqrs is empty"))
@@ -133,6 +123,14 @@ else
 
     fprintf("daqrs file '" + pth_daqrs + "' does not exist; making daqrs now" + newline)
 
+    if isempty(pth_daq)
+        if isempty(dirstack)
+            error(sprintf("dirstack cannot be empty if pth_daq is empty; pth_daq may be empty because you don't have the daq file, or it's named with inavlid format"))
+        end
+        pth_daq_pat = [dirstack recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
+        pth_daq = rdir(pth_daq_pat);
+        pth_daq = pth_daq.name;
+    end
 
     pthfigpre = pth_daqrs(1:end-4);
 

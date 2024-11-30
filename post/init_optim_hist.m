@@ -1,4 +1,4 @@
-function histfit = init_optim_hist(max_iter_global, max_iter_local, optim_hist_save_iter_spacing, num_par_total)
+function histfit = init_optim_hist(max_iter_local, max_iter_global, optim_hist_save_iter_spacing, num_par_total)
 
 %% variables for global optimization output function(s), to save optimization history
 

@@ -72,8 +72,8 @@ opts.plt.splitdim = 'x';
 opts.plt.splitfrac = 0.7;
 opts.plt.fontsmall = 6;
 
-opts.plt.numrows_ts2 = fitin.opop.supp.num_total_model_functions/fitin.opop.supp.max_num_fun_per_unit; 
-opts.plt.numcolumns_ts2 = fitin.opop.supp.max_num_fun_per_unit;
+opts.plt.numrows_ts2 = fitin.op.supp.num_total_model_functions/fitin.op.supp.max_num_fun_per_unit; 
+opts.plt.numcolumns_ts2 = fitin.op.supp.max_num_fun_per_unit;
 
 opts.plt.cmap_patch = distinguishable_colors(opts.plt.num_total_possible_epochs+opts.plt.max_num_indv_to_plot+opts.plt.num_depv_to_plot);
 opts.plt.cmap_patch = opts.plt.cmap_patch(opts.plt.max_num_indv_to_plot+opts.plt.num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
@@ -142,7 +142,7 @@ for ei = 1:numel(enm)
                 case 'sum'
                     mfit_plots_summary(fitin, opts, roidat, stackmnt)
                 case 'ts'
-                    mfit_plots_timeseries(indv, depv, fitin.opop.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.opop.supp, pth_fitdata_prefix, epochinds_str_all)
+                    mfit_plots_timeseries(indv, depv, fitin.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.op.supp, pth_fitdata_prefix, epochinds_str_all)
                 case 'fov'
                     hsvplt(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
                 case 'mdl'

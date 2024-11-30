@@ -1,5 +1,5 @@
 {
-  "bump": {
+  "bmp": {
     "domain": "all",
     "domaintype": "functional",
     "mthd": "pva",
@@ -149,20 +149,21 @@
     "epochinds": 1,
     "excludeopts": "",
     "keep_transition_zones": 0,
+    "max_iter_global": 3,
     "mdl_lag_sec": 0,
-    "mdl_length_sec": 2,
-    "mdlname": "fnet_A01_sh16",
+    "mdl_length_sec": 0,
+    "mdlname": "fnet_A01_s",
     "normalize_depv": "minmaxcnt",
     "normalize_indv": "minmaxcnt",
     "num_synthetic_depv": 0,
     "omit_time_from_savemodel_datestr": 1,
-    "optim_hist_save_iter_spacing": 2,
+    "optim_hist_save_iter_spacing": 0,
     "slvrg": "globalsearch",
     "slvrl": "fmincon",
     "smoothdepv": 0,
     "smoothindv": 0,
     "use_saved_model": 1,
-    "validation_fold": 6,
+    "validation_fold": 0,
     "validation_split_style": "boutsamples"
   },
   "mm": {
@@ -173,11 +174,11 @@
   "mn": {
     "dirtmp": "scopatmp",
     "dmstackdf": "yxztck",
+    "dobmp": 0,
     "dodaq": 0,
     "dofit": 0,
     "doftv": 0,
     "dopltx": 0,
-    "dopop": 0,
     "doroi": 0,
     "oldcarl": 0,
     "plt": [
@@ -185,12 +186,12 @@
       "sld",
       "ftv",
       "roi",
-      "bump",
+      "bmp",
       "mfit",
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024112618204864"
+    "timestr": "2024112923343930"
   },
   "nest": [
     "spec",
@@ -200,23 +201,26 @@
     "ftv",
     "roi",
     "hires",
-    "pop",
     "mfit",
     "pltx",
     "carl",
-    "sld.sp",
-    "pop.bump",
-    "mfit.tg",
-    "mfit.sp",
-    "mfit.tp",
-    "pltx.tg",
-    "hires.sld.sp",
     "roi.mm",
     "roi.ma",
     "roi.qc",
     "roi.nrm",
     "roi.sp",
-    "roi.imhsv"
+    "roi.imhsv",
+    "mfit.tg",
+    "mfit.sp",
+    "mfit.tp",
+    "bmp",
+    "bmp.mfit",
+    "bmp.mfit.tg",
+    "bmp.mfit.opg",
+    "bmp.mfit.opl",
+    "sld.sp",
+    "hires.sld.sp",
+    "pltx.tg"
   ],
   "nrm": {
     "channorm": 0,
@@ -224,6 +228,49 @@
     "post": "f",
     "pre": "f",
     "wavp": []
+  },
+  "opg": {
+    "NumTrialPoints": 1000,
+    "BasinRadiusFactor": 0.2,
+    "DistanceThresholdFactor": 0.75,
+    "MaxWaitCycle": 20,
+    "NumStageOnePoints": 200,
+    "PenaltyThresholdFactor": 0.2,
+    "Display": "final",
+    "FunctionTolerance": 1E-6,
+    "MaxTime": Infinity,
+    "OutputFcn": [],
+    "PlotFcn": [],
+    "StartPointsToRun": "bounds-ineqs",
+    "XTolerance": 1E-6
+  },
+  "opl": {
+    "BarrierParamUpdate": "monotone",
+    "CheckGradients": false,
+    "ConstraintTolerance": 1E-6,
+    "Display": "iter-detailed",
+    "EnableFeasibilityMode": false,
+    "FiniteDifferenceStepSize": "eps^(1/3)",
+    "FiniteDifferenceType": "central",
+    "FunctionTolerance": 1E-6,
+    "HessianApproximation": "bfgs",
+    "HessianFcn": [],
+    "HessianMultiplyFcn": [],
+    "HonorBounds": true,
+    "MaxFunctionEvaluations": 3000,
+    "MaxIterations": 1000,
+    "ObjectiveLimit": -1.0E+20,
+    "OptimalityTolerance": 1E-6,
+    "OutputFcn": [],
+    "PlotFcn": [],
+    "ScaleProblem": false,
+    "SpecifyConstraintGradient": false,
+    "SpecifyObjectiveGradient": false,
+    "StepTolerance": 1E-10,
+    "SubproblemAlgorithm": "factorization",
+    "TypicalX": "ones(numberOfVariables,1)",
+    "UseParallel": false,
+    "Algorithm": "interior-point"
   },
   "pltx": {
     "doui": 1,
@@ -237,9 +284,6 @@
     "plot_z_as_color": 1,
     "vpmapl": [1,2,3,4],
     "vpmapr": [5,6,7,8]
-  },
-  "pop": {
-    "id": []
   },
   "qc": {
     "inmaskthr": 0.5,

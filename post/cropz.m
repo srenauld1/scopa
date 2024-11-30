@@ -5,11 +5,8 @@ numslice = size(stackmnt, 3);
 h = stackplt(stackmnt, doui=1, dmplt='yxz', stackjust='center', szf=2);
 
 h.httl.String = {
-    ['choose z indices for regions prefixed with "' regionex_nounderscore '" from this mean t image'];
-    'press up / down arrows to adjust contrast up / down 10% (50% while also pressing shift) ';
-    'press numbers to choose lower z limit (one-indexed); accept w/ "enter", then choose upper z limit, then accept w/ "enter" ';
-    'press "delete" to redo last step';
-    'press "q" to quit z selection (will select all slices if none selected, or just one slice if one selected)';
+    ['choose z range (lower, upper) for regionex "' regionex_nounderscore '"'];
+    'digits: choose z,    delete: undo last,    enter: accept z,    q: quit,    up/down: adjust contrast';
     };
 
 ndt = numel(h.httl.String);
@@ -51,7 +48,7 @@ while true
         h.httl.String{ndt+1} = ['RESCALED ORIGINAL CONTRAST BY ' num2str(-1*round((scalefac - 1)*100)) ' PERCENT'];
     end
 
-    if all(isstrprop(tmp, 'digit'))
+    if ~isempty(tmp) && all(isstrprop(tmp, 'digit'))
         zchoosedigit = num2str(tmp);
         zchoose = [zchoose zchoosedigit];
         h.httl.String{ndt+2} = ['ENTERED SINGLE DIGIT ' zchoosedigit ', z ' bndstr ' limit frame is now ' zchoose ', ENTER ANOTHER DIGIT OR PRESS ENTER TO ACCEPT'];
@@ -72,7 +69,7 @@ while true
                 end
                 if proceedflag
                     zinds = [zinds zindstmp];
-                    h.httl.String{ndt+2} = ['PRESSED RETURN, MAKING z ' bndstr ' limit frame ' num2str(zchoose) ];
+                    h.httl.String{ndt+2} = ['PRESSED RETURN, MAKING z ' bndstr ' limit frame ' zchoose ];
                     if length(zinds)==2
                         h.httl.String{ndt+2} = [h.httl.String{ndt+2} ', PRESS ENTER AGAIN TO FINALIZE'];
                     end

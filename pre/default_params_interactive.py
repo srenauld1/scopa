@@ -11,14 +11,14 @@ fnind_fn_prefix = '' #string, the job id (before any underscore if arrayed) for 
 pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
 scopatmpdir = '' #string, keep empty
 
-recdate = ['20241117'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
-fly = ['*'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+recdate = ['20231119'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+fly = ['2'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 recording_index = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 scopatmplt = 1 #1 to use scopa template
 clip = [-1, 0.99] #[-1, 0.99] #[] or 0 to skip clip; [-1] to set negatives to 0, or [lower upper] quantiles to clip, or [-1 upper], which will set negatives to 0, and clip upper quantile; unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed (assuming you "autoread" pmt offset and "subtract offset" ); 
 discard_channel_reg = None #None, 1, or 2
@@ -50,7 +50,7 @@ use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise remov
 
 do_crop_only = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings without interruption
 
-do_extract = 0 #caiman source extraction 
+do_extract = 1 #caiman source extraction 
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 methodex = 'seed21py' #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 regionex = ['pnew3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV

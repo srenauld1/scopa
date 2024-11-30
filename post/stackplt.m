@@ -209,8 +209,13 @@ if isempty(roipx)
     end
 else
     dool = 1;
+    hack_allow_default_dmplt_with_roipx = strcmp(dmplt_all(1:3), 'yxc') && size(stack,3)==1;
     if ( numel(dmplt_all)>3 && any(~ismember(dmplt_all(1:3), 'yxz')) ) || ( numel(dmplt_all)<=3 && any(~ismember(dmplt_all, 'yxz')) )
-        error("roipx currently only supports xyz as first 3 dimensions, in any order, in frame or across frames") 
+        if hack_allow_default_dmplt_with_roipx % this is hack to allow default dmplt 'yxczk(t)' when there is only one channel (since it is effectively yxz)
+            fprintf("warning using hack_allow_default_dmplt_with_roipx" + newline)
+        else
+            error("roipx currently only supports xyz as first 3 dimensions, in any order, in frame or across frames")
+        end
     end
     if ~isempty([ix iy iz])
         error("cannot pass ix, iy, or it with roipx since stackplt assumes roipx refers to indices into the entire xyz")
@@ -351,6 +356,10 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         
         sz_framedims_ol = sz_framedims(1:ndims(stack_oneframe));
         dimorder_ol = [dimorder(1:ndims(stack_oneframe)) ndims(stack_oneframe)+1];
+
+        if hack_allow_default_dmplt_with_roipx
+            dimorder_ol = [1 2 3 4];
+        end
 
         imroi = permute(imroi, dimorder_ol);
         imroi = reshape(imroi, sz_framedims_ol{:}, [], size(imroi, ndims(imroi))); %collapse numdim_eachframe into 3d (possible singleton 3rd dim), keep them separate, collapse remaining dims into last dim

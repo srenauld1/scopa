@@ -19,7 +19,7 @@ d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffi
 d.mn.dodaq = 0; %process daq data
 d.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 d.mn.doroi = 0; %do roi extraction 
-d.mn.dopop = 0; %compute population features (o.pop below)
+d.mn.dobmp = 0; %compute bump
 d.mn.dofit = 0; %model fitting (o.mfit below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
 d.mn.pltvis = 1; %1 shows requested plots and saves them, 0 saves but does not show them
@@ -209,18 +209,18 @@ d.nrm.doplt = 0;
 
 %% pop (popcmp: compute population features from roi timeseries, e.g. bump)
 
-d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
+d.id = []; %currently just a wrapper for bump routine (bumpcmp)
 
 %% bump (bumpcmp: compute bump)
 
 % options for bump in bumpcmp function
-% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bump.mfit.tg.v1) and all matches from o.bump.mfit.tg.v2
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mfit.tg.v1) and all matches from o.bmp.mfit.tg.v2
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if o.bump.domaintypeis 'functional', these preferred headings are used as the angle, and o.bump.mfit.tg.v1 as the magnitude, in computing pva
-% if the regionex in o.bump.mfit.tg.v1 is in o.bump.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
-% if o.bump.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
+% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mfit.tg.v1 as the magnitude, in computing pva
+% if the regionex in o.bmp.mfit.tg.v1 is in o.bmp.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
-% o.bump.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
+% o.bmp.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
 %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.roi.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
 %the selected timeseries will be assigned to depv
 %selecting indv uses the same approach
@@ -230,20 +230,20 @@ d.pop.id = []; %currently just a wrapper for bump routine (bumpcmp)
 %depv and indv are composed of all timeseries matching fieldspecs
 %if multiple matches, depv is concatenated along second dim (time), since currently mfit fits single timeseries
 %if multiple matches, indv is concatenated along first dim (not time), since mfit can accept multidimensional independent variable
-% o.bump.mfit(1).indv{1} = {['vis, angsd']};
+% o.bmp.mfit(1).indv{1} = {['vis, angsd']};
 
 %options for computing bump
-d.bump.mthd = 'pva'; %'pva' for vector average
-d.bump.domaintype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-d.bump.domain = 'all'; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
-d.bump.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-d.bump.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-d.bump.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-d.bump.numcluster_for_bump_domain_resample = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to o.bump.mfit.tg.v1  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
-d.bump.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
-d.bump.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
-d.bump.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
-d.bump.doplt = 0;
+d.bmp.mthd = 'pva'; %'pva' for vector average
+d.bmp.domaintype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+d.bmp.domain = 'all'; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
+d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+d.bmp.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+d.bmp.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
+d.bmp.numcluster_for_bump_domain_resample = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to o.bmp.mfit.tg.v1  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+d.bmp.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
+d.bmp.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+d.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
+d.bmp.doplt = 0;
 
 %% mfit (mfit: fit models to individual roi responses)
 

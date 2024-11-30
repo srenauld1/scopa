@@ -26,7 +26,7 @@ else
 end
 
 
-txt = jsonencode(s, PrettyPrint=true);
+txt = jsonencode(s, PrettyPrint=true, ConvertInfAndNaN=false);
 txt = regexprep(txt,',\s+(?=\d)',','); % , white-spaces digit remove
 txt = regexprep(txt,',\s+(?=-)',','); % , white-spaces minussign remove
 txt = regexprep(txt,'[\s+(?=\d)','['); % [ white-spaces digit remove
