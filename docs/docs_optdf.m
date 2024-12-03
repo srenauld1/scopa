@@ -20,7 +20,7 @@ d.mn.dodaq = 0; %process daq data
 d.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 d.mn.doroi = 0; %do roi extraction 
 d.mn.dobmp = 0; %compute bump
-d.mn.dofit = 0; %model fitting (o.mfit below)
+d.mn.dofit = 0; %model fitting (o.mf below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
 d.mn.pltvis = 1; %1 shows requested plots and saves them, 0 saves but does not show them
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
@@ -55,7 +55,7 @@ d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.tcrop = [0, 0]; %how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.stackdtype = 'uint16';
 d.sld.smlenpx = [0, 0, 0]; %gaussian smooth stack in space (yxz); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; each entry must be odd, or 0; [0 0 0] or empty to skip smoothing; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
-d.sld.smlensec = 0; %gaussian smooth stack in time; gaussian sd is smsdtime seconds; 0 to skip
+d.sld.smlensec = 0; %gaussian smooth stack in time; gaussian sd is smlensec seconds; 0 to skip
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = [ %stack suffixes to plot together in stackplt gif, nonexistent or invalid suffixes are ignored; will be reordered from least to most processed (by suffix length)
     %"raw", ...
@@ -68,10 +68,10 @@ d.sld.suffixplt = [ %stack suffixes to plot together in stackplt gif, nonexisten
 
 %% ftv (ftvproc: load, align, resample fictrac video if not on daq)
 
-d.ftv.num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-d.ftv.smlenpx = 2; %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-d.ftv.numpix_to_extract_laser_timeseries = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-d.ftv.smsdtime = 6; %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+d.ftv.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+d.ftv.smlenpx = 2; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+d.ftv.numpx = 10; %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
+d.ftv.smlensec = 6; %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
 d.ftv.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
@@ -214,13 +214,13 @@ d.id = []; %currently just a wrapper for bump routine (bumpcmp)
 %% bump (bumpcmp: compute bump)
 
 % options for bump in bumpcmp function
-% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mfit.tg.v1) and all matches from o.bmp.mfit.tg.v2
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mf.tg.v1) and all matches from o.bmp.mf.tg.v2
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mfit.tg.v1 as the magnitude, in computing pva
-% if the regionex in o.bmp.mfit.tg.v1 is in o.bmp.numcluster_for_bump_domain_resample, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mf.tg.v1 as the magnitude, in computing pva
+% if the regionex in o.bmp.mf.tg.v1 is in o.bmp.numangrs, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
 % if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
-% o.bmp.mfit(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
+% o.bmp.mf(1).depv{1} = {['resp, pb, mo*, in_imf_pc_f_cl_rsc000100_w_*']};
 %this will select all fields in struct 'ts', matching this pattern, with * as wildcard: ts.roi.pb.mo*.in_imf_pc_f_cl_rsc000100_w_*
 %the selected timeseries will be assigned to depv
 %selecting indv uses the same approach
@@ -230,18 +230,18 @@ d.id = []; %currently just a wrapper for bump routine (bumpcmp)
 %depv and indv are composed of all timeseries matching fieldspecs
 %if multiple matches, depv is concatenated along second dim (time), since currently mfit fits single timeseries
 %if multiple matches, indv is concatenated along first dim (not time), since mfit can accept multidimensional independent variable
-% o.bmp.mfit(1).indv{1} = {['vis, angsd']};
+% o.bmp.mf(1).indv{1} = {['vis, angsd']};
 
 %options for computing bump
 d.bmp.mthd = 'pva'; %'pva' for vector average
 d.bmp.domaintype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-d.bmp.domain = 'all'; %cell array of char, 'all', 'right', 'left', 'larger', 'weighted', 'random'
+d.bmp.domain = 'all'; %cell array of char, 'all', 'right', 'left', 'max', 'weighted', 'random'
 d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.slopelensec = 5; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-d.bmp.smoothwindow_sec = 0.2; %full width of gaussian smoothing window (5 times std)
-d.bmp.numcluster_for_bump_domain_resample = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to o.bmp.mfit.tg.v1  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
-d.bmp.resample_smoothfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
-d.bmp.rescale_clusters = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+d.bmp.smlensec = 0.2; %full width of gaussian smoothing window (5 times std)
+d.bmp.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to o.bmp.mf.tg.v1  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
+d.bmp.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
+d.bmp.rs = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 d.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 d.bmp.doplt = 0;
 
@@ -249,25 +249,25 @@ d.bmp.doplt = 0;
 
 % options for modeling depv as function of indv in mfit function
 
-d.mfit.num_synthetic_depv = 0; %create synthetic data (using requested mdlname options, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
-d.mfit.epochinds = 1;
-d.mfit.mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
-d.mfit.mdl_length_sec = 2; %seconds, 0 is one sample
-d.mfit.keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
-d.mfit.validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-d.mfit.validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-d.mfit.slvrg = 'globalsearch';
-d.mfit.slvrl = 'fmincon'; %'lsqcurvefit';
-d.mfit.mdlname = 'fnet_A01_sh16'; %'svd' or fnet string (see docs_mdlname.m)
-d.mfit.excludeopts = '';
-d.mfit.normalize_indv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
-d.mfit.normalize_depv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
-d.mfit.smoothdepv = 0; %gaussian window std is one fifth total length
-d.mfit.smoothindv = 0; %gaussian window std is one fifth total length
-d.mfit.use_saved_model = 1;
-d.mfit.omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
-d.mfit.optim_hist_save_iter_spacing = 2;
-d.mfit.doplt = 0;
+d.mf.num_synthetic_depv = 0; %create synthetic data (using requested mdlname options, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
+d.mf.epochinds = 1;
+d.mf.mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
+d.mf.mdl_length_sec = 2; %seconds, 0 is one sample
+d.mf.keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
+d.mf.validation_fold = 6; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+d.mf.validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+d.mf.slvrg = 'globalsearch';
+d.mf.slvrl = 'fmincon'; %'lsqcurvefit';
+d.mf.mdlname = 'fnet_A01_sh16'; %'svd' or fnet string (see docs_mdlname.m)
+d.mf.excludeopts = '';
+d.mf.normalize_indv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mf.normalize_depv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mf.smoothdepv = 0; %gaussian window std is one fifth total length
+d.mf.smoothindv = 0; %gaussian window std is one fifth total length
+d.mf.use_saved_model = 1;
+d.mf.omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
+d.mf.optim_hist_save_iter_spacing = 2;
+d.mf.doplt = 0;
 
 
 %% tg (tsget: choose timeseries using string matching of flattened struct ts)

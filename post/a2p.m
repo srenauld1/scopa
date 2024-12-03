@@ -68,8 +68,8 @@ for k = 1:numel(oa) % loop over recordings
             catch
                 try
                     ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol_o, md.volrate, ...
-                        o.ftv.num_periodic_peaks_defining_laser_oscillations, o.ftv.smlenpx, o.ftv.numpix_to_extract_laser_timeseries, ...
-                        o.ftv.smsdtime, pth.ftdat, pth.ftvidlog, pth.ftlog);
+                        o.ftv.numpkthr, o.ftv.smlenpx, o.ftv.numpx, ...
+                        o.ftv.smlensec, pth.ftdat, pth.ftvidlog, pth.ftlog);
                 catch ME
                     sprintf(ME.message)
                 end
@@ -116,32 +116,31 @@ for k = 1:numel(oa) % loop over recordings
 
     % lfit(ts.ball.forvel, ts.roi.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
 
-    %% feature extraction (e.g. bump), add to ts
+    %% bump
 
     if o.mn.dobmp
-        o.bmptmp.i1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; %temporary hack until opt2id for bmp
+        o.bmptmp.i1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; %temporary hack until opt2id accepts bmp as vbin
         fn = fieldnames(o.bmp);
         for m = 1:numel(fn)
             
             optid = fn{m};
-            opoptmp = o.bmp.(optid);
+            obmptmp = o.bmp.(optid);
             roidattmp = roidat.i17{1};
             regionex = 'eb';
             indvp = ts.vis.yaw;
             depvp = ts.roi.i17{1};
-            fn_save_prefix = '~/stacks/20241123_1_D05_syt7f_018_syt7f/20241123_1_1_cmrg_dcdn_testfits';
-
-            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, opoptmp, md, ts.epochinds, pth.dirstack, o.id.recid, fn_save_prefix); %fit bump
-
+            pthpre = [pth.stack(1:end-4) regionex '_tesfits'];
+            doplt = 0;
+            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.sz_crop, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
         end
     end
 
     %% model
 
     if o.mn.dofit
-        fn = fieldnames(o.mfit);
+        fn = fieldnames(o.mf);
         for m = 1:numel(fn)
-            ts.fit = mfit(stacksub, fitin, roidat.(fitin.regionex).(fitin.parsex), md, o.mfit(si)); %fit model using any available timeseries
+            ts.fit = mfit(indvp, depvp, imrate, o.mf(fn{k}), doplt, pthpre, epochts, stack, roidat);
         end
     end
 
@@ -169,8 +168,8 @@ for k = 1:numel(oa) % loop over recordings
             fitin.vnm.resp_ind8{1} = '';
             o.pltx.vpmap.l = o.pltx.vpmapl;
             o.pltx.vpmap.r = o.pltx.vpmapr;
-            fitin.fn_save_prefix = [pth.prefix 'fool'];
-            fitin.fn_save_prefix_short = fitin.fn_save_prefix;
+            fitin.pthpre = [pth.prefix 'fool'];
+            fitin.fn_save_prefix_short = fitin.pthpre;
             pthroiint = '~/stacks/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_i7_roi_inter.mat';
             zstartsub = 0;
             nrm='f';
@@ -179,7 +178,7 @@ for k = 1:numel(oa) % loop over recordings
                 o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
                 o.pltx.plot_z_as_color, roidat.i7{1}, ts.t, md.sampper, zstartsub, ...
                 ts.epochinds, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
-                o.pltx.dr, fitin.fn_save_prefix_short, fitin.fn_save_prefix, ...
+                o.pltx.dr, fitin.fn_save_prefix_short, fitin.pthpre, ...
                 pthroiint, nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)
         end
     end

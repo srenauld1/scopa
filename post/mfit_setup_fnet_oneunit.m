@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    mfit_setup_fnet_oneunit(fnetspec, num_samp_mdl, imrate, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
 
 
 
@@ -16,6 +16,8 @@ indvp_min_alldim = inputvar_stats.indvp_min_alldim;
 indvp_max_alldim = inputvar_stats.indvp_max_alldim;
 
 %% define time domain for linear filters (constants in the nested functions)
+
+sampper = 1/imrate;
 
 tmax = sampper*(num_samp_mdl-1);
 t = 0:sampper:tmax; %zero-indexed time for final/used filter
@@ -143,7 +145,8 @@ for fi = 1:num_fun
         x0_tmp = [1,1,1,0];
     elseif strcmp(fnet_onefun, 'v')
         fnet.funh{fi} = @fun_vonmises;
-        lbnd_tmp = [-inf,0,-pi,-inf];
+        % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+        lbnd_tmp = [-inf,-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
         ubnd_tmp = [inf,inf,pi,inf];
         % x0_tmp = [con_genlog_asympleft(3),8,0,0];
         x0_tmp = [1,0.1,0,0];

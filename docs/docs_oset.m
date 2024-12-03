@@ -104,9 +104,9 @@ for brevity, only the deepest nesting of each unique branch is shown
 
     o.sld.sp   (stackplt called from within stackld called from a2p)
     o.bmp   (bumpcmp called from within popcmp called from a2p)
-    o.mfit.tg   (tsget called from within mfit called from a2p)
-    o.mfit.sp   (stackplt called from within mfit called from a2p)
-    o.mfit.tp   (tsplt called from within mfit called from a2p)
+    o.mf.tg   (tsget called from within mfit called from a2p)
+    o.mf.sp   (stackplt called from within mfit called from a2p)
+    o.mf.tp   (tsplt called from within mfit called from a2p)
     o.pltx.tg   (tsget called from within pltx called from a2p)
     o.hires.sld.sp   (tsget called from within pltx called from a2p)
     o.roi.mm   (roidraw called from within roimake called from a2p)
@@ -120,7 +120,7 @@ for brevity, only the deepest nesting of each unique branch is shown
 
 a vbin can be nonscalar struct; 
 if at least one field specification for vbin includes index p, all unspecified fields for all struct indices up to index p are filled with defaults 
-(e.g see how options are set in 'mfit' section below); 
+(e.g see how options are set in 'mf' section below); 
 alternatively, struct index can be assigned in the output of odf
 nonscalar vbins are used in for loops in the pipeline (if e.g o.roi.ma has 3 elements, it means o.roi.ma(1), o.roi.ma(2), and o.roi.ma(3) are passed to roimauto sequentially (roimauto is the function corresponding to vbin ma
 

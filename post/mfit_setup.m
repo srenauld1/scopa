@@ -1,5 +1,5 @@
 
-function op = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, sampper, inputvar_stats, pth_fitdata_prefix)
+function op = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, imrate, inputvar_stats, pth_fitdata_prefix)
 
 
 mdlname = opts.mdlname;
@@ -21,7 +21,7 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [op.mdl, opptmp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats);
+    [op.mdl, opptmp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, imrate, num_dim_indvp, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 
@@ -35,7 +35,8 @@ end
 supp.mdlname = mdlname;
 supp.mdlclass = mdlclass;
 supp.pthspre = pth_fitdata_prefix;
-supp.sampper = sampper;
+supp.imrate = imrate;
+supp.sampper = 1/imrate;
 supp.num_dim_indvp = num_dim_indvp;
 supp.num_samp_mdl = num_samp_mdl;
 if strcmp(mdlclass, 'svd') || strcmp(mdlclass, 'ohe') || strcmp(mdlclass, 'ohe_svd')
@@ -82,7 +83,7 @@ end
 % op.opp.lb = [];
 % op.opp.ub = [];
 % op.opp.nonlcon = [];
-% op.opp.solver = d.mfit.slvrl;
+% op.opp.solver = d.mf.slvrl;
 % op.opp.options = opl;
 
 

@@ -1,13 +1,13 @@
-function out = smooth_timeseries(vartypein, inp, smoothwindow_sec, dt)
+function out = tssmooth(vartypein, inp, smlensec, dt)
 
 arguments
-    vartypein char
-    inp double
-    smoothwindow_sec double
-    dt double
+    vartypein mustBeText
+    inp
+    smlensec
+    dt
 end
 
-smoothwindow = round(smoothwindow_sec / dt);
+smlen = round(smlensec / dt);
 
 if size(inp, 2)>size(inp, 1)
     sprintf("warning, smoothing along first dim, which is smaller than second, be sure this is what you want")
@@ -17,13 +17,13 @@ if strcmp(vartypein, 'circular')
 
     tmpx = cos(inp);
     tmpy = sin(inp);
-    tmpx = smoothdata(tmpx, 'gaussian', smoothwindow, 'omitnan');
-    tmpy = smoothdata(tmpy, 'gaussian', smoothwindow, 'omitnan');
+    tmpx = smoothdata(tmpx, 'gaussian', smlen, 'omitnan');
+    tmpy = smoothdata(tmpy, 'gaussian', smlen, 'omitnan');
     out = atan2(tmpy, tmpx);
 
 elseif strcmp(vartypein, 'normal')
 
-    out = smoothdata(inp, 'gaussian', smoothwindow, 'omitnan');
+    out = smoothdata(inp, 'gaussian', smlen, 'omitnan');
 
 elseif strcmp(vartypein, 'categorical')
 

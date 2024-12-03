@@ -2,11 +2,11 @@
 function differ = tsdv(vartypein, inp, slopelensec, slopeord, dt)
 
 arguments
-    vartypein char
-    inp double
-    slopelensec double
-    slopeord double
-    dt double
+    vartypein
+    inp
+    slopelensec
+    slopeord
+    dt
 end
 
 slopelen = round(slopelensec / dt);

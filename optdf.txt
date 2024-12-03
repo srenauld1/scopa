@@ -1,15 +1,15 @@
 {
   "bmp": {
-    "domain": "all",
     "domaintype": "functional",
     "mthd": "pva",
-    "numcluster_for_bump_domain_resample": 16,
+    "numangrs": 16,
     "omitnan": 1,
-    "resample_smoothfac": 1,
-    "rescale_clusters": 1,
-    "slopelensec": 5,
+    "rs": 1,
+    "scope": "all",
+    "slopelensec": 0.4,
     "slopeord": 2,
-    "smoothwindow_sec": 0.2
+    "smfac": 1,
+    "smlensec": 0
   },
   "carl": {
     "feat": "CON_51",
@@ -105,10 +105,10 @@
   },
   "filled": 0,
   "ftv": {
-    "num_periodic_peaks_defining_laser_oscillations": 10,
-    "numpix_to_extract_laser_timeseries": 10,
+    "numpkthr": 10,
+    "numpx": 10,
     "smlenpx": 2,
-    "smsdtime": 6
+    "smlensec": 1
   },
   "hires": {
     "disttype": "monomodal",
@@ -145,7 +145,7 @@
     "numroi": 128,
     "usehires": 0
   },
-  "mfit": {
+  "mf": {
     "epochinds": 1,
     "excludeopts": "",
     "keep_transition_zones": 0,
@@ -187,11 +187,11 @@
       "ftv",
       "roi",
       "bmp",
-      "mfit",
+      "mf",
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024112923343930"
+    "timestr": "2024120217261950"
   },
   "nest": [
     "spec",
@@ -201,7 +201,7 @@
     "ftv",
     "roi",
     "hires",
-    "mfit",
+    "mf",
     "pltx",
     "carl",
     "roi.mm",
@@ -210,14 +210,14 @@
     "roi.nrm",
     "roi.sp",
     "roi.imhsv",
-    "mfit.tg",
-    "mfit.sp",
-    "mfit.tp",
+    "mf.tg",
+    "mf.sp",
+    "mf.tp",
     "bmp",
-    "bmp.mfit",
-    "bmp.mfit.tg",
-    "bmp.mfit.opg",
-    "bmp.mfit.opl",
+    "bmp.mf",
+    "bmp.mf.tg",
+    "bmp.mf.opg",
+    "bmp.mf.opl",
     "sld.sp",
     "hires.sld.sp",
     "pltx.tg"

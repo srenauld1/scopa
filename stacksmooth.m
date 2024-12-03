@@ -4,12 +4,12 @@ arguments
     stack
     opt.method = 'gaussian'
     opt.smlenpx = []
-    opt.smsdtime = []
+    opt.smlensec = []
     opt.imrate = []
 end
 method = opt.method;
 smlenpx = opt.smlenpx;
-smsdtime = opt.smsdtime;
+smlensec = opt.smlensec;
 imrate = opt.imrate;
 
 if ~iscell(method)
@@ -17,7 +17,7 @@ if ~iscell(method)
 end
 
 if isempty(imrate)
-    imrate = 1; %if empty, interpret smsdtime as samples
+    imrate = 1; %if empty, interpret smlensec as samples
 end
 
 if isempty(smlenpx)
@@ -28,33 +28,33 @@ else
     end
 end
 
-if isempty(smsdtime)
-    smsdtime = 0;
+if isempty(smlensec)
+    smlensec = 0;
 else
-    if ~isscalar(smsdtime)
-        error("smsdtime must be scalar")
+    if ~isscalar(smlensec)
+        error("smlensec must be scalar")
     end
 end
 
-smsdtime = smsdtime*imrate;
-smsd = [smlenpx smsdtime];
+smlensamp = smlensec*imrate;
+smlen = [smlenpx smlensamp];
 dtype = class(stack);
 
 numchan = size(stack, 5);
 
 for m = 1:numel(method)
     for c = 1:numchan %do one channel at a time to keep temporary double output from crashing matlab if stack is big 2-channel
-        for w = 1:numel(smsd)
-            if smsd(w) %in case stack is large, looping over each dimension and converting dtype as we go
+        for w = 1:numel(smlen)
+            if smlen(w) %in case stack is large, looping over each dimension and converting dtype as we go
                 switch dtype
                     case 'int16'
-                        stack(:,:,:,:,c) = int16(smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w)));
+                        stack(:,:,:,:,c) = int16(smoothdata(stack(:,:,:,:,c), w, method{m}, smlen(w)));
                     case 'uint16'
-                        stack(:,:,:,:,c) = uint16(smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w)));
+                        stack(:,:,:,:,c) = uint16(smoothdata(stack(:,:,:,:,c), w, method{m}, smlen(w)));
                     case 'single'
-                        stack(:,:,:,:,c) = single(smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w)));
+                        stack(:,:,:,:,c) = single(smoothdata(stack(:,:,:,:,c), w, method{m}, smlen(w)));
                     case 'double'
-                        stack(:,:,:,:,c) = smoothdata(stack(:,:,:,:,c), w, method{m}, smsd(w));
+                        stack(:,:,:,:,c) = smoothdata(stack(:,:,:,:,c), w, method{m}, smlen(w));
                     otherwise
                         error("stacksmooth only supports uint16, int16, single, and double")
                 end

@@ -40,9 +40,9 @@ o.mn.doroi = 1; %make/load/process rois?
 o.mn.dobmp = 1; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
-o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bmp", "mfit", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bmp", "mf", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
-regionex = {'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 %%%% some simple option specification %%%%
 
@@ -63,31 +63,31 @@ o.ftv.smlenpx = 2;
 %%%% compute bump %%%%
 
 o.bmp.domaintype = 'functional';
-o.bmp.mfit.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
-o.bmp.mfit.tg.optused = [];  %interactive plots using all variables matching this string as timeseries two
-o.bmp.mfit.tg.name = [];  %interactive plots using all variables matching this string as timeseries two
-o.bmp.mfit.tg.group = 'name';  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mf.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mf.tg.optused = [];  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mf.tg.name = [];  %interactive plots using all variables matching this string as timeseries two
+o.bmp.mf.tg.group = 'name';  %interactive plots using all variables matching this string as timeseries two
 
 %%%% fit model %%%%
 
-o.mfit.mdlname = 'fnet_A01_s'; %see docs_mdlname for how to use
+o.mf.mdlname = 'fnet_A01_s'; %see docs_mdlname for how to use
 
 %set indv
-o.mfit.tg.domain = 'daq';  %domain within ts
-o.mfit.tg.optused = [];  %empty for all
-o.mfit.tg.name = {'vf', 'vy'}; %variable name within domain; cell to expand
-o.mfit.tg.group = [];
-o=odf(o, 'mfit.tg', 'indv'); %put in copybin 'indv'
+o.mf.tg.domain = 'daq';  %domain within ts
+o.mf.tg.optused = [];  %empty for all
+o.mf.tg.name = {'vf', 'vy'}; %variable name within domain; cell to expand
+o.mf.tg.group = [];
+o=odf(o, 'mf.tg', 'indv'); %put in copybin 'indv'
 
 % to set depv, make a struct with opts from o.roi; output will be roi created with those options; anything not listed takes default (in odf); anything nonexisting causes error
 roitmp.mm.chan = [2];
 roitmp.ma.numroi = {256, 512}; %cell to expand
 
-o.mfit.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
-o.mfit.tg.optused = roitmp;  %interactive plots using all variables matching this string as timeseries two
-o.mfit.tg.name = [];  %empty for all
-o.mfit.tg.group = [];
-o=odf(o, 'mfit.tg', 'depv'); %put in copybin 'depv'
+o.mf.tg.domain = 'roi';  %interactive plots using all variables matching this string as timeseries two
+o.mf.tg.optused = roitmp;  %interactive plots using all variables matching this string as timeseries two
+o.mf.tg.name = [];  %empty for all
+o.mf.tg.group = [];
+o=odf(o, 'mf.tg', 'depv'); %put in copybin 'depv'
 
 
 
@@ -134,12 +134,12 @@ for k = 1:numel(o)
                     o(k).roi.domm = 0; 
                     o(k).roi.ma.numroi = 64; 
                     o(k).roi.ma.maskmake = 'edge'; 
-                    o(k).bmp.mfit.mdlname = 'fnet_v'; 
-                    o(k).bmp.mfit.mdl_length_sec = 0;
-                    o(k).bmp.mfit.epochinds = 4;
-                    o(k).bmp.mfit.normalize_indv = 'none';
-                    % o(k).bmp.mfit.opl.MaxFunctionEvaluations = Inf; %3000;
-                    % o(k).bmp.mfit.opl.MaxIterations = 5000; %1000
+                    o(k).bmp.mf.mdlname = 'fnet_v'; 
+                    o(k).bmp.mf.mdl_length_sec = 0;
+                    o(k).bmp.mf.epochinds = 4;
+                    o(k).bmp.mf.normalize_indv = 'none';
+                    % o(k).bmp.mf.opl.MaxFunctionEvaluations = Inf; %3000;
+                    % o(k).bmp.mf.opl.MaxIterations = 5000; %1000
 
                 elseif any(strcmp(regionex{m}, {'no', 'ga'}))
                     o(k).roi.doma = 0;
@@ -154,8 +154,8 @@ for k = 1:numel(o)
                     o(k).mn.dofit = 0; 
                     o(k).mn.dopltx = 1; 
                     o(k).sld.tcrop = [4, 2]; 
-                    o(k).mfit.mdl_lag_sec = 1; 
-                    o(k).mfit.mdl_length_sec = 1.25;
+                    o(k).mf.mdl_lag_sec = 1; 
+                    o(k).mf.mdl_length_sec = 1.25;
                     o(k).carl.stimtype = 'drone';
                     o(k).carl.feat = 'CON_51';
                 end

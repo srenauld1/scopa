@@ -1,4 +1,4 @@
-function [mdl, opp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
+function [mdl, opp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, imrate, num_dim_indvp, inputvar_stats)
 
 padlen_sec = 4;
 
@@ -25,7 +25,7 @@ freeformflag = 0;
 for k = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
 
     [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflagtmp] = ...
-        mfit_setup_fnet_oneunit(fnetspec(k,:), num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
+        mfit_setup_fnet_oneunit(fnetspec(k,:), num_samp_mdl, imrate, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
 
     lbnd = [lbnd lbnd_tmp];
     ubnd = [ubnd ubnd_tmp];
@@ -105,13 +105,14 @@ supp.pind_vonmises = allpind(strcmp([supp.fnet.funstr], 'v'));
 
     % 
     % function [c,ceq] = nlcon_fnet(x)
+    %     %the two vonmises constraint are not great because they forces the curve max and min to match data max and min but data is noisy, so the curve won't fit optimally, would be better to match max and min of some filtered version of data, or just skip the constraint 
     % 
     %     countz = 0;
     %     for j = 1:length(pind_Lfree)
     %         countz = countz+1;
     %         ceq(countz) = norm(vec(x(pind_Lfree{j})),1) - 1; %make L1norm = 1 for linear filters with 'freeform' flag
     %     end
-    %     for j = 1:length(pind_vonmises)
+    %     for j = 1:length(pind_vonmises) %this constraint is not great because it forces the curve max and min to match data max and min but data is noisy, would be better to match max and min of some filtered version of data, or just skip the constraint 
     %         countz = countz+1;
     %         ceq(countz) = min(vec(x(pind_vonmises{j})),1) - inputvar_stats.depvp_min_alldim; %max and min match data max and min (not controllable as params of von mises)
     %     end

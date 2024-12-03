@@ -8,8 +8,8 @@ function [daqvarout, daqvarout_dv] = daqproc(daqvartype, daqvarname, daqvarin, .
 % note:
 % smoothing daqvarout before differentiation should not be necessary because it's been downsampled so much,
 % and tsdv allows variable slope window anyway (increase to reduce output noise)
-% but if you still want to smooth first, try passing output of smooth_timeseries to tsdv, like this:
-% tsdv(daqvartype, smooth_timeseries(daqvartype, daqvarin, smoothwindow_sec, dt), slopelensec, slopeord, dt);
+% but if you still want to smooth first, try passing output of tssmooth to tsdv, like this:
+% tsdv(daqvartype, tssmooth(daqvartype, daqvarin, smlensec, dt), slopelensec, slopeord, dt);
 
 if isduration(daqvarin)
     daqvarin = seconds(daqvarin); %convert to seconds, whatever the units

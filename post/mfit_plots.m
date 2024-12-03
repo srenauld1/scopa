@@ -45,6 +45,22 @@ function mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
 
 
 
+%% create pixelwise fit for background of hsv plot (if requested) by calling mfit here, with pixfit==1
+
+if strcmp(fitopt.hsv_background, 'pixels') && pixfit==0 %only do if pixfit==0, to avoid infinite recursion
+    pixfit = 1;
+    roipixind2 = logical(sum(roidat.roipx)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
+    depv2 = reshape(stack, [], size(stack, 4));
+    depv2 = depv2(cell2mat(roipixind2), :);
+    fitin2.vars.depvp = depv2;
+    roidat2 = roidat;
+    roidat2.roipx = roipixind2;
+    mfit(stack, fitin2, roidat2, sampper, fitopt, pixfit); %call mfit on pixels if you want a pixel fit background behind your roi fit background
+    pixfit = 0; %reset to zero
+end
+
+
+
 opts.plt.maxnumroiplot = 70;
 
 opts.plt.hackindvdim = 1;

@@ -19,7 +19,7 @@ for m = 1:numel(vbin)
 
             o = optreduce_roi(o);
 
-        case 'mfit'
+        case 'mf'
 
         case 'feat'
 

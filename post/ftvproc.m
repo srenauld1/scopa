@@ -1,6 +1,6 @@
 function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
-    num_periodic_peaks_defining_laser_oscillations, smlenpx, ...
-    numpix_to_extract_laser_timeseries, smsdtime, pth_dat, pth_vidlog, pth_log, opt)
+    numpkthr, smlenpx, ...
+    numpx, smlensec, pth_dat, pth_vidlog, pth_log, opt)
 
 % NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
 
@@ -8,7 +8,7 @@ function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
 % save and output the aligned, temporally resampled video
 
 % algorithm:
-% finds brightest 'numpix_to_extract_laser_timeseries' pixels in mean-t fictrac video (pixels where the imaging laser is brightest, ie under objective)
+% finds brightest 'numpx' pixels in mean-t fictrac video (pixels where the imaging laser is brightest, ie under objective)
 % extracts timeseries from their spatial average
 % smooths timeseries with small gaussian window
 % finds peaks using findpeaks
@@ -35,10 +35,10 @@ arguments
     pth_vidrs char %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
     numvol double %number of imaging volumes
     imrate double %imaging rate (average,approximate)
-    num_periodic_peaks_defining_laser_oscillations = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-    smlenpx double = 2 %std of gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-    numpix_to_extract_laser_timeseries double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpix_to_extract_laser_timeseries' pixels in the mean frame of fictrac video
-    smsdtime double = 6 %std of gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+    numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+    smlenpx double = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+    numpx double = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
+    smlensec double = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
     pth_dat char = '' %fictrac .dat file
     pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime
@@ -106,7 +106,7 @@ if doplt
     hax = axes('Parent', hfg);
     imagesc(hax, ftvid_meanframe); hold on;
     % imagesc(hax, ftvid_varframe); hold on;
-    [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpix_to_extract_laser_timeseries)); %plot with image to confirm these are good pixels for extracting laser timeseries
+    [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpx)); %plot with image to confirm these are good pixels for extracting laser timeseries
     scatter(mxc,mxr,5,'red','filled')
     pth_gif = [pth_vid '_mean_t_im_.gif'];
     fig2gif(hfg, 1, pth_gif);
@@ -116,8 +116,9 @@ end
 %% find peaks in the laser timeseries
 
 laser_ts_smoothed = laser_ts;
-if smsdtime
-    laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', smsdtime);
+if smlensec
+    smlen = smlensec*imrate;
+    laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', smlen);
 end
 [pk,lk,pw,pp] = findpeaks(laser_ts_smoothed);
 pkdist = diff(lk);
@@ -138,14 +139,14 @@ pkhalfper = ceil(mean(goodpers));
 
 %this worked better than running rmoutliers on peak prominences
 
-[badpeaks_front] = crop_wrong_periods(pkdist, goodpers, num_periodic_peaks_defining_laser_oscillations);
+[badpeaks_front] = crop_wrong_periods(pkdist, goodpers, numpkthr);
 if badpeaks_front==0
     badpeaks_front_msg = "there are no initial bad peaks to remove, the fictrac video may begin after imaging begins";
 else
     badpeaks_front_msg = 'there were bad peaks to remove at the front, so the imaging does seem to begin during the video, at least';
 end
 
-[badpeaks_back] = crop_wrong_periods(flip(pkdist), goodpers, num_periodic_peaks_defining_laser_oscillations);
+[badpeaks_back] = crop_wrong_periods(flip(pkdist), goodpers, numpkthr);
 if badpeaks_back==0
     badpeaks_back_msg = "there are no bad peaks at the end to remove, the fictrac video may end before imaging";
 else

@@ -1,5 +1,5 @@
 function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
-    epochinds_all, roidat, ti, sampper, zstartpos, epochinds_ts_i, lagsxy_sec, ...
+    epochinds_all, roidat, ti, sampper, zstartpos, epochts, lagsxy_sec, ...
     lagsz_sec, lags_to_plot, plot_z_as_color, gifvis, pthgif_prefix_short, pthgif_prefix)
 
 
@@ -47,7 +47,7 @@ labsx = check_labels(labsx, varsx);
 labsy = check_labels(labsy, varsy);
 labsz = check_labels(labsz, varsz);
 
-[lims, numsamp_max] = axlim_old(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i);
+[lims, numsamp_max] = axlim_old(varsx, varsy, varsz, axisroomfac, epochinds_all, epochts);
 
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
@@ -58,7 +58,7 @@ framecount = 0;
 for ei = 1:numel(epochinds_all)
 
     epochinds = epochinds_all{ei};
-    tinds = find(ismember_each_element(epochinds_ts_i, epochinds));
+    tinds = find(ismember_each_element(epochts, epochinds));
     tinew = ti(tinds);
 
     [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = compute_lags(tinew, lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
@@ -178,7 +178,7 @@ end
 
 end
 
-function [lims, numsamp_max] = axlim_old(varsx, varsy, varsz, axisroomfac, epochinds_all, epochinds_ts_i)
+function [lims, numsamp_max] = axlim_old(varsx, varsy, varsz, axisroomfac, epochinds_all, epochts)
 
 rngx = range(varsx, 2);
 rngy = range(varsy, 2);
@@ -202,7 +202,7 @@ lims.t3 = [];
 
 numsamp_max = 0;
 for ei = 1:numel(epochinds_all)
-    numsamp_max = max(numsamp_max, numel(find(ismember_each_element(epochinds_ts_i, epochinds_all{ei}))));
+    numsamp_max = max(numsamp_max, numel(find(ismember_each_element(epochts, epochinds_all{ei}))));
 end
 
 end

@@ -1,6 +1,6 @@
 function pltx(stack, vars, doui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    roidat, ti, sampper, zstartpos, epochinds_ts_i, gifvis, ...
+    roidat, ti, sampper, zstartpos, epochts, gifvis, ...
     iz, it, dr, pthgif_prefix_short, pthgif_prefix, ...
     pth_roim_interactive, normopt, widyxz, opt)
 
@@ -19,7 +19,7 @@ arguments
     ti = []
     sampper = []
     zstartpos = []
-    epochinds_ts_i = []
+    epochts = []
     gifvis = []
     iz = []
     it = []
@@ -113,8 +113,8 @@ end
 [it, itstr] = indsmake(it, indsall=size(stack, 4), label_prefix='t');
 
 % stack = stack(:,:,iz,it,:);
-kpepidx = setxor(1:numel(epochinds_ts_i), it);
-epochinds_ts_i(kpepidx) = 0;
+kpepidx = setxor(1:numel(epochts), it);
+epochts(kpepidx) = 0;
 
 if ~isempty(stimvid)
     vid = stimvid;
@@ -157,7 +157,7 @@ lims = lims(vpmapflat);
 
 varcombos = make_varcombos(vars);
 
-[epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochinds_ts_i, ti, epochinds_all, sampinc, ts_scope, gif_scope);
+[epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochts, ti, epochinds_all, sampinc, ts_scope, gif_scope);
 
 numfr_gif = check_gif_frame_number(gif_scope, tinds_all, varcombos, numfr_gif_max);
 
@@ -501,11 +501,11 @@ end
 end
 
 
-function [epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochinds_ts_i, ti, epochinds_all, sampinc, ts_scope, gif_scope)
+function [epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochts, ti, epochinds_all, sampinc, ts_scope, gif_scope)
 
 for j = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
     epochstring_all{j} = make_epoch_string(epochinds_all{j});
-    tinds_full{j} = find(ismember_each_element(epochinds_ts_i, epochinds_all{j}));
+    tinds_full{j} = find(ismember_each_element(epochts, epochinds_all{j}));
     tinds_all{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
 end
 numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full);

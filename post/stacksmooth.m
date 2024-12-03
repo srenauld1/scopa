@@ -5,7 +5,7 @@ arguments
     opt.dim = []
     opt.method = 'gaussian'
     opt.window = []
-    opt.smsdtime = []
+    opt.smlensec = []
     opt.imrate = []
     opt.smlenpx = []
 end
@@ -13,7 +13,7 @@ dim = opt.dim;
 method = opt.method;
 window = opt.window;
 smlenpx = opt.smlenpx;
-smsdtime = opt.smsdtime;
+smlensec = opt.smlensec;
 imrate = opt.imrate;
 
 if isempty(dim) && ~isempty(window)
@@ -21,13 +21,13 @@ if isempty(dim) && ~isempty(window)
 end
 
 if isempty(imrate)
-    imrate = 1; %if empty, interpret smsdtime as samples
+    imrate = 1; %if empty, interpret smlensec as samples
 end
 
 
-    if smsdtime
-        smsdtime = smsdtime*imrate;
-        smsd = [smlenpx smsdtime];
+    if smlensec
+        smlensec = smlensec*imrate;
+        smsd = [smlenpx smlensec];
     else
         smsd = smlenpx;
     end

@@ -1,10 +1,10 @@
-function fitin = mfit(stack, indvp, depvp, fn_save_prefix, roidat, md, opts, epochinds_ts_i, pltstr, pixfitflag)
+function fitin = mfit(indvp, depvp, imrate, fitopt, doplt, pthpre, epochts, stack, roidat)
 
 % for docs, see file mfit_notes.m
 
-% indvp and depvp are independent and dependent variables before processing 
-% the unintuitive thing that needs to be changed is that depvp first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim), 
-% while for indvp, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether tsget should output vector depvp (and input them to this function mfit)  
+% indvp and depvp are independent and dependent variables before processing
+% the unintuitive thing that needs to be changed is that depvp first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim),
+% while for indvp, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether tsget should output vector depvp (and input them to this function mfit)
 
 % indvp
 % depvp
@@ -12,26 +12,35 @@ function fitin = mfit(stack, indvp, depvp, fn_save_prefix, roidat, md, opts, epo
 % fitin.num_samp_indvp
 % fitin.num_dim_depvp
 % fitin.num_samp_depvp
-% fitin.fn_save_prefix
+% fitin.pthpre
 
-% mfit_prepvars adds to fitin struct with prepared vars and also outputs fitin.stats 
-% mfit_setup output fitin.op with model options, and fitin.op.supp with model params 
+% mfit_prepvars adds to fitin struct with prepared vars and also outputs fitin.stats
+% mfit_setup output fitin.op with model options, and fitin.op.supp with model params
 % mfit_epochs output fitin.fit with fit info
-%   within mfit_epochs is mfit_fit with the actual fit 
+%   within mfit_epochs is mfit_fit with the actual fit
+
+
+arguments
+    indvp
+    depvp
+    imrate
+    fitopt
+    doplt = 0
+    pthpre = []
+    epochts = []
+    stack = []
+    roidat = []
+end
 
 %% check some inputs and prepare save path
 
 fitin.vars.indvp = indvp; indvp = [];
 fitin.vars.depvp = depvp; depvp = [];
 
-opts.hsv_background = "";
+fitopt.hsv_background = "";
 
-if ~iscell(opts.epochinds)
-    opts.epochinds = {opts.epochinds};
-end
-
-if ~exist('pltstr', 'var')
-    pltstr = {};
+if ~iscell(fitopt.epochinds)
+    fitopt.epochinds = {fitopt.epochinds};
 end
 
 if isvector(fitin.vars.indvp) & iscolumn(fitin.vars.indvp)
@@ -45,48 +54,26 @@ if fitin.num_samp_indvp~=fitin.num_samp_depvp | ndims(fitin.vars.depvp)~=2 | ndi
     error("incorrectly sized input(s)")
 end
 
-if ~exist('pixfitflag', 'var') || isempty(pixfitflag)
-    pixfitflag = 0;
-    pixfitflagstr = '';
-else
-    if pixfitflag==1
-        pixfitflagstr = '_PIX';
-    end
-end
 
-fitin.fn_save_prefix = fn_save_prefix;
-pth_fitdata_prefix = [fitin.fn_save_prefix  '_' opts.mdlname '_' num2str(opts.mdl_length_sec) '_' num2str(opts.mdl_lag_sec) pixfitflagstr];
+fitin.pthpre = pthpre;
+pth_fitdata_prefix = [fitin.pthpre  '_' fitopt.mdlname '_' num2str(fitopt.mdl_length_sec) '_' num2str(fitopt.mdl_lag_sec)];
 pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
-
-%% create pixelwise fit for background of hsv plot (if requested) by calling mfit here, with pixfitflag==1
-
-if strcmp(opts.hsv_background, 'pixels') && pixfitflag==0 %only do if pixfitflag==0, to avoid infinite recursion
-    pixfitflag = 1;
-    roipixind2 = logical(sum(roidat.roipx)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
-    depv2 = reshape(stack, [], size(stack, 4));
-    depv2 = depv2(cell2mat(roipixind2), :);
-    fitin2.vars.depvp = depv2;
-    roidat2 = roidat;
-    roidat2.roipx = roipixind2;
-    mfit(stack, fitin2, roidat2, md, opts, pixfitflag); %call mfit on pixels if you want a pixel fit background behind your roi fit background
-    pixfitflag = 0; %reset to zero
-end
 
 %% prepare indv and depv
 
-fitin = mfit_prepvars(fitin, opts, md, pth_fitdata_prefix, epochinds_ts_i);
+fitin = mfit_prepvars(fitin, fitopt, imrate, pth_fitdata_prefix, epochts);
 
 %% set up model fitting and plotting options
 
-fitin.op = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, opts, md.sampper, fitin.stats, pth_fitdata_prefix);
+fitin.op = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, fitopt, imrate, fitin.stats, pth_fitdata_prefix);
 
 %% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
 
-for epi = 1:length(opts.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-    fitin = mfit_epochs(fitin, opts, epi, pth_fitdata_prefix);
+for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
+    fitin = mfit_epochs(fitin, fitopt, epi, pth_fitdata_prefix);
 end
 
-if ~isempty(pltstr)
-    mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
+if doplt
+    mfit_plots(fitin, roidat, stack, fitopt, pth_fitdata_prefix)
 end
 

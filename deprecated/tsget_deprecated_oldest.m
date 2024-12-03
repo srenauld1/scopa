@@ -1,10 +1,7 @@
 function [tsuse, dochoose] = tsget_deprecated(vnm, ts, ti, pth_tsuse_nms_prefix, pth_stack, choosecount, dochoose)
 
-
 % select timeseries from 'ts' whose flattened nested struct fieldnames match vnm pattern,
 % output variables, their names, and some info in struct 'tsuse'
-%this old version works, but has been replaced with a version that searches a saved file of parameter sets to find a timeseries id, then use that to find the timeseries
-% this version was used when variables were in nested structs whose names matched parameters, but that was hard to use and as parameters grow, more impractical
 
 timedim = 2; %for now hard code to assume second dim is time 
 force_single_precision = 1;
@@ -132,14 +129,14 @@ for fi = 1:numel(fn)
             regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
             if numel(unique(regionex_cat))~=1
                 error("tsuse cannot yet use multiple regionex across input vars; in future crop_stack will just have to loop over them and cat the regionex stacks in xy")
-                % tsuse.regionex = 'none';
+                % tsuse.regionex = 'default';
             end
         end
     end
 end
 
 if ~isfield(tsuse, 'regionex')
-    tsuse.regionex = 'none';
+    tsuse.regionex = 'default';
     tsuse.parsex = 'noparsex';
     tsuse.parsnorm = 'noparsnorm';
 end

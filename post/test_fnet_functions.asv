@@ -13,10 +13,10 @@ pth_save = '~/stacks/vonmistest3.gif';
 %% 
 
 V = linspace(0, 2, 1 ); % amp
-M = linspace(1, 1, 1); % width
-Q = linspace(-pi, pi, 10);%xshift (center)
+M = linspace(10, 0.01, 10); % width
+Q = linspace(0, 0, 1);%xshift (center)
 C = [-3]; %yshift (baseline)
-x = indv;
+x = linspace(-pi,pi,10000); %indv;
 % genlog(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [outmin outmax])
 % genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [inmin inmax], [-2 2])
 genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [], []);

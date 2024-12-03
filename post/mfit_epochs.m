@@ -100,10 +100,9 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         save(pth_fitdata, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds', '-v7.3', '-mat')
 
+        mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.normalize_depv)
+
     end
-
-
-    mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.normalize_depv) 
 
     %% compute some fit metrics to be used later
 

@@ -1,5 +1,6 @@
-function [mu, rho, var] = circular_mean_and_variance(ang, wt, omitnan)
+function [mu, rho, var] = circmnvar(ang, wt, omitnan)
 
+%circular mean and variance 
 %uses atan2 and hypot instead of cart2pol for transparency
 %rho computed differently for signed/unsigned weights
 
@@ -7,7 +8,7 @@ if ~exist('omitnan', 'var')
     omitnan = 0;
 end
 if omitnan && any(isnan(wt(:)))
-    disp("WARNING, NAN IN WT IN FUNCTION circular_mean_and_variance")
+    disp("WARNING, NAN IN WT IN FUNCTION circmnvar")
 end
 
 if any(wt(:)<0) && any(wt(:)>0)

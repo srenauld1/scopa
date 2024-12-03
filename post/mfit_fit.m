@@ -5,11 +5,14 @@ function [ft, pred, mse_train, mse_val] = mfit_fit(indv, depv, ri, optim_hist_sa
 % rng default
 
 do_nonlinear_constraint = 0;
+save_progress_files = 1; %save a dummy file on every completed fit so you can monitor progress more easily on long parallel runs
 
 if optim_hist_save_iter_spacing
     histfit = init_optim_hist(op.opp.options.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
     op.opg.OutputFcn = @outfcn_global;
     op.opp.options.OutputFcn = @outfcn_local;
+else
+    histfit = 1; %assign dummy var in case save_progress_files is true
 end
 
 if startsWith(mdlname, 'svd')
@@ -74,11 +77,18 @@ if optim_hist_save_iter_spacing
     savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
     parsave(savepath, histfit) %save histfit, must use separate function
 end
+if save_progress_files
+    savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+    parsave(savepath, histfit) %save histfit, must use separate function
+end
+
 
 %% constraint function
 
 
     function [c,ceq] = nlcon_fnet(x)
+        
+        %the two vonmises constraints are not great because they force the curve max and min to match data max and min but data is noisy, so the curve won't fit optimally, would be better to match max and min of some filtered version of data, or just skip the constraint 
 
         countz = 0;
         for j = 1:length(supp.pind_Lfree)

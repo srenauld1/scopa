@@ -73,8 +73,8 @@ for j = 1:numsubplot
     hax{j}.InnerPosition(3) = ax(sector_ind).w(widfac);
     hax{j}.InnerPosition(4) = ax(sector_ind).h(htfac);
     hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
-    hax{j}.XLim = [1 numxpix]; %why do this instead of axis image or dataaspectratio 1 1 1????
-    hax{j}.YLim = [1 numypix];%why do this instead of axis image or dataaspectratio 1 1 1 ????
+    % hax{j}.XLim = [1 numxpix]; %this cuts edge pixels in half, which makes aspect ratio actually wrong; does it do anything else?why do this instead of axis image or dataaspectratio 1 1 1????
+    % hax{j}.YLim = [1 numypix]; %this cuts edge pixels in half, which makes aspect ratio actually wrong; does it do anything else?why do this instead of axis image or dataaspectratio 1 1 1???
     hax{j}.CLim = stackrange*dr+stackmin;
     hax{j}.Toolbar.Visible = 'off';
 

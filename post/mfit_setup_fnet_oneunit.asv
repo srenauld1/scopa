@@ -143,9 +143,11 @@ for fi = 1:num_fun
         x0_tmp = [1,1,1,0];
     elseif strcmp(fnet_onefun, 'v')
         fnet.funh{fi} = @fun_vonmises;
-        lbnd_tmp = [con_genlog_asympleft(1),-inf,-inf,-inf];
-        ubnd_tmp = [con_genlog_asympleft(2),inf,inf,inf];
-        x0_tmp = [con_genlog_asympleft(3),0,0,0];
+        % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+        lbnd_tmp = [-inf,-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+        ubnd_tmp = [inf,inf,pi,inf];
+        % x0_tmp = [con_genlog_asympleft(3),8,0,0];
+        x0_tmp = [1,0.1,0,0];
     elseif strcmp(fnet_onefun, 'n')
         fnet.funh{fi} = @fun_sin;
         lbnd_tmp = [-inf,-inf,-inf,-inf];
@@ -323,4 +325,6 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     end
 
 
+sin(2*pi*x/A + 2*pi/B);
+exp(A*cos(x-B));
 end

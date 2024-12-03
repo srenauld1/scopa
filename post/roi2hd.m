@@ -1,55 +1,60 @@
 
-function [resptmp, domain] = map_rois_to_head_direction(stack, regionex, indvp, depvp, fn_save_prefix, ...
-    roidat, md, fitopt, halfcent, numcluster_for_bump_domain_resample, resample_smoothfac, doplt, epochinds_ts_i)
+function [resptmp, domain] = roi2hd(stack, regionex, indvp, depvp, pthpre, ...
+    roidat, imrate, fitopt, numangrs, smfac, doplt, epochts)
 
 
 numsamp = size(depvp, 2);
 numroi = size(depvp, 1);
 
-% pltstr = {'ts', 'fov'};
-fitin = mfit(stack, indvp, depvp, fn_save_prefix, roidat, md, fitopt, epochinds_ts_i);
+doplt=0;
+
+fitin = mfit(indvp, depvp, imrate, fitopt, doplt, pthpre, epochts, stack, roidat);
 
 fn = fieldnames(fitin.fits);
 if numel(fn)>1
-    error("you've requested multiple fits to different epochinds, but map_rois_to_head_direction operates on a single fit; decide which epochinds set you want to use to compute bump")
+    error("you've requested multiple fits to different epochinds, but roi2hd operates on a single fit; decide which epochinds set you want to use to compute bump")
 end
-prefang = fitin.fits.(fn{1}).indvpf_mean_allval(:)'; %row vector of preferred angle;
+angpref = fitin.fits.(fn{1}).indvpf_mean_allval(:)'; %row vector of preferred angle;
 
 
-[prefang_sorted,sinds] = sort(prefang);
+[prefang_sorted,sinds] = sort(angpref);
 rawsort = depvp(sinds,:);
 
 %% resample functional domain
 
-if numcluster_for_bump_domain_resample
+if numangrs
 
-    fprintf("resampling compass from " + num2str(numroi) + " rois to " + num2str(halfcent*2) + " rois, with 2pi domain (whether it's PB or not)" + newline)
+    fprintf("resampling compass from " + num2str(numroi) + " rois to " + num2str(numangrs) + " rois, with 2pi domain (whether it's PB or not)" + newline)
 
-    if numroi<numcluster_for_bump_domain_resample*2
+    if numroi<numangrs*2
         fprintf("WARNING, \nREQUESTED RESAMPLE WITH MORE OUTPUT SAMPLES THAN INPUT SAMPLES")
     end
 
     angrange = 2*pi;
-    [resptmp, domain] = resample_compass(depvp, prefang, angrange, halfcent*2, resample_smoothfac, doplt);
+    [resptmp, domain] = compassrs(depvp, angpref, angrange, numangrs, smfac, doplt);
     resptmp = rescale(resptmp);
 
     if strcmp(regionex, 'pb')
 
         fprint("doing pb two halves resampling for optional plotting, but this is not used in the data" + newline)
 
-        % %4pi only works if you shift prefang from one half of pb up by pi, which i have not done yet
+        % %4pi only works if you shift angpref from one half of pb up by pi, which i have not done yet
         % angrange4pi = 4*pi;
-        % [resptmp4pi, domain4pi] = resample_compass(depvp, prefang, angrange4pi, halfcent*2, resample_smoothfac, doplt);
+        % [resptmp4pi, domain4pi] = compassrs(depvp, angpref, angrange4pi, numangrs, smfac, doplt);
         % resptmp4pi = rescale(resptmp4pi);
 
         %resample each half of the compass, then put them together
-        %HALVES ARE NOT WELL DEFINED, FIX THIS (use >pi shift in prefang??, or more precise morphology, or user-defined pb center??)
+        %HALVES ARE NOT WELL DEFINED, FIX THIS (use >pi shift in angpref??, or more precise morphology, or user-defined pb center??)
+        
         rois_left = 1:numroi/2;
         rois_right = numroi/2+1:numroi;
         angrange = 2*pi;
 
-        [dfc_left, domain_left] = resample_compass(depvp(rois_left,:), prefang(rois_left), angrange, halfcent, resample_smoothfac, doplt);
-        [dfc_right, domain_right] = resample_compass(depvp(rois_right,:), prefang(rois_right), angrange, halfcent, resample_smoothfac, doplt);
+        numangrs_left = floor(numel(fuk)/2);
+        numangrs_right = numangrs-numangrs_left;
+
+        [dfc_left, domain_left] = compassrs(depvp(rois_left,:), angpref(rois_left), angrange, numangrs_left, smfac, doplt);
+        [dfc_right, domain_right] = compassrs(depvp(rois_right,:), angpref(rois_right), angrange, numangrs_right, smfac, doplt);
 
         % dfc_left = []
         % domain_left = []
@@ -62,7 +67,7 @@ if numcluster_for_bump_domain_resample
 
 else
 
-    domain = prefang;
+    domain = angpref;
 
 end
 
@@ -73,15 +78,15 @@ if doplt
     %preferred heading plots
     figure;
     subplot(4,1,1)
-    plot(prefang)
+    plot(angpref)
     title("preferred angle")
     ylim([-4 4])
     subplot(4,1,2)
-    plot(mod(prefang, 2*pi))
+    plot(mod(angpref, 2*pi))
     title("preferred angle mod 2pi")
     ylim([0 8])
     subplot(4,1,3)
-    uwtmp = unwrap(mod(prefang, 2*pi));
+    uwtmp = unwrap(mod(angpref, 2*pi));
     uwtmp = uwtmp - uwtmp(1);
     plot(uwtmp)
     title("preferred angle unwrapped/zeroed")
@@ -89,19 +94,19 @@ if doplt
     plot(prefang_sorted)
     title("preferred angle sorted")
     ylim([-4 4])
-    saveas( gcf, [fn_save_prefix '_PREFHD_.png'])
+    saveas( gcf, [pthpre '_PREFHD_.png'])
 
 
 
     %resampled compass plot
-    if numcluster_for_bump_domain_resample
+    if numangrs
 
         plotfull = 1;
-        plotraw = 1;
+        plotraw = 0;
         plothalves = 0; %will plot halves if regionex is pb, if regionex is not pb this has no effect 
         numplotinds = 50;
         tinds = round(linspace(1, numsamp, numplotinds));
-        filename_save = [fn_save_prefix '_RESAMPCOMP_.gif'];
+        filename_save = [pthpre '_RESAMPCOMP_.gif'];
         gifvis = 'on';
         numroi_rs = size(resptmp,1);
         % numroi_rs = numroi_rs/2
@@ -137,8 +142,7 @@ if doplt
                 hax.YAxis(2).Limits = [0 1];
                 if plotraw
                     rawrs = rescale(depvp);
-                    % hpl5 = plot(hax, linspace(1, numroi_rs, numroi), rawrs(:,ind), 'color', [0.1 0.7 0.1], 'LineStyle','-');
-                    hpl5 = scatter(hax, prefang, rawrs(:,ind), [], [0.1 0.7 0.1], 'filled');
+                    hpl5 = plot(hax, linspace(min(angpref), max(angpref), numroi), rawrs(:,ind), 'color', [0.1 0.7 0.1], 'LineStyle','-');
                 end
 
                 hold(hax, 'off');

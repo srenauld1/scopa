@@ -179,7 +179,7 @@ for spi = 1:numel(pth_stacks)
         stack = stacktype(stack, stackdtype);
     end
     if any(smlenpx) || any(smlensec)
-        stack = stacksmooth(stack, method={'gaussian', 'movmedian'}, smlenpx=smlenpx, smsdtime=smlensec, imrate=imrate);
+        stack = stacksmooth(stack, method={'gaussian', 'movmedian'}, smlenpx=smlenpx, smlensec=smlensec, imrate=imrate);
     end
 
 
