@@ -1,4 +1,4 @@
-function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol_each, ...
+function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol, ...
     foreground_plot_style, saturation_factor_background, ...
     saturation_factor_rois, filename_gif, doplt)
 
@@ -11,7 +11,7 @@ function roi_overlay = make_roi_overlay_deprecated(stack, roipx, ncol_each, ...
 arguments
     stack
     roipx
-    ncol_each = 128
+    ncol = 128
     foreground_plot_style char = 'overlay'
     saturation_factor_background = 1
     saturation_factor_rois = 1
@@ -30,7 +30,7 @@ end
 
 numrois = numel(roipx);
 
-stack_rs = rescale(stack, 1, ncol_each);
+stack_rs = rescale(stack, 1, ncol);
 
 img = zeros([size(stack_rs, 1), size(stack_rs, 2), size(stack_rs, 3), numrois], 'single');
 
@@ -38,13 +38,13 @@ for ri = 1:numrois
 
     roipixvals = stack(roipx{ri});
 
-    overlay_tmp = rescale(stack_rs, 1, ncol_each); %redefine for each roi
+    overlay_tmp = rescale(stack_rs, 1, ncol); %redefine for each roi
 
     switch foreground_plot_style
 
         case 'overlay'
 
-            overlay_tmp(roipx{ri}) = rescale(roipixvals, ncol_each+1, ncol_each*2); %for overlay (filled roi), maintains intensity of original, but with different hue
+            overlay_tmp(roipx{ri}) = rescale(roipixvals, ncol+1, ncol*2); %for overlay (filled roi), maintains intensity of original, but with different hue
 
         case 'boundary'
 
@@ -52,7 +52,7 @@ for ri = 1:numrois
             for ii = 1:size(imtmp, 3)
                 bound2d(:,:,ii) = bwperim(imtmp(:,:,ii));
             end
-            overlay_tmp(bound2d) = ncol_each*2; %for boundary (hollow roi) with different hue
+            overlay_tmp(bound2d) = ncol*2; %for boundary (hollow roi) with different hue
 
     end
 
@@ -67,7 +67,7 @@ startcol2 = [0 0 0]; %start color for part 2 (roi/fg)
 endcol2 = [1 0 0]; %end color for part 2 (roi/fg)
 cmap_method = '1d'; %colormap interpolation is 1d along arc of colorwheel, or 2d through colorwheel (1d is intuitive i think)
 
-cmap = colormap_custom(cmap_method, ncol_each, ...
+cmap = cmapmake(cmap_method, ncol, ...
     startcol1, endcol1, saturation_factor_background, ...
     startcol2, endcol2, saturation_factor_rois);
 

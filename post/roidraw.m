@@ -115,7 +115,7 @@ if flag_oneroi
         "this roi can be composed of one or more polygons drawn across one or more images in the stack, or drawn on the mean z projection " + newline + ...
         "Do you want to draw this one manual roi for regionex '" + regionex + "'? Type 1 for yes, type 0 for no:");
 else
-    prompt = sprintf("PRESS 1 TO DRAW ROIS FOR regionex '" + regionex + ", maskname " + maskname + ", channel " + num2str(c) + "; PRESS 0 TO SKIP DRAWING: ");
+    prompt = sprintf("PRESS 1 TO DRAW ROIS FOR regionex '" + regionex + "', maskname '" + maskname + "', channel " + num2str(c) + "; PRESS 0 TO SKIP DRAWING: ");
 end
 commandwindow();
 draw_manual = input(prompt);
@@ -130,7 +130,7 @@ if draw_manual
 
     if draw_on_meanzt
         stackdraw = stack_mnzt;
-        flag_allz = 0;
+        flag_allz = 1;
     else
         stackdraw = stackmnt;
         prompt = sprintf("PRESS 1 TO DRAW ON A SINGLE FIGURE WITH ALL REGIONEX SLICES (FASTER, LOWER RES), PRESS 0 TO DRAW ON EACH SLICE IN A SEPARATE FIGURE (SLOWER, BUT HIGHER RES): ");
@@ -150,9 +150,9 @@ if draw_manual
     end
 
     if flag_allz
-        numfig_per_roi = 1;
+        numfig_per_loop = 1;
     else
-        numfig_per_roi = size(stackdraw, 3);
+        numfig_per_loop = size(stackdraw, 3);
     end
 
     numroiest = 200; %just to preallocate, a big number
@@ -164,7 +164,7 @@ if draw_manual
 
         roimaskman_tmp2 = zeros(size(stackdraw, 1), size(stackdraw, 2), size(stackdraw, 3), 'logical');
         szi = 1;
-        while szi <= numfig_per_roi
+        while szi <= numfig_per_loop
 
             [roimaskman_tmp, flag_quit_one_roi, flag_quit_all_rois, ir] = ...
                 roidraw_onefig(stackdraw, flag_oneim, flag_oneroi, flag_allz, flag_croplim, draw_on_meanzt, ir, szi, title_prefix=title_prefix, roialpha=roialpha, cmap=cmap, fontsize=fontsize, remove_overlap=remove_overlap);
@@ -175,7 +175,7 @@ if draw_manual
                 roimaskman_tmp2(:,:,szi) = roimaskman_tmp;
             end
 
-            if szi == numfig_per_roi || flag_quit_one_roi || flag_quit_all_rois
+            if szi == numfig_per_loop || flag_quit_one_roi || flag_quit_all_rois
 
                 if flag_oneim
                     for ir = 1:size(roimaskman_tmp, 3)

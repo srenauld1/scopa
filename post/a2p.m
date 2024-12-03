@@ -116,6 +116,21 @@ for k = 1:numel(oa) % loop over recordings
 
     % lfit(ts.ball.forvel, ts.roi.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
 
+    dvl = tsdv('circular', ts.roi.i18{1}, 0.5, 2, 1/md.volrate);
+    dvr = tsdv('circular', ts.roi.i19{1}, 0.5, 2, 1/md.volrate);
+
+
+    cmap = cmapmake(ncol=[128,128], nodes=[1 0 0; 1 1 1; 0 0 1], satfac=[1,1], method='1d');
+    hfg = figure; hax = axes(Parent=hfg); hpl = imagesc(hax, [dvl; dvr]);
+    colormap(cmap);
+    clim([-maxabs maxabs]) %zero-centered lim
+    hpl.CDataMapping = 'scaled';
+
+    %%
+
+    figure; plot(dvr); hold on; plot(dvr)
+
+
     %% bump
 
     if o.mn.dobmp

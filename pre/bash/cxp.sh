@@ -82,64 +82,70 @@ REGIONEX=('fullfov')
 
 ############ SET PARAMS FOR CPU RESOURCE REQUEST ############
 
-time_register=18:00:00
+time_copyfiles=00:10:00
+cpu_per_task_copyfiles=1
+mem_per_cpu_copyfiles=5G
+
+time_register=1:30:00
 cpu_per_task_register=1
-mem_per_cpu_register=60G
+mem_per_cpu_register=20G
 
-time_denoise=18:00:00
-cpu_per_task_denoise=1
-mem_per_cpu_denoise=60G
-
-time_stitch=18:00:00
+time_stitch=00:25:00
 cpu_per_task_stitch=1
-mem_per_cpu_stitch=60G
+mem_per_cpu_stitch=25G
 
-time_extract=18:00:00
+time_extract=1:30:00
 cpu_per_task_extract=1
-mem_per_cpu_extract=60G
+mem_per_cpu_extract=20G
 
-time_remove=18:00:00
+time_remove=11:40:00
 cpu_per_task_remove=1
 mem_per_cpu_remove=60G
 
-time_a2p=18:00:00
+time_a2p=1:00:00
 cpu_per_task_a2p=1
-mem_per_cpu_a2p=60G
+mem_per_cpu_a2p=50G
 
-############ SET PARAMS FOR GPU RESOURCE REQUEST ############
+############ SET PARAMS FOR DENOISING RESOURCE REQUEST (CPU AND GPU) ############
+
+cpu_per_task_denoise=1
+mem_per_cpu_denoise=15G
 
 gpustr=a100_80 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
 if [ "$gpustr" == a100_80 ]; then 
     gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
     gpu_partition=gpu_quad 
-    gpu_time=5:00:00
+    time_denoise=5:00:00
 elif [ "$gpustr" == a100_40_mig ]; then 
     gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
     gpu_partition=gpu_quad 
-    gpu_time=4:30:00 #untested, 
+    time_denoise=4:30:00 #untested, 
 elif [ "$gpustr" == v100_32 ]; then 
     gpu_to_use=teslaV100s:1,vram:32G #lowest vram on on gpu_quad (double precision)
     gpu_partition=gpu_quad 
-    gpu_time=9:00:00
+    time_denoise=9:00:00
 elif [ "$gpustr" == a100_40 ]; then 
     gpu_to_use=a100:1,vram:40G #fastest on gpu_requeue (here 40G, but 80G also available) (unnamed precision)
     gpu_partition=gpu_requeue
-    gpu_time=4:00:00 #time untested on requeue, maybe similar to time for a100_80 on quad partition?
+    time_denoise=4:00:00 #time untested on requeue, maybe similar to time for a100_80 on quad partition?
 elif [ "$gpustr" == rtx6000_24 ]; then 
     gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
     gpu_partition=gpu_requeue
-    gpu_time=5:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    time_denoise=5:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpustr" == m40_12 ]; then 
     gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision), there's also one on gpu partition (also 24 gb, double precision), where it's the 2nd fastest, but running on gpu_requeue is preferred method on scopa
     gpu_partition=gpu_requeue
-    gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    time_denoise=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 elif [ "$gpustr" == v100_16 ]; then 
     gpu_to_use=teslaV100:1,vram:16G #fastest on gpu partition (double precision)
     gpu_partition=gpu
-    gpu_time=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
+    time_denoise=18:00:00 #tested time a little under 12 hours, train 5 epochs with 10K patches, test 5 epochs, 
 fi   
 
+
+
+############ USER SHOULD NOT HAVE TO CHANGE ANYTHING BELOW THIS LINE ############
 
 
 
@@ -247,10 +253,10 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
         if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then #do_copyfiles 1 or 2
             echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
             partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
-            time_str=00:10:00
+            time_str=$time_copyfiles
             ntasks_str=1
-            cpus_per_task_str=1
-            mem_per_cpu_str=5G
+            cpus_per_task_str=$cpu_per_task_copyfiles
+            mem_per_cpu_str=$mem_per_cpu_copyfiles
         else
             echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
             if [ "$sbatch_job_name" == mcp.sbatch ]; then #do_register
@@ -261,43 +267,43 @@ for sbatch_job_name in "${sbatch_job_name_sequence[@]}"; do
                     cpus_per_task_str=$cpu_per_task_register
                     mem_per_cpu_str=$mem_per_cpu_register
                 else #use more memory if using bg subtraction
-                    cpus_per_task_str=1
-                    mem_per_cpu_str=35G
+                    cpus_per_task_str=$cpu_per_task_register
+                    mem_per_cpu_str=$mem_per_cpu_register
                 fi
             elif [ "$sbatch_job_name" == dnp.sbatch ]; then #do_denoise
                 partition_str=$gpu_partition #use transfer partition if do_copyfiles==1 or 2
-                time_str=$gpu_time
+                time_str=$time_denoise
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=55G
+                cpus_per_task_str=$cpu_per_task_denoise
+                mem_per_cpu_str=$mem_per_cpu_denoise
                 gres_str=--gres=gpu:$gpu_to_use
                 if [ "$gpu_partition" == gpu_requeue ]; then
                     requeue_str=--requeue 
                 fi 
             elif [ "$sbatch_job_name" == stc.sbatch ]; then #do_stitch
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=00:25:00
+                time_str=$time_stitch
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=25G
-            elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
-                partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=11:40:00 #11:40:00
-                ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=60G
+                cpus_per_task_str=$cpu_per_task_stitch
+                mem_per_cpu_str=$mem_per_cpu_stitch
             elif [ "$sbatch_job_name" == exp.sbatch ]; then #do_extract
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=01:30:00
+                time_str=$time_extract
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=20G
+                cpus_per_task_str=$cpu_per_task_extract
+                mem_per_cpu_str=$mem_per_cpu_extract
+            elif [ "$sbatch_job_name" == rsc.sbatch ]; then #do_remove
+                partition_str=short #use transfer partition if do_copyfiles==1 or 2
+                time_str=$time_remove #11:40:00
+                ntasks_str=1
+                cpus_per_task_str=$cpu_per_task_remove
+                mem_per_cpu_str=$mem_per_cpu_remove
             elif [ "$sbatch_job_name" == a2p.sbatch ]; then  #do_ap2
                 partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                time_str=01:00:00
+                time_str=$mem_per_cpu_a2p
                 ntasks_str=1
-                cpus_per_task_str=1
-                mem_per_cpu_str=50G
+                cpus_per_task_str=$cpu_per_task_a2p
+                mem_per_cpu_str=$mem_per_cpu_a2p
             fi
         fi
 
