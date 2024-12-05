@@ -7,7 +7,7 @@ arguments
     opt.usefun = 1
 end
 
-fndefault = '00000_NONAME';
+fndefault = '00000000';
 
 callstack = dbstack('-completenames');
 if numel(callstack) >= 2

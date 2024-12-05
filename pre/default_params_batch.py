@@ -64,7 +64,7 @@ do_analysis = 0 #matlab analysis 'post', various functions in a2p.m
 # export MKL_NUM_THREADS=1 
 # export OPENBLAS_NUM_THREADS=1 
 use_cluster = 0 #leave as 0 because cluster isn't working (except on google colab), and typical recordings (size 128 x 256 x 20 x 3000) don't take that long
-cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant if use_cluster=0
+cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant if use_cluster=0; use 'multiprocessing' on O2, will run caiman code faster 
 
 makeplots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
 

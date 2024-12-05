@@ -25,26 +25,37 @@ you can also use update argument to clear specific global variables
 
 
 arguments (Repeating)
-    inp 
+    inp
 end
 
 persistent gset
 
 
-update = 0;
+change = 0;
 if numel(inp)==1
     inp = inp{1};
 elseif numel(inp)==2
     if isstruct(inp{2})
-        update = inp{1};
+        change = inp{1};
         inp = inp{2};
+    else
+        if isequal(inp{1}, -1)
+            change = inp{1};
+            inp = inp{2};
+        end
     end
 elseif mod(numel(inp), 2)==1
-    update = inp{1};
+    change = inp{1};
     inp = inp(2:end);
+    if isequal(change, -1)
+        error("you are attempting to remove global variable(s), but have passed them as name-value arguments; use a string, or a cell array of char to list globals for removal")
+    end
 end
 
 if isstruct(inp)
+    if isequal(change, -1)
+        error("you are attempting to remove global variable(s), but have passed them as name-value arguments; use a string, or a cell array of char to list globals for removal")
+    end
     fn = fieldnames(inp);
     inptmp = struct2cell(inp);
     inp = cell(numel(inptmp)*2, 1);
@@ -55,36 +66,80 @@ if isstruct(inp)
 end
 
 
+if ~ismember(change, [-1, 0, 1])
+    error("optional first argument 'change' can only be -1, 0, or 1")
+end
+
+if ~isequal(change, 0) && isempty(gset)
+    error("you are attempting to remove or change a global variable but no global variables exist")
+end
+
+if isequal(change, -1)
+    inc = 1;
+else
+    inc = 2;
+end
+
+
 if iscell(inp) %setting globals
     if isempty(gset)
         gset = struct;
     end
-    for k = 1:2:numel(inp)
-        if ~isfield(gset, char(inp{k})) || update
-            if ~ischar(inp{k+1}) && ~isscalar(inp{k+1})
-                strtmp = mat2str(inp{k+1});
+    if isempty(inp)
+        fprintf("your input to 'glb' does nothing" + newline)
+    end
+    for k = 1:inc:numel(inp)
+        if ~isvarname(char(inp{k}))
+            error("'" + char(inp{k}) + "' is not a valid variable name")
+        end
+        if ~isfield(gset, char(inp{k})) || ~isequal(change, 0)
+            if isequal(change, -1)
+                if ~isfield(gset, char(inp{k}))
+                    fprintf("you are attempting to remove global variable '" + char(inp{k}) + "' but it does not exist" + newline)
+                else
+                    gset = rmfield(gset, char(inp{k}));
+                    fprintf("removing global variable '" + char(inp{k}) +  "'" + newline)
+                end
             else
-                strtmp = inp{k+1};
+                if ~ischar(inp{k+1}) && ~isscalar(inp{k+1})
+                    strtmp = mat2str(inp{k+1});
+                else
+                    strtmp = inp{k+1};
+                end
+                if isequal(change, 0)
+                    msgstart = 'setting';
+                elseif isequal(change, 1)
+                    msgstart = 'changing';
+                end
+                if isequal(char(inp{k}), 'all')
+                    error("you are attempting to set a global variable named 'all' but you cannot use this name because it is reserved for retrieving all global variables" + newline)
+                end
+                if ischar(strtmp) && ~isstring(inp{k+1})
+                    fprintf(msgstart + " global variable '" + char(inp{k}) + "' to '" + strtmp + "'" + newline)
+                else
+                    fprintf(msgstart + " global variable '" + char(inp{k}) + "' to " + strtmp + newline)
+                end
+                gset.(char(inp{k})) = inp{k+1};
             end
-            if ischar(strtmp) && ~isstring(inp{k+1})
-                fprintf("setting global variable '" + char(inp{k}) + "' to '" + strtmp + "'" + newline)
-            else
-                fprintf("setting global variable '" + char(inp{k}) + "' to " + strtmp + newline)
-            end
-            gset.(char(inp{k})) = inp{k+1};
         else
             error(sprintf("you are trying to set global variable '" + char(inp{k}) + "' after it's already been set; \nmake first argument 1 to update global variable(s), \nor clear glb to clear all global variables before attempting to set"))
         end
     end
 elseif ischar(inp) %retrieving globals
     if isequal(inp,'all')
-        outp = gset;
+        if isempty(gset)
+            fprintf("there are no global variables to retrieve" + newline)
+        else
+            outp = gset;
+        end
     elseif ~isfield(gset,inp)
-        fprintf("parameter " + inp + " has not yet been set as a global variable" + newline)
+        fprintf("you are attempting to retrieve global variable '" + inp + "' but it has not yet been set" + newline)
         outp = [];
     else
         outp = gset.(inp);
         fprintf("getting global variable '" + inp + "'" + newline)
     end
+else
+    fprintf("your input to 'glb' does nothing" + newline)
 end
 

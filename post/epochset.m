@@ -1,5 +1,7 @@
-function [epochs, epochinds] = define_g4_epoch_indices(ft_misoffset_sec, ti, recdatenum)
-
+function [epochs, epochinds] = epochset(ft_misoffset_sec, ti, recdatenum)
+ 
+% stimulus epoch information, hard coded
+% for old recordings; no longer necessary because epoch information is written to the daq
 
 
 if recdatenum<20231119
@@ -65,7 +67,7 @@ else
 end
 
 
-epochs = get_epoch_number();
+epochs = epochidget('ocld');
 
 boutinds_onecycle_cell = struct2cell(boutinds_onecycle);
 boutinds_onecycle_cell = boutinds_onecycle_cell(~cellfun(@isempty, boutinds_onecycle_cell));

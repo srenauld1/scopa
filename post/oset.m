@@ -18,7 +18,7 @@ end
 o.spec.pthparent_local = '~/stacks';
 o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(recin) %if you're running a2p without input arguments (ie if recin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not recin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    o.spec.recdate = {'20241123'}; %cell array of char (or scalar char), can use wildcards
+    o.spec.recdate = {'22*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     o.spec.trial = {'1'}; %cell array of char (or scalar char), can use wildcards
     o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
@@ -42,7 +42,7 @@ o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
 o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bmp", "mf", "hires"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
-regionex = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'tm'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 %%%% some simple option specification %%%%
 
@@ -145,7 +145,7 @@ for k = 1:numel(o)
                     o(k).roi.doma = 0;
                     o(k).roi.mm.maskname = {'left', 'right'}; 
                 end
-            elseif startsWith(o(k).id.pthstack, '22')
+            elseif contains(o(k).id.pthstack, '2211')
                 if any(strcmp(regionex{m}, {'tm', 't5'}))
                     o(k).mn.oldcarl = 1;
                     o(k).mn.dodaq = 0; 
@@ -153,6 +153,7 @@ for k = 1:numel(o)
                     o(k).mn.dobmp = 0; 
                     o(k).mn.dofit = 0; 
                     o(k).mn.dopltx = 1; 
+                    o(k).roi.doma = 0;
                     o(k).sld.tcrop = [4, 2]; 
                     o(k).mf.mdl_lag_sec = 1; 
                     o(k).mf.mdl_length_sec = 1.25;

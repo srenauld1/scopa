@@ -1,4 +1,4 @@
-function [epochs, epochinds, vis] = g4epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs)
+function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial)
 % if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
@@ -7,7 +7,7 @@ try
 
     load(pth_epochinfo, 'epochs', 'epochinds', 'naninds')
     if ~exist('epochinds', 'var')
-        throw('pth_epochinfo is old, overwriting with new method')
+        error('pth_epochinfo is old, overwriting with new method')
     end
 
 catch
@@ -33,10 +33,10 @@ catch
                 testepochind_all = [2 3 5];
                 minshiftsec = -8;
                 maxshiftsec = 3;
-            elseif ids.recdatenum>=20241120 && ids.recdatenum<20241130
+            elseif ids.recdatenum>=20241120%% && ids.recdatenum<20241130
                 testepochind_all = [2 3 5];
-                minshiftsec = -8;
-                maxshiftsec = 3;
+                minshiftsec = -15;
+                maxshiftsec = -5;
             else
                 testepochind_all = [];
                 minshiftsec = 0;
@@ -62,23 +62,29 @@ catch
                 cnt = cnt+1;
 
                 ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
-                [~, epochinds] = define_g4_epoch_indices(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+                [~, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-                fu = daqrs.g4panels{1}(epochinds==testepochind);
+                tmp = daqrs.g4panels{1}(epochinds==testepochind);
                 if testepochind==2 || testepochind==3
-                    fu = unwrap(fu); %makes it easier to see
+                    tmp = unwrap(tmp); %makes it easier to see
                 end
 
                 if testepochind==2 || testepochind==3
-                    criter(fmsai) = numel(find(isoutlier(diff(diff(fu))))); %minimize num unique variables in diff, since open look should have only a couple (constant vel)
+                    criter(fmsai) = numel(find(isoutlier(diff(diff(tmp))))); %minimize num unique variables in diff, since open look should have only a couple (constant vel)
                 elseif testepochind==5
-                    criter(fmsai) = var(cos(fu)); %minimize variance of x (or y) component of circular variable, this is offset with least error
+                    criter(fmsai) = var(cos(tmp)); %minimize variance of x (or y) component of circular variable, this is offset with least error
                 end
 
-                plot(hax,fu)
-                %ylim(hax, [min(daqrs.g4panels{1}(:)) - abs(min(daqrs.g4panels{1}(:)))*0.3, max(daqrs.g4panels{1}(:)) + abs(max(daqrs.g4panels{1}(:)))*0.3])
+                ttlstr = [criter(fmsai) ft_misoffset_sec ft_misoffset_sec];
 
-                title([criter(fmsai) ft_misoffset_sec ft_misoffset_sec])
+                if fmsai==1
+                    hpl = plot(hax,tmp);
+                    ttl = title(ttlstr);
+                else
+                    hpl.YData = tmp;
+                    ttl.String = ttlstr;
+                end
+
                 fig2gif(hfg, cnt, [dirstack 'misoffset_.gif'])
 
                 if fmsai==numel(ft_misoffset_sec_all)
@@ -98,7 +104,7 @@ catch
             ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
         end
 
-        [epochs, epochinds] = define_g4_epoch_indices(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+        [epochs, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
 
         uei = unique(epochinds(epochinds~=0), 'stable');

@@ -5,11 +5,13 @@ arguments
     opt.nodes = [0 0 0; 1 1 1]
     opt.satfac = 1
     opt.method = '1d'
+    opt.doplt = 0
 end
 method = opt.method;
 ncol = opt.ncol;
 nodes = opt.nodes;
 satfac = opt.satfac;
+doplt = opt.doplt;
 
 if iscell(nodes)
     if iscellstr(nodes)
@@ -89,20 +91,45 @@ switch method
             end
         end
 
-    case '2d' %2d interp makes straight line through 2d colorwheel from one color to next
+    case '2d'
 
-        if numnodes>3
-            fprintf("you requested method 2d for more than 3 nodes in cmapmake; does it work (not tested)??")
+
+        if numnodes~=3 %|| mod(numnodes,3)~=0
+            error("method 2d is just written for 3 nodes right now")
+            % error("method 2d requires at least 3 nodes, and numnodes must be multiple of 3")
         end
 
-        for k = 1:numnodes
-            cmap(k,:) = nodes(k,:);
+        cnt = 0;
+        cmap = [];
+        for k = 3:3:numnodes
+            cnt = cnt+1;
+            nodeinds = [1:3]+3*(cnt-1);
+            ncol_adj = ncol(k-2)+ncol(k-1);
+
+            [xx,yy] = meshgrid([1:3],[1:ncol_adj]);
+
+            cmaptmp = interp2(xx([1,ceil(ncol_adj/2),ncol_adj],:),yy([1,ceil(ncol_adj/2),ncol_adj],:),nodes(nodeinds,:),xx,yy);
+
+            if mod(cnt,2)==0
+                cmap = [cmap; cmaptmp]; %for overlapping nodes
+            else
+                if numnodes==3
+                    cmap = cmaptmp; %for overlapping nodes
+                else
+                    cmap = [cmap; cmaptmp(1:end-1,:)]; %for overlapping nodes
+                end
+            end
+
         end
 
-        ncol_adj = ncol*2;
+end
 
-        [xx,yy] = meshgrid([1:size(cmap,1)],[1:ncol_adj]);
-
-        cmap = interp2(xx([1,ceil(ncol_adj/2),ncol_adj],:),yy([1,ceil(ncol_adj/2),ncol_adj],:),cmap,xx,yy);
-
+if doplt
+    figure; imagesc(1:256); colormap(cmap);
+    try
+        pthsv = pthauto(suffix='cmap.png', usetime=1, usefun=1);
+        saveas( gcf, pthsv)
+    catch ME
+        fprintf("cannot save cmap demo figure, error message is: " + ME.message + newline)
+    end
 end

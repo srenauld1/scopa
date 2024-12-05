@@ -386,7 +386,7 @@ function epochstring_all = make_epoch_string(epochinds)
 
 delim = 'e';
 epochstring_all.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '', delim});
-[~, epochstring_all.parsed] = get_epoch_number(epochstring_all.short);
+[~, epochstring_all.parsed] = epochidget(epochstring_all.short);
 
 end
 

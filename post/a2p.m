@@ -58,7 +58,7 @@ for k = 1:numel(oa) % loop over recordings
                 usefbl=o.daq.usefbl, ...
                 usefbf=o.daq.usefbf);
             [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
-            [md.epochs, ts.epochinds, ts.vis] = g4epochld(ts.t, pth.epochinfo, ts.vis, pth.dirstack, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
+            [md.epochs, ts.epochinds, ts.vis] = epochld(ts.t, pth.epochinfo, ts.vis, pth.dirstack, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
             [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
         end
 
@@ -116,20 +116,6 @@ for k = 1:numel(oa) % loop over recordings
 
     % lfit(ts.ball.forvel, ts.roi.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
 
-    dvl = tsdv('circular', ts.roi.i18{1}, 0.5, 2, 1/md.volrate);
-    dvr = tsdv('circular', ts.roi.i19{1}, 0.5, 2, 1/md.volrate);
-
-
-    cmap = cmapmake(ncol=[128,128], nodes=[1 0 0; 1 1 1; 0 0 1], satfac=[1,1], method='1d');
-    hfg = figure; hax = axes(Parent=hfg); hpl = imagesc(hax, [dvl; dvr]);
-    colormap(cmap);
-    clim([-maxabs maxabs]) %zero-centered lim
-    hpl.CDataMapping = 'scaled';
-
-    %%
-
-    figure; plot(dvr); hold on; plot(dvr)
-
 
     %% bump
 
@@ -149,6 +135,8 @@ for k = 1:numel(oa) % loop over recordings
             ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.sz_crop, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
         end
     end
+
+    % gatmp
 
     %% model
 

@@ -132,7 +132,9 @@ for k = 1:length(fnin)
 
         tmp2d = resp1.(fn1{m});
 
-        assert(ndims(tmp2d)==2)
+        if ndims(tmp2d)~=2
+            error("tmps2d must be 2d")
+        end
 
         goodinds = any(tmp2d, 2) & ~any(isnan(tmp2d), 2); %so they don't affect the mean, get rid of bad rois here (all zeros or any nans); do before clustering so extraction & normalization param mapping is unaffected, for raw pixels this should do nothing
         if raw_image_input & numel(find(goodinds)) ~= size(tmp2d, 1)
@@ -143,11 +145,7 @@ for k = 1:length(fnin)
             tmp2d = tmp2d(goodinds, :);
         end
 
-        if nowt
-            roiwt_tmp = 1;
-        else
-            roiwt_tmp = roiwt(:, goodinds);
-        end
+        roiwt_tmp = roiwt(:, goodinds);
 
         if ~isempty(tmp2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
             varsz = whos('tmp2d');
