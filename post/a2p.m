@@ -152,14 +152,14 @@ for k = 1:numel(oa) % loop over recordings
     if o.mn.dopltx
         fn = fieldnames(o.pltx);
         for m = 1:numel(fn)
-            fitin.vars.resp_ind1 = ts.roi.i7{1}(1,:);
-            fitin.vars.resp_ind2 = ts.roi.i7{1}(2,:);
-            fitin.vars.resp_ind3 = ts.roi.i7{1}(3,:);
-            fitin.vars.resp_ind4 = ts.roi.i7{1}(4,:);
-            fitin.vars.resp_ind5 = ts.roi.i7{1}(5,:);
-            fitin.vars.resp_ind6 = ts.roi.i7{1}(6,:);
-            fitin.vars.resp_ind7 = ts.roi.i7{1}(7,:);
-            fitin.vars.resp_ind8 = ts.roi.i7{1}(8,:);
+            fitin.vars.resp_ind1 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind2 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind3 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind4 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind5 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind6 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind7 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind8 = ts.roi.i22{1}(1,:);
 
             fitin.vnm.resp_ind1{1} = '';
             fitin.vnm.resp_ind2{1} = '';
@@ -173,13 +173,14 @@ for k = 1:numel(oa) % loop over recordings
             o.pltx.vpmap.r = o.pltx.vpmapr;
             fitin.pthpre = [pth.prefix 'fool'];
             fitin.fn_save_prefix_short = fitin.pthpre;
-            pthroiint = '~/stacks/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_i7_roi_inter.mat';
+            pthroiint = '~/stacks/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_i22_roi_inter.mat';
             zstartsub = 0;
             nrm='f';
+            o.pltx.epochinds = [];
             pltx(stack, fitin.vars, o.pltx.doui,  ...
                 fitin.vnm, o.pltx.vpmap, o.pltx.epochinds, ...
                 o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
-                o.pltx.plot_z_as_color, roidat.i7{1}, ts.t, md.sampper, zstartsub, ...
+                o.pltx.plot_z_as_color, roidat.i22{1}, ts.t, md.sampper, zstartsub, ...
                 ts.epochinds, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
                 o.pltx.dr, fitin.fn_save_prefix_short, fitin.pthpre, ...
                 pthroiint, nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)

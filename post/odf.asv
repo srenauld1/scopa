@@ -153,7 +153,6 @@ end
 
 fields_with_no_direct_user_input = {'copybin', 'id', 'filled', 'nestvalid'};
 
-structhold = struct;
 for k = 1:numel(fields_with_no_direct_user_input)
     if isfield(oin, fields_with_no_direct_user_input{k}) %id is the one field that doesn't have defaults (it holds found files info)
         structhold.(fields_with_no_direct_user_input{k}) = oin.(fields_with_no_direct_user_input{k}); %put it aside and put back below
@@ -271,10 +270,8 @@ for k = 1:numel(fields_with_no_direct_user_input)
     end
 end
 
-copybin = unique([copybinprev, copybin]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
-if ~isempty(copybin)
-    o.copybin = copybin;
-end
+o.copybin = unique([o.copybin, copybin]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
+
 
 o = structsort(o, vectype='row');
 

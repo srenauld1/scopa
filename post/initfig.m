@@ -1,20 +1,20 @@
-function hndls = initfig(opt)
+function h = initfig(opt)
 
 arguments
-    opt.hndls = struct
+    opt.h = struct
     opt.doui = 1
     opt.gifvis = 'on'
     opt.szf = 1
     opt.fontsz = 8
 end
-hndls = opt.hndls;
+h = opt.h;
 doui = opt.doui;
 gifvis = opt.gifvis;
 szf = opt.szf;
 fontsz = opt.fontsz;
 
 
-if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
+if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
 
     szftmp = figsz(szf);
     hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
@@ -37,8 +37,8 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
 
     httl = text( haxmain, 0.5, 0.998, '', 'FontSize', fontsz, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
-    hndls.hfg = hfg;
-    hndls.haxmain = haxmain;
-    hndls.httl = httl;
+    h.hfg = hfg;
+    h.haxmain = haxmain;
+    h.httl = httl;
 
 end

@@ -53,7 +53,7 @@ labsz = check_labels(labsz, varsz);
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 pthgif = [pthgif_prefix '_.gif' ];
 indpolar_prev = Inf;
-hndls = struct;
+h = struct;
 framecount = 0;
 for ei = 1:numel(epochinds_all)
 
@@ -99,11 +99,11 @@ for ei = 1:numel(epochinds_all)
 
                     if isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
                         scatter_type = 'cartesian';
-                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
+                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     if ~isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
                         scatter_type = 'polar';
-                        hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
+                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     indpolar_prev = polar_index;
 
@@ -111,7 +111,7 @@ for ei = 1:numel(epochinds_all)
                         prepvars(numlags, lagsall_xy, lagsall_z, varx, vary, varz, threshold_data, laball, z_is_empty, ...
                         plot_z_as_color, polar_index, numsamp_max, zero_lag_index, lags_to_plot, pval_siglev);
 
-                    [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, ...
+                    [h, framecount] = plotvars(h, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, ...
                         plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, ...
                         polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title);
 
@@ -524,14 +524,14 @@ end
 
 end
 
-function hndls = init_axes(hndls, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
+function h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
 dummyvec_lag = nan(numlags, 1);
 
 
-if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
+if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
 
 
     [dms,arat] = pxscreenget();
@@ -658,19 +658,19 @@ if ~isfield(hndls, 'hfg') %if no figure has been initialized yet, initialize the
 
     %%%%%%%%%%%% ASSIGN HANDLES TO OUTPUT STRUCT %%%%%%%%%%%%
 
-    hndls.hfg = hfg;
-    hndls.htx = htx;
-    hndls.haxbr = haxbr;
-    hndls.haxts = haxts;
-    hndls.hplbr = hplbr;
-    hndls.hplbrln = hplbrln;
-    hndls.hplts1 = hplts1;
-    hndls.hplts2 = hplts2;
-    hndls.hpltsln = hpltsln;
-    hndls.haxfov = haxfov;
-    hndls.hplfov = hplfov;
-    hndls.hplfovlnx = hplfovlnx;
-    hndls.hplfovlny = hplfovlny;
+    h.hfg = hfg;
+    h.htx = htx;
+    h.haxbr = haxbr;
+    h.haxts = haxts;
+    h.hplbr = hplbr;
+    h.hplbrln = hplbrln;
+    h.hplts1 = hplts1;
+    h.hplts2 = hplts2;
+    h.hpltsln = hpltsln;
+    h.haxfov = haxfov;
+    h.hplfov = hplfov;
+    h.hplfovlnx = hplfovlnx;
+    h.hplfovlny = hplfovlny;
 
 end
 
@@ -690,14 +690,14 @@ switch scatter_type
 
     case 'cartesian'
 
-        if isfield(hndls, 'haxscp')
-            delete(hndls.haxscp)
-            delete(hndls.hplscp1)
-            delete(hndls.hplscp2)
-            delete(hndls.hpllnp)
+        if isfield(h, 'haxscp')
+            delete(h.haxscp)
+            delete(h.hplscp1)
+            delete(h.hplscp2)
+            delete(h.hpllnp)
         end
 
-        haxscc = axes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        haxscc = axes( 'Parent', h.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
         haxscc.InnerPosition(1) = ax(sector_ind).x(spind);
         haxscc.InnerPosition(2) = ax(sector_ind).y(spind);
         haxscc.InnerPosition(3) = minextent; %do this rather than plotBoxAspectRatio to ensure shorter axis is used
@@ -720,18 +720,18 @@ switch scatter_type
 
         hold(haxscc, 'off')
 
-        hndls.haxscc = haxscc;
-        hndls.hplscc = hplscc;
+        h.haxscc = haxscc;
+        h.hplscc = hplscc;
 
 
     case 'polar'
 
-        if isfield(hndls, 'haxscc')
-            delete(hndls.haxscc)
-            delete(hndls.hplscc)
+        if isfield(h, 'haxscc')
+            delete(h.haxscc)
+            delete(h.hplscc)
         end
 
-        haxscp = polaraxes( 'Parent', hndls.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        haxscp = polaraxes( 'Parent', h.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
         haxscp.InnerPosition(1) = ax(sector_ind).x(spind);
         haxscp.InnerPosition(2) = ax(sector_ind).y(spind);
         haxscp.InnerPosition(3) = minextent;
@@ -764,10 +764,10 @@ switch scatter_type
 
         hold(haxscp, 'off')
 
-        hndls.haxscp = haxscp;
-        hndls.hplscp1 = hplscp1;
-        hndls.hplscp2 = hplscp2;
-        hndls.hpllnp = hpllnp;
+        h.haxscp = haxscp;
+        h.hplscp1 = hplscp1;
+        h.hplscp2 = hplscp2;
+        h.hpllnp = hpllnp;
 
 
 end
@@ -891,10 +891,10 @@ end
 
 
 
-function [hndls, framecount] = plotvars(hndls, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title)
+function [h, framecount] = plotvars(h, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title)
 
 
-hndls.htx.String = figure_title;
+h.htx.String = figure_title;
 
 if strcmp(gif_scope, 'eachvar')
     framecount = 0;
@@ -904,106 +904,106 @@ for lagind = laginds_to_plot
 
     if isempty(polar_index)
 
-        hndls.hplscc.XData = plotx{lagind};
-        hndls.hplscc.YData = ploty{lagind};
-        hndls.hplscc.CData = cmp{lagind};
+        h.hplscc.XData = plotx{lagind};
+        h.hplscc.YData = ploty{lagind};
+        h.hplscc.CData = cmp{lagind};
         if ~plot_z_as_color
-            hndls.hplscc.ZData = plotz{lagind};
+            h.hplscc.ZData = plotz{lagind};
         end
 
-        hndls.haxscc.XLabel.String = ['\color{blue} ' labx];
-        hndls.haxscc.YLabel.String = ['\color{red} ' laby];
-        % hndls.haxscc.ZLabel.String = labz;
+        h.haxscc.XLabel.String = ['\color{blue} ' labx];
+        h.haxscc.YLabel.String = ['\color{red} ' laby];
+        % h.haxscc.ZLabel.String = labz;
 
     else
 
         if polar_index==1
-            hndls.hplscp1.ThetaData = plotx{lagind};
-            hndls.hplscp1.RData = ploty{lagind};
-            hndls.hplscp1.CData = cmp{lagind};
+            h.hplscp1.ThetaData = plotx{lagind};
+            h.hplscp1.RData = ploty{lagind};
+            h.hplscp1.CData = cmp{lagind};
         elseif polar_index==2
-            hndls.hplscp1.ThetaData = ploty{lagind};
-            hndls.hplscp1.RData = plotx{lagind};
-            hndls.hplscp1.CData = cmp{lagind};
+            h.hplscp1.ThetaData = ploty{lagind};
+            h.hplscp1.RData = plotx{lagind};
+            h.hplscp1.CData = cmp{lagind};
         elseif isequal(polar_index, [1 2])
-            hndls.hplscp1.ThetaData = plotx{lagind};
-            hndls.hplscp1.RData = r_dummy1{lagind};
-            hndls.hplscp2.ThetaData = ploty{lagind};
-            hndls.hplscp2.RData = r_dummy2{lagind};
+            h.hplscp1.ThetaData = plotx{lagind};
+            h.hplscp1.RData = r_dummy1{lagind};
+            h.hplscp2.ThetaData = ploty{lagind};
+            h.hplscp2.RData = r_dummy2{lagind};
         end
 
         % if numel(laby)>maxlablength
         %     labt = cat(2, labt(1:maxlablength), '\newline', labt(maxlablength+1:end)))
         % end
-        hndls.haxscp.ThetaAxis.Label.String = ['\color{blue} Theta:' labt];
-        hndls.haxscp.RAxis.Label.String = ['\color{red} Rho: ' labr];
+        h.haxscp.ThetaAxis.Label.String = ['\color{blue} Theta:' labt];
+        h.haxscp.RAxis.Label.String = ['\color{red} Rho: ' labr];
         if strcmp(ylim_constancy, 'eachvar')
-            hndls.haxscp.RLim = lims.y.eachxtra(yi,:);
-            hndls.haxscp.RTick = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
-            hndls.haxscp.RTickLabel = [];
-            % for tti = 1:numel(hndls.haxscp.RTick)
-            %     hndls.haxscp.RTickLabel{tti} = num2str(hndls.haxscp.RTick(tti), 4);%'%.2g'
+            h.haxscp.RLim = lims.y.eachxtra(yi,:);
+            h.haxscp.RTick = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
+            h.haxscp.RTickLabel = [];
+            % for tti = 1:numel(h.haxscp.RTick)
+            %     h.haxscp.RTickLabel{tti} = num2str(h.haxscp.RTick(tti), 4);%'%.2g'
             % end
         end
 
         if isempty(regexp(labt, ' CUE yaw'))
-            hndls.hpllnp.LineStyle = 'none';
+            h.hpllnp.LineStyle = 'none';
         else
-            hndls.hpllnp.RData = [lims.y.each(yi,2) lims.y.eachxtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
-            hndls.hpllnp.LineStyle = '-';
+            h.hpllnp.RData = [lims.y.each(yi,2) lims.y.eachxtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
+            h.hpllnp.LineStyle = '-';
         end
 
     end
 
 
-    hndls.haxbr.Title.String = ['LAGS (CURR: ' sprintf('%.2g', actual_lags_xy_sec(lagind)) ' SEC)']; 
-    hndls.hplbr.FaceColor = 'flat';
-    hndls.hplbr.XData = actual_lags_xy_sec;
-    hndls.hplbr.YData = ccr;
-    hndls.hplbr.CData = repmat([0 0 1], numel(pval_norm), 1);
-    hndls.hplbr.CData(:,1) = pval_norm;
-    hndls.hplbr.CData(:,2) = pval_norm;
+    h.haxbr.Title.String = ['LAGS (CURR: ' sprintf('%.2g', actual_lags_xy_sec(lagind)) ' SEC)']; 
+    h.hplbr.FaceColor = 'flat';
+    h.hplbr.XData = actual_lags_xy_sec;
+    h.hplbr.YData = ccr;
+    h.hplbr.CData = repmat([0 0 1], numel(pval_norm), 1);
+    h.hplbr.CData(:,1) = pval_norm;
+    h.hplbr.CData(:,2) = pval_norm;
 
-    hndls.hplbrln.Value = actual_lags_xy_sec(lagind);
+    h.hplbrln.Value = actual_lags_xy_sec(lagind);
 
-    hndls.hplts1.YData = plotx{lagind};
-    hndls.hplts2.YData = ploty{lagind};
-    hndls.haxts.XLabel.String = ['\color{blue} ' labx '    \color{red}' laby];
+    h.hplts1.YData = plotx{lagind};
+    h.hplts2.YData = ploty{lagind};
+    h.haxts.XLabel.String = ['\color{blue} ' labx '    \color{red}' laby];
     if strcmp(ylim_constancy, 'eachvar')
-        hndls.haxts.YAxis(1).Limits = lims.x.eachxtra(xi,:);
-        hndls.haxts.YAxis(2).Limits = lims.y.eachxtra(yi,:);
-        hndls.haxts.YAxis(1).TickValues = sort([0, lims.x.each(xi,1), lims.x.each(xi,2)]);
-        hndls.haxts.YAxis(2).TickValues = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
-        hndls.haxts.YAxis(1).TickLabels = [];
-        hndls.haxts.YAxis(2).TickLabels = [];
-        for tti = 1:numel(hndls.haxts.YAxis(2).TickValues)
-            hndls.haxts.YAxis(1).TickLabels{tti} = num2str(hndls.haxts.YAxis(1).TickValues(tti), 4);%'%.2g'
-            hndls.haxts.YAxis(2).TickLabels{tti} = num2str(hndls.haxts.YAxis(2).TickValues(tti), 4);%'%.2g'
+        h.haxts.YAxis(1).Limits = lims.x.eachxtra(xi,:);
+        h.haxts.YAxis(2).Limits = lims.y.eachxtra(yi,:);
+        h.haxts.YAxis(1).TickValues = sort([0, lims.x.each(xi,1), lims.x.each(xi,2)]);
+        h.haxts.YAxis(2).TickValues = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
+        h.haxts.YAxis(1).TickLabels = [];
+        h.haxts.YAxis(2).TickLabels = [];
+        for tti = 1:numel(h.haxts.YAxis(2).TickValues)
+            h.haxts.YAxis(1).TickLabels{tti} = num2str(h.haxts.YAxis(1).TickValues(tti), 4);%'%.2g'
+            h.haxts.YAxis(2).TickLabels{tti} = num2str(h.haxts.YAxis(2).TickValues(tti), 4);%'%.2g'
         end
     end
 
     if roi_index
 
-        for spind = 1:numel(hndls.hplfov)
+        for spind = 1:numel(h.hplfov)
 
             if strcmp(roi_type, 'rois') %roi_type pixels image never changes
-                hndls.hplfov{spind}.CData = squeeze(stack(:,:,spind,:,roi_index));
+                h.hplfov{spind}.CData = squeeze(stack(:,:,spind,:,roi_index));
             end
 
             if spind==crosshair{roi_index}(3)
-                hndls.hplfovlny{spind}.Value = crosshair{roi_index}(1);
-                hndls.hplfovlnx{spind}.Value = crosshair{roi_index}(2);
-                hndls.hplfovlny{spind}.LineStyle = '-';
-                hndls.hplfovlnx{spind}.LineStyle = '-';
+                h.hplfovlny{spind}.Value = crosshair{roi_index}(1);
+                h.hplfovlnx{spind}.Value = crosshair{roi_index}(2);
+                h.hplfovlny{spind}.LineStyle = '-';
+                h.hplfovlnx{spind}.LineStyle = '-';
             else
-                hndls.hplfovlny{spind}.LineStyle = 'none';
-                hndls.hplfovlnx{spind}.LineStyle = 'none';
+                h.hplfovlny{spind}.LineStyle = 'none';
+                h.hplfovlnx{spind}.LineStyle = 'none';
             end
         end
 
     end
 
-    fig2gif(hndls.hfg, framecount, pthgif)
+    fig2gif(h.hfg, framecount, pthgif)
 
 end
 

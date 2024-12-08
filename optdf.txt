@@ -191,9 +191,9 @@
       "hires"
     ],
     "pltvis": 1,
-    "timestr": "2024120217261950"
+    "timestr": "2024120712425171"
   },
-  "nest": [
+  "nestvalid": [
     "spec",
     "mn",
     "daq",

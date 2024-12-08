@@ -1,4 +1,4 @@
-function [cb, ttl] = pltexp_process_callbacks(cb, hndls, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_in, sampinc_in)
+function [cb, ttl] = pltexp_process_callbacks(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_in, sampinc_in)
 
 
 % valid sequences:
@@ -54,27 +54,27 @@ plot_buttons = {'return'};
 init_buttons = {'v', 'm',  't'};
 save_buttons = {'n', 'a', 'c', 'd'};
 
-if ~isempty( hndls.hfg.UserData) && ~isempty(hndls.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), hndls.st.hol))
+if ~isempty( h.hfg.UserData) && ~isempty(h.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), h.st.hol))
     error("multiple callback buttons recorded; should only be one at a time")
 end
 
-if numel(find(~cellfun(@(x) isempty(x.UserData), hndls.st.hol)))>1
+if numel(find(~cellfun(@(x) isempty(x.UserData), h.st.hol)))>1
     error("multiple images have callback data; should only be one at a time")
 end
 
 
-user_input = hndls.hfg.UserData;
-hndls.hfg.UserData = [];
+user_input = h.hfg.UserData;
+h.hfg.UserData = [];
 
 if isempty(user_input)
-    user_input = hndls.ts.hax{1}.UserData;
-    hndls.ts.hax{1}.UserData = [];
+    user_input = h.ts.hax{1}.UserData;
+    h.ts.hax{1}.UserData = [];
 end
 
 if isempty(user_input)
-    for j = 1:numel(hndls.st.hol)
-        user_input = hndls.st.hol{j}.UserData;
-        hndls.st.hol{j}.UserData = [];
+    for j = 1:numel(h.st.hol)
+        user_input = h.st.hol{j}.UserData;
+        h.st.hol{j}.UserData = [];
         if ~isempty(user_input)
             user_input = [user_input j];
             vidflag = 0;
@@ -86,15 +86,15 @@ end
 
 
 if isempty(user_input)
-    user_input = hndls.vid.hol{1}.UserData;
-    hndls.vid.hol{1}.UserData = [];
+    user_input = h.vid.hol{1}.UserData;
+    h.vid.hol{1}.UserData = [];
     if ~isempty(user_input)
         vidflag = 1;
     end
 end
 
 numvar = size(varsz,1);
-numplane = numel(hndls.st.hol);
+numplane = numel(h.st.hol);
 numchan = max(varsz(:, 3));
 
 if isempty(val_varalpha)

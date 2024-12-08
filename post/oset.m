@@ -162,7 +162,7 @@ for k = 1:numel(o)
                 end
             end
 
-            o(k) = odf(o(k), {'roi'}, regionex{m}, files=2); %use files=2 to keep id field untouched (keep found files)
+            o(k) = odf(o(k), {'roi'}, regionex{m}); 
 
     end
 

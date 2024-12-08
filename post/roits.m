@@ -145,7 +145,11 @@ for k = 1:length(fnin)
             tmp2d = tmp2d(goodinds, :);
         end
 
-        roiwt_tmp = roiwt(:, goodinds);
+        if nowt
+            roiwt_tmp = 1;
+        else
+            roiwt_tmp = roiwt(:, goodinds);
+        end
 
         if ~isempty(tmp2d) %some normalizations will be empty (like dff when F0 is too low, divides by zero)
             varsz = whos('tmp2d');

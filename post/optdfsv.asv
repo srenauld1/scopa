@@ -11,7 +11,7 @@ end
 
 d.copybin = ""; %these do not require defaults, they get added to options struct during its creation to mark creation state
 
-d.nest = [ % all vbins (first line) and nested vbins (2nd line) currently supported; options struct will make sure all of these are populated before existing oset 
+d.nestvalid = [ % all vbins (first line) and nested vbins (2nd line) currently supported; options struct will make sure all of these are populated before existing oset 
     "spec", "mn", "daq", "sld", "ftv", "roi", "hires", "pop", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg", "bump"
     "sld.sp", 
     "roi.mm", "roi.ma", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv",    

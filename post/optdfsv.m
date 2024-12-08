@@ -1,4 +1,7 @@
 function optdfsv(pthopt)
+ 
+% default options for a2p
+% running optdfsv writes all options to txt file in scopa using jsonencode (written to file to encourage stability)  
 
 arguments
     pthopt = []
@@ -9,10 +12,13 @@ if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
 
-d.copybin = ""; %these do not require defaults, they get added to options struct during its creation to mark creation state
+
+%% meta (these fields do not allow user input; they get created/modified while creating options struct)
+
+d.copybin = ""; 
 d.filled = 0;
 d.id = [];
-d.nest = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported; options struct will make sure all of these are populated before existing oset 
+d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported; options struct will make sure all of these are populated before existing oset 
     "spec", "mn", "daq", "sld", "ftv", "roi", "hires", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
     "mf.tg", "mf.sp", "mf.tp", ...
