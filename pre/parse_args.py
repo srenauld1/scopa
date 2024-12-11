@@ -272,17 +272,17 @@ def parse_command_line():
     do_extract = int(0)
     do_remove = int(0)
     do_a2p = int(0)
-    if jobnm=='mcp':
+    if jobnm==['mcp']:
         do_register = int(1)
-    elif jobnm=='dnp':
+    elif jobnm==['dnp']:
         do_denoise = int(1)
-    elif jobnm=='stc':
+    elif jobnm==['stc']:
         do_stitch = int(1)
-    elif jobnm=='exp':
+    elif jobnm==['exp']:
         do_extract = int(1)
-    elif jobnm=='rsc':
+    elif jobnm==['rsc']:
         do_remove = int(1)
-    elif jobnm=='a2p':
+    elif jobnm==['a2p']:
         do_a2p = int(1)
 
     ############## PRINT ALL THE ARGUMENTS ##############
