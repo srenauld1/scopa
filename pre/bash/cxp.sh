@@ -88,9 +88,9 @@ REGIONEX=('fullfov')
 USE_CLUSTER=(0) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in ppl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 
 
-############ SET PARAMS FOR RESOURCE REQUEST MANUALLY IF do_autoallo=0, OTHERWISE IT IS AUTOMATIC) ############
+############ SET PARAMS FOR RESOURCE REQUEST MANUALLY IF do_autoallocate=0, OTHERWISE IT IS AUTOMATIC) ############
 
-if [ "$do_autoallo" == 0 ]; then
+if [ "$do_autoallocate" == 0 ]; then
     
     ############ SET PARAMS FOR ALL JOBS EXCEPT DENOISING (THESE DO NOT USE GPU) ############
 
