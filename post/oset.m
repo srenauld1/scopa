@@ -28,6 +28,7 @@ otmp = odf(otmp, files=files); %find files (if files=1), add them to struct o
 
 recs_ganopb = {'202306', '20241208_2'};
 recs_ganoeb = {'202311', '202411', '20241207'};
+recs_fb8c = {'20241209'};
 recs_t5 = {'2211'};
 
 for k = 1:numel(otmp) %loop over found files, setting options depending on recording
@@ -40,6 +41,10 @@ for k = 1:numel(otmp) %loop over found files, setting options depending on recor
 
         o(k) = oset_ganopb(otmp(k));
 
+    elseif contains(otmp(k).id.pthstack, recs_fb8c)
+
+        o(k) = oset_fb8c(otmp(k));
+    
     elseif contains(otmp(k).id.pthstack, recs_t5)
 
         o(k) = oset_t5(otmp(k));
