@@ -329,7 +329,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                     mem_per_cpu_str=$mem_per_cpu_remove
                 elif [ "$JOBNM" == a2p ]; then  #do_a2p
                     partition_str=short #use transfer partition if do_copyfiles==1 or 2
-                    time_str=$mem_per_cpu_a2p
+                    time_str=$time_a2p
                     ntasks_str=1
                     cpus_per_task_str=$cpu_per_task_a2p
                     mem_per_cpu_str=$mem_per_cpu_a2p

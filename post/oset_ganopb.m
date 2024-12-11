@@ -14,7 +14,7 @@ o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but
 o.daq.use_carls_epochs = 1;
 if str2double(o.id.recdate)<20231100
     o.daq.slopelensec = 0.8;
-    fprintf("WARNING THIS IS A LOW VOLRATE RECORDING, SLOPELENSEC IS 0.8 SEC")
+    fprintf("WARNING THIS IS A LOW VOLRATE RECORDING, SLOPELENSEC IS 0.8 SEC" + newline)
 end
 
 o = odf(o);
