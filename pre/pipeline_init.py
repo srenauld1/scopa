@@ -49,11 +49,6 @@ if len(sys.argv)>1: #if in noninteractive mode (running cxp), read in arguments 
                       do_a2p, first_job] = parse_command_line()
 
 
-print('tesit')
-print(clip)
-print(clip[0]+1)
-fool=groul
-
 [pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
