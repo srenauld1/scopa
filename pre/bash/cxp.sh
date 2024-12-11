@@ -49,9 +49,9 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20241123')
+RECDATE=('20241209')
 FLY=('*')
-TRIAL=('5')
+TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
@@ -65,8 +65,8 @@ CHAN_PRIMARY_WHEN_TWO_REG=(2) #1 or 2; one indexed; this is ignored if data has 
 REGISTER_IN_2D=(0) #register each z slice independently
 HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
 MAX_SHIFTS_PRC=(15 15 15) #xyz percentages; 0 will be made 1 pixel; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
-SMLENPX_MCP=(5 5 0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
-CLIPINTERP=(1)
+SMLENPX_MCP=(0 0 0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
+CLIPINTERP=(1) #clip intensity to remain in original data range (interpolation can smear the histogram, sometimes significantly, which can reduce data contrast, ie dff)
 REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
 CHAN_DN=('all') #'all', '1', or '2'; refers to the index in the output stack from registration (suffix *cmrg_.tif), so if you discarded channel 1 in registration the output cmrg will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_cmrg*.tif exists)
@@ -85,7 +85,7 @@ METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
 
-USE_CLUSTER=(1) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pipeline_init.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
+USE_CLUSTER=(0) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pipeline_init.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 
 
 ############ SET PARAMS FOR RESOURCE REQUEST MANUALLY IF do_autoallo=0, OTHERWISE IT IS AUTOMATIC) ############
@@ -99,7 +99,7 @@ if [ "$do_autoallo" == 0 ]; then
     time_copyfiles=00:10:00
 
     cpu_per_task_register=1
-    mem_per_cpu_register=10G
+    mem_per_cpu_register=20G
     time_register=0:30:00
 
     cpu_per_task_stitch=1
@@ -123,7 +123,7 @@ if [ "$do_autoallo" == 0 ]; then
     cpu_per_task_denoise=1
     mem_per_cpu_denoise=15G
 
-    gpustr=a100_80 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
+    gpustr=rtx6000_24 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
     if [ "$gpustr" == a100_80 ]; then 
         gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
@@ -144,7 +144,7 @@ if [ "$do_autoallo" == 0 ]; then
     elif [ "$gpustr" == rtx6000_24 ]; then 
         gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
         gpu_partition=gpu_requeue
-        time_denoise=5:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+        time_denoise=7:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
     elif [ "$gpustr" == m40_12 ]; then 
         gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision), there's also one on gpu partition (also 24 gb, double precision), where it's the 2nd fastest, but running on gpu_requeue is preferred method on scopa
         gpu_partition=gpu_requeue
