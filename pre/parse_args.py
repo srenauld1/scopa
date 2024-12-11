@@ -256,7 +256,6 @@ def parse_command_line():
     epoch_choose_denoise = [int(tmp) for tmp in epoch_choose_denoise] #make sure int
     
     smlenpx_rsc = float(args.smlenpx_rsc[0])
-    do_crop_only = int(args.do_crop_only[0])
     extract_in_2d = int(args.extract_in_2d[0])
 
     if isinstance(args.regionex[0], list):
@@ -304,7 +303,7 @@ def parse_command_line():
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, smlenpx_rsc, use_scannoise_removed, 
-                      do_crop_only, do_extract, methodex, extract_in_2d, regionex, 
+                      do_extract, methodex, extract_in_2d, regionex, 
                       do_a2p, first_job)
 
 
