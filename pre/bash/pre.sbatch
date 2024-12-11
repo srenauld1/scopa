@@ -22,7 +22,7 @@ if [ "$DO_COPYFILES" == 0 ]; then  #load virtual env if not copying files from w
     elif [ "$JOBNM" == alo ] || [ "$JOBNM" == mcp ] || [ "$JOBNM" == exp ] || [ "$JOBNM" == stc ]; then #auto-allocate (doesn't actually need caiman but this will work) or caiman registration or extraction (stitch should not need it but maybe still does bc of an error?)
         eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
         conda activate caiman #should not have to activate caiman for do_stitch but ffmpeg does not work when i remove this; should fix this but doens't really matter
-    elif [ "$JOBNM" == rsc ] || [ "$JOBNM" == a2p ] #matlab engine
+    elif [ "$JOBNM" == rsc ] || [ "$JOBNM" == a2p ]; then #matlab engine
         source /n/data1/hms/neurobio/wilson/mle/bin/activate
     fi
 else  #no need to load any virtual environment for copying files
@@ -35,7 +35,7 @@ if [ "$JOBNM" == dnp ]; then #deepcad denoising
     pydir=/n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad/bin/python3
 elif [ "$JOBNM" == alo ] || [ "$JOBNM" == mcp ] || [ "$JOBNM" == exp ] || [ "$JOBNM" == stc ]; then #auto-allocate (doesn't actually need caiman but this will work) or caiman registration or extraction (stitch should not need it but maybe still does bc of an error?)
     pydir=/n/data1/hms/neurobio/wilson/miniforge3/envs/caiman/bin/python3
-elif [ "$JOBNM" == rsc ] || [ "$JOBNM" == a2p ] #matlab engine
+elif [ "$JOBNM" == rsc ] || [ "$JOBNM" == a2p ]; then #matlab engine
     pydir=/n/data1/hms/neurobio/wilson/mle/bin/python3
 fi
 
