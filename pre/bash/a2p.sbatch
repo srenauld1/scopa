@@ -16,7 +16,7 @@ fi
 --pth_parsfile "$PTH_PARSFILE" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \
---do_analysis 1 \
+--do_a2p 1 \
 --recording_index $SLURM_ARRAY_TASK_ID &
 
 wait

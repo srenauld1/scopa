@@ -1,15 +1,15 @@
 
 % see docs_a2p
 
-function a2p(recin)
+function a2p(specin)
 
 arguments
-    recin = [] %optional; full path to recording (char or cell, wildcards allowed matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see recin in oset and odf); if missing or empty, recording(s) found in oset
+    specin = [] %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset
 end
 
 clear glb %clear globals
 
-oa = oset(recin); % set options; oa stands for o all (ie all recordings)
+oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 
 for k = 1:numel(oa) % loop over recordings
 

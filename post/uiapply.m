@@ -111,7 +111,7 @@ else
 
 
     otmp.roi.nrm.post = {'f'};
-    otmp = odf(otmp,'roi'); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function; use 'nofile' option to skip the file searching because all we need is the roi substruct
+    otmp = odf(otmp,'roi', files=0); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function;
     otmp = otmp.roi;% otmp.roi.nrm.wavp = [0.3 0.6];
 
     [resp, roidat_new] = roimake(stack, ti, sampper, widyxz, [], [], glb('dirstack'), [], pth_roim_interactive, [], [], otmp, roimaskman); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options

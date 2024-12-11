@@ -127,7 +127,7 @@ and for example, the following is valid input file on O2 (if you're not using do
 for running the pipeline in interactive mode . . . 
         entry point is pipeline_init.py for 'pre' pipeline (input raw imaging tif)
                 you can run on your local machine (e.g. in vscode), or on O2Portal (e.g., in vscode)
-                adjust input params in file default_params_interactive.py
+                adjust input params in file optdfpre.py
         entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
         if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 
@@ -485,6 +485,16 @@ pip install scanimage-tiff-reader
 cd /n/data1/hms/neurobio/wilson
 git clone https://github.com/wienecke/scopa.git
 
+
+############################## USE CLUSTER IN CAIMAN ######################################
+
+# cluster_backend = 'ipyparallel' has not worked running non-interactive jobs on O2, but cluster_backend = 'multiprocessing' does work'
+# caiman's note on starting cluster for ipynb
+        # The default backend mode for parallel processing is through the multiprocessing package. 
+        # To make sure that this package is viewable from everywhere before starting the notebook 
+        # these commands need to be executed from the terminal (in Linux and Windows):
+        # export MKL_NUM_THREADS=1 
+        # export OPENBLAS_NUM_THREADS=1 
 
 
 ############################## GPUS ######################################

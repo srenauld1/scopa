@@ -402,7 +402,7 @@ d.tp.timeseries_numsegments = 3; %how many equispaced segments to display in set
 
 %% sp (stackplt: plot stack with various viewing options)
 
-d.sp.it = [50.3];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
+d.sp.it = [-100];%t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments (where segments are equidistant, if possible)
 d.sp.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 d.sp.ir = []; %scalar/vector; which rois to plot in ; empty to skip
 d.sp.roi_color = [1, 0, 0]; %color for rois, if shown

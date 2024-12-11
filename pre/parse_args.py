@@ -30,241 +30,85 @@ class parse_pars_file():
     #     return args
 
 
-def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
-                      recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc,   
-                      do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
-                      use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, smlenpx_rsc, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, 
-                      do_analysis, first_job):
+def parse_command_line():
     
+    ############## SET UP COMMAND LINE PARSER (ONLY A HANDFUL GET PASSED AS CL ARGS, THE REST ARE READ FROM PARSFILE) ##############
+
     CLI=argparse.ArgumentParser()
 
     CLI.add_argument(
-        "--pth_parsfile",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=str,
-        default=[pth_parsfile],  # default if nothing is provided
+        "--first_job",  # name on the CLI - drop the `--` for positional/required parameters
+        nargs=1,  
+        type=int,
+        #default=[first_job],  # default if nothing is provided
     )
-    CLI.add_argument(
-        "--scopatmpdir",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=str,
-        default=[scopatmpdir],  # default if nothing is provided
-    )
+
     CLI.add_argument(
         "--do_copyfiles",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[do_copyfiles],  # default if nothing is provided
+        #default=[do_copyfiles],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--fnind_fn_prefix",  # name on the CLI - drop the `--` for positional/required parameters
+        "--jobnm",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[fnind_fn_prefix],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--folder_with_all_recordings_on_storage_and_compute_filesystems",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=str,
-        default=[folder_with_all_recordings_on_storage_and_compute_filesystems],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--pth_storage_prefix",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=str,
-        default=[pth_storage_prefix],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--regionex",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*",  # 0 or more values expected => creates a list
-        type=str,
-        default=[regionex],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--halfwidth_window_bgsub",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[halfwidth_window_bgsub],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--registration_template_group_id",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[registration_template_group_id],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_register",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_register],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--register_in_2d",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[register_in_2d],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--smlenpx_mcp",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=float,
-        default=[smlenpx_mcp],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--max_shifts_prc",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=float,
-        default=[max_shifts_prc],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_denoise",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_denoise],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_stitch",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_stitch],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--denoise_volume",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[denoise_volume],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--denoise_slice_index",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[denoise_slice_index],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--num_epochs_denoise",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[num_epochs_denoise],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--epoch_choose_denoise",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[epoch_choose_denoise],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_remove",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_remove],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--smlenpx_rsc",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=float,
-        default=[smlenpx_rsc],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_crop_only",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_crop_only],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_extract",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1, 
-        type=int,
-        default=[do_extract],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--extract_in_2d",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[extract_in_2d],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--use_background_subtracted",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[use_background_subtracted],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--use_denoised",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[use_denoised],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--use_scannoise_removed",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[use_scannoise_removed],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--recdate",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[recdate],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--fly",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[fly],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--trial",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[trial],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--folder_substring",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs="*", 
-        type=str,
-        default=[folder_substring],  # default if nothing is provided
+        #default=[jobnm],  # default if nothing is provided
     )
     CLI.add_argument(
         "--recording_index",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
         type=str,
-        default=[recording_index],  # default if nothing is provided
+        #default=[recording_index],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--file_matching_style",  # name on the CLI - drop the `--` for positional/required parameters
+        "--pth_parsfile",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=str,
-        default=[file_matching_style],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--do_analysis",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[do_analysis],  # default if nothing is provided
-    )
-    CLI.add_argument(
-        "--first_job",  # name on the CLI - drop the `--` for positional/required parameters
-        nargs=1,  
-        type=int,
-        default=[first_job],  # default if nothing is provided
+        #default=[pth_parsfile],  # default if nothing is provided
     )
 
-    args = CLI.parse_args()
+
+
+    ############## READ PARAMETERS FROM COMMAND LINE ##############
+
+    args = CLI.parse_args() #COMMAND LINE ARGUMENT PASSED, IT IS USED, OTHERWISE THE DEFAULT IS USED (BUT CURRENTLY THERE ARE NO DEFAULTS SPECIFIED ANYWHERE, THAT IS, EVERYTHING IS IN CXP, PASSED EITHER AS COMMAND LINE ARGUMENT OR IN THE PARAMS FILE)
+
+    first_job = int(args.first_job[0])
+    do_copyfiles = int(args.do_copyfiles[0])
+    
+    if isinstance(args.jobnm[0], list):
+        jobnm = args.jobnm[0] #keep as list
+    else:
+        jobnm = args.jobnm #keep as list
+
+    if isinstance(args.recording_index[0], list):
+        recording_index = args.recording_index[0] #keep as list
+    else:
+        recording_index = args.recording_index #keep as list
+    if recording_index != ['all']:
+        recording_index = [int(tmp) for tmp in recording_index] #convert to int if not 'all'
 
     pth_parsfile = args.pth_parsfile[0]
+
+
+    ############## READ PARAMETERS FILE (parsfile) FOR ARGUMENTS ##############
 
     if pth_parsfile: #additional option to read input from file written in bash script, should come after command line arguments 
         
         pars = parse_pars_file(pth_parsfile) #have to do it this way for exec to create a local variable 
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
-        
         ##args.__dict__ = pars.__dict__.copy() #untested . . .  try this to overwrite new args, need to make them lowercase programmatically first, perhaps in the exec call above 
 
         #vars not written to pars are: the main do* args, and recording_index
+
+        args.scopatmplt = pars.scopatmplt
+        args.clip = pars.clip
+        args.discard_channel_reg = pars.discard_channel_reg
+        args.chan_primary_when_two_reg = pars.chan_primary_when_two_reg
+        args.clipinterp = pars.clipinterp
+        args.chan_dn = pars.chan_dn
+        args.methodex = pars.methodex
 
         args.folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS
         args.pth_storage_prefix = pars.PTH_STORAGE_PREFIX
@@ -280,6 +124,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.halfwidth_window_bgsub = pars.HALFWIDTH_WINDOW_BGSUB
         args.smlenpx_mcp = pars.SMLENPX_MCP
         args.max_shifts_prc = pars.MAX_SHIFTS_PRC
+        args.use_cluster = pars.USE_CLUSTER
         args.denoise_volume = pars.DENOISE_VOLUME
         args.denoise_slice_index = pars.DENOISE_SLICE_INDEX
         args.num_epochs_denoise = pars.NUM_EPOCHS_DENOISE
@@ -292,11 +137,59 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.regionex = pars.REGIONEX
 
 
-    ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
-    
+    ############## MAKE SURE THERE ARE NO LIST OF LISTS, AND CONVERT SOME TO INT ##############
+
+    if isinstance(args.scopatmplt[0], list):
+        scopatmplt = args.scopatmplt[0] #keep as list
+    else:
+        scopatmplt = args.scopatmplt #keep as list
+    scopatmplt = int(scopatmplt)
+
+    if isinstance(args.chan_primary_when_two_reg[0], list):
+        chan_primary_when_two_reg = args.chan_primary_when_two_reg[0] #keep as list
+    else:
+        chan_primary_when_two_reg = args.chan_primary_when_two_reg #keep as list
+    chan_primary_when_two_reg = int(chan_primary_when_two_reg)
+
+    if isinstance(args.discard_channel_reg[0], list):
+        discard_channel_reg = args.discard_channel_reg[0] #keep as list
+    else:
+        discard_channel_reg = args.discard_channel_reg #keep as list
+    if discard_channel_reg == ['None'] or discard_channel_reg == ['none']:
+        discard_channel_reg = None
+    else:
+        discard_channel_reg = int(discard_channel_reg) #convert to int if not 'all'
+
+    if isinstance(args.clip[0], list):
+        clip = args.clip[0] #keep as list
+    else:
+        clip = args.clip #keep as list
+    clip = [float(tmp) for tmp in clip] #convert to int if not 'all'
+
+
+    if isinstance(args.clipinterp[0], list):
+        clipinterp = args.clipinterp[0] #keep as list
+    else:
+        clipinterp = args.clipinterp #keep as list
+    clipinterp = int(clipinterp)
+
+    if isinstance(args.chan_dn[0], list):
+        chan_dn = args.chan_dn[0] #keep as list
+    else:
+        chan_dn = args.chan_dn #keep as list
+    if chan_dn != ['all']:
+        chan_dn = int(chan_dn) #convert to int if not 'all'
+
+
+    if isinstance(args.methodex[0], list):
+        methodex = args.methodex[0] #keep as list
+    else:
+        methodex = args.methodex #keep as list
+
+
+
     folder_with_all_recordings_on_storage_and_compute_filesystems =  args.folder_with_all_recordings_on_storage_and_compute_filesystems[0] 
     pth_storage_prefix = args.pth_storage_prefix[0] 
-    do_copyfiles = int(args.do_copyfiles[0])
     fnind_fn_prefix = args.fnind_fn_prefix[0] 
     scopatmpdir = args.scopatmpdir[0] 
     
@@ -316,12 +209,6 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         folder_substring = args.folder_substring[0] #keep as list
     else:
         folder_substring = args.folder_substring #keep as list
-    if isinstance(args.recording_index[0], list):
-        recording_index = args.recording_index[0] #keep as list
-    else:
-        recording_index = args.recording_index #keep as list
-    if recording_index != ['all']:
-        recording_index = [int(tmp) for tmp in recording_index] #convert to int if not 'all'
 
     file_matching_style = args.file_matching_style[0] 
 
@@ -330,7 +217,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         registration_template_group_id = args.registration_template_group_id #keep as list
 
-    do_register = int(args.do_register[0])
+
     register_in_2d = int(args.register_in_2d[0])
     halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
 
@@ -346,8 +233,8 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         max_shifts_prc = args.max_shifts_prc #keep as list
     max_shifts_prc = [float(tmp) for tmp in max_shifts_prc]
 
-    do_denoise = int(args.do_denoise[0])
-    do_stitch = int(args.do_stitch[0])
+    use_cluster = int(args.use_cluster[0])
+
     denoise_volume = int(args.denoise_volume[0])
 
     if isinstance(args.denoise_slice_index[0], list):
@@ -369,10 +256,8 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         epoch_choose_denoise = args.epoch_choose_denoise #keep as list
     epoch_choose_denoise = [int(tmp) for tmp in epoch_choose_denoise] #make sure int
     
-    do_remove = int(args.do_remove[0])
     smlenpx_rsc = float(args.smlenpx_rsc[0])
     do_crop_only = int(args.do_crop_only[0])
-    do_extract = int(args.do_extract[0])
     extract_in_2d = int(args.extract_in_2d[0])
 
     if isinstance(args.regionex[0], list):
@@ -380,12 +265,31 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     else:
         regionex = args.regionex #keep as list
 
-    do_analysis = int(args.do_analysis[0])
-    first_job = int(args.first_job[0])
+
+    ############## SET THE DO OPTIONS BASED ON COMMAND LINE ARGUMENT jobnm ##############
+
+    do_register = int(0)
+    do_denoise = int(0)
+    do_stitch = int(0)
+    do_extract = int(0)
+    do_remove = int(0)
+    do_a2p = int(0)
+    if jobnm=='mcp':
+        do_register = int(1)
+    elif jobnm=='dnp':
+        do_denoise = int(1)
+    elif jobnm=='stc':
+        do_stitch = int(1)
+    elif jobnm=='exp':
+        do_extract = int(1)
+    elif jobnm=='rsc':
+        do_remove = int(1)
+    elif jobnm=='a2p':
+        do_a2p = int(1)
+
+    ############## PRINT ALL THE ARGUMENTS ##############
 
     print("\n\n\nPARSED THESE COMMAND LINE AND/OR PARAM FILE ARGUMENTS:")
-
-    # options = {k: v for k, v in locals().items() if v is not None} #example turn locals into dict
 
     whitespaces_three = '   '
     loccop = locals().copy()
@@ -397,11 +301,11 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc,  
-                      do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
+                      do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, smlenpx_rsc, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, 
-                      do_analysis, first_job)
+                      do_crop_only, do_extract, methodex, extract_in_2d, regionex, 
+                      do_a2p, first_job)
 
 

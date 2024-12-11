@@ -12,7 +12,7 @@ import ast
 
 
 def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_analysis, use_background_subtracted, use_denoised, use_scannoise_removed, 
+                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
     # chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
@@ -50,13 +50,13 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
-        if do_denoise or do_stitch or do_extract or do_crop_only or do_remove or do_analysis:
+        if do_denoise or do_stitch or do_extract or do_crop_only or do_remove or do_a2p:
             fn_suffix_scopa = '_cmrg' 
             if use_background_subtracted:
                 fn_suffix_scopa = '_bksb' + fn_suffix_scopa
-            if use_denoised and (do_extract or do_crop_only or do_remove or do_analysis): #don't let this affect do_stitch since it must have dcdn if it's run
+            if use_denoised and (do_extract or do_crop_only or do_remove or do_a2p): #don't let this affect do_stitch since it must have dcdn if it's run
                 fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
-            if use_scannoise_removed and (do_extract or do_crop_only or do_analysis):
+            if use_scannoise_removed and (do_extract or do_crop_only or do_a2p):
                 fn_suffix_scopa = fn_suffix_scopa + '_nosn'
         if use_scannoise_removed and do_extract:
             fn_suffix_scopa = fn_suffix_scopa + '_.mat'  #this is the only time only a mat is available when a tif is required (besides carls_old_project)
@@ -83,7 +83,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_carlold, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since multiple patterns are valid as input
 
-        if do_remove or do_analysis: #these jobs use mat files (or convert tif to mat) so check if mat exists too
+        if do_remove or do_a2p: #these jobs use mat files (or convert tif to mat) so check if mat exists too
             fn_suffix_scopa_mat = fn_suffix_scopa[:-5] + '_.mat'
             fn_pattern_scopa_mat = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa_mat
             pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa_mat, recursive=True)
@@ -98,11 +98,11 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     keepidx = [tmptmp.index(i) for i in pth_allfiles_singles_full if i in tmptmp] #find indices of extensionless singles in full filename list 
     pth_allfiles_singles_full = [pth_allfiles_singles[i] for i in keepidx] #this puts the extension back on
     pth_allfiles_multi_noext = [item for item, count in collections.Counter([x[:-3] for x in pth_allfiles_singles]).items() if count > 1] #files that appear more than once when ignoring extension
-    if do_remove or do_analysis:
-        pth_allfiles_mat_with_tif = [tmp + 'mat' for tmp in pth_allfiles_multi_noext] #choose mat not tif, if both available (force mat extension on those that appear with mat and tif extensions since do_remove and do_analysis want mat if available)  
+    if do_remove or do_a2p:
+        pth_allfiles_mat_with_tif = [tmp + 'mat' for tmp in pth_allfiles_multi_noext] #choose mat not tif, if both available (force mat extension on those that appear with mat and tif extensions since do_remove and do_a2p want mat if available)  
         pth_allfiles_tif_with_mat = []
     else:
-        pth_allfiles_tif_with_mat = [tmp + 'tif' for tmp in pth_allfiles_multi_noext] # choose tif not mat, if both available (force tif extension on those that appear with mat and tif extensions since everything but do_remove and do_analysis want tif if available)  
+        pth_allfiles_tif_with_mat = [tmp + 'tif' for tmp in pth_allfiles_multi_noext] # choose tif not mat, if both available (force tif extension on those that appear with mat and tif extensions since everything but do_remove and do_a2p want tif if available)  
         pth_allfiles_mat_with_tif = []
     pth_allfiles_duplicates = [item for item, count in collections.Counter(pth_allfiles).items() if count > 1] #files that appear multiple times in pth_allfiles
     pth_allfiles = pth_allfiles_singles_full + pth_allfiles_tif_with_mat + pth_allfiles_mat_with_tif + pth_allfiles_duplicates #combine 
@@ -119,7 +119,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     if do_register:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]
     else:
-        if do_remove or do_analysis:
+        if do_remove or do_a2p:
             fn_suffixes_all = [fn_suffix_scopa, fn_suffix_scopa_mat]
         else:
             fn_suffixes_all = [fn_suffix_scopa]
@@ -229,7 +229,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             else:
                 carls_old_project = 1
             
-            if fname[-3:]=='mat' and do_copyfiles==0 and not do_analysis:
+            if fname[-3:]=='mat' and do_copyfiles==0 and not do_a2p:
                 mat_file_shape = mat2tif(pth_readfile, carls_old_project)
 
 

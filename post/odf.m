@@ -382,7 +382,6 @@ if files
     idtmp = idmake(rectmp);
     numrec = numel(idtmp);
 
-    % o = rmfield(o, 'id'); %if id exists, remove it because you just made it (it's either empty or 'nofile' or is the same as idtmp)
     if isfield(o, 'id') && ~isempty(o.id)
         fprintf("WARNING, REPLACING FIELD id" + newline)
     end
