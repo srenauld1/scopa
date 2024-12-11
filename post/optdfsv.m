@@ -33,7 +33,7 @@ d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, orga
 
 d.spec.pthparent_local = '~/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-d.spec.suffixvalid = ["raw", "cmrg", "cmrg_dcdn", "bksb_cmrg", "bksb_cmrg_dcdn", "bksb_cmrg_dcdn_nosn"]; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pipeline_init.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
+d.spec.suffixvalid = ["raw", "cmrg", "cmrg_dcdn", "bksb_cmrg", "bksb_cmrg_dcdn", "bksb_cmrg_dcdn_nosn"]; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (ppl.py, cxp.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
 d.spec.recdate = {'*'}; %cell array of char, can use wildcards
 d.spec.fly = {'*'}; %cell array of char, can use wildcards

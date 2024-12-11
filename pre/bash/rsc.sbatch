@@ -12,7 +12,7 @@ else #load virtual env if not copying files
     source /n/data1/hms/neurobio/wilson/mle/bin/activate
 fi
 
-/n/data1/hms/neurobio/wilson/mle/bin/python3 $PARENDIR/pipeline_init.py \
+/n/data1/hms/neurobio/wilson/mle/bin/python3 $PARENDIR/ppl.py \
 --pth_parsfile "$PTH_PARSFILE" \
 --do_copyfiles "$DO_COPYFILES" \
 --first_job "$FIRST_JOB" \

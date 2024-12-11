@@ -41,7 +41,7 @@ fi
 
 
 ## CALL PIPELINE ##
-$pydir $PARENDIR/pipeline_init.py \
+$pydir $PARENDIR/ppl.py \
 --first_job "$FIRST_JOB" \
 --do_copyfiles "$DO_COPYFILES" \
 --jobnm "$JOBNM" \

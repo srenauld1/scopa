@@ -1,16 +1,16 @@
 #!/bin/bash
 
-#ab.sh runs the entire preprocessing pipeline by specifying params for pipeline_init.py
+#ab.sh runs the entire preprocessing pipeline by specifying params for ppl.py
 # run as ./ab.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
 # CURRENTLY YOU CANNOT SUBMIT JOBS WITH ab WHILE ANOTHER SET OF JOBS SUBMITTED BY ab IS RUNNING (THERE WILL BE AN ERROR)
-#pipeline_init.py is called from various sbatch files (specified by sbatch_job_name_sequence), which are themselves called below, and each of which uses different resources and depends on the previous (with matching jobarrayind) to finish without error
+#ppl.py is called from various sbatch files (specified by sbatch_job_name_sequence), which are themselves called below, and each of which uses different resources and depends on the previous (with matching jobarrayind) to finish without error
 #ab.sh is designed to only be called once  #######
 #the sbatch files called below can run multiple jobs in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
 #each sbatch file below is called in a 2-iteration for loop, the first iteration copies the required files from storage server to scratch on O2, the second operates on them, afterward files are automatically copied back to the storage server  
 #copying requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
 ##
 #the ab.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
-#see pipeline_init.py and README.md for more details 
+#see ppl.py and README.md for more details 
 
 #note bash variables are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
 #bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)

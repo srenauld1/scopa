@@ -14,17 +14,17 @@ import json
 currscriptdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(currscriptdir))
 
-print("\n\nLIST OF PATHS AVAILABLE TO pipeline_init.py:\n","\n ".join(sys.path),"\n")
+print("\n\nLIST OF PATHS AVAILABLE TO ppl.py:\n","\n ".join(sys.path),"\n")
 
 if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from cxp (and a handful are hard coded to never change here)
   cluster_backend = 'multiprocessing' #irrelevant if use_cluster=0; use 'multiprocessing' on O2 to speed up caiman code
   makeplots = 0 #should be 0 if running job from cxp on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
   do_crop_only = 0 #should be 0 if running job from cxp on O2, since this is interactive drawing/cropping of FOV
-  print("pth_parsfile passed as input to pipeline_init.py (in batch mode), using options from pth_parsfile (options from cxp.sh)")
+  print("pth_parsfile passed as input to ppl.py (in batch mode), using options from pth_parsfile (options from cxp.sh)")
 else: #in interactive mode, read options set in optdfpre, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpre.py, where user sets options; 2 options, do_copyfiles and recording_index, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpre
   print("pth_parsfile not passed as input (in interactive mode), using options from optdfpre.py")
   exec(open(currscriptdir + '/' + 'optdfpre.py').read())
-  first_job = 1 #this should always be 1 if you're running pipeline_init.py directly/interactively, first_job is only used when pipeline_init.py is called from cxp.sh, as part of a larger pipeline 
+  first_job = 1 #this should always be 1 if you're running ppl.py directly/interactively, first_job is only used when ppl.py is called from cxp.sh, as part of a larger pipeline 
   jobnm = '' #empty for intyeractive mode; job name run from cxp (noninteractive job identifier)
   pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
   scopatmpdir = '' #string, keep empty for interactive; directory for scopatmp folder; automatically defined in make_paths
@@ -165,4 +165,4 @@ for ri, _ in enumerate(pth_read_all):
          
 
 
-print("\n\n\nEXITING pipeline_init.py") 
+print("\n\n\nEXITING ppl.py") 

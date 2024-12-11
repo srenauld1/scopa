@@ -93,7 +93,7 @@ especially if you are using do_copyfiles to automate file transfer to and from O
 
 do_copyfiles may not work well for large transfers (judging by the wording on the O2 website), but for this pipeline, i've had no problems 
  
-do_copyfiles occurs inside pipeline_init.py for two reasons:
+do_copyfiles occurs inside ppl.py for two reasons:
         1. to ensure everything is the same for the copying and the analysis (ie to ensure the right files get copied)
         2. since slurm arrays are used, it is simpler to copy inside the parallel job
 
@@ -107,7 +107,7 @@ this is flyg formatting
 this is scopa formatting
         20230627_3_1_raw.tif
 
-key file identifiers are recdate, fly, and trial (these are params used to find files in pipeline_init.py, and cxp.sh)
+key file identifiers are recdate, fly, and trial (these are params used to find files in ppl.py, and cxp.sh)
 
 this file must be in a data folder that it within folder_with_all_recordings_on_storage_and_compute_filesystems
 the data folder can have any name pattern
@@ -125,7 +125,7 @@ and for example, the following is valid input file on O2 (if you're not using do
 ############################## INTERACTIVE VS BATCH MODE ######################################
 
 for running the pipeline in interactive mode . . . 
-        entry point is pipeline_init.py for 'pre' pipeline (input raw imaging tif)
+        entry point is ppl.py for 'pre' pipeline (input raw imaging tif)
                 you can run on your local machine (e.g. in vscode), or on O2Portal (e.g., in vscode)
                 adjust input params in file optdfpre.py
         entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
@@ -142,7 +142,7 @@ for running the pipeline in interactive mode . . .
                 so most likely only have to install caiman and a few other small packages locally (see installation below)
 
 for running the pipeline in batch (non-interactive) mode . . . 
-        entry point is cxp.sh (calls pipeline_init.py)
+        entry point is cxp.sh (calls ppl.py)
         set input params in cxp.sh
         default_params_batch.py is invoked in this case, but do not ever adjust params in this file 
         the pipeline has a script (cxp.sh) that lets you string together jobs on O2  (in any application or language available on O2), cxp.sh handles parallelization, job dependencies, resource  allocation, all automatically
@@ -190,7 +190,7 @@ for deepcad denoising; if you want to step into deepcad code during VSCode debug
 
 run ./cxp.sh in command line on O2 
 see cxp.sh for docs
-cxp.sh calls pipeline_init.py
+cxp.sh calls ppl.py
 
  since the different submodules of the pipeline require very different resources on O2, cxp runs each module as a separate sbatch job with different resources; these jobs depend on each other
 
@@ -201,7 +201,7 @@ there are two main sub-pipelines:
 
 'pre': 
 
-in folder pre, mostly python, entrypoint is pipeline_init.py in interactive mode (run VS code on O2 portal), or cxp.sh in batch mode (run ./cxp.sh on O2 command line . . . cxp.sh calls pipeline_init.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
+in folder pre, mostly python, entrypoint is ppl.py in interactive mode (run VS code on O2 portal), or cxp.sh in batch mode (run ./cxp.sh on O2 command line . . . cxp.sh calls ppl.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
                 --registration (caiman Normcorre), with line-by-line background subtraction and temporal 
                         smoothing submodules to deal with noisy recordings, prior to registration 
                 --denoising (deepcadrt), with "best model" selection
@@ -224,9 +224,9 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 
 ############################## PARALLELIZATION ON O2 ######################################
 
- if recording_index = 'all', pipeline_init.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
+ if recording_index = 'all', ppl.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
- if recording_index is not 'all', pipeline_init.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
+ if recording_index is not 'all', ppl.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
 
  this is convenient because recording_index can be assigned SLURM_ARRAY_TASK_ID in a bash script (e.g. mcp.sbatch), 
  which will run the pipeline on multiple recordings in parallel as a job array on O2 
@@ -301,7 +301,7 @@ entrypoint is a2p.m
 
 
 #a2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
-#first part (motion correction, denoising, and source extraction) is in python, entry point pipeline_init.py:
+#first part (motion correction, denoising, and source extraction) is in python, entry point ppl.py:
 
 ##a2p.m loads output files from python pipeline,
 ##if high-z-res stack exists, it can be used to aid with morphological identification

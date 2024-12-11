@@ -3,7 +3,7 @@ function out = tifld(filename_tif, opt)
 % tzcyx --> yxczt 
 % read tif that was written as tzcyx; array is read as yxczt 
 
-% scanimage, and scopa 'pre' pipeline (everything output by pipeline_init.py) write stacks as 3d tifs,
+% scanimage, and scopa 'pre' pipeline (everything output by ppl.py) write stacks as 3d tifs,
 % with dim order tzcyx, where t and z and c dimensions are collapsed into one
 % matlab file exchange function TIFFStack reads these tifs as 3d with dim order yxczt (even if they were written as >3d, at least with imwrite from tifffile.tifffile)
 

@@ -25,7 +25,7 @@ currdir = currdir{end};
 if contains(rootDir, 'scopa')
 
     if ono2
-        error("to run flyg1-scopa from O2, run cxp.sh from O2 command line (non-interactive), or pipeline_init.py from VSCode (interactive)")
+        error("to run flyg1-scopa from O2, run cxp.sh from O2 command line (non-interactive), or ppl.py from VSCode (interactive)")
     else
 
         rootDir = strsplit(rootDir, ', ');

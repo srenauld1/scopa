@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# see pipeline_init.py and README.md for more details 
+# see ppl.py and README.md for more details 
 
 # TO USE cxp.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2 
 
-# cxp.sh runs the entire preprocessing pipeline by specifying params for pipeline_init.py
+# cxp.sh runs the entire preprocessing pipeline by specifying params for ppl.py
 # run as ./cxp.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
 # CURRENTLY YOU CANNOT SUBMIT JOBS WITH CXP WHILE ANOTHER SET OF JOBS SUBMITTED BY CXP IS RUNNING 
-# pipeline_init.py is called from sbatch file pre.sbatch, which is itself called below,
+# ppl.py is called from sbatch file pre.sbatch, which is itself called below,
 # pre.sbatch is called in different way, depending on user input
 # pre.sbatch can run multiple times in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
 # each sbatch file below is called in a 3-iteration for loop, the first iteration (when do_copyfiles=1) copies files required for whatever job is running from storage server to scratch on O2, the second (when do_copyfiles=0) operates on them, the third (when do_copyfiles=2) copies new files back to the storage server  
@@ -85,7 +85,7 @@ METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
 
-USE_CLUSTER=(0) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pipeline_init.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
+USE_CLUSTER=(0) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in ppl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 
 
 ############ SET PARAMS FOR RESOURCE REQUEST MANUALLY IF do_autoallo=0, OTHERWISE IT IS AUTOMATIC) ############

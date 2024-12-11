@@ -1,6 +1,6 @@
 
 
-## SET OPTIONS FOR INTERACTIVE MODE (WHEN pipeline_init.py IS CALLED DIRECTLY, NOT FROM cxp.sh)
+## SET OPTIONS FOR INTERACTIVE MODE (WHEN ppl.py IS CALLED DIRECTLY, NOT FROM cxp.sh)
 
 ## CHOOSE WHAT PARTS OF THE PIPELINE TO RUN (IN INTERACTIVE MODE, ONELY ONE do_* CAN BE TRUE AT A TIME, FOR NOW; THIS IS NOT THE CASE IN cxp.sh) ## 
 
@@ -59,7 +59,7 @@ maskname = ['none']
 
 ## SOME OPTIONS APPLIED IN VARIOUS PARTS OF THE PIPELINE ## 
 
-use_cluster = 0 #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pipeline_init.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
+use_cluster = 0 #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in ppl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 cluster_backend = 'ipyparallel' #string, single element not in list, irrelevant if use_cluster=0; use 'multiprocessing' on O2, can run caiman code faster 
 
 makeplots = 0 #should be 0 if running job on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
