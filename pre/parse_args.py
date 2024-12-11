@@ -143,13 +143,13 @@ def parse_command_line():
         scopatmplt = args.scopatmplt[0] #keep as list
     else:
         scopatmplt = args.scopatmplt #keep as list
-    scopatmplt = int(scopatmplt)
+    scopatmplt = int(scopatmplt[0])
 
     if isinstance(args.chan_primary_when_two_reg[0], list):
         chan_primary_when_two_reg = args.chan_primary_when_two_reg[0] #keep as list
     else:
         chan_primary_when_two_reg = args.chan_primary_when_two_reg #keep as list
-    chan_primary_when_two_reg = int(chan_primary_when_two_reg)
+    chan_primary_when_two_reg = int(chan_primary_when_two_reg[0])
 
     if isinstance(args.discard_channel_reg[0], list):
         discard_channel_reg = args.discard_channel_reg[0] #keep as list
@@ -158,7 +158,7 @@ def parse_command_line():
     if discard_channel_reg == ['None'] or discard_channel_reg == ['none']:
         discard_channel_reg = None
     else:
-        discard_channel_reg = int(discard_channel_reg) #convert to int if not 'all'
+        discard_channel_reg = int(discard_channel_reg[0]) #convert to int if not 'all'
 
     if isinstance(args.clip[0], list):
         clip = args.clip[0] #keep as list
@@ -171,21 +171,20 @@ def parse_command_line():
         clipinterp = args.clipinterp[0] #keep as list
     else:
         clipinterp = args.clipinterp #keep as list
-    clipinterp = int(clipinterp)
+    clipinterp = int(clipinterp[0])
 
     if isinstance(args.chan_dn[0], list):
         chan_dn = args.chan_dn[0] #keep as list
     else:
         chan_dn = args.chan_dn #keep as list
     if chan_dn != ['all']:
-        chan_dn = int(chan_dn) #convert to int if not 'all'
+        chan_dn = int(chan_dn[0]) #convert to int if not 'all'
 
 
     if isinstance(args.methodex[0], list):
         methodex = args.methodex[0] #keep as list
     else:
         methodex = args.methodex #keep as list
-
 
 
     folder_with_all_recordings_on_storage_and_compute_filesystems =  args.folder_with_all_recordings_on_storage_and_compute_filesystems[0] 
