@@ -102,13 +102,13 @@ def parse_command_line():
 
         #vars not written to pars are: the main do* args, and recording_index
 
-        args.scopatmplt = pars.scopatmplt
-        args.clip = pars.clip
-        args.discard_channel_reg = pars.discard_channel_reg
-        args.chan_primary_when_two_reg = pars.chan_primary_when_two_reg
-        args.clipinterp = pars.clipinterp
-        args.chan_dn = pars.chan_dn
-        args.methodex = pars.methodex
+        args.scopatmplt = pars.SCOPATMPLT
+        args.clip = pars.CLIP
+        args.discard_channel_reg = pars.DISCARD_CHANNEL_REG
+        args.chan_primary_when_two_reg = pars.CHAN_PRIMARY_WHEN_TWO_REG
+        args.clipinterp = pars.CLIPINTERP
+        args.chan_dn = pars.CHAN_DN
+        args.methodex = pars.METHODEX
 
         args.folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS
         args.pth_storage_prefix = pars.PTH_STORAGE_PREFIX
