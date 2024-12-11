@@ -371,7 +371,7 @@ if files
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
         rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixvalid=o.spec.suffixvalid, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, match=o.spec.match); %find files matching spec
     else
-        rectmp = stackfind(pth=o.spec.pth); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
+        rectmp = stackfind(pth=o.spec.pth, suffixvalid=o.spec.suffixvalid); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
         if isempty(rectmp)
             fprintf("NONE OF THE FULL PATH INPUT (OR WILDCARD PATTERNS) TO a2p EXIST" + newline)
         end

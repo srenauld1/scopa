@@ -181,6 +181,8 @@ mkdir -p $SCOPATMPDIR
 
 pthout=$SCOPATMPDIR/slurm-%A_%a.out
 
+#PTH_GPULOG=$SCOPATMPDIR/$SLURM_JOBID.gpulog
+
 ############ WRITE THE ABOVE PARAMS TO PTH_PARSFILE ############
 
 PTH_PARSFILE=$SCOPATMPDIR/scopaparams.txt #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh

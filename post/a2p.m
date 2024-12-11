@@ -9,6 +9,8 @@ end
 
 clear glb %clear globals
 
+optdfsv
+
 oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 
 for k = 1:numel(oa) % loop over recordings
