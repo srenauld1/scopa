@@ -34,7 +34,7 @@ do_a2p=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind; if this bash variable can be turned into a list of vectors, then cxp will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
 
-do_autoallocate=0 #leave as 0 for now
+do_autoallocate=0 #do_autoallocate=1 uses transfer partition to look into server and find size of stack in raw scanimage tif, but doesn't copy anything; stack size determines all resource requests; do_autoallocate=0 uses resources set by user below
 fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
@@ -97,6 +97,10 @@ if [ "$do_autoallocate" == 0 ]; then
     cpu_per_task_copyfiles=1
     mem_per_cpu_copyfiles=5G
     time_copyfiles=00:10:00
+
+    cpu_per_task_autoallocate=1
+    mem_per_cpu_autoallocate=5G
+    time_autoallocate=00:10:00
 
     cpu_per_task_register=1
     mem_per_cpu_register=20G
@@ -265,7 +269,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
     
     for DO_COPYFILES in "${do_copyfiles_sequence[@]}"; do #copy files on first loop (from superfolder_name_storage to superfolder_name_compute), analyze data from those files on second loop 
 
-        if { [ "$DO_COPYFILES" == 1 ] && [ "$JOBNM" == dnp ] && [ "$do_register" == 1 ]; } ||  { [ "$DO_COPYFILES" == 2 ] && [ "$JOBNM" == dnp ]; } || { [ "$DO_COPYFILES" == 1 ] && [ "$JOBNM" == stc ]; }; then #skip copyfiles 1 for denoising if you also ran register, copyfiles 2 for denoising, and copyfiles 1 for stitch,  
+        if { [ "$DO_COPYFILES" != 0 ] && [ "$JOBNM" == alo ]; } || { [ "$DO_COPYFILES" == 1 ] && [ "$JOBNM" == dnp ] && [ "$do_register" == 1 ]; } ||  { [ "$DO_COPYFILES" == 2 ] && [ "$JOBNM" == dnp ]; } || { [ "$DO_COPYFILES" == 1 ] && [ "$JOBNM" == stc ]; }; then #skip copyfiles 1 for denoising if you also ran register, copyfiles 2 for denoising, and copyfiles 1 for stitch,  
 
             echo "SKIPPING A COPYFILES JOB BECAUSE IT'S NOT NECESSARY"
 
@@ -290,7 +294,13 @@ for JOBNM in "${jobnm_seq[@]}"; do
                 mem_per_cpu_str=$mem_per_cpu_copyfiles
             else
                 echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
-                if [ "$JOBNM" == mcp ]; then #do_register
+                if [ "$JOBNM" == alo ]; then #do_autoallocate
+                    partition_str=transfer #use transfer partition if autoallocate
+                    time_str=$time_autoallocate
+                    ntasks_str=1
+                    cpus_per_task_str=$cpu_per_task_autoallocate
+                    mem_per_cpu_str=$mem_per_cpu_autoallocate
+                elif [ "$JOBNM" == mcp ]; then #do_register
                     partition_str=short #use transfer partition if do_copyfiles==1 or 2
                     time_str=$time_register
                     ntasks_str=1
@@ -361,7 +371,6 @@ for JOBNM in "${jobnm_seq[@]}"; do
             echo ""$JOBNM" HAS JOB-ARRAY ID: ${!tmpid}"
 
             loopcount=$((loopcount+1)) #increment loopcount
-
 
         fi
 

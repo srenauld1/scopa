@@ -1,13 +1,11 @@
 
-function [roiwt, roicen, numroi_final] = roimauto(stack, roimaskman, numroi_init, ...
-    widyxz, stack_hires, hrlr, pth_roim_prefix, regionex, doplt, opts)
+function [roiwt, roicen, numroi_final] = roimauto(stack, roimaskman, numroi_init, widyxz, regionex, opts)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
 %creating new maskseg and inserting in switch statement)
 %stackmnt must be 3d (xyz), although 3rd dim (z) can be singleton
 %roimaskman must match dimensionality of stackmnt, or be lower dimensional
-%stack_hires is optional, must be 3d xyz, and match xy size of stackmnt
 
 maskmake = opts.maskmake;
 maskseg = opts.maskseg;

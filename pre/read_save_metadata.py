@@ -6,43 +6,15 @@ import numpy as np
 import json
 
 
-def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
+def read_save_metadata(pth_readfile, pth_md, mat_file_shape = None):
 
     mdt = {}
-    mdthr = {}
 
     print("READING METADATA") #use ScanImageTiffReader to read metadata (strange ping because scanimage tif headers are not saved as json)
 
     try:
         
         if mat_file_shape is None: #mat_file_shape is None for scanimage data, is not None for Leica data (Carl's old project)
-
-            if pth_hires:
-                meta_hires = ScanImageTiffReader(pth_hires).metadata()
-                mdthr['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                mdthr['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                
-                mdthr['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta_hires)[0])
-                mdthr['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta_hires)[0])
-                mdthr['flyback'] = mdthr['numslice_withflyback'] - mdthr['numslice']
-                try:
-                    mdthr['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta_hires)[0])
-                except:
-                    print("USING OLD SCANIMAGE VERSION METADATA PATTERNS FOR HIRES METADATA")
-                    mdthr['numvol'] = int(re.findall( 'numVolumes = (.*)', meta_hires)[0])
-            
-                mdthr['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta_hires)[0])
-                mdthr['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta_hires)[0])
-                mdthr['dims'] = [mdthr['numvol'], mdthr['numslice_withflyback'] - mdthr['flyback'], mdthr['ypix'], mdthr['xpix']]
-                fovtmp = literal_eval(re.findall( 'imagingFovUm = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
-                mdthr['xfov'] = abs(fovtmp[0]) + abs(fovtmp[2])
-                mdthr['yfov'] = abs(fovtmp[1]) + abs(fovtmp[3])
-                mdthr['zwid'] = float(re.findall( 'actualStackZStepSize = (.*)', meta_hires)[0])
-                mdthr['zstartpos'] = literal_eval(re.findall( 'zsRelative = (.*)', meta_hires)[0].replace(";",","))
-                mdthr['zfov'] = mdthr['zstartpos'][-1] + mdthr['zwid'] - mdthr['zstartpos'][0]
-                mdthr['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta_hires)[0])
-                mdthr['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta_hires)[0])
-                mdthr['channelOffsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta_hires)[0].replace(" ",",").replace(";",","))
 
 
             meta = ScanImageTiffReader(pth_readfile).metadata()    #tiffile might be able to read metadata
@@ -56,7 +28,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
             try:
                 mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
             except:
-                print("USING OLD SCANIMAGE VERSION METADATA PATTERNS FOR HIRES METADATA")
+                print("USING OLD SCANIMAGE VERSION METADATA PATTERNS")
                 mdt['numvol'] = int(re.findall( 'numVolumes = (.*)', meta)[0])
             
             mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta)[0])
@@ -120,27 +92,7 @@ def read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = None):
             'channel_save': mdt['channel_save'],
             'channel_active': mdt['channel_active'],
             'channelOffsets': mdt['channelOffsets']}
-    
-    if pth_hires:
-        md_hires = {'numvol': mdthr['numvol'],
-                    'numslice_withflyback': mdthr['numslice_withflyback'],
-                    'numslice': mdthr['numslice'],
-                    'xpix': mdthr['xpix'],
-                    'ypix': mdthr['ypix'],
-                    'flyback': mdthr['flyback'],
-                    'dims': mdthr['dims'],
-                    'xfov': mdthr['xfov'],
-                    'yfov': mdthr['yfov'],
-                    'zwid': mdthr['zwid'],
-                    'zstartpos': mdthr['zstartpos'],
-                    'zfov': mdthr['zfov'],
-                    'framerate': mdthr['framerate'],
-                    'volrate': mdthr['volrate'], 
-                    'channel_save': mdthr['channel_save'],
-                    'channel_active': mdthr['channel_active'],
-                    'channelOffsets': mdthr['channelOffsets']}
-        md['md_hires'] = md_hires
-    
+        
     
     if not np.isin(md['channel_save'], md['channel_active']).any():
         print("channel_save is not a subset in channel_active")

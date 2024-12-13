@@ -110,11 +110,6 @@
     "smlenpx": 2,
     "smlensec": 1
   },
-  "hires": {
-    "disttype": "monomodal",
-    "regtype": "rigid",
-    "use_caiman_on_hires": 0
-  },
   "id": [],
   "imhsv": {
     "fg": "allrois",
@@ -142,8 +137,7 @@
     "edgethr": [0.1,0.7],
     "maskmake": "nonzero",
     "maskseg": "uniform",
-    "numroi": 128,
-    "usehires": 0
+    "numroi": 128
   },
   "mf": {
     "epochinds": 1,
@@ -187,11 +181,10 @@
       "ftv",
       "roi",
       "bmp",
-      "mf",
-      "hires"
+      "mf"
     ],
     "pltvis": 1,
-    "timestr": "2024121111553260"
+    "timestr": "2024121218353810"
   },
   "nestvalid": [
     "spec",
@@ -200,7 +193,6 @@
     "sld",
     "ftv",
     "roi",
-    "hires",
     "mf",
     "pltx",
     "carl",
@@ -219,7 +211,6 @@
     "bmp.mf.opg",
     "bmp.mf.opl",
     "sld.sp",
-    "hires.sld.sp",
     "pltx.tg"
   ],
   "nrm": {
@@ -306,6 +297,7 @@
     "dostats": 0,
     "smlenpx": [0,0,0],
     "smlensec": 0,
+    "smmthd": "gaussian",
     "stackdtype": "uint16",
     "suffixplt": [
       "raw",

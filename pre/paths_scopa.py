@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 
-def make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
+def make_paths(currscriptdir, do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
 
@@ -57,15 +57,22 @@ def make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storag
     if not os.path.exists(pth_fldr_fnind):
         Path(pth_fldr_fnind).mkdir(parents=True, exist_ok=True)
 
-    if do_copyfiles==0: #computing (not copying)
-        pth_allrec = pth_compute
-        pth_fldr_copydest_prefix = 'junkpath/' #this won't be used, making dummy name just in case 
-    elif do_copyfiles==1: #copying into O2
-        pth_allrec = pth_storage
-        pth_fldr_copydest_prefix = pth_compute
-    elif do_copyfiles==2: #copying out of O2
-        pth_allrec = pth_compute
-        pth_fldr_copydest_prefix = pth_storage
+    if do_autoallocate==1: 
+        if do_copyfiles==0: #do_autoallocate uses transfer partition to look into server and find size of raw scanimage tif, but doesn't copy anything 
+            pth_allrec = pth_storage
+            pth_fldr_copydest_prefix = pth_compute
+        else:
+            raise Exception ("if do_autoallocate is 1, do_copyfiles must be 0")
+    else:
+        if do_copyfiles==0: #computing (not copying)
+            pth_allrec = pth_compute
+            pth_fldr_copydest_prefix = 'junkpath/' #this won't be used, making dummy name just in case 
+        elif do_copyfiles==1: #copying into O2
+            pth_allrec = pth_storage
+            pth_fldr_copydest_prefix = pth_compute
+        elif do_copyfiles==2: #copying out of O2
+            pth_allrec = pth_compute
+            pth_fldr_copydest_prefix = pth_storage
 
     pth_optdf = pth_scopa + 'optdf.txt'
     pth_optroi = pth_allrec + 'optroi.txt'

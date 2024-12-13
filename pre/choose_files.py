@@ -154,7 +154,6 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     pth_ftvid_all = []
     pth_ftdat_all = []
     pth_croplim_all = []
-    pth_hires_all = []
     carls_old_project_all = []
     countz = 0
     for pth_readfile in pth_allfiles: #loop over all found files
@@ -197,15 +196,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_croplim_mat_pattern = pth_prefix + '_*_croplim_.mat' # copy all croplim files from server to O2 
             pth_croplim_mat = glob.glob(pth_croplim_mat_pattern)
             pth_croplim = pth_croplim_npy + pth_croplim_mat
-            
 
-            pth_pattern_hires = fldr + datestr_found + '?' + flystr_found + '_' + trialstr_found + '_hires_.tif'
-            pth_hires = glob.glob(pth_pattern_hires)
-            if not pth_hires: #alternative pattern, if first doesn't exist
-                pth_pattern_hires = fldr + datestr_found + '?' + flystr_found + '_hires_.tif'
-                pth_hires = glob.glob(pth_pattern_hires)
-            if pth_hires:
-                pth_hires = pth_hires[0]
                 
             fn_pattern_ftvid = fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
             pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
@@ -220,8 +211,8 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
-                if re.search('trial', fname) or re.search('stackraw', fname) or pth_hires: #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
-                    [pth_readfile, fname, pth_hires] = rename_files(pth_readfile, fname, fn_prefix, fldr, pth_hires)
+                if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
+                    [pth_readfile, fname] = rename_files(pth_readfile, fname, fn_prefix, fldr)
             
             mat_file_shape = None
             if int(datestr_found)>20230101:
@@ -240,7 +231,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             if not os.path.isfile(pth_md): #if scanimage metadata file (*mdsi_.txt) is not present, make it
                 if do_register: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
-                        read_save_metadata(pth_readfile, pth_md, pth_hires, mat_file_shape = mat_file_shape)
+                        read_save_metadata(pth_readfile, pth_md, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
                         pth_md = []
                     elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
@@ -267,7 +258,6 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             pth_ftvid_all.append(pth_ftvid)
             pth_ftdat_all.append(pth_ftdat)
             pth_croplim_all.append(pth_croplim)
-            pth_hires_all.append(pth_hires)
             carls_old_project_all.append(carls_old_project)
             
         
@@ -298,4 +288,4 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, pth_hires_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all) 

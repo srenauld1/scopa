@@ -5,8 +5,8 @@ import os
 
 
 
-def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop_only, do_a2p, 
-                     pth_read, pth_md, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_hires, pth_fldr_copydest_prefix, fldr, 
+def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, 
+                     pth_read, pth_md, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_fldr_copydest_prefix, fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -50,11 +50,6 @@ def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extrac
                 Path(pth_fldr_copydest_ft).mkdir(parents=True, exist_ok=True)
                 print("\n\n\ncopying this file: \n" + pth_ftdat + "\ninto this directory: \n" + pth_fldr_copydest_ft)
                 shutil.copy2(pth_ftdat, pth_fldr_copydest_ft)
-                time.sleep(5) 
-
-            if pth_hires and do_a2p:
-                print("\n\n\ncopying this file: \n" + pth_hires + "\ninto this directory: \n" + pth_fldr_copydest)
-                shutil.copy2(pth_hires, pth_fldr_copydest)
                 time.sleep(5) 
             
             if do_extract or do_crop_only or do_a2p:

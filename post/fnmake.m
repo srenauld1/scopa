@@ -90,45 +90,6 @@ pth_epochinds = [dirstack recid '_epochinds_.bin'];
 pth_epochinfo = [dirstack recid '_epochinfo_.mat'];
 
 
-%% hires
-
-fntmp = fieldnames(o.roi);
-for k = 1:numel(fntmp)
-    if isfield(o.roi.(fntmp{k}), 'ma')
-        usehires(k) = o.roi.(fntmp{k}).ma.usehires; %gets updated to numeric struct, fieldname usehires
-    else
-        usehires(k) = 0;
-    end
-end
-
-pth_hires_prefix = [];
-pth_hires_mat_matreg = [];
-pth_roif_hires = [];
-if any(usehires) %for each recording, dohires if any regionex have usehires true (since we want to load/process hires once before looping over regionex)
-    pthpat = [dirstack recid  '_hires_.tif'];
-    pth_tmp = rdir(pthpat);
-    if isempty(pth_tmp)
-        pthpat = [pthpat(1:end-4) '.mat'];
-        pth_tmp = rdir(pthpat);
-        if isempty(pth_tmp)
-            pthpat = [dirstack num2str(recdatenum) '_' num2str(flynum) '_hires_.tif']; %sometimes hires has no trial in filename (one hires for all trials)
-            pth_tmp = rdir(pthpat);
-            if isempty(pth_tmp)
-                pthpat = [pthpat(1:end-4) '.mat'];
-                pth_tmp = rdir(pthpat);
-            end
-        end
-    end
-    if isempty(pth_tmp)
-        fprintf("WARNING, USER REQUESTED usehires FOR AT LEAST ONE REGIONEX BUT NO FILE WITH SUFFIX hires CAN BE FOUND" + newline)
-    else
-        pth_hires_prefix = pth_tmp.name(1:end-4);
-        pth_hires_mat_matreg = [pth_hires_prefix 'hires_matreg_.mat'];
-        pth_roif_hires = [pth_hires_prefix '_roishires_.mat'];
-    end
-end
-
-
 %% files for roimake
 
 for k = 1:numel(regionex)
@@ -165,9 +126,6 @@ pth.ftvid = pth_ftvid;
 pth.ftvidrs = pth_ftvidrs;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
-pth.hires_prefix = pth_hires_prefix;
-pth.hires_mat_matreg = pth_hires_mat_matreg;
-pth.roif_hires = pth_roif_hires;
 pth.featsave = pth_feat_save;
 pth.parent_feat = pthparent_feat;
 pth.template = pth_template;

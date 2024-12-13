@@ -41,11 +41,9 @@ end
 regionex = opt.regionex;
 
 if isfield(opt, 'ma')
-    usehires = opt.ma.usehires;
     numroiauto = opt.ma.numroi;
 else
     numroiauto = 0;
-    usehires = 0;
 end
 
 pthpre = erase(pth_roim, '.mat');
@@ -54,7 +52,7 @@ numchan = size(stack,5);
 %% crop movie to regionex cuboid
 
 if ~maskinput
-    [stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop, usehires, stackmnthr, hrlr);
+    [stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop, stackmnthr, hrlr);
 end
 
 %% draw rois (polygons/polyhedra)
@@ -79,7 +77,7 @@ if doma
     for c = 1:numchan
         if ismember(c,opt.ma.chan)
             if ~isequal(numroiauto, 0)
-                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, doplt, opt.ma);
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, regionex, opt.ma);
             end
         end
     end

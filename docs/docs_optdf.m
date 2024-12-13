@@ -93,7 +93,6 @@ d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatena
 
 d.ma.chan = 1; %which channel for auto roi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
 d.ma.numroi = 128; %partition regionex into num_roim_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-d.ma.usehires = 0; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 d.ma.maskmake = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 d.ma.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
 d.ma.edgethr = [.1, .7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
@@ -294,17 +293,6 @@ d.pltx.it = []; %[3320]; %t indices to plot, empty for all, negative for that nu
 d.pltx.dr = [0, 1];
 d.pltx.doui = 1;
 
-%% hires (hiresld: load and register high-z-res stack if it exists)
-
-%options for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-%hires stack is only used in making morphological rois, set o.roi.ma.use_hires=1 to use
-%options below, in vbin hires, are for registering the hires stack to the regular stack;
-% hires registration is done in matlab rather than in caiman, but should be switched over to caiman
-
-d.hires.disttype = 'monomodal'; % multimodal monomodal, used in stackrg3d from within hiresrg
-d.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in stackrg3d from within hiresrg
-d.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
-d.hires.doplt = 0;
 
 %% tp (tsplt: plot timeseries)
 

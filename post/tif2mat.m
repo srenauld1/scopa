@@ -47,8 +47,8 @@ end
 
 if stack_size_is_known
 
-    if contains(filnam, 'trial_') && contains(filnam, '-') || contains(filnam, 'raw') || contains(filnam, 'hires')
-        size_read_from = [sz_yxzt(1), sz_yxzt(2), numel(channel_save), numslice_withflyback, sz_yxzt(4)]; %z dimension of size_read_from includes flyback frames for raw and hires stacks
+    if contains(filnam, 'trial_') && contains(filnam, '-') || contains(filnam, 'raw')
+        size_read_from = [sz_yxzt(1), sz_yxzt(2), numel(channel_save), numslice_withflyback, sz_yxzt(4)]; %z dimension of size_read_from includes flyback frames for raw stack
     else
         size_read_from = [sz_yxzt(1), sz_yxzt(2), numel(channel_save), sz_yxzt(3), sz_yxzt(4)]; %sz_yxzt; %all other stacks do not have flyback frames, so fullsize is same as sz_yxzt
     end
@@ -64,7 +64,7 @@ if stack_size_is_known
     end
     if isempty(inds_z_read_from)
         if cropfb
-            inds_z_read_from = 1:sz_yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:sz_yxzt(3) will skip flyback frames for raw and hires, while 1:size_z_read_from will read flyback frames;
+            inds_z_read_from = 1:sz_yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:sz_yxzt(3) will skip flyback frames for raw, while 1:size_z_read_from will read flyback frames;
         else
             inds_z_read_from = 1:size_read_from(4); %read all frames of not cropfb
         end
@@ -90,7 +90,7 @@ try
         inds_t_read_from = inds_t_read_from);
 catch ME
     if strcmp(ME.message, '*** TIFFStack: Index exceeds stack dimensions.')
-        if ~( contains(filnam, 'trial_') && contains(filnam, '-') ) && ~contains(filnam, 'raw') && ~contains(filnam, 'hires')
+        if ~( contains(filnam, 'trial_') && contains(filnam, '-') ) && ~contains(filnam, 'raw')
             fprintf("you may have discarded a channel in creating " + filnam + fnext + " trying to load again, this time as single channel" + newline)
             size_read_from(3) = 1;
             inds_c_read_from = 1;

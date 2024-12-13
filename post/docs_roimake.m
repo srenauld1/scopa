@@ -32,12 +32,11 @@ pre:
 
 rois:
     roimake: roim and/or roif
-    input: stack (pre output) and metadata (optional hires)
+    input: stack (pre output) and metadata
     output: roi masks and timeseries
 
 post:
     extern/daq
-    hires: registration, rois
     feature extraction (from stack and/or timeseries)
     modeling
     visualization
@@ -86,7 +85,7 @@ for num_roim argument
 if number is passed, method is automated
 you can have zero morph rois, which means any functional rois will not get morph selection
 you can have one morph roi, which will use edge detection to refine and functional rois will get that selection
-you can have more than 1 morph roi, which will create automated rois (either with or without hires stack), and those are bad for functional roi selection
+you can have more than 1 morph roi, which will create automated rois, and those are bad for functional roi selection
 if more than zero automated morph rois, option to use manually drawn roi
 to help automation (loops over each drawn roi)
 if string 'manual' is passed

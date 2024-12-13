@@ -19,12 +19,11 @@ d.copybin = "";
 d.filled = 0;
 d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported; options struct will make sure all of these are populated before existing oset 
-    "spec", "mn", "daq", "sld", "ftv", "roi", "hires", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
+    "spec", "mn", "daq", "sld", "ftv", "roi", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
     "mf.tg", "mf.sp", "mf.tp", ...
     "bmp", "bmp.mf", "bmp.mf.tg", "bmp.mf.opg", "bmp.mf.opl", ...
     "sld.sp", ...
-    "hires.sld.sp", ...
     "pltx.tg", ...
     ];
 
@@ -53,7 +52,7 @@ d.mn.dopltx = 0; %plot experiment (o.pltx below)
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 d.mn.oldcarl = 0; %run with some settings for carl's old project
-d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf", "hires"]; %list of subroutines that get plots (all by default)
+d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf"]; %list of subroutines that get plots (all by default)
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 
@@ -78,7 +77,7 @@ d.daq.use_carls_epochs = 0; %1 for carl, 0 for everybody else; use vector of epo
 
 %% sld (stackld: load, process stack)
 
-d.sld.chanuse = [1, 2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
+d.sld.chanuse = [1,2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
 d.sld.cropfb = 1; %crop flyback frames from each volume
 d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.clip = [0, 1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
@@ -86,6 +85,7 @@ d.sld.tcrop = [0, 0]; %how many samples to remove from [start, end] of stack; si
 d.sld.stackdtype = 'uint16';
 d.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
 d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
+d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = [ d.spec.suffixvalid ]; %stack suffixes to plot together in a gif; default tries to plot all d.spec.suffixvalid; nonexistent or invalid suffixes are ignored; these stacks are also converted from tif to mat (along with d.spec.suffix, in case user doesn't list it here)
 
@@ -115,7 +115,6 @@ d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatena
 
 d.ma.chan = 1; %which channel for auto roi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
 d.ma.numroi = 128; %partition regionex into num_roim_auto morphological rois; a drawn roi, if it exists, masks the regionex prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single regionex)
-d.ma.usehires = 0; %cell of regionex strings, use hi-z-res stack to help make morphological rois (to help 3d edge detection of region boundaries, and to help automated subdivision of 3d region into morphological rois)
 d.ma.maskmake = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 d.ma.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
 d.ma.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
@@ -378,19 +377,6 @@ d.pltx.iz = []; %z indices to plot, empty for all, negative for that number equi
 d.pltx.it = []; %[3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 d.pltx.dr = [0,1];
 d.pltx.doui = 1;
-
-%% hires (hiresld: load and register high-z-res stack if it exists)
-
-% options for hires stack (high z resolution version of main stack) . . . this code is a little deprecated
-% hires stack is only used in making morphological rois, set o.roi.ma.use_hires=1 to use
-% options below, in vbin hires, are for registering the hires stack to the regular stack;
-% hires registration is done in matlab rather than in caiman because it matches an unregistered stack to a registered stack with different z resolution
-% this is different enough from caiman's available pipeline's, and simple enough to do with matlab imregtform and imwarp, that it made sense at the time; 
-% but now it seems simpler to just do the same thing in caiman with scikit warp as part of register.py (TODO)
-
-d.hires.disttype = 'monomodal'; % multimodal monomodal, used in stackrg3d from within hiresrg
-d.hires.regtype = 'rigid'; %3d registration type (rigid should be best for tiny fly brain), used in stackrg3d from within hiresrg
-d.hires.use_caiman_on_hires = 0; %keep at 0 bc pipeline not yet finished for this option (also doens't seem to help)
 
 %% tp (tsplt: plot timeseries)
 

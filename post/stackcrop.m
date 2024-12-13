@@ -1,6 +1,5 @@
-function [stack, zstartsub, hrlrsub, hiresmntsub, croplim] = ...
-    stackcrop(stack, regionex, zstartpos, recid, dirstack, sz, ...
-    usehires, stackmnthr, hrlr )
+function [stack, zstartsub, croplim] = ...
+    stackcrop(stack, regionex, zstartpos, recid, dirstack, sz)
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
@@ -9,15 +8,9 @@ if isempty(regionexdf)
     regionexdf = 'none'; %if you haven't set the global
 end
 
-if ~exist('usehires', 'var')
-    usehires = 0;
-end
-
-
 if strcmp(regionex, regionexdf) 
 
     croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4), 1, size(stack, 5)];
-    % stack = single(stack);
 
 else
 
@@ -31,33 +24,10 @@ else
         [croplim, croplimstr] = croplimmake(stack, sz(4), dirstack, recid, regionex, regionex_nounderscore, numchan);
     end
     
-    % stack = single(stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10))); %previously converted to single here, not sure why
     stack = stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10)); %previously converted to single here, not sure why
 
 end
 
 zstartsub = zstartpos(croplim(5):croplim(6));
-
-if usehires
-    if numchan==2
-        error("need to write 2 chan croplim for hires")
-    end
-    if contains(regionex, '_')
-        error("you set usehires=1 with a sub-regionex (ie regionex has an underscore); code isn't written for this yet; just need to crop hires accordingly (or, depending on sub-regionex)")
-    end
-    if ~isempty(croplim)
-        zinds_lores = croplim(5):croplim(6);
-        zinds_hires = ismember_each_element(hrlr, zinds_lores);
-        hrlrsub = hrlr(zinds_hires) - (min(croplim(5):croplim(6))-1);
-        hiresmntsub = single(stackmnthr(croplim(1):croplim(2), croplim(3):croplim(4), zinds_hires));
-    else
-        hrlrsub = hrlr;
-        hiresmntsub = stackmnthr;
-    end
-else
-    hiresmntsub = [];
-    hrlrsub = [];
-end
-
 
 end

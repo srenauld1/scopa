@@ -1,7 +1,7 @@
 function pltx(stack, vars, doui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
     roidat, ti, sampper, zstartpos, epochts, gifvis, ...
-    iz, it, dr, pthgif_prefix_short, pthgif_prefix, ...
+    iz, it, drvid, pthgif_prefix_short, pthgif_prefix, ...
     pth_roim_interactive, normopt, widyxz, opt)
 
 arguments
@@ -23,7 +23,7 @@ arguments
     gifvis = []
     iz = []
     it = []
-    dr = []
+    drvid = []
     pthgif_prefix_short = []
     pthgif_prefix = []
     pth_roim_interactive = []
@@ -36,9 +36,6 @@ end
 vid = opt.vid;
 stimvid = opt.stimvid;
 
-ywid = widyxz(1);
-xwid = widyxz(2);
-zwid = widyxz(3);
 
 if ~iscell(epochinds_all)
     epochinds_all = {epochinds_all};
@@ -75,7 +72,7 @@ sampinc = 10; %sample increment per gif frame; sampinc~=1 will include lower bou
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 0; %making 0 makes missing channel nan, which is good i think . . . previously thought leave this as 1, skip nanes when rescaling to plot timeseries on same axis
-newroirad = 3*xwid; %radius (microns) for user input rois
+newroirad = 3%3*widyxz(1); %radius (microns) for user input rois
 numfr_gif_max = 2000; %throw error if there will be more
 timedim = 2;
 
@@ -183,7 +180,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sampper, pth_roim_interactive, normopt, newroirad, newroicen_all, xwid, ywid, zwid, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sampper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -261,7 +258,7 @@ while plotloop %loop is turned off if no user input
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    h.st = initaxim(h.hfg, ax, stack, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=dr, sector_ind=sector_ind);
+                    h.st = initaxim(h.hfg, ax, stack, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
 
 
                     sector_ind = 1;
@@ -276,11 +273,10 @@ while plotloop %loop is turned off if no user input
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
-                    display_range_vid = [0 1];
+                    drvid = [0 1];
                     douivid = 1;
-                    txtvar_vid = [];
-                    h.vid = initaxim(h.hfg, ax, vid, doui=douivid, cmap, txtvar_vid, display_range_vid, sector_ind, subplot_ind, widfac, htfac);
-                    h.st = initaxim(h.hfg, ax, stack, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=dr, sector_ind=sector_ind);
+                    doolvid = 1;
+                    h.vid = initaxim(h.hfg, ax, vid, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
 
 
                 end

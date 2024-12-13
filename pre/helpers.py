@@ -39,7 +39,7 @@ def stack_reshape_transpose_clip_zero_type(stack, dims, clip=0):
     return stack
 
 
-def rename_files(pth_readfile, fname, fn_prefix, fldr, pth_hires):
+def rename_files(pth_readfile, fname, fn_prefix, fldr):
 
     if re.search('trial', fname) or re.search('stackraw', fname):
         fname_rename = fn_prefix + '_raw_.' + fname[-3:]
@@ -54,27 +54,8 @@ def rename_files(pth_readfile, fname, fn_prefix, fldr, pth_hires):
         
         pth_readfile = pth_readfile_rename
         fname = fname_rename
-    
 
-    if pth_hires:
-        fn_hires = os.path.basename(pth_hires)
-        if re.search(fn_prefix.split('_')[0] + '-' + fn_prefix.split('_')[1], fn_hires):
-            fn_hires_rename = fn_hires.replace('-', '_')
-            pth_hires_rename = fldr + fn_hires_rename
-            print("RENAMING FILE \n" + pth_hires + "\nTO \n" + pth_hires_rename)
-            os.rename(pth_hires, pth_hires_rename) 
-        
-            pth_hires = pth_hires_rename
-
-        pth_badmat = glob.glob(pth_hires[:-4] + '.mat') #remove any mat files from old filename pattern
-        if pth_badmat:
-            print("REMOVING THE FOLLOWING MAT FILE WITH OLD NAMING PATTERN \n" + pth_badmat[0])
-            os.remove(pth_badmat[0])
-        
-    
-        
-
-    return (pth_readfile, fname, pth_hires)
+    return (pth_readfile, fname)
 
 
 def mat2tif(pth_readfile, carls_old_project):

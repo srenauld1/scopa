@@ -266,24 +266,13 @@ def parse_command_line():
 
     ############## SET THE DO OPTIONS BASED ON COMMAND LINE ARGUMENT jobnm ##############
 
-    do_register = int(0)
-    do_denoise = int(0)
-    do_stitch = int(0)
-    do_extract = int(0)
-    do_remove = int(0)
-    do_a2p = int(0)
-    if jobnm==['mcp']:
-        do_register = int(1)
-    elif jobnm==['dnp']:
-        do_denoise = int(1)
-    elif jobnm==['stc']:
-        do_stitch = int(1)
-    elif jobnm==['exp']:
-        do_extract = int(1)
-    elif jobnm==['rsc']:
-        do_remove = int(1)
-    elif jobnm==['a2p']:
-        do_a2p = int(1)
+    do_autoallocate = int(jobnm==['alo'])
+    do_register = int(jobnm==['mcp'])
+    do_denoise = int(jobnm==['dnp'])
+    do_stitch = int(jobnm==['stc'])
+    do_extract = int(jobnm==['exp'])
+    do_remove = int(jobnm==['rsc'])
+    do_a2p = int(jobnm==['a2p'])
 
     ############## PRINT ALL THE ARGUMENTS ##############
 
@@ -297,7 +286,7 @@ def parse_command_line():
             print(whitespaces_three, k, '=', v)
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
+                      do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 

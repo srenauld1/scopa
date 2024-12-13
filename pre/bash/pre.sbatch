@@ -14,12 +14,14 @@ fi
 ## LOAD VIRTUAL ENVIRONMENT ##
 if [ "$DO_COPYFILES" == 0 ]; then  #load virtual env if not copying files from wilsonlab server into O2
     echo "DOING ANALYSIS (NOT COPYING FILES) BECAUSE DO_COPYFILES IS SET TO "$DO_COPYFILES""
-    if [ "$JOBNM" == dnp ]; then #deepcad denoising
+    if [ "$JOBNM" == alo ]; then
+        echo "RUNNING AUTOALLOCATE JOB ON TRANSFER PARTITION"
+    elif [ "$JOBNM" == dnp ]; then #deepcad denoising
         module load cuda/11.7 #12.1
         eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
         conda activate deepcad
         /n/cluster/bin/job_gpu_monitor.sh &
-    elif [ "$JOBNM" == alo ] || [ "$JOBNM" == mcp ] || [ "$JOBNM" == exp ] || [ "$JOBNM" == stc ]; then #auto-allocate (doesn't actually need caiman but this will work) or caiman registration or extraction (stitch should not need it but maybe still does bc of an error?)
+    elif [ "$JOBNM" == mcp ] || [ "$JOBNM" == exp ] || [ "$JOBNM" == stc ]; then #auto-allocate (doesn't actually need caiman but this will work) or caiman registration or extraction (stitch should not need it but maybe still does bc of an error?)
         eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
         conda activate caiman #should not have to activate caiman for do_stitch but ffmpeg does not work when i remove this; should fix this but doens't really matter
     elif [ "$JOBNM" == rsc ] || [ "$JOBNM" == a2p ]; then #matlab engine

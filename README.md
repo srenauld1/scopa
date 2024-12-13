@@ -297,7 +297,7 @@ entrypoint is a2p.m
 
  if a regionex rectangle or cuboid cannot well separate brain regions that you want separated in later analysis, 'post' gives the option to further sebset/subdivide any regionex with free drawn rois (we don't do that here because caiman cannot operate on irregularly shaped FOV)
 
- hires is not processed in python; in matlab it is registered to the registered stack; this seemed simpler 
+ hires stack processing is now deprecated; some code for it is in deprecated folder; originally the idea was for hi-z-res stack to help improve morphological roi segmentation; it helped some in the interior z of the stack, but now i image at high z res anyway, and also found the hi res did not help enough to justify the increased code complexity
 
 
 #a2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
@@ -316,9 +316,6 @@ entrypoint is a2p.m
 ##written to cycle through all source extraction files (different params) and cycle through all normalization methods, and compare all of them
 ##since it can be hard to intuit the optimal settings
 
-#Hi-z-res stack is only useful for mapping multiple morphological ROIs
-#Because hires can help increase z res in the interior of the region if functional ROIs span multiple lo res planes (def flawed though)
-#But won't help at the region exterior since you don't know where lores roi ends
 
 #rois can be morphological or functional
 #morphological rois are clustered

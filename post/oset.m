@@ -15,7 +15,7 @@ otmp.spec.pthparent_local = '~/stacks';
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(specin) %if you're running a2p without input arguments (ie if specin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not specin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
     otmp.spec.recdate = {'20230627'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.fly = {'2'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)

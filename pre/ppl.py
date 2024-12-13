@@ -35,11 +35,12 @@ from parse_args import parse_command_line
 from paths_scopa import make_paths
 from choose_files import choose_files
 from copy_files_scopa import copy_files_scopa
+from autoallocate import autoallocate
 
 if len(sys.argv)>1: #if in noninteractive mode (running cxp), read in arguments from cxp
 
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
-                      do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
+                      do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
@@ -49,7 +50,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running cxp), read in arguments 
                       do_a2p, first_job] = parse_command_line()
 
 
-[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(currscriptdir, do_copyfiles, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
+[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(currscriptdir, do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_a2p > 1:
@@ -63,7 +64,7 @@ else:
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range) . . . IS THIS STILL TRUE?")
 
-if not do_copyfiles:
+if do_copyfiles==0 and do_autoallocate==0:
 
   import numpy as np
   import cv2
@@ -111,7 +112,7 @@ if not do_copyfiles:
     import io
 
 
-[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, pth_hires_all, carls_old_project_all] = \
+[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all] = \
   choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
@@ -119,49 +120,55 @@ if not do_copyfiles:
 
 for ri, _ in enumerate(pth_read_all):
    
-    if do_copyfiles!=0: #copy data (from storage to compute filesystem, or vice versa)
-      copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pth_md_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_croplim_all[ri], pth_hires_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
-        
-    elif do_copyfiles==0: #analyze data 
+    if do_autoallocate==1: 
       
-      print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_read_all[ri] + "\nLOADING SCANIMAGE METADATA FROM THIS FILE: \n" + pth_md_all[ri]) 
+      autoallocate(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pth_md_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_croplim_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
 
-      with open(pth_md_all[ri], 'r') as file:
-        md = json.loads(file.read())
-
-      if do_register:
-          try: #spatial_downsample_fictrac_video is not essential, so putting in a try block
-            spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
-          except Exception as err:
-            print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
-          register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
-
-      if do_denoise:
-        chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
-        denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_primary)
-        if chanstr_secondary:
-          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)
-           
-      if do_stitch:
-        stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
-
-      if do_remove:
-        eng = matlab.engine.start_matlab()
-        eng.addpath(eng.genpath(pth_scopa))
-        mtlout = io.StringIO()
-        mtlerr = io.StringIO()
-        eng.scannoiserm(pth_read_all[ri], smlenpx_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
-
-      if do_extract or do_crop_only:
-        extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)
-
-      if do_a2p:
-        eng = matlab.engine.start_matlab()
-        eng.addpath(eng.genpath(pth_scopa))
-        mtlout = io.StringIO()
-        mtlerr = io.StringIO()
-        eng.a2p(pth_read_all[ri], stdout=mtlout, stderr=mtlerr, nargout=0)
+    else:
+      
+      if do_copyfiles!=0: #copy data (from storage to compute filesystem, or vice versa)
+        copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pth_md_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_croplim_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
           
-         
+      elif do_copyfiles==0: #analyze data 
+        
+        print("\n\n\nOPERATING ON THE FOLLOWING FILE: \n" + pth_read_all[ri] + "\nLOADING SCANIMAGE METADATA FROM THIS FILE: \n" + pth_md_all[ri]) 
+
+        with open(pth_md_all[ri], 'r') as file:
+          md = json.loads(file.read())
+
+        if do_register:
+            try: #spatial_downsample_fictrac_video is not essential, so putting in a try block
+              spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+            except Exception as err:
+              print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
+            register(pth_read_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
+
+        if do_denoise:
+          chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
+          denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_primary)
+          if chanstr_secondary:
+            denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)
+            
+        if do_stitch:
+          stitch_denoised_slices(pth_denoising, fn_prefix_all[ri], pth_read_all[ri], md, denoise_volume, epoch_choose_denoise) 
+
+        if do_remove:
+          eng = matlab.engine.start_matlab()
+          eng.addpath(eng.genpath(pth_scopa))
+          mtlout = io.StringIO()
+          mtlerr = io.StringIO()
+          eng.scannoiserm(pth_read_all[ri], smlenpx_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
+
+        if do_extract or do_crop_only:
+          extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)
+
+        if do_a2p:
+          eng = matlab.engine.start_matlab()
+          eng.addpath(eng.genpath(pth_scopa))
+          mtlout = io.StringIO()
+          mtlerr = io.StringIO()
+          eng.a2p(pth_read_all[ri], stdout=mtlout, stderr=mtlerr, nargout=0)
+            
+          
 
 print("\n\n\nEXITING ppl.py") 

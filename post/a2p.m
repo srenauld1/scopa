@@ -9,8 +9,6 @@ end
 
 clear glb %clear globals
 
-optdfsv
-
 oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 
 for k = 1:numel(oa) % loop over recordings
@@ -25,7 +23,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load metadata
 
-    md = mdsild(pth.md, o.sld, o.hires.sld);
+    md = mdsild(pth.md, o.sld);
 
     % md_flyg = mdflygld(ids, pth.mdflyg, pth.dirstack, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md
@@ -61,7 +59,9 @@ for k = 1:numel(oa) % loop over recordings
                 usefbf=o.daq.usefbf);
             [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
             [md.epochs, ts.epochinds, ts.vis] = epochld(ts.t, pth.epochinfo, ts.vis, pth.dirstack, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
-            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
+            if ~isempty(ts.ball.forvel)
+                [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
+            end
         end
 
         if o.mn.doftv
@@ -81,31 +81,29 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% load/visualize stack (and optional hires stack)
+    %% load/visualize stack
 
-    stack = stackld(pth.stack, ...   %can just pass pth.stack if it's mat; if tif need to also pass sz to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim;
-        suffixplt=o.sld.suffixplt, ... %pass nonempty suffixplt and it will plot whichever suffixes are in same folder as pth.stack, along with pth.stack
+    stack = stackld(pth.stack, ...
+        pthmd = pth.md, ...
         sz = md.sz_o, ...
         numslice_withflyback = md.numslice_withflyback, ...
         channel_save = md.channel_save, ...
+        stackdtype = o.sld.stackdtype, ...
         chanuse = o.sld.chanuse, ...
         tcrop = o.sld.tcrop, ...
         cropfb = o.sld.cropfb, ...
         zerostack = o.sld.zerostack, ...
         clip = o.sld.clip, ...
-        stackdtype = o.sld.stackdtype, ...
+        smlenpx = o.sld.smlenpx, ...
+        smlensec = o.sld.smlensec, ...
+        imrate = md.volrate, ...
+        smmthd = o.sld.smmthd, ...
         dostats = o.sld.dostats, ...
+        suffixplt=o.sld.suffixplt, ...
         it = o.sld.sp.it, ...
         iz = o.sld.sp.iz, ...
-        smlenpx=o.sld.smlenpx, ...
-        smlensec = o.sld.smlensec, ...
-        dr = o.sld.sp.dr, ...
-        imrate = md.volrate);
-
-    if pth.hires_prefix
-        [stackmnthr, hrlr] = hiresld(ids.recid, pth, stack, md, o.hires);
-    end
-
+        dr = o.sld.sp.dr);
+    
     %% create/load/select rois/responses for each optid
 
     if o.mn.doroi
@@ -154,14 +152,14 @@ for k = 1:numel(oa) % loop over recordings
     if o.mn.dopltx
         fn = fieldnames(o.pltx);
         for m = 1:numel(fn)
-            fitin.vars.resp_ind1 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind2 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind3 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind4 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind5 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind6 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind7 = ts.roi.i22{1}(1,:);
-            fitin.vars.resp_ind8 = ts.roi.i22{1}(1,:);
+            fitin.vars.resp_ind1 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind2 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind3 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind4 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind5 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind6 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind7 = ts.roi.i30{1}(50,:);
+            fitin.vars.resp_ind8 = ts.roi.i30{1}(50,:);
 
             fitin.vnm.resp_ind1{1} = '';
             fitin.vnm.resp_ind2{1} = '';
@@ -175,14 +173,15 @@ for k = 1:numel(oa) % loop over recordings
             o.pltx.vpmap.r = o.pltx.vpmapr;
             fitin.pthpre = [pth.prefix 'fool'];
             fitin.fn_save_prefix_short = fitin.pthpre;
-            pthroiint = '~/stacks/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_i22_roi_inter.mat';
-            zstartsub = 0;
+            pthroiint = '~/stacks/20241209_1/20241209_1_1_cmrg_dcdn_i30_roi_inter.mat';
             nrm='f';
+            ts.epochinds = ones(size(ts.t));
             o.pltx.epochinds = [];
+            zstartsub = round(linspace(0,30,10));
             pltx(stack, fitin.vars, o.pltx.doui,  ...
                 fitin.vnm, o.pltx.vpmap, o.pltx.epochinds, ...
                 o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
-                o.pltx.plot_z_as_color, roidat.i22{1}, ts.t, md.sampper, zstartsub, ...
+                o.pltx.plot_z_as_color, roidat.i30{1}, ts.t, md.sampper, zstartsub, ...
                 ts.epochinds, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
                 o.pltx.dr, fitin.fn_save_prefix_short, fitin.pthpre, ...
                 pthroiint, nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)

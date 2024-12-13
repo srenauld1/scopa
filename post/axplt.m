@@ -211,7 +211,11 @@ while tloop
 
 
         %%%% FICTRAC VIDEO %%%%
-        h.vid.hpl{1}.CData = vid(:,:,:,tinds_use(fr)); %fictrac video
+        if ndims(vid)==3
+            h.vid.hpl{1}.CData = vid(:,:,tinds_use(fr)); %fictrac video
+        else
+            h.vid.hpl{1}.CData = vid(:,:,:,tinds_use(fr)); %fictrac video
+        end
         if vidcenflag
             nc1 = cb.val.vidcen{vidcenv}(1);
             nc2 = cb.val.vidcen{vidcenv}(2);
