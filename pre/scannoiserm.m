@@ -1,34 +1,23 @@
 
-function scannoiserm(pth_stack_tif, smlenpx_rsc)
+function scannoiserm(pth_stack, stopband, smlensec, doplt)
 
+arguments
+    pth_stack %pth_stack is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
+    stopband = [10 20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
+    smlensec = 0
+    doplt = 1;
+end
 
 sprintf("\n\n\nENTERING scannoiserm.m")
-
-%pth_stack_tif is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
-
-makeplots = 1;
-stopband = [10 20]; %set emperically for now, stopband frequency indices keep between 2 and half x length . . . hopefully scan noise is fairly constant across recordings
 
 it = 50.4; %t indices to plot, blank for all, negative for that number equidistant from all available
 iz = []; %z indices to plot, blank for all, negative for that number equidistant from all available
 
 zerostack = 1; %subtract min to make min zero 
 
-dr = [0,1]; %for plotting, if makeplots
-fdimnum = 3;%for plotting, if makeplots
-dimorder = [1,2,3,4];%for plotting, if makeplots
+display(['processing : ' pth_stack] )
 
-display(['processing : ' pth_stack_tif] )
-
-[dirstack, filnam, ~] = fileparts(pth_stack_tif);
-
-if ~isempty(regexp(filnam, regexptranslate('wildcard', '_raw'))) || ~isempty(regexp(filnam, regexptranslate('wildcard', '_trial')))
-    error(sprintf("ERROR, \nTHIS FUNCTION IS NOT WRITTEN FOR STACKS WITH FLYBACK " + ...
-        "('raw' or 'trial' in filename), \n" + ...
-        "IF YOU WANT TO PASS THOSE STACKS TO THIS FUNCTION, \n" + ...
-        "YOU NEED TO ADJUST size_z_read_from AND inds_z_read_from \n" + ...
-        "TO MAKE THEM AS THEY APPEAR IN stackld.m"))
-end
+[dirstack, filnam, ~] = fileparts(pth_stack);
 
 dirstack = [dirstack filesep];
 spl = strjoin(strsplit(filnam, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
@@ -44,8 +33,7 @@ end
 
 recid = [num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum)];
 
-pth_stack_mat = [pth_stack_tif(1:end-4) '.mat']; %in case pth_stack_tif is a tif, also look for mat (and if it's mat, this does nothing
-pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
+pth_stack_nosn_mat = [pth_stack(1:end-4) 'nosn_.mat'];
 pth_md = [dirstack recid '_mdsi_.txt'];
 
 md = mdsild(pth_md);
@@ -56,8 +44,6 @@ sampper = 1/md.volrate;
 cropfb = 0;
 numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
 
-[it, itstr] = indsmake(it, indsall=sz(4), label_prefix='t');
-[iz, izstr] = indsmake(it, indsall=sz(3), label_prefix='z');
 
 
 if isequal(dr, [0,1])
@@ -66,16 +52,16 @@ else
     dr_str = ['DR' num2str(dr(1)) 'to' num2str(dr(2))];
 end
 
-if smlenpx_rsc
-    smooth_str = [strrep(num2str(smlenpx_rsc), '.', 'p') 'secSmooth'];
-    len_window_smooth_t_rsc_samp = smlenpx_rsc / sampper; %does not need to be rounded for smoothdata
+if smlensec
+    smooth_str = [strrep(num2str(smlensec), '.', 'p') 'secSmooth'];
+    len_window_smooth_t_rsc_samp = smlensec / sampper; %does not need to be rounded for smoothdata
 else
     smooth_str = 'nosmooth';
     len_window_smooth_t_rsc_samp = 0;
 end
 
 figtitle_prefix = [recid '_' suffix '_' dr_str '_' smooth_str];
-filename_prefix = [dirstack figtitle_prefix '_' izstr '_' itstr ];
+filename_prefix = [dirstack figtitle_prefix];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
@@ -85,14 +71,14 @@ fn_gif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 %% load
 
 try
-    stack = struct2cell(load(pth_stack_mat));
+    stack = struct2cell(load(pth_stack));
     stack = stack{1};
 catch
-    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, cropfb, zerostack, sz(4));
+    stack = tif2mat(pth_stack, numslice_withflyback, sz, cropfb, zerostack, sz(4));
 end
 
 
-%% smooth
+%% smooth (optional, can make noise more bandlimited, so easier to filter)
 
 
 if len_window_smooth_t_rsc_samp
@@ -104,22 +90,12 @@ end
 
 %% plot before filtering
 
-
-
-if makeplots
-    
-    index_labels = arrayfun(@(x) 1:x(end), size(stack), 'UniformOutput', false);
-    index_labels{3} = iz;
-    index_labels{4} = it;
-    gifvis = 'on';
-
-    stackplt(stack(:,:,iz, it), pthgif=fn_gif_prefilt, gifvis=gifvis, dr=dr, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
-
+if doplt
+    stackplt(stack, it=it, iz=iz, pthgif=fn_gif_prefilt);
 end
 
 
 %% filter
-
 
 stack = fft_filter_1d(stack, stopband);
 "DONE FILTERING"
@@ -127,8 +103,8 @@ stack = fft_filter_1d(stack, stopband);
 
 %% plot after filtering
 
-if makeplots
-    stackplt(stack(:,:,iz, it), pthgif=fn_gif_postfilt, gifvis=gifvis, dr=dr, fdimnum=fdimnum, dimorder=dimorder, title_prefix=figtitle_prefix, index_labels=index_labels)
+if doplt
+    stackplt(stack, it=it, iz=iz, pthgif=fn_gif_postfilt);
 end
 
 %% save

@@ -30,6 +30,7 @@ arguments
     opt.iz = []
     opt.dr = [0,1]
     opt.doplt = [] %default empty rather than 0 to distinguish user passing 0 and user passing nothing
+    opt.suffixvalid = []
 end
 
 pthmd = opt.pthmd;
@@ -52,10 +53,8 @@ it = opt.it; %t indices to plot, empty for all, negative for that number equidis
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 dr = opt.dr;
 doplt = opt.doplt;
+suffixvalid = opt.suffixvalid;
 
-if ~iscell(dr)
-    dr = {dr};
-end
 
 suffixplt = convertStringsToChars(suffixplt);
 if ~isempty(suffixplt) && ~iscell(suffixplt)
@@ -71,18 +70,23 @@ if ~doplt
     suffixplt = [];
 end
 
-if any([isempty(sz), isempty(numslice_withflyback), isempty(channel_save), isempty(imrate)])
-    if isempty(pthmd) || ( ~isempty(pthmd) && ~all([isempty(sz), isempty(numslice_withflyback), isempty(channel_save), isempty(imrate)]) )
-        error("you must pass all metadata arguments, or pass path to metadata file and no metadata arguments")
-    else
-        md = mdsild(pthmd);
-        sz = md.sz_o;
-        numslice_withflyback = md.numslice_withflyback;
-        channel_save = md.channel_save;
-        imrate = md.volrate;
-    end
+if ~isempty(suffixvalid) && isempty(glb('suffixvalid'))
+    glb(suffixvalid=d.spec.suffixvalid); %set to global
 end
 
+if endsWith(pthstack, '.tif') || any(smlensec) %you only need md to convert tif to mat, or to smooth in time
+    if any([isempty(sz), isempty(numslice_withflyback), isempty(channel_save), isempty(imrate)])
+        if isempty(pthmd) || ( ~isempty(pthmd) && ~all([isempty(sz), isempty(numslice_withflyback), isempty(channel_save), isempty(imrate)]) )
+            error("you must pass all metadata arguments, or pass path to metadata file and no metadata arguments")
+        else
+            md = mdsild(pthmd);
+            sz = md.sz_o;
+            numslice_withflyback = md.numslice_withflyback;
+            channel_save = md.channel_save;
+            imrate = md.volrate;
+        end
+    end
+end
 
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 suffixstack = id.suffix;
@@ -91,6 +95,10 @@ dirstack = id.dirstack;
 
 if ~iscell(suffixstack)
     suffixstack = {suffixstack};
+end
+
+if ~iscell(dr)
+    dr = {dr};
 end
 
 if ~isempty(suffixplt)
@@ -130,7 +138,7 @@ dr = dr(indsnew);
 
 cnt = 0;
 for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt, dr, and indsmissing
-    pthtmp = stackfind(pthsib=pthstack, suffix=suffixld{spi});
+    pthtmp = stackfind(pthsib=pthstack, suffix=suffixld{spi}, suffixvalid=suffixvalid);
     if ~isempty(pthtmp)
         cnt = cnt+1;
         pthstackall(cnt) = pthtmp;

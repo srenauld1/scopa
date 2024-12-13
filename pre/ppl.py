@@ -45,7 +45,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running cxp), read in arguments 
                       registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, smlenpx_rsc, use_scannoise_removed,
+                      do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed,
                       do_extract, methodex, extract_in_2d, regionex, 
                       do_a2p, first_job] = parse_command_line()
 
@@ -157,7 +157,7 @@ for ri, _ in enumerate(pth_read_all):
           eng.addpath(eng.genpath(pth_scopa))
           mtlout = io.StringIO()
           mtlerr = io.StringIO()
-          eng.scannoiserm(pth_read_all[ri], smlenpx_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
+          eng.scannoiserm(pth_read_all[ri], stopband_rsc, smlensec_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
 
         if do_extract or do_crop_only:
           extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)

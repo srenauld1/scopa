@@ -103,9 +103,7 @@ if iscell(inp) %setting globals
             else
                 if ~ischar(inp{k+1}) && ~isscalar(inp{k+1})
                     if iscell(inp{k+1})
-                        tmpcl = inp{k+1};
-                        strtmp = sprintf( '%s, ', tmpcl{:} );
-                        strtmp = strtmp(1:end-2);
+                        strtmp = fprintf( '%d ', cell2mat(time(2:end)) ) cell2mat(inp{k+1});
                     else
                         strtmp = mat2str(inp{k+1});
                     end

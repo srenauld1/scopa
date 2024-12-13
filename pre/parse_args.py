@@ -132,7 +132,7 @@ def parse_command_line():
         args.use_denoised = pars.USE_DENOISED
         args.use_scannoise_removed = pars.USE_SCANNOISE_REMOVED
         args.epoch_choose_denoise = pars.EPOCH_CHOOSE_DENOISE
-        args.smlenpx_rsc = pars.SMLENPX_RSC
+        args.smlensec_rsc = pars.SMLENSEC_RSC
         args.extract_in_2d = pars.EXTRACT_IN_2D
         args.regionex = pars.REGIONEX
 
@@ -255,7 +255,7 @@ def parse_command_line():
         epoch_choose_denoise = args.epoch_choose_denoise #keep as list
     epoch_choose_denoise = [int(tmp) for tmp in epoch_choose_denoise] #make sure int
     
-    smlenpx_rsc = float(args.smlenpx_rsc[0])
+    smlensec_rsc = float(args.smlensec_rsc[0])
     extract_in_2d = int(args.extract_in_2d[0])
 
     if isinstance(args.regionex[0], list):
@@ -291,7 +291,7 @@ def parse_command_line():
                       registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
-                      do_remove, smlenpx_rsc, use_scannoise_removed, 
+                      do_remove, smlensec_rsc, use_scannoise_removed, 
                       do_extract, methodex, extract_in_2d, regionex, 
                       do_a2p, first_job)
 
