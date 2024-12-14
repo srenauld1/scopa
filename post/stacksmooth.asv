@@ -30,7 +30,7 @@ end
 if isempty(smlenpx)
     smlenpx = [0 0 0];
 else
-    if numel(smlenpx)~=3 || ~isvector(smlenpx)
+    if numel(smlenpx)~=3 ||&& ~isvector(smlenpx)
         error("smlenpx must be 3-element vector")
     end
 end

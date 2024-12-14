@@ -9,7 +9,7 @@ arguments
     it = 50.3 %frames to plot (empty for all); 50.3 means 3 equidistant 50-frame segments 
     iz = [] %z slices to plot (empty for all)
     doplt = 1;
-    frameinds = [] %subset of frames to test filtering much faster (since it it purely spatial filtering, and frameinds indexing applied after any temporal smoothing is applied)
+    frameinds = [] %subset of frames to test filtering faster (since it it purely spatial filtering, and frameinds indexing applied after any temporal smoothing is applied); although filtering all frames should not take very long (1-10 minutes at the most)
 end
 
 
@@ -23,13 +23,15 @@ pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
 
 md = mdsild([], pthstack=pthstack);
 
+sbstr = [num2str(stopband(1)) 'to' num2str(stopband(2)) 'stopband_'];
+
 if smlensec
     smstr = [strrep(num2str(smlensec), '.', 'p') 'smsec'];
 else
     smstr = 'nosmooth';
 end
 
-figtitle_prefix = [id.recid '_' id.suffix '_' smstr];
+figtitle_prefix = [id.recid '_' id.suffix '_' sbstr '_' smstr];
 filename_prefix = [id.dirstack figtitle_prefix];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
@@ -161,7 +163,7 @@ stack = reshape(stack, numlines, numxpix, []);
 stack = permute(stack, [2 3 1]);
 
 stackout = zeros(size(stack), 'int16');
-
+tic
 % parfor_progress(numlines);
 for k = 1:numlines %do small loop so that the conversion to double is not too large in ram (output saved as int16, then converted to uint16 after subtracting min)
 
@@ -175,7 +177,7 @@ for k = 1:numlines %do small loop so that the conversion to double is not too la
 
 end
 % parfor_progress(0);
-
+toc
 
 stackout = stacktype(stackout, typeout); %convert from int16 to uint16
 
