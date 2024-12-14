@@ -171,7 +171,7 @@ def parse_command_line():
         stopband_rsc = args.stopband_rsc[0] #keep as list
     else:
         stopband_rsc = args.stopband_rsc #keep as list
-    clip = [int(tmp) for tmp in stopband_rsc] #convert to int if not 'all'
+    stopband_rsc = [int(tmp) for tmp in stopband_rsc] #convert to int if not 'all'
 
 
     if isinstance(args.clipinterp[0], list):
