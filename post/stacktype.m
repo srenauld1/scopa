@@ -1,15 +1,15 @@
-function stack = stacktype(stack, output_datatype)
+function stack = stacktype(stack, typeout)
 
-if ~isa(stack, output_datatype)
+if ~isa(stack, typeout)
     stackmin = min(stack, [], [1 2 3 4], 'omitmissing');
-    if any(stackmin < 0) && startsWith(output_datatype, 'u')
-        error("stack minimum is negative, and stackdtype is " + output_datatype + "; data type conversion would clip negative values in original data type; consider subtracting min (zerostack=1), or clipping negatives yourself (clipneg=1)")
+    if any(stackmin < 0) && startsWith(typeout, 'u')
+        error("stack minimum is negative, and stackdtype is " + typeout + "; data type conversion would clip negative values in original data type; consider subtracting min (zerostack=1), or clipping negatives yourself (clipneg=1)")
     end
     stackmax = max(stack(:)); %find max after possible zeroing
-    if startsWith(output_datatype, 'u') && stackmax > intmax(output_datatype)
-        error("ERROR, CONVERTING TO output_datatype " + output_datatype + " WILL CAUSE UPPER CLIPPING, CHANGE output_datatype")
+    if startsWith(typeout, 'u') && stackmax > intmax(typeout)
+        error("ERROR, CONVERTING TO typeout " + typeout + " WILL CAUSE UPPER CLIPPING, CHANGE typeout")
     end
-    switch output_datatype
+    switch typeout
         case 'uint16'
             stack = uint16(stack);
         case 'uint32'

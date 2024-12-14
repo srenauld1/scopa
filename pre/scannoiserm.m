@@ -1,5 +1,5 @@
 
-function scannoiserm(pthstack, stopband, smlensec, zerostack, it, iz, doplt, testframes)
+function scannoiserm(pthstack, stopband, smlensec, zerostack, it, iz, doplt, frameinds)
 
 arguments
     pthstack %pthstack is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
@@ -9,12 +9,13 @@ arguments
     it = 50.3 %frames to plot (empty for all); 50.3 means 3 equidistant 50-frame segments 
     iz = [] %z slices to plot (empty for all)
     doplt = 1;
-    testframes = [] %subset of frames to test filtering much faster (since it it purely spatial filtering, and testframes indexing applied after any temporal smoothing is applied)
+    frameinds = [] %subset of frames to test filtering much faster (since it it purely spatial filtering, and frameinds indexing applied after any temporal smoothing is applied)
 end
 
 
 fprintf("\n\n\nENTERING scannoiserm.m" + newline)
 fprintf("PROCESSING: " + pthstack + newline)
+
 
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 
@@ -47,14 +48,23 @@ stack = stackld(pthstack, ...
     zerostack=zerostack, ...
     smlensec=smlensec);
 
-%% index into testframes, if nonempty
+%% index into frameinds, if nonempty
 
 
-if any(testframes)
-    stack=stack(:,:,:,testframes);
-    fprintf("TESTFRAMES APPLIED" + newline)
+if isempty(frameinds)
+    frameinds = 1:md.numvol_o;
+else
+    frameinds(frameinds>md.numvol_o) = [];
+    stack=stack(:,:,:,frameinds);
 end
 
+if isequal(frameinds, 1:md.numvol_o)
+    dosave = 1;
+    fprintf("REMOVING SCAN NOISE FOR ALL " + numel(frameinds) + " FRAMES; WILL SAVE OUTPUT STACK" + newline)
+else
+    dosave = 0;
+    fprintf("REMOVING SCAN NOISE FOR " + numel(frameinds) + " FRAMES, FROM " + frameinds(1) + " TO " + frameinds(end) + "; WILL NOT SAVE OUTPUT STACK BECAUSE NOT OPERATING ON ALL FRAMES" + newline)
+end
 
 %% plot before filtering
 
@@ -77,11 +87,11 @@ end
 
 %% save
 
-if any(testframes)
-    fprintf("NOT SAVING BECAUSE USER PASSED ARGUMENT TESTFRAMES (A SUBSET OF ALL FRAMES), AND ONLY THOSE FRAMES GOT FILTERED" + newline)
-else
+if dosave
     save(pthstack_nosn, 'stack', '-v7.3', '-mat')
     fprintf("FINISHED SAVING" + newline)
+else
+    fprintf("NOT SAVING FILTERED STACK BECAUSE ONLY A SUBSET OF FRAMES WERE OPERATED ON (BECAUSE OF ARGUMENT frameinds)" + newline)
 end
 
 
@@ -92,7 +102,13 @@ end
 function stackout = fft_filter_1d(stack, stopband)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
-disp(size(stack));
+
+typeout = 'uint16'; %forcing this for now;
+if ~isa(stack, typeout)
+    error("STACK MUST BE UINT16")
+end
+
+fprintf("STACK SIZE IS: " + mat2str(size(stack)) + newline);
 
 sz = size(stack);
 numlines = sz(1);
@@ -148,24 +164,22 @@ stack = permute(stack, [2 3 1]);
 
 stackout = zeros(size(stack), 'int16');
 
+parfor_progress(numlines);
 parfor indi = 1:numlines %do small loop so that the conversion to double is not too large in ram (output saved as int16, then converted to uint16 after subtracting min)
 
     data = double(stack(:, :, indi));
     mnd = mean(data);
     data = data - mnd;
-    tmpout = filtfilt(filt, data); %zero-phase filtering
-    % tmpout = fftfilt(filt, data); %not zero phase
+    tmpout = filtfilt(filt, data); %zero-phase filtering ( fftfilt(filt, data) is not zero-phase ) 
     stackout(:,:, indi) = tmpout + mnd;
 
-end
+    parfor_progress;
 
-minall = min(stackout(:));
-maxall = max(stackout(:));
-stackout = stackout - minall; %subtract min before converting to uint16
-if maxall > 2^16-1
-    error("ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE")
 end
-stackout = uint16(stackout);
+parfor_progress(0);
+
+
+stackout = stacktype(stackout, typeout); %convert from int16 to uint16
 
 stackout = permute(stackout, [3 1 2]);
 stackout = reshape(stackout, sz); %put back in 4d
