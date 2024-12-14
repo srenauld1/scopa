@@ -137,7 +137,7 @@ if isempty(oin) || isempty(fieldnames(oin))
             end
             if ismember(vbin{k}, d.nestvalid) %if oin is empty but there's a nested vbin (a valid one, ie, listed in d.nestvalid) 
                 vbintmp = strsplit(vbin{k}, '.');
-                eval(['oin.' vbin{k} '= d.(vbintmp{end})']) %fill defaults for the deepest sub-vbin, and the whole nested branch will get filled
+                eval(['oin.' vbin{k} '= d.(vbintmp{end});']) %fill defaults for the deepest sub-vbin, and the whole nested branch will get filled
             else
                 oin.(vbin{k}) = d.(vbin{k});
             end

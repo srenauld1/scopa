@@ -1,100 +1,75 @@
 
-function scannoiserm(pth_stack_tif, stopband, smlensec)
+function scannoiserm(pthstack, opt)
 
 arguments
-    pth_stack %pth_stack_tif is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
-    smlensec = 0
-    stopband = [10 20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
+    pthstack %pthstack is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
+    opt.stopband = [10 20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
+    opt.smlensec = 0
+    opt.zerostack = 1
+    opt.it = 50.3
+    opt.iz = []
+    opt.testframes = []
+    opt.doplt = 1;
 end
+stopband = opt.stopband;
+smlensec = opt.smlensec;
+zerostack = opt.zerostack;
+it = opt.it;
+iz = opt.iz;
+testframes = opt.testframes;
+doplt = opt.doplt;
 
-sprintf("\n\n\nENTERING scannoiserm.m")
+fprintf("\n\n\nENTERING scannoiserm.m" + newline)
+fprintf("PROCESSING: " + pthstack + newline)
+opt
 
+id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
+recid = id.recid;
+dirstack = id.dirstack;
+suffix = id.suffix;
 
-makeplots = 1;
-stopband = [10 20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise is fairly constant across recordings
+pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
+pthmd = [dirstack recid '_mdsi_.txt'];
 
-it = 50.4; %t indices to plot, blank for all, negative for that number equidistant from all available
-iz = []; %z indices to plot, blank for all, negative for that number equidistant from all available
-
-zerostack = 1; %subtract min to make min zero 
-
-display(['processing : ' pth_stack_tif] )
-
-[dirstack, filnam, ~] = fileparts(pth_stack_tif);
-
-dirstack = [dirstack filesep];
-spl = strjoin(strsplit(filnam, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
-spl = strsplit(spl, '_'); %then separate by underscore
-
-recdatenum = str2double(spl{1});
-flynum = str2double(spl{2});
-trialnum = str2double(spl{3});
-suffix = strjoin(spl(4:end), '_');
-if strcmp(suffix(end), '_')
-    suffix = suffix(1:end-1);
-end
-
-recid = [num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum)];
-
-pth_stack_nosn_mat = [pth_stack_mat(1:end-4) 'nosn_.mat'];
-pth_md = [dirstack recid '_mdsi_.txt'];
-
-md = mdsild(pth_md);
-sz = single([md.ypix md.xpix md.numslice md.numvol_o]);
-sampper = 1/md.volrate;
-
-
-cropfb = 0;
-numslice_withflyback = []; %hack, this function currently only takes processed stacks with flyback already removedd
-
-
-
-if isequal(dr, [0,1])
-    dr_str = 'DRfull';
-else
-    dr_str = ['DR' num2str(dr(1)) 'to' num2str(dr(2))];
-end
+md = mdsild(pthmd);
 
 if smlensec
-    smooth_str = [strrep(num2str(smlensec), '.', 'p') 'secSmooth'];
-    len_window_smooth_t_rsc_samp = smlensec / sampper; %does not need to be rounded for smoothdata
+    smlensamp = smlensec * md.volrate; %does not need to be rounded for smoothdata
+    smooth_str = [strrep(num2str(smlensec), '.', 'p') 'smsec'];
 else
     smooth_str = 'nosmooth';
-    len_window_smooth_t_rsc_samp = 0;
 end
 
-figtitle_prefix = [recid '_' suffix '_' dr_str '_' smooth_str];
+figtitle_prefix = [recid '_' suffix '_' smooth_str];
 filename_prefix = [dirstack figtitle_prefix];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
-fn_gif_prefilt = [filename_prefix '_prefilt_' timestr '_.gif'];
-fn_gif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
+pthgif_prefilt = [filename_prefix '_prefilt_' timestr '_.gif'];
+pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
-try
-    stack = struct2cell(load(pth_stack_mat));
-    stack = stack{1};
-catch
-    stack = tif2mat(pth_stack_tif, numslice_withflyback, sz, cropfb, zerostack, sz(4));
-end
+stack = stackld(pthstack, sz=md.sz_o, numslice_withflyback=md.numslice_withflyback, channel_save=md.channel_save, imrate=md.volrate, zerostack=zerostack);
 
 
 %% smooth (optional, can make noise more bandlimited, so easier to filter)
 
 
-if len_window_smooth_t_rsc_samp
-    stack = smoothdata(stack, 4, 'gaussian', len_window_smooth_t_rsc_samp);
+if smlensec
+    stack = smoothdata(stack, 4, 'gaussian', smlensamp);
+    "DONE SMOOTHING"
 end
-"DONE SMOOTHING"
 
 
+if testframes
+
+end
 
 %% plot before filtering
 
-if makeplots
-    stackplt(stack, it=it, iz=iz, pthgif=fn_gif_prefilt);
+if doplt
+    stackplt(stack, it=it, iz=iz, pthgif=pthgif_prefilt);
 end
 
 
@@ -106,14 +81,14 @@ stack = fft_filter_1d(stack, stopband);
 
 %% plot after filtering
 
-if makeplots
-    stackplt(stack, it=it, iz=iz, pthgif=fn_gif_postfilt);
+if doplt
+    stackplt(stack, it=it, iz=iz, pthgif=pthgif_postfilt);
 end
 
 %% save
 
 
-save(pth_stack_nosn_mat, 'stack', '-v7.3', '-mat')
+save(pthstack_nosn, 'stack', '-v7.3', '-mat')
 
 "FINISHED SAVING"
 
@@ -122,12 +97,12 @@ end
 
 %% function for filtering
 
-function imout = fft_filter_1d(imin, stopband)
+function stackout = fft_filter_1d(stack, stopband)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
-disp(size(imin));
+disp(size(stack));
 
-sz = size(imin);
+sz = size(stack);
 numlines = sz(1);
 numxpix = sz(2);
 fs = numxpix; %sampling frequency (num x pixels)
@@ -176,32 +151,32 @@ filt = designfilt(...
 
 %%
 
-imin = reshape(imin, numlines, numxpix, []);
-imin = permute(imin, [2 3 1]);
+stack = reshape(stack, numlines, numxpix, []);
+stack = permute(stack, [2 3 1]);
 
-imout = zeros(size(imin), 'int16');
+stackout = zeros(size(stack), 'int16');
 
 parfor indi = 1:numlines %do small loop so that the conversion to double is not too large in ram (output saved as int16, then converted to uint16 after subtracting min)
 
-    data = double(imin(:, :, indi));
+    data = double(stack(:, :, indi));
     mnd = mean(data);
     data = data - mnd;
     tmpout = filtfilt(filt, data); %zero-phase filtering
     % tmpout = fftfilt(filt, data); %not zero phase
-    imout(:,:, indi) = tmpout + mnd;
+    stackout(:,:, indi) = tmpout + mnd;
 
 end
 
-minall = min(imout(:));
-maxall = max(imout(:));
-imout = imout - minall; %subtract min before converting to uint16
+minall = min(stackout(:));
+maxall = max(stackout(:));
+stackout = stackout - minall; %subtract min before converting to uint16
 if maxall > 2^16-1
     error("ERROR, CLIPPING REQUIRED, CHANGE OUTPUT TYPE")
 end
-imout = uint16(imout);
+stackout = uint16(stackout);
 
-imout = permute(imout, [3 1 2]);
-imout = reshape(imout, sz); %put back in 4d
+stackout = permute(stackout, [3 1 2]);
+stackout = reshape(stackout, sz); %put back in 4d
 
 end
 

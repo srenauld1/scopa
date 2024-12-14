@@ -29,7 +29,7 @@ else: #in interactive mode, read options set in optdfpre, and also set a few opt
   pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
   scopatmpdir = '' #string, keep empty for interactive; directory for scopatmp folder; automatically defined in make_paths
   fnind_fn_prefix = '' #string, keep empty for interactive; the job id (before any underscore if arrayed) for the first job run by cxp.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
-
+  do_autoallocate = 0 #autoallocate resources or not; only used in noninteractive mode
 
 from parse_args import parse_command_line
 from paths_scopa import make_paths
@@ -157,7 +157,7 @@ for ri, _ in enumerate(pth_read_all):
           eng.addpath(eng.genpath(pth_scopa))
           mtlout = io.StringIO()
           mtlerr = io.StringIO()
-          eng.scannoiserm(pth_read_all[ri], stopband_rsc, smlensec_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
+          eng.scannoiserm(pth_read_all[ri], stopband_rsc=stopband_rsc, smlensec_rsc=smlensec_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
 
         if do_extract or do_crop_only:
           extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)

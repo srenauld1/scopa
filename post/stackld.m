@@ -30,7 +30,6 @@ arguments
     opt.iz = []
     opt.dr = [0,1]
     opt.doplt = [] %default empty rather than 0 to distinguish user passing 0 and user passing nothing
-    opt.suffixvalid = []
 end
 
 pthmd = opt.pthmd;
@@ -53,7 +52,6 @@ it = opt.it; %t indices to plot, empty for all, negative for that number equidis
 iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 dr = opt.dr;
 doplt = opt.doplt;
-suffixvalid = opt.suffixvalid;
 
 
 suffixplt = convertStringsToChars(suffixplt);
@@ -68,10 +66,6 @@ end
 if ~doplt
     fprintf("in stackld, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted" + newline)
     suffixplt = [];
-end
-
-if ~isempty(suffixvalid) && isempty(glb('suffixvalid'))
-    glb(suffixvalid=suffixvalid); %set to global
 end
 
 if endsWith(pthstack, '.tif') || any(smlensec) %you only need md to convert tif to mat, or to smooth in time

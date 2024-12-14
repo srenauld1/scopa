@@ -7,8 +7,8 @@
 do_register = 0 #caiman normCorre registration 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 do_stitch = 0 #stitch deepcad denoised slices into stack of original size and put in data folder (before stitch, denoised data is in temporary 'denoising' directory)
-do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
-do_extract = 1 #caiman source extraction 
+do_remove = 1 #remove scan noise (matlab script, but choose_files uses choose_files function below)
+do_extract = 0 #caiman source extraction 
 do_a2p = 0 #matlab analysis 'post', various functions in a2p.m
 
 do_copyfiles = 0 #copy to/from wilsonlab server to analysis folder; in general when running interactively (ie setting options here in this file) you will want this to be 0, to run analysis, but if you want to test copyfiles functionality, you can set to 1 or 2; 0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage_prefix to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage_prefix from where you're running this script
