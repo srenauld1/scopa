@@ -220,7 +220,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
             else:
                 carls_old_project = 1
             
-            if fname[-3:]=='mat' and do_copyfiles==0 and not do_a2p:
+            if fname[-3:]=='mat' and do_copyfiles==0 and not do_remove and not do_a2p:
                 mat_file_shape = mat2tif(pth_readfile, carls_old_project)
 
 

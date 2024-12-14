@@ -6,11 +6,13 @@ arguments
     opt.smlenpx = []
     opt.smlensec = []
     opt.imrate = []
+    opt.memlim = 0 %work in progress, leave as 0; operate in batches to prevent ram from exceeding input stack size (since smoothdata converts from int) 
 end
 method = opt.method;
 smlenpx = opt.smlenpx;
 smlensec = opt.smlensec;
 imrate = opt.imrate;
+memlim = opt.memlim;
 
 if ~iscell(method)
     method = {method};
