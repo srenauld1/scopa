@@ -162,19 +162,19 @@ stack = permute(stack, [2 3 1]);
 
 stackout = zeros(size(stack), 'int16');
 
-% parfor_progress(numlines);
+parfor_progress(numlines);
 for k = 1:numlines %do small loop so that the conversion to double is not too large in ram (output saved as int16, then converted to uint16 after subtracting min)
 
     data = double(stack(:, :, k));
     mnd = mean(data);
     data = data - mnd;
-    tmpout = filtfilt(filt, data); %zero-phase filtering for a single y, all zt, along x dimension (here, x is first dimension); note similar function fftfilt(filt, data) is not zero-phase 
+    tmpout = filtfilt(filt, data); %zero-phase filtering for a single y, all zt, along x dimension (here, x is first dimension); note siilar function fftfilt(filt, data) is not zero-phase 
     stackout(:,:, k) = tmpout + mnd;
 
-    % parfor_progress;
+    parfor_progress;
 
 end
-% parfor_progress(0);
+parfor_progress(0);
 
 
 stackout = stacktype(stackout, typeout); %convert from int16 to uint16

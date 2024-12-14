@@ -117,7 +117,7 @@ if [ "$do_autoallocate" == 0 ]; then
 
     cpu_per_task_remove=8
     mem_per_cpu_remove=4G
-    time_remove=4:00:00
+    time_remove=1:00:00
 
     cpu_per_task_a2p=1
     mem_per_cpu_a2p=50G
