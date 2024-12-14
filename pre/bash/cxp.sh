@@ -24,14 +24,14 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
-do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_a2p)
-do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
+do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
+do_denoise=0 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
+do_stitch=0 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_a2p)
+do_remove=1 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
-do_a2p=1 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
+do_a2p=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
-do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+do_copyfiles_sequence=(0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind; if this bash variable can be turned into a list of vectors, then cxp will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
 
 do_autoallocate=0 #do_autoallocate=1 uses transfer partition to look into server and find size of stack in raw scanimage tif, but doesn't copy anything; stack size determines all resource requests; do_autoallocate=0 uses resources set by user below
@@ -49,7 +49,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from 
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20241209')
+RECDATE=('20230424')
 FLY=('*')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -79,7 +79,7 @@ USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered st
 USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif); if it doesn't exist, won't error
 
 STOPBAND_RSC=(10 20) #stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
-SMLENSEC_RSC=(0) #seconds, gaussian temporal smoothing window length in scannoiserm (only used if do_remove=1)
+SMLENSEC_RSC=(1) #seconds, gaussian temporal smoothing window length in scannoiserm (only used if do_remove=1)
 USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
 
 METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
@@ -115,9 +115,9 @@ if [ "$do_autoallocate" == 0 ]; then
     mem_per_cpu_extract=20G
     time_extract=1:30:00
 
-    cpu_per_task_remove=1
-    mem_per_cpu_remove=60G
-    time_remove=11:40:00
+    cpu_per_task_remove=8
+    mem_per_cpu_remove=4G
+    time_remove=4:00:00
 
     cpu_per_task_a2p=1
     mem_per_cpu_a2p=50G
