@@ -1,27 +1,20 @@
 
-function scannoiserm(pthstack, opt)
+function scannoiserm(pthstack, stopband, smlensec, zerostack, it, iz, doplt, testframes)
 
 arguments
     pthstack %pthstack is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
-    opt.stopband = [10 20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
-    opt.smlensec = 0
-    opt.zerostack = 1
-    opt.it = 50.3
-    opt.iz = []
-    opt.testframes = [] %subset of frames to test filtering much faster (since it it purely spatial filtering, and testframes indexing applied after any temporal smoothing is applied)
-    opt.doplt = 1;
+    stopband = [10,20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
+    smlensec = 0 %temporal gaussian smooth window in seconds; makes scan noise more bandlimited
+    zerostack = 1 %subtract min to make min zero
+    it = 50.3 %frames to plot (empty for all); 50.3 means 3 equidistant 50-frame segments 
+    iz = [] %z slices to plot (empty for all)
+    doplt = 1;
+    testframes = [] %subset of frames to test filtering much faster (since it it purely spatial filtering, and testframes indexing applied after any temporal smoothing is applied)
 end
-stopband = opt.stopband;
-smlensec = opt.smlensec;
-zerostack = opt.zerostack;
-it = opt.it;
-iz = opt.iz;
-testframes = opt.testframes;
-doplt = opt.doplt;
+
 
 fprintf("\n\n\nENTERING scannoiserm.m" + newline)
 fprintf("PROCESSING: " + pthstack + newline)
-opt
 
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 
@@ -46,16 +39,13 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
-stack = stackld(pthstack, sz=md.sz_o, numslice_withflyback=md.numslice_withflyback, channel_save=md.channel_save, imrate=md.volrate, zerostack=zerostack);
-
-
-%% smooth (optional, can make noise more bandlimited, so easier to filter)
-
-
-if smlensec
-    stack = smoothdata(stack, 4, 'gaussian', smlensamp);
-    fprintf("DONE SMOOTHING" + newline)
-end
+stack = stackld(pthstack, ...
+    sz=md.sz_o, ...
+    numslice_withflyback=md.numslice_withflyback, ...
+    channel_save=md.channel_save, ...
+    imrate=md.volrate, ...
+    zerostack=zerostack, ...
+    smlensec=smlensec);
 
 %% index into testframes, if nonempty
 
