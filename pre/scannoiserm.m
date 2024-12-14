@@ -58,7 +58,7 @@ stack = stackld(pthstack, sz=md.sz_o, numslice_withflyback=md.numslice_withflyba
 
 if smlensec
     stack = smoothdata(stack, 4, 'gaussian', smlensamp);
-    "DONE SMOOTHING"
+    fprintf("DONE SMOOTHING" + newline)
 end
 
 %% index into testframes, if nonempty
@@ -66,7 +66,7 @@ end
 
 if any(testframes)
     stack=stack(:,:,:,testframes);
-    "TESTFRAMES APPLIED"
+    fprintf("TESTFRAMES APPLIED" + newline)
 end
 
 
@@ -80,7 +80,7 @@ end
 %% filter
 
 stack = fft_filter_1d(stack, stopband);
-"DONE FILTERING"
+fprintf("DONE FILTERING" + newline)
 
 
 %% plot after filtering
@@ -92,10 +92,10 @@ end
 %% save
 
 if any(testframes)
-    "NOT SAVING BECAUSE USER PASSED ARGUMENT TESTFRAMES (A SUBSET OF ALL FRAMES), AND ONLY THOSE FRAMES GOT FILTERED"
+    fprintf("NOT SAVING BECAUSE USER PASSED ARGUMENT TESTFRAMES (A SUBSET OF ALL FRAMES), AND ONLY THOSE FRAMES GOT FILTERED" + newline)
 else
     save(pthstack_nosn, 'stack', '-v7.3', '-mat')
-    "FINISHED SAVING"
+    fprintf("FINISHED SAVING" + newline)
 end
 
 
