@@ -24,9 +24,6 @@ fprintf("PROCESSING: " + pthstack + newline)
 opt
 
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
-recid = id.recid;
-dirstack = id.dirstack;
-suffix = id.suffix;
 
 pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
 
@@ -39,8 +36,8 @@ else
     smooth_str = 'nosmooth';
 end
 
-figtitle_prefix = [recid '_' suffix '_' smooth_str];
-filename_prefix = [dirstack figtitle_prefix];
+figtitle_prefix = [id.recid '_' id.suffix '_' smooth_str];
+filename_prefix = [id.dirstack figtitle_prefix];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 
