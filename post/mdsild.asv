@@ -1,10 +1,10 @@
-function md = mdsild(pthmd, optsld, optsldhr, opt)
+function md = mdsild(pth_md, optsld, optsldhr)
 
 arguments
-    pthmd
+    pth_md
     optsld = []
     optsldhr = []
-    opt.pthstack = []
+    pthstack = opt.pthstack
 end
 pthstack = opt.pthstack;
 
@@ -12,7 +12,7 @@ if isempty(pthmd)
     if isempty(pthstack)
         error("must pass pthmd or pthstack")
     else
-        id = idmake(pthstack); 
+        id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
         pthmd = [id.dirstack id.recid '_mdsi_.txt'];
     end
 end
@@ -26,10 +26,11 @@ if isempty(optsldhr)
     optsldhr = otmp.sld;
 end
 
-if isfile(pthmd)
-    md = structtxtld(pthmd);
+
+if isfile(pth_md)
+    md = structtxtld(pth_md);
 else
-    error("pthmd (mdsild.txt) does not exist; you need to run registration; there, mdsild.txt will be created from the raw scanimage output file")
+    error("pth_md (mdsild.txt) does not exist; you need to run registration; there, mdsild.txt will be created from the raw scanimage output file")
 end
 
 md.numvol_o = md.numvol;

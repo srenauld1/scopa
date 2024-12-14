@@ -29,9 +29,8 @@ dirstack = id.dirstack;
 suffix = id.suffix;
 
 pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
-pthmd = [dirstack recid '_mdsi_.txt'];
 
-md = mdsild(pthmd);
+md = mdsild([], pthstack=pthstack);
 
 if smlensec
     smlensamp = smlensec * md.volrate; %does not need to be rounded for smoothdata

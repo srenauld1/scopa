@@ -8,7 +8,7 @@ arguments
     opt.zerostack = 1
     opt.it = 50.3
     opt.iz = []
-    opt.testframes = []
+    opt.testframes = [] %subset of frames to test filtering much faster (since it it purely spatial filtering, and testframes indexing applied after any temporal smoothing is applied)
     opt.doplt = 1;
 end
 stopband = opt.stopband;
@@ -58,13 +58,17 @@ stack = stackld(pthstack, sz=md.sz_o, numslice_withflyback=md.numslice_withflyba
 
 if smlensec
     stack = smoothdata(stack, 4, 'gaussian', smlensamp);
-    "DONE SMOOTHING"
+    fprintf("DONE SMOOTHING" + newline)
 end
 
+%% index into testframes, if nonempty
 
-if testframes
 
+if any(testframes)
+    stack=stack(:,:,:,testframes);
+    fprintf("TESTFRAMES APPLIED" + newline)
 end
+
 
 %% plot before filtering
 
@@ -76,7 +80,7 @@ end
 %% filter
 
 stack = fft_filter_1d(stack, stopband);
-"DONE FILTERING"
+fprintf("DONE FILTERING" + newline)
 
 
 %% plot after filtering
@@ -87,10 +91,12 @@ end
 
 %% save
 
-
-save(pthstack_nosn, 'stack', '-v7.3', '-mat')
-
-"FINISHED SAVING"
+if any(testframes)
+    fprintf("NOT SAVING BECAUSE USER PASSED ARGUMENT TESTFRAMES (A SUBSET OF ALL FRAMES), AND ONLY THOSE FRAMES GOT FILTERED" + newline)
+else
+    save(pthstack_nosn, 'stack', '-v7.3', '-mat')
+    fprintf("FINISHED SAVING" + newline)
+end
 
 
 end
