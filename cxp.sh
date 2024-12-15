@@ -178,8 +178,7 @@ fi
 ############ MAKE SCOPATMPDIR TO STORE SCOPA TEMP FILES AND OUTPUT IN USER'S HOME DIR ############
 
 user_homedir=$( getent passwd "$USER" | cut -d: -f6 ) 
-scripdir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-PARENDIR="$(dirname "$scripdir")"
+SCOPADIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 name_of_scopa_tmp_folder=scopatmp
 SCOPATMPDIR=$user_homedir/$name_of_scopa_tmp_folder
 mkdir -p $SCOPATMPDIR
@@ -352,7 +351,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
 
             #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
             arr_id_out=$(sbatch --parsable \
-            --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE",PARENDIR="$PARENDIR",JOBNM="$JOBNM" \
+            --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE",SCOPADIR="$SCOPADIR",JOBNM="$JOBNM" \
             --array=[$jobarrayind] \
             --dependency="$dep_str" \
             --partition="$partition_str" \
