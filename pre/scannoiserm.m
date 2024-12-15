@@ -17,6 +17,13 @@ fprintf("\n\n\nENTERING scannoiserm.m" + newline)
 fprintf("PROCESSING: " + pthstack + newline)
 
 
+if iscell(stopband)
+    stopband = cell2mat(stopband);
+end
+if iscell(stopband)
+    smlensec = cell2mat(smlensec);
+end
+
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 
 pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
