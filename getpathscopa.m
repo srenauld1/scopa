@@ -1,7 +1,8 @@
-function pth = getpathscopa()
+function pthscopa = getpathscopa()
 
-pthenv = getpathenv();
+stk = dbstack('-completenames');
+[pthenv, ~, ~] = fileparts(stk(1).file);
 spl = strsplit(pthenv, filesep);
-pth = [strjoin(spl(1:find(~cellfun(@isempty, strfind(spl, 'scopa')))), filesep) filesep];
+pthscopa = [strjoin(spl(1:find(~cellfun(@isempty, strfind(spl, 'scopa')))), filesep) filesep];
 
 end

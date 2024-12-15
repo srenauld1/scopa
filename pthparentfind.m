@@ -11,8 +11,8 @@ envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
     if isempty(pthparent_o2)
         fprintf("O2 parent path not specified, using default path based on parent folder name" + newline)
-        pthenv = getpathenv();
-        spl = strsplit(pthenv, filesep);
+        pthscopa = getpathscopa();
+        spl = strsplit(pthscopa, filesep);
         username = cell2mat(spl(find(contains(spl, 'home'))+1));
         if isempty(username)
             error("scopa may not be in your O2 home folder, make sure to git clone scopa into your O2 home folder")
