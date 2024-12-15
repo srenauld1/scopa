@@ -38,7 +38,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
             if fnmatch.fnmatch(pat_usetemplate, putat):
                 print(pat_usetemplate)
                 print(putat)     
-                raise Exception ("ERROR, YOU HAVE SPECIFIED registration_template_group_id WITH OVERLAPPING MATCHES (THIS EXCEPTION NEEDS TO BE MOVED TO CXP, BEFORE JOB INITIATION)")
+                raise Exception ("ERROR, YOU HAVE SPECIFIED registration_template_group_id WITH OVERLAPPING MATCHES (THIS EXCEPTION NEEDS TO BE MOVED TO PL, BEFORE JOB INITIATION)")
 
 
 

@@ -14,21 +14,21 @@ import json
 currscriptdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(currscriptdir))
 
-print("\n\nLIST OF PATHS AVAILABLE TO ppl.py:\n","\n ".join(sys.path),"\n")
+print("\n\nLIST OF PATHS AVAILABLE TO pl.py:\n","\n ".join(sys.path),"\n")
 
-if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from cxp (and a handful are hard coded to never change here)
+if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from pl (and a handful are hard coded to never change here)
   cluster_backend = 'multiprocessing' #irrelevant if use_cluster=0; use 'multiprocessing' on O2 to speed up caiman code
-  makeplots = 0 #should be 0 if running job from cxp on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
-  do_crop_only = 0 #should be 0 if running job from cxp on O2, since this is interactive drawing/cropping of FOV
-  print("pth_parsfile passed as input to ppl.py (in batch mode), using options from pth_parsfile (options from cxp.sh)")
-else: #in interactive mode, read options set in optdfpre, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpre.py, where user sets options; 2 options, do_copyfiles and recording_index, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpre
-  print("pth_parsfile not passed as input (in interactive mode), using options from optdfpre.py")
-  exec(open(currscriptdir + '/' + 'optdfpre.py').read())
-  first_job = 1 #this should always be 1 if you're running ppl.py directly/interactively, first_job is only used when ppl.py is called from cxp.sh, as part of a larger pipeline 
-  jobnm = '' #empty for intyeractive mode; job name run from cxp (noninteractive job identifier)
+  makeplots = 0 #should be 0 if running job from pl on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
+  do_crop_only = 0 #should be 0 if running job from pl on O2, since this is interactive drawing/cropping of FOV
+  print("pth_parsfile passed as input to pl.py (in batch mode), using options from pth_parsfile (options from pl.sh)")
+else: #in interactive mode, read options set in optdfpl, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpl.py, where user sets options; 2 options, do_copyfiles and recording_index, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpl
+  print("pth_parsfile not passed as input (in interactive mode), using options from optdfpl.py")
+  exec(open(currscriptdir + '/' + 'optdfpl.py').read())
+  first_job = 1 #this should always be 1 if you're running pl.py directly/interactively, first_job is only used when pl.py is called from pl.sh, as part of a larger pipeline 
+  jobnm = '' #empty for intyeractive mode; job name run from pl (noninteractive job identifier)
   pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
   scopatmpdir = '' #string, keep empty for interactive; directory for scopatmp folder; automatically defined in make_paths
-  fnind_fn_prefix = '' #string, keep empty for interactive; the job id (before any underscore if arrayed) for the first job run by cxp.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
+  fnind_fn_prefix = '' #string, keep empty for interactive; the job id (before any underscore if arrayed) for the first job run by pl.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by pl, make empty to skip 
   do_autoallocate = 0 #autoallocate resources or not; only used in noninteractive mode
 
 from parse_args import parse_command_line
@@ -37,7 +37,7 @@ from choose_files import choose_files
 from copy_files_scopa import copy_files_scopa
 from autoallocate import autoallocate
 
-if len(sys.argv)>1: #if in noninteractive mode (running cxp), read in arguments from cxp
+if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments from pl
 
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
@@ -171,4 +171,4 @@ for ri, _ in enumerate(pth_read_all):
             
           
 
-print("\n\n\nEXITING ppl.py") 
+print("\n\n\nEXITING pl.py") 

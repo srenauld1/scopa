@@ -25,7 +25,7 @@ currdir = currdir{end};
 if contains(rootDir, 'scopa')
 
     if ono2
-        error("to run flyg1-scopa from O2, run cxp.sh from O2 command line (non-interactive), or ppl.py from VSCode (interactive)")
+        error("to run flyg1-scopa from O2, run pl.sh from O2 command line (non-interactive), or pl.py from VSCode (interactive)")
     else
 
         rootDir = strsplit(rootDir, ', ');
@@ -42,19 +42,19 @@ if contains(rootDir, 'scopa')
             error(sprintf("scopa branch should be your own, not '" + scopabranch_original + "'"))
         end
         pthpre = [scopapath filesep 'pre' filesep 'bash' filesep];
-        pthfile = [pthpre 'cxp.sh'];
+        pthfile = [pthpre 'pl.sh'];
         if contains(regexp(fileread(pthfile), 'PTH_STORAGE_PREFIX=(\S*)', 'match'), {'/n/files/Neurobio/wilsonlab/', '/n/scratch/users'})
-            sprintf("running flyg1-scopa (cxp.sh) on O2 by sending command from this matlab script running on your local machine \n" + ...
+            sprintf("running flyg1-scopa (pl.sh) on O2 by sending command from this matlab script running on your local machine \n" + ...
                 "MAKE SURE YOU HAVE YOUR OWN BRANCH OF SCOPA ON YOUR LOCAL MACHINE : \n" + ...
                 "MAKE SURE YOU HAVE CLONED SCOPA INTO YOUR O2 HOME DIRECTORY (NAVIGATE THERE FROM O2 COMMAND LINE WITH 'cd ~') : \n" + ...
                 "MAKE SURE YOU HAVE SET UP SSH KEY AS DESCRIBED HERE: https://harvardmed.atlassian.net/wiki/spaces/O2/pages/2051211265/VSCode+and+Code+Server+on+O2#SSH-Keys")
-            prompt = 'do you want to add/commit/push all local scopa changes to remote, then pull to O2, then run cxp.sh on O2? type 1 for yes, type 0 for no: ';
+            prompt = 'do you want to add/commit/push all local scopa changes to remote, then pull to O2, then run pl.sh on O2? type 1 for yes, type 0 for no: ';
             commandwindow();
             proceed_o2 = input(sprintf(prompt));
 
             if proceed_o2
                 pth_remote = '@o2.hms.harvard.edu';
-                pth_cxp_dir_on_o2 = ['/home/' o2_user '/scopa/pre/bash']; %assume they put in their home folder
+                pth_pl_dir_on_o2 = ['/home/' o2_user '/scopa/pre/bash']; %assume they put in their home folder
 
                 str = ['cd ' scopapath filesep 'pre' filesep 'bash' filesep '; '...
                     'git checkout ' scopabranch '; ' ...
@@ -65,7 +65,7 @@ if contains(rootDir, 'scopa')
                 [statusout, strout] = system(str)
 
 
-                str = ['ssh ' o2_user pth_remote '; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd ' pth_cxp_dir_on_o2 '; cxp.sh'];
+                str = ['ssh ' o2_user pth_remote '; cd /home/' o2_user '/scopa; git checkout ' scopabranch '; git pull; cd ' pth_pl_dir_on_o2 '; pl.sh'];
                 [statusout, strout] = system(str)
             end
         else

@@ -23,7 +23,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     
     if not first_job:
         with open(pth_fnind) as f1:
-            print("\n\n\nSINCE THIS IS A JOB INITIATED BY CXP.SH, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
+            print("\n\n\nSINCE THIS IS A JOB INITIATED BY pl.sh, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
             filepatspec_all = []
             for line in f1:
                 filepatspec_all.append(ast.literal_eval(line))
@@ -114,7 +114,7 @@ def choose_files(first_job, pth_allrec, recdate, fly, trial, folder_substring, r
     try:
         fn_suffix_scopa
     except:
-        raise Exception("fn_suffix_scopa IS NOT DEFINED; recording_index (jobarrayind IN cxp.sh) FOR THIS JOB MAY BE OUTSIDE THE RANGE OF AVAILABLE FILES, IN WHICH CASE THIS JOB, AND ALL DEPENDENT JOBS, WILL ERROR; THIS IS NOT A PROBLEM EXCEPT IT MEANS YOU'RE REQUESTING BUT NOT USING RESOURCES ON O2; MAKE SURE jobarrayind ONLY LISTS INDICES FOR FILES THAT EXIST")
+        raise Exception("fn_suffix_scopa IS NOT DEFINED; recording_index (jobarrayind IN pl.sh) FOR THIS JOB MAY BE OUTSIDE THE RANGE OF AVAILABLE FILES, IN WHICH CASE THIS JOB, AND ALL DEPENDENT JOBS, WILL ERROR; THIS IS NOT A PROBLEM EXCEPT IT MEANS YOU'RE REQUESTING BUT NOT USING RESOURCES ON O2; MAKE SURE jobarrayind ONLY LISTS INDICES FOR FILES THAT EXIST")
 
     if do_register:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]

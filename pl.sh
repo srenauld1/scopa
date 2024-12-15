@@ -1,19 +1,19 @@
 #!/bin/bash
 
-# see ppl.py and README.md for more details 
+# see pl.py and README.md for more details 
 
-# TO USE cxp.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2 
+# TO USE pl.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2 
 
-# cxp.sh runs the entire preprocessing pipeline by specifying params for ppl.py
-# run as ./cxp.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
-# CURRENTLY YOU CANNOT SUBMIT JOBS WITH CXP WHILE ANOTHER SET OF JOBS SUBMITTED BY CXP IS RUNNING 
-# ppl.py is called from sbatch file pre.sbatch, which is itself called below,
-# pre.sbatch is called in different way, depending on user input
-# pre.sbatch can run multiple times in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
+# pl.sh runs the entire preprocessing pipeline by specifying params for pl.py
+# run as ./pl.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
+# CURRENTLY YOU CANNOT SUBMIT JOBS WITH PL WHILE ANOTHER SET OF JOBS SUBMITTED BY PL IS RUNNING 
+# pl.py is called from sbatch file pl.sbatch, which is itself called below,
+# pl.sbatch is called in different way, depending on user input
+# pl.sbatch can run multiple times in parallel if jobarrayind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
 # each sbatch file below is called in a 3-iteration for loop, the first iteration (when do_copyfiles=1) copies files required for whatever job is running from storage server to scratch on O2, the second (when do_copyfiles=0) operates on them, the third (when do_copyfiles=2) copies new files back to the storage server  
 # using do_copyfiles requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
 
-# cxp.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
+# pl.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
 
 # note bash variables below are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
 # bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
@@ -32,10 +32,10 @@ do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_a2p=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
 do_copyfiles_sequence=(0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind; if this bash variable can be turned into a list of vectors, then cxp will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
+jobarrayind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobarrayind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobarrayind; if this bash variable can be turned into a list of vectors, then pl will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
 
 do_autoallocate=0 #do_autoallocate=1 uses transfer partition to look into server and find size of stack in raw scanimage tif, but doesn't copy anything; stack size determines all resource requests; do_autoallocate=0 uses resources set by user below
-fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous cxp run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let cxp assign a new FNIND_FN_PREFIX
+fnind_fn_prefix_override='' #if you want to use a file/jobarrayind mapping from a previous pl run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let pl assign a new FNIND_FN_PREFIX
 
 ############ SET PARAMS FOR IDENTIFYING RECORDING ############
 
@@ -86,7 +86,7 @@ METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel
 EXTRACT_IN_2D=(1)
 REGIONEX=('fullfov')
 
-USE_CLUSTER=(0) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in ppl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
+USE_CLUSTER=(0) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 
 
 ############ SET PARAMS FOR RESOURCE REQUEST MANUALLY IF do_autoallocate=0, OTHERWISE IT IS AUTOMATIC) ############
@@ -170,7 +170,7 @@ fi
 
 if [ -z "${fnind_fn_prefix_override}" ]; then #on the first loop, use first_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
     CURRTIME="`date +%Y%m%d%H%M%S`"
-    FNIND_FN_PREFIX=${CURRTIME} #string, a datetime string id assigned on the first job run by cxp.sh, will point to a file that saves/maps filename specifiers and indices to ensure files get the same index across all jobs run by cxp, make empty to skip 
+    FNIND_FN_PREFIX=${CURRTIME} #string, a datetime string id assigned on the first job run by pl.sh, will point to a file that saves/maps filename specifiers and indices to ensure files get the same index across all jobs run by pl, make empty to skip 
 else #on subsequent loops, use dependencies, and turn off first_job flag 
     FNIND_FN_PREFIX=$fnind_fn_prefix_override
 fi
@@ -189,7 +189,7 @@ pthout=$SCOPATMPDIR/slurm-%A_%a.out
 
 ############ WRITE THE ABOVE PARAMS TO PTH_PARSFILE ############
 
-PTH_PARSFILE=$SCOPATMPDIR/scopaparams.txt #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run cxp.sh
+PTH_PARSFILE=$SCOPATMPDIR/scopaparams.txt #no need to change this, make empty to skip (no reason to do that here though) filename for params that are common to all sbatch files called below, this txt file is automatically created and overwritten each time you run pl.sh
 
 declare -A pars #put common input args into associative array called pars (grouping them into associative array helps with automation downstream)
 
@@ -235,7 +235,7 @@ done >"$PTH_PARSFILE" #write common input args to txt file
 ############ SET SEQUENCE OF SBATCH JOBS TO BE SUBMITTED ############
 
 
-jobnm_seq=() #list of sbatch jobs run by cxp.sh (space delimited, enclosed by parentheses, no quotes required)
+jobnm_seq=() #list of sbatch jobs run by pl.sh (space delimited, enclosed by parentheses, no quotes required)
 
 if [ "$do_autoallocate" == 1 ]; then
     jobnm_seq+=(alo)
@@ -263,7 +263,7 @@ fi
 ############ LOOP OVER SBATCH JOBS AND DO_COPYFILES DIRECTIVES (TODO: RESOURCES SET IN LOOP BELOW FOR NOW, MAKE THIS AUTOMATED SOON) ############
 
 echo -e "STARTING SCOPA PIPELINE \n SUBMITTING THE FOLLOWING SBATCH JOBS \n "${jobnm_seq[@]}""
-echo LIST OF PATHS AVAILABLE TO cxp.sh: ; echo ; echo "${PATH//:/$'\n'}" ; echo
+echo LIST OF PATHS AVAILABLE TO pl.sh: ; echo ; echo "${PATH//:/$'\n'}" ; echo
 
 loopcount=0
 for JOBNM in "${jobnm_seq[@]}"; do
@@ -364,7 +364,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
             --mail-type=ALL,ARRAY_TASKS \
             "$requeue_str" \
             "$gres_str" \
-            pre.sbatch) 
+            pl.sbatch) 
 
             declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
             tmpid=arrid_${loopcount}_dynvar #assign to another var whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic

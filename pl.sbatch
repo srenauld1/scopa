@@ -43,7 +43,7 @@ fi
 
 
 ## CALL PIPELINE ##
-$pydir $SCOPADIR/ppl.py \
+$pydir $SCOPADIR/pl.py \
 --first_job "$FIRST_JOB" \
 --do_copyfiles "$DO_COPYFILES" \
 --jobnm "$JOBNM" \

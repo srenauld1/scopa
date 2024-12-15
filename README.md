@@ -13,7 +13,7 @@ TO DO:
 --proper caiman averaging
 --shared python matlab engine
 --O2 paralellization along arbitrary dimension, not just along recordings 
---submit cxp with ssh
+--submit pl with ssh
 --population analysis
 --integrate into flyg
 
@@ -55,7 +55,7 @@ the pipeline has various features for parameter exploration
 
 ############################## AUTOMATED FILE TRANSFER ######################################
 
-automated file transfer is intended to make batch mode on O2 (running cxp.sh) more convenient, although it can be used on O2 or local, and in interactive or batch mode
+automated file transfer is intended to make batch mode on O2 (running pl.sh) more convenient, although it can be used on O2 or local, and in interactive or batch mode
 
 
 if do_copyfiles==1 no computation occurs, but the pipeline will automatically copy whatever files you need from a storage location to a compute location, if do_copyfiles==0 computation occurs, but no copy occurs, if do_copyfiles==2 no computation occurs, but any new files are copied back into storage location . . . the relevant files are determined by the pipeline module you're running
@@ -93,7 +93,7 @@ especially if you are using do_copyfiles to automate file transfer to and from O
 
 do_copyfiles may not work well for large transfers (judging by the wording on the O2 website), but for this pipeline, i've had no problems 
  
-do_copyfiles occurs inside ppl.py for two reasons:
+do_copyfiles occurs inside pl.py for two reasons:
         1. to ensure everything is the same for the copying and the analysis (ie to ensure the right files get copied)
         2. since slurm arrays are used, it is simpler to copy inside the parallel job
 
@@ -107,7 +107,7 @@ this is flyg formatting
 this is scopa formatting
         20230627_3_1_raw.tif
 
-key file identifiers are recdate, fly, and trial (these are params used to find files in ppl.py, and cxp.sh)
+key file identifiers are recdate, fly, and trial (these are params used to find files in pl.py, and pl.sh)
 
 this file must be in a data folder that it within folder_with_all_recordings_on_storage_and_compute_filesystems
 the data folder can have any name pattern
@@ -125,9 +125,9 @@ and for example, the following is valid input file on O2 (if you're not using do
 ############################## INTERACTIVE VS BATCH MODE ######################################
 
 for running the pipeline in interactive mode . . . 
-        entry point is ppl.py for 'pre' pipeline (input raw imaging tif)
+        entry point is pl.py for 'pre' pipeline (input raw imaging tif)
                 you can run on your local machine (e.g. in vscode), or on O2Portal (e.g., in vscode)
-                adjust input params in file optdfpre.py
+                adjust input params in file optdfpl.py
         entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
         if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 
@@ -142,13 +142,13 @@ for running the pipeline in interactive mode . . .
                 so most likely only have to install caiman and a few other small packages locally (see installation below)
 
 for running the pipeline in batch (non-interactive) mode . . . 
-        entry point is cxp.sh (calls ppl.py)
-        set input params in cxp.sh
+        entry point is pl.sh (calls pl.py)
+        set input params in pl.sh
         default_params_batch.py is invoked in this case, but do not ever adjust params in this file 
-        the pipeline has a script (cxp.sh) that lets you string together jobs on O2  (in any application or language available on O2), cxp.sh handles parallelization, job dependencies, resource  allocation, all automatically
-        so cxp.sh is useful as a master pipeline script, for running this pipeline in non-interactive mode 
-        cxp.sh and has a simple layout that can be extended/adpated 
-        call it by typing cxp.sh in the O2 command line 
+        the pipeline has a script (pl.sh) that lets you string together jobs on O2  (in any application or language available on O2), pl.sh handles parallelization, job dependencies, resource  allocation, all automatically
+        so pl.sh is useful as a master pipeline script, for running this pipeline in non-interactive mode 
+        pl.sh and has a simple layout that can be extended/adpated 
+        call it by typing pl.sh in the O2 command line 
 
 also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined regionex (or they're all 'fullfov') then it will run through all found files, whether in interactive mode or batch mode
 
@@ -188,11 +188,11 @@ for deepcad denoising; if you want to step into deepcad code during VSCode debug
 
 ############################## BATCH ON O2 ######################################
 
-run ./cxp.sh in command line on O2 
-see cxp.sh for docs
-cxp.sh calls ppl.py
+run ./pl.sh in command line on O2 
+see pl.sh for docs
+pl.sh calls pl.py
 
- since the different submodules of the pipeline require very different resources on O2, cxp runs each module as a separate sbatch job with different resources; these jobs depend on each other
+ since the different submodules of the pipeline require very different resources on O2, pl runs each module as a separate sbatch job with different resources; these jobs depend on each other
 
 ############################## PIPELINE ORGANIZATION ######################################
 
@@ -201,7 +201,7 @@ there are two main sub-pipelines:
 
 'pre': 
 
-in folder pre, mostly python, entrypoint is ppl.py in interactive mode (run VS code on O2 portal), or cxp.sh in batch mode (run ./cxp.sh on O2 command line . . . cxp.sh calls ppl.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
+in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS code on O2 portal), or pl.sh in batch mode (run ./pl.sh on O2 command line . . . pl.sh calls pl.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
                 --registration (caiman Normcorre), with line-by-line background subtraction and temporal 
                         smoothing submodules to deal with noisy recordings, prior to registration 
                 --denoising (deepcadrt), with "best model" selection
@@ -224,9 +224,9 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 
 ############################## PARALLELIZATION ON O2 ######################################
 
- if recording_index = 'all', ppl.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
+ if recording_index = 'all', pl.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
- if recording_index is not 'all', ppl.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
+ if recording_index is not 'all', pl.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
 
  this is convenient because recording_index can be assigned SLURM_ARRAY_TASK_ID in a bash script (e.g. mcp.sbatch), 
  which will run the pipeline on multiple recordings in parallel as a job array on O2 
@@ -301,7 +301,7 @@ entrypoint is a2p.m
 
 
 #a2p.m is the entry point to the 2nd half of the analysis analysis pipeline for volumetric xyzt 2p imaging data with behavior and stimulus
-#first part (motion correction, denoising, and source extraction) is in python, entry point ppl.py:
+#first part (motion correction, denoising, and source extraction) is in python, entry point pl.py:
 
 ##a2p.m loads output files from python pipeline,
 ##if high-z-res stack exists, it can be used to aid with morphological identification
@@ -496,7 +496,7 @@ git clone https://github.com/wienecke/scopa.git
 
 ############################## GPUS ######################################
 
-current recommendation is the default in cxp.sh
+current recommendation is the default in pl.sh
 it is rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
 this takes 5.5 hours, but has very little wait time because it's on gpu_requeue partition, which also counts against your fairshare score much less 
 
