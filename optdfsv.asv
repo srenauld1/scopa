@@ -116,7 +116,7 @@ d.ma.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma fo
 d.ma.celsz = 8; %for bwmorph close after edge detection, helps connect edges
 d.ma.do3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
-%% cm (roifmake: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in optex)
+%% cm (roifauto: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in optex)
 
 %{
 methodex:

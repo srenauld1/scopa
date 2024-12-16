@@ -57,7 +57,9 @@ if flag_oneim && ~flag_croplim
     h.httl.String = cat(1, h.httl.String, ttltmp);
 end
 
-if flag_croplim
+if flag_croplim || (flag_oneim && flag_single_roi_per_stack)
+    ttltmp = {'YOU MUST DRAW A SINGLE CONTIGUOUS ROI ON THIS IMAGE'};
+elseif flag_oneim && flag_single_roi_per_stack     
     ttltmp = {'YOU MUST DRAW A SINGLE CONTIGUOUS ROI ON THIS IMAGE'};
 else
     ttltmp = { [...
@@ -70,7 +72,10 @@ else
 end
 h.httl.String = cat(1, h.httl.String, ttltmp);
 
-if ~flag_allz %discontiguous is default if allz displayed
+ttltmp = {'up/down: RESCALE CONTRAST,   '};
+h.httl.String = cat(1, h.httl.String, ttltmp);
+
+if ~flag_allz && ~(flag_oneim && flag_single_roi_per_stack) %discontiguous is default if allz displayed
     ttltmp = { [...
         '   s: NEXT SLICE,   ', ...
         'd/e: ENTER/EXIT XY DISCONTIGUOUS MODE', ...
@@ -98,9 +103,9 @@ if isempty(cmap)
 end
 
 if flag_allz || (flag_oneim && ~flag_single_roi_per_stack)
-    flag_single_roi_per_image = 0;
+    flag_single_roi_per_figure = 0;
 else
-    flag_single_roi_per_image = 1;
+    flag_single_roi_per_figure = 1;
 end
 
 flag_do = 0;
@@ -277,7 +282,7 @@ while true
 
 
     if flag_roi_drawn
-        if flag_single_roi_per_image
+        if flag_single_roi_per_figure
             if strcmp(h.httl.String{ndt+1}, 'SELECT IMAGE WITH CLICK')
                 xtmp{1} = 'SELECT IMAGE WITH CLICK';
                 % h.httl.String{ndt+1} = 'YOU ARE LIMITED TO ONE POLYGON ON THIS IMAGE, PRESS "backspace" TO REDO IT, OR NAVIGATE WITH "q", "r" or "s"';

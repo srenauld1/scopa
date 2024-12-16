@@ -1,4 +1,4 @@
-function roidat = roidatmake(stack, roiman)
+function roidat = roidatmake(stack)
 
 numchan = size(stack,5);
 roidat = cell(numchan, 1);

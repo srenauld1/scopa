@@ -22,10 +22,9 @@ else
     if isempty(croplim)
         croplim = croplimmake(stack, dirstack, recid, regionex, regionex_nounderscore, numchan);
     end
-
-    if ~isequal(croplim(1):croplim(2), 1:size(stack,1)) && ~isequal(croplim(3):croplim(4), 1:size(stack,2)) && ~isequal(croplim(5):croplim(6), 1:size(stack,3)) && ~isequal(croplim(7):croplim(8), 1:size(stack,4)) && ~isequal(croplim(9):croplim(10), 1:size(stack,5))
-        stack = stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10)); %previously converted to single here, not sure why
-    end
+    
+    if ~isequal(croplim(1):croplim(2), 1:size(stack,1))
+    stack = stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10)); %previously converted to single here, not sure why
 
 end
 

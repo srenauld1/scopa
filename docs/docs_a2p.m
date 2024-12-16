@@ -32,14 +32,14 @@ variables:
     y, x, z, t, c: reserved for stack dimensions
     k, m, p, q, s, u, v, w: reserved for loop indices
     b: reserved for model parameters
-    cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in roifmake)
+    cmc, cmdff, cmdffr, cms, cma, cmb, cmsnr, cmval: caiman roi extraction output variables (loaded/processed in roifauto)
 
 
 main processing functions:
     stackld: load stacks; plot stacks for comparison
     daqld: load/process daq data
     roimake: make manual (drawn) and/or automated morphological rois
-    roifmake: process functional rois extracted in pre pipeline with caiman
+    roifauto: process functional rois extracted in pre pipeline with caiman
     bumpcmp: compute bump in various ways
     popcmp: compute poulation features, currently only holds bumpcmp; eventually will be general stack and timeseries feature extraction routine, to make extracted features available to mfit routine
     mfit: fit models to any available timeseries (derived from roi code, or feature extraction code, or direct experimental timeseries (e.g stimulus, fictrac timeseries, etc)

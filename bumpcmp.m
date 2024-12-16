@@ -1,4 +1,4 @@
-function bmp = bumpcmp(stack, indvp, depvp, regionex, roidat, zstartpos, sz_crop, imrate, epochts, pth_dirstack, recid, pthpre, doplt, opt)
+function bmp = bumpcmp(stack, indvp, depvp, regionex, roidat, zstartpos, imrate, epochts, pth_dirstack, recid, pthpre, doplt, opt)
 
 
 arguments
@@ -8,7 +8,6 @@ arguments
     regionex
     roidat
     zstartpos
-    sz_crop
     imrate
     epochts
     pth_dirstack
@@ -45,7 +44,7 @@ sampper = 1/imrate;
 
 %% crop stack 
 
-stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop);
+stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack);
 
 
 %% define domain (functionally or morphologically)

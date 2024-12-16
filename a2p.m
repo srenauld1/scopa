@@ -30,7 +30,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load stim (daq)
 
-    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = []; stackmnthr = []; hrlr = []; %init some optional variables
+    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = []; %init some optional variables
     if o.mn.oldcarl
 
         [ts.vis.(o.carl.feat), stimvid] = featld(o.id.recid, o.carl.stimtype, o.carl.feat, ...
@@ -110,7 +110,7 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
             optid = fn{m};
-            [ts.roi.(optid), roidat.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, md.sz_crop, pth.dirstack, o.id.recid, pth.roi.(optid), stackmnthr, hrlr, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            [ts.roi.(optid), roidat.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, pth.dirstack, o.id.recid, pth.roi.(optid), o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -132,7 +132,7 @@ for k = 1:numel(oa) % loop over recordings
             depvp = ts.roi.i17{1};
             pthpre = [pth.stack(1:end-4) regionex '_tesfits'];
             doplt = 0;
-            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.sz_crop, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
+            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
         end
     end
 

@@ -1,4 +1,4 @@
-function [roiman_allchan, roiwt, roicen, num_roim] = roidraw(stack, opt)
+function roiman_allchan = roidraw(stack, opt)
 
 arguments
     stack
@@ -56,14 +56,6 @@ for c = 1:numchan
             roiman = roidraw_onechan(stack(:,:,:,:,c), regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap);
             save(pth_maskman, 'roiman', '-v7.3', '-mat')
         end
-        num_roim{c} = size(roiman, 4);
-        roiwt{c} = zeros(num_roim{c}, numel(sum(roiman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-        for mi = 1:num_roim{c}
-            tmp = roiman(:,:,:,mi);
-            [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-            roiwt{c}(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
-        end
-        roicen{c} = find_roi_centroids(roiman);
         roiman_allchan{c} = roiman;
     end
 end
@@ -74,9 +66,6 @@ if ~isempty(chancp) && numchan==2
         fprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones; you may not intend this" + newline);
     end
     roiman_allchan(chanreceive) = roiman_allchan(chancp);
-    num_roim(chanreceive) = num_roim(chancp);
-    roiwt(chanreceive) = roiwt(chancp);
-    roicen(chanreceive) = roicen(chancp);
 end
 
 
@@ -85,7 +74,7 @@ end
 end
 
 
-function roimaskman_all_roi_all_z = roidraw_onechan(stack, regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize,remove_overlap)
+function roimaskman_all_roi_all_z = roidraw_onechan(stack, regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap)
 
 
 regionex_reformat = strrep(regionex, '_', ' ');
@@ -100,8 +89,8 @@ szo = size(stack);
 stackmnt = stackmn(stack, numdimout=3); %take mean of trailing dims until stack is 2d
 stack_mnzt = stackmn(stackmnt, numdimout=2); %take mean of trailing dims until stack is 2d
 
-stackmnt = stackclip(stackmnt, clip=[0 1]);
-stack_mnzt = stackclip(stack_mnzt, clip=[0 1]);
+stackmnt = stackclip(stackmnt, clip=[0,1]);
+stack_mnzt = stackclip(stack_mnzt, clip=[0,1]);
 
 %% show mean zt and decide if you still want to draw rois
 
@@ -128,9 +117,9 @@ if draw_manual
     prompt = sprintf("PRESS 1 TO DRAW ON EACH SLICE, PRESS 0 TO DRAW ON THE MEAN Z PROJECTION (SHOWN): ");
     draw_on_meanzt = ~input(prompt);
 
+    flag_allz = 0;
     if draw_on_meanzt
         stackdraw = stack_mnzt;
-        flag_allz = 1;
     else
         stackdraw = stackmnt;
         prompt = sprintf("PRESS 1 TO DRAW ON A SINGLE FIGURE WITH ALL REGIONEX SLICES (FASTER, LOWER RES), PRESS 0 TO DRAW ON EACH SLICE IN A SEPARATE FIGURE (SLOWER, BUT HIGHER RES): ");
@@ -191,7 +180,7 @@ if draw_manual
                 end
                 roimaskman_tmp2(:) = 0;
 
-                if flag_oneroi || flag_oneim %limited to one roi
+                if flag_oneroi || flag_oneim %limited to one figure drawing session
                     flag_quit_all_rois = 1;
                 end
 

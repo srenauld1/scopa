@@ -31,7 +31,11 @@ else
     stack = reshape(stack, [], numchan);
 
     chan = 1;
-    minnew(chan) = quantile(stack(:,chan), clip(1), 1); %index minnew into chan in case you want to see these values for each channel
+    if clip(1)==-1
+        minnew(chan) = 0;
+    else
+        minnew(chan) = quantile(stack(:,chan), clip(1), 1); %index minnew into chan in case you want to see these values for each channel
+    end
     maxnew(chan) = quantile(stack(:,chan), clip(2), 1); %index maxnew into chan in case you want to see these values for each channel
     if skipzero
         if contains(class(stack), 'int')
@@ -49,7 +53,11 @@ else
 
     if numchan==2 %don't make single chan function for both channels because this can be big array and the indexing inside function will create large temporary variable
         chan = 2;
-        minnew(chan) = quantile(stack(:,chan), clip(1), 1); %index minnew into chan in case you want to see these values for each channel
+        if clip(1)==-1
+            minnew(chan) = 0;
+        else
+            minnew(chan) = quantile(stack(:,chan), clip(1), 1); %index minnew into chan in case you want to see these values for each channel
+        end
         maxnew(chan) = quantile(stack(:,chan), clip(2), 1); %index maxnew into chan in case you want to see these values for each channel
         if skipzero
             idxz = stack(:,chan)==0;

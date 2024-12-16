@@ -30,7 +30,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load stim (daq)
 
-    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = []; stackmnthr = []; hrlr = []; %init some optional variables
+    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = []; %init some optional variables
     if o.mn.oldcarl
 
         [ts.vis.(o.carl.feat), stimvid] = featld(o.id.recid, o.carl.stimtype, o.carl.feat, ...
@@ -96,30 +96,20 @@ for k = 1:numel(oa) % loop over recordings
         clip = o.sld.clip, ...
         smlenpx = o.sld.smlenpx, ...
         smlensec = o.sld.smlensec, ...
+        imrate = md.volrate, ...
         smmthd = o.sld.smmthd, ...
-        dr = o.sld.sp.dr, ...
-        imrate = md.volrate);
-
-
-smlenpx = opt.smlenpx;
-smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
-imrate = opt.imrate;
-smmthd = opt.smmthd;
-dostats = opt.dostats;
-suffixplt = opt.suffixplt;
-it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
-dr = opt.dr;
-doplt = opt.doplt;
-
+        dostats = o.sld.dostats, ...
+        suffixplt=o.sld.suffixplt, ...
+        it = o.sld.sp.it, ...
+        iz = o.sld.sp.iz, ...
+        dr = o.sld.sp.dr);
     
     %% create/load/select rois/responses for each optid
 
     if o.mn.doroi
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
-            optid = fn{m};
-            [ts.roi.(optid), roidat.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, md.sz_crop, pth.dirstack, o.id.recid, pth.roi.(optid), stackmnthr, hrlr, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            [ts.roi.(fn{m}), roidat.(fn{m})] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, pth.dirstack, o.id.recid, pth.roi.(fn{m}), o.roi.(fn{m})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -141,7 +131,7 @@ doplt = opt.doplt;
             depvp = ts.roi.i17{1};
             pthpre = [pth.stack(1:end-4) regionex '_tesfits'];
             doplt = 0;
-            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.sz_crop, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
+            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
         end
     end
 

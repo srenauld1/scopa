@@ -166,7 +166,9 @@ for spi = 1:numel(pthstackall)
         stack = struct2cell(load(pthstackall{spi})); %make sure loaded stack is named 'stack'
         stack = stack{1};
         chanusetmp = chanuse(chanuse<=size(stack,5)); %only use requested channels that exist, if you request one channel that doesn't exist this will error
-        stack = stack(:,:,:,:,chanusetmp);
+        if ~isequal(chanusetmp, 1:size(stack,5))
+            stack = stack(:,:,:,:,chanusetmp);
+        end
     elseif endsWith(pthstackall{spi}, '.tif')
         stack = tif2mat(pthstackall{spi}, ...
             sz_yxzt=sz, ...
@@ -187,7 +189,7 @@ for spi = 1:numel(pthstackall)
             pthsv_prefix=pthstackall{spi}(1:end-4))
     end
 
-    if any(clip)
+    if any(clip) && ~isequal(clip, [0,1])
         stack = stackclip(stack, clip=clip);
     end
     if zerostack

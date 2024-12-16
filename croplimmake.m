@@ -1,5 +1,5 @@
 
-function [croplim, croplimstr] = croplimmake(stack, sz_t, dirstack, recid, regionex, regionex_nounderscore, numchan)
+function [croplim, croplimstr] = croplimmake(stack, dirstack, recid, regionex, regionex_nounderscore, numchan)
 
 if numchan==2
     fprintf("averaging both channels to create the images for defining croplim" + newline)
@@ -56,7 +56,7 @@ end
 
 %% save
 
-tinds = 1:sz_t;
+tinds = 1:size(stack,4);
 cinds = 1:size(stack,5);
 croplim = [yinds(1), yinds(end), xinds(1), xinds(end), zinds(1), zinds(end), tinds(1), tinds(end), cinds(1), cinds(end)]; 
 croplimstr = [num2str(croplim(7)) '_' num2str(croplim(8)) '_' num2str(croplim(3)) '_' num2str(croplim(4)) '_' num2str(croplim(1)) '_' num2str(croplim(2)) '_' num2str(croplim(5)) '_' num2str(croplim(6)) '_' num2str(croplim(9)) '_' num2str(croplim(10))]; %txyz

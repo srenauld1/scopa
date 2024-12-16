@@ -1,4 +1,4 @@
-function roifmake(stack, pth_roif, opt)
+function roifauto(stack, pth_roif, opt)
 
 arguments
     stack

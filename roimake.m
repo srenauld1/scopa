@@ -1,4 +1,4 @@
-function [resp, roidat] = roimake(stack, t, sampper, widyxz, zstartpos, sz_crop, pth_dirstack, recid, pth_roim, stackmnthr, hrlr, opt, roimaskman_allchan)
+function [resp, roidat] = roimake(stack, t, sampper, widyxz, zstartpos, pth_dirstack, recid, pth_roim, opt, roiman)
 
 % see docs_roimake.m
 
@@ -8,17 +8,14 @@ arguments
     sampper
     widyxz
     zstartpos
-    sz_crop
     pth_dirstack
     recid
     pth_roim
-    stackmnthr
-    hrlr
     opt
-    roimaskman_allchan = []
+    roiman = []
 end
 
-if isempty(roimaskman_allchan)
+if isempty(roiman)
     maskinput = 0;
     domm = opt.domm;
     doma = opt.doma;
@@ -28,8 +25,8 @@ if isempty(roimaskman_allchan)
         doplt = any(strcmp('roi', glb('plt')));
     end
 else
-    if ~iscell(roimaskman_allchan)
-        roimaskman_allchan = {roimaskman_allchan};
+    if ~iscell(roiman)
+        roiman = {roiman};
     end
     maskinput = 1;
     domm = 0;
@@ -52,7 +49,7 @@ numchan = size(stack,5);
 %% crop movie to regionex cuboid
 
 if ~maskinput
-    [stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop, stackmnthr, hrlr);
+    stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack);
 end
 
 %% draw rois (polygons/polyhedra)
@@ -63,10 +60,10 @@ if domm
     else
         oneroi = 0;
     end
-    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    roiman = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
 else
     if ~maskinput
-        roimaskman_allchan = cell(numchan,1); %make it empty if you didn't draw or pass in mask
+        roiman = cell(numchan,1); %make it empty if you didn't draw or pass in mask
     end
 end
 
@@ -77,7 +74,7 @@ if doma
     for c = 1:numchan
         if ismember(c,opt.ma.chan)
             if ~isequal(numroiauto, 0)
-                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, regionex, opt.ma);
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roiman{c}, numroiauto, widyxz, regionex, opt.ma);
             end
         end
     end
@@ -87,7 +84,7 @@ end
 
 if docm
     error("for now, for caiman extraction, run pipeline_init with do_extract=1; soon you will be able to run it from here, as option in a2p")
-    roifmake(...
+    roifauto(...
         stack, ...
         pth_roif, ...
         roitype, ...
@@ -106,20 +103,6 @@ if docm
         )
 end
 
-
-if maskinput
-    for c = 1:numchan
-        roiman = roimaskman_allchan{c};
-        num_roim{c} = size(roiman, 4);
-        roiwt{c} = zeros(num_roim{c}, numel(sum(roiman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-        for mi = 1:num_roim{c}
-            tmp = roiman(:,:,:,mi);
-            [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-            roiwt{c}(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
-        end
-        roicen{c} = find_roi_centroids(roiman);
-    end
-end
 
 %% compute roi responses (and normalize)
 
@@ -150,7 +133,7 @@ pth_roimdat = [pthpre '_roimdat_.mat'];
 try
     load(pth_roimdat, 'roidat');
 catch
-    roidat = roidatmake(stack, roiwt, roicen, num_roim);
+    roidat = roidatmake(stack, roiman);
     if ~maskinput
         save(pth_roimdat, 'roidat', '-mat', '-v7.3');
     end
