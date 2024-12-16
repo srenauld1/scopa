@@ -1,6 +1,7 @@
 
 import numpy as np
 import os
+import json
 from tifffile.tifffile import imwrite, imread
 import scipy.io as sio
 import caiman as cm
@@ -18,7 +19,7 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
 
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -45,6 +46,9 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
             register_in_2d = 1
             print("stack does not have multiple slices but register_in_2d is set to false, changing register_in_2d to true now")
 
+
+    md = check_aborted_stack(md, pth_md, stack, stack_has_multiple_z_slices)
+    
     stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
 
     if halfwidth_window_bgsub:
@@ -249,6 +253,17 @@ def register(pth_tif_read, pth_prefix, pth_allrec, md, scopatmplt, clip, discard
 ########################################################################################################################################################
 ########################################################################################################################################################
 ########################################################################################################################################################
+
+
+def check_aborted_stack(md, pth_md, stack, stack_has_multiple_z_slices):
+    if stack_has_multiple_z_slices==0 and md['dims'][0] != stack.shape[0]:
+        print("stack cannot be reshaped into dimensions reported in tif header, but since it is not volumetric, assuming user aborted acquisition and updating metadata to match stack dimensions")
+        md['numvol'] = stack.shape[0]
+        md['dims'][0] = md['numvol']
+    with open(pth_md, 'w') as file: 
+        file.write(json.dumps(md, sort_keys=True, indent=4))
+    return md
+
 
 def cropflyback(stack, dims, flyback):
     stack = stack.reshape(dims[0], dims[1]+flyback, dims[2], dims[3])

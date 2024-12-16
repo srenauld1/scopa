@@ -25,12 +25,21 @@ def read_save_metadata(pth_readfile, pth_md, mat_file_shape = None):
             mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
             mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
             mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
-            try:
-                mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
-            except:
-                print("USING OLD SCANIMAGE VERSION METADATA PATTERNS")
-                mdt['numvol'] = int(re.findall( 'numVolumes = (.*)', meta)[0])
+
+            if mdt['numslice']==1 and mdt['numslice_withflyback']==1:
+                if re.findall( 'hStackManager.enable = (.*)', meta)[0]!='false': #if it's a single slice
+                    raise Exception("if numslice is 1, hStackManager.enable should be false")
+                print("hStackManager.enable is false, treating stack as planar yxt")
+                mdt['numvol'] = int(re.findall( 'framesPerSlice = (.*)', meta)[0])
+            else:
+                try:
+                    mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
+                except:
+                    print("USING OLD SCANIMAGE VERSION METADATA PATTERNS")
+                    mdt['numvol'] = int(re.findall( 'numVolumes = (.*)', meta)[0])
             
+
+
             mdt['xpix'] = int(re.findall( 'pixelsPerLine = (.*)', meta)[0])
             mdt['ypix'] = int(re.findall( 'linesPerFrame = (.*)', meta)[0])
             mdt['dims'] = [mdt['numvol'], mdt['numslice_withflyback'] - mdt['flyback'], mdt['ypix'], mdt['xpix']]
