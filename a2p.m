@@ -109,8 +109,7 @@ for k = 1:numel(oa) % loop over recordings
     if o.mn.doroi
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
-            optid = fn{m};
-            [ts.roi.(optid), roidat.(optid)] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, pth.dirstack, o.id.recid, pth.roi.(optid), o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            [ts.roi.(fn{m}), roidat.(fn{m})] = roimake(stack, ts.t, md.sampper, md.widyxz, md.zstartpos, pth.dirstack, o.id.recid, pth.roi.(fn{m}), o.roi.(fn{m})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
