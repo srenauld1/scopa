@@ -25,7 +25,7 @@ def subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, zi
 
         dimorder = 'txy' 
         pth_bgplots_save = pth_prefix + '_' + str(zind)
-        br = bgremover(stack[:,:,:,zind], pth_bgplots_save, patchhalfwidth=halfwidth_window_bgsub, dimorder=dimorder)
+        br = bgremover(stack[:,:,:,zind], pth_bgplots_save, bglenpx=halfwidth_window_bgsub, dimorder=dimorder)
         br.draw_patches()
         br.remove_bg()
         if makeplots:

@@ -28,9 +28,10 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
     
     if strcmp(regionex{m}, 'pb')
         o.roi.doma = 1; %do automated morph rois
-        o.roi.nrm.post = {'rsc000100'};
+        o.roi.docm = 1; %do draw rois
         o.roi.ma.numroi = 64;
         o.roi.ma.maskmake = 'edge';
+        o.roi.nrm.post = {'rsc000100'};
         o.bmp.mf.mdlname = 'fnet_v';
         o.bmp.mf.mdl_length_sec = 0;
         o.bmp.mf.epochinds = 4;

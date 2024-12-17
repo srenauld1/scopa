@@ -1,10 +1,10 @@
-function roidat = roidatmake(stack, roiman)
+function roidat = roidatmake(stack, roimask)
 
 numchan = size(stack,5);
 roidat = cell(numchan, 1);
 for c = 1:numchan
-    if ~isempty(roiman{c})
-        roidat{c} = roidatmake_onechan(stack(:,:,:,:,c), roiman{c});
+    if ~isempty(roimask{c})
+        roidat{c} = roidatmake_onechan(stack(:,:,:,:,c), roimask{c});
     end
 end
 
@@ -13,17 +13,17 @@ end
 
 
 
-function roidat = roidatmake_onechan(stack, roiman)
+function roidat = roidatmake_onechan(stack, roimask)
 
 
-num_roim = size(roiman, 4);
-roiwt = zeros(num_roim, numel(sum(roiman, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
+num_roim = size(roimask, 4);
+roiwt = zeros(num_roim, numel(sum(roimask, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
 for mi = 1:num_roim
-    tmp = roiman(:,:,:,mi);
+    tmp = roimask(:,:,:,mi);
     [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
     roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
 end
-roicen = find_roi_centroids(roiman);
+roicen = find_roi_centroids(roimask);
 
 
 mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');

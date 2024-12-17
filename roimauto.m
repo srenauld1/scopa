@@ -1,5 +1,5 @@
 
-function [roiwt, roicen, numroi_final] = roimauto(stack, roimaskman, numroi_init, widyxz, regionex, opts)
+function roimask = roimauto(stack, roimaskman, numroi_init, widyxz, regionex, opts)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -204,7 +204,7 @@ else
             if size(unique(tmp.', 'rows'), 1)~=1
                 error("each row must have constant value")
             end
-            idx_vox2roi = tmp(:,1);
+            % idx_vox2roi = tmp(:,1); %previously this was an alternative to deriving idx_vox2roi below; it is very similar 
             centmp = centmp.';
 
     end
@@ -218,20 +218,19 @@ end
 
 %% assign each voxel in the 3d mask to a morphological roi centroid
 
-if ~strcmp(maskseg, 'uniform') %method 'uniform' has already computed idx_vox2roi (with different algorithm), 'uniformp' recomputes it using pdist2 and its output centroids
-    cenmorphflat = cell2mat(roicen(:));
-    flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(roicen{idx},1),1), (1:size(roicen{idx},1)).'], (1:numel(roicen)).', 'uniform', 0));
-    [~, maptmp] = pdist2(cenmorphflat, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
-    idx_vox2roi = uint16(flatten_key(maptmp, 1)); %this records which cell the nearest morph centroid is from
-end
+cenmorphflat = cell2mat(roicen(:));
+flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(roicen{idx},1),1), (1:size(roicen{idx},1)).'], (1:numel(roicen)).', 'uniform', 0));
+[~, maptmp] = pdist2(cenmorphflat, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
+idx_vox2roi = uint16(flatten_key(maptmp, 1)); %this records which cell the nearest morph centroid is from
 
 %% find indices for each mophological roi
 
 roiwt = zeros(numroi_final, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
-
 for i = 1:numroi_final
     roiwt(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
 end
+
+roimask = reshape(roiwt, [size(stackmnt), numroi_final] );
 
 
 

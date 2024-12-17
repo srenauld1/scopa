@@ -17,7 +17,7 @@ if any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o,
     error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
 end
 
-id_capable_vbin = {'roi', 'mf', 'feat'}; %only these vbin can be expanded and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
+id_capable_vbin = {'roi', 'mf', 'bmp'}; %only these vbin can be expanded and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
 
 for k = 1:numel(vbin)
 
@@ -27,7 +27,7 @@ for k = 1:numel(vbin)
         error(sprintf("option module (vbin) " + vbintmp + " does not support mapping between options sets and option ids (opt2id)"))
     end
 
-    pthopt = [glb('pthparent') 'opt' vbintmp '.txt'];
+    pthopt = [glb('pthscopa') 'opt' vbintmp '.txt'];
     if isfile(pthopt)
         optfile = structtxtld(pthopt, nocells=1);
     else

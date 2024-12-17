@@ -6,7 +6,7 @@ format is:
     examples from different domains:
         ts.roi.optid.name (name=roi index ie ind1, ind2, . . . indN)
         ts.daq.optid.name (name=daq variable name, eg fv for forward velocity or g4pos for g4 bar position or t for timestamp)
-        ts.feat.optid.name (name=extracted feature name, eg bumpang for bump mean angular position)
+        ts.bmp.optid.name (name=extracted feature name, eg bumpang for bump mean angular position)
     when options are not variable (e.g. daq variables are currently extracted with a hard-coded options set), optid is 'none'
 tsget recovers timeseries from ts (since ts can be complex)
 mfit, feat, and pltx use tsget to simplify timeseries recovery, variable names, and file names

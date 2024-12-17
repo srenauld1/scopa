@@ -184,7 +184,7 @@
       "mf"
     ],
     "pltvis": 1,
-    "timestr": "2024121218353810"
+    "timestr": "2024121710452394"
   },
   "nestvalid": [
     "spec",
@@ -198,6 +198,7 @@
     "carl",
     "roi.mm",
     "roi.ma",
+    "roi.cm",
     "roi.qc",
     "roi.nrm",
     "roi.sp",
