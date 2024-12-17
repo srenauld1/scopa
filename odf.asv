@@ -288,10 +288,7 @@ if fill
         error('copybin names cannot match any vbin names')
     end
 
-    if ~isfield(o, 'roi') || ~isstruct(o.roi) 
-        o = odf(o, 'roi', d.roi.regionex);
-        copybinprev{1} = d.roi.regionex;
-    end
+    if ~isstruct(o.roi)
 
     oflat = structflat(o);
     fnoflat = fieldnames(oflat);

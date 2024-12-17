@@ -13,8 +13,8 @@
   },
   "carl": {
     "feat": "CON_51",
-    "pth_template": "~/ds/data/stimuli",
-    "pthparent_feat": "~/ds/data/rec",
+    "pth_template": "/Users/wienecke/ds/data/stimuli",
+    "pthparent_feat": "/Users/wienecke/ds/data/rec",
     "stimtype": "drone"
   },
   "cm": {
@@ -184,7 +184,7 @@
       "mf"
     ],
     "pltvis": 1,
-    "timestr": "2024121710452394"
+    "timestr": "2024121712340746"
   },
   "nestvalid": [
     "spec",
@@ -325,7 +325,7 @@
     ],
     "match": "each",
     "pth": "",
-    "pthparent_local": "~/stacks",
+    "pthparent_local": "/Users/wienecke/stacks",
     "pthparent_o2": "",
     "recdate": [
       "*"

@@ -8,6 +8,7 @@ arguments
 end
 
 clear glb %clear globals
+optdfsv
 
 oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 

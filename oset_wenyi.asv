@@ -1,0 +1,14 @@
+function o = oset_mito(o)
+
+o.mn.dodaq = 0; 
+o.mn.doftv = 0; 
+o.mn.doroi = 0; 
+o.mn.dobmp = 0; 
+o.mn.dofit = 0; 
+o.mn.dopltx = 0; 
+o.mn.plt = ["sld"]; %plot only from sld module (this will create stack gifs, options specified in 
+
+o.sld.sp.it = -100; %default (d.sp.it, in optdfsv.m) is -100, which is 100 equidistant framesspecify how many frames of stack gif you want plotted (if you want it plotted when you run a2p)
+
+o = odf(o, fill=1);
+

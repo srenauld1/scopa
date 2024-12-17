@@ -5,17 +5,17 @@ function [o, oflat] = oset(specin, opt)
 
 arguments
     specin = [] % specin can be empty, or not passed as argument, and will search for file using fspc* below; specin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, make files=0
-    opt.files = 1 % find recordings using specin (or o.spec, if specin is empty) 
+    opt.files = 1 % find recordings using specin (or o.spec, if specin is empty)
 end
 files = opt.files;
 
 %%%% user-defined recording specifiers (if no input to a2p) %%%%
 
-otmp.spec.pthparent_local = '~/stacks';
+otmp.spec.pthparent_local = '/Users/wienecke/stacks';
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(specin) %if you're running a2p without input arguments (ie if specin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not specin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
     otmp.spec.recdate = {'20230627'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.fly = {'2'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
@@ -31,30 +31,40 @@ recs_ganoeb = {'202311', '202411', '20241207'};
 recs_fb8c = {'20241209'};
 recs_mito = {'20241216'};
 recs_t5 = {'2211'};
+recs_wenyi = {'20230627', 'wenyi', 'wz113'};
 
 for k = 1:numel(otmp) %loop over found files, setting options depending on recording
 
-    if contains(otmp(k).id.pthstack, recs_ganopb)
+    if contains(otmp(k).id.pthstack, recs_wenyi)
 
-        o(k) = oset_ganopb(otmp(k));
-
-    elseif contains(otmp(k).id.pthstack, recs_ganoeb)
-
-        o(k) = oset_ganopb(otmp(k));
-
-    elseif contains(otmp(k).id.pthstack, recs_fb8c)
-
-        o(k) = oset_fb8c(otmp(k));
+        o(k) = oset_wenyi(otmp(k));
     
-    elseif contains(otmp(k).id.pthstack, recs_mito)
+    else
 
-        o(k) = oset_mito(otmp(k));
+        if contains(otmp(k).id.pthstack, recs_ganopb)
+
+            o(k) = oset_ganopb(otmp(k));
+
+        elseif contains(otmp(k).id.pthstack, recs_ganoeb)
+
+            o(k) = oset_ganopb(otmp(k));
+
+        elseif contains(otmp(k).id.pthstack, recs_fb8c)
+
+            o(k) = oset_fb8c(otmp(k));
+
+        elseif contains(otmp(k).id.pthstack, recs_mito)
+
+            o(k) = oset_mito(otmp(k));
+
+        elseif contains(otmp(k).id.pthstack, recs_t5)
+
+            o(k) = oset_t5(otmp(k));
+
+        end
     
-    elseif contains(otmp(k).id.pthstack, recs_t5)
-
-        o(k) = oset_t5(otmp(k));
-
     end
+
 
 end
 

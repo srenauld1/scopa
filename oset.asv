@@ -11,38 +11,53 @@ files = opt.files;
 
 %%%% user-defined recording specifiers (if no input to a2p) %%%%
 
-o.spec.pthparent_local = '~/stacks';
-o.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
+otmp.spec.pthparent_local = '/Users/wienecke/fugg';
+otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(specin) %if you're running a2p without input arguments (ie if specin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not specin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    o.spec.recdate = {'20230627'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    o.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
-    o.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-    o.spec.pth = '';
+    otmp.spec.recdate = {'20230627'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.fly = {'2'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
+    otmp.spec.pth = '';
 elseif iscell(specin) || ischar(specin) %if input to a2p is not empty, and is not struct
-    o.spec.pth = specin;
+    otmp.spec.pth = specin;
 end
 
-otmp = odf(o, files=files); %find files (if files=1), add them to struct o
+otmp = odf(otmp, files=files); %find files (if files=1), add them to struct o
 
 recs_ganopb = {'202306', '20241208_2'};
 recs_ganoeb = {'202311', '202411', '20241207'};
+recs_fb8c = {'20241209'};
+recs_mito = {'20241216'};
 recs_t5 = {'2211'};
+recs_wenyi = {'wenyi', 'wz113', 'fugg'}; %if 'stacks' is in either of these directories (local and O2), use wenyi's settings
 
-for k = 1:numel(o) %loop over found files, setting options depending on recording
+for k = 1:numel(otmp) %loop over found files, setting options depending on recording
 
-    if contains(o(k).id.pthstack, recs_ganopb)
+    if contains(otmp(k).id.pthstack, recs_ganopb)
 
-        otmp = oset_ganopb(o(k));
+        o(k) = oset_ganopb(otmp(k));
 
-    elseif contains(o(k).id.pthstack, recs_ganoeb)
+    elseif contains(otmp(k).id.pthstack, recs_ganoeb)
 
-        o(k) = oset_ganopb(o(k));
+        o(k) = oset_ganopb(otmp(k));
 
-    elseif contains(o(k).id.pthstack, recs_t5)
+    elseif contains(otmp(k).id.pthstack, recs_fb8c)
 
-        o(k) = oset_t5(o(k));
+        o(k) = oset_fb8c(otmp(k));
+    
+    elseif contains(otmp(k).id.pthstack, recs_mito)
+
+        o(k) = oset_mito(otmp(k));
+    
+    elseif contains(otmp(k).id.pthstack, recs_t5)
+
+        o(k) = oset_t5(otmp(k));
+    
+    elseif contains(otmp(k).id.pthstack, recs_wenyi)
+
+        o(k) = oset_wenyi(otmp(k));
 
     end
 
@@ -50,8 +65,6 @@ end
 
 
 %%%% organize %%%%
-
-o = odf(o, fill=1); %final call to odf with fill=1 will fill any missing option nestings, but otherwise change nothing
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
