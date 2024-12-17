@@ -31,7 +31,7 @@ recs_ganoeb = {'202311', '202411', '20241207'};
 recs_fb8c = {'20241209'};
 recs_mito = {'20241216'};
 recs_t5 = {'2211'};
-recs_wenyi = {'20230627', 'wenyi', 'wz113'};
+recs_wenyi = {'wenyi', 'wz113'};
 
 for k = 1:numel(otmp) %loop over found files, setting options depending on recording
 
