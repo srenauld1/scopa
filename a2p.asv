@@ -8,6 +8,7 @@ arguments
 end
 
 clear glb %clear globals
+optdfsv
 
 oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 
@@ -125,10 +126,10 @@ for k = 1:numel(oa) % loop over recordings
             
             optid = fn{m};
             obmptmp = o.bmp.(optid);
-            roidattmp = roidat.i17{1};
-            regionex = 'eb';
+            roidattmp = roidat.i3{1};
+            regionex = 'pb';
             indvp = ts.vis.yaw;
-            depvp = ts.roi.i17{1};
+            depvp = ts.roi.i3{1};
             pthpre = [pth.stack(1:end-4) regionex '_tesfits'];
             doplt = 0;
             ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump

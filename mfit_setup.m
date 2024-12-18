@@ -16,6 +16,7 @@ if strcmp(mdlclass, 'svd')
 
     op.mdl = @objective_svd;
 
+    opptmp = [];
     supp.num_total_model_functions = 1;
     supp.pvar = sscanf(mdlname, 'svd_%d'); %numeric suffix is pvar
 

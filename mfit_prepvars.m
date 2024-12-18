@@ -17,8 +17,8 @@ if opts.smoothdepv
 end
 if opts.smoothindv
     error("insert switch for circular")
-    for i = 1:num_dim_indvp
-        fitin.vars.indvp(i,:) = smoothdata(fitin.vars.indvp(i,:), time_dimension, 'gaussian', opts.smoothindv);
+    for k = 1:num_dim_indvp
+        fitin.vars.indvp(k,:) = smoothdata(fitin.vars.indvp(k,:), time_dimension, 'gaussian', opts.smoothindv);
     end
 end
 
@@ -75,9 +75,9 @@ num_samp_indvpaug = num_samp_indvp-(num_samp_mdl-1)-num_samp_lag;
 
 indvpaug = zeros( num_dim_indv, num_samp_indvpaug ); %indv, where for each dimension (of num_dim_indvp total), each of num_samp_mdl offsets into past become an additional dimension; excludes final num_samp_mdl samples; flips timeseries in time to make dot product same as valid convolution
 epochinds_ts_i_m = zeros( num_samp_mdl, num_samp_indvpaug );
-for i = 1 : num_samp_indvpaug
-    indvpaug(:,i) = reshape( flip(fitin.vars.indvp(:,i:i+num_samp_mdl-1), time_dimension), [], 1 ); %indvpaug makes time samples into past just another indv dim, e.g., for model with 2 dims a and b and 4 time samples into past, with lag zero, indvpaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
-    epochinds_ts_i_m(:,i) = flip(epochts(i:i+num_samp_mdl-1), time_dimension); %do the same for epochinds, to make sure model doesn't include any samples from wrong epoch
+for k = 1 : num_samp_indvpaug
+    indvpaug(:,k) = reshape( flip(fitin.vars.indvp(:,k:k+num_samp_mdl-1), time_dimension), [], 1 ); %indvpaug makes time samples into past just another indv dim, e.g., for model with 2 dims a and b and 4 time samples into past, with lag zero, indvpaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
+    epochinds_ts_i_m(:,k) = flip(epochts(k:k+num_samp_mdl-1), time_dimension); %do the same for epochinds, to make sure model doesn't include any samples from wrong epoch
 end
 
 %% if mdlname starts with 'ohe', one hot encode indv

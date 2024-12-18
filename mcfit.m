@@ -1,0 +1,79 @@
+
+
+% use svd to find best linear fit to function defined by indv and depv (here, bar position and spike rate, respctively)
+% restrict fit to specific samples (here, during bar motion-pulses)
+% ft are coefficients of the linear fit; here, ft is a vector of length nmdl; the max representssample of peak sensitivity to bar position 
+
+%% inputs (enter indv, depv, tsepoch, nmdl, at least)
+
+indv = []; % (n,m) vector (here, m=1) of bar position; indv can be multidimensional, where m can be >1, representing stimulus features, like bar position)
+depv = []; % (n,1) vector of spike rate
+tsepoch = []; % (n,1) vector of integers representing stimulus epoch; for example, 1 when bar is on, 0 when bar is off; use this to restrict model to samples when bar is on (could also restrict by different stimulus states, e.g. each azimuthal starting location of bar)
+nmdl = 20; % number samples in model (number samples in each presentation of moving bar); you cold try making this a little longer, to include some of the time when the bar is off, but you'd need to insert some number for bar position during those times (probably something like 10 degrees below or above the min/max bar position) 
+epochinds = [1]; %vector; which stimulus epochs to include in fit (must be elements in tsepoch); here, epochinds = [1] for single-epoch fit; but if you wanted to make azimuthal starting bar position different epochs
+nlag = 0; %number samples of lag (to shift temporal window of model); only make nonzero if you're confident there are many samples of lag between indv and depv, and including them in the model would just make it noisy
+pvar = 0.9; % range 0-1; fraction of the data variance that the linear fit should account for; if not 1, pvar eliminates smaller singular values from pseudoinverse;
+keep_transition_zones = 1; %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochinds, discards samples with any epochs not listed; if epochinds is singleton, this is irrelevant
+
+load('~/stacks/mctest.mat', 'indv', 'depv')
+indv = indv'; indv = repmat(indv, [1 2]);
+depv = depv';
+tsepoch = ones(numel(depv),1);
+
+%% create "augmented" variables for multi-timepoint model 
+
+nindv = size(indv,1);
+ndim_indv = size(indv,2);
+
+nindvaug = nindv-(nmdl-1)-nlag;
+indvaug = zeros( nindvaug, ndim_indv*nmdl ); %indvaug (augmented indv) where for each dimension of indv, each of nmdl offsets into past becomes an additional dimension; excludes final nmdl samples; flips in time to make dot product same as valid convolution
+tsepochaug = zeros( nindvaug, nmdl ); %do the same for epochinds, to make sure model doesn't include any samples from wrong epoch
+for k = 1 : nindvaug
+    indvaug(k,:) = reshape( flip(indv(k:k+nmdl-1, :)), 1, [] );
+    tsepochaug(k, :) = flip(tsepoch(k:k+nmdl-1));
+end
+
+%% index, keep only samples during epochinds (here, when the bar is on, ie epochind 1) 
+
+tsepochaug_pure = zeros(size(tsepochaug, 1), 1);
+for k = 1:numel(epochinds)
+    tsepochaug_pure = tsepochaug_pure + epochinds(k) * all(ismember(tsepochaug, epochinds(k)), 2); %epoch indices where the epoch is constant across all model timepoints
+end
+if any(tsepochaug_pure(:)>max(epochinds(:)))
+    error("should not have overlapping pure epoch samples")
+end
+
+if keep_transition_zones  %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochinds, discards samples with any epochs not listed;
+    tmp = zeros(size(tsepochaug));
+    for k = 1:numel(epochinds)
+        tmp = tmp + ismember(tsepochaug, epochinds(k));
+    end
+    keepinds_indvpaug = find(all(tmp, 2)); % specify dimension for all() in case tsepochaug is singleton
+else %do not include samples with multiple epochs, even if those epochs listed in epochinds
+    keepinds_indvpaug = find(tsepochaug_pure);
+end
+keepinds_depvp = keepinds_indvpaug + (nmdl-1) + nlag; %account for desired indv vs depv lag, and number timepoints in model (which includes current so -1)
+
+indvaug_tmp = indvaug(keepinds_indvpaug,:);
+depv_tmp = depv(keepinds_depvp,:);
+
+%% fit 
+
+[ u, s, v ] = svd( indvaug_tmp, 'econ' );
+k = find(s);
+t = s(k);
+r = cumsum( t.*t );
+p = find( 1/r(end)*r>=pvar, 1 );
+r = zeros( size(s) );
+r( k(1:p) ) = 1 ./ t(1:p);
+psiv = v * r.' * u'; % (m*nmdl,n-nmdl+1) array for pseudoinverse of fitting problem
+ft = psiv*depv_tmp;
+
+ft = reshape(ft, nmdl, ndim_indv); %reshape into (nmdl,m), although here m is 1, for single-dimensional independent variable
+
+%% plot
+
+[~, mxi] = max(ft); %mxi is sample with max sensitivity to bar position, for each stimulus epoch (here, there is only one epoch)
+
+figure; plot(ft); title(sprintf("for each epochind, peak bar-position sensitivity occurs at sample: " + mat2str(mxi)))
+
