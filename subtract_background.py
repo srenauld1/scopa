@@ -16,25 +16,28 @@ from scipy import signal
 
 ##########################################################################################################################################
 
-def subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, zindall):
+def subtract_background(stack, bglenpx, pth_prefix, makeplots, zindall):
             
     print("STARTING LINE-BY-LINE BACKGROUND SUBTRACTION in subtract_background.py")
-    stack = stack.astype('float32') #needs to be float because subtraction can cause negatives       
+    # stack = stack.astype('int16') #needs to be int16 because subtraction can cause negatives   
+
+    if bglenpx%2!=0:
+        raise Exception("bglenpx must be even")    
 
     for zind in zindall: #for every z slice 
 
         dimorder = 'txy' 
         pth_bgplots_save = pth_prefix + '_' + str(zind)
-        br = bgremover(stack[:,:,:,zind], pth_bgplots_save, bglenpx=halfwidth_window_bgsub, dimorder=dimorder)
+        br = bgremover(stack[:,:,:,zind], pth_bgplots_save, bglenpx=bglenpx, dimorder=dimorder)
         br.draw_patches()
         br.remove_bg()
         if makeplots:
             br.make_plots()
         stack[:,:,:,zind] = np.transpose(br.out, (0, 2, 1))
             
-    mnmv = np.min(stack).astype('float32')
+    mnmv = np.min(stack)
     stack -= mnmv #make movie nonnegative (not sure this is necessary)
-    stack = stack.astype('uint16')
+    # stack = stack.astype('uint16')
     print("MIN BEFORE MOTION CORRECTION AFTER BACKGROUND SUBTRACTION" + str(mnmv))
 
     return stack

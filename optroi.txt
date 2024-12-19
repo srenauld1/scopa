@@ -174,5 +174,257 @@
       "roi_color": [1,0,0],
       "roialpha": 0.3
     }
+  },
+  "i4": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "fg": "allrois",
+      "hrange_in_manual": [],
+      "hrange_out_manual": [0,0.6],
+      "huenorm": "native",
+      "hueshift": 0,
+      "huestr": "",
+      "ignorehue": 0,
+      "ignoresat": 0,
+      "ignoreval": 0,
+      "mdlname": "",
+      "satnorm": "relative",
+      "srange_in_manual": [],
+      "srange_out_manual": [0,1],
+      "valnorm": "relative",
+      "vrange_in_manual": [],
+      "vrange_out_manual": [0,1]
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "t5",
+    "sp": {
+      "dr": [0,1],
+      "ir": [],
+      "it": -100,
+      "iz": [],
+      "roi_color": [1,0,0],
+      "roialpha": 0.3
+    }
+  },
+  "i5": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "fg": "allrois",
+      "hrange_in_manual": [],
+      "hrange_out_manual": [0,0.6],
+      "huenorm": "native",
+      "hueshift": 0,
+      "huestr": "",
+      "ignorehue": 0,
+      "ignoresat": 0,
+      "ignoreval": 0,
+      "mdlname": "",
+      "satnorm": "relative",
+      "srange_in_manual": [],
+      "srange_out_manual": [0,1],
+      "valnorm": "relative",
+      "vrange_in_manual": [],
+      "vrange_out_manual": [0,1]
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "tm",
+    "sp": {
+      "dr": [0,1],
+      "ir": [],
+      "it": -100,
+      "iz": [],
+      "roi_color": [1,0,0],
+      "roialpha": 0.3
+    }
+  },
+  "i6": {
+    "cm": {
+      "extract_cc": 1,
+      "gSig": [2,2,0.5],
+      "ITER": 3,
+      "low_rank_background": true,
+      "max_iter_snmf": 500,
+      "maxthr": 0.1,
+      "merge_thr": 0.85,
+      "method_init": "graph_nmf",
+      "nb": 1,
+      "normalize_init": true,
+      "nrgthr": 0.9999,
+      "only_init": false,
+      "p": 0,
+      "perc_baseline_snmf": 20,
+      "roidensity": 0.4,
+      "SC_nnn": 20,
+      "SC_normalize": 1,
+      "SC_sigma": 1,
+      "SC_thr": 0,
+      "SC_use_NN": 0,
+      "sigma_smooth_snmf_time": 0.5,
+      "sparsity_penalty": 0.5,
+      "thr_method": "nrg",
+      "update_background_components": true
+    },
+    "docm": 1,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "fg": "allrois",
+      "hrange_in_manual": [],
+      "hrange_out_manual": [0,0.6],
+      "huenorm": "native",
+      "hueshift": 0,
+      "huestr": "",
+      "ignorehue": 0,
+      "ignoresat": 0,
+      "ignoreval": 0,
+      "mdlname": "",
+      "satnorm": "relative",
+      "srange_in_manual": [],
+      "srange_out_manual": [0,1],
+      "valnorm": "relative",
+      "vrange_in_manual": [],
+      "vrange_out_manual": [0,1]
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "edge",
+      "maskseg": "uniform",
+      "numroi": 128
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "pb",
+    "sp": {
+      "dr": [0,1],
+      "ir": [],
+      "it": -100,
+      "iz": [],
+      "roi_color": [1,0,0],
+      "roialpha": 0.3
+    }
+  },
+  "i7": {
+    "cm": {
+      "extract_cc": 1,
+      "gSig": [2,2,0.5],
+      "ITER": 3,
+      "low_rank_background": true,
+      "max_iter_snmf": 500,
+      "maxthr": 0.1,
+      "merge_thr": 0.85,
+      "method_init": "graph_nmf",
+      "nb": 1,
+      "normalize_init": true,
+      "nrgthr": 0.9999,
+      "only_init": false,
+      "p": 0,
+      "perc_baseline_snmf": 20,
+      "roidensity": 0.4,
+      "SC_nnn": 20,
+      "SC_normalize": 1,
+      "SC_sigma": 1,
+      "SC_thr": 0,
+      "SC_use_NN": 0,
+      "sigma_smooth_snmf_time": 0.5,
+      "sparsity_penalty": 0.5,
+      "thr_method": "nrg",
+      "update_background_components": true
+    },
+    "docm": 1,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "fg": "allrois",
+      "hrange_in_manual": [],
+      "hrange_out_manual": [0,0.6],
+      "huenorm": "native",
+      "hueshift": 0,
+      "huestr": "",
+      "ignorehue": 0,
+      "ignoresat": 0,
+      "ignoreval": 0,
+      "mdlname": "",
+      "satnorm": "relative",
+      "srange_in_manual": [],
+      "srange_out_manual": [0,1],
+      "valnorm": "relative",
+      "vrange_in_manual": [],
+      "vrange_out_manual": [0,1]
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "edge",
+      "maskseg": "uniform",
+      "numroi": 256
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "pb",
+    "sp": {
+      "dr": [0,1],
+      "ir": [],
+      "it": -100,
+      "iz": [],
+      "roi_color": [1,0,0],
+      "roialpha": 0.3
+    }
   }
 }

@@ -121,7 +121,7 @@ def parse_command_line():
         args.file_matching_style = pars.FILE_MATCHING_STYLE
         args.registration_template_group_id = pars.REGISTRATION_TEMPLATE_GROUP_ID
         args.register_in_2d = pars.REGISTER_IN_2D
-        args.halfwidth_window_bgsub = pars.HALFWIDTH_WINDOW_BGSUB
+        args.bglenpx = pars.BGLENPX
         args.smlenpx_mcp = pars.SMLENPX_MCP
         args.max_shifts_prc = pars.MAX_SHIFTS_PRC
         args.use_cluster = pars.USE_CLUSTER
@@ -225,7 +225,7 @@ def parse_command_line():
 
 
     register_in_2d = int(args.register_in_2d[0])
-    halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
+    bglenpx = int(args.bglenpx[0])
 
     if isinstance(args.smlenpx_mcp[0], list):
         smlenpx_mcp = args.smlenpx_mcp[0] #keep as list
@@ -295,7 +295,7 @@ def parse_command_line():
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
+                      registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed, 

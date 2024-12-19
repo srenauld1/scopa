@@ -19,7 +19,7 @@ from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 
 
-def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
 
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -51,7 +51,7 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
     
     stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
 
-    if halfwidth_window_bgsub:
+    if bglenpx:
         pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in choose_files (make this more reliable)
     else:
         pth_tif_write = pth_prefix + chanstr_primary + '_cmrg_.tif'#match pattern in choose_files (make this more reliable)
@@ -102,10 +102,10 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
    
     ########################## BACKGROUND SUBTRACTION ##########################
 
-    if halfwidth_window_bgsub:
-        stack = subtract_background(stack, halfwidth_window_bgsub, pth_prefix, makeplots, indzall)
+    if bglenpx:
+        stack = subtract_background(stack, bglenpx, pth_prefix, makeplots, indzall)
         if two_channel_reg:
-            stack_secondary = subtract_background(stack_secondary, halfwidth_window_bgsub, pth_prefix, makeplots, indzall)
+            stack_secondary = subtract_background(stack_secondary, bglenpx, pth_prefix, makeplots, indzall)
 
     if clipinterp:
         limax = tuple(np.arange(1,np.ndim(stack)))

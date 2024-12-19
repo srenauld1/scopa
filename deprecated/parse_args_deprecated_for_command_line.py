@@ -37,7 +37,7 @@ class parse_pars_file():
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,    
+                      registration_template_group_id, do_register, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,    
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, smlensec_rsc, use_scannoise_removed, 
@@ -89,10 +89,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[regionex],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--halfwidth_window_bgsub",  # name on the CLI - drop the `--` for positional/required parameters
+        "--bglenpx",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1, 
         type=int,
-        default=[halfwidth_window_bgsub],  # default if nothing is provided
+        default=[bglenpx],  # default if nothing is provided
     )
     CLI.add_argument(
         "--registration_template_group_id",  # name on the CLI - drop the `--` for positional/required parameters
@@ -286,7 +286,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.file_matching_style = pars.FILE_MATCHING_STYLE
         args.registration_template_group_id = pars.REGISTRATION_TEMPLATE_GROUP_ID
         args.register_in_2d = pars.REGISTER_IN_2D
-        args.halfwidth_window_bgsub = pars.HALFWIDTH_WINDOW_BGSUB
+        args.bglenpx = pars.BGLENPX
         args.smlenpx_mcp = pars.SMLENPX_MCP
         args.max_shifts_prc = pars.MAX_SHIFTS_PRC
         args.use_cluster = pars.USE_CLUSTER
@@ -343,7 +343,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     
     do_register = int(args.do_register[0])
     register_in_2d = int(args.register_in_2d[0])
-    halfwidth_window_bgsub = int(args.halfwidth_window_bgsub[0])
+    bglenpx = int(args.bglenpx[0])
 
     if isinstance(args.smlenpx_mcp[0], list):
         smlenpx_mcp = args.smlenpx_mcp[0] #keep as list
@@ -410,7 +410,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
+                      registration_template_group_id, do_register, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, smlensec_rsc, use_scannoise_removed, 

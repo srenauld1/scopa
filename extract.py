@@ -15,7 +15,7 @@ from helpers import stack_reshape_transpose_clip_zero_type
 
 
 
-def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -24,7 +24,8 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
 
-    stack = imread(pth_tif_read)
+    if optall: #if not running extract from matlab (if you are, you will pass in options dict optall)
+        stack = imread(pth_tif_read)
 
     discard_channel_ex, chan_primary_when_two_ex, morphinpy = parse_methodex(methodex)
     stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
@@ -65,7 +66,8 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
             stackcrop_tmp = None
             
 
-            optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
+            if optall:
+                optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
 
             print("looping over " + str(len(optall)) + " unique options sets")
             
@@ -267,18 +269,22 @@ def parse_methodex(methodex):
             if 'each' in methodex:
                 raise Exception('seedeachpy and seedeachmat not supported yet')
             else:
-                if '12' in methodex:
+                if '1' in methodex and not '2' in methodex: 
+                    discard_channel_ex = 2 
+                elif '2' in methodex and not '1' in methodex: 
+                    discard_channel_ex = 1 
+                elif '12' in methodex:
                     chan_primary_when_two_ex = 1
                 elif '21' in methodex:
                     chan_primary_when_two_ex = 2
                 else:
-                    raise Exception('seed methodex must contain each, 12, or 21')
+                    raise Exception('seed methodex must contain each, 1, 2, 12, or 21')
             if methodex.endswith('py'):
                 morphinpy = 1
             elif methodex.endswith('mat'):
                 morphinpy = 0
             else:
-                raise Exception('seed methodex must end in py or mat')
+                raise Exception('methodex starting with seed must end in py or mat')
         else:
             raise Exception('methodex must be 1, 2, 12, or start with seed')
 

@@ -131,7 +131,7 @@ if iscell(stack)
     end
 else
     stack = permute(stack, dimorder);
-    if isempty(dimorder_averaged)
+    if 0%isempty(dimorder_averaged)
         dimorder_averaged_nontrivial = [];
     else
         dimorder_averaged_nontrivial = dimorder_averaged(size(stack,dimorder_averaged)~=1); %do this after indexing and permuting, but before averaging
@@ -308,7 +308,7 @@ dims_after_permute_changing_across_frames = numdim_eachframe+1:maxnumdims;
 lab_framechange = index_labels(dims_after_permute_changing_across_frames); %labels that can change on each frame
 lab_framechange_numel = cellfun(@numel, lab_framechange);
 if isscalar(lab_framechange_numel)
-    lab_framechange_numel = [lab_framechange_numel 1]; %row here, used as column below 
+    lab_framechange_numel = [lab_framechange_numel 1]; 
 end
 
 dr_str = vec(cellfun(@num2str, dr, 'UniformOutput', false))';

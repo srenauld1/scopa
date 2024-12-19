@@ -63,7 +63,7 @@ CLIP=(-1 0.99) #use space as delimiter, not comma; 0 to skip clip; -1 to set neg
 DISCARD_CHANNEL_REG=('None') #'None', 1, or 2
 CHAN_PRIMARY_WHEN_TWO_REG=(2) #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 REGISTER_IN_2D=(0) #register each z slice independently
-HALFWIDTH_WINDOW_BGSUB=(0) #make zero to skip, otherwise window half width for line by line background subtraction (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough)
+BGLENPX=(0) #must be even and nonzero, will run line-by-line background subtraction; 0 to skip background subtraction; full width of patch over which mean is computed for background subtraction (patch is a line in x); must be even; applied before registration, won't happen unless do_register==1, (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough, and there is a clear background patch on each line; if that's the case, set this as large as possible to cover that background, and even)
 MAX_SHIFTS_PRC=(15 15 15) #xyz percentages; 0 will be made 1 pixel; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 SMLENPX_MCP=(0 0 0) #seconds, gaussian temporal smoothing window length in register (prior to registration, helps register noisy movies)
 CLIPINTERP=(1) #clip intensity to remain in original data range (interpolation can smear the histogram, sometimes significantly, which can reduce data contrast, ie dff)
@@ -209,7 +209,7 @@ pars["CHAN_PRIMARY_WHEN_TWO_REG"]="${CHAN_PRIMARY_WHEN_TWO_REG[@]}"
 pars["CLIPINTERP"]="${CLIPINTERP[@]}"
 pars["REGISTRATION_TEMPLATE_GROUP_ID"]="${REGISTRATION_TEMPLATE_GROUP_ID[@]}"
 pars["REGISTER_IN_2D"]="${REGISTER_IN_2D[@]}"
-pars["HALFWIDTH_WINDOW_BGSUB"]="${HALFWIDTH_WINDOW_BGSUB[@]}"
+pars["BGLENPX"]="${BGLENPX[@]}"
 pars["SMLENPX_MCP"]="${SMLENPX_MCP[@]}"
 pars["MAX_SHIFTS_PRC"]="${MAX_SHIFTS_PRC[@]}"
 pars["USE_CLUSTER"]="${USE_CLUSTER[@]}"
@@ -305,7 +305,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                     partition_str=short #use transfer partition if do_copyfiles==1 or 2
                     time_str=$time_register
                     ntasks_str=1
-                    if [ "${HALFWIDTH_WINDOW_BGSUB[@]}" == 0 ]; then #use less memory if no bg subtraction
+                    if [ "${BGLENPX[@]}" == 0 ]; then #use less memory if no bg subtraction
                         cpus_per_task_str=$cpu_per_task_register
                         mem_per_cpu_str=$mem_per_cpu_register
                     else #use more memory if using bg subtraction

@@ -16,11 +16,11 @@ def make_paths(currscriptdir, do_copyfiles, do_autoallocate, folder_with_all_rec
 
     if scopatmpdir:
         pth_scopatmpdir = scopatmpdir
-        print("\n\n\nsetting pth_scopatmpdir to scopatmpdir in user's home dir: \n" + pth_scopatmpdir)
+        print("\n\n\nsetting pth_scopatmpdir to scopatmp in user's home dir: \n" + pth_scopatmpdir)
     else:
         pp = Path(sys.path[0]).parts #split path
         split_index = pp.index('scopa') + 1
-        pth_scopatmpdir = os.path.join(*pp[:split_index-1], 'scopatmpdir') #join to make suffix
+        pth_scopatmpdir = os.path.join(*pp[:split_index-1], 'scopatmp') #join to make suffix
         if not os.path.exists(pth_scopatmpdir):
             Path(pth_scopatmpdir).mkdir(parents=True, exist_ok=True)
         print("\n\n\nsetting pth_scopatmpdir to: \n" + pth_scopatmpdir)

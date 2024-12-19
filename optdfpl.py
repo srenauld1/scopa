@@ -4,10 +4,10 @@
 
 ## CHOOSE WHAT PARTS OF THE PIPELINE TO RUN (IN INTERACTIVE MODE, ONELY ONE do_* CAN BE TRUE AT A TIME, FOR NOW; THIS IS NOT THE CASE IN pl.sh) ## 
 
-do_register = 0 #caiman normCorre registration 
+do_register = 1 #caiman normCorre registration 
 do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 do_stitch = 0 #stitch deepcad denoised slices into stack of original size and put in data folder (before stitch, denoised data is in temporary 'denoising' directory)
-do_remove = 1 #remove scan noise (matlab script, but choose_files uses choose_files function below)
+do_remove = 0 #remove scan noise (matlab script, but choose_files uses choose_files function below)
 do_extract = 0 #caiman source extraction 
 do_a2p = 0 #matlab analysis 'post', various functions in a2p.m
 
@@ -19,7 +19,7 @@ recording_index = ['all'] #list, 'all' or list of zero-indexed string ints or in
 folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #folder holding all recordings you want this pipeline to operate on, if you're using do_copyfiles, this will refer to a folder on storage server and o2, tree on storage will be mirrored on o2; it is a separate variable (rather than end of pth_storage_prefix) to emphasize that it is separated off and mirrored on O2 
 pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, pth_storage_prefix+folder_with_all_recordings_on_storage_and_compute_filesystems is the path to the storage folder containing all recordings, data will be copied from here, into a folder on scratch with name (folder_with_all_recordings_on_storage_and_compute_filesystems) then analyzed, then copied back, ignored if do_copyfiles==0, 
 
-recdate = ['20231119'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdate = ['20230627'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['2'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
@@ -32,7 +32,7 @@ clip = [-1, 0.99] #[-1, 0.99] #0 to skip clip; [-1] to set negatives to 0, or [l
 discard_channel_reg = None #None, 1, or 2
 chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
 register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
-halfwidth_window_bgsub = 0 #half width of patch over which mean is computed for background subtraction (patch is a line in x), applied before registration, won't happejn unless do_register==1, make zero to skip, 
+bglenpx = 4 #must be even and nonzero, will run line-by-line background subtraction; 0 to skip background subtraction; full width of patch over which mean is computed for background subtraction (patch is a line in x); must be even; applied before registration, won't happen unless do_register==1, (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough, and there is a clear background patch on each line; if that's the case, set this as large as possible to cover that background, and even)
 max_shifts_prc = [5, 5, 0] #empty [] to skip; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 smlenpx_mcp = [0, 0, 0] 
 clipinterp = 1
@@ -47,14 +47,14 @@ epoch_choose_denoise = range(1,num_epochs_denoise+1) #one-indexed, which denoisi
 use_background_subtracted = 0 #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration 
 use_denoised = 1  #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif) 
 
-stopband_rsc = [10, 20]; #stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
+stopband_rsc = [10,20]; #stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
 smlensec_rsc = 0 #gaussian window length in matlab smoothdata for smoothing stack in time prior to removing scan noise (with line by line notch filter) in extremely noisy recordings
 use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
 
 do_crop_only = 0 #skip everything but FOV selection for all entries in regionex, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings without interruption
 
 extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
-methodex = 'seed21py' #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
+methodex = 'seed21py' #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seed1mat' (channel 1 functional extraction seeded with morph rois created/saved in matlab), 'seed2mat' (same as seed1 but for channel 2), 'seed1py' (same but seeded with automated morph rois made in python), 'seed2py' (same as 'seed1py' but channel 2), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 regionex = ['pnew3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['fullfov'] to extract from entire FOV
 maskname = ['none']
 

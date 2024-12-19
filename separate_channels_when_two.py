@@ -41,13 +41,13 @@ def separate_channels_when_two(stack, md, discard_channel, chan_primary):
                     stack = stack[:, :, chan_primary-1, :, :].squeeze()
                     print("STACK HAS 2 CHANNELS, WITH chan_primary SET TO " + str(chan_primary) )
         
-        else: #if channel_save has one channel, but rmdr is 2, you may have saved two channels with only one active; in read_save_metadata, this was detected and corrected when writing md['channel_save'], and here the extra saved channel will be removed from the stack
+        else: #if channel_save has one channel, but rmdr is 2, you may have saved two channels with only one active; in mdsisv, this was detected and corrected when writing md['channel_save'], and here the extra saved channel will be removed from the stack
             
             if isinstance(md['channel_save'], list):
                 stack = stack[:, :, int(md['channel_save'][0])-1, :, :].squeeze()
             elif isinstance(md['channel_save'], int):
                 stack = stack[:, :, md['channel_save'][0]-1, :, :].squeeze()
-            print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN read_save_metadata.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
+            print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN mdsisv.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
 
     #output chan_primary (which is also an input) in case it gets updated if there are two channels and discard_channel is not None
         

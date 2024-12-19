@@ -240,7 +240,7 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 --input to register (and, thus, whole pipeline) are the tif files output by ScanImage (precision is int16, not uint16), dimensions are tzyx
 --input filename must be the following format:
 
- metadata is read from these raw tif files in read_save_metadata.py
+ metadata is read from these raw tif files in mdsisv.py
 https://github.com/flatironinstitute/CaImAn/blob/main
 
 

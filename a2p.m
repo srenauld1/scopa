@@ -23,7 +23,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load metadata
 
-    md = mdsild(pth.md, o.sld);
+    md = mdsild(pth.md, o.sld, pthstack=pth.stack);
 
     % md_flyg = mdflygld(ids, pth.mdflyg, pth.dirstack, md); %commenting out since a2p doens't use any flyg metadata except balldia, which is hard coded in input param file since it never changes, and flyg metadata file is created in flyg preprocessing pipeline, which you don't need to run if you're running scopa
     % md = cell2struct([struct2cell(md); struct2cell(md_flyg)], [fieldnames(md); fieldnames(md_flyg)]); %combine mdsi (md) and flyg md into one struct, md

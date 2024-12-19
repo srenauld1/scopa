@@ -42,7 +42,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, recording_index, file_matching_style,
-                      registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, halfwidth_window_bgsub, smlenpx_mcp, max_shifts_prc, use_cluster,  
+                      registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed,
@@ -141,7 +141,7 @@ for ri, _ in enumerate(pth_read_all):
               spatial_downsample_fictrac_video(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
             except Exception as err:
               print("AN EXCEPTION OCCURRED DURING spatial_downsample_fictrac_video, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
-            register(pth_read_all[ri], pth_md_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, halfwidth_window_bgsub, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
+            register(pth_read_all[ri], pth_md_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
 
         if do_denoise:
           chanstr_primary, chanstr_secondary = separate_z_slices_for_denoising(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
