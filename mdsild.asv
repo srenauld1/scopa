@@ -8,11 +8,12 @@ arguments
 end
 pthstack = opt.pthstack;
 
+id = idmake(pthstack); %just in case id info gets used below
+
 if isempty(pthmd)
     if isempty(pthstack)
         error("must pass pthmd or pthstack")
     else
-        id = idmake(pthstack); 
         pthmd = [id.dirstack id.recid '_mdsi_.txt'];
     end
 end
@@ -29,43 +30,22 @@ end
 if isfile(pthmd)
     md = structtxtld(pthmd);
 else
-
-    system("/Users/wienecke/miniforge3/bin/python3 /Users/wienecke/scopa/mdsisv.py --pthstack '/Users/wienecke/stacks/20230627-2_D05_syt7f_018_syt7f/20230627_2_2_cmrg_dcdn_.mat' --pthmd ''/Users/wienecke/stacks/20230627-2_D05_syt7f_018_syt7f/20230627_2_2_mdsi_.txt''")
-
-    petmp = pyenv;
-    if ~strcmp(petmp.Executable, "/Users/wienecke/miniforge3/bin/python3") && contains(petmp.Home, "wienecke")
-        pyenv(Version="/Users/wienecke/miniforge3/bin/python3")
-        pyenv(Version="/Users/wienecke/miniforge3/envs/caiman/bin/python3")
+    fprintf("cannot find this scanimage metadata file: " + pthmd + newline + "if you successfully ran registration, it should have been created, but creating it now using python function mdsisv" + newline)
+    pthrawpt = [id.dirstack id.recid '_raw_.tif'];
+    pthraw = rdir(pthrawpt);
+    if isempty(pthraw)
+        pthrawpt = [id.dirstack id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trialnum ) '_*.tif'];
+        pthraw = rdir(pthrawpt);
     end
-    insert(py.sys.path, int64(0), '/Users/wienecke/scopa/')
-    insert(py.sys.path, int64(0), '/Users/wienecke/miniforge3/envs/caiman')
+    if isempty(pthraw)
+        error("cannot find raw scanimage file matching scopa or flyg pattern")
+    end
+    pthraw = pthraw.name;
+    pyex = '/Users/wienecke/miniforge3/envs/si/bin/python3';
+    pyfn = '/Users/wienecke/scopa/mdsisv_mat.py';
 
-    % pyExec = 'C:\software\miniconda3\envs\mlpy\python.exe';
-    pyExec = '/Users/wienecke/miniforge3/envs/caiman/bin/python3';
-    pyRoot = fileparts(pyExec);
-    p = getenv('PATH');
-    p = strsplit(p, ';');
-    addToPath = {
-        pyRoot
-        fullfile(pyRoot, 'Library', 'mingw-w64', 'bin')
-        fullfile(pyRoot, 'Library', 'usr', 'bin')
-        fullfile(pyRoot, 'Library', 'bin')
-        fullfile(pyRoot, 'Scripts')
-        fullfile(pyRoot, 'bin')
-        };
-    p = [addToPath(:); p(:)];
-    p = unique(p, 'stable');
-    p = strjoin(p, ';');
-    setenv('PATH', p);
-
-    clear classes
-    module_to_load = 'ScanImageTiffReader';
-    python_module_to_use = py.importlib.import_module(module_to_load);
-
-
-    mefff = pyrunfile("/Users/wienecke/scopa/fool.py", "z",x=2, y=4);
-
-    mefff = pyrunfile("/Users/wienecke/scopa/mdsisv_mat.py",pthstack=pthstack,pthmd=pthmd);
+    syscmd = [pyex ' ' pyfn ' ' pthraw ' ' pthmd];
+    system(syscmd)
 end
 
 md.numvol_o = md.numvol;

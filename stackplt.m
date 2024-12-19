@@ -44,7 +44,7 @@ end
 if ~exist('dmstackdf', 'var') || isempty(dmstackdf)
     dmstackdf = glb('dmstackdf');
     if isempty(dmstackdf)
-        fprintf("using dmdf yxztck" + newline)
+        fprintf("using dmstackdf yxztck" + newline)
         dmstackdf = 'yxztck';
     end
 end

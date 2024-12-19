@@ -1,7 +1,7 @@
 function pthsv = pthauto(opt)
 
 arguments
-    opt.glob = 'dirstack'
+    opt.glbvar = 'dirstack'
     opt.suffix = ''
     opt.usetime = 1
     opt.usefun = 1
@@ -15,10 +15,10 @@ if numel(callstack) >= 2
 else
     fcnnm = 'unknownfunction';
 end
-dirstack = glb(opt.glob);
+dirstack = glb(opt.glbvar);
 if isempty(dirstack)
     vnm = inputname(1);
-    error(sprintf("global variable " + opt.glob + " has not been set" + newline + "and a save path was not passed as argument into function " + fcnnm + newline + "do one or the other"))
+    error(sprintf("glbvaral variable " + opt.glbvar + " has not been set" + newline + "and a save path was not passed as argument into function " + fcnnm + newline + "do one or the other"))
 end
 infix = '';
 if opt.usefun

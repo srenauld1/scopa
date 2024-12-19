@@ -83,8 +83,10 @@ end
 
 %% filter
 
-stack = fft_filter_1d(stack, stopband);
-fprintf("DONE FILTERING" + newline)
+for k = 1:size(stack,5)
+    stack(:,:,:,:,k) = fft_filter_1d(stack(:,:,:,:,k), stopband, zerostack);
+    fprintf("DONE FILTERING CHANNEL INDEX " + num2str(k) + newline)
+end
 
 
 %% plot after filtering
@@ -106,13 +108,16 @@ end
 end
 
 
-function stackout = fft_filter_1d(stack, stopband)
+function stackout = fft_filter_1d(stack, stopband, zerostack)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
 
 typeout = 'uint16'; %forcing this for now;
 if ~isa(stack, typeout)
     error("STACK MUST BE UINT16")
+end
+if ndims(stack)~=4
+    error("stack is not 4d; currently must be 4d (yxzt) for scannoiserm")
 end
 
 fprintf("STACK SIZE IS: " + mat2str(size(stack)) + newline);
@@ -185,6 +190,10 @@ for k = 1:numlines %do small loop so that the conversion to double is not too la
 end
 % parfor_progress(0);
 toc
+
+if zerostack
+    stackout = stackout - min(stackout, [], 'all', 'omitmissing'); %subtract min
+end
 
 stackout = stacktype(stackout, typeout); %convert from int16 to uint16
 

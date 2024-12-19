@@ -1,7 +1,3 @@
-import sys
-# caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, '/Users/wienecke/scopa/dependencies')
-
 from ScanImageTiffReader import ScanImageTiffReader
 from ast import literal_eval
 import re

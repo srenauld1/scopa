@@ -382,6 +382,14 @@ if you install your own, the packages installed with pip while the conda env is 
 /home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
 
 
+create environment just for running mdsisv.py
+        conda create -n si
+        conda activate si
+        conda config --env --add channels conda-forge
+        conda install numpy
+        pip install matplotlib 
+
+
 ############################## MATLAB ENGINE FOR PYTHON ######################################
 
 to run everything through the same pipeline, install the matlab for python engine, which let's you call matlab functions from within python files (i do this so all analysis goes through the same functions for input-based file selection and copying

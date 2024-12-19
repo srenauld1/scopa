@@ -8,11 +8,12 @@ arguments
 end
 pthstack = opt.pthstack;
 
+id = idmake(pthstack); %just in case id info gets used below
+
 if isempty(pthmd)
     if isempty(pthstack)
         error("must pass pthmd or pthstack")
     else
-        id = idmake(pthstack); 
         pthmd = [id.dirstack id.recid '_mdsi_.txt'];
     end
 end
@@ -26,11 +27,26 @@ if isempty(optsldhr)
     optsldhr = otmp.sld;
 end
 
-if isfile(pthmd)
-    md = structtxtld(pthmd);
-else
-    system('/Users/wienecke/miniforge3/bin/python3 /Users/wienecke/scopa/mdsisv_mat.py /Users/wienecke/stacks/20230627-2_D05_syt7f_018_syt7f/20230627_2_2_raw_.tif /Users/wienecke/stacks/20230627-2_D05_syt7f_018_syt7f/20230627_2_2_mdsi_.txt')
+if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py 
+    fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using python function mdsisv" + newline)
+    pthrawpt = [id.dirstack id.recid '_raw_.tif'];
+    pthraw = rdir(pthrawpt);
+    if isempty(pthraw)
+        pthrawpt = [id.dirstack id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trialnum ) '_*.tif'];
+        pthraw = rdir(pthrawpt);
+    end
+    if isempty(pthraw)
+        error("cannot find raw scanimage file matching scopa or flyg pattern")
+    end
+    pthraw = pthraw.name;
+    pyex = '/Users/wienecke/miniforge3/envs/si/bin/python3';
+    pyfn = '/Users/wienecke/scopa/mdsisv_mat.py';
+    syscmd = [pyex ' ' pyfn ' ' pthraw ' ' pthmd];
+    system(syscmd)
 end
+
+md = structtxtld(pthmd);
+
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
