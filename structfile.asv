@@ -48,6 +48,7 @@ end
 
 if isempty(nm)
     autonm = 1;
+    autonm_write = 1;
 else
     autonm = 0;
 end
@@ -183,7 +184,7 @@ if isfile(pth)
             if isfield(sfile, 'autonm')
                 sfile = rmfield(sfile, 'autonm');
             else
-            fprintf("s is empty and nm is nonempty, so retrieving a variable named nm from file pth" + newline)
+                fprintf("s is empty and nm is nonempty, so retrieving a variable named nm from file pth" + newline)
             end
         else
             if isfield(sfile, 'autonm')
@@ -208,6 +209,7 @@ end
 
 %%%%% GET MATCHED VARIABLE FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
 
+sout = [];
 if ~isfile(pth)
     if autonm
         nmout = [prefix '1'];
@@ -223,7 +225,7 @@ else
             if autonm %if no variable or name was provided
                 error("s and nm cannot both be empty")
             else
-                if isequal(nm, nmfile{k}) %if name matches when no variable was provided
+                if isequal([prefix nm], nmfile{k}) %if name matches when no variable was provided
                     matchind = [matchind k];
                 end
             end
@@ -233,7 +235,7 @@ else
                     matchind = [matchind k];
                 end
             else
-                if isequal(s, sfile.(nmfile{k})) && ~strcmp(nm, nmfile{k}) %if variable matches but name doesn't
+                if isequal(s, sfile.(nmfile{k})) && ~strcmp([prefix nm], nmfile{k}) %if variable matches but name doesn't
                     error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmout)
                 end
             end
@@ -245,6 +247,12 @@ else
             nmout = [prefix num2str(max(nmnums)+1)];
         else
             nmout = [prefix nm];
+            if isempty(s)
+                fprintf("no variable in pth matching nm " + [prefix nm] + newline)
+                return
+            else
+                nmout = [prefix nm];
+            end
         end
         sout = s;
         sfile.(nmout) = s;
@@ -263,7 +271,7 @@ if useprefix
     sfile.loc = loc;
     sfile.prefix = prefix;
 end
-if autonm
+if file_write_autonm
     sfile.autonm = 1;
 end
 structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s

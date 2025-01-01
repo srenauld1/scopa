@@ -46,8 +46,10 @@ if ~endsWith(pth, '.txt')
     error('pth must be .txt file (for now)')
 end
 
+autonm_write = 0;
 if isempty(nm)
     autonm = 1;
+    autonm_write = 1;
 else
     autonm = 0;
 end
@@ -181,9 +183,10 @@ if isfile(pth)
     else
         if isempty(s)
             if isfield(sfile, 'autonm')
+                autonm_write = 1;
                 sfile = rmfield(sfile, 'autonm');
             else
-            fprintf("s is empty and nm is nonempty, so retrieving a variable named nm from file pth" + newline)
+                fprintf("s is empty and nm is nonempty, so retrieving a variable named nm from file pth" + newline)
             end
         else
             if isfield(sfile, 'autonm')
@@ -270,7 +273,7 @@ if useprefix
     sfile.loc = loc;
     sfile.prefix = prefix;
 end
-if autonm
+if autonm_write
     sfile.autonm = 1;
 end
 structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
