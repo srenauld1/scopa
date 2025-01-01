@@ -46,6 +46,9 @@ pthscopa = getpathscopa();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
+if ~isfile(pthopt)
+    optdfsv();
+end
 
 
 if files %if files==1, oin must be scalar
