@@ -122,15 +122,6 @@ for k = 1:numel(oa) % loop over recordings
         o.bmptmp.i1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; %temporary hack until opt2id accepts bmp as vbin
         fn = fieldnames(o.bmp);
         for m = 1:numel(fn)
-            
-            optid = fn{m};
-            obmptmp = o.bmp.(optid);
-            roidattmp = roidat.i3{1};
-            regionex = 'pb';
-            indvp = ts.vis.yaw;
-            depvp = ts.roi.i3{1};
-            pthpre = [pth.stack(1:end-4) regionex '_tesfits'];
-            doplt = 0;
             ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
         end
     end
@@ -151,33 +142,6 @@ for k = 1:numel(oa) % loop over recordings
     if o.mn.dopltx
         fn = fieldnames(o.pltx);
         for m = 1:numel(fn)
-            fk = 2000:65000;
-            fitin.vars.resp_ind1 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind2 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind3 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind4 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind5 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind6 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind7 = ts.roi.a1{1}(50,fk);
-            fitin.vars.resp_ind8 = ts.roi.a1{1}(50,fk);
-
-            fitin.vnm.resp_ind1{1} = '';
-            fitin.vnm.resp_ind2{1} = '';
-            fitin.vnm.resp_ind3{1} = '';
-            fitin.vnm.resp_ind4{1} = '';
-            fitin.vnm.resp_ind5{1} = '';
-            fitin.vnm.resp_ind6{1} = '';
-            fitin.vnm.resp_ind7{1} = '';
-            fitin.vnm.resp_ind8{1} = '';
-            o.pltx.vpmap.l = o.pltx.vpmapl;
-            o.pltx.vpmap.r = o.pltx.vpmapr;
-            fitin.pthpre = [pth.pre 'fool'];
-            fitin.fn_save_prefix_short = fitin.pthpre;
-            pthroiint = '~/stacks/20241209_1/20241209_1_1_cmrg_dcdn_i30_roi_inter.mat';
-            nrm='f';
-            ts.epochinds = ones(size(ts.t(fk)));
-            o.pltx.epochinds = [];
-            zstartsub = round(linspace(0,30,size(stack,3)));
             pltx(stack(:,:,:,fk,:), fitin.vars, o.pltx.doui,  ...
                 fitin.vnm, o.pltx.vpmap, o.pltx.epochinds, ...
                 o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
