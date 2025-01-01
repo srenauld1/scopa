@@ -21,7 +21,11 @@ for m = 1:numel(vbin)
 
         case 'mf'
 
-        case 'feat'
+        case 'bmp'
+
+        otherwise
+
+            fprintf("no reduction routine for opt " + vbintmp + newline)
 
     end
 

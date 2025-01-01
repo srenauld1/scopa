@@ -1,4 +1,4 @@
-def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume):
+def zsep_todn_carls_old_project(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume):
 
     # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
@@ -51,7 +51,7 @@ def separate_z_slices_for_denoising_carls_old_project(pth_tif_read, fn_prefix, p
     return chanstr_primary, chanstr_secondary
 
 
-def stitch_denoised_slices_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
+def stitchdn_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
 
   #stitch together denoised slices (tyx) into original size (tzyx, with singleton z)
 

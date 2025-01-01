@@ -1,5 +1,5 @@
 
-function differ = tsdv(vartypein, inp, slopelensec, slopeord, dt)
+function dv = tsdv(vartypein, inp, slopelensec, slopeord, dt)
 
 arguments
     vartypein
@@ -11,9 +11,12 @@ end
 
 slopelen = round(slopelensec / dt);
 
-if strcmp(vartypein, 'circular')
+if slopelen<slopeord+1
+    error("movingslope will error because slopelen is less than slopeord+1; your value of slopelensec, given value of dt (sample period), gives slopelen less than slopeord+1; use a different slopelen and/or slopeord (likely just slopelen should be changed)")
+end
 
-    % differentiate circular variable 
+if strcmp(vartypein, 'circular') % differentiate circular variable 
+
 
     inpx = cos(inp);
     inpy = sin(inp);
@@ -22,17 +25,17 @@ if strcmp(vartypein, 'circular')
     inpdy = movingslope(inpy, slopelen, slopeord);
 
     denom = inpx.^2 + inpy.^2;
-    differ = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
+    dv = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
 
-elseif strcmp(vartypein, 'normal')
+elseif strcmp(vartypein, 'normal') % differentiate non-circular variable 
 
-    differ = movingslope(inp, slopelen, slopeord);
+    dv = movingslope(inp, slopelen, slopeord);
 
-elseif strcmp(vartypein, 'categorical')
+elseif strcmp(vartypein, 'categorical') % differentiate categorical variable 
 
     filt = [zeros(1,slopelen-1), 1, zeros(1,slopelen-1), -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
-    differ = conv(inp, filt, 'full');
-    differ = differ((numel(filt) - 1)+1:end-(numel(filt) - (1 + (slopelen-1))));
-    differ = cat(1, zeros((slopelen-1)+1, 1), differ);
+    dv = conv(inp, filt, 'full');
+    dv = dv((numel(filt) - 1)+1:end-(numel(filt) - (1 + (slopelen-1))));
+    dv = cat(1, zeros((slopelen-1)+1, 1), dv);
 
 end

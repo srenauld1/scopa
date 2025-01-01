@@ -1,6 +1,6 @@
-function respout = respnorm(respin, normtype_all, sampper)
+function tsout = tsnorm(tsin, normtype_all, sampper)
 
-% several normalization methods, input respin is 2d space x time, single or double precision
+% several normalization methods, input tsin is 2d space x time, single or double precision
 % normtype_all is cell array of strings, each string specifies a different
 % normalization method, which is applied independently to each roi's timeseries (or pixel's timeseries)
 % each normalization string is comprised of 'syllables', which can be concatenated in any order for sequential normalization operations
@@ -23,7 +23,7 @@ end
 for nti = 1:length(normtype_all)
 
     normtype = normtype_all{nti};
-    tmp = respin;
+    tmp = tsin;
 
     while normtype
 
@@ -115,7 +115,7 @@ for nti = 1:length(normtype_all)
 
     end
 
-    respout.(normtype_all{nti}) = tmp;
+    tsout.(normtype_all{nti}) = tmp;
 
 end
 

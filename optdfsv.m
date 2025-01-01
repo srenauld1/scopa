@@ -50,11 +50,21 @@ d.mn.dofit = 0; %model fitting (o.mf below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
 
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
+d.mn.pthpy = '/Users/wienecke/miniforge3/envs/caiman/bin/python3'; %path to python executable  
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 d.mn.oldcarl = 0; %run with some settings for carl's old project
 d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf"]; %list of subroutines that get plots (all by default)
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
+
+d.mn.pthscopas.a = ''; %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
+d.mn.pthscopas.b = ''; %path to scopa in filesystem b (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.pthscopas.c = ''; %path to scopa in filesystem c (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.pthscopas.d = ''; %path to scopa in filesystem d (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.pthscopas.e = ''; %path to scopa in filesystem e (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.pthscopas.f = ''; %path to scopa in filesystem f (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.pthscopas.g = ''; %path to scopa in filesystem g (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.pthscopas.h = ''; %path to scopa in filesystem h (used to prevent conflicting edits to "same" lookup file in different filesystems) 
 
 %% daq (daqld: load, process daq)
 
@@ -423,5 +433,10 @@ d.carl.pth_template = '/Users/wienecke/ds/data/stimuli';
 
 %% write options to file
 
+if ~strcmp(cell2mat(vec(fieldnames(d.mn.pthscopas))'), 'abcdefgh')
+    error("d.mn.pthscopas fields (ids for each filesystem containing scopa) must be consecutive lowercase alphabetical characters")
+end
+
+
 fprintf("writing default options to: " + pthopt + newline)
-structtxtsv(d, pthopt)
+structtxtsv(d, pthopt, overwrite=1, readonly=1)

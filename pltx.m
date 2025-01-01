@@ -68,7 +68,7 @@ ts_scope = 'full'; %how much of total possible timseries to show in long timesca
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
 ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will be constant across all variables for a single fieldname in 'vars', each means it will be adjusted for each change in variable for each fieldname in 'vars'
 lrscale = 'equal'; %whether left and right have relative scaling
-sampinc = 10; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
+sampinc = 40; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 roialpha = 0.2; %transparency in roi overlay
 rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 0; %making 0 makes missing channel nan, which is good i think . . . previously thought leave this as 1, skip nanes when rescaling to plot timeseries on same axis
@@ -100,7 +100,7 @@ clear pltexp_scat_prepvars %clear persistent variable within
 layout = {[4,4], stack(:,:,:,:,1)};
 marginax = [0.05,0.005];
 marginfg = [0.07,0.05];
-splitfrac = 0.47;
+splitfrac = 0.55;
 ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='minimize');
 
 cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));

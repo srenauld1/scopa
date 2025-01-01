@@ -383,11 +383,9 @@ if you install your own, the packages installed with pip while the conda env is 
 
 
 create environment just for running mdsisv.py
-        conda create -n si
+        conda create -n si python=3.11 numpy
         conda activate si
-        conda config --env --add channels conda-forge
-        conda install numpy
-        pip install matplotlib 
+        pip install scanimage-tiff-reader 
 
 
 ############################## MATLAB ENGINE FOR PYTHON ######################################

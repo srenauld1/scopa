@@ -44,7 +44,7 @@ sampper = 1/imrate;
 
 %% crop stack 
 
-stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack);
+stack = stackcrop(stack, regionex, recid, pth_dirstack);
 
 
 %% define domain (functionally or morphologically)

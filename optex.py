@@ -1,7 +1,7 @@
 
 
 import numpy as np
-from distlist import distlist
+from optdist import optdist
 from optreduce import optreduce
 from dictsort import dictsort
 from optex2id import optex2id
@@ -15,7 +15,7 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     # optlist hold carl's favorite options (each in a list) for tuning caiman roi extraction;
     # each option here is also an option optdf, which are default options read from the default options file, optdf.txt file; if an option is a list in optdf, it must be a list of lists in optlist
     # options in optlist will overwrite their counterparts in optdf
-    # lists are distributed into all possible combinations (using listdist) and extract.py loops over these options sets, so you can see how extraction is affected by varying these params; 
+    # lists are distributed into all possible combinations (using optdist) and extract.py loops over these options sets, so you can see how extraction is affected by varying these params; 
     # any params from optex can be used here, these are just my favorite because they seem to have the largest effect, and/or are most variable across recordings 
     # after optlist is applied/distributed, optreduce will remove any options that aren't used (since option use depend on options themselves), then dict_unique will remove any repeat sets, 
     # then optex2id finds a unique ID by checking all options sets that have ever been run (using file optroi.txt) and assigns an ID to each option set currently in use (if it's never been used it gets a new ID and is appended to optroi.txt)
@@ -71,9 +71,9 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     optlist['docm'] = [ 1 ] #true whether calling extract from matlab or not
     optlist['doqc'] = [ 0 ] #false if not calling extract from matlab
 
-    ############ DISTRIBUTE OPTIONS IN LISTS (APPLY distlist TO CREATE ALL COMBINATIONS OF OPTIONS) ############
+    ############ DISTRIBUTE OPTIONS IN LISTS (APPLY optdist TO CREATE ALL COMBINATIONS OF OPTIONS) ############
 
-    optsets = distlist(optlist)
+    optsets = optdist(optlist)
     max_num_options_sets = 500 #error if you create more than this many options sets
     if len(optsets.map)>max_num_options_sets:
         raise Exception("WARNING, YOU HAVE CREATED MORE THAN " + str(max_num_options_sets) + " OPTIONS SETS, IF YOU REALLY WANT TO PROCEED WITH THIS NUMBER, COMMENT THIS EXCEPTION OR CHANGE max_num_options_sets")

@@ -1,27 +1,25 @@
-function [resp, roidat] = roimake(stack, t, sampper, widyxz, zstartpos, pth_dirstack, recid, pth_roim, opt, roimask)
+function [resp, roidat] = roimake(stack, pthstack, t, sampper, widyxz, pthpy, roimask, optroi)
 
 % see docs_roimake.m
 
 arguments
-    stack
-    t
-    sampper
-    widyxz
-    zstartpos
-    pth_dirstack
-    recid
-    pth_roim
-    opt
+    stack 
+    pthstack
+    t = [] %only required nonempty if ~isempty(wavp) or channorm~=0 in roits
+    sampper = [] %only required nonempty for normalizing by moving window in tsnorm
+    widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
+    pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     roimask = []
+    optroi = []
 end
 
 if isempty(roimask)
     maskinput = 0;
-    domm = opt.domm;
-    doma = opt.doma;
-    docm = opt.docm;
-    doqc = opt.doqc;
-    if ~isfield(opt, 'doplt') || (isfield(opt, 'doplt') && isempty(opt.doplt))
+    domm = optroi.domm;
+    doma = optroi.doma;
+    docm = optroi.docm;
+    doqc = optroi.doqc;
+    if ~isfield(optroi, 'doplt') || (isfield(optroi, 'doplt') && isempty(optroi.doplt))
         doplt = any(strcmp('roi', glb('plt')));
     end
 else
@@ -33,23 +31,23 @@ else
     doma = 0;
     docm = 0;
     doqc = 0;
-    doplt = 0; 
+    doplt = 0;
 end
-regionex = opt.regionex;
+regionex = optroi.regionex;
 
-if isfield(opt, 'ma')
-    numroiauto = opt.ma.numroi;
+if isfield(optroi, 'ma')
+    numroiauto = optroi.ma.numroi;
 else
     numroiauto = 0;
 end
 
-pthpre = erase(pth_roim, '.mat');
+pthpre = [erase(pthstack, '.mat') regionex '_'];
 numchan = size(stack,5);
 
 %% crop movie to regionex cuboid
 
 if ~maskinput
-    stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack);
+    stack = stackcrop(stack, pthstack, regionex);
 end
 
 %% draw rois (polygons/polyhedra)
@@ -60,7 +58,7 @@ if domm
     else
         oneroi = 0;
     end
-    roimask = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    roimask = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=optroi.mm.chan, chancp=optroi.mm.chancp, maskname=optroi.mm.maskname);
 else
     if ~maskinput
         roimask = cell(numchan,1); %make it empty if you didn't draw or pass in mask
@@ -72,37 +70,66 @@ end
 
 if doma
     for c = 1:numchan
-        if ismember(c,opt.ma.chan)
+        if ismember(c,optroi.ma.chan)
             if ~isequal(numroiauto, 0)
-                roimask{c} = roimauto(stack(:,:,:,:,c), roimask{c}, numroiauto, widyxz, regionex, opt.ma);
+                roimask{c} = roimauto(stack(:,:,:,:,c), roimask{c}, numroiauto, widyxz, regionex, optroi.ma);
             end
         end
     end
 end
 
-%% load/select functional (caiman) roi responses
+%% functional (caiman) roi responses
 
 if docm
 
-    pyenv(Version="/Users/wienecke/miniforge3/bin/python3")
-    mefff = pyrunfile("/Users/wienecke/scopa/fool.py", "z",x=6,y=2);
-    mefff = pyrunfile("/Users/wienecke/scopa/fool.py", ...
-        "fff", ...
-        pth_prefix='', ...
-        pth_tif_read='', ...
-        pth_optdf='', ...
-        pth_optroi='', ...
-        md=2, ...
-        extract_in_2d=0, ...
-        methodex='1', ...
-        regionex=opt.regionex, ...
-        maskname=opt.mm.maskname, ...
-        optall=opt.cm ...
-        );
+    if isempty(pthpy)
+        pthpy = glb('pthpy');
+        if isempty(pthpy)
+            error("you have not set glb('pthpy'), and you didn't pass in argument pthpy; you must do one or the other" + newline)
+        end
+    end
+
+    pthscopa = getpathscopa();
+
+    try %run python directly from matlab (ie not using system command to control a shell)
+        petmp = pyenv;
+        if ~strcmp(petmp.Executable, pthpy) && ~strcmp(petmp.ExecutionMode, 'OutOfProcess')
+            try
+                pyenv(ExecutionMode="OutOfProcess")
+                pyenv(Version=pthpy)
+            catch ME
+                fprintf(ME.message + newline)
+                fprintf("do not use pyenv in the current matlab session with a different Version or ExecutionMode than those specified here" + newline)
+            end
+        end
+        if count(py.sys.path,pthscopa) == 0
+            insert(py.sys.path,int32(0),pthscopa);
+        end
+        py.extract.extract( ...
+            pth_prefix='', ...
+            pth_tif_read='', ...
+            pth_optdf='', ...
+            pth_optroi='', ...
+            md=2, ...
+            extract_in_2d=0, ...
+            methodex='1', ...
+            regionex=optroi.regionex, ...
+            maskname=optroi.mm.maskname, ...
+            optall=optroi.cm ...
+            );
+    catch ME %alternative that uses system command
+        fprintf(ME.message + newline)
+        fprintf("RUNNING PYTHON DIRECTLY FAILED, USING system TO RUN PYTHON INSTEAD")
+        pyfn = [pthscopa 'extract_mat.py'];
+        syscmd = [pthpy ' ' pyfn ' ' pthraw ' ' pthmd];
+        system(syscmd)
+    end
 
 end
 
-%% quality control 
+
+
+%% quality control
 
 if doqc
     roimask = roiqc(...
@@ -140,14 +167,14 @@ end
 
 %% compute roi responses (and normalize)
 
-pth_morphroits = [pthpre '_resp_.mat']; 
+pth_morphroits = [pthpre 'resp_.mat'];
 try
     load(pth_morphroits, 'resp')
 catch
     resp = cell(numchan,1);
     for c = 1:numchan
         if ~isempty(roimask{c})
-            resptmp = roits(stack(:,:,:,:,c), roiwt=roidat{c}.roiwt, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+            resptmp = roits(stack(:,:,:,:,c), roiwt=roidat{c}.roiwt, normpre=optroi.nrm.pre, normpost=optroi.nrm.post, sampper=sampper, wavp=optroi.nrm.wavp, degdtr=optroi.nrm.degdtr, channorm=optroi.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
             fn = fieldnames(resptmp);
             if numel(fn)>1
                 error("there should only be one field because all params have been distributed and assigned optid")
@@ -165,7 +192,7 @@ end
 
 %% plots
 
-if doplt %all these are at imaging resolution
+if doplt 
 
     stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
 

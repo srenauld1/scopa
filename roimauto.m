@@ -1,22 +1,19 @@
 
-function roimask = roimauto(stack, roimaskman, numroi_init, widyxz, regionex, opts)
+function roimaskout = roimauto(stack, roimaskin, numroi_init, widyxz, regionex, opt)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
 %creating new maskseg and inserting in switch statement)
 %stackmnt must be 3d (xyz), although 3rd dim (z) can be singleton
-%roimaskman must match dimensionality of stackmnt, or be lower dimensional
+%roimaskin must match dimensionality of stackmnt, or be lower dimensional
 
-maskmake = opts.maskmake;
-maskseg = opts.maskseg;
-edgethr = opts.edgethr;
-edgesig = opts.edgesig;
-celsz = opts.celsz;
-do3d = opts.do3d;
+maskmake = opt.maskmake;
+maskseg = opt.maskseg;
+edgethr = opt.edgethr;
+edgesig = opt.edgesig;
+celsz = opt.celsz;
+do3d = opt.do3d;
 
-ywid = widyxz(1);
-xwid = widyxz(2);
-zwid = widyxz(3);
 
 
 
@@ -26,11 +23,11 @@ stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
 stackmnt = rescale(stackmnt); 
 numel_stackmnt = numel(stackmnt);
 
-if isempty(roimaskman)
-    roimaskman = 1;
+if isempty(roimaskin)
+    roimaskin = 1;
 end
 
-num_roim_manual = size(roimaskman, 4);
+num_roim_manual = size(roimaskin, 4);
 
 if num_roim_manual>1
     error(sprintf("num_roim_manual is greater than one AND numroiauto is greater than zero" + newline + ...
@@ -49,9 +46,9 @@ end
 % end
 
 
-%% mask mean stackmnt with any available manual mask (if none was made, roimaskman is all ones, ie has no effect)
+%% mask mean stackmnt with any available manual mask (if none was made, roimaskin is all ones, ie has no effect)
 
-roimaskman_allrois = logical(sum(roimaskman, 4)); %if there's a 4th dim, it's rois co collapse it
+roimaskman_allrois = logical(sum(roimaskin, 4)); %if there's a 4th dim, it's rois co collapse it
 premask = stackmnt.*roimaskman_allrois; %don't change this variable because you need it below
 
 
@@ -161,7 +158,15 @@ else
 
             end
 
-        case {'uniform', 'uniformp'} % create multiple roughly equal-volume roi by partitioning regionex into numroi_init groups
+        case {'uniform'} % create multiple roughly equal-volume roi by partitioning regionex into numroi_init groups
+
+            if isempty(widyxz)
+                error("you did not pass argument widyxz, or you passed empty widyxz, but you also requested maskseg 'uniform', which requires nonempty argument widyxz")
+            end
+            ywid = widyxz(1);
+            xwid = widyxz(2);
+            zwid = widyxz(3);
+
 
             if do3d
 
@@ -230,7 +235,7 @@ for i = 1:numroi_final
     roiwt(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
 end
 
-roimask = reshape(roiwt, [size(stackmnt), numroi_final] );
+roimaskout = reshape(roiwt, [size(stackmnt), numroi_final] );
 
 
 

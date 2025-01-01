@@ -21,7 +21,7 @@ for m = 1:numel(regionex)
 
     if strcmp(regionex{m}, 'fb8c')
         o.roi.doma = 1; 
-        o.roi.ma.numroi = 128;
+        o.roi.ma.numroi = {12, 13, 14, 15};
         o.roi.nrm.post = {'rsc000100'};
     end
 
@@ -29,5 +29,4 @@ for m = 1:numel(regionex)
 
 end
 
-o = odf(o, fill=1);
 

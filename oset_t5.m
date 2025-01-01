@@ -26,5 +26,3 @@ for m = 1:numel(regionex)
 
 end
 
-o = odf(o, fill=1);
-

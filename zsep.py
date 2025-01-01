@@ -7,7 +7,7 @@ from separate_channels_when_two import separate_channels_when_two
 
 
 
-def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume, chan_dn):
+def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume, chan_dn):
 
     # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
@@ -27,16 +27,16 @@ def separate_z_slices_for_denoising(pth_tif_read, fn_prefix, pth_denoising, md, 
 
     stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel, chan_primary)
     
-    separate_z_slices_single_channel(stack, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
+    zsep_onechan(stack, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
     if stack_secondary is not None:
         stack = None
-        separate_z_slices_single_channel(stack_secondary, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_secondary)
+        zsep_onechan(stack_secondary, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_secondary)
 
     return chanstr_primary, chanstr_secondary
 
 
 
-def separate_z_slices_single_channel(stack, dims, denoise_volume, pth_denoising, fn_prefix, chan_str_infix):
+def zsep_onechan(stack, dims, denoise_volume, pth_denoising, fn_prefix, chan_str_infix):
     
     stack = stack.reshape(dims)
     stack = np.transpose(stack, (0, 2, 3, 1)) #put in order t y x z (not t x y z)

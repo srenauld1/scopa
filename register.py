@@ -8,7 +8,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from optrg import optrg
 from helpers import tracefunc, stack_reshape_transpose_clip_zero_type 
-from z_stitch import stitch_registered_slices 
+from zstitch import stitchrg 
 from registration_template import choose_registration_template
 from separate_channels_when_two import separate_channels_when_two
 from subtract_background import subtract_background
@@ -52,9 +52,9 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
     stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
 
     if bglenpx:
-        pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in choose_files (make this more reliable)
+        pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in filefind (make this more reliable)
     else:
-        pth_tif_write = pth_prefix + chanstr_primary + '_cmrg_.tif'#match pattern in choose_files (make this more reliable)
+        pth_tif_write = pth_prefix + chanstr_primary + '_cmrg_.tif'#match pattern in filefind (make this more reliable)
     pth_tif_write_allchan = pth_tif_write.replace(chanstr_primary, '') #this is same as pth_tif_write if two_channel_reg==0
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
@@ -212,13 +212,13 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
             stack = None
             if two_channel_reg: #OVERWRITE STACK TO SAVE MEMORY SINCE WE'RE AT THE END, AND ONLY PLOTTING IS LEFT
                 stack_allchan = np.zeros((stack_shape[0], stack_shape[1], stack_shape[2], stack_shape[3], 2), dtype=stack_dtype)
-                stack_allchan[:,:,:,:,chan_primary-1] = stitch_registered_slices(pth_tif_write, md['dims']) #output is all slices, txyz
-                stack_allchan[:,:,:,:,chan_secondary-1] = stitch_registered_slices(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_primary-1] = stitchrg(pth_tif_write, md['dims']) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_secondary-1] = stitchrg(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
                 if makeplots:
                     plot_gif(stack_allchan[:,:,:,:,chan_primary-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
                     plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
             else:
-                stack_allchan = stitch_registered_slices(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
+                stack_allchan = stitchrg(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
                 if makeplots:
                     plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
                     #plot_gif(smooth_movie(stack_allchan, sigma=(1.2,1.2), axes=(1,2)), '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))

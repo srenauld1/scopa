@@ -1,34 +1,35 @@
-function [stack, zstartsub, croplim] = stackcrop(stack, regionex, zstartpos, recid, dirstack)
+function [stack, croplim] = stackcrop(stack, pthstack, regionex)
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
+pthcroplim = [erase(pthstack, '.mat') 'croplim_.txt'];
+
 regionexdf = glb('regionexdf');
 if isempty(regionexdf)
-    regionexdf = 'none'; %if you haven't set the global, set it here; this regionex will not cause prompt to create regionex
+    regionexdf = 'none'; %if you haven't set the global, glb('regionexdf'), set regionexdf here; this regionex will not prompt you to create regionex, it will just use the whole fov
 end
 
 if strcmp(regionex, regionexdf) 
 
-    croplim = [1, size(stack, 1), 1, size(stack, 2), 1, size(stack, 3), 1, size(stack, 4), 1, size(stack, 5)];
+    croplim.y = [1, size(stack, 1)];
+    croplim.x = [1, size(stack, 2)];
+    croplim.z = [1, size(stack, 3)];
+    croplim.t = [1, size(stack, 4)];
+    croplim.c = [1, size(stack, 5)];
 
 else
 
-    spl = strsplit(regionex, '_');
-    regionex_nounderscore = spl{1};
-    numchan = size(stack,5);
-
-    croplim = croplimld(dirstack, recid, regionex_nounderscore, numchan); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
+    % croplim = croplimld(pthcroplim); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     
+    croplim = [];
     if isempty(croplim)
-        croplim = croplimmake(stack, dirstack, recid, regionex, regionex_nounderscore, numchan);
+        croplim = croplimmake(stack, pthcroplim, regionex);
     end
 
-    if ~(isequal(croplim(1):croplim(2), 1:size(stack,1)) && isequal(croplim(3):croplim(4), 1:size(stack,2)) && isequal(croplim(5):croplim(6), 1:size(stack,3)) && isequal(croplim(7):croplim(8), 1:size(stack,4)) && isequal(croplim(9):croplim(10), 1:size(stack,5)))
-        stack = stack(croplim(1):croplim(2), croplim(3):croplim(4), croplim(5):croplim(6), croplim(7):croplim(8), croplim(9):croplim(10)); %previously converted to single here, not sure why
+    if ~(isequal(croplim.y, [1,size(stack,1)]) && isequal(croplim.x, [1,size(stack,2)]) && isequal(croplim.z, [1,size(stack,3)]) && isequal(croplim.t, [1,size(stack,4)]) && isequal(croplim.c, [1,size(stack,5)]))
+        stack = stack(croplim.y(1):croplim.y(2), croplim.x(1):croplim.x(2), croplim.z(1):croplim.z(2), croplim.t(1):croplim.t(2), croplim.c(1):croplim.c(2)); %previously converted to single here, not sure why
     end
 
 end
-
-zstartsub = zstartpos(croplim(5):croplim(6));
 
 end

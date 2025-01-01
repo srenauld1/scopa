@@ -196,7 +196,7 @@ def denoise(pth_denoising, fn_prefix, dims, volrate, denoise_slice_index, denois
     save_denoised_stack = True  #keep this true to save denoised stack for do_stitch to operate on; whether to save result images after each epoch of testing (not training; originasl deepcad code applies this to train and test, but carl commented out training epoch reference image saving, since that is done in do_stitch later, per epoch per slice); 
     num_frames_of_each_tif_to_denoise = 1e10 #this is number of frames of each tif to be tested (denoised); make this the length of the stack (or greater) to get the whole stack denoised
 
-    denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitch_denoised_slices will write to uint16
+    denoise_dtype = "uint16" #dtype for denoising, and writing results, but regardless, stitchdn will write to uint16
 
 
     if denoise_volume: #if training on all slices, put them all in one folder

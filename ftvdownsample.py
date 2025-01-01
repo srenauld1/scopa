@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 from plot_gif import plot_gif
 import scipy.io as sio
 
-def spatial_downsample_fictrac_video(pth_ftvid, pth_prefix, makeplots):
+def ftvdownsample(pth_ftvid, pth_prefix, makeplots):
 
     #downsample in xy, also convert RGB to grayscale, save as uint8 mat file; does not downsample in time (that occurs in matlab, depending on analysis)
 
-    print("\n\n\nENTERING spatial_downsample_fictrac_video.py")
+    print("\n\n\nENTERING ftvdownsample.py")
 
     hack_vid_length = 1
     ftv_dsfac_x = 0.25 #downsample factor in x (linear interp)

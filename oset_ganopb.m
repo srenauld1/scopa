@@ -12,6 +12,8 @@ o.mn.dopltx = 0; %enter pltx for summary interactive plots?
 o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bmp", "mf"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
+o.mn.pthpy = '/Users/wienecke/miniforge3/envs/caiman/bin/python3'; %path to python executable  
+
 o.daq.use_carls_epochs = 1;
 if str2double(o.id.recdate)<20231100
     o.daq.slopelensec = 0.8;
@@ -29,7 +31,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
     if strcmp(regionex{m}, 'pb')
         o.roi.doma = 1; %do automated morph rois
         o.roi.docm = 1; %do draw rois
-        o.roi.ma.numroi = 64;
+        o.roi.ma.numroi = 613;
         o.roi.ma.maskmake = 'edge';
         o.roi.nrm.post = {'rsc000100'};
         o.bmp.mf.mdlname = 'fnet_v';
@@ -46,4 +48,3 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
 
 end
 
-o = odf(o, fill=1);

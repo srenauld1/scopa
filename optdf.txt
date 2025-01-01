@@ -184,7 +184,18 @@
       "mf"
     ],
     "pltvis": 1,
-    "timestr": "2024121716274874"
+    "pthpy": "/Users/wienecke/miniforge3/envs/caiman/bin/python3",
+    "pthscopas": {
+      "a": "",
+      "b": "",
+      "c": "",
+      "d": "",
+      "e": "",
+      "f": "",
+      "g": "",
+      "h": ""
+    },
+    "timestr": "2024122613582224"
   },
   "nestvalid": [
     "spec",
@@ -238,7 +249,6 @@
   },
   "opl": {
     "BarrierParamUpdate": "monotone",
-    "CheckGradients": false,
     "ConstraintTolerance": 1E-6,
     "Display": "iter-detailed",
     "EnableFeasibilityMode": false,

@@ -408,28 +408,10 @@ if fill
         end
     end
 
+    if 
 
-    % now check for any problems 
 
-
-    fn = fieldnames(o.mn.pthscopas);
-    cnt = 0;
-    for k = 1:numel(fn)
-        if isempty(o.mn.pthscopas.(fn{k}))
-            cnt = cnt+1;
-        else
-            if ~endsWith(o.mn.pthscopas.(fn{k}), filesep)
-                error("all pthscopas must end with filesep; add filesep")
-            end
-        end
-    end
-    if cnt==numel(fn)
-        error("at least one pthscopas must be nonempty")
-    end
-
-    % now mark options struct as filled (complete)
-
-    o.filled = 1;
+    o.filled = 1; %mark options struct as filled (complete)
 
 
 end

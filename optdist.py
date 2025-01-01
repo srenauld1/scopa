@@ -1,4 +1,4 @@
-class distlist():
+class optdist():
 
 
     def __init__(self, opt):

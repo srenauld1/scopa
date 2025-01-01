@@ -28,7 +28,7 @@ pre:
     background subtraction, scanphase correction, registration, denoising, scannoise removal  
     input: stack
     output: stack and parsed scanimage metadata 
-    slow and large files, do not expand opts
+    slow and large files, do not distribute opts
 
 rois:
     roimake: roim and/or roif
@@ -67,14 +67,14 @@ roi routines
     an a2p run creates all options, and checks if an options set exists in the most recent options_cmex_.txt, and populates regionexcm, use regionexcm to look up roi file(s) 
 
 run a2p
-    expand params, define all regionex, save o
+    distribute opts, define all regionex, save o
     search for o.roif options in options_cmex
         exists: id regionexcm and its files
             files don't exist; flag to run
         does not exist: flag to run, pass in o.roi options 
 
 run extract.py
-    expand params, define all regionexcm, save ocm
+    distribute opts, define all regionexcm, save ocm
     if seeded, check if roim file exists, if so, load and use, if not, draw roim for seed in python
 
 if you want to independently automate mrois from multiple drawn regions, use different regionex

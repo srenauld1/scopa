@@ -1,30 +1,17 @@
-function md = mdsild(pthmd, optsld, optsldhr, opt)
+function md = mdsild(pthstack, optsld, pthpy)
 
 arguments
-    pthmd
+    pthstack
     optsld = []
-    optsldhr = []
-    opt.pthstack = []
+    pthpy = []
 end
-pthstack = opt.pthstack;
 
 id = idmake(pthstack); %just in case id info gets used below
-
-if isempty(pthmd)
-    if isempty(pthstack)
-        error("must pass pthmd or pthstack")
-    else
-        pthmd = [id.dirstack id.recid '_mdsi_.txt'];
-    end
-end
+pthmd = [id.dirstack id.recid '_mdsi_.txt'];
 
 if isempty(optsld)
     otmp = odf([], 'sld');
     optsld = otmp.sld;
-end
-if isempty(optsldhr)
-    otmp = odf([], 'sld');
-    optsldhr = otmp.sld;
 end
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py 
@@ -39,10 +26,38 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
         error("cannot find raw scanimage file matching scopa or flyg pattern")
     end
     pthraw = pthraw.name;
-    pyex = '/Users/wienecke/miniforge3/envs/si/bin/python3';
-    pyfn = '/Users/wienecke/scopa/mdsisv_mat.py';
-    syscmd = [pyex ' ' pyfn ' ' pthraw ' ' pthmd];
-    system(syscmd)
+
+    if isempty(pthpy)
+        pthpy = glb('pthpy');
+        if isempty(pthpy)
+            error("you have not set glb('pthpy'), and you didn't pass in argument pthpy; you must do one or the other" + newline)
+        end
+    end
+
+    pthscopa = getpathscopa();
+
+    try %run python directly from matlab (ie not using system command to control a shell)
+        petmp = pyenv;
+        if ~strcmp(petmp.Executable, pthpy) && ~strcmp(petmp.ExecutionMode, 'OutOfProcess')
+            try
+                pyenv(ExecutionMode="OutOfProcess")
+                pyenv(Version=pthpy)
+            catch ME
+                fprintf(ME.message + newline)
+                fprintf("do not use pyenv in the current matlab session with a different Version or ExecutionMode than those specified here" + newline)
+            end
+        end
+        if count(py.sys.path,pthscopa) == 0
+            insert(py.sys.path,int32(0),pthscopa);
+        end
+        py.mdsisv.mdsisv(pthraw, pthmd)
+    catch ME %alternative that uses system command
+        fprintf(ME.message + newline)
+        fprintf("RUNNING PYTHON DIRECTLY FAILED, USING system TO RUN PYTHON INSTEAD")
+        pyfn = [pthscopa 'mdsisv_mat.py'];
+        syscmd = [pthpy ' ' pyfn ' ' pthraw ' ' pthmd];
+        system(syscmd)
+    end
 end
 
 md = structtxtld(pthmd);
@@ -93,7 +108,7 @@ end
 
 md.widyxz = [md.ywid, md.xwid, md.zwid];
 md.sampper = 1/md.volrate;
-md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'md.tcrop'";
+md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'sld.tcrop'";
 
 md = structsort(md, vectype='row');
 

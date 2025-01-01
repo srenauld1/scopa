@@ -10,6 +10,7 @@ pyruntest
     end
     insert(py.sys.path, int64(0), '/Users/wienecke/scopa/')
     insert(py.sys.path, int64(0), '/Users/wienecke/miniforge3/envs/caiman')
+    insert(py.sys.path, int64(0), '/Users/wienecke/miniforge3/envs/si')
 
     % pyExec = 'C:\software\miniconda3\envs\mlpy\python.exe';
     pyExec = '/Users/wienecke/miniforge3/envs/caiman/bin/python3';

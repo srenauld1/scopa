@@ -5,5 +5,4 @@ function o = oset_wenyi(o)
 % o.sld.suffixplt = {'cmrg_dcdn'}; %by default stackld will plot all available stacks in the automatic gif (calling stackplt from stackld), but you can change which stacks get plotted here
 % o.sld.sp.it = -100; %specify how many frames of automatically plotted stack gif you want plotted (if you want it plotted when you run a2p)default (d.sp.it, in optdfsv.m) is -100, which is 100 equidistant frames; you can change that here
 
-o = odf(o, fill=1); %don't delete this
 

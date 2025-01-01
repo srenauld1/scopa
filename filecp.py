@@ -5,7 +5,7 @@ import os
 
 
 
-def copy_files_scopa(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, 
+def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, 
                      pth_read, pth_md, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_fldr_copydest_prefix, fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 

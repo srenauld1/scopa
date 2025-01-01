@@ -122,7 +122,7 @@ for k = 1:length(fnin)
 
     resp1.f = respin.(fnin{k}); %assign the no-normalization default
 
-    resp1 = respnorm(resp1.f, normpre, sampper);
+    resp1 = tsnorm(resp1.f, normpre, sampper);
 
     fn1 = fieldnames(resp1);
 
@@ -177,7 +177,7 @@ for k = 1:length(fnin)
             resp2.f = wavflt(resp2.f, t=t, wavp=wavp, doplt=0); %pth_roim_prefix
         end
 
-        resp2 = respnorm(resp2.f, normpost, sampper);
+        resp2 = tsnorm(resp2.f, normpost, sampper);
 
         fn2 = fieldnames(resp2);
         for fni2 = 1:length(fn2)

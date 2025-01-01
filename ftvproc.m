@@ -1,5 +1,4 @@
-function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
-    numpkthr, smlenpx, ...
+function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, numpkthr, smlenpx, ...
     numpx, smlensec, pth_dat, pth_vidlog, pth_log, opt)
 
 % NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
@@ -31,7 +30,7 @@ function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, ...
 
 
 arguments
-    pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
+    pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
     pth_vidrs char %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
     numvol double %number of imaging volumes
     imrate double %imaging rate (average,approximate)
@@ -80,7 +79,9 @@ end
 
 %% load video, extract laser timeseries
 
-load(pth_vid, 'ftvds') %ftvds is spatially downsampled, grayscale fictrac video, which was saved in spatial_downsample_fictrac_video.py, as part of registration pipeline
+ftvds = struct2cell(load(pth_vid)); %make sure loaded variable is named 'ftvds'; %ftvds is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
+ftvds = ftvds{1};
+
 ftvds = permute(ftvds, [2 3 1]);
 szvd = size(ftvds);
 ftvds = reshape(ftvds, [], size(ftvds, 3));

@@ -13,7 +13,7 @@ from denoising_score import denoising_score
 
 
 
-def stitch_registered_slices(pth_tif_reg, dims):
+def stitchrg(pth_tif_reg, dims):
 
     print("\n\n\nstitching together separately registered z slices, and writing as one tif")
 
@@ -50,11 +50,11 @@ def stitch_registered_slices(pth_tif_reg, dims):
     return stack 
 
 
-def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
+def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
 
     #stitch together denoised slices (tyx) into original size (tzyx)
 
-    print("\n\n\nENTERING FUNCTION stitch_denoised_slices")
+    print("\n\n\nENTERING FUNCTION stitchdn")
 
     two_chan_stitch = 0
     if 'channel_save' in md: #older runs of do_register will not have this field in md, if you want it, delete mdsi and rerun
@@ -74,12 +74,12 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
         chan_str_insert = '_chn1'
         stack_dtype = 'uint16'
         stack_allchan = np.zeros((dims_pre_denoise[0], dims_pre_denoise[1], 2, dims_pre_denoise[2], dims_pre_denoise[3]), dtype=stack_dtype)
-        stack_allchan[:,:,0,:,:] = stitch_denoised_slices_single_channel(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
+        stack_allchan[:,:,0,:,:] = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
         chan_str_insert = '_chn2'
-        stack_allchan[:,:,1,:,:] = stitch_denoised_slices_single_channel(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
+        stack_allchan[:,:,1,:,:] = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
     else:
         chan_str_insert = ''
-        stack_allchan = stitch_denoised_slices_single_channel(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
+        stack_allchan = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
 
     if len(stack_allchan.shape)==4:
         stack_allchan = stack_allchan.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
@@ -91,7 +91,7 @@ def stitch_denoised_slices(pth_denoising, fn_prefix, pth_tif_read, md, denoise_v
     imwrite(pth_tif_write, stack_allchan, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
 
-def stitch_denoised_slices_single_channel(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert):
+def stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert):
 
     if denoise_volume == 1:
         pth_trainset_all = natsorted(glob.glob(os.path.join(pth_denoising, fn_prefix + chan_str_insert + '_all/')))

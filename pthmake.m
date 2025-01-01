@@ -1,4 +1,4 @@
-function pth = fnmake(o)
+function pth = pthmake(o)
 
 
 %%set up filenames for a2p
@@ -21,10 +21,13 @@ dirtmp = o.mn.dirtmp;
 [dirstack, ~, ~] = fileparts(pthstack);
 dirstack = [dirstack filesep];
 
-pth_prefix = [dirstack recid '_'];
+pth_prefix = erase(pthstack, '.mat');
+pth_prefix_nosuffix = [dirstack recid '_'];
 
 tmp = strsplit(dirstack, filesep);
 pth_parent = [strjoin(tmp(1:end-2), filesep) filesep];
+
+pth_py = o.mn.pthpy;
 
 pth_tmpfiles = [pth_parent dirtmp filesep];
 if ~isfolder(pth_tmpfiles)
@@ -90,13 +93,6 @@ pth_epochinds = [dirstack recid '_epochinds_.bin'];
 pth_epochinfo = [dirstack recid '_epochinfo_.mat'];
 
 
-%% files for roimake
-
-for k = 1:numel(regionex)
-    pth_roi.(regionex{k}) = [pthstack(1:end-4) regionex{k} '_roi_.mat'];
-    pth_roif.(regionex{k}) = [pthstack(1:end-4) regionex{k} '_roif_.mat'];
-    pth_roii.(regionex{k}) = [pthstack(1:end-4) regionex{k} '_roii_.mat'];
-end
 
 %% carl's old project
 
@@ -107,16 +103,15 @@ pth_template = o.carl.pth_template;
 
 %% output
 
-pth.prefix = pth_prefix;
+pth.pre = pth_prefix;
+pth.prenosuffix = pth_prefix_nosuffix;
 pth.parent = pth_parent;
+pth.py = pth_py;
 pth.dirstack = dirstack;
 pth.stack = pthstack;
 pth.md = pth_md;
 pth.mdflyg = pth_mdflyg;
 pth.tmpfiles = pth_tmpfiles;
-pth.roi = pth_roi;
-pth.roif_all = pth_roif;
-pth.roi_interactive = pth_roii;
 pth.daq = pth_daq;
 pth.daqrs = pth_daqrs;
 pth.ftdat = pth_ftdat;

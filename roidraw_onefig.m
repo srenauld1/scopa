@@ -1,6 +1,5 @@
 function [maskroi, flag_quit_one_roi, flag_quit_all_rois, ircumcurr] = ...
-    roidraw_onefig(stack, flag_oneim, ...
-    flag_single_roi_per_stack, flag_allz, flag_croplim, draw_on_meanzt, ir, szi, opt)
+    roidraw_onefig(stack, flag_oneim, flag_single_roi_per_stack, flag_allz, flag_croplim, draw_on_meanzt, ir, szi, opt)
 
 arguments
     stack

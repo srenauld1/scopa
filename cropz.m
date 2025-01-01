@@ -115,10 +115,10 @@ end
 
 close(h.hfg)
 if isempty(zinds)
-    zinds = 1:numslice;
+    zinds = [1,numslice];
 else
-    zinds = min(zinds):max(zinds);
-    stackmnt = stackmnt(:,:,zinds);
+    zinds = [zinds(1),zinds(2)];
+    stackmnt = stackmnt(:,:,zinds(1):zinds(2));
 end
 
 

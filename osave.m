@@ -12,6 +12,6 @@ end
 fnopt = [o.id.recid '_options_.txt'];
 pthopt = fullfile(pthpar, fnopt);
 
-structtxtsv(o, pthopt)
+structtxtsv(o, pthopt, overwrite=1, readonly=1)
 
 end

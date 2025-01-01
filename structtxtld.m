@@ -8,6 +8,7 @@ arguments
     opt.flat = 0; %flatten struct 
 end
 
+
 s = fileread(pth);
 s = jsondecode(s);
 if opt.flat

@@ -9,18 +9,15 @@ arguments
 end
 files = opt.files;
 
-
 %%%% USER NAME (to route to different oset_* files below) %%%%
 
 user = 'carl';
 
+%%%% path to scopa in filesystem a (name 'a' is arbitrary, can create asd many as you want, used to identify option id files, to prevent conflicting ids)    %%%%
 
-%%%% path to scopa in different filesystems (used to prevent conflicts in writing to file; valid filesystem ids are a,b,c,d,e,f,g,h) %%%%
-
-otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to scopa in filesystem a 
-otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to scopa in filesystem b 
-otmp.mn.pthscopas.c = fullfile('C:\', 'Users', 'Wilson_Lab', 'Documents', 'GitHub', 'scopa', filesep); %path to scopa in filesystem c 
-
+otmp.mn.pthscopas.a = '/Users/wienecke/scopa'; %path to scopa in filesystem a (name 'a' is arbitrary, can create asd many as you want, used to identify option id files, to prevent conflicting ids)   
+otmp.mn.pthscopas.b = '/home/caw846/scopa'; %path to scopa in filesystem b (name 'b' is arbitrary, can create asd many as you want, used to identify option id files, to prevent conflicting ids) 
+otmp.mn.pthscopas.c = '//C:/Documents/scopa'; %path to scopa in filesystem c (name 'c' is arbitrary, can create asd many as you want, used to identify option id files, to prevent conflicting ids) 
 
 %%%% user-defined recording specifiers (used to find recordings if there is no input to a2p) %%%%
 
@@ -38,13 +35,10 @@ elseif iscell(specin) || ischar(specin) %if input to a2p is not empty, and is no
 end
 
 
-otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
+otmp = odf(otmp, files=files); %find files (if files=1), add them to struct o
 
 
-
-%%%% loop over found files in otmp, setting options depending on recording (and user) %%%%
-
-for k = 1:numel(otmp) 
+for k = 1:numel(otmp) %loop over found files, setting options depending on recording
 
     if strcmp(user, 'wenyi')
         
@@ -102,17 +96,13 @@ for k = 1:numel(otmp)
 end
 
 
-
-%%%% finalize and organize options struct %%%%
-
-o = odf(o, fill=1); % final call to odf, with fill=1 to make sure o is filled
+%%%% organize %%%%
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
-o = opt2id(o);
+o = opt2id(o, 'roi');
 
 oflat = structflat(o, prefix='o'); %get flattened struct for user to see options struct organization more easily (oflat does not get used); need prefix to make valid fieldnames in case nonscalar
-
 
 end
 
