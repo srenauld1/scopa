@@ -60,7 +60,8 @@ def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_c
     if 'channel_save' in md: #older runs of do_register will not have this field in md, if you want it, delete mdsi and rerun
         if not isinstance(md['channel_save'], int):
             if len(md['channel_save'])==2:
-                two_chan_stitch = 1
+                if os.path.isdir(os.path.join(pth_denoising, fn_prefix + '_chn1_')) or os.path.isdir(os.path.join(pth_denoising, fn_prefix + '_chn2_')):
+                    two_chan_stitch = 1
 
 
     pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif' #forcing this suffix since stitch is specificaly for denoising (rather than letting it have use_denoised determine)

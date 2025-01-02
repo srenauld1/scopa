@@ -208,7 +208,6 @@ end
 
 %%%%% GET MATCHED VARIABLE FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
 
-sout = [];
 if ~isfile(pth)
     if autonm
         nmout = [prefix '1'];
@@ -216,7 +215,7 @@ if ~isfile(pth)
         nmout = [prefix nm];
     end
     sout = s;
-    sfile.(nmout) = s;
+    sfilenew = s;
 else
     matchind = [];
     for k = 1:numel(nmfile)
@@ -248,13 +247,12 @@ else
             nmout = [prefix nm];
             if isempty(s)
                 fprintf("no variable in pth matching nm " + [prefix nm] + newline)
-                return
             else
                 nmout = [prefix nm];
             end
         end
         sout = s;
-        sfile.(nmout) = s;
+        sfilenew = s;
     elseif isscalar(matchind)
         nmout = nmfile{matchind};
         sout = sfile.(nmfile{matchind}); %if variable matches a variable in file, give variable the name it has in file
@@ -266,8 +264,8 @@ end
 
 %%%%% WRITE TO FILE %%%%%
 
-if isempty(sout)
-    fprintf("sout is empty, not writing anything to file pth" + newline)
+if isempty(sfilenew)
+    fprintf("sfilenew is empty, not writing anything to file pth" + newline)
 else
     if useprefix
         sfile.loc = loc;
@@ -276,6 +274,7 @@ else
     if autonm_write
         sfile.autonm = 1;
     end
+    sfile.(nmout) = sfilenew;
     structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 end
 
