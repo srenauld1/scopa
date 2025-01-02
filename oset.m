@@ -27,10 +27,10 @@ otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'ca
 otmp.spec.pthparent_local = '/Users/wienecke/stacks';
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(specin) %if you're running a2p without input arguments (ie if specin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not specin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    otmp.spec.recdate = {'20241221'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.recdate = {'20241218'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    otmp.spec.suffix = {'cmrg'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
     otmp.spec.pth = '';
 elseif iscell(specin) || ischar(specin) %if input to a2p is not empty, and is not struct
@@ -71,7 +71,7 @@ for k = 1:numel(otmp)
         recs_ganopb = {'202306', '20241208_2'};
         recs_ganoeb = {'202311', '202411', '20241207'};
         recs_fb8c = {'20241209', '20241221', '20241222'};
-        recs_mito = {'20241216'};
+        recs_mito = {'mito'};
         recs_t5 = {'2211'};
 
         if contains(otmp(k).id.pthstack, recs_ganopb)

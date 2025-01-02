@@ -1,9 +1,10 @@
 
-function croplim = croplimmake(stack, pthcroplim, regionex)
+function croplim = croplimmake(stack, pthcroplim, nmcroplim, regionex)
 
 arguments
     stack
     pthcroplim
+    nmcroplim
     regionex
 end
 
@@ -90,7 +91,7 @@ croplim.z = [iz(1), iz(2)];
 croplim.t = [it(1), it(2)];
 croplim.c = [ic(1), ic(2)];
 
-structtxtsv(croplim, pthcroplim, overwrite=1, readonly=1)
+croplim = structfile(pthcroplim, s=croplim, nm=nmcroplim, useprefix=1);
 
 
 

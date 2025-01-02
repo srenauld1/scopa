@@ -3,9 +3,13 @@ function [stack, croplim] = stackcrop(stack, pthstack, regionex)
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
 pthscopa = getpathscopa();
-pthcroplim = [pthscopa 'croplim_.txt'];
+pthcroplim = [pthscopa 'croplim_*_.txt'];
 
-nmcroplim = erase(pthstack, '.mat'); 
+[~, nmstack] = fileparts(pthstack); 
+if ~endsWith(nmstack, '_')
+    nmstack = [nmstack '_'];
+end
+nmcroplim = [nmstack regionex];
 
 regionexdf = glb('regionexdf');
 if isempty(regionexdf)
@@ -21,14 +25,11 @@ if strcmp(regionex, regionexdf)
     croplim.c = [1, size(stack, 5)];
 
 else
-
-    % croplim = croplimld(pthcroplim); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     
-    [opttmp, nmnew] = structfile(pthcroplim, nm=nmcroplim, useprefix=1);
+    croplim = structfile(pthcroplim, s=[], nm=nmcroplim, useprefix=1);
 
-    croplim = [];
     if isempty(croplim)
-        croplim = croplimmake(stack, pthcroplim, regionex);
+        croplim = croplimmake(stack, pthcroplim, nmcroplim, regionex);
     end
 
     if ~(isequal(croplim.y, [1,size(stack,1)]) && isequal(croplim.x, [1,size(stack,2)]) && isequal(croplim.z, [1,size(stack,3)]) && isequal(croplim.t, [1,size(stack,4)]) && isequal(croplim.c, [1,size(stack,5)]))

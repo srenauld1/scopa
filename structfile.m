@@ -256,6 +256,7 @@ else
     elseif isscalar(matchind)
         nmout = nmfile{matchind};
         sout = sfile.(nmfile{matchind}); %if variable matches a variable in file, give variable the name it has in file
+        sfilenew = [];
     else
         error("found multiple matches in file")
     end

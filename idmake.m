@@ -24,7 +24,7 @@ for k = 1:numel(pthstacks)
     recdate = spl{1};
     fly = spl{2};
 
-    if contains(pthstacktmp, 'trial_') && contains(pthstacktmp, '-') %if it's a flyg-pattern raw file, trialnum and suffix need to be read differently
+    if contains(fnin, 'trial_') && contains(fnin, '-') %if it's a flyg-pattern raw file, trialnum and suffix need to be read differently
         trial = num2str(str2double(spl{find(strcmp(spl, 'trial'))+1}));
         suffix = 'raw';
     else
