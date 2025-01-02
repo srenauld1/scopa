@@ -1,0 +1,5 @@
+{
+  "a20241221_5_1_cmrg_dcdn_fb8c": [],
+  "loc": "/Users/wienecke/scopa/",
+  "prefix": "a"
+}

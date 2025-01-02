@@ -27,12 +27,12 @@ else: #in interactive mode, read options set in optdfpl, and also set a few opti
   first_job = 1 #this should always be 1 if you're running pl.py directly/interactively, first_job is only used when pl.py is called from pl.sh, as part of a larger pipeline 
   jobnm = '' #empty for intyeractive mode; job name run from pl (noninteractive job identifier)
   pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
-  scopatmpdir = '' #string, keep empty for interactive; directory for scopatmp folder; automatically defined in make_paths
+  scopatmpdir = '' #string, keep empty for interactive; directory for scopatmp folder; automatically defined in pthmake
   fnind_fn_prefix = '' #string, keep empty for interactive; the job id (before any underscore if arrayed) for the first job run by pl.sh, will point to a file that saves filename indices to ensure files get the same index across all jobs run by pl, make empty to skip 
   do_autoallocate = 0 #autoallocate resources or not; only used in noninteractive mode
 
 from parse_args import parse_command_line
-from paths_scopa import make_paths
+from pthmakepy import pthmake
 from filefind import filefind
 from filecp import filecp
 from autoallocate import autoallocate
@@ -50,7 +50,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
                       do_a2p, first_job] = parse_command_line()
 
 
-[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = make_paths(currscriptdir, do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
+[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
 
 
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_a2p > 1:

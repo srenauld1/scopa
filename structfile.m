@@ -200,9 +200,6 @@ if isfile(pth)
 
 else
 
-    if isempty(s)
-        error("pth is not a file, and s is empty, so there is nothing to write to a new file; if you want to retrieve a variable, s can be empty, but pth must exist")
-    end
     sfile = struct;
     nmfile = fieldnames(sfile);
 
@@ -269,12 +266,16 @@ end
 
 %%%%% WRITE TO FILE %%%%%
 
-if useprefix
-    sfile.loc = loc;
-    sfile.prefix = prefix;
+if isempty(sout)
+    fprintf("sout is empty, not writing anything to file pth" + newline)
+else
+    if useprefix
+        sfile.loc = loc;
+        sfile.prefix = prefix;
+    end
+    if autonm_write
+        sfile.autonm = 1;
+    end
+    structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 end
-if autonm_write
-    sfile.autonm = 1;
-end
-structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 

@@ -9,6 +9,7 @@ from itertools import product
 import collections
 from pathlib import Path
 import ast
+from pthmakepy import getpathscopa
 
 
 def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
@@ -163,11 +164,15 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
             fldr = ('/').join(pth_readfile.split('/')[:-1]) + '/'
             fname = pth_readfile.split('/')[-1]
 
+            if '__' in fname:
+                print("\n\n\nWARNING FOUND FILE HAS DOUBLE UNDERSCORE(S), REPLACING WITH SINGLE UNDERSCORE(S)")
+                fname = fname.replace('__', '_')
+
             if re.search('trial', fname):                       
                 fn_prefix = fname.split('_')[0].split('-')[0] + '_' + fname.split('_')[0].split('-')[1]  + '_' + str(int(fname.split('_')[-2][-1])) #change hyphen to underscore
             else:
                 fn_prefix = '_'.join(fname.split('_')[:3])
-            fn_prefix_flyg = '-'.join(fname.split('_')[:2])
+            fn_prefix_flyg = '-'.join(fn_prefix.split('_')[:2])
 
             pth_prefix = fldr + fn_prefix
             datestr_found = fn_prefix.split('_')[0]
@@ -189,7 +194,8 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
             if pth_daq:
                 pth_daq = pth_daq[0]
 
-            pth_croplim_pattern = pth_prefix + '_*_croplim_.txt' # copy all croplim files from server to O2 
+            pthscopa = getpathscopa()
+            pth_croplim_pattern = pthscopa + 'croplim_*_.txt' # copy all croplim files from server to O2 
             pth_croplim = glob.glob(pth_croplim_pattern)
                 
             fn_pattern_ftvid = fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
