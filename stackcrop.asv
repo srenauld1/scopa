@@ -1,11 +1,11 @@
-function [stack, croplim] = stackcrop(stack, pthstack, regionex)
+function [stack, croplim] = stackcrop(stack, regionex)
 
 %output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
 
 pthscopa = getpathscopa();
 pthcroplim = [pthscopa 'croplim_.txt'];
 
-nmcroplim = erase(pthstack, '.mat'); 
+pthstack = erase(pthstack, '.mat') 
 
 regionexdf = glb('regionexdf');
 if isempty(regionexdf)
@@ -24,7 +24,7 @@ else
 
     % croplim = croplimld(pthcroplim); %make sure croplim didn't get made during this run of pipeline for a previous regionex with same prefix
     
-    [opttmp, nmnew] = structfile(pthcroplim, nm=nmcroplim, useprefix=1);
+    [opttmp, nmnew] = structfile(pthcroplim, nm='5', useprefix=1)
 
     croplim = [];
     if isempty(croplim)

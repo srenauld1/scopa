@@ -20,7 +20,7 @@ user = 'carl';
 otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to scopa in filesystem a 
 otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to scopa in filesystem b 
 otmp.mn.pthscopas.c = fullfile('C:\', 'Users', 'Wilson_Lab', 'Documents', 'GitHub', 'scopa', filesep); %path to scopa in filesystem c 
-
+otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py) 
 
 %%%% user-defined recording specifiers (used to find recordings if there is no input to a2p) %%%%
 

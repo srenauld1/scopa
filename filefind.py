@@ -63,7 +63,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
         else:
             fn_suffix_scopa = fn_suffix_scopa + '_.tif'
         fn_pattern_scopa = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa #
-        pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa, recursive=True)
+        pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/**/' + fn_pattern_scopa, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine with empty (functionally pointless here, just for readability/symmetry with pattern below
 
         if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern 
@@ -73,20 +73,18 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
             else:
                 fn_suffix_flyg = '_*_trial_' + '{:03d}'.format(int(filepatspec[2])) + '_*.tif'  #this suffix actually includes a filepatspec for trial, oh well
             fn_pattern_flyg = filepatspec[0] + '-' + filepatspec[1] + fn_suffix_flyg
-            # pth_allfiles_flyg = glob.glob(pth_allrec + '**/' + fn_pattern_flyg, recursive=True)
-            pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_flyg, recursive=True)
+            pth_allfiles_flyg = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/**/' + fn_pattern_flyg, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_flyg #combine, since multiple patterns are valid as input
 
             fn_suffix_carlold = 'stackraw_.*'
             fn_pattern_carlold = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + '_' + fn_suffix_carlold 
-            # pth_allfiles_carlold = glob.glob(pth_allrec + '**/' + fn_pattern_carlold, recursive=True)
-            pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_carlold, recursive=True)
+            pth_allfiles_carlold = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/**/' + fn_pattern_carlold, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_carlold #combine, since multiple patterns are valid as input
 
         if do_remove or do_a2p: #these jobs use mat files (or convert tif to mat) so check if mat exists too
             fn_suffix_scopa_mat = fn_suffix_scopa[:-5] + '_.mat'
             fn_pattern_scopa_mat = filepatspec[0] + '_' + filepatspec[1] + '_' + filepatspec[2] + fn_suffix_scopa_mat
-            pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/' + fn_pattern_scopa_mat, recursive=True)
+            pth_allfiles_scopa_mat = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/**/' + fn_pattern_scopa_mat, recursive=True)
             pth_allfiles = pth_allfiles + pth_allfiles_scopa_mat #combine, since multiple patterns are valid as input
 
 
@@ -191,12 +189,8 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
             if pth_daq:
                 pth_daq = pth_daq[0]
 
-            pth_croplim_npy_pattern = pth_prefix + '_*_croplim_.npy' # copy all croplim files from server to O2 
-            pth_croplim_npy = glob.glob(pth_croplim_npy_pattern)
-            pth_croplim_mat_pattern = pth_prefix + '_*_croplim_.mat' # copy all croplim files from server to O2 
-            pth_croplim_mat = glob.glob(pth_croplim_mat_pattern)
-            pth_croplim = pth_croplim_npy + pth_croplim_mat
-
+            pth_croplim_pattern = pth_prefix + '_*_croplim_.txt' # copy all croplim files from server to O2 
+            pth_croplim = glob.glob(pth_croplim_pattern)
                 
             fn_pattern_ftvid = fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
             pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)

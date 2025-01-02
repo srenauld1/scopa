@@ -50,12 +50,12 @@ d.mn.dofit = 0; %model fitting (o.mf below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
 
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
-d.mn.pthpy = '/Users/wienecke/miniforge3/envs/caiman/bin/python3'; %path to python executable  
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 d.mn.oldcarl = 0; %run with some settings for carl's old project
 d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf"]; %list of subroutines that get plots (all by default)
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
+d.mn.pthpy = ''; %path to python executable  
 
 d.mn.pthscopas.a = ''; %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
 d.mn.pthscopas.b = ''; %path to scopa in filesystem b (used to prevent conflicting edits to "same" lookup file in different filesystems) 

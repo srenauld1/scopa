@@ -184,7 +184,7 @@
       "mf"
     ],
     "pltvis": 1,
-    "pthpy": "/Users/wienecke/miniforge3/envs/caiman/bin/python3",
+    "pthpy": "",
     "pthscopas": {
       "a": "",
       "b": "",
@@ -195,7 +195,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025010116024859"
+    "timestr": "2025010116503956"
   },
   "nestvalid": [
     "spec",
