@@ -2,7 +2,7 @@
 
 # see pl.py and README.md for more details 
 
-# TO USE pl.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2 
+# TO USE pl.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2  #
 
 # pl.sh runs the entire preprocessing pipeline by specifying params for pl.py
 # run as ./pl.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
