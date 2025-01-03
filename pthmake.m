@@ -24,15 +24,8 @@ dirstack = [dirstack filesep];
 pth_prefix = erase(pthstack, '.mat');
 pth_prefix_nosuffix = [dirstack recid '_'];
 
-tmp = strsplit(dirstack, filesep);
-pth_parent = [strjoin(tmp(1:end-2), filesep) filesep];
-
 pth_py = o.mn.pthpy;
 
-pth_tmpfiles = [pth_parent dirtmp filesep];
-if ~isfolder(pth_tmpfiles)
-    mkdir(pth_tmpfiles)
-end
 
 pth_md = [dirstack recid '_mdsi_.txt'];
 pth_mdflyg_pat = [dirstack datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
@@ -105,13 +98,11 @@ pth_template = o.carl.pth_template;
 
 pth.pre = pth_prefix;
 pth.prenosuffix = pth_prefix_nosuffix;
-pth.parent = pth_parent;
 pth.py = pth_py;
 pth.dirstack = dirstack;
 pth.stack = pthstack;
 pth.md = pth_md;
 pth.mdflyg = pth_mdflyg;
-pth.tmpfiles = pth_tmpfiles;
 pth.daq = pth_daq;
 pth.daqrs = pth_daqrs;
 pth.ftdat = pth_ftdat;

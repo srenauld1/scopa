@@ -204,7 +204,7 @@ classdef TIFFStack < handle
          oStack.bForceTiffread = bForceTiffread;
 
          oStack.bUseTiffLib = (exist('tifflib') == 3) & ~bForceTiffread; %#ok<EXIST>
-
+         
          if (~oStack.bUseTiffLib)
             warning('TIFFStack:SlowAccess', ...
                     '--- TIFFStack: Using slower non-TiffLib access.');
