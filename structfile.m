@@ -71,21 +71,8 @@ if useprefix
             error("to use structfile with useprefix=1, you must have passed in name-value argument pthscopas, or set glb('pthscopas')")
         end
     end
-    if isempty(pthall)
-        pftmp = struct2cell(pthscopas);
-        for k = 1:numel(pftmp)
-            if ~isempty(pftmp{k}) && ~endsWith(pftmp{k}, filesep)
-                pftmp{k} = [pftmp{k} filesep];
-            end
-        end
-        fnpf = fieldnames(pthscopas);
-        prefix = fnpf(strcmp(pthscopa,pftmp));
-        if numel(prefix)~=1
-            error("there must be only one match to prefix")
-        end
-        prefix = cell2mat(prefix);
-        pth = strrep(pth, '*', prefix);
-    else
+       
+    if ~isempty(pthall)
         filesystem_matched = 0;
         for k = 1:numel(pthall) %if pth contains wildcard, it's because it's filesystem protected, so find the file for this filesystem
             sfile = structtxtld(pthall(k).name, nocells=1);
@@ -101,9 +88,22 @@ if useprefix
                 pth = pthall(k).name;
             end
         end
-        if filesystem_matched==0
-            error("no file on current filesystem found; check glb('pthscopas'), which matches o.mn.pthscopas")
+    end
+    if filesystem_matched==0
+        fprintf("no file on current filesystem found; creating one")
+        pftmp = struct2cell(pthscopas);
+        for k = 1:numel(pftmp)
+            if ~isempty(pftmp{k}) && ~endsWith(pftmp{k}, filesep)
+                pftmp{k} = [pftmp{k} filesep];
+            end
         end
+        fnpf = fieldnames(pthscopas);
+        prefix = fnpf(strcmp(pthscopa,pftmp));
+        if numel(prefix)~=1
+            error("there must be only one match to prefix")
+        end
+        prefix = cell2mat(prefix);
+        pth = strrep(pth, '*', prefix);
     end
 
 else
