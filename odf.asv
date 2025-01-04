@@ -46,6 +46,9 @@ pthscopa = getpathscopa();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
+if ~isfile(pthopt)
+    optdfsv();
+end
 
 
 if files %if files==1, oin must be scalar
@@ -225,7 +228,7 @@ else
                 eval(['oindeepest.' vbindeepest ' = oin.' vbin{k} ';']); %use eval to succinctly extract nested field
             else %if the nesting doesn't exist in oin, create it with defaults in the deepest layer, and nothing above
                 if isfield(d, vbindeepest)
-                    fprintf("you input vbin '" + vbin{k} + "', but '" + vbindeepest + "' does not exist in your input to odf, so creating it and populating with default values" + newline)
+                    % fprintf("you input vbin '" + vbin{k} + "', but '" + vbindeepest + "' does not exist in your input to odf, so creating it and populating with default values" + newline)
                 else
                     error(sprintf("d." + vbindeepest) + " does not exist")
                 end
@@ -249,7 +252,7 @@ else
                 oin = rmfield(oin, vbin{k});
             else
                 if isfield(d, vbin{k})
-                    fprintf("note: " + vbin{k} + " does not exist in your input to odf, creating it and populating with all default values" + newline)
+                    % fprintf("note: " + vbin{k} + " does not exist in your input to odf, creating it and populating with all default values" + newline)
                     oinsub.(vbin{k}) = d.(vbin{k}); %use all defaults vbin{k} is not in oin
                 else
                     error(sprintf("d." + vbin{k}) + " does not exist")
@@ -297,7 +300,7 @@ if files
         o.spec.match = '';
     end
 
-    fprintf("RUNNING odf with files true, SEARCHING FOR FILES" + newline)
+    % fprintf("RUNNING odf with files true, SEARCHING FOR FILES" + newline)
 
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
         rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixvalid=o.spec.suffixvalid, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, match=o.spec.match); %find files matching spec
@@ -323,7 +326,7 @@ if files
 
 else
     
-    fprintf("RUNNING odf with files false, NOT SEARCHING FOR FILES, WILL KEEP ANY EXISTING FILES" + newline)
+    % fprintf("RUNNING odf with files false, NOT SEARCHING FOR FILES, WILL KEEP ANY EXISTING FILES" + newline)
 
 end
 
@@ -408,10 +411,29 @@ if fill
         end
     end
 
-    if 
 
+    % now check for any problems 
 
-    o.filled = 1; %mark options struct as filled (complete)
+    if isempty(o.mn)
+
+    fn = fieldnames(o.mn.pthscopas);
+    cnt = 0;
+    for k = 1:numel(fn)
+        if isempty(o.mn.pthscopas.(fn{k}))
+            cnt = cnt+1;
+        else
+            if ~endsWith(o.mn.pthscopas.(fn{k}), filesep)
+                error("all pthscopas must end with filesep; add filesep")
+            end
+        end
+    end
+    if cnt==numel(fn)
+        error("at least one pthscopas must be nonempty")
+    end
+
+    % now mark options struct as filled (complete)
+
+    o.filled = 1;
 
 
 end

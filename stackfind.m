@@ -12,6 +12,7 @@ arguments
     opt.fly = []
     opt.trial = []
     opt.suffix = []
+    opt.substr = []
     opt.match = 'each'
 end
 
@@ -24,6 +25,7 @@ recdate = opt.recdate;
 fly = opt.fly;
 trial = opt.trial;
 suffix = opt.suffix;
+substr = opt.substr;
 match = opt.match;
 
 suffixvalid = convertStringsToChars(suffixvalid);
@@ -40,8 +42,8 @@ if ~isempty(pth)
     if ~iscell(pth)
         pth = {pth};
     end
-    if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix)
-        error("cannot use recdate, fly, trial, or suffix inputs with pth input")
+    if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix) || ~isempty(substr)
+        error("cannot use recdate, fly, trial, suffix, or substr inputs with pth input")
     end
 end
 if ~isempty(pthsib)
@@ -50,8 +52,8 @@ if ~isempty(pthsib)
     if ~iscell(pthsib)
         pthsib = {pthsib};
     end
-    if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial)
-        error("cannot use recdate, fly, or trial inputs with pthsib input")
+    if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(substr)
+        error("cannot use recdate, fly, trial, or substr inputs with pthsib input")
     end
 end
 
@@ -68,6 +70,9 @@ if isempty(trial)
 end
 if isempty(suffix)
     suffix = '*';
+end
+if isempty(substr)
+    substr = '*';
 end
 if isempty(suffixvalid) || sum(strlength(suffixvalid))==0 %sum(strlength(suffixvalid))==0 will test for empty char or string
     suffixvalid = glb('suffixvalid');
@@ -97,11 +102,11 @@ if isempty(pth)
         end
     end
 
-    fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix);
+    fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix, substr);
 
     pth_prefix_all = [];
     for j = 1:numel(fspc.recdate)
-        pth_prefix_all_onespec = stackfind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, pthparent, suffixvalid);
+        pth_prefix_all_onespec = stackfind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, fspc.substr{j}, pthparent, suffixvalid);
         pth_prefix_all = cat(1, pth_prefix_all, vec(pth_prefix_all_onespec));
     end
 
@@ -120,15 +125,15 @@ end
 
 if isempty(pth_prefix_all)
     if isempty(pth)
-        fspcstr = sprintf("pthparent: " + pthparent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix);
-        fprintf(newline+ "WARNING, NO FILES FOUND WITH match '" + match + "' AND FILENAME SPECIFIERS:" + newline + fspcstr + newline)
+        fspcstr = sprintf("pthparent: " + pthparent + newline + "recdate: " + recdate + newline + "fly: " + fly + newline + "trial: " + trial + newline + "suffix: " + suffix + newline + "substr: " + substr);
+        fprintf(newline + "WARNING, NO FILES FOUND WITH match '" + match + "' AND FILENAME SPECIFIERS:" + newline + fspcstr + newline)
     else
         fprintf(newline + "WARNING, NO FILES FOUND MATCHING INPUT PATHS OR PATH PATTERNS" + newline)
     end
     pth_all = [];
 else
-    pth_all = prioritize_mat(pth_prefix_all);
-    check_for_duplicate_specifiers(pth_all)
+    pth_all = prioritize_mat(pth_prefix_all); %keep mat and remove tif if they are for the same recording
+    check_for_duplicate_specifiers(pth_all); %why do we care about this if we have check_for_duplicate_filenames (and that doens't even matter)?
     check_for_duplicate_filenames(pth_all);
 end
 
@@ -139,7 +144,7 @@ end
 
 
 
-function fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix)
+function fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix, substr)
 
 if ~iscell(recdate)==1
     recdate = {recdate};
@@ -153,11 +158,14 @@ end
 if ~iscell(suffix)==1
     suffix = {suffix};
 end
+if ~iscell(substr)==1
+    substr = {substr};
+end
 
 if strcmp(match, 'any')
-    fspc = combinations(recdate, fly, trial, suffix);
+    fspc = combinations(recdate, fly, trial, suffix, substr);
 elseif strcmp(match, 'each')
-    specnums = [numel(recdate), numel(fly), numel(trial), numel(suffix)];
+    specnums = [numel(recdate), numel(fly), numel(trial), numel(suffix), numel(substr)];
     uniquespecnums = unique(specnums);
     if numel(uniquespecnums(uniquespecnums~=1))>1
         error("for file matching style 'each' specifiers must have same length, or length 1")
@@ -175,10 +183,14 @@ elseif strcmp(match, 'each')
     if numel(suffix)==1
         suffix = repelem(suffix, maxspecnum);
     end
+    if numel(substr)==1
+        substr = repelem(substr, maxspecnum);
+    end
     fspc.recdate = recdate;
     fspc.fly = fly;
     fspc.trial = trial;
     fspc.suffix = suffix;
+    fspc.substr = substr;
 end
 
 
@@ -187,12 +199,12 @@ end
 
 
 
-function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, pthparent, suffixvalid)
+function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixvalid)
 
 
-recdate = num2str(recdate); %just in case it's numeric, won't matter if not
-fly = num2str(fly); %just in case it's numeric, won't matter if not
-trial = num2str(trial); %just in case it's numeric, won't matter if not
+recdate = num2str(recdate); %just in case
+fly = num2str(fly); %just in case
+trial = num2str(trial); %just in case
 
 
 %%SCOPA PATTERN, TIF AND MAT
@@ -200,24 +212,34 @@ fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_
 valid_tif_fns = strcat(suffixvalid, '_.tif');
 pth_all_tif = rdir(fn_pattern_tif);
 pth_all_tif = pth_all_tif(contains({pth_all_tif.name}, valid_tif_fns)); %in case wildcard suffix returns unwanted files
+pth_all_tif = pth_all_tif(~cellfun(@isempty, regexp({pth_all_tif.name}, regexptranslate('wildcard', substr))));
 
 valid_mat_fns = strcat(suffixvalid, '_.mat');
 fn_pattern_mat = [fn_pattern_tif(1:end-4) '.mat'];
 pth_all_mat = rdir(fn_pattern_mat);
 pth_all_mat = pth_all_mat(contains({pth_all_mat.name}, valid_mat_fns)); %in case wildcard suffix returns unwanted files
-
+pth_all_mat = pth_all_mat(~cellfun(@isempty, regexp({pth_all_mat.name}, regexptranslate('wildcard', substr))));
 
 %%FLYG RAW PATTERN, TIF AND MAT
-if strcmp(suffix, 'raw')
+if strcmp(suffix, 'raw') || strcmp(suffix, '*')
     if strcmp(trial, '*')
         fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_*_*.tif']; %double asterisk is 0 or more directories
     else
         fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_' sprintf( '%03s', trial ) '_*.tif']; %double asterisk is 0 or more directories
     end
     pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
+    pth_all_flyg_raw_tif = pth_all_flyg_raw_tif(~cellfun(@isempty, regexp({pth_all_flyg_raw_tif.name}, regexptranslate('wildcard', substr))));
 
     fn_pattern_flyg_raw_mat = [fn_pattern_flyg_raw_tif(1:end-4) '.mat'];
     pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by suffixvalid since flygraw pattern doesn't include suffix
+    pth_all_flyg_raw_mat = pth_all_flyg_raw_mat(~cellfun(@isempty, regexp({pth_all_flyg_raw_mat.name}, regexptranslate('wildcard', substr))));
+
+    for k = flip(1:numel(pth_all_flyg_raw_mat)) %in case any files were created that are found by above pattern (since flyg has a variable number suffix after trial, before extension, above that gets wildcard, here files that have anything but 5 digits get removed); go backwards to remove; 
+        spl = strsplit(pth_all_flyg_raw_mat(k).name, '_');
+        if isempty(regexp(spl{end}, '^\d{5}.mat'))
+            pth_all_flyg_raw_mat(k) = [];
+        end
+    end
 
 else
     pth_all_flyg_raw_tif = [];
@@ -261,7 +283,7 @@ for k = 1:numel(pth_all)
     tmp{k} = [id.recdate '_' id.fly '_' id.trial '_' id.suffix];
 end
 if numel(tmp)~=numel(unique(tmp))
-    error("there are at least two found files with the same extension and same specifiers (date, fly, trial, and suffix (which will be 'raw' for raw stack, whether named with flyg or scopa format")
+    fprintf([sprintf('there are at least two found files with the same extension and same specifiers: date, fly, trial, and suffix (note suffix is "raw" for raw stack, whether named with flyg or scopa format); be sure duplicate specifiers belong to different recordings (e.g. in different locations, which can be distinguished with specifier "substr"); here are all found stacks: '), newline, sprintf('%s \n', pth_all{:})])
 end
 
 end
@@ -270,7 +292,7 @@ end
 
 function check_for_duplicate_filenames(pth_prefix_all)
 
-error_on_repeat_filenames = 1;
+error_on_repeat_filenames = 0;
 
 pthscheck = cellfun(@(x,y) strsplit(x,y), pth_prefix_all, repelem({filesep}, numel(pth_prefix_all)), 'UniformOutput', false);
 justfns = cellfun(@(x) x(end), pthscheck);
@@ -283,8 +305,9 @@ if ~isempty(cell2mat(jp'))
     if error_on_repeat_filenames
         error(sprintf([sprintf('repeated filenames in different locations, \nmove or rename or set error_on_repeat_filenames to 0 in local function check_for_duplicate_filenames in function stackfind.m; \nrepeated filenames are: '), newline, sprintf('%s \n', pthdupes{:})]))
     else
-        fprintf([sprintf('repeated filenames in different locations, operating on the first of each repeat:'), newline, sprintf('%s \n', pthdupes{:})])        
-        pth_prefix_all = pth_prefix_all(kp);
+        fprintf([sprintf('repeated filenames in different locations; be sure duplicate specifiers belong to different recordings (e.g. in different locations, which can be distinguished with specifier "substr"); here are all found stacks:'), newline, sprintf('%s \n', pthdupes{:})])        
+        % fprintf([sprintf('repeated filenames in different locations, operating on the first of each repeat:'), newline, sprintf('%s \n', pthdupes{:})])        
+        % pth_prefix_all = pth_prefix_all(kp);
     end
 end
 

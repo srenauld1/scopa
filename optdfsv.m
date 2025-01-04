@@ -37,7 +37,8 @@ d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); i
 d.spec.recdate = {'*'}; %cell array of char, can use wildcards
 d.spec.fly = {'*'}; %cell array of char, can use wildcards
 d.spec.trial = {'*'}; %cell array of char, can use wildcards
-d.spec.suffix = {'raw'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+d.spec.suffix = {'*'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+d.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
 d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 
 %% mn (ap2: main pipeline control in a2p)
@@ -55,7 +56,8 @@ d.mn.oldcarl = 0; %run with some settings for carl's old project
 d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf"]; %list of subroutines that get plots (all by default)
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
-d.mn.pthpy = ''; %path to python executable  
+
+d.mn.user = '';
 
 d.mn.pthscopas.a = ''; %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
 d.mn.pthscopas.b = ''; %path to scopa in filesystem b (used to prevent conflicting edits to "same" lookup file in different filesystems) 
@@ -65,6 +67,8 @@ d.mn.pthscopas.e = ''; %path to scopa in filesystem e (used to prevent conflicti
 d.mn.pthscopas.f = ''; %path to scopa in filesystem f (used to prevent conflicting edits to "same" lookup file in different filesystems) 
 d.mn.pthscopas.g = ''; %path to scopa in filesystem g (used to prevent conflicting edits to "same" lookup file in different filesystems) 
 d.mn.pthscopas.h = ''; %path to scopa in filesystem h (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+
+d.mn.pthpy = ''; %path to python executable  
 
 %% daq (daqld: load, process daq)
 

@@ -1,4 +1,4 @@
-function [resp, roidat] = roimake(stack, pthstack, t, sampper, widyxz, pthpy, roimask, doplt, optroi)
+function [resp, roidat] = roimake(stack, pthstack, t, sampper, widyxz, pthpy, roimask, optroi)
 
 % see docs_roimake.m
 
@@ -11,6 +11,7 @@ arguments
     pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     roimask = []
     doplt = []
+    user = []
     optroi = []
 end
 
@@ -32,7 +33,7 @@ else
     doma = 0;
     docm = 0;
     doqc = 0;
-    doplt = 0; %force 0 here
+    doplt = 0;
 end
 regionex = optroi.regionex;
 

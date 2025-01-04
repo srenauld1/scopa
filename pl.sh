@@ -119,8 +119,8 @@ if [ "$do_autoallocate" == 0 ]; then
     mem_per_cpu_remove=20G
     time_remove=0:30:00
 
-    cpu_per_task_a2p=5
-    mem_per_cpu_a2p=12G
+    cpu_per_task_a2p=1
+    mem_per_cpu_a2p=10G
     time_a2p=0:20:00
 
     ############ SET PARAMS FOR DENOISING RESOURCE REQUEST (THIS INCLUDES GPU) ############

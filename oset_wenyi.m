@@ -6,3 +6,4 @@ function o = oset_wenyi(o)
 % o.sld.sp.it = -100; %specify how many frames of automatically plotted stack gif you want plotted (if you want it plotted when you run a2p)default (d.sp.it, in optdfsv.m) is -100, which is 100 equidistant frames; you can change that here
 
 
+o = odf(o, fill=1); %make sure o is filled

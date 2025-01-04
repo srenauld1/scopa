@@ -4,7 +4,7 @@ regionex = {'none'};
 
 o.mn.dodaq = 0; 
 o.mn.doftv = 0; 
-o.mn.doroi = 0; 
+o.mn.doroi = 1; 
 o.mn.dobmp = 0; 
 o.mn.dofit = 0; 
 o.mn.dopltx = 0; 
@@ -28,5 +28,7 @@ for m = 1:numel(regionex)
     o = odf(o, {'roi'}, regionex{m});
 
 end
+
+o = odf(o, fill=1); %make sure o is filled
 
 

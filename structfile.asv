@@ -189,7 +189,7 @@ if isfile(pth)
             if isfield(sfile, 'autonm')
                 error("s and nm are nonempty, so you are trying to write variable to file pth with name nm, but pth exists and previously used autonm, so you must use autonm here (pass nm=[] or just don't pass nm as argument)")
             else
-                fprintf("s and nm are nonempty, so if variable is not in file, writing it to file pth with name nm" + newline)
+                fprintf("s and nm are nonempty, so writing variable to file pth with name nm" + newline)
             end
         end
         nmfile = fieldnames(sfile);
@@ -231,9 +231,9 @@ else
                 end
             else
                 if isequal(s, sfile.(nmfile{k}))
-                    if strcmp([prefix nm], nmfile{k}) %if variable and name match
+                    if strcmp([prefix nm], nmfile{k}) %if variable matches but name doesn't
                         matchind = [matchind k];
-                    else %if variable matches but name doesn't
+                    else
                         error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmout)
                     end
                 end

@@ -38,4 +38,5 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
 
 end
 
+o = odf(o, fill=1); %make sure o is filled
 

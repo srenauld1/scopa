@@ -115,7 +115,7 @@ else
     otmp = otmp.roi;% otmp.roi.nrm.wavp = [0.3 0.6];
     otmp.regionex = 'inter';
 
-    [resp, roidat_new] = roimake(stack, '~/stacks/20241222-5/20241222_5_1_cmrg_dcdn_.mat', ti, sampper, widyxz, '', roimaskman, otmp); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    [resp, roidat_new] = roimake(stack, '~/stacks/20241222-5/20241222_5_1_cmrg_dcdn_.mat', ti, sampper, widyxz, '', roimaskman, [], otmp); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
 
     resp = resp{1};
     roipx = roidat_new{1}.roipx;

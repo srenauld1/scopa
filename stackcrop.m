@@ -1,11 +1,15 @@
 function [stack, croplim] = stackcrop(stack, pthstack, regionex)
 
-%output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple 
+%output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple
 
 pthscopa = getpathscopa();
-pthcroplim = [pthscopa 'croplim_*_.txt'];
+user = glb('user');
+if isempty(user)
+    error("you have not set glb('user')")
+end
+pthcroplim = [pthscopa 'croplim_' user '_*_.txt'];
 
-[~, nmstack] = fileparts(pthstack); 
+[~, nmstack] = fileparts(pthstack);
 if ~endsWith(nmstack, '_')
     nmstack = [nmstack '_'];
 end
@@ -16,7 +20,8 @@ if isempty(regionexdf)
     regionexdf = 'none'; %if you haven't set the global, glb('regionexdf'), set regionexdf here; this regionex will not prompt you to create regionex, it will just use the whole fov
 end
 
-if strcmp(regionex, regionexdf) 
+
+if strcmp(regionex, regionexdf)
 
     croplim.y = [1, size(stack, 1)];
     croplim.x = [1, size(stack, 2)];
@@ -24,8 +29,10 @@ if strcmp(regionex, regionexdf)
     croplim.t = [1, size(stack, 4)];
     croplim.c = [1, size(stack, 5)];
 
+    croplim = structfile(pthcroplim, s=croplim, nm=nmcroplim, useprefix=1);
+
 else
-    
+
     croplim = structfile(pthcroplim, s=[], nm=nmcroplim, useprefix=1);
 
     if isempty(croplim)

@@ -9,6 +9,11 @@ arguments
     vbin = [] %vbin to recover id (and expand)
 end
 
+user = glb('user');
+if isempty(user)
+    error("you have not set glb('user')")
+end
+
 % id_capable_vbin = {'roi', 'mf', 'bmp'}; %only these vbin can be distributed (optdist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
 id_capable_vbin = {'roi'}; %only these vbin can be distributed (optdist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
 
@@ -37,7 +42,7 @@ for k = 1:numel(vbin)
 
     %%%%%%%% FIND OPTIONS FILE (FOR THIS FILESYSTEM) FOR A SINGLE vbin %%%%%%%%
 
-    pthoptpat = [pthscopa 'opt' vbintmp '_*_.txt'];
+    pthoptpat = [pthscopa 'opt' vbintmp '_' user '_*_.txt'];
 
     for m = 1:numel(o)
 

@@ -4,37 +4,31 @@ function [o, oflat] = oset(specin, opt)
 % edit docs_oset.m
 
 arguments
-    specin = [] % specin can be empty, or not passed as argument, and will search for file using fspc* below; specin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, make files=0
+    specin = '' % specin can be empty, or not passed as argument, and will search for file using fspc* below; specin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, make files=0
     opt.files = 1 % find recordings using specin (or o.spec, if specin is empty)
 end
+otmp.spec.pth = specin;
 files = opt.files;
 
 
-%%%% USER NAME (to route to different oset_* files below) %%%%
+%%%% user, path to scopa in different filesystems, and python path %%%%
 
-user = 'carl';
+otmp.mn.user = 'cw'; %cw, wz, jf; (to route to different oset_* files below)
+otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to scopa in filesystem a
+otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to scopa in filesystem b
+otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py)
 
+%%%% recording specifiers (used to find recordings if there is no input to a2p) %%%%
 
-%%%% path to scopa in different filesystems (used to prevent conflicts in writing to file; valid filesystem ids are a,b,c,d,e,f,g,h) %%%%
-
-otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to scopa in filesystem a 
-otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to scopa in filesystem b 
-otmp.mn.pthscopas.c = fullfile('C:\', 'Users', 'Wilson_Lab', 'Documents', 'GitHub', 'scopa', filesep); %path to scopa in filesystem c 
-otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py) 
-
-%%%% user-defined recording specifiers (used to find recordings if there is no input to a2p) %%%%
-
-otmp.spec.pthparent_local = '/Users/wienecke/stacks';
+otmp.spec.pthparent_local = fullfile(filesep, 'Users', 'wienecke', 'stacks', filesep);
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
-if isempty(specin) %if you're running a2p without input arguments (ie if specin is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not specin is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    otmp.spec.recdate = {'202412*'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
+if isempty(otmp.spec.pth) %if you're running a2p without input arguments (ie if otmp.spec.pth is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not otmp.spec.pth is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
+    otmp.spec.recdate = {'20241218'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.fly = {'3'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.trial = {'2'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.suffix = {'cmrg'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    otmp.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
-    otmp.spec.pth = '';
-elseif iscell(specin) || ischar(specin) %if input to a2p is not empty, and is not struct
-    otmp.spec.pth = specin;
 end
 
 
@@ -44,57 +38,49 @@ otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
 
 %%%% loop over found files in otmp, setting options depending on recording (and user) %%%%
 
-for k = 1:numel(otmp) 
+for k = 1:numel(otmp)
 
-    if strcmp(user, 'wenyi')
-        
-        recs_wenyi = {''}; %empty string means every recording
+    switch otmp(1).mn.user
 
-        if contains(otmp(k).id.pthstack, recs_wenyi)
+        case 'wz'
 
-            o(k) = oset_wenyi(otmp(k));
+            if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
 
-        end
+                o(k) = oset_wenyi(otmp(k));
 
-    elseif strcmp(user, 'jingxuan')
-        
-        recs_jingxuan = {''}; %empty string means every recording
+            end
 
-        if contains(otmp(k).id.pthstack, recs_jingxuan)
+        case 'jf'
 
-            o(k) = oset_jingxuan(otmp(k));
+            if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
 
-        end
+                o(k) = oset_jingxuan(otmp(k));
 
-    elseif strcmp(user, 'carl')
+            end
 
-        recs_ganopb = {'202306', '20241208_2'};
-        recs_ganoeb = {'202311', '202411', '20241207'};
-        recs_fb8c = {'20241209', '20241221', '20241222'};
-        recs_mito = {'mito'};
-        recs_t5 = {'2211'};
+        case 'cw'
 
-        if contains(otmp(k).id.pthstack, recs_ganopb)
+            if contains(otmp(k).id.pthstack, {'ganopb'})
 
-            o(k) = oset_ganopb(otmp(k));
+                o(k) = oset_ganopb(otmp(k));
 
-        elseif contains(otmp(k).id.pthstack, recs_ganoeb)
+            elseif contains(otmp(k).id.pthstack, {'ganoeb'})
 
-            o(k) = oset_ganoeb(otmp(k));
+                o(k) = oset_ganoeb(otmp(k));
 
-        elseif contains(otmp(k).id.pthstack, recs_fb8c)
+            elseif contains(otmp(k).id.pthstack, {'fb8c'})
 
-            o(k) = oset_fb8c(otmp(k));
+                o(k) = oset_fb8c(otmp(k));
 
-        elseif contains(otmp(k).id.pthstack, recs_mito)
+            elseif contains(otmp(k).id.pthstack, {'mito'})
 
-            o(k) = oset_mito(otmp(k));
+                o(k) = oset_mito(otmp(k));
 
-        elseif contains(otmp(k).id.pthstack, recs_t5)
+            elseif contains(otmp(k).id.pthstack, {'f91g'})
 
-            o(k) = oset_t5(otmp(k));
+                o(k) = oset_t5(otmp(k));
 
-        end
+            end
 
     end
 
@@ -102,10 +88,18 @@ for k = 1:numel(otmp)
 end
 
 
+%%%% remove empty options structs (in case recording matches otmp.spec but not contains* criterion) %%%%
 
-%%%% finalize and organize options struct %%%%
+rmidx = [];
+for k = 1:numel(o)
+    if all(structfun(@isempty, o(k)))
+        rmidx = [rmidx k];
+    end
+end
+o(rmidx) = []; %remove empty
 
-o = odf(o, fill=1); % final call to odf, with fill=1 to make sure o is filled
+
+%%%% finalize/organize options struct %%%%
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 

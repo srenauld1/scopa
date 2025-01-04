@@ -1,46 +1,6 @@
 {
   "a1": {
     "docm": 0,
-    "doma": 0,
-    "domm": 0,
-    "doqc": 0,
-    "imhsv": {
-      "fg": "allrois",
-      "hrange_in_manual": [],
-      "hrange_out_manual": [0,0.6],
-      "huenorm": "native",
-      "hueshift": 0,
-      "huestr": "",
-      "ignorehue": 0,
-      "ignoresat": 0,
-      "ignoreval": 0,
-      "mdlname": "",
-      "satnorm": "relative",
-      "srange_in_manual": [],
-      "srange_out_manual": [0,1],
-      "valnorm": "relative",
-      "vrange_in_manual": [],
-      "vrange_out_manual": [0,1]
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "regionex": "none",
-    "sp": {
-      "dr": [0,1],
-      "ir": [],
-      "it": -100,
-      "iz": [],
-      "roi_color": [1,0,0],
-      "roialpha": 0.3
-    }
-  },
-  "a2": {
-    "docm": 0,
     "doma": 1,
     "domm": 1,
     "doqc": 0,

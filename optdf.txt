@@ -195,7 +195,8 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025010116503956"
+    "timestr": "2025010319194904",
+    "user": ""
   },
   "nestvalid": [
     "spec",
@@ -340,8 +341,11 @@
     "recdate": [
       "*"
     ],
+    "substr": [
+      "*"
+    ],
     "suffix": [
-      "raw"
+      "*"
     ],
     "suffixvalid": [
       "raw",

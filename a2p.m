@@ -4,7 +4,7 @@
 function a2p(specin)
 
 arguments
-    specin = [] %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset
+    specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset
 end
 
 clear glb %clear globals
@@ -30,15 +30,16 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load stim (daq)
 
-    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; stimvid = []; %init some optional variables
+    ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; ts.ball = []; ts.vis = []; %init some optional variables
+    ts.t = md.sampper * [1:md.sz_crop(4)];
+    ts.epochinds = ones(numel(ts.t), 1);
+
     if o.mn.oldcarl
 
         [ts.vis.(o.carl.feat), stimvid] = featld(o.id.recid, o.carl.stimtype, o.carl.feat, ...
             pthparent_feat=pth.parent_feat, rep=1, feat2=[], pthsv_plot=[], doplt=0, ...
             getgrid=1, vistype='plane', it=[1:3:250], gridres=256, flipped=0, downsample_template=1, ...
             crop_edges=1, pth_template=pth.template);
-        ts.t = md.sampper * [1:md.sz_crop(4)];
-        ts.epochinds = ones(numel(ts.t), 1);
 
     else
 
@@ -109,7 +110,7 @@ for k = 1:numel(oa) % loop over recordings
     if o.mn.doroi
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
-            [ts.roi.(fn{m}), roidat.(fn{m})] = roimake(stack, pth.stack, ts.t, md.sampper, md.widyxz, pth.py, [], o.roi.(fn{m})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            [ts.roi.(fn{m}), roidat.(fn{m})] = roimake(stack, pth.stack, ts.t, md.sampper, md.widyxz, pth.py, [], [], o.roi.(fn{m})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 

@@ -91,8 +91,8 @@ if files
     end
     [~, flatfntmp, ~] = structflat(oin, 'prefix', 'o');
     if any(strcmp(flatfntmp, 'spec.pth')) && ~isempty(oin.spec.pth)
-        if (any(strcmp(flatfntmp, 'spec.recdate')) && ~isempty(oin.spec.recdate)) || (any(strcmp(flatfntmp, 'spec.fly')) && ~isempty(oin.spec.fly)) || (any(strcmp(flatfntmp, 'spec.trial')) && ~isempty(oin.spec.trial)) || (any(strcmp(flatfntmp, 'spec.suffix')) && ~isempty(oin.spec.suffix))
-            error("in file mode, cannot pass in spec.pth and any of spec.recdate, spec.fly, spec.trial, spec.suffix")
+        if (any(strcmp(flatfntmp, 'spec.recdate')) && ~isempty(oin.spec.recdate)) || (any(strcmp(flatfntmp, 'spec.fly')) && ~isempty(oin.spec.fly)) || (any(strcmp(flatfntmp, 'spec.trial')) && ~isempty(oin.spec.trial)) || (any(strcmp(flatfntmp, 'spec.suffix')) && ~isempty(oin.spec.suffix)) || (any(strcmp(flatfntmp, 'spec.substr')) && ~isempty(oin.spec.substr))
+            error("in file mode, cannot pass in spec.pth and any of spec.recdate, spec.fly, spec.trial, spec.suffix, spec.substr")
         end
     end
 end
@@ -111,6 +111,7 @@ if ~files %if not in files mode, update default spec to be empty
     d.spec.fly = '';
     d.spec.trial = '';
     d.spec.suffix = '';
+    d.spec.substr = '';
     d.spec.match = '';
 end
 
@@ -228,7 +229,7 @@ else
                 eval(['oindeepest.' vbindeepest ' = oin.' vbin{k} ';']); %use eval to succinctly extract nested field
             else %if the nesting doesn't exist in oin, create it with defaults in the deepest layer, and nothing above
                 if isfield(d, vbindeepest)
-                    fprintf("you input vbin '" + vbin{k} + "', but '" + vbindeepest + "' does not exist in your input to odf, so creating it and populating with default values" + newline)
+                    % fprintf("you input vbin '" + vbin{k} + "', but '" + vbindeepest + "' does not exist in your input to odf, so creating it and populating with default values" + newline)
                 else
                     error(sprintf("d." + vbindeepest) + " does not exist")
                 end
@@ -252,7 +253,7 @@ else
                 oin = rmfield(oin, vbin{k});
             else
                 if isfield(d, vbin{k})
-                    fprintf("note: " + vbin{k} + " does not exist in your input to odf, creating it and populating with all default values" + newline)
+                    % fprintf("note: " + vbin{k} + " does not exist in your input to odf, creating it and populating with all default values" + newline)
                     oinsub.(vbin{k}) = d.(vbin{k}); %use all defaults vbin{k} is not in oin
                 else
                     error(sprintf("d." + vbin{k}) + " does not exist")
@@ -297,13 +298,14 @@ if files
         o.spec.fly = '';
         o.spec.trial = '';
         o.spec.suffix = '';
+        o.spec.substr = '';
         o.spec.match = '';
     end
 
-    fprintf("RUNNING odf with files true, SEARCHING FOR FILES" + newline)
+    % fprintf("RUNNING odf with files true, SEARCHING FOR FILES" + newline)
 
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
-        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixvalid=o.spec.suffixvalid, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, match=o.spec.match); %find files matching spec
+        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixvalid=o.spec.suffixvalid, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, substr=o.spec.substr, match=o.spec.match); %find files matching spec
     else
         rectmp = stackfind(pth=o.spec.pth, suffixvalid=o.spec.suffixvalid); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
         if isempty(rectmp)
@@ -326,7 +328,7 @@ if files
 
 else
     
-    fprintf("RUNNING odf with files false, NOT SEARCHING FOR FILES, WILL KEEP ANY EXISTING FILES" + newline)
+    % fprintf("RUNNING odf with files false, NOT SEARCHING FOR FILES, WILL KEEP ANY EXISTING FILES" + newline)
 
 end
 
@@ -397,9 +399,9 @@ if fill
     end
 
     %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%     
-    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('pthscopas'))
+    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('pthscopas')) && isempty(glb('user'))
         if ( isfield(o, 'mn') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, pthscopas=o.mn.pthscopas)
+            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, pthscopas=o.mn.pthscopas, user=o.mn.user)
         end
     end
     
@@ -414,6 +416,12 @@ if fill
 
     % now check for any problems 
 
+    if isempty(o.mn.user)
+        error('o.mn.user cannot be empty')
+    end
+    if isempty(regexp(o.mn.user, '^[a-zA-Z]+$'))
+        error('o.mn.user can only contain alphabetic characters')
+    end
 
     fn = fieldnames(o.mn.pthscopas);
     cnt = 0;
