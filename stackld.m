@@ -4,6 +4,8 @@
 % load a single image stack (pthstack) output by scopa 'pre' pipeline, or the raw stack output by scanimage
 % if mat doesn't exist, will read tif and save as mat (reading large tif uses TIFFStack library, in scopa/dependencies)
 % can also plot (but not output) multiple stacks output by different stages in the scopa preprocessing pipeline (suffixplt) 
+% stack plots create temporary variables for stacks (subset according to user yxztc index inputs) one at a time, in a loop, then plots the accumulated stacks variable, because opening multiple stacks at once could require a lot of memory 
+% (if you're plotting the whole stack though, this strategy is a disadvantage)
 
 function stack = stackld(pthstack, opt)
 
@@ -16,8 +18,9 @@ arguments
     opt.channel_save = []
     opt.stackdtype = 'uint16'
     opt.chanuse = 1
-    opt.tcrop = [0,0] %how many frames to crop from [beginning,end] of trial
     opt.cropfb = 1 %whether to crop flyback frames (only applied to raw tif)
+    opt.tcrop = [0,0] %how many frames to crop from [beginning,end] of trial
+    opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
     opt.zerostack = 0
     opt.clip = []
     opt.smlenpx = [];
@@ -38,8 +41,9 @@ numslice_withflyback = opt.numslice_withflyback;
 channel_save = opt.channel_save;
 stackdtype = opt.stackdtype;
 chanuse = opt.chanuse;
-tcrop = opt.tcrop;
 cropfb = opt.cropfb;
+tcrop = opt.tcrop;
+savemem = opt.savemem;
 zerostack = opt.zerostack;
 clip = opt.clip;
 smlenpx = opt.smlenpx;
@@ -171,11 +175,12 @@ for spi = 1:numel(pthstackall)
         end
     elseif endsWith(pthstackall{spi}, '.tif')
         stack = tif2mat(pthstackall{spi}, ...
-            sz_yxzt=sz, ...
+            yxzt=sz, ...
             numslice_withflyback=numslice_withflyback, ...
             channel_save=channel_save,...
             cropfb=cropfb, ...
-            tcrop=tcrop);
+            tcrop=tcrop, ...
+            savemem=savemem);
     else
         error("pthstackall must end with tif or mat");
     end
@@ -202,6 +207,8 @@ for spi = 1:numel(pthstackall)
         stack = stacksmooth(stack, method=smmthd, smlenpx=smlenpx, smlensec=smlensec, imrate=imrate);
     end
 
+    glb(1, stackmnt=stacktype(mean(stack, 4), class(stack))); %set mean t stack as global since it's used repeatedly, and can be a little slow to compute
+
 
     if doplt && any(strcmp(suffixld{spi}, suffixplt))
 
@@ -213,7 +220,7 @@ for spi = 1:numel(pthstackall)
         end
 
         stacktmp{cnt, 1} = stack(:,:,iz,it,:); %make sure it's indexed into first dimension
-        stackmntmp{cnt, 1} = mean(stack, 4, 'native');  %make sure it's indexed into first dimension
+        stackmntmp{cnt, 1} = single(mean(stack, 4));  %make sure it's indexed into first dimension
 
         if ~strcmp(pthstack, pthstackall{spi})
             stack = []; %remove unless it's the stack for analysis outside this function

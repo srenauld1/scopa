@@ -59,7 +59,7 @@ if domm
     else
         oneroi = 0;
     end
-    roimask = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=optroi.mm.chan, chancp=optroi.mm.chancp, maskname=optroi.mm.maskname);
+    roimask = roidraw(stack, pthstack=pthstack, regionex=regionex, oneroi=oneroi, chan=optroi.mm.chan, chancp=optroi.mm.chancp, maskname=optroi.mm.maskname);
 else
     if ~maskinput
         roimask = cell(numchan,1); %make it empty if you didn't draw or pass in mask

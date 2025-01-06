@@ -31,7 +31,7 @@ mask_roim_all = opt.mask_allroi;
 
 
 numbins = 20;
-stackmnt = mean(stack, 4, 'native');
+stackmnt = single(mean(stack, [4 5]));
 
 
 %% prepare vars

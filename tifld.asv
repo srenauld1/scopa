@@ -14,7 +14,7 @@ function stack = tifld(pthtif, opt)
 %TIFFStack seems to fail reading floats
 
 %option to just read a subset of z and t indices to save memory/time (iz, it)
-%sz(4) and sz(5) must match z and t dimensions of tif
+%fullsize_z_read_from and fullsize_t_read_from must match z and t dimensions of tif
 %tifs from scopa can be 3d or 4d and can be read here without issue
 
 %cannot reshape stack from its 3d form and then subset with inds*
@@ -25,7 +25,7 @@ function stack = tifld(pthtif, opt)
 
 arguments
     pthtif
-    opt.sz = []
+    opt.size_read_from = []
     opt.iy = []
     opt.ix = []
     opt.ic = []
@@ -34,14 +34,14 @@ arguments
     opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 end
 savemem = opt.savemem;
-sz = opt.sz;
+size_read_from = opt.size_read_from;
 iy = opt.iy;
 ix = opt.ix;
 ic = opt.ic;
 iz = opt.iz;
 it = opt.it;
 
-if isempty(sz)
+if isempty(size_read_from)
     stack_size_is_known = 0;
 else
     stack_size_is_known = 1;
@@ -49,8 +49,8 @@ end
 
 if savemem
     if stack_size_is_known
-        if isequal(iy, 1:sz(1)) && isequal(ix, 1:sz(2)) && isequal(iz, 1:sz(3)) && isequal(ic, 1:sz(4)) && isequal(it, 1:sz(5))
-            fprintf("savemem is true but all inds_*_read_from are equal to their corresponding sz, so you are reading in the entire stack and will not save memory with memmap, so changing savemem to false and using faster tif reader" + newline)
+        if isequal(iy, 1:size_read_from(1)) && isequal(ix, 1:size_read_from(2)) && isequal(iz, 1:size_read_from(3)) && isequal(ic, 1:size_read_from(4)) && isequal(it, 1:size_read_from(5))
+            fprintf("savemem is true but all inds_*_read_from are equal to their corresponding size_read_from, so you are reading in the entire stack and will not save memory with memmap, so changing savemem to false and using faster tif reader" + newline)
             savemem = 0;
         end
     end
@@ -61,19 +61,19 @@ if savemem
 end
 
 if stack_size_is_known
-    if ~all(iy >= 1 & iy <= sz(1))
+    if ~all(iy >= 1 & iy <= size_read_from(1))
         error("REQUESTED iy are not subset of available stack")
     end
-    if ~all(ix >= 1 & ix <= sz(2))
+    if ~all(ix >= 1 & ix <= size_read_from(2))
         error("REQUESTED ix are not subset of available stack")
     end
-    if ~all(ic >= 1 & ic <= sz(3))
+    if ~all(ic >= 1 & ic <= size_read_from(3))
         error("REQUESTED ic are not subset of available stack")
     end
-    if ~all(iz >= 1 & iz <= sz(4))
+    if ~all(iz >= 1 & iz <= size_read_from(4))
         error("REQUESTED iz are not subset of available stack")
     end
-    if ~all(it >= 1 & it <= sz(5))
+    if ~all(it >= 1 & it <= size_read_from(5))
         error("REQUESTED it are not subset of available stack")
     end
 else
@@ -101,8 +101,8 @@ if do_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is
         ny = size(stack, 1);
         nx = size(stack, 2);
         if stack_size_is_known %if you have access to metadata before entering this function
-            if ~isequal(prod(sz), numel(stack))
-                error("prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead")
+            if ~isequal(prod(size_read_from), numel(stack))
+                error("prod(size_read_from), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead")
             end
         else %e.g. if you don't have metadata
             if isfield(mdtif.tifinfo, 'Software') && contains(mdtif.tifinfo.Software, 'hChannels.channelSave')
@@ -111,12 +111,13 @@ if do_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is
                 sistr = mdtif.tifinfo.ImageDescription;
             end
             if exist('sistr', 'var') %hack to not put a try catch block within the larer more important try catch (and not repeat several lines of code)
+                nc = sistrparse(sistr, 'channelsActive');
                 nc = numel(sistrparse(sistr, 'channelSave'));
                 nz = sistrparse(sistr, 'numFramesPerVolumeWithFlyback');
                 nt = sistrparse(sistr, 'actualNumVolumes');
                 sztmp = [ny, nx, nc, nz, nt];
                 if isequal(prod(sztmp), numel(stack))
-                    sz = sztmp;
+                    size_read_from = sztmp;
                     stack_size_is_known = 1;
                 else
                     error("did not pass metadata into tifld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
@@ -150,20 +151,23 @@ end
 
 if stack_size_is_known
 
+    fullsize_c_read_from = size_read_from(3);
+    fullsize_z_read_from = size_read_from(4);
+    fullsize_t_read_from = size_read_from(5);
     if isempty(ic)
-        ic = 1:sz(3); %this default can only be assigned if stack_size_is_known==1
+        ic = 1:fullsize_c_read_from; %this default can only be assigned if stack_size_is_known==1
     end
     if isempty(iz)
-        iz = 1:sz(4); %this default can only be assigned if stack_size_is_known==1
+        iz = 1:fullsize_z_read_from; %this default can only be assigned if stack_size_is_known==1
     end
     if isempty(it)
-        it = 1:sz(5); %this default can only be assigned if stack_size_is_known==1
+        it = 1:fullsize_t_read_from; %this default can only be assigned if stack_size_is_known==1
     end
 
     inds_t_read_from_all = repelem(it,numel(ic)*numel(iz));
     inds_z_read_from_all = repmat(repelem(iz,numel(ic)), [1 numel(it)]);
     inds_c_read_from_all = repmat(ic, [1 numel(iz)*numel(it)]);
-    inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
+    inds_czt_read_from = sub2ind([fullsize_c_read_from, fullsize_z_read_from, fullsize_t_read_from], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
 
     stack = stack(iy, ix, inds_czt_read_from); %if using tiffstack, this reads into memory; stack = stack just copies the stack object so cant do that
     stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
@@ -172,7 +176,7 @@ else
 
     stack = stack(iy, ix, :); %if using tiffstack, this reads into memory; if you don't know stack size, you can't subset z or t in stack;  stack = stack just copies the stack object so cant do that
 
-    sprintf("WARNING, sz was not passed as argument, or was empty (you did not read metadata before entering this function), or there was a problem reading raw tif metadata; output tif is 3d, and may have collapsed czt dimensions")
+    sprintf("WARNING, fullsize_z_read_from AND fullsize_t_read_from were not passed as arguments, or are empty, or there was a metadata problem; output tif is 3d, and may have collapsed czt dimensions")
 
 end
 

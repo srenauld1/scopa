@@ -83,7 +83,7 @@ savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
 pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
 
 stack = stack(:,:,:,:,chanuse);
-stackmnt = mean(stack, 4, 'native');
+stackmnt = single(mean(stack, 4));
 
 numxpix = size(stackmnt,2);
 numypix = size(stackmnt,1);

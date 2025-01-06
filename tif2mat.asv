@@ -19,15 +19,15 @@ arguments
     opt.yxzt = [] % known size of stack, dim order yxzt
     opt.numslice_withflyback = []
     opt.channel_save = 1 %saved channels
-    opt.chanuse = [1,2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
+    opt.chanuse = [1 2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
     opt.cropfb = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
-    opt.tcrop = [0,0] %num frames to crop from [start, end]
+    opt.tcrop = [0, 0] %num frames to crop from [start, end]
     opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
-    opt.iy = []
-    opt.ix = []
-    opt.ic = []
-    opt.iz = []
-    opt.it = []
+    opt.inds_y_read_from = []
+    opt.inds_x_read_from = []
+    opt.inds_c_read_from = []
+    opt.inds_z_read_from = []
+    opt.inds_t_read_from = []
 end
 
 
@@ -38,14 +38,14 @@ chanuse = opt.chanuse;
 cropfb = opt.cropfb;
 tcrop = opt.tcrop;
 savemem = opt.savemem;
-iy = opt.iy;
-ix = opt.ix;
-ic = opt.ic;
-iz = opt.iz;
-it = opt.it;
+inds_y_read_from = opt.inds_y_read_from;
+inds_x_read_from = opt.inds_x_read_from;
+inds_c_read_from = opt.inds_c_read_from;
+inds_z_read_from = opt.inds_z_read_from;
+inds_t_read_from = opt.inds_t_read_from;
 
-if ~isempty(iz) && ~isempty(cropfb)
-    sprintf("WARNING, iz is nonempty AND cropfb is true; ignoring cropfb to give priority to the user-supplied iz, which may or may not crop flyback")
+if ~isempty(inds_z_read_from) && ~isempty(cropfb)
+    sprintf("WARNING, inds_z_read_from is nonempty AND cropfb is true; ignoring cropfb to give priority to the user-supplied inds_z_read_from, which may or may not crop flyback")
 end
 
 [~, fn, ext] = fileparts(pthtif);
@@ -66,30 +66,30 @@ if stack_size_is_known
         size_read_from = [yxzt(1), yxzt(2), numel(channel_save), yxzt(3), yxzt(4)]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
     end
 
-    if isempty(iy)
-        iy = 1:size_read_from(1); %can choose any subset of y, can be discontiguous;
+    if isempty(inds_y_read_from)
+        inds_y_read_from = 1:size_read_from(1); %can choose any subset of y, can be discontiguous;
     end
-    if isempty(ix)
-        ix = 1:size_read_from(2); %can choose any subset of x, can be discontiguous;
+    if isempty(inds_x_read_from)
+        inds_x_read_from = 1:size_read_from(2); %can choose any subset of x, can be discontiguous;
     end
-    if isempty(ic)
-        ic = 1:size_read_from(3); %can choose any subset of t, can be discontiguous
+    if isempty(inds_c_read_from)
+        inds_c_read_from = 1:size_read_from(3); %can choose any subset of t, can be discontiguous
     end
-    if isempty(iz)
+    if isempty(inds_z_read_from)
         if cropfb
-            iz = 1:yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:yxzt(3) will skip flyback frames for raw, while 1:size_z_read_from will read flyback frames;
+            inds_z_read_from = 1:yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:yxzt(3) will skip flyback frames for raw, while 1:size_z_read_from will read flyback frames;
         else
-            iz = 1:size_read_from(4); %read all frames of not cropfb
+            inds_z_read_from = 1:size_read_from(4); %read all frames of not cropfb
         end
     end
-    if isempty(it)
-        it = 1:size_read_from(5); %can choose any subset of t, can be discontiguous
+    if isempty(inds_t_read_from)
+        inds_t_read_from = 1:size_read_from(5); %can choose any subset of t, can be discontiguous
     end
 
 else
     size_read_from = [];
-    if ~isempty(ic) || ~isempty(iz) || ~isempty(it)
-        error("you must know stack size to pass nonempty iz or it or ic")
+    if ~isempty(inds_c_read_from) || ~isempty(inds_z_read_from) || ~isempty(inds_t_read_from)
+        error("you must know stack size to pass nonempty inds_z_read_from or inds_t_read_from or inds_c_read_from")
     end
 end
 
@@ -97,25 +97,25 @@ try
     stack = tifld(pthtif, ...
         savemem = savemem, ...
         size_read_from = size_read_from, ...
-        iy = iy, ...
-        ix = ix, ...
-        ic = ic, ...
-        iz = iz, ...
-        it = it);
+        inds_y_read_from = inds_y_read_from, ...
+        inds_x_read_from = inds_x_read_from, ...
+        inds_c_read_from = inds_c_read_from, ...
+        inds_z_read_from = inds_z_read_from, ...
+        inds_t_read_from = inds_t_read_from);
 catch ME
     if strcmp(ME.message, '*** TIFFStack: Index exceeds stack dimensions.')
         if ~( contains(fn, 'trial_') && contains(fn, '-') ) && ~contains(fn, 'raw')
             fprintf("you may have discarded a channel in creating " + fn + ext + " trying to load again, this time as single channel" + newline)
             size_read_from(3) = 1;
-            ic = 1;
+            inds_c_read_from = 1;
             chanuse = 1;
             stack = tifld(pthtif, ...
                 size_read_from = size_read_from, ...
-                iy = iy, ...
-                ix = ix, ...
-                ic = ic, ...
-                iz = iz, ...
-                it = it);
+                inds_y_read_from = inds_y_read_from, ...
+                inds_x_read_from = inds_x_read_from, ...
+                inds_c_read_from = inds_c_read_from, ...
+                inds_z_read_from = inds_z_read_from, ...
+                inds_t_read_from = inds_t_read_from);
         end
     else
         rethrow(ME);

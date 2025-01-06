@@ -14,8 +14,7 @@ if isempty(optsld)
     optsld = otmp.sld;
 end
 
-if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
-    
+if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py 
     fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using python function mdsisv" + newline)
     pthrawpt = [id.dirstack id.recid '_raw_.tif'];
     pthraw = rdir(pthrawpt);
@@ -28,47 +27,37 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
     end
     pthraw = pthraw.name;
 
-    dopy = 1;
     if isempty(pthpy)
         pthpy = glb('pthpy');
         if isempty(pthpy)
-            fprintf("you have not set glb('pthpy'), and you didn't pass in argument pthpy; using tifreadfast to extract metadata from raw file" + newline)
-            dopy = 0;
+            fprintf("you have not set glb('pthpy'), and you didn't pass in argument pthpy; using " + newline)
         end
     end
 
-    if dopy
+    pthscopa = getpathscopa();
 
-        pthscopa = getpathscopa();
-
-        try %run python directly from matlab (ie not using system command to control a shell)
-            petmp = pyenv;
-            if ~strcmp(petmp.Executable, pthpy) && ~strcmp(petmp.ExecutionMode, 'OutOfProcess')
-                try
-                    pyenv(ExecutionMode="OutOfProcess")
-                    pyenv(Version=pthpy)
-                catch ME
-                    fprintf(ME.message + newline)
-                    fprintf("do not use pyenv in the current matlab session with a different Version or ExecutionMode than those specified here" + newline)
-                end
+    try %run python directly from matlab (ie not using system command to control a shell)
+        petmp = pyenv;
+        if ~strcmp(petmp.Executable, pthpy) && ~strcmp(petmp.ExecutionMode, 'OutOfProcess')
+            try
+                pyenv(ExecutionMode="OutOfProcess")
+                pyenv(Version=pthpy)
+            catch ME
+                fprintf(ME.message + newline)
+                fprintf("do not use pyenv in the current matlab session with a different Version or ExecutionMode than those specified here" + newline)
             end
-            if count(py.sys.path,pthscopa) == 0
-                insert(py.sys.path,int32(0),pthscopa);
-            end
-            py.mdsisv.mdsisv(pthraw, pthmd)
-        catch ME %alternative that uses system command
-            fprintf(ME.message + newline)
-            fprintf("RUNNING PYTHON DIRECTLY FAILED, USING system TO RUN PYTHON INSTEAD")
-            pyfn = [pthscopa 'mdsisv_mat.py'];
-            syscmd = [pthpy ' ' pyfn ' ' pthraw ' ' pthmd];
-            system(syscmd)
         end
-
-    else
-
-
+        if count(py.sys.path,pthscopa) == 0
+            insert(py.sys.path,int32(0),pthscopa);
+        end
+        py.mdsisv.mdsisv(pthraw, pthmd)
+    catch ME %alternative that uses system command
+        fprintf(ME.message + newline)
+        fprintf("RUNNING PYTHON DIRECTLY FAILED, USING system TO RUN PYTHON INSTEAD")
+        pyfn = [pthscopa 'mdsisv_mat.py'];
+        syscmd = [pthpy ' ' pyfn ' ' pthraw ' ' pthmd];
+        system(syscmd)
     end
-
 end
 
 md = structtxtld(pthmd);

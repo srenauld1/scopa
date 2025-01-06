@@ -15,12 +15,13 @@ celsz = opt.celsz;
 do3d = opt.do3d;
 
 
-
-
 %% preprocess stackmnt, make mean stackmnt
 
-stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
-stackmnt = rescale(stackmnt); 
+stackmnt = glb('stackmnt');
+if isempty(stackmnt)
+    stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
+end
+stackmnt = rescale(stackmnt);
 numel_stackmnt = numel(stackmnt);
 
 if isempty(roimaskin)

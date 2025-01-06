@@ -1,7 +1,7 @@
 function pth = pthmake(o)
 
 
-%%set up filenames for a2p
+%%set up filenames for a2p; most a2p filenames are set here for convenience (should they all be? all required files are here i think)
 
 id = o.id;
 
