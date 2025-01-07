@@ -83,7 +83,6 @@ for k = 1:numel(oa) % loop over recordings
 
     stack = stackld(pth.stack, o.sld);
 
-
     %% create/load/select rois/responses for each optid
 
     if o.mn.doroi

@@ -29,7 +29,7 @@ suffixplt = opt.suffixplt;
 it = opt.sp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.sp.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 dr = opt.sp.dr;
-doplt = 0;
+doplt = [];
 
 suffixplt = convertStringsToChars(suffixplt);
 if ~isempty(suffixplt) && ~iscell(suffixplt)
