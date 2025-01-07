@@ -186,7 +186,7 @@
     "pltvis": 1,
     "pthpy": "",
     "pthscopas": {
-      "a": "",
+      "a": "/youforgottossetpthscopas/",
       "b": "",
       "c": "",
       "d": "",
@@ -195,8 +195,8 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025010421361811",
-    "user": ""
+    "timestr": "2025010617002896",
+    "user": "youforgottossetuser"
   },
   "nestvalid": [
     "spec",
@@ -205,6 +205,7 @@
     "sld",
     "ftv",
     "roi",
+    "bmp",
     "mf",
     "pltx",
     "carl",
@@ -218,13 +219,16 @@
     "mf.tg",
     "mf.sp",
     "mf.tp",
-    "bmp",
     "bmp.mf",
     "bmp.mf.tg",
     "bmp.mf.opg",
     "bmp.mf.opl",
     "sld.sp",
-    "pltx.tg"
+    "pltx.tg",
+    "copybin",
+    "filled",
+    "id",
+    "nestvalid"
   ],
   "nrm": {
     "channorm": 0,
@@ -332,22 +336,14 @@
     "roialpha": 0.3
   },
   "spec": {
-    "fly": [
-      "*"
-    ],
+    "fly": "",
     "match": "each",
     "pth": "",
     "pthparent_local": "/Users/wienecke/stacks",
     "pthparent_o2": "",
-    "recdate": [
-      "*"
-    ],
-    "substr": [
-      "*"
-    ],
-    "suffix": [
-      "*"
-    ],
+    "recdate": "",
+    "substr": "",
+    "suffix": "",
     "suffixvalid": [
       "raw",
       "cmrg",
@@ -356,9 +352,7 @@
       "bksb_cmrg_dcdn",
       "bksb_cmrg_dcdn_nosn"
     ],
-    "trial": [
-      "*"
-    ]
+    "trial": ""
   },
   "tg": {
     "domain": [],

@@ -2,7 +2,7 @@ function stack = tif2mat(pthtif, opt)
 
 %{
 
-convert tif stack (yxczt) to mat stack (yxztc) and save
+convert tif stack yxczt to yxztc, optionally crop  and save
 will read entire stack if yxzt is empty
 will read subset of stack if any inds_*_read_from are nonempty, but for c, z, and t dimensions, these require yxzt be nonempty
 option to crop flyback (cropfb)
@@ -12,28 +12,20 @@ metadata quantities can be read from tif if it's the raw output from scanimage, 
 
 %}
 
-
-
 arguments
     pthtif
-    opt.yxzt = [] % known size of stack, dim order yxzt
-    opt.numslice_withflyback = []
-    opt.channel_save = 1 %saved channels
     opt.chanuse = [1,2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
     opt.cropfb = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
     opt.tcrop = [0,0] %num frames to crop from [start, end]
     opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
-    opt.iy = []
-    opt.ix = []
-    opt.ic = []
-    opt.iz = []
-    opt.it = []
+    opt.iy = [] %y indices to save; empty for all; if savemem, only this subset will get read into memory  
+    opt.ix = [] %x indices to save; empty for all; if savemem, only this subset will get read into memory
+    opt.ic = [] %c indices to save; empty for all; if savemem, only this subset will get read into memory
+    opt.iz = [] %z indices to save; empty for all; if savemem, only this subset will get read into memory
+    opt.it = [] %t indices to save; empty for all; if savemem, only this subset will get read into memory
 end
 
 
-numslice_withflyback = opt.numslice_withflyback;
-yxzt = opt.yxzt;
-channel_save = opt.channel_save;
 chanuse = opt.chanuse;
 cropfb = opt.cropfb;
 tcrop = opt.tcrop;
@@ -43,6 +35,10 @@ ix = opt.ix;
 ic = opt.ic;
 iz = opt.iz;
 it = opt.it;
+
+id = idmake(pthtif); %just in case id info gets used below
+pthmd = [id.dirstack id.recid '_mdsi_.txt'];
+numslice_withflyback = structfile(pthmd, nm='numslice_withflyback');
 
 if ~isempty(iz) && ~isempty(cropfb)
     sprintf("WARNING, iz is nonempty AND cropfb is true; ignoring cropfb to give priority to the user-supplied iz, which may or may not crop flyback")
@@ -61,33 +57,33 @@ end
 if stack_size_is_known
 
     if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw')
-        size_read_from = [yxzt(1), yxzt(2), numel(channel_save), numslice_withflyback, yxzt(4)]; %z dimension of size_read_from includes flyback frames for raw stack
+        sz = [yxzt(1), yxzt(2), numel(channel_save), numslice_withflyback, yxzt(4)]; %z dimension of sz includes flyback frames for raw stack
     else
-        size_read_from = [yxzt(1), yxzt(2), numel(channel_save), yxzt(3), yxzt(4)]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
+        sz = [yxzt(1), yxzt(2), numel(channel_save), yxzt(3), yxzt(4)]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
     end
 
     if isempty(iy)
-        iy = 1:size_read_from(1); %can choose any subset of y, can be discontiguous;
+        iy = 1:sz(1); %can choose any subset of y, can be discontiguous;
     end
     if isempty(ix)
-        ix = 1:size_read_from(2); %can choose any subset of x, can be discontiguous;
+        ix = 1:sz(2); %can choose any subset of x, can be discontiguous;
     end
     if isempty(ic)
-        ic = 1:size_read_from(3); %can choose any subset of t, can be discontiguous
+        ic = 1:sz(3); %can choose any subset of t, can be discontiguous
     end
     if isempty(iz)
         if cropfb
             iz = 1:yxzt(3); %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:yxzt(3) will skip flyback frames for raw, while 1:size_z_read_from will read flyback frames;
         else
-            iz = 1:size_read_from(4); %read all frames of not cropfb
+            iz = 1:sz(4); %read all frames of not cropfb
         end
     end
     if isempty(it)
-        it = 1:size_read_from(5); %can choose any subset of t, can be discontiguous
+        it = 1:sz(5); %can choose any subset of t, can be discontiguous
     end
 
 else
-    size_read_from = [];
+    sz = [];
     if ~isempty(ic) || ~isempty(iz) || ~isempty(it)
         error("you must know stack size to pass nonempty iz or it or ic")
     end
@@ -96,7 +92,7 @@ end
 try
     stack = tifld(pthtif, ...
         savemem = savemem, ...
-        size_read_from = size_read_from, ...
+        sz = sz, ...
         iy = iy, ...
         ix = ix, ...
         ic = ic, ...
@@ -106,11 +102,11 @@ catch ME
     if strcmp(ME.message, '*** TIFFStack: Index exceeds stack dimensions.')
         if ~( contains(fn, 'trial_') && contains(fn, '-') ) && ~contains(fn, 'raw')
             fprintf("you may have discarded a channel in creating " + fn + ext + " trying to load again, this time as single channel" + newline)
-            size_read_from(3) = 1;
+            sz(3) = 1;
             ic = 1;
             chanuse = 1;
             stack = tifld(pthtif, ...
-                size_read_from = size_read_from, ...
+                sz = sz, ...
                 iy = iy, ...
                 ix = ix, ...
                 ic = ic, ...

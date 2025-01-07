@@ -19,12 +19,13 @@ d.copybin = "";
 d.filled = 0;
 d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported; options struct will make sure all of these are populated before existing oset 
-    "spec", "mn", "daq", "sld", "ftv", "roi", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
+    "spec", "mn", "daq", "sld", "ftv", "roi", "bmp", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
     "mf.tg", "mf.sp", "mf.tp", ...
-    "bmp", "bmp.mf", "bmp.mf.tg", "bmp.mf.opg", "bmp.mf.opl", ...
+    "bmp.mf", "bmp.mf.tg", "bmp.mf.opg", "bmp.mf.opl", ...
     "sld.sp", ...
     "pltx.tg", ...
+    "copybin", "filled", "id", "nestvalid", ... 
     ];
 
 
@@ -34,11 +35,11 @@ d.spec.pthparent_local = '/Users/wienecke/stacks'; %on local machine, full path 
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 d.spec.suffixvalid = ["raw", "cmrg", "cmrg_dcdn", "bksb_cmrg", "bksb_cmrg_dcdn", "bksb_cmrg_dcdn_nosn"]; %all valid suffixes on files (all tifs, except for '*nosn', output by 'pre' part of scopa pipeline (pl.py, pl.sh); 'raw' is raw tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'raw' (unless you're carl, who renames the flyg/scanimage raw files with suffix 'raw')
 d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
-d.spec.recdate = {'*'}; %cell array of char, can use wildcards
-d.spec.fly = {'*'}; %cell array of char, can use wildcards
-d.spec.trial = {'*'}; %cell array of char, can use wildcards
-d.spec.suffix = {'*'};  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
-d.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
+d.spec.recdate = ''; %cell array of char, can use wildcards
+d.spec.fly = ''; %cell array of char, can use wildcards
+d.spec.trial = ''; %cell array of char, can use wildcards
+d.spec.suffix = '';  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+d.spec.substr = ''; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
 d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 
 %% mn (ap2: main pipeline control in a2p)
@@ -57,9 +58,9 @@ d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf"]; %list of subroutines that 
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 
-d.mn.user = '';
+d.mn.user = 'youforgottossetuser';
 
-d.mn.pthscopas.a = ''; %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
+d.mn.pthscopas.a = fullfile(filesep, 'youforgottossetpthscopas', filesep); %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
 d.mn.pthscopas.b = ''; %path to scopa in filesystem b (used to prevent conflicting edits to "same" lookup file in different filesystems) 
 d.mn.pthscopas.c = ''; %path to scopa in filesystem c (used to prevent conflicting edits to "same" lookup file in different filesystems) 
 d.mn.pthscopas.d = ''; %path to scopa in filesystem d (used to prevent conflicting edits to "same" lookup file in different filesystems) 

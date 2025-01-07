@@ -82,6 +82,8 @@ else
     pth_ftvidrs = [pth_ftvid(1:end-4) 'RS_.mat'];
 end
 
+pth_ts = [dirstack recid '_ts_.mat'];
+
 pth_epochinds = [dirstack recid '_epochinds_.bin'];
 pth_epochinfo = [dirstack recid '_epochinfo_.mat'];
 
@@ -110,6 +112,7 @@ pth.ftlog = pth_ftlog;
 pth.ftvidlog = pth_ftvidlog;
 pth.ftvid = pth_ftvid;
 pth.ftvidrs = pth_ftvidrs;
+pth.ts = pth_ts;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.featsave = pth_feat_save;

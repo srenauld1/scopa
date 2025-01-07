@@ -84,6 +84,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load/visualize stack
 
+
     stack = stackld(pth.stack, ...
         pthmd = pth.md, ...
         sz = md.sz_o, ...
@@ -105,7 +106,8 @@ for k = 1:numel(oa) % loop over recordings
         it = o.sld.sp.it, ...
         iz = o.sld.sp.iz, ...
         dr = o.sld.sp.dr);
-    
+
+
     %% create/load/select rois/responses for each optid
 
     if o.mn.doroi
@@ -114,8 +116,6 @@ for k = 1:numel(oa) % loop over recordings
             [ts.roi.(fn{m}), roidat.(fn{m})] = roimake(stack, pth.stack, ts.t, md.sampper, md.widyxz, pth.py, [], [], o.roi.(fn{m})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
-
-    % lfit(ts.ball.forvel, ts.roi.i4{1}, t=ts.t, doplt=1, usesaved=1, roipx=roidat.i4{1}.roipx, stack=stack, sortstyle='xyz', flypos=ts.flypos, ipltts=round(linspace(1, numel(roidat.i4{1}.roipx), 100)))
 
 
     %% bump
@@ -154,6 +154,7 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
+    save(pth.ts, 'ts', '-mat', '-v7.3')
 
 end
 

@@ -31,16 +31,20 @@ arguments
     copybin = [] %subfields into which vbin is copied
     opt.files = 0 %whether to use spec to find stack files, or skip
     opt.fill = 0; %whether to fill all default nestings
+    opt.unpack = 0; %if output is a single vbin in nestvalid, do not nest in enclosing struct (losing the name of the vbin in the output)
     opt.pthopt = [] %path to default options file; if empty, uses default path
 end
 files = opt.files;
 fill = opt.fill;
+unpack = opt.unpack;
 pthopt = opt.pthopt;
 
 if isstring(oin) || isstring(vbin) || isstring(copybin) %these will be char unless there's a mistake
     error('you may have attempted to pass "files" name-value argument, without some of the other non-name-value arguments, but misspelled "files" or used the wrong term altogether')
 end
 
+
+%%%% load defaults %%%%
 
 pthscopa = getpathscopa();
 if isempty(pthopt)
@@ -50,6 +54,13 @@ if ~isfile(pthopt)
     optdfsv();
 end
 
+if isfile(pthopt)
+    d = structtxtld(pthopt, nocells=1);
+else
+    error(sprintf("cannot find default options file, '" + pthopt + "', run optdfsv.m to create the default options file"))
+end
+
+%%%% update options %%%%
 
 if files %if files==1, oin must be scalar
     if numel(oin)>1
@@ -58,14 +69,25 @@ if files %if files==1, oin must be scalar
     if fill==1
         error("files cannot be true when fill is true" + newline)
     end
-    o = odfscal(oin, vbin, copybin, files, fill, pthscopa, pthopt); %odfs is for scalar struct o
+    o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa); %odfs is for scalar struct o
 else %otherwise, oin can be nonscalar
     if isempty(oin)
-        o = odfscal(oin, vbin, copybin, files, fill, pthscopa, pthopt); %odfs is for scalar struct o
+        o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa); %odfs is for scalar struct o
     else
         for k = numel(oin):-1:1 %in case o is nonscalar, loop over each element, calling odfs; backwards to preallocate
-            o(k) = odfscal(oin(k), vbin, copybin, files, fill, pthscopa, pthopt); %odfs is for scalar struct o
+            o(k) = odfscal(d, oin(k), vbin, copybin, files, fill, pthscopa); %odfs is for scalar struct o
         end
+    end
+end
+
+if unpack
+    if ~isscalar(o)
+        error("cannot unpack nonscalar struct")
+    end
+    if sum(isfield(o, d.nestvalid))==1
+        o = o.(cell2mat(fieldnames(o)));
+    else
+        error("cannot unpack struct with multiple vbins")
     end
 end
 
@@ -74,7 +96,7 @@ end
 
 
 
-function o = odfscal(oin, vbin, copybin, files, fill, pthscopa, pthopt)
+function o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa)
 
 
 if isfield(oin, 'filled') && oin.filled==1
@@ -97,23 +119,6 @@ if files
     end
 end
 
-
-%% load defaults
-
-if isfile(pthopt)
-    d = structtxtld(pthopt, nocells=1);
-else
-    error(sprintf("cannot find default options file, '" + pthopt + "', run optdfsv.m to create the default options file"))
-end
-
-if ~files %if not in files mode, update default spec to be empty
-    d.spec.recdate = '';
-    d.spec.fly = '';
-    d.spec.trial = '';
-    d.spec.suffix = '';
-    d.spec.substr = '';
-    d.spec.match = '';
-end
 
 
 %% prep inputs
@@ -338,6 +343,16 @@ end
 
 if fill
 
+    if ~isfield(o, 'id')
+        o.id = d.id;
+    end
+    if ~isfield(o, 'copybin')
+        o.copybin = d.copybin;
+    end
+    if ~isfield(o, 'nestvalid')
+        o.nestvalid = d.nestvalid;
+    end
+
     dnestflat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.nestvalid, repelem({'.'}, numel(d.nestvalid)), 'un', false)));
     if any(ismember(copybinprev, dnestflat))
         error('copybin names cannot match any vbin names')
@@ -378,21 +393,27 @@ if fill
         end
     end
 
+
     for k = 1:numel(d.nestvalid) %doesn't matter if these get updated in loop but fnoflat doesn't (right?)
-        if isempty(fnoflat_before_copybin_all) || all(cellfun(@isempty, regexp(d.nestvalid{k}, strcat('^', strrep(fnoflat_before_copybin_all, '__', '.'))))) %if d.nestvalid{k} is not any vbin with copybin from above
-            expr = ['^' strrep(d.nestvalid{k}, '.', '__')];
-            mtch = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr, 'match')));
-            if isempty(mtch)
-                o = odf(o, d.nestvalid{k}, files=0);
+        if ~strcmp(d.nestvalid{k}, 'filled')
+            if isempty(fnoflat_before_copybin_all) || all(cellfun(@isempty, regexp(d.nestvalid{k}, strcat('^', strrep(fnoflat_before_copybin_all, '__', '.'))))) %if d.nestvalid{k} is not any vbin with copybin from above
+                expr = ['^' strrep(d.nestvalid{k}, '.', '__')];
+                mtch = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr, 'match')));
+                if isempty(mtch)
+                    try
+o = odf(o, d.nestvalid{k}, files=0);
+                    catch
+                        ff=2
+                    end
+                end
             end
         end
     end
 
 
-
     % now set some globals, as the final step in creating options struct (we know it's final because filled=1 now)
 
-    %%%% these globals should not be edited by the user in general, so they take values from d (output from optdfsv) %%%% 
+    %%%% these globals should not be edited by the user in general, so they take values from d (output from optdfsv) %%%%
     if isempty(glb('pthscopa')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
         xyscreen = pxscreenget;
         glb(pthscopa=pthscopa, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
@@ -438,10 +459,21 @@ if fill
         error("at least one pthscopas must be nonempty")
     end
 
-    % now mark options struct as filled (complete)
+
+    % mark as filled, unless you're only filling input vbin 
 
     o.filled = 1;
 
+    fn = fieldnames(o);
+    for k = 1:numel(fn)
+        if ~strcmp(fn{k}, d.nestvalid)
+            error("you cannot fill the entire options struct with a vbin that is not listed in nest valid (you may have created a vbin that can only appear within another vbin, outside that enclosing vbin)")
+        end
+        if ~strcmp(fn{k}, vbin)
+            o.filled = 0;
+            o = rmfield(o, fn{k});
+        end
+    end
 
 end
 

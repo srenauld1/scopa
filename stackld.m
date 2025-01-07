@@ -3,8 +3,8 @@
 
 % load a single image stack (pthstack) output by scopa 'pre' pipeline, or the raw stack output by scanimage
 % if mat doesn't exist, will read tif and save as mat (reading large tif uses TIFFStack library, in scopa/dependencies)
-% can also plot (but not output) multiple stacks output by different stages in the scopa preprocessing pipeline (suffixplt) 
-% stack plots create temporary variables for stacks (subset according to user yxztc index inputs) one at a time, in a loop, then plots the accumulated stacks variable, because opening multiple stacks at once could require a lot of memory 
+% can also plot (but not output) multiple stacks output by different stages in the scopa preprocessing pipeline (suffixplt)
+% stack plots create temporary variables for stacks (subset according to user yxztc index inputs) one at a time, in a loop, then plots the accumulated stacks variable, because opening multiple stacks at once could require a lot of memory
 % (if you're plotting the whole stack though, this strategy is a disadvantage)
 
 function stack = stackld(pthstack, opt)
@@ -12,10 +12,6 @@ function stack = stackld(pthstack, opt)
 
 arguments
     pthstack  %can just pass pthstack if it's mat; if tif need to also pass sz (or pthmd) to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim;
-    opt.pthmd = []
-    opt.sz = []
-    opt.numslice_withflyback = []
-    opt.channel_save = []
     opt.stackdtype = 'uint16'
     opt.chanuse = 1
     opt.cropfb = 1 %whether to crop flyback frames (only applied to raw tif)
@@ -25,7 +21,6 @@ arguments
     opt.clip = []
     opt.smlenpx = [];
     opt.smlensec = []
-    opt.imrate = []
     opt.smmthd = 'gaussian';
     opt.dostats = 0
     opt.suffixplt = [] %pass nonempty suffixplt (cell of char or string array) and it will plot whichever of those suffixes are in same folder as pth.stack, along with pth.stack
@@ -34,11 +29,6 @@ arguments
     opt.dr = [0,1]
     opt.doplt = [] %default empty rather than 0 to distinguish user passing 0 and user passing nothing
 end
-
-pthmd = opt.pthmd;
-sz = opt.sz;
-numslice_withflyback = opt.numslice_withflyback;
-channel_save = opt.channel_save;
 stackdtype = opt.stackdtype;
 chanuse = opt.chanuse;
 cropfb = opt.cropfb;
@@ -48,7 +38,6 @@ zerostack = opt.zerostack;
 clip = opt.clip;
 smlenpx = opt.smlenpx;
 smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
-imrate = opt.imrate;
 smmthd = opt.smmthd;
 dostats = opt.dostats;
 suffixplt = opt.suffixplt;
@@ -72,24 +61,13 @@ if ~doplt
     suffixplt = [];
 end
 
-if endsWith(pthstack, '.tif') || any(smlensec) %you only need md to convert tif to mat, or to smooth in time
-    if any([isempty(sz), isempty(numslice_withflyback), isempty(channel_save), isempty(imrate)])
-        if isempty(pthmd) || ( ~isempty(pthmd) && ~all([isempty(sz), isempty(numslice_withflyback), isempty(channel_save), isempty(imrate)]) )
-            error("you must pass all metadata arguments, or pass path to metadata file and no metadata arguments")
-        else
-            md = mdsild(pthmd);
-            sz = md.sz_o;
-            numslice_withflyback = md.numslice_withflyback;
-            channel_save = md.channel_save;
-            imrate = md.volrate;
-        end
-    end
-end
-
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 suffixstack = id.suffix;
 recid = id.recid;
 dirstack = id.dirstack;
+
+pthmd = [id.dirstack id.recid '_mdsi_.txt'];
+imrate = structfile(pthmd, nm='volrate');
 
 if ~iscell(suffixstack)
     suffixstack = {suffixstack};
@@ -174,13 +152,11 @@ for spi = 1:numel(pthstackall)
             stack = stack(:,:,:,:,chanusetmp);
         end
     elseif endsWith(pthstackall{spi}, '.tif')
-        stack = tif2mat(pthstackall{spi}, ...
-            yxzt=sz, ...
-            numslice_withflyback=numslice_withflyback, ...
-            channel_save=channel_save,...
+        stack = tif2mat( pthstackall{spi}, ...
             cropfb=cropfb, ...
             tcrop=tcrop, ...
-            savemem=savemem);
+            savemem=savemem ...
+            );
     else
         error("pthstackall must end with tif or mat");
     end
