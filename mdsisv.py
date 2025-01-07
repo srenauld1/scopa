@@ -55,7 +55,7 @@ def mdsisv(pth_readfile, pth_md, mat_file_shape = None):
             mdt['zfov'] = mdt['zstartpos'][-1] + mdt['zwid'] - mdt['zstartpos'][0]
         mdt['framerate'] = float(re.findall( 'scanFrameRate = (.*)', meta)[0])
         mdt['volrate'] = float(re.findall( 'scanVolumeRate = (.*)', meta)[0])
-        mdt['channelOffsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta)[0].replace(" ",",").replace(";",","))
+        mdt['channel_offsets'] = literal_eval(re.findall( 'channelOffsets = (.*)', meta)[0].replace(" ",",").replace(";",","))
     
     else: #for raw imaging files that are not saved by scanimage (eg carl's old project with Leica data)
 
@@ -75,7 +75,7 @@ def mdsisv(pth_readfile, pth_md, mat_file_shape = None):
         mdt['flyback'] = 0
         mdt['zwid'] = 0
         mdt['zstartpos'] = 0
-        mdt['channelOffsets'] = 0
+        mdt['channel_offsets'] = 0
 
                 
     md = {  'numvol': mdt['numvol'],
@@ -94,7 +94,7 @@ def mdsisv(pth_readfile, pth_md, mat_file_shape = None):
             'volrate': mdt['volrate'], 
             'channel_save': mdt['channel_save'],
             'channel_active': mdt['channel_active'],
-            'channelOffsets': mdt['channelOffsets']}
+            'channel_offsets': mdt['channel_offsets']}
         
     
     if not np.isin(md['channel_save'], md['channel_active']).any():

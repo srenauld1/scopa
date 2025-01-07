@@ -12,22 +12,7 @@ function stack = stackld(pthstack, opt)
 
 arguments
     pthstack  %can just pass pthstack if it's mat; if tif need to also pass sz (or pthmd) to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim;
-    opt.stackdtype = 'uint16'
-    opt.chanuse = 1
-    opt.cropfb = 1 %whether to crop flyback frames (only applied to raw tif)
-    opt.tcrop = [0,0] %how many frames to crop from [beginning,end] of trial
-    opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
-    opt.zerostack = 0
-    opt.clip = []
-    opt.smlenpx = [];
-    opt.smlensec = []
-    opt.smmthd = 'gaussian';
-    opt.dostats = 0
-    opt.suffixplt = [] %pass nonempty suffixplt (cell of char or string array) and it will plot whichever of those suffixes are in same folder as pth.stack, along with pth.stack
-    opt.it = -50;
-    opt.iz = []
-    opt.dr = [0,1]
-    opt.doplt = [] %default empty rather than 0 to distinguish user passing 0 and user passing nothing
+    opt = []
 end
 stackdtype = opt.stackdtype;
 chanuse = opt.chanuse;
@@ -41,11 +26,10 @@ smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
 smmthd = opt.smmthd;
 dostats = opt.dostats;
 suffixplt = opt.suffixplt;
-it = opt.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-iz = opt.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
-dr = opt.dr;
-doplt = opt.doplt;
-
+it = opt.sp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+iz = opt.sp.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
+dr = opt.sp.dr;
+doplt = 0;
 
 suffixplt = convertStringsToChars(suffixplt);
 if ~isempty(suffixplt) && ~iscell(suffixplt)

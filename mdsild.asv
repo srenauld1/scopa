@@ -16,7 +16,7 @@ end
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
-    fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using tifreadfast (from within mdsisv_mat), and if that fils, using python function mdsisv, and if that fails, calling mdsisv_pymat" + newline)
+    fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using tifreadfast, and if that fils, using python function mdsisv, and if that fails, call" + newline)
     pthrawpt = [id.dirstack id.recid '_raw_.tif'];
     pthraw = rdir(pthrawpt);
     if isempty(pthraw)

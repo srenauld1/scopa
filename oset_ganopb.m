@@ -5,14 +5,12 @@ regionex = {'pb'}; %use 'none' to skip prompt to define substack (will enter roi
 
 o.mn.dodaq = 1; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
-o.mn.doroi = 1; %make/load/process rois?
-o.mn.dobmp = 1; %compute bump?
+o.mn.doroi = 0; %make/load/process rois?
+o.mn.dobmp = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
 o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "sld", "ftv", "roi", "bmp", "mf"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
-
-o.mn.pthpy = '/Users/wienecke/miniforge3/envs/caiman/bin/python3'; %path to python executable  
 
 o.daq.use_carls_epochs = 1;
 if str2double(o.id.recdate)<20231100

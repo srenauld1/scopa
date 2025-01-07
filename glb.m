@@ -160,7 +160,11 @@ if iscell(inp) %setting globals
                         strtmp = sprintf( '%s, ', tmpcl{:} );
                         strtmp = strtmp(1:end-2);
                     else
-                        strtmp = mat2str(inp{k+1});
+                        if ndims(inp{k+1})>2
+                            strtmp = 'a multidimensional array that is not printed here';
+                        else
+                            strtmp = mat2str(inp{k+1});
+                        end
                     end
                 else
                     strtmp = inp{k+1};

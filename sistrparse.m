@@ -19,7 +19,7 @@ else
     val = str2double(regexp(tok{1}{1}, '\d*[\.]?\d*', 'match')); %try to convert to number (matrix will be vector)
     if ~isnan(val)
         if numel(val)>1 && contains(tok{1}{1}, ';')
-            fprintf("WARNING, CHAR CONTAINS SEMICOLON, DO YOU WANT A MATRIX? OUTPUT IS VECTOR; ")
+            fprintf("WARNING, CHAR CONTAINS SEMICOLON, DO YOU WANT A MATRIX? OUTPUT IS VECTOR; " + newline)
         end
     else %if it's not a number, just output char
         val = strrep(tok{1}{1},  '''', ''); %make sure char output does not have extra quotes

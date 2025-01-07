@@ -24,6 +24,8 @@ arguments
     opt.iz = [] %z indices to save; empty for all; if savemem, only this subset will get read into memory
     opt.it = [] %t indices to save; empty for all; if savemem, only this subset will get read into memory
 end
+
+
 chanuse = opt.chanuse;
 cropfb = opt.cropfb;
 tcrop = opt.tcrop;
@@ -38,16 +40,16 @@ id = idmake(pthtif); %just in case id info gets used below
 pthmd = [id.dirstack id.recid '_mdsi_.txt'];
 numslice_withflyback = structfile(pthmd, nm='numslice_withflyback');
 if isempty(numslice_withflyback)
-    error("some metadata is missing")
+        error("some metadata is missing")
 end
 channel_save = structfile(pthmd, nm='channel_save');
-if isempty(channel_save)
-    error("some metadata is missing")
+if isempty(numslice_withflyback)
+        error("some metadata is missing")
 end
 ypix = structfile(pthmd, nm='ypix');
 xpix = structfile(pthmd, nm='xpix');
 numslice = structfile(pthmd, nm='numslice');
-numvol = structfile(pthmd, nm='numvol');
+numvol = structfile(pthmd, nm='numvolo');
 yxzt = [ypix xpix numslice numvol];
 if numel(yxzt)~=4
     error("some metadata is missing")
