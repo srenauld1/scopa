@@ -1,11 +1,7 @@
 
 function o = optreduce_roi(o)
 
-two_channel_ex = 1;
-"HARD CODINGtwo_channel_ex FOR NOW "
-"HARD CODINGtwo_channel_ex FOR NOW "
-"HARD CODINGtwo_channel_ex FOR NOW "
-"HARD CODINGtwo_channel_ex FOR NOW "
+two_channel_ex = 1; %hard coding for now, soon, parse methodex
 
 %% remove large submodules if they don't have do true
 

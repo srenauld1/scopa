@@ -74,7 +74,10 @@ pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
 if size(stack,5)~=1 %don't index if channel dimension is singleton, it will create a (potentially large) temporary variable within this function pointlessly
     stack = stack(:,:,:,:,chanuse);
 end
-stackmnt = single(mean(stack, 4));
+stackmnt = glb('stackmnt');
+if isempty(stackmnt)
+    stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
+end
 
 numxpix = size(stackmnt,2);
 numypix = size(stackmnt,1);

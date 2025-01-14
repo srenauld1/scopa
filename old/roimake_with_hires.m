@@ -132,7 +132,7 @@ catch
     resp = cell(numchan,1);
     for c = 1:numchan
         if ~isempty(roiwt{c})
-            resptmp = roits(stack(:,:,:,:,c), roiwt=roiwt{c}, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+            resptmp = roiresp(stack(:,:,:,:,c), roiwt=roiwt{c}, normpre=opt.nrm.pre, normpost=opt.nrm.post, sampper=sampper, wavp=opt.nrm.wavp, degdtr=opt.nrm.degdtr, channorm=opt.nrm.channorm, t=t, pthpre=pthpre, doplt=0); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
             fn = fieldnames(resptmp);
             if numel(fn)>1
                 error("there should only be one field because all params have been distributed and assigned optid")

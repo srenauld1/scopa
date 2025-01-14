@@ -91,8 +91,11 @@ if isscalar(inp)
                 inp = char(inp{1});
             elseif iscell(inp{1}) && isstring(inp{1}{1})
                 inp = char(inp{1}{1});
+            elseif iscell(inp{1})
+                inp = inp{1};
             end
-            inp = inp{1};
+        else
+            error("must be cell here")
         end
     else
         inp = inp{1};
@@ -160,8 +163,8 @@ if iscell(inp) %setting globals
                         strtmp = sprintf( '%s, ', tmpcl{:} );
                         strtmp = strtmp(1:end-2);
                     else
-                        if ndims(inp{k+1})>2
-                            strtmp = 'a multidimensional array that is not printed here';
+                        if ndims(inp{k+1})>2 || numel(inp{k+1})>30
+                            strtmp = 'an array that is too long to be printed here';
                         else
                             strtmp = mat2str(inp{k+1});
                         end

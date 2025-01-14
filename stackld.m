@@ -7,12 +7,12 @@
 % stack plots create temporary variables for stacks (subset according to user yxztc index inputs) one at a time, in a loop, then plots the accumulated stacks variable, because opening multiple stacks at once could require a lot of memory
 % (if you're plotting the whole stack though, this strategy is a disadvantage)
 
-function stack = stackld(pthstack, opt)
-
+function stack = stackld(pthstack, opt, doplt)
 
 arguments
     pthstack  %can just pass pthstack if it's mat; if tif need to also pass sz (or pthmd) to read tif into stack's native shape, or if you don't pass sz it will read tif with tzc collapsed into 3rd dim;
-    opt = []
+    opt
+    doplt = []
 end
 stackdtype = opt.stackdtype;
 chanuse = opt.chanuse;
@@ -29,7 +29,6 @@ suffixplt = opt.suffixplt;
 it = opt.sp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = opt.sp.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
 dr = opt.sp.dr;
-doplt = [];
 
 suffixplt = convertStringsToChars(suffixplt);
 if ~isempty(suffixplt) && ~iscell(suffixplt)

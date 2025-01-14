@@ -5,7 +5,7 @@ regionex = {'pb'}; %use 'none' to skip prompt to define substack (will enter roi
 
 o.mn.dodaq = 1; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
-o.mn.doroi = 0; %make/load/process rois?
+o.mn.doroi = 1; %make/load/process rois?
 o.mn.dobmp = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?

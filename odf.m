@@ -395,16 +395,12 @@ if fill
 
 
     for k = 1:numel(d.nestvalid) %doesn't matter if these get updated in loop but fnoflat doesn't (right?)
-        if ~strcmp(d.nestvalid{k}, 'filled')
+        if ~strcmp(d.nestvalid{k}, 'filled') %filled is the one field that cannot be done here
             if isempty(fnoflat_before_copybin_all) || all(cellfun(@isempty, regexp(d.nestvalid{k}, strcat('^', strrep(fnoflat_before_copybin_all, '__', '.'))))) %if d.nestvalid{k} is not any vbin with copybin from above
                 expr = ['^' strrep(d.nestvalid{k}, '.', '__')];
                 mtch = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr, 'match')));
                 if isempty(mtch)
-                    try
-o = odf(o, d.nestvalid{k}, files=0);
-                    catch
-                        ff=2
-                    end
+                    o = odf(o, d.nestvalid{k}, files=0);
                 end
             end
         end

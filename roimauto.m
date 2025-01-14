@@ -1,12 +1,15 @@
+function roimask = roimauto(stackmnt, roimask, widyxz, regionex, opt)
 
-function roimaskout = roimauto(stack, roimaskin, numroi_init, widyxz, regionex, opt)
+arguments
+    stackmnt
+    roimask
+    widyxz
+    regionex
+    opt
+end
 
-%this function has several partially overlapping control features,
-%organization is meant to make it easy to add new methods (e.g. by
-%creating new maskseg and inserting in switch statement)
-%stackmnt must be 3d (xyz), although 3rd dim (z) can be singleton
-%roimaskin must match dimensionality of stackmnt, or be lower dimensional
-
+chan = opt.chan;
+numroi_init = opt.numroi;
 maskmake = opt.maskmake;
 maskseg = opt.maskseg;
 edgethr = opt.edgethr;
@@ -14,13 +17,28 @@ edgesig = opt.edgesig;
 celsz = opt.celsz;
 do3d = opt.do3d;
 
+numchan = size(stackmnt,5);
+for c = 1:numchan
+    if ismember(c,chan)
+        if ~isequal(numroi_init, 0)
+            roimask{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimask{c}, numroi_init, widyxz, regionex, maskmake, maskseg, edgethr, edgesig, celsz, do3d);
+        end
+    end
+end
+
+end
+
+function roimaskout = roimauto_onechan(stackmnt, roimaskin, numroi_init, widyxz, regionex, maskmake, maskseg, edgethr, edgesig, celsz, do3d)
+
+%this function has several partially overlapping control features,
+%organization is meant to make it easy to add new methods (e.g. by
+%creating new maskseg and inserting in switch statement)
+%stackmnt must be 3d (xyz), although 3rd dim (z) can be singleton
+%roimaskin must match dimensionality of stackmnt, or be lower dimensional
 
 %% preprocess stackmnt, make mean stackmnt
 
-stackmnt = glb('stackmnt');
-if isempty(stackmnt)
-    stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
-end
+
 stackmnt = rescale(stackmnt);
 numel_stackmnt = numel(stackmnt);
 
@@ -210,7 +228,7 @@ else
             if size(unique(tmp.', 'rows'), 1)~=1
                 error("each row must have constant value")
             end
-            % idx_vox2roi = tmp(:,1); %previously this was an alternative to deriving idx_vox2roi below; it is very similar 
+            % idx_vox2roi = tmp(:,1); %previously this was an alternative to deriving idx_vox2roi below; it is very similar
             centmp = centmp.';
 
     end
@@ -236,9 +254,14 @@ for i = 1:numroi_final
     roiwt(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
 end
 
-roimaskout = reshape(roiwt, [size(stackmnt), numroi_final] );
+if ndims(stackmnt)==2
+    roimaskout = reshape(roiwt, [size(stackmnt), 1, numroi_final] );
+elseif ndims(stackmnt)==3
+    roimaskout = reshape(roiwt, [size(stackmnt), numroi_final] );
+end
 
 
 
 
+end
 

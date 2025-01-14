@@ -58,8 +58,6 @@ end
 
 if flag_croplim || (flag_oneim && flag_single_roi_per_stack)
     ttltmp = {'YOU MUST DRAW A SINGLE CONTIGUOUS ROI ON THIS IMAGE'};
-elseif flag_oneim && flag_single_roi_per_stack     
-    ttltmp = {'YOU MUST DRAW A SINGLE CONTIGUOUS ROI ON THIS IMAGE'};
 else
     ttltmp = { [...
         'q: QUIT DRAWING,   ', ...
@@ -101,10 +99,17 @@ if isempty(cmap)
     cmap = distinguishable_colors(numrois_est);
 end
 
-if flag_allz || (flag_oneim && ~flag_single_roi_per_stack)
-    flag_single_roi_per_figure = 0;
-else
+% if flag_allz || (flag_oneim && ~flag_single_roi_per_stack)
+%     flag_single_roi_per_figure = 0;
+% else
+%     flag_single_roi_per_figure = 1;
+% end
+
+% previously was above, but i don't think flag_allz is necessary here
+if flag_oneim && flag_single_roi_per_stack
     flag_single_roi_per_figure = 1;
+else
+    flag_single_roi_per_figure = 0;
 end
 
 flag_do = 0;
@@ -171,14 +176,18 @@ while true
 
     if flag_do
         h.httl.String{ndt+1} = ['DRAW NOW ON IMAGE ' num2str(imfocus) ' (CLICK=PLACE VERTEX, DRAG=ADJUST, DOUBLE-CLICK=FINISH)'];
-        if flag_allz
+        if flag_allz && ~(flag_oneim && flag_single_roi_per_stack) 
             h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
         elseif flag_croplim
             h.httl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR ' title_prefix];
         else
             if flag_oneim
                 if flag_single_roi_per_stack
-                    h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
+                    if flag_allz
+                        h.httl.String{ndt+3} = ['THE ONE POLYGON YOU DRAW ON THIS IMAGE DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
+                    else
+                        h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
+                    end
                 else
                     h.httl.String{ndt+3} = ['EACH POLYGON, AND EACH UNION OF XY DISCONTIGUOUS SUBROIS, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR ' title_prefix];
                 end
@@ -335,7 +344,7 @@ while true
             end
         end
 
-        if flag_xy_discontiguous || flag_allz
+        if flag_xy_discontiguous || ( flag_allz && ~(flag_oneim && flag_single_roi_per_stack) )
             tmp_ind = tmp_ind+1;
         else
             flag_roi_drawn = 1;

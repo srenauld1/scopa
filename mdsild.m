@@ -48,6 +48,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
             if ~strcmp(petmp.Executable, pthpy) && ~strcmp(petmp.ExecutionMode, 'OutOfProcess')
                 try
                     pyenv(ExecutionMode="OutOfProcess")
+                    pyenv(Version='/Library/Frameworks/Python.framework/Versions/3.10/bin/python3')
                     pyenv(Version=pthpy)
                 catch ME
                     fprintf(ME.message + newline)

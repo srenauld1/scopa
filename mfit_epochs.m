@@ -82,7 +82,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        parfor ri = 1:num_dim_depvp
+        for ri = 1:num_dim_depvp
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
@@ -93,7 +93,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                     sampinds_indvdepv_val, num_samp_total, supp, op, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
             
-                % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
+                mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
             end
         end
         toc

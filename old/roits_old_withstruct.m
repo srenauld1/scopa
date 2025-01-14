@@ -1,4 +1,6 @@
-function resp = roits(respin, opt)
+function resp = roiresp(respin, opt)
+
+%handles 
 
 arguments
     respin % response; numeric array or struct; if numeric array, must be yxztc (can be singleton c); if struct, each field is a numeric array, size [roi,time]
@@ -64,7 +66,7 @@ for c = 1:numel(chanused)
             respin_onechan = cell2struct(respin_onechan, fntmp);
             resp = roits_onechan(respin_onechan, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         else
-            resp = roits_onechan(respin(:,:,:,:,c), roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
+            resp = roits_onechan(c, respin, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         end
     end
 end
@@ -76,9 +78,10 @@ end
 end
 
 
-function resp = roits_onechan(respin, roiwt, normpre, normpost, sampper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
+function resp = roits_onechan(chan, respin, roiwt, normpre, normpost, sampper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
 
 arguments
+    chan
     respin
     roiwt
     normpre
@@ -100,19 +103,19 @@ if uwt==0
 elseif uwt(uwt~=0)==1
     wtstr = 'n'; %no pixel weighting, just indices
     if uwt==1
-        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roits, or wasn't passed to roits
+        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roiresp, or wasn't passed to roiresp
     end
 else
     wtstr = 'y'; %pixel indices with weighting
 end
 
-if ~isstruct(respin) %if input is raw image f
+if isstruct(respin) 
+    raw_image_input = 0;
+else %else input is raw image
     raw_image_input = 1;
     respintmp.imf = reshape(respin, [], size(respin, ndims(respin))); %reshape
     respin = respintmp;
     clear respintmp
-else
-    raw_image_input = 0;
 end
 
 fnin = fieldnames(respin);

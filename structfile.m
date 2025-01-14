@@ -23,11 +23,13 @@ arguments
     opt.s = [] %variable to write to file, or get from file
     opt.nm = [] %by default, names variables automatically
     opt.useprefix = 0 %by default, does not use prefix (ie does not use filesystem protection); if prefix is not empty
+    opt.dupe = 0 % allow duplicate s with different names
     opt.pthscopas = [] %by default, looks for pthscopas in glb('pthscopas')
 end
 s = opt.s;
 nm = opt.nm;
 useprefix = opt.useprefix;
+dupe = opt.dupe;
 pthscopas = opt.pthscopas;
 
 
@@ -234,7 +236,9 @@ else
                     if strcmp([prefix nm], nmfile{k}) %if variable and name match
                         matchind = [matchind k];
                     else %if variable matches but name doesn't
-                        error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmout)
+                        if ~dupe %if duplicates are not allowed, error 
+                            error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmout)                        
+                        end
                     end
                 end
             end

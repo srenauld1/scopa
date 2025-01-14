@@ -21,8 +21,8 @@ d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported; options struct will make sure all of these are populated before existing oset 
     "spec", "mn", "daq", "sld", "ftv", "roi", "bmp", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
-    "mf.tg", "mf.sp", "mf.tp", ...
-    "bmp.mf", "bmp.mf.tg", "bmp.mf.opg", "bmp.mf.opl", ...
+    "mf.tg", "mf.sp", "mf.tp", "mf.opg", "mf.opl", ...
+    "bmp.mf", "bmp.mf.tg", "bmp.mf.sp", "bmp.mf.tp", "bmp.mf.opg", "bmp.mf.opl", ...
     "sld.sp", ...
     "pltx.tg", ...
     "copybin", "filled", "id", "nestvalid", ... 
@@ -88,7 +88,7 @@ d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to 
 d.daq.voltmin = 0; % daq voltage min; need to find this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.use_carls_epochs = 0; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial; vector is created in socket code to control stimulus state, then saved at end of experiment; for old recordings file was not saved, so use_carls_epochs recreates that vector in the same way the socket code did
-
+d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
 
 %% sld (stackld: load, process stack)
 
@@ -234,7 +234,7 @@ d.qc.maxregperroi = 4; % for discontiguous rois
 d.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morphological mask (morph mask is all ones if you don't make one)
 
 
-%% nrm (roits: extract and/or normalize roi timeseries)
+%% nrm (roiresp: extract and/or normalize roi timeseries)
 
 % options for extraction/normalization of roi signals
 % standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.pre and nrm.post, 
@@ -252,6 +252,7 @@ d.nrm.post = 'f'; %must have at least one string, compsed of syllables above; po
 d.nrm.degdtr = 0; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default
 d.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
 d.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
+d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
 %% bmp (bumpcmp: compute bump)
 

@@ -1,7 +1,7 @@
-function roiman_allchan = roidraw(stack, opt)
+function roiman_allchan = roidraw(stackmnt, opt)
 
 arguments
-    stack
+    stackmnt
     opt.pthstack = []
     opt.regionex = 'none'
     opt.dmstack = []
@@ -28,13 +28,13 @@ cmap = opt.cmap;
 fontsize = opt.fontsize;
 remove_overlap = opt.remove_overlap;
 
-if ndims(stack)>5
-    error("stack in roidraw cannot have more than 5 dimensions")
+if ndims(stackmnt)>5
+    error("stackmnt in roidraw cannot have more than 5 dimensions")
 end
 
-stack = stackperm(stack, dmstack);
+stackmnt = stackperm(stackmnt, dmstack);
 
-numchan = size(stack,5);
+numchan = size(stackmnt,5);
 
 roiman_allchan = cell(numchan, 1);
 
@@ -50,7 +50,7 @@ for c = 1:numchan
                 fprintf("WARNING, MASK MANUAL CHANNEL" + num2str(c) + " IS ALL ONES FOR regionex: " + regionex + newline)
             end
         catch
-            roiman = roidraw_onechan(stack(:,:,:,:,c), regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap);
+            roiman = roidraw_onechan(stackmnt(:,:,:,:,c), regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap);
             save(pth_maskman, 'roiman', '-v7.3', '-mat')
         end
         roiman_allchan{c} = roiman;
@@ -71,25 +71,21 @@ end
 end
 
 
-function roimaskman_all_roi_all_z = roidraw_onechan(stack, regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap)
+function roimaskman_all_roi_all_z = roidraw_onechan(stackmnt, regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap)
 
 
 regionex_reformat = strrep(regionex, '_', ' ');
 title_prefix = ['REGIONEX: "' regionex_reformat '", MASKNAME: "' maskname  '", channel: ' num2str(c)];
 
 
-%% make mean zt (2d), and mean t (3d) versions of input stack
+%% make mean zt (2d) version of input stackmnt
 
-szo = size(stack);
-
-stackmnt = glb('stackmnt');
-if isempty(stackmnt)
-    stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
-end
 % stackmnt = stackclip(stackmnt, clip=[0,1]);
 
-stackmnzt = stacktype(mean(stackmnt, 3), class(stack));
+stackmnzt = stacktype(mean(stackmnt, 3), class(stackmnt));
 % stackmnzt = stackclip(stackmnzt, clip=[0,1]);
+
+szo = size(stackmnt);
 
 %% show mean zt and decide if you still want to draw rois
 
@@ -119,6 +115,7 @@ if draw_manual
     flag_allz = 0;
     if draw_on_meanzt
         stackdraw = stackmnzt;
+        flag_allz = 1;
     else
         stackdraw = stackmnt;
         prompt = sprintf("PRESS 1 TO DRAW ON A SINGLE FIGURE WITH ALL REGIONEX SLICES (FASTER, LOWER RES), PRESS 0 TO DRAW ON EACH SLICE IN A SEPARATE FIGURE (SLOWER, BUT HIGHER RES): ");
@@ -214,7 +211,7 @@ if draw_on_meanzt
 end
 
 
-if all(roimaskman_all_roi_all_z(:)==1) && ndims(roimaskman_all_roi_all_z)==2 && ndims(stack)>2
+if all(roimaskman_all_roi_all_z(:)==1) && ndims(roimaskman_all_roi_all_z)==2 && numel(szo)>2
     roimaskman_all_roi_all_z = ones(szo(1), szo(2), szo(3), 'logical'); %insertiung this because i don't remember why the above creates 2d rather than 3d ones
 end
 

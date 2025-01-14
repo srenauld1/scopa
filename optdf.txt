@@ -66,6 +66,7 @@
   "copybin": "",
   "daq": {
     "balldia": 9,
+    "idxreg": "start",
     "slopelensec": 0.4,
     "slopeord": 2,
     "toballscale": [
@@ -195,7 +196,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025010711460543",
+    "timestr": "2025011122433009",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -219,8 +220,12 @@
     "mf.tg",
     "mf.sp",
     "mf.tp",
+    "mf.opg",
+    "mf.opl",
     "bmp.mf",
     "bmp.mf.tg",
+    "bmp.mf.sp",
+    "bmp.mf.tp",
     "bmp.mf.opg",
     "bmp.mf.opl",
     "sld.sp",
@@ -233,6 +238,7 @@
   "nrm": {
     "channorm": 0,
     "degdtr": 0,
+    "mincoh": 0.3,
     "post": "f",
     "pre": "f",
     "wavp": []

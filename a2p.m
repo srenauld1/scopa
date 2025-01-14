@@ -41,39 +41,16 @@ for k = 1:numel(oa) % loop over recordings
     else
 
         if o.mn.dodaq
-            daqrs = daqld(md.numvol_o, md.numslice, md.numslice_withflyback, md.sampper, o.daq.balldia, o.daq.voltmin, o.daq.voltmax, ...
-                vnormal=o.daq.vnormal, ...
-                vcircular=o.daq.vcircular, ...
-                vcategorical=o.daq.vcategorical, ...
-                toballscale=o.daq.toballscale, ...
-                tounwrap=o.daq.tounwrap, ...
-                tozero=o.daq.tozero, ...
-                pth_daq=pth.daq, ...
-                pth_daqrs=pth.daqrs, ...
-                slopelensec=o.daq.slopelensec, ...
-                slopeord=o.daq.slopeord, ...
-                useinds=o.daq.useinds, ...
-                usefbl=o.daq.usefbl, ...
-                usefbf=o.daq.usefbf);
+            daqrs = daqld(pth.stack, o.daq);
             [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
             [md.epochs, ts.epochinds, ts.vis] = epochld(ts.t, pth.epochinfo, ts.vis, pth.dirstack, o.id, md.sampper, daqrs, o.daq.use_carls_epochs);
-            if ~isempty(ts.ball.forvel)
-                [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
-            end
+            [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
         end
 
         if o.mn.doftv
-            try
-                load(pth.ftvidrs, 'ftvdsrs')
-            catch
-                try
-                    ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol_o, md.volrate, ...
-                        o.ftv.numpkthr, o.ftv.smlenpx, o.ftv.numpx, ...
-                        o.ftv.smlensec, pth.ftdat, pth.ftvidlog, pth.ftlog);
-                catch ME
-                    sprintf(ME.message)
-                end
-            end
+            ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol_o, md.volrate, ...
+                o.ftv.numpkthr, o.ftv.smlenpx, o.ftv.numpx, ...
+                o.ftv.smlensec, pth.ftdat, pth.ftvidlog, pth.ftlog);
         end
 
     end
@@ -88,10 +65,10 @@ for k = 1:numel(oa) % loop over recordings
     if o.mn.doroi
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
-            [ts.roi.(fn{m}), roidat.(fn{m})] = roimake(stack, pth.stack, ts.t, md.sampper, md.widyxz, pth.py, [], [], o.roi.(fn{m})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            optid = fn{m};
+            [ts.roi.(optid), roidat.(optid)] = roimake(stack, pth.stack, optid, ts.t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
-
 
     %% bump
 
@@ -107,10 +84,22 @@ for k = 1:numel(oa) % loop over recordings
 
     %% model
 
+
+    % stim = struct2cell(load([pth.dirstack '20241218_3_2_wsraw_0001_sync.mat'], 'si_frame_direction'));
+    % stim = stim{1};
+    % lfit(stim, ts.roi.a2{1}, t=ts.t, doplt=1, pixfit=1, usesaved=1, roipx=roidat.a2{1}.roipx, lagsec=0, stack=stack, sortstyle='xyz', flypos=ts.flypos)
+
+
+    pthsync = rdir([pth.prenosuffix '*_sync.mat']);
+    indvp = struct2cell(load(pthsync.name, 'si_frame_direction'));
+    indvp = indvp{1};
+    depvp = ts.roi.a4{1}(1,:);
+    doplt = 0;
+    otmp.mf.a1 = o.mf; o = rmfield(o, 'mf'); o.mf = otmp.mf; clear otmp;
     if o.mn.dofit
         fn = fieldnames(o.mf);
         for m = 1:numel(fn)
-            ts.fit = mfit(indvp, depvp, imrate, o.mf(fn{k}), doplt, pthpre, epochts, stack, roidat);
+            ts.fit = mfit(indvp, depvp, md.volrate, o.mf.(fn{m}), doplt, pth.pre, ts.epochinds, stack, roidat.a4{1});
         end
     end
 

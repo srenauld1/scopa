@@ -1,11 +1,11 @@
-function tsout = tsnorm(tsin, normtype_all, sampper)
+function ts = tsnorm(ts, normtype_all, sampper)
 
 % several normalization methods, input tsin is 2d space x time, single or double precision
 % normtype_all is cell array of strings, each string specifies a different
 % normalization method, which is applied independently to each roi's timeseries (or pixel's timeseries)
 % each normalization string is comprised of 'syllables', which can be concatenated in any order for sequential normalization operations
 % syllables are applied in order from left to right
-% normalized responses are saved in struct 'resp' to a field whose name matches the normalization string used to produce them
+% normalized responses are output in same size as input (NO LONGER saved in struct 'resp' to a field whose name matches the normalization string used to produce them)
 % below, xxx, yyy, zzz, and www, are 3-character strings converted to integers, range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
 % valid normalization syllables are:
 % 'f' : no normalization
@@ -23,7 +23,6 @@ end
 for nti = 1:length(normtype_all)
 
     normtype = normtype_all{nti};
-    tmp = tsin;
 
     while normtype
 
@@ -51,11 +50,11 @@ for nti = 1:length(normtype_all)
                         error("sampper (sample period) must not be empty if using a dff window")
                     end
                     winlen = round(winlen / sampper);
-                    f0 = RankOrderFilter(tmp, winlen, f0_pct); %moving baseline
+                    f0 = RankOrderFilter(ts, winlen, f0_pct); %moving baseline
                 else
-                    f0 = prctile(tmp, f0_pct, 2); %static baseline
+                    f0 = prctile(ts, f0_pct, 2); %static baseline
                 end
-                tmp = (tmp - f0) ./ f0; %df/f
+                ts = (ts - f0) ./ f0; %df/f
             end
         end
 
@@ -67,9 +66,9 @@ for nti = 1:length(normtype_all)
                 patmatch = normtype(matchind:matchind+patlen-1);
                 botprct = sscanf(patmatch(4:6), '%d');
                 topprct = sscanf(patmatch(7:9), '%d');
-                lbnd = prctile(tmp, botprct, 2);
-                ubnd = prctile(tmp, topprct, 2);
-                tmp = (tmp-lbnd)./(ubnd-lbnd); %rescaling to specified percentiles
+                lbnd = prctile(ts, botprct, 2);
+                ubnd = prctile(ts, topprct, 2);
+                ts = (ts-lbnd)./(ubnd-lbnd); %rescaling to specified percentiles
             end
         end
 
@@ -79,7 +78,7 @@ for nti = 1:length(normtype_all)
             if ~isempty(matchind)
                 patlen = length(erase(pat, {'\', '^'}));
                 patmatch = normtype(matchind:matchind+patlen-1);
-                tmp = zscore(tmp, 1, 2); %2nd arg is 1 to use population not sample
+                ts = zscore(ts, 1, 2); %2nd arg is 1 to use population not sample
             end
         end
 
@@ -89,7 +88,7 @@ for nti = 1:length(normtype_all)
             if ~isempty(matchind)
                 patlen = length(erase(pat, {'\', '^'}));
                 patmatch = normtype(matchind:matchind+patlen-1);
-                tmp = tmp - min(tmp, [], 2) + 1; %nonnegative
+                ts = ts - min(ts, [], 2) + 1; %nonnegative
             end
         end
 
@@ -99,10 +98,10 @@ for nti = 1:length(normtype_all)
             if ~isempty(matchind)
                 patlen = length(erase(pat, {'\', '^'}));
                 patmatch = normtype(matchind:matchind+patlen-1);
-                tmp2 = tmp - min(tmp, [], 2) + 1; %boxcox input must be nonnegative
-                tmp = zeros(size(tmp), 'single'); %nan(size(tmp))
-                for i = 1:size(tmp, 1)
-                    [tmp(i,:), ~] = boxcox(tmp2(i,:)');
+                tmp2 = ts - min(ts, [], 2) + 1; %boxcox input must be nonnegative
+                ts = zeros(size(ts), 'single'); %nan(size(tmp))
+                for i = 1:size(ts, 1)
+                    [ts(i,:), ~] = boxcox(tmp2(i,:)');
                 end
             end
         end
@@ -114,8 +113,6 @@ for nti = 1:length(normtype_all)
         end
 
     end
-
-    tsout.(normtype_all{nti}) = tmp;
 
 end
 

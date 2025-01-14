@@ -11,21 +11,21 @@ function ftvdsrs = ftvproc(pth_vid, pth_vidrs, numvol, imrate, numpkthr, smlenpx
 % extracts timeseries from their spatial average
 % smooths timeseries with small gaussian window
 % finds peaks using findpeaks
-% 
+%
 % removes peaks at the beginning and end of laser_ts (laser timeseries) if distance to next period is not ceil(ftrate/imrate) or floor(ftrate/imrate) . . . ie crops laser_ts to actual laser oscillation portion only
 % includes half-period before the first peak and after the last (half-period is the average half distance between peaks remaining after cropping)
 % assigns each sample in laser_ts (laser timeseries) the index of its nearest intensity peak using nearest neighbor interpolation, these are putative volume indices in the fictrac video
 % averages fictrac video during each putative volume index
 % saves temporally resampled video
 
-% this function only uses fictrac .dat file to estimate approximate fictrac rate 
+% this function only uses fictrac .dat file to estimate approximate fictrac rate
 % this function does not use the fictrac .txt file, or .log file,
 % but if user passes pth_vidlog and pth_log, loads/parses .txt and .log file, respectively, in case they can help in the future (but they all have independent problems of their own)
-% currently, this function should not have an error of more than +/- one-half imaging sample 
-% since, arbitrarily, the centroid of the imaging sample is considered the peak of the laser intensity, 
-% the trough/anti-peak would probably align more precisely (since it should be less ambiguously  it is the temporally shorter volume flyback period), 
-% this would require little change to this code except applying findpeaks to the inverse laser timeseries, 
-% error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data, 
+% currently, this function should not have an error of more than +/- one-half imaging sample
+% since, arbitrarily, the centroid of the imaging sample is considered the peak of the laser intensity,
+% the trough/anti-peak would probably align more precisely (since it should be less ambiguously  it is the temporally shorter volume flyback period),
+% this would require little change to this code except applying findpeaks to the inverse laser timeseries,
+% error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data,
 % and because the fictrac video is currently only used for visualization
 
 
@@ -44,8 +44,6 @@ arguments
     opt.doplt = [] %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
 doplt = opt.doplt;
-
-
 if isempty(doplt)
     doplt = any(strcmp('ftv', glb('plt')));
 end
@@ -56,188 +54,194 @@ elseif doplt==2
     gifvis = 'off';
 end
 
-if pth_vidlog
-    ftvl = parse_fictrac_vidlog(pth_vidlog);
-end
-if pth_log
-    try
-        [pthtmp, ~, ~] = fileparts(pth_log);
-        pth_log_parsed = [pthtmp filesep 'FT_LOG_PARSED_.mat'];
-        load(pth_log_parsed, 'log_timestamps', 'log_framecounts')
-    catch
-        [log_timestamps, log_framecounts] = parse_fictrac_log(pth_log, pth_log_parsed, ftvl(end)); %outputs: vlts (vid log
+try
+    load(pth_vidrs, 'ftvdsrs')
+catch
+
+    if pth_vidlog
+        ftvl = parse_fictrac_vidlog(pth_vidlog);
     end
+    if pth_log
+        try
+            [pthtmp, ~, ~] = fileparts(pth_log);
+            pth_log_parsed = [pthtmp filesep 'FT_LOG_PARSED_.mat'];
+            load(pth_log_parsed, 'log_timestamps', 'log_framecounts')
+        catch
+            [log_timestamps, log_framecounts] = parse_fictrac_log(pth_log, pth_log_parsed, ftvl(end)); %outputs: vlts (vid log
+        end
+    end
+
+    ftdat = read_fictrac_dat(pth_dat);
+    ftrate = 1e9/median(ftdat.deltaTimestamp);
+    goodper = ftrate/imrate;
+
+    if imrate > ftrate / 2
+        error(sprintf("imaging rate is approximately " + num2str(imrate) + " hz, while fictrac rate is approximately " + num2str(ftrate) + " hz; this algorithm will not work well if imaging rate is high, relative to fictrac rate; threshold set at half fictrac rate"))
+    end
+
+    %% load video, extract laser timeseries
+
+    ftvds = struct2cell(load(pth_vid)); %make sure loaded variable is named 'ftvds'; %ftvds is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
+    ftvds = ftvds{1};
+
+    ftvds = permute(ftvds, [2 3 1]);
+    szvd = size(ftvds);
+    ftvds = reshape(ftvds, [], size(ftvds, 3));
+    ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
+    ftvid_meanframe = imgaussfilt(ftvid_meanframe,smlenpx);
+    % ftvid_meanframe(25:end,:) = 0; %hack
+    [~,mxi] = sort(ftvid_meanframe(:), 'descend');
+
+    % ftvid_varframe = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
+    % ftvid_varframe(25:end,:) = 0; %hack
+    % ftvid_varframe = imgaussfilt(ftvid_varframe,smlenpx);
+    % [~,mxi] = sort(ftvid_varframe(:), 'descend');
+
+    laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of oscillations in the brightest numbrightpix pixels in the spatially smoothed, mean-t image
+    % laser_ts = laser_ts - mean(laser_ts);
+    % laser_ts = rescale(laser_ts);
+
+    num_vidframes = numel(laser_ts);
+    ftvds = reshape(ftvds, szvd);
+
+    if doplt
+        hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
+        hax = axes('Parent', hfg);
+        imagesc(hax, ftvid_meanframe); hold on;
+        % imagesc(hax, ftvid_varframe); hold on;
+        [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpx)); %plot with image to confirm these are good pixels for extracting laser timeseries
+        scatter(mxc,mxr,5,'red','filled')
+        pth_gif = [pth_vid '_mean_t_im_.gif'];
+        fig2gif(hfg, 1, pth_gif);
+    end
+
+
+    %% find peaks in the laser timeseries
+
+    laser_ts_smoothed = laser_ts;
+    if smlensec
+        smlen = smlensec*imrate;
+        laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', smlen);
+    end
+    [pk,lk,pw,pp] = findpeaks(laser_ts_smoothed);
+    pkdist = diff(lk);
+
+    [~, f, v] = ordernrank(pkdist);
+    % goodper = v(isoutlier(f));
+    goodpers = [floor(goodper) ceil(goodper)];
+
+    pkdistdiff = [pkdist(1)-1 diff(pkdist)];
+
+
+    %% find laser oscillation period by finding delay between signal and its inverse
+
+    pkhalfper = find_oscillation_halfperiod(laser_ts_smoothed);
+    pkhalfper = ceil(mean(goodpers));
+
+    %% crop before/after trial period by finding/cropping aperiodic peaks in the laser timeseries
+
+    %this worked better than running rmoutliers on peak prominences
+
+    [badpeaks_front] = crop_wrong_periods(pkdist, goodpers, numpkthr);
+    if badpeaks_front==0
+        badpeaks_front_msg = "there are no initial bad peaks to remove, the fictrac video may begin after imaging begins";
+    else
+        badpeaks_front_msg = 'there were bad peaks to remove at the front, so the imaging does seem to begin during the video, at least';
+    end
+
+    [badpeaks_back] = crop_wrong_periods(flip(pkdist), goodpers, numpkthr);
+    if badpeaks_back==0
+        badpeaks_back_msg = "there are no bad peaks at the end to remove, the fictrac video may end before imaging";
+    else
+        badpeaks_back_msg = 'there were bad peaks to remove at the end, so the imaging does seem to end during the video, at least';
+    end
+    keeppeakinds = badpeaks_front+1:numel(lk)-badpeaks_back;
+    % keeppeakinds = keeppeakinds(2:end);
+    peakperiods_good = unique(pkdist(keeppeakinds));
+    % if range(peakperiods_good)>max_peak_distance_change_defining_periodic
+    %     error("range of peakperiods_good should not exceed cycle_period_tiolerance")
+    % end
+
+    pkg = pk(keeppeakinds);
+    lkg = lk(keeppeakinds);
+    pwg = pw(keeppeakinds);
+    ppg = pp(keeppeakinds);
+    pkdistdiffg = pkdistdiff(keeppeakinds);
+
+    possible_frame_drops = find(abs(pkdistdiffg)>1);
+
+    % numgoodpeaks_to_plot = 3;
+    %peakinds_to_plot = 10; figure; plot(1:lk(peakinds_to_plot), laser_ts_smoothed(1:lk(peakinds_to_plot)), lk(1:peakinds_to_plot), pk(1:peakinds_to_plot), 'o')
+    % peakinds_to_plot = 185:badpeaks_front+numgoodpeaks_to_plot; figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
+    % peakinds_to_plot = numel(lk)-badpeaks_back-(numgoodpeaks_to_plot-1):numel(lk); figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
+
+    %% find slope (over peak half period) of laser timeseries (currently not used, but previously considered using slopes to define the oscillations against the non-oscillations, since laser oscillations have much bigger slopes)
+
+    dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
+
+    %% plot laser intensity timeseries with peaks marked
+
+    if doplt
+        peaks_timeseries = nan(size(laser_ts_smoothed));
+        peaks_timeseries(lkg) = pkg;
+        segx = 50;
+        pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
+        titlein = 'laser oscillation with peaks (ideally imaging volumes) marked in red';
+        yconst = 1;
+        mkr2 = 'o';
+        ylimtype = 'each';
+        tsplt(laser_ts_smoothed, y2=peaks_timeseries, pthgif=pth_gif, segx=segx, titlein=titlein, yconst=yconst, ymatch=ymatch, mkr2=mkr2)
+    end
+
+    %% find downsampling indices
+
+
+    numpk = numel(pkg);
+    fprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol) + newline)
+
+    if numpk~=numvol
+        error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
+    end
+
+    keepinds_vid = lkg(1)-pkhalfper:lkg(end)+pkhalfper;
+
+    lkgzeroed = lkg - keepinds_vid(1) + 1;
+
+    rsinds = zeros(size(keepinds_vid));
+    rsinds(lkgzeroed) = 1;
+    rsinds = bin2ind(logical(rsinds));
+    rsinds(rsinds==0) = nan;
+    rsinds = fillmissing(rsinds, 'nearest');
+
+    %% downsample video
+
+    ftvds = ftvds(:,:,keepinds_vid);
+    rsu = unique(rsinds(rsinds~=0),'stable'); %index of each volume, according to light flashes
+    ftvdsrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
+    for ri = 1:numel(rsu)
+        ftvdsrs(:,:,ri) = mean(ftvds(:,:,rsinds==rsu(ri)),3);
+    end
+
+    fprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)) + newline)
+
+    %% plot video before and after resampling
+
+    if doplt
+        title_prefix = 'pre resample';
+        pthgif = [pth_vid(1:end-4) '.gif'];
+        stackplt(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
+
+        title_prefix = 'post resample';
+        pthgif = [pth_vid(1:end-4) 'RS_.gif'];
+        stackplt(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
+    end
+
+    save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
+    fprintf("exiting downsample_fictrac_video" + newline)
+
+
+
 end
-
-ftdat = read_fictrac_dat(pth_dat);
-ftrate = 1e9/median(ftdat.deltaTimestamp);
-goodper = ftrate/imrate;
-
-if imrate > ftrate / 2
-    error(sprintf("imaging rate is approximately " + num2str(imrate) + " hz, while fictrac rate is approximately " + num2str(ftrate) + " hz; this algorithm will not work well if imaging rate is high, relative to fictrac rate; threshold set at half fictrac rate"))
-end
-
-%% load video, extract laser timeseries
-
-ftvds = struct2cell(load(pth_vid)); %make sure loaded variable is named 'ftvds'; %ftvds is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
-ftvds = ftvds{1};
-
-ftvds = permute(ftvds, [2 3 1]);
-szvd = size(ftvds);
-ftvds = reshape(ftvds, [], size(ftvds, 3));
-ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
-ftvid_meanframe = imgaussfilt(ftvid_meanframe,smlenpx);
-% ftvid_meanframe(25:end,:) = 0; %hack
-[~,mxi] = sort(ftvid_meanframe(:), 'descend');
-
-% ftvid_varframe = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
-% ftvid_varframe(25:end,:) = 0; %hack
-% ftvid_varframe = imgaussfilt(ftvid_varframe,smlenpx);
-% [~,mxi] = sort(ftvid_varframe(:), 'descend');
-
-laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of oscillations in the brightest numbrightpix pixels in the spatially smoothed, mean-t image
-% laser_ts = laser_ts - mean(laser_ts);
-% laser_ts = rescale(laser_ts);
-
-num_vidframes = numel(laser_ts);
-ftvds = reshape(ftvds, szvd);
-
-if doplt
-    hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
-    hax = axes('Parent', hfg);
-    imagesc(hax, ftvid_meanframe); hold on;
-    % imagesc(hax, ftvid_varframe); hold on;
-    [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpx)); %plot with image to confirm these are good pixels for extracting laser timeseries
-    scatter(mxc,mxr,5,'red','filled')
-    pth_gif = [pth_vid '_mean_t_im_.gif'];
-    fig2gif(hfg, 1, pth_gif);
-end
-
-
-%% find peaks in the laser timeseries
-
-laser_ts_smoothed = laser_ts;
-if smlensec
-    smlen = smlensec*imrate;
-    laser_ts_smoothed = smoothdata(laser_ts_smoothed, 'gaussian', smlen);
-end
-[pk,lk,pw,pp] = findpeaks(laser_ts_smoothed);
-pkdist = diff(lk);
-
-[~, f, v] = ordernrank(pkdist);
-% goodper = v(isoutlier(f));
-goodpers = [floor(goodper) ceil(goodper)];
-
-pkdistdiff = [pkdist(1)-1 diff(pkdist)];
-
-
-%% find laser oscillation period by finding delay between signal and its inverse
-
-pkhalfper = find_oscillation_halfperiod(laser_ts_smoothed);
-pkhalfper = ceil(mean(goodpers));
-
-%% crop before/after trial period by finding/cropping aperiodic peaks in the laser timeseries
-
-%this worked better than running rmoutliers on peak prominences
-
-[badpeaks_front] = crop_wrong_periods(pkdist, goodpers, numpkthr);
-if badpeaks_front==0
-    badpeaks_front_msg = "there are no initial bad peaks to remove, the fictrac video may begin after imaging begins";
-else
-    badpeaks_front_msg = 'there were bad peaks to remove at the front, so the imaging does seem to begin during the video, at least';
-end
-
-[badpeaks_back] = crop_wrong_periods(flip(pkdist), goodpers, numpkthr);
-if badpeaks_back==0
-    badpeaks_back_msg = "there are no bad peaks at the end to remove, the fictrac video may end before imaging";
-else
-    badpeaks_back_msg = 'there were bad peaks to remove at the end, so the imaging does seem to end during the video, at least';
-end
-keeppeakinds = badpeaks_front+1:numel(lk)-badpeaks_back;
-% keeppeakinds = keeppeakinds(2:end);
-peakperiods_good = unique(pkdist(keeppeakinds));
-% if range(peakperiods_good)>max_peak_distance_change_defining_periodic
-%     error("range of peakperiods_good should not exceed cycle_period_tiolerance")
-% end
-
-pkg = pk(keeppeakinds);
-lkg = lk(keeppeakinds);
-pwg = pw(keeppeakinds);
-ppg = pp(keeppeakinds);
-pkdistdiffg = pkdistdiff(keeppeakinds);
-
-possible_frame_drops = find(abs(pkdistdiffg)>1);
-
-% numgoodpeaks_to_plot = 3;
-%peakinds_to_plot = 10; figure; plot(1:lk(peakinds_to_plot), laser_ts_smoothed(1:lk(peakinds_to_plot)), lk(1:peakinds_to_plot), pk(1:peakinds_to_plot), 'o')
-% peakinds_to_plot = 185:badpeaks_front+numgoodpeaks_to_plot; figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
-% peakinds_to_plot = numel(lk)-badpeaks_back-(numgoodpeaks_to_plot-1):numel(lk); figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
-
-%% find slope (over peak half period) of laser timeseries (currently not used, but previously considered using slopes to define the oscillations against the non-oscillations, since laser oscillations have much bigger slopes)
-
-dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
-
-%% plot laser intensity timeseries with peaks marked
-
-if doplt
-    peaks_timeseries = nan(size(laser_ts_smoothed));
-    peaks_timeseries(lkg) = pkg;
-    segx = 50;
-    pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
-    titlein = 'laser oscillation with peaks (ideally imaging volumes) marked in red';
-    yconst = 1;
-    mkr2 = 'o';
-    ylimtype = 'each';
-    tsplt(laser_ts_smoothed, y2=peaks_timeseries, pthgif=pth_gif, segx=segx, titlein=titlein, yconst=yconst, ymatch=ymatch, mkr2=mkr2)
-end
-
-%% find downsampling indices
-
-
-numpk = numel(pkg);
-fprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol) + newline)
-
-if numpk~=numvol
-    error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
-end
-
-keepinds_vid = lkg(1)-pkhalfper:lkg(end)+pkhalfper;
-
-lkgzeroed = lkg - keepinds_vid(1) + 1;
-
-rsinds = zeros(size(keepinds_vid));
-rsinds(lkgzeroed) = 1;
-rsinds = bin2ind(logical(rsinds));
-rsinds(rsinds==0) = nan;
-rsinds = fillmissing(rsinds, 'nearest');
-
-%% downsample video
-
-ftvds = ftvds(:,:,keepinds_vid);
-rsu = unique(rsinds(rsinds~=0),'stable'); %index of each volume, according to light flashes
-ftvdsrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
-for ri = 1:numel(rsu)
-    ftvdsrs(:,:,ri) = mean(ftvds(:,:,rsinds==rsu(ri)),3);
-end
-
-fprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)) + newline)
-
-%% plot video before and after resampling
-
-if doplt
-    title_prefix = 'pre resample';
-    pthgif = [pth_vid(1:end-4) '.gif'];
-    stackplt(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
-
-    title_prefix = 'post resample';
-    pthgif = [pth_vid(1:end-4) 'RS_.gif'];
-    stackplt(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
-end
-
-save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
-fprintf("exiting downsample_fictrac_video" + newline)
-
-
 
 end
 

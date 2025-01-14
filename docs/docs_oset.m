@@ -65,7 +65,7 @@ here is a complete list of vbins and functions they hold options for (see also s
     roi, roimake   (called from a2p)
     ma, roimauto   (called from roimake)
     roif, roifauto   (called from a2p)
-    nrm, roits   (called from roimake and roifauto)
+    nrm, roiresp   (called from roimake and roifauto)
     pop, popcmp   (called from a2p)
     bmp, bumpcmp   (called from popcmp)
     mfit, mfit   (called from a2p)

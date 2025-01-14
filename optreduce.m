@@ -1,4 +1,4 @@
-function o = optreduce(o, vbin)
+function [o, oreturn] = optreduce(o, vbin)
 
 %remove redundancy in options sets (before writing to options file and assigning options set index)
 
@@ -7,28 +7,35 @@ arguments
     vbin
 end
 
-if ~iscell(vbin)
-    vbin = {vbin};
+nonfunctional_vbin = {'sp', 'tp', 'imhsv'};
+
+if isfield(o, vbin)
+    error("you passed o with substruct " + vbin + " but should pass that substruct itself")
 end
 
-for m = 1:numel(vbin)
-    vbintmp = vbin{m};
-
-    switch vbintmp
-        case 'roi'
-
-            o = optreduce_roi(o);
-
-        case 'mf'
-
-        case 'bmp'
-
-        otherwise
-
-            fprintf("no reduction routine for opt " + vbintmp + newline)
-
+oreturn = struct;
+for m = 1:numel(nonfunctional_vbin)
+    if isfield(o, nonfunctional_vbin{m})
+        oreturn.(nonfunctional_vbin{m}) = o.(nonfunctional_vbin{m});
+        o = rmfield(o, nonfunctional_vbin{m});
     end
+end
+
+switch vbin
+
+    case 'roi'
+
+        o = optreduce_roi(o);
+
+    case 'mf'
+
+    case 'bmp'
+
+    otherwise
+
+        fprintf("no reduction routine for opt " + vbin + newline)
 
 end
+
 
 end

@@ -102,7 +102,7 @@ if do_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is
         nx = size(stack, 2);
         if stack_size_is_known %if you have access to metadata before entering this function
             if ~isequal(prod(sz), numel(stack))
-                error("prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead")
+                error("prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tiff written by tiffile imwrite, but there should be no mismatch when reading scanimage output files")
             end
         else %e.g. if you don't have metadata
             if isfield(mdtif.tifinfo, 'Software') && contains(mdtif.tifinfo.Software, 'hChannels.channelSave')
@@ -130,13 +130,13 @@ if do_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is
                 if isequal(prod(sztmp), numel(stack))
                     fprintf("size inferred from metadata matches in number elements but size of all dimensions cannot be determined, so stack_size_is_known will not be set to true, and output will be 3d with possible collapsed czt dimensions")
                 else
-                    error("did not pass metadata into tifld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
+                    error("did not pass metadata into tifld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
                 end
             end
             fclose(mdtif.fid);
         end
     catch
-        stack = []; %clear a potentiallylarge variable
+        stack = []; %clear a potentially large variable
         stack = TIFFStack(pthtif); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
     end
 end

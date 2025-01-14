@@ -1,10 +1,10 @@
-function roidat = roidatmake(stack, roimask)
+function roidat = roidatmake(stackmnt, roimask)
 
-numchan = size(stack,5);
+numchan = size(stackmnt,5);
 roidat = cell(numchan, 1);
 for c = 1:numchan
     if ~isempty(roimask{c})
-        roidat{c} = roidatmake_onechan(stack(:,:,:,:,c), roimask{c});
+        roidat{c} = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, c); 
     end
 end
 
@@ -13,23 +13,16 @@ end
 
 
 
-function roidat = roidatmake_onechan(stack, roimask)
+function roidat = roidatmake_onechan(stackmnt_onechan, roimask_onechan, chan)
 
+roiwt = roiwtmake(stackmnt_onechan, roimask_onechan);
+numroi = size(roiwt,1);
+roicen = find_roi_centroids(roimask_onechan);
 
-num_roim = size(roimask, 4);
-roiwt = zeros(num_roim, numel(sum(roimask, 4)), 'logical');  %initialize a logical matrix that is size (centroids, voxels)
-for mi = 1:num_roim
-    tmp = roimask(:,:,:,mi);
-    [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-    roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
-end
-roicen = find_roi_centroids(roimask);
+mask_allroi = zeros(size(stackmnt_onechan, 1), size(stackmnt_onechan, 2), size(stackmnt_onechan, 3), 'logical');
 
-
-mask_allroi = zeros(size(stack, 1), size(stack, 2), size(stack, 3), 'logical');
-
-roipx = cell(num_roim, 1);
-pixinds_bnd_roi = cell(num_roim, 1);
+roipx = cell(numroi, 1);
+pixinds_bnd_roi = cell(numroi, 1);
 bnd2d = zeros(size(mask_allroi), 'logical');
 for ii = 1:length(roipx)
     roipx{ii} = find(vec(roiwt(ii,:))); %pixel indices of each roi
@@ -63,8 +56,8 @@ for ii = 1:numel(pixinds_allroi) %one pixel at a time
 end
 
 
-
-roidat.numroi = num_roim;
+roidat.chan = chan;
+roidat.numroi = numroi;
 roidat.roipx = roipx;  %pixel indices of each roi, one roi per cell
 roidat.roiwt = roiwt; %boolean mask vector of each roi
 roidat.roicen = roicen;
@@ -76,7 +69,7 @@ roidat.roinumpix = [];
 roidat.roipixvals_binned = [];
 roidat.roipixvals_edges = [];
 roidat.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipx)
-roidat.stackmnt = single(mean(stack,4)); %roi timeseries are single precision, so this can be too, it won't be very big
+roidat.stackmnt = stackmnt_onechan; %index after taking mean (if glb('stackmnt') isn't set, to save ram; %roi timeseries are single precision, so this can be too, it won't be very big
 
 roidat = orderfields(roidat);
 

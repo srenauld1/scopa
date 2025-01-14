@@ -14,7 +14,11 @@ if numchan==2
     fprintf("averaging both channels to create the images for defining croplim" + newline)
 end
 
-stackmnt = single(mean(stack, [4 5])); %native is slow and not necessary for mean t
+stackmnt = glb('stackmnt');
+if isempty(stackmnt)
+    stackmnt = single(mean(stack, 4)); %native is slow and not necessary for mean t
+end
+stackmnt = mean(stackmnt, 5); %for croplim, average channels too
 
 %% first define z limits
 
@@ -91,7 +95,7 @@ croplim.z = [iz(1), iz(2)];
 croplim.t = [it(1), it(2)];
 croplim.c = [ic(1), ic(2)];
 
-croplim = structfile(pthcroplim, s=croplim, nm=nmcroplim, useprefix=1);
+croplim = structfile(pthcroplim, s=croplim, nm=nmcroplim, useprefix=1, dupe=1); %allow duplicates because multiple croplim can be the same 
 
 
 

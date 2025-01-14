@@ -1,4 +1,4 @@
-function daqrs = daqld(numvol, numslice, numslice_withflyback, sampper, balldia, voltmin, voltmax, opt)
+function daqrs = daqld(pthstack, opt, doplt)
 
 
 % uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
@@ -31,72 +31,48 @@ function daqrs = daqld(numvol, numslice, numslice_withflyback, sampper, balldia,
 
 
 arguments
-    numvol {mustBeNumeric}
-    numslice {mustBeNumeric}
-    numslice_withflyback {mustBeNumeric}
-    sampper {mustBeNumeric} %imaging frame period (1/volrate)
-    balldia {mustBeNumeric}
-    voltmin {mustBeNumeric}
-    voltmax {mustBeNumeric}
-    opt.vnormal = {'Time', 'heat', 'virmenIteration'}; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-    opt.vcircular = {'ficTracIntSide', 'ficTracIntForward', 'ficTracYaw', 'g4panels'}; %list circular daq variables you want to process
-    opt.vcategorical = {'ftcam'}; %list categorical daq variables you want to process
-    opt.toballscale = {'ficTracIntSide', 'ficTracIntForward'}; %define which vars to rescale from radians to mm
-    opt.tounwrap = {'ficTracIntSide', 'ficTracIntForward'}; %define which vars to unwrap
-    opt.tozero = {'ficTracIntSide', 'ficTracIntForward'}; %%define which vars to zero (force to start at 0)
-    opt.recdatenum = [] %if not passed, or empty, will be set to '*' for daq file search
-    opt.flynum = [] %if not passed, or empty, will be set to '*' for daq file search
-    opt.trialnum = [] %if not passed, or empty, will be set to '*' for daq file search
-    opt.dirstack = '' %can pass dirstack instead of pth_daq and/or pth_daqrs
-    opt.pth_daq char = '' %path to daq data from experiment; can pass dirstack, and optional recdatenum, flynum, trialnum instead of pth_daq and/or pth_daqrs
-    opt.pth_daqrs char = '' %save path for resampled daq data; can pass dirstack instead of pth_daq and/or pth_daqrs
-    opt.slopelensec {mustBeNumeric} = 0.2 %slope length (seconds) for computing derivative of each daq variable
-    opt.slopeord {mustBeNumeric} = 2 %slope order for computing derivative of each daq variable (should just stay 2)
-    opt.useinds = 'none' %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-    opt.usefbl logical = 1 %use flyback lines when defining resampling inds if useinds is not none; flyback lines are probably always too fast to ever make this parameter matter
-    opt.usefbf logical = 1%use flyback frames when defining resampling inds if useinds is not none; this param could be relevant for slow volume rates, or flyback that is slow, relative to non-flyback
-    opt.doplt = []
-    opt.idxreg char = 'start' %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
+    pthstack
+    opt
+    doplt = []
 end
 
-vnormal = opt.vnormal;
-vcircular = opt.vcircular;
-vcategorical = opt.vcategorical;
-toballscale = opt.toballscale;
-tounwrap = opt.tounwrap;
-tozero = opt.tozero;
-recdatenum = opt.recdatenum;
-flynum = opt.flynum;
-trialnum = opt.trialnum;
-dirstack = opt.dirstack;
-pth_daq = opt.pth_daq;
-pth_daqrs = opt.pth_daqrs;
-slopelensec = opt.slopelensec;
-slopeord = opt.slopeord;
-useinds = opt.useinds;
-usefbl = opt.usefbl;
-usefbf = opt.usefbf;
-doplt = opt.doplt;
-idxreg = opt.idxreg;
+balldia = opt.balldia; % mm, used to convert fictrac variables into mm
+voltmin = opt.voltmin; % daq voltage min; need to find this in metadata
+voltmax = opt.voltmax; % daq voltage max, need to find this in metadata
+vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
+vcircular = opt.vcircular; %list circular daq variables you want to process
+vcategorical = opt.vcategorical; %list categorical daq variables you want to process
+toballscale = opt.toballscale; %define which vars to rescale from radians to mm
+tounwrap = opt.tounwrap;  %define which vars to unwrap
+tozero = opt.tozero; %%define which vars to zero (force to start at 0)
+slopelensec = opt.slopelensec; %slope length (seconds) for computing derivative of each daq variable
+slopeord = opt.slopeord; %slope order for computing derivative of each daq variable (should just stay 2)
+useinds = opt.useinds; %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
+usefbl = opt.usefbl; %use flyback lines when defining resampling inds if useinds is not none; flyback lines are probably always too fast to ever make this parameter matter
+usefbf = opt.usefbf; %use flyback frames when defining resampling inds if useinds is not none; this param could be relevant for slow volume rates, or flyback that is slow, relative to non-flyback
+idxreg = opt.idxreg;  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
+
+id = idmake(pthstack); %just in case id info gets used below
+
+pth_daq_pat = [id.dirstack id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+pth_daq = rdir(pth_daq_pat);
+if isempty(pth_daq)
+    error("this daq file does not exist: " + pth_daq_pat)
+end
+pth_daq = pth_daq.name;
+pth_daqrs = [id.dirstack id.recid '_daqrs_.mat'];
+
+pthmd = [id.dirstack id.recid '_mdsi_.txt'];
+numslice_withflyback = structfile(pthmd, nm='numslice_withflyback');
+numslice = structfile(pthmd, nm='numslice');
+numvol = structfile(pthmd, nm='numvol');
+volrate = structfile(pthmd, nm='volrate');
+sampper = 1/volrate;
 
 if isempty(doplt)
     doplt = any(strcmp('daq', glb('plt')));
 end
-if isempty(recdatenum)
-    recdate = '*';
-else
-    recdate = num2str(recdatenum);
-end
-if isempty(flynum)
-    fly = '*';
-else
-    fly = num2str(flynum);
-end
-if isempty(trialnum)
-    trial = '*';
-else
-    trial = num2str(trialnum);
-end
+
 if ~isstring(vnormal)
     vnormal = string(vnormal); %could also convert to char here
 end
@@ -108,29 +84,13 @@ if ~isstring(vcategorical)
 end
 
 
-if isempty(pth_daqrs)
-    if isempty(dirstack)
-        error(sprintf("dirstack cannot be empty if pth_daqrs is empty"))
-    end
-    pth_daqrs = [dirstack num2str(recdatenum) '_' num2str(flynum) '_' num2str(trialnum) '_daqrs_.mat'];
-end
-
 if isfile(pth_daqrs)
- 
+
     load(pth_daqrs, 'daqrs')
 
 else
 
     fprintf("daqrs file '" + pth_daqrs + "' does not exist; making daqrs now" + newline)
-
-    if isempty(pth_daq)
-        if isempty(dirstack)
-            error(sprintf("dirstack cannot be empty if pth_daq is empty; pth_daq may be empty because you don't have the daq file, or it's named with inavlid format"))
-        end
-        pth_daq_pat = [dirstack recdate '-' fly '_daqData_*_trial_' sprintf( '%03d', trial ) '.mat'];
-        pth_daq = rdir(pth_daq_pat);
-        pth_daq = pth_daq.name;
-    end
 
     pthfigpre = pth_daqrs(1:end-4);
 
@@ -216,9 +176,9 @@ else
     for si = 1:num_resamples
 
         newrow = table();
-        newrow.recdatenum = {recdatenum};
-        newrow.flynum = {flynum};
-        newrow.trialnum = {trialnum};
+        newrow.recdatenum = {id.recdatenum};
+        newrow.flynum = {id.flynum};
+        newrow.trialnum = {id.trialnum};
         if strcmp(useinds, 'none')
             resample_inds = [];
             newrow.methodrs = {'volume_approx'};
