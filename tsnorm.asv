@@ -36,6 +36,8 @@ for k = 1:length(normall)
         error("normtmp must be char")
     end
 
+    normtmp='dff010dff001000rscrsc001100z'
+
     while normtmp
 
         mtch = []; %reset on each loop

@@ -17,7 +17,7 @@ end
 
 if isempty(roimask)
     maskinput = 0;
-    saveresp = 0;
+    saveresp = 1;
     domm = opt.domm;
     doma = opt.doma;
     docm = opt.docm;
@@ -54,7 +54,7 @@ if ~maskinput
     stack = stackcrop(stack, pthstack, regionex);
 end
 
-stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (ie don't use glb('stackmnt') because that is the whole fov)
+stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (don't use glb('stackmnt') because that is the whole fov)
 
 %% draw rois 
 
@@ -81,7 +81,7 @@ end
 %% functional (caiman) roi responses
 
 if docm
-    roifauto(pthpy, opt.cm, regionex=opt.regionex, maskname=opt.mm.maskname)
+    [respcm, roimask] = roifauto(pthpy, opt.cm, regionex=opt.regionex, maskname=opt.mm.maskname);
 end
 
 %% quality control

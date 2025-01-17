@@ -22,7 +22,7 @@ for m = 1:numel(regionex)
 
     o.roi.regionex = regionex{m};
     o.roi.domm = 1; 
-    o = odf(o, {'roi'}, regionex{m});
+    o = odf(o, 'roi', regionex{m});
 
 end
 

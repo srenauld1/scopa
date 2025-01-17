@@ -56,7 +56,7 @@ end
 
 
 if do3d==1 && size(stackmnt, 3)==1 %if z dim is singleton
-    fprintf('WARNING, cannot make requested 3d mask because stackmnt is 2d, making 2d mask instead')
+    fprintf("WARNING, cannot make requested 3d mask because stackmnt is 2d, making 2d mask instead" + newline)
     do3d = 0; %override if stackmnt is only 2d
 end
 
@@ -254,6 +254,7 @@ for i = 1:numroi_final
     roiwt(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
 end
 
+roiwt = roiwt';
 if ndims(stackmnt)==2
     roimaskout = reshape(roiwt, [size(stackmnt), 1, numroi_final] );
 elseif ndims(stackmnt)==3

@@ -34,7 +34,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
         o.roi.mm.maskname = {'left', 'right'};
     end
 
-    o = odf(o, {'roi'}, regionex{m});
+    o = odf(o, 'roi', regionex{m});
 
 end
 

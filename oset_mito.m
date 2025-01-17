@@ -22,9 +22,9 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
     o.roi.domm = 1; %do draw rois
     o.roi.mm.maskname = {'lo'};
     
-    o.roi.doma = 0; %do automated morph rois
-    o.roi.ma.numroi = 64;
-    o.roi.ma.maskmake = 'edge';
+    o.roi.doma = 1; %do automated morph rois
+    o.roi.ma.numroi = 1024;
+    % o.roi.ma.maskmake = 'edge';
 
     o.roi.nrm.post = {'f'};
     
@@ -35,7 +35,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
     % o.mf.opl.MaxFunctionEvaluations = Inf; %3000;
     % o.mf.opl.MaxIterations = 5000; %1000    else
 
-    o = odf(o, {'roi'}, regionex{m});
+    o = odf(o, 'roi', regionex{m});
 
 end
 

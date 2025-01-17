@@ -412,6 +412,33 @@ d.sp.ir = []; %scalar/vector; which rois to plot in ; empty to skip
 d.sp.roi_color = [1, 0, 0]; %color for rois, if shown
 d.sp.roialpha = 0.3; %transparency for rois, if shown
 
+    d.sp.pthgif char = ''
+    d.sp.gifvis char = 'on'
+    d.sp.roipx = []
+    d.sp.ir = []
+    d.sp.roicols = [1 0 0]
+    d.sp.roialpha = 0.3
+    d.sp.cmap = gray(256) %colormap or 'rgb' if stack is truecolor (final dim length 3 . . . can be any numeric type)
+    d.sp.title_prefix char = ''
+    d.sp.title_suffix = ''
+    d.sp.index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
+    d.sp.szf = 1 %% scalar denoting fig size; 0-1 makes square until 1 makes largest square fig for your screen, sz 1-2 fills larger dimension until 2 is fullscreen
+    d.sp.numcolorsgif = 128
+    d.sp.dmplt = []; %dim order; 1 and 2 are rows and columns of each image, respectively, >2 are subplots with standard matlab arrangement (left to right, top to bottom); dimensions in parentheses are put in separate frames of gif; dimensions in dmstack, but not dmplt, are averaged; for example, if dmstack='yxztc' and dmplt='xyc(t)': each frame has c images, each image is x by y (row by column), there are t frames in the gif, and for all images z has been averaged, and there is no k dimension
+    d.sp.dmstack = [] %input stack dimensions; make empty for default (yxztck)
+    d.sp.dr = [0,1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
+    d.sp.iy = [];
+    d.sp.ix = [];
+    d.sp.iz = [];
+    d.sp.it = [];
+    d.sp.ic = []; %pmt indices (red or green channel
+    d.sp.ik = []; %rgb color channel indices
+    d.sp.doui = 0;
+    d.sp.stackjust = 'center' %how to justify stack image; center, minimize, none
+    d.sp.marginfg = 0.05;
+    d.sp.marginax = 0.01;
+    d.sp.fontsz = 10;
+    d.sp.dosave = 1 %whether to write to gif
 
 %% imhsv (hsvplt and hsvcmp: make and plot hsv images)
 

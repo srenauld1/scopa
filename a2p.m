@@ -81,6 +81,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
     % gatmp
+    % mitotmp
 
     %% model
 

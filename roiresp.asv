@@ -83,17 +83,17 @@ catch
         error("for stack input, all pixels should be goodinds")
     end
 
+    if any(goodinds) %some pre-normalizations (first call to tsnorm, above) will output empty (like dff when F0 is too low, divides by zero); some caiman runs (with bad params) will output all nans 
 
-    %%%% EXTRACT RESPONSES FOR EACH ROI %%%%
-    for k = 1:numchan
-        if chanuse(k)
-            if any(goodinds(:,:,k)) %some pre-normalizations (first call to tsnorm, above) will output empty (like dff when F0 is too low, divides by zero); some caiman runs (with bad params) will output all nans
+        %%%% EXTRACT RESPONSES FOR EACH ROI %%%%
+        for k = 1:numchan
+            if chanuse(k)
                 respnew{k} = zeros(numel(wtsz{k}), size(resp,2), 'single'); %make it cell since each channel can have different number rois
                 varsz = whos('resp');
                 numseg = ceil(varsz.bytes/memthr);
                 if numseg>1 %if resp is larger than memthr, convert to single (double or single required for mtimes, which is by far fastest way to do this part) in segments to use less ram, since respnew, even though it is also single precision, is generally much smaller than resp
                     seglen = ceil(size(resp,2)/numseg);
-                    for w = 1:numseg
+                    for w = 1:numseg 
                         idx = [1:seglen]+seglen*(w-1);
                         idx(idx>size(resp,2)) = [];
                         if ~isempty(goodinds) && ~all(goodinds(:,:,k))
@@ -126,16 +126,15 @@ catch
                     respnew{k} = norm_cross_chan(respnew{k}, t=t, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
                 end
 
-            else
-
-                respnew{k} = nan; %if there were no good pixels/rois for channel k
-
             end
         end
+
+
+    else
+
+        resp = nan; %if there were no good pixels/rois
+
     end
-
-
-    resp = respnew;
 
 
     if saveresp

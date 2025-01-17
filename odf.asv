@@ -26,9 +26,9 @@ in particular: if a field is in both oin.vbin and d.vbin, use the value in oin.v
 %}
 
 arguments
-    oin = [] %input options struct for overwriting defaults in default options struct d; can be omitted to just invoke defaults for all vbin listed in vbin (or all possible vbin is vbin is empty)
+    oin = [] %input options struct for overwriting defaults in default options struct d
     vbin = '' %char, or cell of char; empty char '' is the same as all vbin (do not use []); if nonempty, and copybin is nonempty, update vbin and place results in copybin, and update ~vbin without placing in copybin; if nonempty and copybin is empty, just update vbin; if empty and copybin is nonempty, update all and place all in copybin
-    copybin = '' %char, or cell of char, or empty to skip; subfields into which vbin is copied
+    copybin = '' %char, or cell of char; subfields into which vbin is copied; empty char to skip (not [])
     opt.files = 0 %whether to use spec to find stack files, or skip
     opt.fill = 0; %whether to fill all default nestings
     opt.unpack = 0; %if output is a single vbin in nestvalid, do not nest in enclosing struct (losing the name of the vbin in the output)
@@ -39,15 +39,17 @@ fill = opt.fill;
 unpack = opt.unpack;
 pthopt = opt.pthopt;
 
-
-
-if ischar(oin) || isstring(oin) || iscellstr(oin) || ( iscell(oin) && isstring(oin{1}) )  % check if oin was omitted, if so, first argument was vbin; update arguments accordingly
-    vbin = oin;
-    oin = [];
-end
 if ~( ischar(vbin) || isstring(vbin) || iscellstr(vbin) || ( iscell(vbin) && isstring(vbin{1}) ) )
     error("vbin must be char or string or cell of char or string; if you want it to be empty, use empty char '' ")
 end
+if ~( ischar(copybin) || isstring(copybin) || iscellstr(copybin) || ( iscell(copybin) && isstring(copybin{1}) ) )
+    error("vbin must be char or string or cell of char or string; if you want it to be empty, use empty char '' ")
+end
+if ischar(oin) || isstring(oin) || iscellstr(oin) || ( iscell(oin) && isstring(oin{1}) )  %can't omit oin because odf won't know if empty first argument 
+    vbin = oin;
+    oin = [];
+end
+
 
 
 %%%% load defaults %%%%

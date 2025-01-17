@@ -24,7 +24,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
         o.roi.nrm.post = {'dff008000'};
     end
 
-    o = odf(o, {'roi'}, regionex{m});
+    o = odf(o, 'roi', regionex{m});
 
 end
 

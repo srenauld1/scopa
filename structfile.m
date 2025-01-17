@@ -163,7 +163,11 @@ if isfile(pth)
         if numel(fnmatches)==numel(nmfile) %if all vars in file follow default naming pattern (prefix with consecutive numbers)
             nmnumstr = cellflat(regexp(nmfile,'\d+','match'));
             nmnums = cellfun(@str2double, nmnumstr);
-            prefix_derived = unique(erase(nmfile, nmnumstr));
+            prefix_derived = [];
+            for k = 1:numel(nmfile)
+                prefix_derived = [prefix_derived erase(nmfile(k), nmnumstr(k))];
+            end
+            prefix_derived = unique(prefix_derived);
             if ~isscalar(prefix_derived)
                 error("default pattern can only use one prefix")
             end

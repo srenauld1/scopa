@@ -25,7 +25,7 @@ for m = 1:numel(regionex)
         o.roi.nrm.post = {'rsc000100'};
     end
 
-    o = odf(o, {'roi'}, regionex{m});
+    o = odf(o, 'roi', regionex{m});
 
 end
 

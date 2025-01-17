@@ -41,13 +41,13 @@ roiman_allchan = cell(numchan, 1);
 for c = 1:numchan
     chan_combine = unique([chan chancp]); %combine in case you want to copy a previously drawn channel, and also want to currently draw another channel
     if ismember(c,chan_combine)
-        mask_suffix = ['_' regionex '_' maskname '_chn' num2str(c) '_roiman'];
-        pth_maskman = insertBefore(pthstack, '_.mat', mask_suffix);
+        fnsuffix = ['_' regionex '_' maskname '_chn' num2str(c) '_roiman'];
+        pth_maskman = insertBefore(pthstack, '_.mat', fnsuffix);
         try
-            roiman = struct2cell(load(pth_maskman));
+            roiman = struct2cell(load(pth_maskman)); %make sure it's called roiman (in case using old mask)
             roiman = roiman{1};
             if all(roiman(:)==1)
-                fprintf("WARNING, MASK MANUAL CHANNEL" + num2str(c) + " IS ALL ONES FOR regionex: " + regionex + newline)
+                fprintf("WARNING, MASK MANUAL FOR CHANNEL" + num2str(c) + " IS ALL ONES FOR regionex: " + regionex + newline)
             end
         catch
             roiman = roidraw_onechan(stackmnt(:,:,:,:,c), regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap);
@@ -112,7 +112,6 @@ if draw_manual
     prompt = sprintf("PRESS 1 TO DRAW ON EACH SLICE, PRESS 0 TO DRAW ON THE MEAN Z PROJECTION (SHOWN): ");
     draw_on_meanzt = ~input(prompt);
 
-    flag_allz = 0;
     if draw_on_meanzt
         stackdraw = stackmnzt;
         flag_allz = 1;

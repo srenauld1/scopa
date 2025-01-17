@@ -77,9 +77,9 @@ for j = 1:numsubplot
     % hax{j}.YLim = [1 numypix]; %this cuts edge pixels in half, which makes aspect ratio actually wrong; does it do anything else?why do this instead of axis image or dataaspectratio 1 1 1???
     if stackrange==0
         hax{j}.CLim = dr+stackmin;
-        htx2{j} = text(hax{j}, 0.5, 0.25, 'STACK IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'red');
-        htx2{j} = text(hax{j}, 0.5, 0.5, 'STACK IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'green');
-        htx2{j} = text(hax{j}, 0.5, 0.75, 'STACK IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'blue');
+        htx2{j} = text(hax{j}, 0.5, 0.25, 'CONSTANT STACK', 'Units', 'normalized', 'FontSize', fontlarge, 'Color', 'red');
+        htx2{j} = text(hax{j}, 0.5, 0.5, 'CONSTANT STACK', 'Units', 'normalized', 'FontSize', fontlarge, 'Color', 'green');
+        htx2{j} = text(hax{j}, 0.5, 0.75, 'CONSTANT STACK', 'Units', 'normalized', 'FontSize', fontlarge, 'Color', 'blue');
         htx2{j}.PickableParts = 'none'; %so you can capture click on image beneath the text
         htx2{j}.HorizontalAlignment = 'center';
         htx2{j}.VerticalAlignment = 'middle';

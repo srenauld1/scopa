@@ -16,7 +16,7 @@ arguments
     opt.index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
     opt.szf = 1 %% scalar denoting fig size; 0-1 makes square until 1 makes largest square fig for your screen, sz 1-2 fills larger dimension until 2 is fullscreen
     opt.numcolorsgif = 128
-    opt.dmplt = []; %dim order; 1 and 2 are rows and columns of each image, respectively, >2 are subplots with standard matlab arrangement (left to right, top to bottom); dimensions in parentheses are put in separate frames of gif; dimensions in dmstack, but not dmplt, are averaged; for example, if dmstack='yxztc' and dmplt='xyc(t)': each frame has c images, each image is x by y (row by column), there are t frames in the gif, and for all images z has been averaged, and there is no k dimension  
+    opt.dmplt = []; %dim order; 1 and 2 are rows and columns of each image, respectively, >2 are subplots with standard matlab arrangement (left to right, top to bottom); dimensions in parentheses are put in separate frames of gif; dimensions in dmstack, but not dmplt, are averaged; for example, if dmstack='yxztc' and dmplt='xyc(t)': each frame has c images, each image is x by y (row by column), there are t frames in the gif, and for all images z has been averaged, and there is no k dimension
     opt.dmstack = [] %input stack dimensions; make empty for default (yxztck)
     opt.dr = [0 1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
     opt.iy = [];
@@ -30,10 +30,36 @@ arguments
     opt.marginfg = 0.05;
     opt.marginax = 0.01;
     opt.fontsz = 10;
-    opt.dosave = 1 %whether to write to gif 
+    opt.dosave = 1 %whether to write to gif
 end
 
-eval(structvars(opt).'); %bad practice; turn opt into local variables with the same name as opt fields; using this function because there are so many here, but it's bad practice
+pthgif = opt.pthgif;
+gifvis = opt.gifvis;
+roipx = opt.roipx;
+ir = opt.ir;
+roicols = opt.roicols;
+roialpha = opt.roialpha;
+cmap = opt.cmap;
+title_prefix = opt.title_prefix;
+title_suffix = opt.title_suffix;
+index_labels = opt.index_labels;
+szf = opt.szf;
+numcolorsgif = opt.numcolorsgif;
+dmplt = opt.dmplt;
+dmstack = opt.dmstack;
+dr = opt.dr;
+iy = opt.iy;
+ix = opt.ix;
+iz = opt.iz;
+it = opt.it;
+ic = opt.ic;
+ik = opt.ik;
+doui = opt.doui;
+stackjust = opt.stackjust;
+marginfg = opt.marginfg;
+marginax = opt.marginax;
+fontsz = opt.fontsz;
+dosave = opt.dosave;
 
 clear roiolmake %to clear the persistent variable within
 
@@ -44,19 +70,19 @@ end
 if ~exist('dmstackdf', 'var') || isempty(dmstackdf)
     dmstackdf = glb('dmstackdf');
     if isempty(dmstackdf)
-        fprintf("using dmdf yxztck" + newline)
+        fprintf("using dmstackdf yxztck" + newline)
         dmstackdf = 'yxztck';
     end
 end
 
 
-dimlabels = vec(num2cell(dmstackdf)); 
+dimlabels = vec(num2cell(dmstackdf));
 maxnumdims = numel(dmstackdf);
 max_num_inds_to_print = 10;
 max_num_im_per_frame = 60;
 max_num_gif_frames = 2000;
 
-if ndims(stack)>maxnumdims 
+if ndims(stack)>maxnumdims
     error("stack exceeds maximum allowed number dimensions")
 end
 if ndims(stack)==maxnumdims || strcmp(cmap, 'rgb')
@@ -126,25 +152,25 @@ if iscell(stack)
             dimorder_averaged_nontrivial = dimorder_averaged(size(stack{1},dimorder_averaged)~=1); %do this after indexing and permuting, but before averaging
         end
         if ~isempty(dimorder_averaged) %do this after applying any indices
-            stack{k} = mean(stack{k}, dimorder_averaged, 'native');
+            stack{k} = stacktype(mean(stack{k}, dimorder_averaged), class(stack{k}));
         end
     end
 else
     stack = permute(stack, dimorder);
-    if 0%isempty(dimorder_averaged)
+    if isempty(dimorder_averaged)
         dimorder_averaged_nontrivial = [];
     else
         dimorder_averaged_nontrivial = dimorder_averaged(size(stack,dimorder_averaged)~=1); %do this after indexing and permuting, but before averaging
     end
     if ~isempty(dimorder_averaged) %do this after applying any indices
-        stack = mean(stack, dimorder_averaged, 'native');
+        stack = stacktype(mean(stack, dimorder_averaged), class(stack));
     end
 end
 
-if isequal(dm_eachframe(1), 'x') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim 
-    ydir = 'normal'; 
+if isequal(dm_eachframe(1), 'x') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim
+    ydir = 'normal';
 else
-    ydir = 'reverse'; 
+    ydir = 'reverse';
 end
 
 
@@ -172,7 +198,7 @@ if iscell(stack)
     if numel(dr)~=1 && numel(dr)~=numel(stack)
         error("dr length must be 1, or match number of stacks")
     end
-    if numel(dr)==1
+    if isscalar(dr)
         dr = repmat(dr, [numel(stack) 1]);
     end
 
@@ -186,14 +212,23 @@ if iscell(stack)
         rstmp = mldivide(rsa, rsb); %two equations two unknowns
         newmax = rstmp(1);
         newmin = rstmp(2);
+        stackclass = [];
         if ~isa(stack{si}, 'single') %for the rescaling cannot be uint16
+            stackclass = class(stack{si});
             stack{si} = single(stack{si});
         end
-        stack{si} = newmin + ((stack{si} - stackmin) / stackrange)*(newmax-newmin);
+        if stackrange==0 %if stack is a constant
+            stack{si}(:) = 1;
+        else
+            stack{si} = newmin + ((stack{si} - stackmin) / stackrange)*(newmax-newmin);
+        end
+        if ~isempty(stackclass)
+            stack{si} = stacktype(stack{si}, stackclass);
+        end
     end
 
     clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled
-    stack = cell2mat(stack); %convert to mat and cat stacks
+    stack = cell2mat(stack); %convert to mat and concatenate stacks
 
 else %if there's only one stack, don't rescale it, just assign dr to CLim
     if numel(dr)~=1
@@ -202,7 +237,11 @@ else %if there's only one stack, don't rescale it, just assign dr to CLim
     stackmin = double(min(stack(:)));
     stackmax = double(max(stack(:)));
     stackrange = stackmax-stackmin;
-    clim_tmp = stackrange*cell2mat(dr)+stackmin;
+    if stackrange==0
+        clim_tmp = [0 1];
+    else
+        clim_tmp = stackrange*cell2mat(dr)+stackmin;
+    end
 end
 
 %% roipx (roi pixel indices)
@@ -293,7 +332,7 @@ index_labels = index_labels(dimorder);
 
 
 index_labels_avg = cell(numel(index_labels), 1);
-for k = 1:numel(dimorder_averaged_nontrivial) %averaged dimensions 
+for k = 1:numel(dimorder_averaged_nontrivial) %averaged dimensions
     il = dimorder_averaged_nontrivial(k);
     [~, index_labels_avg{il}] = indsmake(index_labels{il}, indsall=index_labels{il}, label_prefix=dimlabels{il}, printmax=max_num_inds_to_print);
 end
@@ -308,7 +347,7 @@ dims_after_permute_changing_across_frames = numdim_eachframe+1:maxnumdims;
 lab_framechange = index_labels(dims_after_permute_changing_across_frames); %labels that can change on each frame
 lab_framechange_numel = cellfun(@numel, lab_framechange);
 if isscalar(lab_framechange_numel)
-    lab_framechange_numel = [lab_framechange_numel 1]; 
+    lab_framechange_numel = [lab_framechange_numel 1]; %row here, used as column below
 end
 
 dr_str = vec(cellfun(@num2str, dr, 'UniformOutput', false))';
@@ -362,9 +401,9 @@ h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
 cnt = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipx)
-        
+
         [imroi, imalpha] = roiolmake(stack_oneframe, roipx{ir(ri)}, col=roicols(ri,:), alp=roialpha); %make an overlay for one roi
-        
+
         sz_framedims_ol = sz_framedims(1:ndims(stack_oneframe));
         dimorder_ol = [dimorder(1:ndims(stack_oneframe)) ndims(stack_oneframe)+1];
 

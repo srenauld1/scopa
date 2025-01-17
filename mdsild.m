@@ -10,8 +10,7 @@ id = idmake(pthstack); %just in case id info gets used below
 pthmd = [id.dirstack id.recid '_mdsi_.txt'];
 
 if isempty(optsld)
-    otmp = odf([], 'sld');
-    optsld = otmp.sld;
+    optsld = odf('sld', unpack=1);
 end
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py

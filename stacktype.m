@@ -26,6 +26,10 @@ if ~isa(stack, typeout)
             stack = single(stack);
         case 'double'
             stack = double(stack);
+        case 'logical'
+            stack = logical(stack);
+        otherwise
+            error("stack class is not in this switch statement; add it")
     end
 
 end
