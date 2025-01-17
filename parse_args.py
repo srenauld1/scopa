@@ -56,10 +56,10 @@ def parse_command_line():
         #default=[jobnm],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--recording_index",  # name on the CLI - drop the `--` for positional/required parameters
+        "--jobind",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
         type=str,
-        #default=[recording_index],  # default if nothing is provided
+        #default=[jobind],  # default if nothing is provided
     )
     CLI.add_argument(
         "--pth_parsfile",  # name on the CLI - drop the `--` for positional/required parameters
@@ -82,12 +82,16 @@ def parse_command_line():
     else:
         jobnm = args.jobnm #keep as list
 
-    if isinstance(args.recording_index[0], list):
-        recording_index = args.recording_index[0] #keep as list
+    if isinstance(args.jobind[0], list):
+        jobind = args.jobind[0] #keep as list
     else:
-        recording_index = args.recording_index #keep as list
-    if recording_index != ['all']:
-        recording_index = [int(tmp) for tmp in recording_index] #convert to int if not 'all'
+        jobind = args.jobind #keep as list
+    if jobind != ['all']:
+        jobind = [int(tmp) for tmp in jobind] #convert to int if not 'all'
+    
+    if do_copyfiles!=0:
+        jobind = ['all']
+        print('FORCING jobind=all BECAUSE do_copyfiles IS NONZERO (SO ALL COPIES TO/FROM TRANSFER PARTITION WILL OCCUR IN A SINGLE JOB, SO SAVE RESOURCES)')
 
     pth_parsfile = args.pth_parsfile[0]
 
@@ -100,7 +104,7 @@ def parse_command_line():
         # args = pars.overwrite_args(args) #not working yet . . . attempts to automatically overwrite args with whatever is in pars_file, so they don't have to be manually defined (as below) 
         ##args.__dict__ = pars.__dict__.copy() #untested . . .  try this to overwrite new args, need to make them lowercase programmatically first, perhaps in the exec call above 
 
-        #vars not written to pars are: the main do* args, and recording_index
+        #vars not written to pars are: the main do* args, and jobind
 
         args.scopatmplt = pars.SCOPATMPLT
         args.clip = pars.CLIP
@@ -294,7 +298,7 @@ def parse_command_line():
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
-                      recdate, fly, trial, folder_substring, recording_index, file_matching_style,
+                      recdate, fly, trial, folder_substring, jobind, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 

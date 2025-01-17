@@ -6,7 +6,7 @@
 pthsync = rdir([pth.prenosuffix '*_sync.mat']);
 indvp = struct2cell(load(pthsync.name, 'si_frame_direction'));
 indvp = indvp{1};
-depvp = ts.roi.a6{1}(1,:);
+depvp = ts.roi.a10{1}(1,:);
 doplt = 0;
 
-ts.fit = mfit(indvp, depvp, md.volrate, o.mf, doplt, pth.pre, ts.epochinds, stack, roidat.a6{1});
+ts.fit = mfit(indvp, depvp, md.volrate, o.mf, doplt, pth.pre, ts.epochinds, stack, roidat.a10{1});

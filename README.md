@@ -224,14 +224,14 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 
 ############################## PARALLELIZATION ON O2 ######################################
 
- if recording_index = 'all', pl.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
+ if jobind = 'all', pl.py cycles through all recordings in directory pth_allrec, passing one trial at a time to pipeline in pipeline.py
 
- if recording_index is not 'all', pl.py chooses only the recording matching value of recording_index, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
+ if jobind is not 'all', pl.py chooses only the recording matching value of jobind, based on the sorted list of all recordings matching recdates, fly, trial pattern in pth_allrec
 
- this is convenient because recording_index can be assigned SLURM_ARRAY_TASK_ID in a bash script (e.g. mcp.sbatch), 
+ this is convenient because jobind can be assigned SLURM_ARRAY_TASK_ID in a bash script (e.g. mcp.sbatch), 
  which will run the pipeline on multiple recordings in parallel as a job array on O2 
 
- for example, the line SBATCH --array=[1-30] will run up to 30 jobs (or as many as resources will allow) in parallel for recordings (date_fly_trial) with recording_index 1-30  
+ for example, the line SBATCH --array=[1-30] will run up to 30 jobs (or as many as resources will allow) in parallel for recordings (date_fly_trial) with jobind 1-30  
 
 
 ############################## REGISTRATION ######################################

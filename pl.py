@@ -21,7 +21,7 @@ if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from 
   makeplots = 0 #should be 0 if running job from pl on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
   do_crop_only = 0 #should be 0 if running job from pl on O2, since this is interactive drawing/cropping of FOV
   print("pth_parsfile passed as input to pl.py (in batch mode), using options from pth_parsfile (options from pl.sh)")
-else: #in interactive mode, read options set in optdfpl, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpl.py, where user sets options; 2 options, do_copyfiles and recording_index, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpl
+else: #in interactive mode, read options set in optdfpl, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpl.py, where user sets options; 2 options, do_copyfiles and jobind, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpl
   print("pth_parsfile not passed as input (in interactive mode), using options from optdfpl.py")
   exec(open(currscriptdir + '/' + 'optdfpl.py').read())
   first_job = 1 #this should always be 1 if you're running pl.py directly/interactively, first_job is only used when pl.py is called from pl.sh, as part of a larger pipeline 
@@ -41,7 +41,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
 
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
-                      recdate, fly, trial, folder_substring, recording_index, file_matching_style,
+                      recdate, fly, trial, folder_substring, jobind, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
@@ -56,8 +56,8 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_a2p > 1:
   raise Exception ("only one of these variables can be true: do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p")
 else:
-  if recording_index !=['all'] and len(recording_index)>1:
-     raise Exception ("currently can only have one recording_index per parallel run")
+  if jobind !=['all'] and len(jobind)>1:
+     raise Exception ("currently can only have one jobind per parallel run")
   if do_denoise:
     if denoise_volume==0 and len(denoise_slice_index)>1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all. . . IS THIS STILL TRUE?")
@@ -113,7 +113,7 @@ if do_copyfiles==0 and do_autoallocate==0:
 
 
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all] = \
-  filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+  filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 

@@ -12,7 +12,7 @@ import ast
 from pthmakepy import getpathscopa
 
 
-def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recording_index, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
@@ -20,7 +20,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
 
     ######### FORMAT FILE SPECIFIERS, BASED ON INPUT #########
 
-    pth_fnind = pth_fldr_fnind + fnind_fn_prefix + '_' + str(recording_index[0]) + '_.txt'
+    pth_fnind = pth_fldr_fnind + fnind_fn_prefix + '_' + str(jobind[0]) + '_.txt'
     
     if not first_job:
         with open(pth_fnind) as f1:
@@ -113,7 +113,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
     try:
         fn_suffix_scopa
     except:
-        raise Exception("fn_suffix_scopa IS NOT DEFINED; recording_index (jobarrayind IN pl.sh) FOR THIS JOB MAY BE OUTSIDE THE RANGE OF AVAILABLE FILES, IN WHICH CASE THIS JOB, AND ALL DEPENDENT JOBS, WILL ERROR; THIS IS NOT A PROBLEM EXCEPT IT MEANS YOU'RE REQUESTING BUT NOT USING RESOURCES ON O2; MAKE SURE jobarrayind ONLY LISTS INDICES FOR FILES THAT EXIST")
+        raise Exception("fn_suffix_scopa IS NOT DEFINED; jobind (jobind IN pl.sh) FOR THIS JOB MAY BE OUTSIDE THE RANGE OF AVAILABLE FILES, IN WHICH CASE THIS JOB, AND ALL DEPENDENT JOBS, WILL ERROR; THIS IS NOT A PROBLEM EXCEPT IT MEANS YOU'RE REQUESTING BUT NOT USING RESOURCES ON O2; MAKE SURE jobind ONLY LISTS INDICES FOR FILES THAT EXIST")
 
     if do_register:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]
@@ -128,13 +128,13 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
         recindstr = ''
     else:
         search_result_string = "THE FOLLOWING FILES WERE FOUND: \n" + '%s' % '\n'.join(map(str, pth_allfiles))
-        if not first_job or recording_index == ['all']:
+        if not first_job or jobind == ['all']:
             recindstr = "WILL OPERATE ON ALL OF THESE FILES"
         else:
             recindstr = []
-            for ri in recording_index:
+            for ri in jobind:
                 recindstr.append(ordinal(int(ri)+1))
-            recindstr = "BECAUSE OF VALUE(S) in recording_index, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING (ZERO-INDEXED) INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, recording_index))
+            recindstr = "BECAUSE OF VALUE(S) in jobind, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING (ZERO-INDEXED) INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, jobind))
 
     print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
           "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
@@ -157,7 +157,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, recor
     countz = 0
     for pth_readfile in pth_allfiles: #loop over all found files
             
-        if not first_job or (first_job and ( recording_index == ['all'] or (recording_index !=['all'] and np.isin(countz, recording_index).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in recording_index; but if not first_job (always first_job in interactive mode, but only on first run in batch mode), don't apply this selection
+        if not first_job or (first_job and ( jobind == ['all'] or (jobind !=['all'] and np.isin(countz, jobind).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in jobind; but if not first_job (always first_job in interactive mode, but only on first run in batch mode), don't apply this selection
 
             print("\n\n\nPREPARING FILE: \n" + pth_readfile)
 

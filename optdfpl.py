@@ -12,7 +12,7 @@ do_extract = 0 #caiman source extraction
 do_a2p = 0 #matlab analysis 'post', various functions in a2p.m
 
 do_copyfiles = 0 #copy to/from wilsonlab server to analysis folder; in general when running interactively (ie setting options here in this file) you will want this to be 0, to run analysis, but if you want to test copyfiles functionality (you must be on transfer partition to do so), you can set to 1 or 2; 0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage_prefix to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage_prefix from where you're running this script
-recording_index = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in recording_index
+jobind = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in jobind
 
 ## CHOOSE RECORDING OR RECORDINGS ## 
 

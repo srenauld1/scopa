@@ -15,4 +15,4 @@
 --fly '*' \
 --trial '1' \
 --do_cropping_session 0 \
---recording_index 'all'
+--jobind 'all'

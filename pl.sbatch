@@ -47,7 +47,7 @@ $pydir $SCOPADIR/pl.py \
 --first_job "$FIRST_JOB" \
 --do_copyfiles "$DO_COPYFILES" \
 --jobnm "$JOBNM" \
---recording_index $SLURM_ARRAY_TASK_ID \
+--jobind $SLURM_ARRAY_TASK_ID \
 --pth_parsfile "$PTH_PARSFILE"
 
 #wait
