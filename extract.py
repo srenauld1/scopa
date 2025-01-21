@@ -10,12 +10,13 @@ import caiman.source_extraction.cnmf as cnmf
 from optex import optex
 from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
-from separate_channels_when_two import separate_channels_when_two
+from stackchan import stackchan
 from helpers import stack_reshape_transpose_clip_zero_type
+import json
 
 
 
-def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -27,8 +28,8 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
     if optall: #if not running extract from matlab (if you are, you will pass in options dict optall)
         stack = imread(pth_tif_read)
 
-    discard_channel_ex, chan_primary_when_two_ex, morphinpy = parse_methodex(methodex)
-    stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_ex, chan_primary_when_two_ex)
+    chanrm, chan_primary_when_two, morphinpy = parse_methodex(methodex)
+    stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, chanrm, chan_primary_when_two)
 
     stack = stack_reshape_transpose_clip_zero_type(stack, md['dims'])
     print("STACK HAS SHAPE: \n" + str(stack.shape))
@@ -58,7 +59,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
             pth_tif_write_tmp = pth_write_prefix + '_tmp_.tif'
             if two_channel_ex: #stackcrop_tmp_secondary becomes stackcrop_ex and stackcrop_tmp becomes stackcrop_seed
                 stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp_secondary, pth_tif_write_tmp, dview)
-                pth_tif_write_tmp_secondary = pth_tif_write_tmp.replace(chanstr_ex, chanstr_seed) #only used if two_channel_ex==1 (ie if there are two channels and discard_channel_reg=None)
+                pth_tif_write_tmp_secondary = pth_tif_write_tmp.replace(chanstr_ex, chanstr_seed) #only used if two_channel_ex==1 (ie if there are two channels and chanrm=None)
                 stackcrop_seed, pth_mmap_seed, _, _ = stack2memmap(stackcrop_tmp, pth_tif_write_tmp_secondary, dview)
                 stackcrop_tmp_secondary = None
             else:
@@ -251,18 +252,23 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, extract_in_2d, 
 
                 if dview is not None: cm.stop_server(dview=dview)
 
+    print("now that the rois has been written, updating metadata to include chanrm")
+    md['chanrm_cmex'] = chanrm
+    with open(pthmd, 'w') as file: 
+        file.write(json.dumps(md, sort_keys=True, indent=4))
+
 
 
 def parse_methodex(methodex):
     
-    chan_primary_when_two_ex = None #irrelevant unless methodex starts with 'seed'
+    chan_primary_when_two = None #irrelevant unless methodex starts with 'seed'
     morphinpy = 0
     if methodex=='1':
-        discard_channel_ex = 2 #just in case 
+        chanrm = 2 #just in case 
     elif methodex=='2':
-        discard_channel_ex = 1 #just in case 
+        chanrm = 1 #just in case 
     else:
-        discard_channel_ex = None
+        chanrm = None
         if methodex=='12':
             raise Exception('12 not supported yet')
         elif methodex.startswith('seed'):
@@ -270,13 +276,13 @@ def parse_methodex(methodex):
                 raise Exception('seedeachpy and seedeachmat not supported yet')
             else:
                 if '1' in methodex and not '2' in methodex: 
-                    discard_channel_ex = 2 
+                    chanrm = 2 
                 elif '2' in methodex and not '1' in methodex: 
-                    discard_channel_ex = 1 
+                    chanrm = 1 
                 elif '12' in methodex:
-                    chan_primary_when_two_ex = 1
+                    chan_primary_when_two = 1
                 elif '21' in methodex:
-                    chan_primary_when_two_ex = 2
+                    chan_primary_when_two = 2
                 else:
                     raise Exception('seed methodex must contain each, 1, 2, 12, or 21')
             if methodex.endswith('py'):
@@ -288,7 +294,7 @@ def parse_methodex(methodex):
         else:
             raise Exception('methodex must be 1, 2, 12, or start with seed')
 
-    return discard_channel_ex, chan_primary_when_two_ex, morphinpy
+    return chanrm, chan_primary_when_two, morphinpy
 
 
 def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):

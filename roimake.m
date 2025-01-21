@@ -87,7 +87,7 @@ end
 %% quality control
 
 if doqc
-    roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, tcrop = tcrop, roicen = roidat.roicen, mask_allroi = roidat.mask_allroi);
+    roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm = trm, roicen = roidat.roicen, mask_allroi = roidat.mask_allroi);
 end
 
 %% assemble roi data into struct

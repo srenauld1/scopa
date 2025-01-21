@@ -108,8 +108,7 @@ def parse_command_line():
 
         args.scopatmplt = pars.SCOPATMPLT
         args.clip = pars.CLIP
-        args.discard_channel_reg = pars.DISCARD_CHANNEL_REG
-        args.chan_primary_when_two_reg = pars.CHAN_PRIMARY_WHEN_TWO_REG
+        args.methodrg = pars.METHODRG
         args.clipinterp = pars.CLIPINTERP
         args.chan_dn = pars.CHAN_DN
         args.methodex = pars.METHODEX
@@ -150,20 +149,11 @@ def parse_command_line():
         scopatmplt = args.scopatmplt #keep as list
     scopatmplt = int(scopatmplt[0])
 
-    if isinstance(args.chan_primary_when_two_reg[0], list):
-        chan_primary_when_two_reg = args.chan_primary_when_two_reg[0] #keep as list
+    if isinstance(args.methodrg[0], list):
+        methodrg = args.methodrg[0] #keep as list
     else:
-        chan_primary_when_two_reg = args.chan_primary_when_two_reg #keep as list
-    chan_primary_when_two_reg = int(chan_primary_when_two_reg[0])
+        methodrg = args.methodrg #keep as list
 
-    if isinstance(args.discard_channel_reg[0], list):
-        discard_channel_reg = args.discard_channel_reg[0] #keep as list
-    else:
-        discard_channel_reg = args.discard_channel_reg #keep as list
-    if discard_channel_reg == ['None'] or discard_channel_reg == ['none']:
-        discard_channel_reg = None
-    else:
-        discard_channel_reg = int(discard_channel_reg[0]) #convert to int if not 'all'
 
     if isinstance(args.clip[0], list):
         clip = args.clip[0] #keep as list
@@ -299,7 +289,7 @@ def parse_command_line():
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, jobind, file_matching_style,
-                      registration_template_group_id, do_register, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
+                      registration_template_group_id, do_register, scopatmplt, clip, methodrg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed, 

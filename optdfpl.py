@@ -5,11 +5,11 @@
 ## CHOOSE WHAT PARTS OF THE PIPELINE TO RUN (IN INTERACTIVE MODE, ONELY ONE do_* CAN BE TRUE AT A TIME, FOR NOW; THIS IS NOT THE CASE IN pl.sh) ## 
 
 do_register = 1 #caiman normCorre registration 
-do_denoise = 0 #deepcad denoising(from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
+do_denoise = 0 #deepcad denoising (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 do_stitch = 0 #stitch deepcad denoised slices into stack of original size and put in data folder (before stitch, denoised data is in temporary 'denoising' directory)
 do_remove = 0 #remove scan noise (matlab script, but filefind uses filefind function below)
 do_extract = 0 #caiman source extraction 
-do_a2p = 0 #matlab analysis 'post', various functions in a2p.m
+do_a2p = 0 #matlab 'postprocessing' analysis; various functions in a2p.m (stimulus processing, roi segmentation, model fitting, plotting)
 
 do_copyfiles = 0 #copy to/from wilsonlab server to analysis folder; in general when running interactively (ie setting options here in this file) you will want this to be 0, to run analysis, but if you want to test copyfiles functionality (you must be on transfer partition to do so), you can set to 1 or 2; 0, 1, or 2 . . . 1 does nothing but copy the files matching pattern from pth_storage_prefix to compute folder, 2 is same but vice-versa, 0 allows everything else in the pipeline to occur . . . set to 0 if you do not have access to pth_storage_prefix from where you're running this script
 jobind = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'all', loop over all recordings matching pattern in pth_compute, if not 'all', zero indexed (can be str or int) operate on recording whose index (in sorted list of all recordings in pth_compute) matches value in jobind
@@ -19,7 +19,7 @@ jobind = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'a
 folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #folder holding all recordings you want this pipeline to operate on, if you're using do_copyfiles, this will refer to a folder on storage server and o2, tree on storage will be mirrored on o2; it is a separate variable (rather than end of pth_storage_prefix) to emphasize that it is separated off and mirrored on O2 
 pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, pth_storage_prefix+folder_with_all_recordings_on_storage_and_compute_filesystems is the path to the storage folder containing all recordings, data will be copied from here, into a folder on scratch with name (folder_with_all_recordings_on_storage_and_compute_filesystems) then analyzed, then copied back, ignored if do_copyfiles==0, 
 
-recdate = ['20250105'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
+recdate = ['20240907'] #list of strings, as it appears in the directory and raw file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial, '*' for any #
 folder_substring = ['*'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
@@ -28,9 +28,8 @@ file_matching_style = 'any' #string, single element not in list, 'any' or 'each'
 ## SOME OPTIONS IN ROUGH ORDER OF APPEARANCE ## 
 
 scopatmplt = 1 #1 to use scopa template
-clip = [-1, 0.99] #[-1, 0.99] #0 to skip clip; [-1] to set negatives to 0, or [lower upper] quantiles to clip, or [-1 upper], which will set negatives to 0, and clip upper quantile; unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed (assuming you "autoread" pmt offset and "subtract offset" ); 
-discard_channel_reg = None #None, 1, or 2
-chan_primary_when_two_reg = 2 #1 or 2; one indexed; this is ignored if data has one channel or discard_channel_reg is not 'none';  channel that is registered first (typically the higher snr, or more static, or both), other channel gets shifted using this channel's registration; 
+clip = [-1] #[-1, 0.99] #0 to skip clip; [-1] to set negatives to 0, or [lower upper] quantiles to clip, or [-1 upper], which will set negatives to 0, and clip upper quantile; unless your stack is very noisy, or you have miscalibrated pmt offset, negative values should be predominantly noise and can be removed (assuming you "autoread" pmt offset and "subtract offset" ); 
+methodrg = 'seed21' #'1' to register channel 1 only and discard channel 2 if it exists; '2' for the same as '1' but for channel 2; '12' to register channels 1 and 2 independently ('12' does not work yet!); 'seed12' to register channel 1, then register channel 2 with the same shifts as channel 1; 'seed21' is same as 'seed12' but reversed; if methodrg is 'seed12' or 'seed21' or '12' and only one channel is present, methodrg is changed to '1' or '2' (whichever channel is present) automatically to prevent error
 register_in_2d = 0 #one z slice at a time, for 4d data, ignored if 3d data  
 bglenpx = 0 #must be even and nonzero, will run line-by-line background subtraction; 0 to skip background subtraction; full width of patch over which mean is computed for background subtraction (patch is a line in x); must be even; applied before registration, won't happen unless do_register==1, (helps remove stimulus bleedthrough, but don't use unless there's a lot of bleedthrough, and there is a clear background patch on each line; if that's the case, set this as large as possible to cover that background, and even)
 max_shifts_prc = [10, 10, 10] #empty [] to skip; unit percentage of FOV in each dimension xyz (converted to pixels in optrg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)

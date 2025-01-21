@@ -6,7 +6,7 @@ import numpy as np
 import json
 
 
-def mdsisv(pth_readfile, pth_md, mat_file_shape = None):
+def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
 
     mdt = {}
 
@@ -104,14 +104,14 @@ def mdsisv(pth_readfile, pth_md, mat_file_shape = None):
             md['channel_save'] = md['channel_active']
 
 
-    with open(pth_md, 'w') as file: 
+    with open(pthmd, 'w') as file: 
         file.write(json.dumps(md, sort_keys=True, indent=4))
 
 
 
-def convert_md_file(pth_md, pth_md_old, pth_md_mat_old): #convert old metadatafile to new and delete old 
+def convert_md_file(pthmd, pthmd_old, pthmd_matold): #convert old metadatafile to new and delete old 
 
-    md = np.load(pth_md_old, allow_pickle='TRUE').item()
+    md = np.load(pthmd_old, allow_pickle='TRUE').item()
 
     raise_channel_exception = 1
     if not 'channel_save' in md or not 'channel_active' in md:
@@ -121,10 +121,10 @@ def convert_md_file(pth_md, pth_md_old, pth_md_mat_old): #convert old metadatafi
             md['channel_save'] = 1
             md['channel_active'] = 1
 
-    with open(pth_md, 'w') as file: 
+    with open(pthmd, 'w') as file: 
         file.write(json.dumps(md, sort_keys=True, indent=4))
 
-    os.remove(pth_md_old)
-    # if os.path.isfile(pth_md_mat_old): 
-    #     os.remove(pth_md_mat_old)
+    os.remove(pthmd_old)
+    # if os.path.isfile(pthmd_matold): 
+    #     os.remove(pthmd_matold)
 

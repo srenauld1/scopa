@@ -21,6 +21,11 @@ for k = 1:numel(oa) % loop over recordings
 
     glb(1, dirstack=pth.dirstack); %set/update data folder path as global (update option since you might be looping over k)
 
+
+    %% load/visualize stack
+
+    stack = stackpr(pth.stack, o.sld);
+    
     %% load metadata
 
     md = mdsild(pth.stack, o.sld, pth.py);
@@ -56,9 +61,6 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% load/visualize stack
-
-    stack = stackld(pth.stack, o.sld);
 
     %% create/load/select rois/responses for each optid
 

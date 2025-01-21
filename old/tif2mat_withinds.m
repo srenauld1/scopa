@@ -7,14 +7,14 @@ will read entire stack if yxzt is empty
 will read subset of stack if any inds_*_read_from are nonempty, but for c, z, and t dimensions, these require yxzt be nonempty
 option to crop flyback (fbrm)
 option to crop frames (trm)
-option to crop channels (chanrm)
+option to crop channels (chanuse)
 metadata quantities can be read from tif if it's the raw output from scanimage, but other tif stacks output by preprocessing pipeline will not have the metadata, so 
 
 %}
 
 arguments
     pthtif
-    opt.chanrm = [1,2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
+    opt.chanuse = [1,2] %channels to keep in mat file; default to keep all channels, [1 2], since any absent channel will be ignored 
     opt.fbrm = 0; % before saving stack as mat, crop flyback frames if they exist (if raw scanimage data stack)
     opt.trm = [0,0] %num frames to crop from [start, end]
     opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
@@ -24,7 +24,7 @@ arguments
     opt.iz = [] %z indices to save; empty for all; if savemem, only this subset will get read into memory
     opt.it = [] %t indices to save; empty for all; if savemem, only this subset will get read into memory
 end
-chanrm = opt.chanrm;
+chanuse = opt.chanuse;
 fbrm = opt.fbrm;
 trm = opt.trm;
 savemem = opt.savemem;
@@ -117,7 +117,7 @@ catch ME
             fprintf("you may have discarded a channel in creating " + fn + ext + " trying to load again, this time as single channel" + newline)
             sz(3) = 1;
             ic = 1;
-            chanrm = 1;
+            chanuse = 1;
             stack = stackld(pthtif, ...
                 sz = sz, ...
                 iy = iy, ...
@@ -133,7 +133,7 @@ end
 
 if ndims(stack)==3
     
-    sprintf("WARNING, ignoring trm, and chanrm because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
+    sprintf("WARNING, ignoring trm, and chanuse because TIF WAS READ WITHOUT KNOWING STACK SIZE; STACK IS 3D BUT MAY HAVE COLLAPSED non-singtleton c, z, or t into 3rd dimension")
 
 else
 
@@ -142,9 +142,9 @@ else
         stack = stack(:,:,:,:,keepinds_t);
     end
 
-    chanrm = intersect(channel_save, chanrm); %ignore requested channels that don't exist
-    if ~isequal(chanrm, 1:size(stack,3))
-        stack = stack(:,:,chanrm,:,:);
+    chanuse = intersect(channel_save, chanuse); %ignore requested channels that don't exist
+    if ~isequal(chanuse, 1:size(stack,3))
+        stack = stack(:,:,chanuse,:,:);
     end
 
 end

@@ -1,6 +1,6 @@
 function [y, s] = tifreadfast(s, frames)
 
-%tifreadfast (renamed read_patterned_tifdata tifreadfast)
+%renamed original read_patterned_tifdata, David Greenberg January 2015
 
 %Read data from a tif file with a repeating structure, by guessing the location of each frame's data.
 %This function only works with multipage tifs that have the same amount of data for each image,

@@ -196,7 +196,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025011122433009",
+    "timestr": "2025012018373774",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -313,10 +313,10 @@
     "regionex": "none"
   },
   "sld": {
-    "chanuse": [1,2],
+    "chanuse": [],
     "clip": [0,1],
-    "cropfb": 1,
     "dostats": 0,
+    "fbrm": 1,
     "savemem": 0,
     "smlenpx": [0,0,0],
     "smlensec": 0,
@@ -330,7 +330,7 @@
       "bksb_cmrg_dcdn",
       "bksb_cmrg_dcdn_nosn"
     ],
-    "tcrop": [0,0],
+    "trm": [],
     "zerostack": 1
   },
   "sp": {

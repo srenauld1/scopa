@@ -12,7 +12,7 @@ o.mn.dopltx = 0;
 o.mn.plt = [""]; 
 o.mn.pltvis = 1; 
 
-o.sld.tcrop = [4,2];
+o.sld.trm = [4,2];
 o.mf.mdl_lag_sec = 1;
 o.mf.mdl_length_sec = 1.25;
 o.carl.stimtype = 'drone';

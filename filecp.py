@@ -6,7 +6,7 @@ import os
 
 
 def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, 
-                     pth_read, pth_md, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_fldr_copydest_prefix, fldr, 
+                     pth_read, pthmd, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_fldr_copydest_prefix, fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -28,9 +28,9 @@ def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extra
 
             Path(pth_fldr_copydest).mkdir(parents=True, exist_ok=True)
 
-            if pth_md:
-                print("\n\n\ncopying this file: \n" + pth_md + "\ninto this directory: \n" + pth_fldr_copydest)
-                shutil.copy2(pth_md, pth_fldr_copydest)
+            if pthmd:
+                print("\n\n\ncopying this file: \n" + pthmd + "\ninto this directory: \n" + pth_fldr_copydest)
+                shutil.copy2(pthmd, pth_fldr_copydest)
                 time.sleep(5) 
             
             if pth_daq and do_a2p:

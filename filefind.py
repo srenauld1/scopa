@@ -148,7 +148,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
     pth_fldr_all = []
     fn_prefix_all = []
     pth_prefix_all = []
-    pth_md_all = []
+    pthmd_all = []
     pth_daq_all = []
     pth_ftvid_all = []
     pth_ftdat_all = []
@@ -181,13 +181,13 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
 
             ######### FIND SOME ADDITIONAL OPTIONAL FILES #########
 
-            pth_md = pth_prefix + '_mdsi_.txt'
+            pthmd = pth_prefix + '_mdsi_.txt'
 
             # fn_pattern_md_flyg = fldr + fn_prefix_flyg + '_metadata_*_trial_' + trialstr_found.zfill(3) + '.mat'
-            # pth_md_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
-            # pth_md_flyg = pth_md_flyg[0] #flyg metadata file only exists if you register in flyg
-            # if pth_md_flyg:
-            #     pth_md_flyg = pth_md_flyg[0]
+            # pthmd_flyg = glob.glob(fn_pattern_md_flyg, recursive=True)
+            # pthmd_flyg = pthmd_flyg[0] #flyg metadata file only exists if you register in flyg
+            # if pthmd_flyg:
+            #     pthmd_flyg = pthmd_flyg[0]
 
             fn_pattern_daq = fldr + fn_prefix_flyg + '_daqData_*_trial_' + trialstr_found.zfill(3) + '.mat'
             pth_daq = glob.glob(fn_pattern_daq, recursive=True)
@@ -226,25 +226,25 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
 
             ######### READ & WRITE SCANIMAGE METADATA #########
 
-            pth_md_old = pth_prefix + '_metadatanew_.npy'
-            pth_md_mat_old = pth_md_old[:-4] + '.mat'  
-            if not os.path.isfile(pth_md): #if scanimage metadata file (*mdsi_.txt) is not present, make it
+            pthmd_old = pth_prefix + '_metadatanew_.npy'
+            pthmd_matold = pthmd_old[:-4] + '.mat'  
+            if not os.path.isfile(pthmd): #if scanimage metadata file (*mdsi_.txt) is not present, make it
                 if do_register: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
-                        mdsisv(pth_readfile, pth_md, mat_file_shape = mat_file_shape)
+                        mdsisv(pth_readfile, pthmd, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
-                        pth_md = []
+                        pthmd = []
                     elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
                         raise Exception("mdsi_.txt is not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or run do_register to create them")
                 else:
-                    if os.path.isfile(pth_md_old):
-                        convert_md_file(pth_md, pth_md_old, pth_md_mat_old)
+                    if os.path.isfile(pthmd_old):
+                        convert_md_file(pthmd, pthmd_old, pthmd_matold)
                     else:
                         raise Exception("mdsi_.txt is not found, and neither is old metadata file 'metadatanew.npy, and you're not running do_register; can only be created from scanimage metadata in raw tif (the tif file used in do_register), so make sure you haven't moved those metadata files, or run do_register to create them")
-            if os.path.isfile(pth_md_old): 
-                os.remove(pth_md_old)
-            if os.path.isfile(pth_md_mat_old): 
-                os.remove(pth_md_mat_old)
+            if os.path.isfile(pthmd_old): 
+                os.remove(pthmd_old)
+            if os.path.isfile(pthmd_matold): 
+                os.remove(pthmd_matold)
                             
             
             ######### PUT IN LISTS #########
@@ -253,7 +253,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
             pth_fldr_all.append(fldr)
             fn_prefix_all.append(fn_prefix)
             pth_prefix_all.append(pth_prefix)
-            pth_md_all.append(pth_md)
+            pthmd_all.append(pthmd)
             pth_daq_all.append(pth_daq)
             pth_ftvid_all.append(pth_ftvid)
             pth_ftdat_all.append(pth_ftdat)
@@ -288,4 +288,4 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pth_md_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all) 

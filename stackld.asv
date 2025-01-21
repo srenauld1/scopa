@@ -71,14 +71,18 @@ doconvert = 1;
 if endsWith(pthstack, '.mat')
     try
         load(pthstack, 'mmd')
-        if ~isequal(mmd.fbrm, fbrm) || ~isequal(mmd.trm, trm) || ~isequal(mmd.iy, iy) || ~isequal(mmd.ix, ix) || ~isequal(mmd.ic, ic) || ~isequal(mmd.iz, iz) || ~isequal(mmd.it, it)
-            error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT; YOU HAVE A MAT FILE ALREADY THAT USE A DIFFERENT SET OF OPTIONS; DELETE THAT MAT FILE OR USE THE SAME OPTIONS LISTED IN mmd IN FILE: " + pthstack)
-        end
+        if ~isequal(mmd.fbrm, fbrm) || ~isequal(mmd.trm, trm) || ~isequal(mmd.iy, iy) || ~isequal(mmd.ix, fbrm) || ~isequal(mmd.fbrm, fbrm) || ~isequal(mmd.fbrm, fbrm)
+    mmd.trm = trm;
+    mmd.iy = iy;
+    mmd.ix = ix;
+    mmd.iz = ic;
+    mmd.ic = iz;
+    mmd.it = it;
         load(pthstack, 'stack')
         doconvert = 0;
     catch ME
         fprintf("cannot load mat file stack and/or tif conversion metadata (mmd); error message is: " + ME.message + newline)
-        fprintf("trying to convert tif to mat now" + newline)
+        fprintf("trying to converttif to mat now" + newline)
     end
 end
 
@@ -255,7 +259,7 @@ if doconvert
         stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
 
         stack = permute(stack, [1 2 4 5 3]);
-        save(pthmat, 'stack', 'mmd', '-v7.3', '-mat')
+        save(pthmat, 'stack', '-v7.3', '-mat')
 
     else
 
@@ -269,6 +273,8 @@ if doconvert
         fprintf("WARNING, sz was not passed as argument, or was empty (you did not read metadata before entering this function), or there was a problem reading raw tif metadata; output tif is 3d, and may have collapsed czt dimensions; not saving as mat file" + newline)
 
     end
+
+
 
 
 end

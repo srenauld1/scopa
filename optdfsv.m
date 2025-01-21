@@ -92,12 +92,12 @@ d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'e
 
 %% sld (stackld: load, process stack)
 
-d.sld.chanuse = [1,2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
-d.sld.cropfb = 1; %crop flyback frames from each volume
+d.sld.chanuse = []; %which pmt channel to use, empty to keep all ; will error if you request channel that doens't exist
+d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist
+d.sld.trm = []; %how many samples to remove from [start, end] of stack; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.clip = [0, 1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
-d.sld.tcrop = [0, 0]; %how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.stackdtype = 'uint16';
 d.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
 d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip

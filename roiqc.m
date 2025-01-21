@@ -13,7 +13,7 @@ arguments
     opt.roisrt = 'majoraxis' % 'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
     opt.ir = []
     opt.doplt = 0
-    opt.tcrop = [0, 0]
+    opt.trm = [0, 0]
     opt.roicen = []
     opt.mask_allroi = []
 end
@@ -25,7 +25,7 @@ inmaskthr = opt.inmaskthr;
 roisrt = opt.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
 numroiplt = opt.roiol.ir;
 doplt = opt.doplt;
-tcrop = opt.tcrop;
+trm = opt.trm;
 cnt_roim = opt.roicen;
 mask_roim_all = opt.mask_allroi;
 
@@ -100,9 +100,9 @@ if ndims(cma)~=4
     error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
 end
 
-if any(tcrop)
-    cmc = cmc(:,tcrop(1)+1:end-tcrop(2));
-    cms = cms(:,tcrop(1)+1:end-tcrop(2));
+if any(trm)
+    cmc = cmc(:,trm(1)+1:end-trm(2));
+    cms = cms(:,trm(1)+1:end-trm(2));
 end
 
 numrois = size(cma, 4);

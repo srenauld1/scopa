@@ -23,7 +23,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
         pthraw = rdir(pthrawpt);
     end
     if isempty(pthraw)
-        error("cannot find raw scanimage file matching scopa or flyg pattern")
+        error("cannot find raw scanimage file matching scopa or flyg pattern to read metadata")
     end
     pthraw = pthraw.name;
 
@@ -74,10 +74,10 @@ md = structtxtld(pthmd);
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optsld.tcrop(1) - optsld.tcrop(2);
+md.numvol_crop = md.numvol_o - optsld.trm(1) - optsld.trm(2);
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
-md.tcrop = optsld.tcrop; %copy from struct ld
-md.cropfb = optsld.cropfb; %copy from struct ld
+md.trm = optsld.trm; %copy from struct ld
+md.fbrm = optsld.fbrm; %copy from struct ld
 md.zerostack = optsld.zerostack; %copy from struct ld
 
 
@@ -117,7 +117,7 @@ end
 
 md.widyxz = [md.ywid, md.xwid, md.zwid];
 md.sampper = 1/md.volrate;
-md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'sld.tcrop'";
+md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'sld.trm'";
 
 md = structsort(md, vectype='row');
 

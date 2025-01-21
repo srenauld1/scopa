@@ -1,7 +1,7 @@
 
-function md = mdsi_parse(pth_md)
+function md = mdsi_parse(pthmd)
 %parses mdsi, deprecated because jsondecode(readfile(()) does it better
-str = fileread(pth_md);
+str = fileread(pthmd);
 if startsWith(str, '{') && endsWith(str, '}')
     str = str(2:end-1);
     if endsWith(str, '}')

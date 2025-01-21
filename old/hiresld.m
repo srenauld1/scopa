@@ -46,7 +46,7 @@ catch
         pth2.stack_analysis = [pth.hires_prefix '.mat'];
         pth2.stacks_prefix = {pth.hires_prefix};
 
-        stack_hires = stackld(md.md_hires.sz_o, md.md_hires.numslice_withflyback, pth2, opts_hires.ld, recid);
+        stack_hires = stackpr(md.md_hires.sz_o, md.md_hires.numslice_withflyback, pth2, opts_hires.ld, recid);
 
         stack_hires(:,:,hires_z_out_of_bounds,:) = [];
         stackmnthr = rescale(mean(stack_hires, 4));

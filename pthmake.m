@@ -27,13 +27,13 @@ pth_prefix_nosuffix = [dirstack recid '_'];
 pth_py = o.mn.pthpy;
 
 
-pth_md = [dirstack recid '_mdsi_.txt'];
-pth_mdflyg_pat = [dirstack datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
-pth_mdflyg = rdir(pth_mdflyg_pat);
-if isempty(pth_mdflyg)
-    pth_mdflyg = [];
+pthmd = [dirstack recid '_mdsi_.txt'];
+pthmd_flyg_pat = [dirstack datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
+pthmd_flyg = rdir(pthmd_flyg_pat);
+if isempty(pthmd_flyg)
+    pthmd_flyg = [];
 else
-    pth_mdflyg = pth_mdflyg.name;
+    pthmd_flyg = pthmd_flyg.name;
 end
 
 pth_daq_pat = [dirstack datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', trialnum ) '.mat'];
@@ -103,8 +103,8 @@ pth.prenosuffix = pth_prefix_nosuffix;
 pth.py = pth_py;
 pth.dirstack = dirstack;
 pth.stack = pthstack;
-pth.md = pth_md;
-pth.mdflyg = pth_mdflyg;
+pth.md = pthmd;
+pth.mdflyg = pthmd_flyg;
 pth.daq = pth_daq;
 pth.daqrs = pth_daqrs;
 pth.ftdat = pth_ftdat;

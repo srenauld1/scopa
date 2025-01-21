@@ -2,7 +2,7 @@ import numpy as np
 import os
 from tifffile.tifffile import imwrite, imread
 import shutil
-from separate_channels_when_two import separate_channels_when_two
+from stackchan import stackchan
 
 
 
@@ -19,13 +19,16 @@ def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume, chan_d
 
     stack = imread(pth_tif_read)
     
-    discard_channel = None #in this function, discard_channel should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)
+    chanrm = None #WARNING! in this function, chanrm should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)
     if chan_dn == ['all'] or chan_dn=='all': #ignored if it's not a 2-channel recording according to metadata md
         chan_primary = 1 #can be any number from existing channels if chan_dn is 'all'; just sets which is denoised first
     else:
         chan_primary = chan_dn 
 
-    stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel, chan_primary)
+    if chanrm is not None:
+        raise Exception("WARNING! in this function (zsep_todn), chanrm should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)")
+    
+    stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, chanrm, chan_primary)
     
     zsep_onechan(stack, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
     if stack_secondary is not None:

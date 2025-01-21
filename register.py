@@ -10,16 +10,17 @@ from optrg import optrg
 from helpers import tracefunc, stack_reshape_transpose_clip_zero_type 
 from zstitch import stitchrg 
 from registration_template import choose_registration_template
-from separate_channels_when_two import separate_channels_when_two
+from stackchan import stackchan
 from subtract_background import subtract_background
 from stacksmooth import stacksmooth
 from im_montage import im_montage
 from plot_gif import plot_gif
 from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
+from stackshape import stackshape
 
 
-def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip, discard_channel_reg, chan_primary_when_two_reg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
+def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, methodrg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
 
    # note md['dims'] does not include channels, since each channel is operated on separately through this part of the pipeline
 
@@ -36,6 +37,7 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
         
     stack = imread(pth_tif_read) #(tz)yx, or if multiple channels, (tz)cyx; use to include .astype('float32') but float is not actually necessary as far as i can tell, although caiman has it this way i think O2 resource savings are worth the loss in precision 
         
+        
     if md['dims'][1]>1:
         stack_has_multiple_z_slices = 1
         indzall = np.arange(md['dims'][1])
@@ -47,9 +49,13 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
             print("stack does not have multiple slices but register_in_2d is set to false, changing register_in_2d to true now")
 
 
-    md = check_aborted_stack(md, pth_md, stack, stack_has_multiple_z_slices)
+    md = check_aborted_stack(md, pthmd, stack, stack_has_multiple_z_slices)
+
+    tzcyx, numchan = stackshape(stack, md)
+
+    chanrm, chan_primary, methodrg = parse_methodrg(methodrg, numchan)
     
-    stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = separate_channels_when_two(stack, md, discard_channel_reg, chan_primary_when_two_reg)
+    stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, chanrm, chan_primary)
 
     if bglenpx:
         pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in filefind (make this more reliable)
@@ -60,7 +66,7 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
     if two_channel_reg:
         print("SINCE STACK HAS 2 CHANNELS AND chan_primary IS SET TO " + chanstr_primary + ", WILL REGISTER CHANNEL " + chanstr_secondary + " USING SHIFTS FROM CHANNEL " + chanstr_primary )
-        pth_tif_write_secondary = pth_tif_write.replace(chanstr_primary, chanstr_secondary) #only used if two_channel_reg==1 (ie if there are two channels and discard_channel_reg=None)
+        pth_tif_write_secondary = pth_tif_write.replace(chanstr_primary, chanstr_secondary) #only used if two_channel_reg==1 (ie if there are two channels and chanrm=None)
         pth_tif_write_secondary_tmp_prefix = pth_tif_write_secondary[:-4] + 'tmp'
     else:
         pth_tif_write_secondary = []  
@@ -244,6 +250,11 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
             write_registered_stack(stack_allchan, pth_tif_write_allchan)
 
         countz = countz + 1
+    
+    print("now that the stack has been written, updating metadata to include chanrm")
+    md['chanrm_cmrg'] = chanrm
+    with open(pthmd, 'w') as file: 
+        file.write(json.dumps(md, sort_keys=True, indent=4))
 
 
 
@@ -255,14 +266,42 @@ def register(pth_tif_read, pth_md, pth_prefix, pth_allrec, md, scopatmplt, clip,
 ########################################################################################################################################################
 
 
-def check_aborted_stack(md, pth_md, stack, stack_has_multiple_z_slices):
+def check_aborted_stack(md, pthmd, stack, stack_has_multiple_z_slices):
     if stack_has_multiple_z_slices==0 and md['dims'][0] != stack.shape[0]:
         print("stack cannot be reshaped into dimensions reported in tif header, but since it is not volumetric, assuming user aborted acquisition and updating metadata to match stack dimensions")
         md['numvol'] = stack.shape[0]
         md['dims'][0] = md['numvol']
-    with open(pth_md, 'w') as file: 
+    with open(pthmd, 'w') as file: 
         file.write(json.dumps(md, sort_keys=True, indent=4))
     return md
+
+
+def parse_methodrg(methodrg, numchan):
+    
+    if methodrg!='1' and methodrg!='2' and numchan==1:
+        print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to '1' TO OPERATE ON THE ONLY CHANNEL PRESENT")
+        methodrg = '1'
+
+    chan_primary = None #irrelevant unless methodrg denotes 2-channel registration 
+    chanrm = None
+    if methodrg=='1':
+        chanrm = 2 #just in case there are two channels 
+    elif methodrg=='2':
+        chanrm = 1 #just in case there are two channels 
+    else:
+        if methodrg=='12':
+            raise Exception('methodrg 12 does not work yet')
+        elif methodrg.startswith('seed'):
+            if '12' in methodrg:
+                chan_primary = 1
+            elif '21' in methodrg:
+                chan_primary = 2
+            else:
+                raise Exception('methodrg starting with seed must be either seed12 or seed21')
+        else:
+            raise Exception('methodrg must be 1, 2, 12, seed12, or seed21')
+
+    return chanrm, chan_primary, methodrg
 
 
 def cropflyback(stack, dims, flyback):

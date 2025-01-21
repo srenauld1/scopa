@@ -1,4 +1,4 @@
-function stack = tifld(pthtif, opt)
+function stack = stackld(pthtif, opt)
 
 % tzcyx --> yxczt
 % read tif that was written as tzcyx; array is read as yxczt
@@ -119,7 +119,7 @@ if do_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is
                     sz = sztmp;
                     stack_size_is_known = 1;
                 else
-                    error("did not pass metadata into tifld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
+                    error("did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
                 end
             else
                 sistr = mdtif.tifinfo.ImageDescription;
@@ -130,7 +130,7 @@ if do_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is
                 if isequal(prod(sztmp), numel(stack))
                     fprintf("size inferred from metadata matches in number elements but size of all dimensions cannot be determined, so stack_size_is_known will not be set to true, and output will be 3d with possible collapsed czt dimensions")
                 else
-                    error("did not pass metadata into tifld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
+                    error("did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from mdtif output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
                 end
             end
             fclose(mdtif.fid);

@@ -1,15 +1,15 @@
 
-function plot_stack_stats(stack, opt)
+function stackstats(stack, opt)
 
 arguments
-    stack {mustBeNumeric}
+    stack
     opt.mask = []
     opt.iz = 1:size(stack,3)
     opt.it = 1:size(stack,4)
     opt.pthsv_prefix = []
 end
 
-fprintf("function plot_stack_stats is very old and needs to be updated")
+error("function stackstats is old and needs to be updated, but could be useful")
 
 mask = opt.mask;
 iz = opt.iz;
@@ -18,7 +18,7 @@ pthsv_prefix = opt.pthsv_prefix;
 
 
 if ~isa(stack, 'single')
-    sprintf("stack is not single in function 'plot_stack_stats', converting to single for 'plot_stack_stats'")
+    sprintf("stack is not single in function 'stackstats', converting to single for 'stackstats'")
     stack = single(stack);
 end
 

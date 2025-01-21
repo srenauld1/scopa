@@ -10,6 +10,7 @@ import os
 from tifffile.tifffile import imwrite, imread
 import shutil
 from denoising_score import denoising_score
+import json
 
 
 
@@ -50,23 +51,11 @@ def stitchrg(pth_tif_reg, dims):
     return stack 
 
 
-def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise):
+def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_choose_denoise, pthmd):
 
     #stitch together denoised slices (tyx) into original size (tzyx)
 
     print("\n\n\nENTERING FUNCTION stitchdn")
-
-    two_chan_stitch = 0
-    if 'channel_save' in md: #older runs of do_register will not have this field in md, if you want it, delete mdsi and rerun
-        if not isinstance(md['channel_save'], int):
-            if len(md['channel_save'])==2:
-                if len(glob.glob(os.path.join(pth_denoising, fn_prefix + '_chn1_*/')))!=0 or len(glob.glob(os.path.join(pth_denoising, fn_prefix + '_chn2_*/')))!=0: #make sure two-channel denoising actually occurred (it won't if you discarded a channel, even though metadata mdsi will report 2 channels)
-                    two_chan_stitch = 1
-                else:
-                    print("\n\n\nSTITCHING A SINGLE CHANNEL BECAUSE THERE ARE NO DENOISING FOLDERS WITH CHANNEL INFIXES; METADATA REPORTS THERE ARE TWO CHANNELS SAVED, SO YOU MUST HAVE DISCARDED A CHANNEL IN REGISTRATION OR DENOISING")
-
-
-
 
     pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif' #forcing this suffix since stitch is specificaly for denoising (rather than letting it have use_denoised determine)
     
@@ -75,16 +64,46 @@ def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_c
   
     dims_pre_denoise = md['dims']
 
-    if two_chan_stitch:
-        chan_str_insert = '_chn1'
-        stack_dtype = 'uint16'
+    #channel infixes will only exist for denoised 2-channel recordings, even if only one channel was denoised
+    chn1_infix_exists = 0
+    chn2_infix_exists = 0
+    if 'channel_save' in md: #older runs of do_register will not have this field in md, if you want it, delete mdsi and rerun
+        if not isinstance(md['channel_save'], int):
+            if len(md['channel_save'])==2:
+                if len(glob.glob(os.path.join(pth_denoising, fn_prefix + '_chn1_*/')))!=0:
+                    chn1_infix_exists = 1
+                if len(glob.glob(os.path.join(pth_denoising, fn_prefix + '_chn2_*/')))!=0:
+                    chn2_infix_exists = 1
+                
+
+    all_dn_folders = glob.glob(os.path.join(pth_denoising, fn_prefix + '_*/'))
+    onechan_dn_folders = [fntmp for fntmp in all_dn_folders if ( re.search(r'\d+/$', fntmp) or re.search(r'all/$', fntmp) ) and not re.search('chn1', fntmp) and not re.search('chn2', fntmp)]
+    if len(onechan_dn_folders)!=0 and (chn1_infix_exists or chn2_infix_exists):
+        raise Exception("WARNING, THERE ARE DENOISING FOLDERS FOR THIS RECORDING WITH AND WITHOUT CHANNEL INFIXES; THIS MEANS THIS RECORDING IS 2-CHANNEL, AND AT SOME POINT YOU RAN DENOISING ON A STACK (FOR EXAMPLE THE REGISTERED STACK) THAT HAD A CHANNEL DISCARDED, AND ALSO AT SOME POINT RAN DENOISING ON BOTH CHANNELS; THE CODE DOESN'T KNOW WHICH YOU ARE TRYING TO DO RIGHT NOW; DELETE THE DENOISING FOLDER(S) YOU DON'T NEED; THIS IS A HACK SOLUTION THAT NEEDS TO BE FIXED")
+
+    chanrm = None
+    if chn1_infix_exists and chn2_infix_exists:
+        stack_dtype = 'uint16' #float within stitchdn_onechan, but 2 channels are put together as uint16
         stack_allchan = np.zeros((dims_pre_denoise[0], dims_pre_denoise[1], 2, dims_pre_denoise[2], dims_pre_denoise[3]), dtype=stack_dtype)
+        chan_str_insert = '_chn1'
         stack_allchan[:,:,0,:,:] = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
         chan_str_insert = '_chn2'
         stack_allchan[:,:,1,:,:] = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
-    else:
+    elif chn1_infix_exists and not chn2_infix_exists:
+        chanrm = 2
+        chan_str_insert = '_chn1'
+        print("\n\n\nSTITCHING CHANNEL 1 BECAUSE chn1 infix exists in the denoising folder but not chn2 infix; you must have denoised only channel 1 of a 2-channel stack (raw or registered)")
+        stack_allchan = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
+    elif not chn1_infix_exists and chn2_infix_exists:
+        chanrm = 1
+        chan_str_insert = '_chn2'
+        print("\n\n\nSTITCHING CHANNEL 2 BECAUSE chn2 infix exists in the denoising folder but not chn1 infix; you must have denoised only channel 2 of a 2-channel stack (raw or registered)")
+        stack_allchan = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
+    elif not chn1_infix_exists and not chn2_infix_exists:
+        print("\n\n\nSTITCHING A SINGLE CHANNEL BECAUSE THERE ARE NO DENOISING FOLDERS WITH CHANNEL INFIXES (chn1 or chn2); EITHER THE RECORDING HAS ONLY ONE CHANNEL, OR YOU DISCARDED A CHANNEL IN THE STACK YOU DENOISED (FOR EXAMPLE, THE REGISTERED STACK)")
         chan_str_insert = ''
         stack_allchan = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
+
 
     if len(stack_allchan.shape)==4:
         stack_allchan = stack_allchan.reshape(dims_pre_denoise[0] * dims_pre_denoise[1], dims_pre_denoise[2], dims_pre_denoise[3]) #(tz)yx
@@ -92,8 +111,12 @@ def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_c
         stack_allchan = stack_allchan.reshape(dims_pre_denoise[0] * dims_pre_denoise[1] * 2, dims_pre_denoise[2], dims_pre_denoise[3]) #(tzc)yx
 
     print(stack_allchan.shape)
-    #imwrite(pth_tif_write, stack.squeeze(), bigtiff=True, photometric='minisblack') #squeeze was just for non-volumetric (old project), does it change header, slowing read dramatically?
     imwrite(pth_tif_write, stack_allchan, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
+
+    print("now that the stack has been written, updating metadata to include chanrm")
+    md['chanrm_dcdn'] = chanrm
+    with open(pthmd, 'w') as file: 
+        file.write(json.dumps(md, sort_keys=True, indent=4))
 
 
 def stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert):
