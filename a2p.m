@@ -33,7 +33,7 @@ for k = 1:numel(oa) % loop over recordings
     %% load stim (daq)
 
     ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; ts.ball = []; ts.vis = []; %init some optional variables
-    ts.t = md.sampper * [1:md.sz_crop(4)];
+    ts.t = md.sampper * [1:size(stack,4)];
     ts.epochinds = ones(numel(ts.t), 1);
 
     if o.mn.oldcarl

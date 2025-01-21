@@ -72,15 +72,14 @@ end
 
 md = structtxtld(pthmd);
 
-md.numvol_o = md.numvol;
 md.sz = [md.ypix md.xpix md.numslice md.numvol];
 
 if isempty(optsld.trm)
-    md.numvol_crop = md.numvol_o;
+    md.numvol_crop = md.numvol;
 else
-    md.numvol_crop = md.numvol_o - optsld.trm(1) - optsld.trm(2);
+    md.numvol_crop = md.numvol - optsld.trm(1) - optsld.trm(2);
 end
-md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
+md.sz_crop = [md.sz(1) md.sz(2) md.sz(3) md.numvol_crop];
 md.trm = optsld.trm; %copy from struct ld
 md.fbrm = optsld.fbrm; %copy from struct ld
 md.zerostack = optsld.zerostack; %copy from struct ld
@@ -122,7 +121,6 @@ end
 
 md.widyxz = [md.ywid, md.xwid, md.zwid];
 md.sampper = 1/md.volrate;
-md.numvol = "renamed 'numvol_o' to distinguish from optional 'numvol_crop' which may or may not be different from 'numvol_o', depending on values of 'sld.trm'";
 
 md = structsort(md, vectype='row');
 

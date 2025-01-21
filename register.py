@@ -35,6 +35,7 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
         n_processes = 1 #set this in case you don't (or can't) setup cluster 
         dview = None #set this in case you don't (or can't) setup cluster
         
+
     stack = imread(pth_tif_read) #(tz)yx, or if multiple channels, (tz)cyx; use to include .astype('float32') but float is not actually necessary as far as i can tell, although caiman has it this way i think O2 resource savings are worth the loss in precision 
         
         

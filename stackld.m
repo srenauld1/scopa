@@ -101,7 +101,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if stack_size_is_known
-        sz = stacksize(md, ic)
+        sz = stacksize(md, id, ic, rawstack, fbrm);
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -164,7 +164,7 @@ if doconvert
             else %if you don't have metadata, get it here
                 md = mdsild(pthstack);
                 if ~isempty(md)
-
+                    sz = stacksize(md, id, ic, rawstack, fbrm);
                 else
                     stack_size_is_known = 0;
                     error("did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
@@ -272,7 +272,7 @@ end
 end
 
 
-function sz = stacksize(md, ic)
+function sz = stacksize(md, id, ic, rawstack, fbrm)
 
 if isfield(md, ['chanrm_' id.suffix])
     chanrm = md.(['chanrm_' id.suffix]);
