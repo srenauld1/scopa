@@ -84,6 +84,8 @@ end
 
 if doconvert
 
+    pthstack = regexprep(pthstack, '.mat', '.tif'); %in case mat existed but errored above
+
     if ~endsWith(pthstack, '.tif')
         error("pthstack must end with tif or mat")
     end
