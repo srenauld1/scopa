@@ -278,28 +278,28 @@ def check_aborted_stack(md, pthmd, stack, stack_has_multiple_z_slices):
 
 def parse_methodrg(methodrg, numchan):
     
-    if methodrg!='1' and methodrg!='2' and numchan==1:
+    if methodrg!='first' and methodrg!='second' and numchan==1:
         print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to '1' TO OPERATE ON THE ONLY CHANNEL PRESENT")
-        methodrg = '1'
+        methodrg = 'first'
 
     chan_primary = None #irrelevant unless methodrg denotes 2-channel registration 
     chanrm = None
-    if methodrg=='1':
-        chanrm = 2 #just in case there are two channels 
-    elif methodrg=='2':
-        chanrm = 1 #just in case there are two channels 
-    else:
-        if methodrg=='12':
-            raise Exception('methodrg 12 does not work yet')
-        elif methodrg.startswith('seed'):
-            if '12' in methodrg:
-                chan_primary = 1
-            elif '21' in methodrg:
-                chan_primary = 2
-            else:
-                raise Exception('methodrg starting with seed must be either seed12 or seed21')
+    if methodrg=='first':
+        if numchan==2:
+            chanrm = 2 
+    elif methodrg=='second':
+        if numchan==2:
+            chanrm = 1 
         else:
-            raise Exception('methodrg must be 1, 2, 12, seed12, or seed21')
+            raise Exception("methodrg second is for the registering the second of two saved channels, but only one channel was saved, so you should use methodrg first, even if the one saved channel is channel 2")
+    elif methodrg=='both':
+        raise Exception("methodrg both does not work yet")
+    elif methodrg=='12':
+        chan_primary = 1
+    elif methodrg=='21':
+        chan_primary = 2
+    else:
+        raise Exception('methodrg must be first, second, both, 12, or 21')
 
     return chanrm, chan_primary, methodrg
 

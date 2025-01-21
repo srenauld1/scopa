@@ -73,7 +73,7 @@ end
 md = structtxtld(pthmd);
 
 md.numvol_o = md.numvol;
-md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
+md.sz = [md.ypix md.xpix md.numslice md.numvol];
 
 if isempty(optsld.trm)
     md.numvol_crop = md.numvol_o;

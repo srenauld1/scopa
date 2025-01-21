@@ -46,14 +46,13 @@ ic = opt.ic;
 iz = opt.iz;
 it = opt.it;
 
+sz = [];
+try_tiffstack_backup = 0; %hard coding right now
+
+id = idmake(pthstack);
+
 try
     md = mdsild(pthstack);
-    numslice_withflyback = md.numslice_withflyback;
-    channel_save = md.channel_save;
-    ypix = md.ypix;
-    xpix = md.xpix;
-    numslice = md.numslice;
-    numvol = md.numvol_o;
     stack_size_is_known = 1;
 catch
     stack_size_is_known = 0;
@@ -84,11 +83,13 @@ end
 
 if doconvert
 
+    pthstack = regexprep(pthstack, '.mat', '.tif'); %in case mat existed but errored above
+
     if ~endsWith(pthstack, '.tif')
         error("pthstack must end with tif or mat")
     end
 
-    [~, fn, ext] = fileparts(pthstack);
+    [~, fn, ~] = fileparts(pthstack);
     pthmat = regexprep(pthstack, '.tif', '.mat');
 
     if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw')
@@ -100,11 +101,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if stack_size_is_known
-        if rawstack
-            sz = [ypix, xpix, numel(channel_save), numslice_withflyback, numvol]; %z dimension of sz includes flyback frames for raw stack
-        else
-            sz = [ypix, xpix, numel(channel_save), numslice, numvol]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
-        end
+        sz = stacksize(md, ic)
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -156,7 +153,7 @@ if doconvert
                         error("prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tiff written by tiffile imwrite, but there should be no mismatch when reading scanimage output files")
                     else
                         if prod(sz)>numel(stack)
-                            error("tifreadfast returned stack that has fewer elements than your metadata reports")
+                            error("tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels")
                         else
                             waittime = 20;
                             fprintf(newline + "tifreadfast returned stack with more elements than your metadata reports" + newline + "this can occur with stacks not written by scanimage" + newline + "if you do not halt execution within " + num2str(waittime) + " seconds, " + newline + "the code will assume your metadata is correct " + newline + " and crop the stack (at the end of each overlong dimension) to match metadata" + newline)
@@ -164,37 +161,27 @@ if doconvert
                         end
                     end
                 end
-            else %e.g. if you don't have metadata
-                md = mdsisv_mat(pthstack);
+            else %if you don't have metadata, get it here
+                md = mdsild(pthstack);
                 if ~isempty(md)
-                    numslice_withflyback = md.numslice_withflyback;
-                    channel_save = md.channel_save;
-                    ypix = md.ypix;
-                    xpix = md.xpix;
-                    numslice = md.numslice;
-                    numvol = md.numvol_o;
-                    stack_size_is_known = 1;
+
                 else
                     stack_size_is_known = 0;
                     error("did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
                 end
-                
-    if stack_size_is_known
-        if rawstack
-            sz = [ypix, xpix, numel(channel_save), numslice_withflyback, numvol]; %z dimension of sz includes flyback frames for raw stack
-        else
-            sz = [ypix, xpix, numel(channel_save), numslice, numvol]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
-        end
-    end
             end
         catch
             if tiffstack_already_failed
                 error("tifreadfast failed and tiffreadstack also failed previously; cannot read stack" + newline)
             else
-                fprintf("tifreadfast failed, using tiffstack" + newline)
+                if try_tiffstack_backup
+                    fprintf("tifreadfast failed, using tiffstack as backup; it is slower and only works on some platforms but does not read extra blank frames in tifs not written by scanimage" + newline)
+                    stack = []; %clear a potentially large variable, in case stack got read by tifreadfast but something caused error afterwards
+                    stack = TIFFStack(pthstack); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
+                else
+                    error("tifreadfast failed, the code could use tiffstack at this point but we should try to rely on tifreadfast because it is overall better" + newline)
+                end
             end
-            stack = []; %clear a potentially large variable, in case stack got read by tifreadfast but something caused error afterwards
-            stack = TIFFStack(pthstack); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
         end
     end
 
@@ -202,44 +189,41 @@ if doconvert
     mmd.trm = trm;
     mmd.iy = iy;
     mmd.ix = ix;
-    mmd.iz = ic;
-    mmd.ic = iz;
+    mmd.ic = ic;
+    mmd.iz = iz;
     mmd.it = it;
+    mmd.sz = sz;
 
 
     %%%% CHECK ANY INDICES FOR PROBLEMS %%%%
 
     if stack_size_is_known
         if isempty(iy)
-            iy = 1:sz(1); %can choose any subset of y, can be discontiguous;
+            iy = 1:sz(1);
         end
         if ~all(iy >= 1 & iy <= sz(1))
             error("REQUESTED iy are not subset of available stack")
         end
         if isempty(ix)
-            ix = 1:sz(2); %can choose any subset of x, can be discontiguous;
+            ix = 1:sz(2);
         end
         if ~all(ix >= 1 & ix <= sz(2))
             error("REQUESTED ix are not subset of available stack")
         end
         if isempty(ic)
-            ic = 1:sz(3); %can choose any subset of t, can be discontiguous
+            ic = 1:sz(3);
         end
         if ~all(ic >= 1 & ic <= sz(3))
             error("REQUESTED ic are not subset of available stack")
         end
         if isempty(iz)
-            if fbrm
-                iz = 1:numslice; %can crop flyback before reading into memory by passing subset of inds; in general, can choose any subset of z, can be discontiguous; e.g. passing 1:numslice will skip flyback frames for raw, while 1:size_z_read_from will read flyback frames;
-            else
-                iz = 1:sz(4); %read all frames of not fbrm
-            end
+            iz = 1:sz(4);
         end
         if ~all(iz >= 1 & iz <= sz(4))
             error("REQUESTED iz are not subset of available stack")
         end
         if isempty(it)
-            it = 1:sz(5); %can choose any subset of t, can be discontiguous
+            it = 1:sz(5);
             if ~isempty(trm)
                 it = trm(1)+1:it(4)-trm(2);
             end
@@ -281,5 +265,37 @@ if doconvert
 
     end
 
+
+end
+
+
+end
+
+
+function sz = stacksize(md, ic)
+
+channel_save = md.channel_save;
+ypix = md.ypix;
+xpix = md.xpix;
+numslice = md.numslice;
+numvol = md.numvol_o;
+if isfield(md, ['chanrm_' id.suffix])
+    chanrm = md.(['chanrm_' id.suffix]);
+else
+    error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi")
+end
+if isempty(chanrm)
+    chankeep = 1:numel(md.channel_save);
+else
+    chankeep = setxor(chanrm, 1:numel(channel_save));
+end
+if ~isempty(ic) && ~ismember(chankeep, ic)
+    error("ic is not member of channels after possible chanrm")
+end
+if rawstack && ~fbrm
+    sz = [ypix, xpix, numel(chankeep), md.numslice_withflyback, numvol]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
+else
+    sz = [ypix, xpix, numel(chankeep), numslice, numvol]; %yxczt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
+end
 
 end

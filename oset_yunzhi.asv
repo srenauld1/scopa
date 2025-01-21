@@ -1,0 +1,17 @@
+function o = oset_yunzhi(o)
+
+
+o.mn.dodaq = 1; %process daq timeseries?
+o.mn.doroi = 1; %make/load/process rois?
+
+o = odf(o);
+
+
+    o.roi.regionex = regionex{m};
+
+    o.roi.domm = 1; %do draw rois
+    o.roi.domma = 1; %do draw rois
+            o.roi.ma.numroi = 128; %must be power of 2
+
+o = odf(o);
+

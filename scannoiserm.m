@@ -48,8 +48,9 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
+stack = stackpr(pthstack, o.sld);
+
 stack = stackpr(pthstack, ...
-    sz=md.sz_o, ...
     numslice_withflyback=md.numslice_withflyback, ...
     channel_save=md.channel_save, ...
     imrate=md.volrate, ...
@@ -60,13 +61,13 @@ stack = stackpr(pthstack, ...
 
 
 if isempty(frameinds)
-    frameinds = 1:md.numvol_o;
+    frameinds = 1:size(stack,4);
 else
-    frameinds(frameinds>md.numvol_o) = [];
+    frameinds(frameinds>size(stack,4)) = [];
     stack=stack(:,:,:,frameinds);
 end
 
-if isequal(frameinds, 1:md.numvol_o)
+if isequal(frameinds, 1:size(stack,4))
     dosave = 1;
     fprintf("REMOVING SCAN NOISE FOR ALL " + numel(frameinds) + " FRAMES; WILL SAVE OUTPUT STACK" + newline)
 else

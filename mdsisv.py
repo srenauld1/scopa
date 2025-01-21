@@ -15,7 +15,7 @@ def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
         
     if mat_file_shape is None: #mat_file_shape is None for scanimage data, is not None for Leica data (Carl's old project)
 
-        meta = ScanImageTiffReader(pth_readfile).metadata()    #tiffile might be able to read metadata
+        meta = ScanImageTiffReader(pth_readfile).metadata() #tiffile might be able to read metadata
         
         mdt['channel_save'] = literal_eval(re.findall( 'channelSave = (.*)', meta)[0].replace(" ",",").replace(";",","))
         mdt['channel_active'] = literal_eval(re.findall( 'channelsActive = (.*)', meta)[0].replace(" ",",").replace(";",","))

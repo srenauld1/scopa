@@ -270,6 +270,116 @@
     },
     "regionex": "none"
   },
+  "a12": {
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "edge",
+      "maskseg": "uniform",
+      "numroi": 64
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "eb"
+  },
+  "a13": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "left"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "ga"
+  },
+  "a14": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "right"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "ga"
+  },
+  "a15": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "left"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "no"
+  },
+  "a16": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "right"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "no"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "prefix": "a"

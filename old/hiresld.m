@@ -8,7 +8,7 @@ pth_hires_tif = [pth.hires_prefix '.tif'];
 pixdist_z_lr = md.widyxz(3);
 pos_lr_cntrs = compute_z_centers(pixdist_z_lr, md.numslice );
 pixdist_z_hr = md.md_hires.widyxz(3);
-pos_hr_cntrs = compute_z_centers(pixdist_z_hr, md.md_hires.sz_o(3) );
+pos_hr_cntrs = compute_z_centers(pixdist_z_hr, md.md_hires.sz(3) );
 
 hrlr = [];
 for phri = 1:length(pos_hr_cntrs)
@@ -46,7 +46,7 @@ catch
         pth2.stack_analysis = [pth.hires_prefix '.mat'];
         pth2.stacks_prefix = {pth.hires_prefix};
 
-        stack_hires = stackpr(md.md_hires.sz_o, md.md_hires.numslice_withflyback, pth2, opts_hires.ld, recid);
+        stack_hires = stackpr(md.md_hires.sz, md.md_hires.numslice_withflyback, pth2, opts_hires.ld, recid);
 
         stack_hires(:,:,hires_z_out_of_bounds,:) = [];
         stackmnthr = rescale(mean(stack_hires, 4));
