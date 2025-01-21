@@ -167,9 +167,17 @@ if doconvert
             else %e.g. if you don't have metadata
                 md = mdsisv_mat(pthstack);
                 if ~isempty(md)
-                    ny = size(stack, 1);
-                    nx = size(stack, 2);
-                    sz = [ny nx];
+                    numslice_withflyback = md.numslice_withflyback;
+                    channel_save = md.channel_save;
+                    ypix = md.ypix;
+                    xpix = md.xpix;
+                    numslice = md.numslice;
+                    numvol = md.numvol_o;
+                    if rawstack
+                        sz = [ypix, xpix, numel(channel_save), numslice_withflyback, numvol]; %z dimension of sz includes flyback frames for raw stack
+                    else
+                        sz = [ypix, xpix, numel(channel_save), numslice, numvol]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
+                    end
                     stack_size_is_known = 1;
                 else
                     stack_size_is_known = 0;
