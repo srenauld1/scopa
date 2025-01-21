@@ -74,7 +74,12 @@ md = structtxtld(pthmd);
 
 md.numvol_o = md.numvol;
 md.sz_o = [md.ypix md.xpix md.numslice md.numvol_o];
-md.numvol_crop = md.numvol_o - optsld.trm(1) - optsld.trm(2);
+
+if isempty(optsld.trm)
+    md.numvol_crop = md.numvol_o;
+else
+    md.numvol_crop = md.numvol_o - optsld.trm(1) - optsld.trm(2);
+end
 md.sz_crop = [md.sz_o(1) md.sz_o(2) md.sz_o(3) md.numvol_crop];
 md.trm = optsld.trm; %copy from struct ld
 md.fbrm = optsld.fbrm; %copy from struct ld
