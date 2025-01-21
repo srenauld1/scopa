@@ -172,7 +172,7 @@ if doconvert
                     ypix = md.ypix;
                     xpix = md.xpix;
                     numslice = md.numslice;
-                    numvol = md.numvol_o;
+                    numvol = md.numvol;
                     if rawstack
                         sz = [ypix, xpix, numel(channel_save), numslice_withflyback, numvol]; %z dimension of sz includes flyback frames for raw stack
                     else
