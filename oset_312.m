@@ -13,7 +13,7 @@ o.mn.pltvis = 1;
 
 o.daq.use_carls_epochs = 1;
 
-o.sld.chanuse = [1 2];
+o.sld.chanuse = [2];
 
 for m = 1:numel(regionex) 
 
