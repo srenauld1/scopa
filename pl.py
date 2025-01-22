@@ -24,7 +24,7 @@ if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from 
 else: #in interactive mode, read options set in optdfpl, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpl.py, where user sets options; 2 options, do_copyfiles and jobind, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpl
   print("pth_parsfile not passed as input (in interactive mode), using options from optdfpl.py")
   exec(open(currscriptdir + '/' + 'optdfpl.py').read())
-  first_job = 1 #this should always be 1 if you're running pl.py directly/interactively, first_job is only used when pl.py is called from pl.sh, as part of a larger pipeline 
+  first_noncopy_job = 1 #this should always be 1 if you're running pl.py directly/interactively, first_noncopy_job is only used when pl.py is called from pl.sh, as part of a larger pipeline 
   jobnm = '' #empty for intyeractive mode; job name run from pl (noninteractive job identifier)
   pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 
   scopatmpdir = '' #string, keep empty for interactive; directory for scopatmp folder; automatically defined in pthmake
@@ -47,7 +47,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed,
                       do_extract, methodex, extract_in_2d, regionex, 
-                      do_a2p, first_job] = parse_command_line()
+                      do_a2p, first_noncopy_job] = parse_command_line()
 
 
 [pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
@@ -113,7 +113,7 @@ if do_copyfiles==0 and do_autoallocate==0:
 
 
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all] = \
-  filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+  filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 

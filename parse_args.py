@@ -37,10 +37,10 @@ def parse_command_line():
     CLI=argparse.ArgumentParser()
 
     CLI.add_argument(
-        "--first_job",  # name on the CLI - drop the `--` for positional/required parameters
+        "--first_noncopy_job",  # name on the CLI - drop the `--` for positional/required parameters
         nargs=1,  
         type=int,
-        #default=[first_job],  # default if nothing is provided
+        #default=[first_noncopy_job],  # default if nothing is provided
     )
 
     CLI.add_argument(
@@ -74,7 +74,7 @@ def parse_command_line():
 
     args = CLI.parse_args() #COMMAND LINE ARGUMENT PASSED, IT IS USED, OTHERWISE THE DEFAULT IS USED (BUT CURRENTLY THERE ARE NO DEFAULTS SPECIFIED ANYWHERE, THAT IS, EVERYTHING IS IN PL, PASSED EITHER AS COMMAND LINE ARGUMENT OR IN THE PARAMS FILE)
 
-    first_job = int(args.first_job[0])
+    first_noncopy_job = int(args.first_noncopy_job[0])
     do_copyfiles = int(args.do_copyfiles[0])
     
     if isinstance(args.jobnm[0], list):
@@ -294,6 +294,6 @@ def parse_command_line():
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed, 
                       do_extract, methodex, extract_in_2d, regionex, 
-                      do_a2p, first_job)
+                      do_a2p, first_noncopy_job)
 
 

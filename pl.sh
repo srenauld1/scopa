@@ -167,11 +167,11 @@ fi
 
 ############ CREATE PREFIX FOR TXT FILES THAT WILL MAP FOUND FILENAMES TO PARALLEL JOB INDICES ############
 
-if [ -z "${fnind_fn_prefix_override}" ]; then #on the first loop, use first_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
+if [ -z "${fnind_fn_prefix_override}" ]; then 
     CURRTIME="`date +%Y%m%d%H%M%S`"
     FNIND_FN_PREFIX=${CURRTIME} #string, a datetime string id assigned on the first job run by pl.sh, will point to a file that saves/maps filename specifiers and indices to ensure files get the same index across all jobs run by pl, make empty to skip 
-else #on subsequent loops, use dependencies, and turn off first_job flag 
-    FNIND_FN_PREFIX=$fnind_fn_prefix_override
+else 
+    FNIND_FN_PREFIX=$fnind_fn_prefix_override #override jobid mapping in fnind file with a file with your own suffix
 fi
 
 ############ MAKE SCOPATMPDIR TO STORE SCOPA TEMP FILES AND OUTPUT IN USER'S HOME DIR ############
@@ -263,6 +263,7 @@ fi
 echo -e "STARTING SCOPA PIPELINE \n SUBMITTING THE FOLLOWING SBATCH JOBS \n "${jobnm_seq[@]}""
 echo LIST OF PATHS AVAILABLE TO pl.sh: ; echo ; echo "${PATH//:/$'\n'}" ; echo
 
+swtichon=1
 loopcount=0
 for JOBNM in "${jobnm_seq[@]}"; do
     
@@ -274,12 +275,17 @@ for JOBNM in "${jobnm_seq[@]}"; do
 
         else
 
-            if [ $loopcount == 0 ]; then #on the first loop, use first_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
-                FIRST_JOB=1
+            if [ $loopcount == 0 ]; then #on the first loop, use first_noncopy_job flag, and there is no job dependency ('singleton' will do nothing because --name param is not specified)
                 dep_str=singleton
-            else #on subsequent loops, use dependencies, and turn off first_job flag 
-                FIRST_JOB=0
+            else #on subsequent loops, use dependencies, and turn off first_noncopy_job flag 
                 dep_str=aftercorr:${!tmpid} #the job depends on the previous job with corresponding array index, whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic
+            fi
+
+            if [ "$DO_COPYFILES" == 0 ] && [ "$swtichon" == 1 ]; then
+                FIRST_NONCOPY_JOB=1 #set to 0 the first time the loop encounters a job with do_copyfiles 0   
+                swtichon=0    
+            else
+                FIRST_NONCOPY_JOB=0 #set to 0 the first time the loop encounters a job with do_copyfiles 0               
             fi
 
             requeue_str=--begin=now #don't change this dummy variable, only overwritten if using the gpu_requeue partition 
@@ -288,7 +294,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                 echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
                 echo "FORCING jobind=0 SO COPYFILES OCCURS IN A SINGLE JOB"
                 jobind=( 0 )
-                partition_str=transfer #use short partition for everything but copying files (when do_copyfiles==0)        
+                partition_str=transfer    
                 time_str=$time_copyfiles
                 ntasks_str=1
                 cpus_per_task_str=$cpu_per_task_copyfiles
@@ -302,7 +308,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                     cpus_per_task_str=$cpu_per_task_autoallocate
                     mem_per_cpu_str=$mem_per_cpu_autoallocate
                 elif [ "$JOBNM" == mcp ]; then #do_register
-                    partition_str=short #use transfer partition if do_copyfiles==1 or 2
+                    partition_str=short
                     time_str=$time_register
                     ntasks_str=1
                     if [ "${BGLENPX[@]}" == 0 ]; then #use less memory if no bg subtraction
@@ -313,7 +319,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                         mem_per_cpu_str=$mem_per_cpu_register
                     fi
                 elif [ "$JOBNM" == dnp ]; then #do_denoise
-                    partition_str=$gpu_partition #use transfer partition if do_copyfiles==1 or 2
+                    partition_str=$gpu_partition
                     time_str=$time_denoise
                     ntasks_str=1
                     cpus_per_task_str=$cpu_per_task_denoise
@@ -323,25 +329,25 @@ for JOBNM in "${jobnm_seq[@]}"; do
                         requeue_str=--requeue 
                     fi 
                 elif [ "$JOBNM" == stc ]; then #do_stitch
-                    partition_str=short #use transfer partition if do_copyfiles==1 or 2
+                    partition_str=short
                     time_str=$time_stitch
                     ntasks_str=1
                     cpus_per_task_str=$cpu_per_task_stitch
                     mem_per_cpu_str=$mem_per_cpu_stitch
                 elif [ "$JOBNM" == exp ]; then #do_extract
-                    partition_str=short #use transfer partition if do_copyfiles==1 or 2
+                    partition_str=short
                     time_str=$time_extract
                     ntasks_str=1
                     cpus_per_task_str=$cpu_per_task_extract
                     mem_per_cpu_str=$mem_per_cpu_extract
                 elif [ "$JOBNM" == rsc ]; then #do_remove
-                    partition_str=short #use transfer partition if do_copyfiles==1 or 2
+                    partition_str=short
                     time_str=$time_remove #11:40:00
                     ntasks_str=1
                     cpus_per_task_str=$cpu_per_task_remove
                     mem_per_cpu_str=$mem_per_cpu_remove
                 elif [ "$JOBNM" == a2p ]; then  #do_a2p
-                    partition_str=short #use transfer partition if do_copyfiles==1 or 2
+                    partition_str=short
                     time_str=$time_a2p
                     ntasks_str=1
                     cpus_per_task_str=$cpu_per_task_a2p
@@ -351,7 +357,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
 
             #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
             arr_id_out=$(sbatch --parsable \
-            --export=DO_COPYFILES="$DO_COPYFILES",FIRST_JOB="$FIRST_JOB",PTH_PARSFILE="$PTH_PARSFILE",SCOPADIR="$SCOPADIR",JOBNM="$JOBNM" \
+            --export=DO_COPYFILES="$DO_COPYFILES",FIRST_NONCOPY_JOB="$FIRST_NONCOPY_JOB",PTH_PARSFILE="$PTH_PARSFILE",SCOPADIR="$SCOPADIR",JOBNM="$JOBNM" \
             --array=[$jobind] \
             --dependency="$dep_str" \
             --partition="$partition_str" \
@@ -365,6 +371,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
             "$requeue_str" \
             "$gres_str" \
             pl.sbatch) 
+
 
             declare arrid_${loopcount}_dynvar=$arr_id_out #create dynamic variable name to store job_id for next job dependency specification
             tmpid=arrid_${loopcount}_dynvar #assign to another var whose value is accessed with ${!tmpid}, rather than $tmpid, since it is dynamic

@@ -12,7 +12,7 @@ import ast
 from pthmakepy import getpathscopa
 
 
-def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
@@ -22,13 +22,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
 
     pth_fnind = pth_fldr_fnind + fnind_fn_prefix + '_' + str(jobind[0]) + '_.txt'
     
-    if not first_job:
-        with open(pth_fnind) as f1:
-            print("\n\n\nSINCE THIS IS A JOB INITIATED BY pl.sh, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
-            filepatspec_all = []
-            for line in f1:
-                filepatspec_all.append(ast.literal_eval(line))
-    else:
+    if first_noncopy_job or do_copyfiles!=0:
         if file_matching_style=='any': #find all possible combinations 
             filepatspec_all = list(product(recdate, fly, trial, folder_substring)) 
         elif file_matching_style=='each': #else corresponding elements 
@@ -44,6 +38,12 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
             if not(len(recdate) == len(fly) == len(trial) == len(folder_substring)):
                 raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
             filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdate, fly, trial, folder_substring)] 
+    else:
+        with open(pth_fnind) as f1:
+            print("\n\n\nSINCE THIS IS A JOB INITIATED BY pl.sh, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
+            filepatspec_all = []
+            for line in f1:
+                filepatspec_all.append(ast.literal_eval(line))
 
     ######### FIND FILES #########
 
@@ -128,7 +128,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
         recindstr = ''
     else:
         search_result_string = "THE FOLLOWING FILES WERE FOUND: \n" + '%s' % '\n'.join(map(str, pth_allfiles))
-        if not first_job or jobind == ['all']:
+        if not first_noncopy_job or jobind == ['all']:
             recindstr = "WILL OPERATE ON ALL OF THESE FILES"
         else:
             recindstr = []
@@ -157,7 +157,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
     countz = 0
     for pth_readfile in pth_allfiles: #loop over all found files
             
-        if not first_job or (first_job and ( jobind == ['all'] or (jobind !=['all'] and np.isin(countz, jobind).any()) ) ): #if first_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in jobind; but if not first_job (always first_job in interactive mode, but only on first run in batch mode), don't apply this selection
+        if not first_noncopy_job or (first_noncopy_job and ( jobind == ['all'] or (jobind !=['all'] and np.isin(countz, jobind).any()) ) ): #if first_noncopy_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in jobind; but if not first_noncopy_job (always first_noncopy_job in interactive mode, but only on first run in batch mode), don't apply this selection because it's been written into the fnind file that the file specifiers are read from
 
             print("\n\n\nPREPARING FILE: \n" + pth_readfile)
 
@@ -247,7 +247,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
                 os.remove(pthmd_matold)
                             
             
-            ######### PUT IN LISTS #########
+            ######### PUT IN LISTS (THESE MAY NOT BE ALL FOUND FILES SINCE jobid MAY HAVE BEEN APPLIED #########
 
             pth_read_all.append(pth_readfile)
             pth_fldr_all.append(fldr)
@@ -265,7 +265,7 @@ def filefind(first_job, pth_allrec, recdate, fly, trial, folder_substring, jobin
 
     ######### IF FIRST JOB IN PIPELINE, WRITE FILE SPECIFIERS INTO FILE FOR LATER JOBS #########
 
-    if first_job: #if first_job, write a file matching recording specifiers to recording index, so subsequent jobs in the same run will follow this mapping
+    if first_noncopy_job: #if first_noncopy_job, write file(s) matching recording specifiers (and possible jobind selection) to recording index, so subsequent jobs in the same run will follow this mapping
         with open(pth_fnind, 'w') as f2:
             
             print("\n\n\nSINCE THIS IS THE FIRST (OR ONLY) JOB IN THE PIPELINE, WILL WRITE FILENAME SPECIFIERS FOR FOUND FILES TO THIS FILE: \n" + pth_fnind)

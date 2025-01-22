@@ -44,7 +44,7 @@ fi
 
 ## CALL PIPELINE ##
 $pydir $SCOPADIR/pl.py \
---first_job "$FIRST_JOB" \
+--first_noncopy_job "$FIRST_NONCOPY_JOB" \
 --do_copyfiles "$DO_COPYFILES" \
 --jobnm "$JOBNM" \
 --jobind $SLURM_ARRAY_TASK_ID \
