@@ -300,7 +300,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                 cpus_per_task_str=$cpu_per_task_copyfiles
                 mem_per_cpu_str=$mem_per_cpu_copyfiles
             else
-                jobind_tmp=$jobind
+                jobind_tmp=("${jobind[@]}")
                 echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
                 if [ "$JOBNM" == alo ]; then #do_autoallocate
                     partition_str=transfer #use transfer partition if autoallocate
