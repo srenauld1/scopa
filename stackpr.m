@@ -126,11 +126,9 @@ stackmntmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat
 cnt = 0;
 for spi = 1:numel(pthstackall)
 
-    stack = stackld(pthstackall{spi}, fbrm=fbrm, trm=trm, ic=chanuse, savemem=savemem);
+    [stack, chankeep{spi}] = stackld(pthstackall{spi}, fbrm=fbrm, trm=trm, ic=chanuse, savemem=savemem);
 
-    %insert chanuse here also in case 
-
-    if dostats 
+    if dostats
         stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstackall{spi}(1:end-4))
     end
     if any(clip) && ~isequal(clip, [0,1])
@@ -173,6 +171,22 @@ end
 %% plot
 
 if doplt
+
+    chankeep_main_stack = chankeep{end};
+    for k = 1:numel(stacktmp)
+        if ~all(ismember(chankeep{end}, chankeep{k})) 
+            error("chankeep mismatch")
+        end
+        if size(stacktmp{k},5)>numel(chankeep_main_stack)
+            stacktmp{k} = stacktmp{k}(:,:,:,:,chankeep_main_stack);
+        end
+    end
+
+        chanusetmp = chanuse(chanuse<=size(stack,5)); %only use requested channels that exist, if you request one channel that doesn't exist this will error
+    if ~isequal(chanuse(chanuse<=size(stack,5)), 1:size(stack,5))
+        stack = stack(:,:,:,:,chanuse(chanuse<=size(stack,5)));
+    end
+
 
     [~, plot_stack_order] = sort(indsnew);
 

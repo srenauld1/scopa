@@ -1,4 +1,4 @@
-function stack = stackld(pthstack, opt)
+function [stack, chankeep] = stackld(pthstack, opt)
 
 %{
 
@@ -101,7 +101,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if stack_size_is_known
-        sz = stacksize(md, id, ic, rawstack, fbrm);
+        [sz, chankeep] = stacksize(md, id, ic, rawstack);
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -164,7 +164,7 @@ if doconvert
             else %if you don't have metadata, get it here
                 md = mdsild(pthstack);
                 if ~isempty(md)
-                    sz = stacksize(md, id, ic, rawstack, fbrm);
+                    [sz, chankeep] = stacksize(md, id, ic, rawstack);
                 else
                     stack_size_is_known = 0;
                     error("did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
@@ -184,6 +184,7 @@ if doconvert
             end
         end
     end
+    
 
     mmd.fbrm = fbrm;
     mmd.trm = trm;
@@ -217,7 +218,11 @@ if doconvert
             error("REQUESTED ic are not subset of available stack")
         end
         if isempty(iz)
-            iz = 1:sz(4);
+            if rawstack && fbrm
+                iz = 1:md.numslice; %numslice is different from sz(4) for raw; if you're removing flyback, use numslice; if you're not, use sz(4)
+            else
+                iz = 1:sz(4);
+            end
         end
         if ~all(iz >= 1 & iz <= sz(4))
             error("REQUESTED iz are not subset of available stack")
@@ -272,24 +277,28 @@ end
 end
 
 
-function sz = stacksize(md, id, ic, rawstack, fbrm)
+function [sz, chankeep] = stacksize(md, id, ic, rawstack)
 
 if isfield(md, ['chanrm_' id.suffix])
     chanrm = md.(['chanrm_' id.suffix]);
 else
-    error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi")
+    if rawstack
+        chanrm = [];
+    else
+        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi")
+    end
 end
 if isempty(chanrm)
     chankeep = 1:numel(md.channel_save);
 else
     chankeep = setxor(chanrm, 1:numel(md.channel_save));
 end
-if ~isempty(ic) && ~ismember(chankeep, ic)
-    error("ic is not member of channels after possible chanrm")
+if ~isempty(ic) && ~ismember(ic, chankeep)
+    error("ic is not member of channels in this stack (after accounting for possible chanrm)")
 end
 
 sz = [md.ypix, md.xpix, numel(chankeep), md.numslice, md.numvol]; %yxczt;
-if rawstack && ~fbrm
+if rawstack
     sz(4) = md.numslice_withflyback;
 end
 
