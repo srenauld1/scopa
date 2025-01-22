@@ -22,7 +22,7 @@ for k = 1:numel(oa) % loop over recordings
     glb(1, dirstack=pth.dirstack); %set/update data folder path as global (update option since you might be looping over k)
 
 
-    %% load/visualize stack
+    %% load/process/visualize stack
 
     stack = stackpr(pth.stack, o.sld);
     

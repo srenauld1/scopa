@@ -90,12 +90,8 @@ d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.use_carls_epochs = 0; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial; vector is created in socket code to control stimulus state, then saved at end of experiment; for old recordings file was not saved, so use_carls_epochs recreates that vector in the same way the socket code did
 d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
 
-%% sld (stackld: load, process stack)
+%% spr (stackpr: process stack)
 
-d.sld.chanuse = []; %which pmt channel to use, empty to keep all ; will error if you request channel that doens't exist
-d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist
-d.sld.trm = []; %how many samples to remove from [start, end] of stack; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
-d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.clip = [0, 1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
 d.sld.stackdtype = 'uint16';
@@ -105,6 +101,17 @@ d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'meth
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = [ d.spec.suffixvalid ]; %stack suffixes to plot together in a gif; default tries to plot all d.spec.suffixvalid; nonexistent or invalid suffixes are ignored; these stacks are also converted from tif to mat (along with d.spec.suffix, in case user doesn't list it here)
 
+%% sld (stackld: load stack from tif / save to mat )
+
+d.sld.chanuse = []; %which pmt channel to use, empty to keep all; will error if you request channel that doens't exist
+d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist, before saving to mat
+d.sld.trm = []; %how many samples to remove from [start, end] of stack, before saving to mat; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
+d.sld.iy = []; %y indices to keep and save to mat
+d.sld.ix = []; %x indices to keep and save to mat
+d.sld.ic = []; %c indices to keep and save to mat; this is which pmt channel to use; empty to keep all; will error if you request channel that doens't exist
+d.sld.iz = []; %z indices to keep and save to mat
+d.sld.it = []; %t indices to keep and save to mat 
 
 %% ftv (ftvproc: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
 

@@ -16,8 +16,11 @@ arguments
     opt
     doplt = []
 end
-optsld = opt.sld;
 stackdtype = opt.stackdtype;
+chanuse = opt.chanuse;
+fbrm = opt.fbrm;
+trm = opt.trm;
+savemem = opt.savemem;
 zerostack = opt.zerostack;
 clip = opt.clip;
 smlenpx = opt.smlenpx;
@@ -125,7 +128,7 @@ stackmntmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat
 cnt = 0;
 for spi = 1:numel(pthstackall)
 
-    [stack, chantif{spi}] = stackld(pthstackall{spi}, optsld);
+    [stack, chantif{spi}] = stackld(pthstackall{spi}, fbrm=fbrm, trm=trm, ic=chanuse, savemem=savemem);
 
     if dostats
         stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstackall{spi}(1:end-4))

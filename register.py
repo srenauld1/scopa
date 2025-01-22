@@ -281,6 +281,9 @@ def check_aborted_stack(md, pthmd, stack, stack_has_multiple_z_slices):
 
 
 def parse_methodrg(methodrg, numchan):
+
+    if isinstance(methodrg, list):
+        methodrg = methodrg[0]
     
     if methodrg!='first' and methodrg!='second' and numchan==1:
         print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to '1' TO OPERATE ON THE ONLY CHANNEL PRESENT")

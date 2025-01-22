@@ -90,14 +90,10 @@ d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.use_carls_epochs = 0; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial; vector is created in socket code to control stimulus state, then saved at end of experiment; for old recordings file was not saved, so use_carls_epochs recreates that vector in the same way the socket code did
 d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
 
-%% sld (stackpr: load, process stack)
+%% spr (stackpr: process stack)
 
-d.sld.chanuse = [1,2]; % which PMT channel to use ,1, or 2, or [1 2]; ignored if requested channel doens't exist
-d.sld.fbrm = 1; %crop flyback frames from each volume
-d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 d.sld.zerostack = 1; %subtract min to make min zero
 d.sld.clip = [0, 1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
-d.sld.trm = [0, 0]; %how many samples to remove from [start, end] of stack; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.stackdtype = 'uint16';
 d.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
 d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
@@ -105,6 +101,13 @@ d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'meth
 d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.suffixplt = [ d.spec.suffixvalid ]; %stack suffixes to plot together in a gif; default tries to plot all d.spec.suffixvalid; nonexistent or invalid suffixes are ignored; these stacks are also converted from tif to mat (along with d.spec.suffix, in case user doesn't list it here)
 
+%% sld (stackld: load, process stack)
+
+d.sld.chanuse = []; %which pmt channel to use, empty to keep all ; will error if you request channel that doens't exist
+d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist
+d.sld.trm = []; %how many samples to remove from [start, end] of stack; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
+d.sld.iy = [];
 
 %% ftv (ftvproc: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
 
@@ -412,33 +415,6 @@ d.sp.ir = []; %scalar/vector; which rois to plot in ; empty to skip
 d.sp.roi_color = [1, 0, 0]; %color for rois, if shown
 d.sp.roialpha = 0.3; %transparency for rois, if shown
 
-    d.sp.pthgif char = ''
-    d.sp.gifvis char = 'on'
-    d.sp.roipx = []
-    d.sp.ir = []
-    d.sp.roicols = [1 0 0]
-    d.sp.roialpha = 0.3
-    d.sp.cmap = gray(256) %colormap or 'rgb' if stack is truecolor (final dim length 3 . . . can be any numeric type)
-    d.sp.title_prefix char = ''
-    d.sp.title_suffix = ''
-    d.sp.index_labels cell = {} %ids for the indices represented by stack, each cell corresponds to each dim of stack, and must match in length
-    d.sp.szf = 1 %% scalar denoting fig size; 0-1 makes square until 1 makes largest square fig for your screen, sz 1-2 fills larger dimension until 2 is fullscreen
-    d.sp.numcolorsgif = 128
-    d.sp.dmplt = []; %dim order; 1 and 2 are rows and columns of each image, respectively, >2 are subplots with standard matlab arrangement (left to right, top to bottom); dimensions in parentheses are put in separate frames of gif; dimensions in dmstack, but not dmplt, are averaged; for example, if dmstack='yxztc' and dmplt='xyc(t)': each frame has c images, each image is x by y (row by column), there are t frames in the gif, and for all images z has been averaged, and there is no k dimension
-    d.sp.dmstack = [] %input stack dimensions; make empty for default (yxztck)
-    d.sp.dr = [0,1]; %[low,high] for image property CLim (contrast); ignored if stack is RGB
-    d.sp.iy = [];
-    d.sp.ix = [];
-    d.sp.iz = [];
-    d.sp.it = [];
-    d.sp.ic = []; %pmt indices (red or green channel
-    d.sp.ik = []; %rgb color channel indices
-    d.sp.doui = 0;
-    d.sp.stackjust = 'center' %how to justify stack image; center, minimize, none
-    d.sp.marginfg = 0.05;
-    d.sp.marginax = 0.01;
-    d.sp.fontsz = 10;
-    d.sp.dosave = 1 %whether to write to gif
 
 %% imhsv (hsvplt and hsvcmp: make and plot hsv images)
 

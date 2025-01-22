@@ -21,16 +21,23 @@ TIFFStack seems to fail reading floats
 
 arguments
     pthstack
-    opt
+    opt.fbrm = 0; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
+    opt.trm = [] %num frames to crop from [start, end]; [] to skip
+    opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
+    opt.iy = [] %y indices to keep and save to mat
+    opt.ix = [] %x indices to keep and save to mat
+    opt.ic = [] %c indices to keep and save to mat
+    opt.iz = [] %z indices to keep and save to mat
+    opt.it = [] %t indices to keep and save to mat
 end
-fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
-trm = opt.trm; %num frames to crop from [start, end]; [] to skip
-savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
-iy = opt.iy; %y indices to keep and save to mat
-ix = opt.ix; %x indices to keep and save to mat
-ic = opt.ic; %c indices to keep and save to mat
-iz = opt.iz; %z indices to keep and save to mat
-it = opt.it; %t indices to keep and save to mat 
+fbrm = opt.fbrm;
+trm = opt.trm;
+savemem = opt.savemem;
+iy = opt.iy;
+ix = opt.ix;
+ic = opt.ic;
+iz = opt.iz;
+it = opt.it;
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
@@ -55,7 +62,7 @@ if ~isempty(it) && ~isempty(trm)
 end
 
 
-%%%% LOAD MAT VERSION OF STACK IF IT EXISTS, AND IF YOU ARE REQUESTING THE SAME SETTINGS USED WHEN IT WAS ORIGINALLY CREATED %%%%
+%%%% L %%%%
 
 doconvert = 1;
 if endsWith(pthstack, '.mat')
@@ -78,8 +85,6 @@ if endsWith(pthstack, '.mat')
         fprintf("trying to convert tif to mat now" + newline)
     end
 end
-
-%%%% LOAD STACK FROM TIF IF MAT DOESN'T EXIST OR FAILED OR YOU REQUESTED NEW STACK SETTINGS  %%%%
 
 if doconvert
 
@@ -159,7 +164,7 @@ if doconvert
                     stack = TIFFStack(pthstack); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
                     [md, sz, chantif] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
                 else
-                    error("tifreadfast failed, and try_tiffstack_backup is set to 0; you could set it to 1 and try again" + newline)
+                    error("tifreadfast failed, the code could use tiffstack at this point but we should try to rely on tifreadfast because it is overall better" + newline)
                 end
             end
         end
@@ -225,7 +230,7 @@ if doconvert
         end
     end
 
-    %%%% APPLY INDICES AND RESHAPE STACK %%%%
+    %%%% RESHAPE THE STACK AND APPLY INDICES %%%%
 
     if ~isempty(md)
 
