@@ -366,7 +366,7 @@ if fill
         error('copybin names cannot match any vbin names')
     end
 
-    if ~isfield(o, 'roi') || ~isstruct(o.roi) 
+    if ~isfield(o, 'roi') || ~isstruct(o.roi) || isfield(o.roi, 'regionex')
         o = odf(o, 'roi', d.roi.regionex);
         copybinprev{1} = d.roi.regionex;
     end

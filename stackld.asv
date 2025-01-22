@@ -21,23 +21,16 @@ TIFFStack seems to fail reading floats
 
 arguments
     pthstack
-    opt.fbrm = 0; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
-    opt.trm = [] %num frames to crop from [start, end]; [] to skip
-    opt.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
-    opt.iy = [] %y indices to keep and save to mat
-    opt.ix = [] %x indices to keep and save to mat
-    opt.ic = [] %c indices to keep and save to mat
-    opt.iz = [] %z indices to keep and save to mat
-    opt.it = [] %t indices to keep and save to mat
+    opt
 end
-fbrm = opt.fbrm;
-trm = opt.trm;
-savemem = opt.savemem;
-iy = opt.iy;
-ix = opt.ix;
-ic = opt.ic;
-iz = opt.iz;
-it = opt.it;
+fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
+trm = opt.trm; %num frames to crop from [start, end]; [] to skip
+iy = opt.iy; %y indices to keep and save to mat
+ix = opt.ix; %x indices to keep and save to mat
+ic = opt.ic; %c indices to keep and save to mat
+iz = opt.iz; %z indices to keep and save to mat
+it = opt.it; %t indices to keep and save to mat 
+savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
@@ -45,6 +38,7 @@ try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long
 md = [];
 sz = [];
 chantif = [];
+overflow = [];
 
 id = idmake(pthstack);
 
@@ -62,7 +56,7 @@ if ~isempty(it) && ~isempty(trm)
 end
 
 
-%%%% L %%%%
+%%%% LOAD MAT VERSION OF STACK IF IT EXISTS, AND IF YOU ARE REQUESTING THE SAME SETTINGS USED WHEN IT WAS ORIGINALLY CREATED %%%%
 
 doconvert = 1;
 if endsWith(pthstack, '.mat')
@@ -85,6 +79,8 @@ if endsWith(pthstack, '.mat')
         fprintf("trying to convert tif to mat now" + newline)
     end
 end
+
+%%%% LOAD STACK FROM TIF IF MAT DOESN'T EXIST OR FAILED OR YOU REQUESTED NEW STACK SETTINGS  %%%%
 
 if doconvert
 
@@ -136,7 +132,7 @@ if doconvert
         try
             fprintf("savemem is true, trying to read stack with TIFFStack first to save memory (since you are reading a subset of the stack)" + newline)
             stack = TIFFStack(pthstack); %stack is memmapped tif stack, this doesn't read the stack into memory yet
-            [md, sz, chantif] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
+            [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
         catch
             tiffstack_already_failed = 1;
             fprintf("savemem tiffstack failed, using tifreadfast" + newline)
@@ -153,7 +149,7 @@ if doconvert
         try
             fprintf("trying to read stack with tifreadfast" + newline)
             stack = tifreadfast(pthstack); %here, stack is read into memory (is not memmapped)
-            [md, sz, chantif] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
+            [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
         catch
             if tiffstack_already_failed
                 error("tifreadfast failed and tiffreadstack also failed previously; cannot read stack" + newline)
@@ -162,9 +158,9 @@ if doconvert
                     fprintf("tifreadfast failed, using tiffstack as backup; it is slower and only works on some platforms but does not read extra blank frames in tifs not written by scanimage" + newline)
                     stack = []; %clear a potentially large variable, in case stack got read by tifreadfast but something caused error afterwards
                     stack = TIFFStack(pthstack); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
-                    [md, sz, chantif] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
+                    [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
                 else
-                    error("tifreadfast failed, the code could use tiffstack at this point but we should try to rely on tifreadfast because it is overall better" + newline)
+                    error("tifreadfast failed, and try_tiffstack_backup is set to 0; you could set it to 1 and try again" + newline)
                 end
             end
         end
@@ -230,7 +226,7 @@ if doconvert
         end
     end
 
-    %%%% RESHAPE THE STACK AND APPLY INDICES %%%%
+    %%%% APPLY INDICES AND RESHAPE STACK %%%%
 
     if ~isempty(md)
 
@@ -239,6 +235,13 @@ if doconvert
         inds_c_read_from_all = repmat(ic, [1 numel(iz)*numel(it)]);
         inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
 
+        if overflow
+            overflowinds = setxor(inds_czt_read_from, 1:size(stack,3));
+            overflowstack = stack(:, :, overflowinds); 
+            fool = stack(iy, ix, :); %stackplt(fool, dmstack='yxt', it=110097:110099)
+            if sum(all(mod(sum(fool(:,:,110097:size(fool,3)),3)/numel(110097:size(fool,3)), 1)==0))<1
+                error("IN THE OVERFLOW FRAMES, THERE ARE NO STATCOLUMNS ")
+        end
         stack = stack(iy, ix, inds_czt_read_from); %if using tiffstack, this reads into memory; stack = stack just copies the stack object so cant do that
         stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
 
@@ -254,7 +257,7 @@ if doconvert
             ix = 1:size(stack,2); %this default can be assigned even if md is empty; if md is not empty and ix is empty, default uses known stack size instead of read stack size
         end
         stack = stack(iy, ix, :); %if using tiffstack, this reads into memory; if you don't know stack size, you can't subset z or t in stack;  stack = stack just copies the stack object so cant do that
-        fprintf("WARNING, sz was not passed as argument, or was empty (you did not read metadata before entering this function), or there was a problem reading raw tif metadata; output tif is 3d, and may have collapsed czt dimensions; not saving as mat file" + newline)
+        fprintf("WARNING, there was a problem parsing metadata; output tif is 3d, and may have collapsed czt dimensions; and may have overflow frames; not saving as mat file" + newline)
 
     end
 
@@ -293,9 +296,10 @@ end
 end
 
 
-function [md, sz, chantif] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack)
+function [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack)
 
 errmsg = [];
+overflow = [];
 
 if ~isempty(md) %if you have metadata already
     if ~isequal(prod(sz), numel(stack))
@@ -305,9 +309,8 @@ if ~isempty(md) %if you have metadata already
             if prod(sz)>numel(stack)
                 errmsg = "tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels";
             else
-                waittime = 20;
-                fprintf(newline + "tifreadfast returned stack with more elements than your metadata reports" + newline + "this can occur with stacks not written by scanimage" + newline + "if you do not halt execution within " + num2str(waittime) + " seconds, " + newline + "the code will assume your metadata is correct " + newline + "and crop the stack (at the end of each overlong dimension) to match metadata" + newline)
-                pause(waittime)
+                overflow = 1;
+                fprintf("tifreadfast returned stack with more elements than your metadata reports" + newline + "this can occur with stacks not written by scanimage; will check that the extra frames are blank" + newline)
             end
         end
     end
