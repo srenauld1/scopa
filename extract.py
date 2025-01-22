@@ -252,10 +252,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
 
                 if dview is not None: cm.stop_server(dview=dview)
 
-    print("now that the rois has been written, updating metadata to include chanrm")
-    md['chanrm_cmex'] = chanrm
-    with open(pthmd, 'w') as file: 
-        file.write(json.dumps(md, sort_keys=True, indent=4))
+
 
 
 

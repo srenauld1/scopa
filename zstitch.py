@@ -113,8 +113,12 @@ def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_c
     print(stack_allchan.shape)
     imwrite(pth_tif_write, stack_allchan, bigtiff=True, photometric='minisblack') #write the registered movie as tif for use in matlab, and caiman extraction below
 
+    pthhd, pthtl = os.path.split(pth_tif_write)
+    suffix = pthtl.replace(fn_prefix, '')
+    suffix = suffix.replace('_.tif', '')
+
     print("now that the stack has been written, updating metadata to include chanrm")
-    md['chanrm_dcdn'] = chanrm
+    md['chanrm_' + suffix] = chanrm
     with open(pthmd, 'w') as file: 
         file.write(json.dumps(md, sort_keys=True, indent=4))
 

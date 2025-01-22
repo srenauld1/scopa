@@ -1,4 +1,4 @@
-function stack = stackld(pthstack, opt)
+function [stack, chantif] = stackld(pthstack, opt)
 
 %{
 
@@ -70,7 +70,13 @@ doconvert = 1;
 if endsWith(pthstack, '.mat')
     try
         load(pthstack, 'mmd')
-        if ~isequal(mmd.fbrm, fbrm) || ~isequal(mmd.trm, trm) || ~isequal(mmd.iy, iy) || ~isequal(mmd.ix, ix) || ~isequal(mmd.ic, ic) || ~isequal(mmd.iz, iz) || ~isequal(mmd.it, it)
+        if ~isequal(mmd.fbrm, fbrm) ... %if mat already exists, error if current settings do not match (and are not functionally equivalent to) settings previously used to convert tif to mat
+            || ~isequal(mmd.trm, trm) ...
+            || ( ~isequal(mmd.iy, iy) && ~isequal(1:mmd.sz(1), ix) ) ...
+            || ( ~isequal(mmd.ix, ix) && ~isequal(1:mmd.sz(2), ix) ) ...
+            || ( ~isequal(mmd.ic, ic) && ~isequal(mmd.chantif, ic) ) ...
+            || ( ~isequal(mmd.iz, iz) && ~isequal(1:mmd.sz(4), ix) ) ...
+            || ( ~isequal(mmd.it, it) && ~isequal(1:mmd.sz(5), ix) )
             error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT; YOU HAVE A MAT FILE ALREADY THAT USE A DIFFERENT SET OF OPTIONS; DELETE THAT MAT FILE OR USE THE SAME OPTIONS LISTED IN mmd IN FILE: " + pthstack)
         end
         load(pthstack, 'stack')
@@ -101,7 +107,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if stack_size_is_known
-        sz = stacksize(md, id, ic, rawstack, fbrm);
+        [sz, chantif] = stacksize(md, id, ic, rawstack);
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -156,7 +162,7 @@ if doconvert
                             error("tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels")
                         else
                             waittime = 20;
-                            fprintf(newline + "tifreadfast returned stack with more elements than your metadata reports" + newline + "this can occur with stacks not written by scanimage" + newline + "if you do not halt execution within " + num2str(waittime) + " seconds, " + newline + "the code will assume your metadata is correct " + newline + " and crop the stack (at the end of each overlong dimension) to match metadata" + newline)
+                            fprintf(newline + "tifreadfast returned stack with more elements than your metadata reports" + newline + "this can occur with stacks not written by scanimage" + newline + "if you do not halt execution within " + num2str(waittime) + " seconds, " + newline + "the code will assume your metadata is correct " + newline + "and crop the stack (at the end of each overlong dimension) to match metadata" + newline)
                             pause(waittime)
                         end
                     end
@@ -164,7 +170,7 @@ if doconvert
             else %if you don't have metadata, get it here
                 md = mdsild(pthstack);
                 if ~isempty(md)
-                    sz = stacksize(md, id, ic, rawstack, fbrm);
+                    [sz, chantif] = stacksize(md, id, ic, rawstack);
                 else
                     stack_size_is_known = 0;
                     error("did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt")
@@ -186,6 +192,8 @@ if doconvert
     end
     
 
+    %%%% RECORD SETTINGS FOR CONVERTING TIF TO MAT %%%%
+
     mmd.fbrm = fbrm;
     mmd.trm = trm;
     mmd.iy = iy;
@@ -194,6 +202,7 @@ if doconvert
     mmd.iz = iz;
     mmd.it = it;
     mmd.sz = sz;
+    mmd.chantif = chantif; 
 
 
     %%%% CHECK ANY INDICES FOR PROBLEMS %%%%
@@ -218,8 +227,11 @@ if doconvert
             error("REQUESTED ic are not subset of available stack")
         end
         if isempty(iz)
-            if rawstack &&
-            iz = 1:sz(4);
+            if rawstack && fbrm
+                iz = 1:md.numslice; %numslice is different from sz(4) for raw; if you're removing flyback, use numslice; if you're not, use sz(4)
+            else
+                iz = 1:sz(4);
+            end
         end
         if ~all(iz >= 1 & iz <= sz(4))
             error("REQUESTED iz are not subset of available stack")
@@ -274,7 +286,7 @@ end
 end
 
 
-function sz = stacksize(md, id, ic, rawstack, fbrm)
+function [sz, chantif] = stacksize(md, id, ic, rawstack)
 
 if isfield(md, ['chanrm_' id.suffix])
     chanrm = md.(['chanrm_' id.suffix]);
@@ -286,15 +298,15 @@ else
     end
 end
 if isempty(chanrm)
-    chankeep = 1:numel(md.channel_save);
+    chantif = 1:numel(md.channel_save);
 else
-    chankeep = setxor(chanrm, 1:numel(md.channel_save));
+    chantif = setxor(chanrm, 1:numel(md.channel_save));
 end
-if ~isempty(ic) && ~ismember(ic, chankeep)
-    error("ic is not member of channels in this stack (after accounting for possible chanrm)")
+if ~isempty(ic) && ~all(ismember(ic, chantif))
+    error("ic is not a subset of channels in this stack (after accounting for possible chanrm)")
 end
 
-sz = [md.ypix, md.xpix, numel(chankeep), md.numslice, md.numvol]; %yxczt;
+sz = [md.ypix, md.xpix, numel(chantif), md.numslice, md.numvol]; %yxczt;
 if rawstack
     sz(4) = md.numslice_withflyback;
 end

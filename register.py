@@ -252,8 +252,11 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
         countz = countz + 1
     
+    suffix = pth_tif_write_allchan.replace(pth_prefix, '')
+    suffix = suffix.replace('_.tif', '')
+
     print("now that the stack has been written, updating metadata to include chanrm")
-    md['chanrm_cmrg'] = chanrm
+    md['chanrm_' + suffix] = chanrm
     with open(pthmd, 'w') as file: 
         file.write(json.dumps(md, sort_keys=True, indent=4))
 

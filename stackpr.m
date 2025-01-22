@@ -126,7 +126,7 @@ stackmntmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat
 cnt = 0;
 for spi = 1:numel(pthstackall)
 
-    [stack, chankeep{spi}] = stackld(pthstackall{spi}, fbrm=fbrm, trm=trm, ic=chanuse, savemem=savemem);
+    [stack, chantif{spi}] = stackld(pthstackall{spi}, fbrm=fbrm, trm=trm, ic=chanuse, savemem=savemem);
 
     if dostats
         stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstackall{spi}(1:end-4))
@@ -172,21 +172,18 @@ end
 
 if doplt
 
-    chankeep_main_stack = chankeep{end};
+    %make sure stacks for plotting all use the same channel 
+    chantif_main_stack = chantif{end};
     for k = 1:numel(stacktmp)
-        if ~all(ismember(chankeep{end}, chankeep{k})) 
-            error("chankeep mismatch")
+        if ~all(ismember(chantif_main_stack, chantif{k})) 
+            error("mismatch in channels taken from tifs for plotting, or channels written to tifs")
         end
-        if size(stacktmp{k},5)>numel(chankeep_main_stack)
-            stacktmp{k} = stacktmp{k}(:,:,:,:,chankeep_main_stack);
+        if size(stacktmp{k},5)>numel(chantif_main_stack)
+            fprintf("KEEPING ONLY CHANNEL " + num2str(chantif_main_stack) + " IN TEMPORARY PLOTTING STACK WITH SUFFIX " + suffixplt{k} + " TO MATCH CHANNEL PLOTTED IN STACK WITH SUFFIX " + suffixplt{end} + newline)
+            stacktmp{k} = stacktmp{k}(:,:,:,:,chantif_main_stack);
+            stackmntmp{k} = stackmntmp{k}(:,:,:,:,chantif_main_stack);
         end
     end
-
-        chanusetmp = chanuse(chanuse<=size(stack,5)); %only use requested channels that exist, if you request one channel that doesn't exist this will error
-    if ~isequal(chanuse(chanuse<=size(stack,5)), 1:size(stack,5))
-        stack = stack(:,:,:,:,chanuse(chanuse<=size(stack,5)));
-    end
-
 
     [~, plot_stack_order] = sort(indsnew);
 
@@ -201,16 +198,6 @@ if doplt
     index_labels = arrayfun(@(x) 1:x(end), size(stacktmp{1}), 'UniformOutput', false); % setup labels for stack that has already been subset;
     index_labels{3} = iz; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
     index_labels{4} = it; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it
-
-    numchan = cellfun(@(x) size(x,5), stacktmp);
-    if numel(unique(numchan))~=1
-        if numchan(strcmp(suffixplt, 'raw'))==2 && any(numchan(~strcmp(suffixplt, 'raw'))==1)
-            fprintf("you may have discarded a channel in creating some stacks besides raw, removing channel 2 from the temporary raw plotting stack so it can be plotted with any single-channel stack" + newline)
-            stacktmp{strcmp(suffixplt, 'raw')} = stacktmp{strcmp(suffixplt, 'raw')}(:,:,:,:,1);
-        else
-            error("all stacks must have same number of channels")
-        end
-    end
 
     if exist('shifts', 'var')
         shifts_yxz = shifts;

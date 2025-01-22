@@ -20,15 +20,13 @@ fprintf("PROCESSING: " + pthstack + newline)
 if iscell(stopband)
     stopband = cell2mat(stopband);
 end
-if iscell(stopband)
+if iscell(smlensec)
     smlensec = cell2mat(smlensec);
 end
 
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 
 pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
-
-md = mdsild([], pthstack=pthstack);
 
 sbstr = [num2str(stopband(1)) 'to' num2str(stopband(2)) 'stopband_'];
 
@@ -48,14 +46,12 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
+o.sld.smlensec = smlensec; 
+o.sld.zerostack = zerostack; 
+o = odf(o, 'sld');
+
 stack = stackpr(pthstack, o.sld);
 
-stack = stackpr(pthstack, ...
-    numslice_withflyback=md.numslice_withflyback, ...
-    channel_save=md.channel_save, ...
-    imrate=md.volrate, ...
-    zerostack=zerostack, ...
-    smlensec=smlensec);
 
 %% index into frameinds, if nonempty
 
