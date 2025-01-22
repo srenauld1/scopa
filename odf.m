@@ -56,6 +56,7 @@ pthscopa = getpathscopa();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
+
 if ~isfile(pthopt)
     optdfsv();
 end
@@ -192,10 +193,11 @@ else
     if any(contains(vbin, '.')) %if nested vbin, remove deepest vbin and operate on it, invoking defaults throughout the nested vbin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
         [~, fbsortinds] = sort(cellfun(@numel, regexp(vbin, '[.]*')), 'descend'); %
         vbin = vbin(fbsortinds); %sort to make update order deepest nested vbin to shallowest, otherwise doens't work
-        for k = 1:numel(fnd)
-            repeatvbin = cellfun(@numel, strfind(vbin, fnd{k}))>1;
-            if any(repeatvbin)
-                error(sprintf("you have multiple copies of vbin " + fnd{k} + " and possibly others; in a nested vbin each vbin can only appear once, for now at least"))
+        for kk = 1:numel(vbin)
+            for k = 1:numel(fnd)
+                if sum(cellfun(@numel, regexp(strsplit(vbin{kk}, '.'), ['^' fnd{k} '$'])))>1
+                    error(sprintf("you have multiple copies of vbin " + fnd{k} + " and possibly others; in a nested vbin each vbin can only appear once, for now at least"))
+                end
             end
         end
         [~, fnflattmp] = structflat(oin, 'prefix', 'o'); %use prefix in case it's nonscalar
@@ -225,7 +227,7 @@ else
             vbintmp = strsplit(vbin{k}, '.');
             vbinshallowest = vbintmp{1};
             vbindeepest = vbintmp{end};
-            if numel(regexp(vbin{k}, vbindeepest, 'match'))>1
+            if sum(cellfun(@numel, regexp(strsplit(vbin{k}, '.'), ['^' vbindeepest '$'])))>1
                 error("currently vbindeepest can only appear once in a nested vbin, see note on 224 below")
             end
             if isempty(copybin) %if you're not making copybin of a nested vbin . . .

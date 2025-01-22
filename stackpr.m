@@ -35,7 +35,7 @@ if ~isempty(suffixplt) && ~iscell(suffixplt)
 end
 
 if isempty(doplt)
-    doplt = any(strcmp('sld', glb('plt')));
+    doplt = any(strcmp('spr', glb('plt')));
 end
 
 if ~doplt

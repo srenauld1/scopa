@@ -25,12 +25,12 @@ arguments
 end
 fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
 trm = opt.trm; %num frames to crop from [start, end]; [] to skip
-savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 iy = opt.iy; %y indices to keep and save to mat
 ix = opt.ix; %x indices to keep and save to mat
 ic = opt.ic; %c indices to keep and save to mat
 iz = opt.iz; %z indices to keep and save to mat
 it = opt.it; %t indices to keep and save to mat 
+savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 

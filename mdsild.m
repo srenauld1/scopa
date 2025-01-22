@@ -1,17 +1,13 @@
-function md = mdsild(pthstack, optsld, pthpy)
+function md = mdsild(pthstack, pthpy)
 
 arguments
     pthstack
-    optsld = []
     pthpy = []
 end
 
 id = idmake(pthstack); %just in case id info gets used below
 pthmd = [id.dirstack id.recid '_mdsi_.txt'];
 
-if isempty(optsld)
-    optsld = odf('sld', unpack=1);
-end
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
@@ -73,16 +69,6 @@ end
 md = structtxtld(pthmd);
 
 md.sz = [md.ypix md.xpix md.numslice md.numvol];
-
-if isempty(optsld.trm)
-    md.numvol_crop = md.numvol;
-else
-    md.numvol_crop = md.numvol - optsld.trm(1) - optsld.trm(2);
-end
-md.sz_crop = [md.sz(1) md.sz(2) md.sz(3) md.numvol_crop];
-md.trm = optsld.trm; %copy from struct ld
-md.fbrm = optsld.fbrm; %copy from struct ld
-md.zerostack = optsld.zerostack; %copy from struct ld
 
 
 if ~isfield(md,'channel_save')

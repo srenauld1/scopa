@@ -31,7 +31,7 @@ do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_a2p=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
-do_copyfiles_sequence=(1 0) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
+do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
 jobind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobind; if this bash variable can be turned into a list of vectors, then pl will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
 
 do_autoallocate=0 #do_autoallocate=1 uses transfer partition to look into server and find size of stack in raw scanimage tif, but doesn't copy anything; stack size determines all resource requests; do_autoallocate=0 uses resources set by user below
@@ -293,13 +293,14 @@ for JOBNM in "${jobnm_seq[@]}"; do
             if [ "$DO_COPYFILES" == 1 ] || [ "$DO_COPYFILES" == 2 ]; then #do_copyfiles 1 or 2
                 echo "ON LOOP "$loopcount", TYPE "$DO_COPYFILES" FILE COPY FROM WITHIN SBATCH JOB"
                 echo "FORCING jobind=0 SO COPYFILES OCCURS IN A SINGLE JOB"
-                jobind=( 0 )
+                jobind_tmp=( 0 )
                 partition_str=transfer    
                 time_str=$time_copyfiles
                 ntasks_str=1
                 cpus_per_task_str=$cpu_per_task_copyfiles
                 mem_per_cpu_str=$mem_per_cpu_copyfiles
             else
+                jobind_tmp=$jobind
                 echo "ON LOOP "$loopcount", NO FILE COPY FROM WITHIN SBATCH JOB"
                 if [ "$JOBNM" == alo ]; then #do_autoallocate
                     partition_str=transfer #use transfer partition if autoallocate
@@ -358,7 +359,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
             #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
             arr_id_out=$(sbatch --parsable \
             --export=DO_COPYFILES="$DO_COPYFILES",FIRST_NONCOPY_JOB="$FIRST_NONCOPY_JOB",PTH_PARSFILE="$PTH_PARSFILE",SCOPADIR="$SCOPADIR",JOBNM="$JOBNM" \
-            --array=[$jobind] \
+            --array=[$jobind_tmp] \
             --dependency="$dep_str" \
             --partition="$partition_str" \
             --time="$time_str" \

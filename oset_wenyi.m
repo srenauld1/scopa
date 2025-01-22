@@ -1,7 +1,7 @@
 function o = oset_wenyi(o)
 
-% o.mn.plt = [""]; %by defualt plots are created from all modules that you enter (if you don't enter, with a do_*, they are ignored); uncomment this to plot nothing automatically (empty string); or uncomment and specify specific modules for plotting here; o.mn.plt = ["sld"] will plot only from sld module (stackpr); plot only from sld module (stackpr, ie the automatic gifs)
+% o.mn.plt = [""]; %by defualt plots are created from all modules that you enter (if you don't enter, with a do_*, they are ignored); uncomment this to plot nothing automatically (empty string); or uncomment and specify specific modules for plotting here; o.mn.plt = ["spr"] will plot only from spr module (stackpr); plot only from spr module (stackpr, ie the automatic gifs)
 
-% o.sld.suffixplt = {'cmrg_dcdn'}; %by default stackpr will plot all available stacks in the automatic gif (calling stackplt from stackpr), but you can change which stacks get plotted here
+% o.spr.suffixplt = {'cmrg_dcdn'}; %by default stackpr will plot all available stacks in the automatic gif (calling stackplt from stackpr), but you can change which stacks get plotted here
 
-% o.sld.sp.it = -100; %specify how many frames of automatically plotted stack gif you want plotted (if you want it plotted when you run a2p)default (d.sp.it, in optdfsv.m) is -100, which is 100 equidistant frames; you can change that here
+% o.spr.sp.it = -100; %specify how many frames of automatically plotted stack gif you want plotted (if you want it plotted when you run a2p)default (d.sp.it, in optdfsv.m) is -100, which is 100 equidistant frames; you can change that here

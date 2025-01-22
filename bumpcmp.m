@@ -21,7 +21,7 @@ eval(structvars(opt).'); %bad practice; turn opt into local variables with the s
 
 
 if isempty(doplt)
-    doplt = any(strcmp('sld', glb('plt')));
+    doplt = any(strcmp('bmp', glb('plt')));
 end
 
 if numangrs

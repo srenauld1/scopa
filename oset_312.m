@@ -8,12 +8,12 @@ o.mn.doroi = 1;
 o.mn.dobmp = 0; 
 o.mn.dofit = 0; 
 o.mn.dopltx = 0; 
-o.mn.plt = ["sld"]; 
+o.mn.plt = ["spr"]; 
 o.mn.pltvis = 1; 
 
 o.daq.use_carls_epochs = 1;
 
-o.sld.chanuse = [2];
+o.spr.sld.ic = [];
 
 for m = 1:numel(regionex) 
 
