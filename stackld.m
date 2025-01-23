@@ -270,7 +270,7 @@ end
 end
 
 
-function [sz, chantif] = stacksize(md, id, ic, rawstack)
+function [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack)
 
 if isfield(md, ['chanrm_' id.suffix])
     chanrm = md.(['chanrm_' id.suffix]);
