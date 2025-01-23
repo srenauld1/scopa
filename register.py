@@ -252,9 +252,6 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
         countz = countz + 1
     
-    for iz in np.arange(stack_allchan.shape[1]): #delete the tmp z files
-        pth_write_single = pth_tif_write[:-4] + str(iz) + '_z_.tif'
-        os.remove(pth_write_single)
 
     suffix = pth_tif_write_allchan.replace(pth_prefix, '')
     suffix = suffix.replace('_.tif', '')
