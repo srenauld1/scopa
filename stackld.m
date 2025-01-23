@@ -102,7 +102,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if ~isempty(md)
-        [sz, chantif] = stacksize(md, id, ic, rawstack);
+        [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack);
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -319,7 +319,7 @@ if ~isempty(md) %if you have metadata already
 else %if you don't have metadata, get it here
     md = mdsild(pthstack);
     if ~isempty(md)
-        [sz, chantif] = stacksize(md, id, ic, rawstack);
+        [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack);
     else
         errmsg = "did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
     end
