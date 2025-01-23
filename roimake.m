@@ -92,7 +92,7 @@ end
 
 %% assemble roi data into struct
 
-roidat = roidatmake(stackmnt, roimask);
+roidat = roidatmake(stackmnt, roimask, regionex, opt.mm.maskname);
 
 
 %% compute roi responses (and normalize)

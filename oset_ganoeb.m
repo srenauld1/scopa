@@ -1,6 +1,7 @@
 function o = oset_ganoeb(o)
 
 regionex = {'ga', 'no', 'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.dodaq = 1; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
@@ -23,7 +24,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
         o.roi.doma = 1; %do automated morph rois
         o.roi.nrm.post = {'rsc000100'};
         o.roi.ma.numroi = 64;
-        o.roi.ma.maskmake = 'edge';
+        o.roi.ma.maskmake = 'nonzero';
         o.bmp.mf.mdlname = 'fnet_v';
         o.bmp.mf.mdl_length_sec = 0;
         o.bmp.mf.epochinds = 4;

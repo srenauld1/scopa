@@ -37,14 +37,14 @@ catch
                     testepochind_all = [2 3 5];
                     minshiftsec = -8;
                     maxshiftsec = 3;
-                elseif ids.recdatenum>=20241120 && ids.recdatenum<20241130
+                elseif ids.recdatenum>=20241120%% && ids.recdatenum<20241130
                     testepochind_all = [2 3 5];
                     minshiftsec = -15;
                     maxshiftsec = 15;
                 elseif ids.recdatenum>=20250101%% && ids.recdatenum<20241130
                     testepochind_all = [2 3 5];
-                    minshiftsec = -3;
-                    maxshiftsec = -1;
+                    minshiftsec = -15;
+                    maxshiftsec = -5;
                 else
                     testepochind_all = [];
                     minshiftsec = 0;
@@ -56,7 +56,7 @@ catch
                 maxshiftsec = 0;
             end
 
-            ft_misoffset_sec_all = minshiftsec : sampper*0.45 : maxshiftsec;
+            ft_misoffset_sec_all = minshiftsec : 0.5 : maxshiftsec;
 
             hfg = figure;
             hax = axes('Parent', hfg);
@@ -92,10 +92,7 @@ catch
                         hpl.YData = tmp;
                         ttl.String = ttlstr;
                     end
-
-
-                    hax.YLim = [-30, 30];
-                    hax.XLim = [1000, 3000];
+                    
 
                     fig2gif(hfg, cnt, [dirstack 'misoffset_.gif'])
 

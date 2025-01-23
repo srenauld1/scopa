@@ -54,7 +54,7 @@ d.mn.dopltx = 0; %plot experiment (o.pltx below)
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 d.mn.oldcarl = 0; %run with some settings for carl's old project
-d.mn.plt = ["daq", "sld", "ftv", "roi", "bmp", "mf"]; %list of subroutines that get plots (all by default)
+d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mf"]
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 

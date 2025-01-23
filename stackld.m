@@ -278,7 +278,7 @@ else
     if rawstack
         chanrm = [];
     else
-        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi")
+        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi" + newline + "you cabn also add the field to mdsi manually, the syntax is: " + sprintf('"chanrm: 1," or "chanrm: 2," or "chanrm: null,"') + newline)
     end
 end
 if isempty(chanrm)

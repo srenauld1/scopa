@@ -77,10 +77,14 @@ for k = 1:numel(oa) % loop over recordings
     %% bump
 
     if o.mn.dobmp
-        o.bmptmp.i1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; %temporary hack until opt2id accepts bmp as vbin
+        o.bmptmp.a1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; o = rmfield(o, 'bmptmp'); %temporary hack until opt2id accepts bmp as vbin
         fn = fieldnames(o.bmp);
+        indvp = ts.ball.yaw;
+        depvp = ts.roi.a19;
+        regionex = roidat.a19{1}.regionex;
+        roidattmp = roidat.a19{1};
         for m = 1:numel(fn)
-            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, pthpre, doplt, obmptmp); %fit bump
+            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, obmptmp); %fit bump
         end
     end
 

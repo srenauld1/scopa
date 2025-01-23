@@ -1,4 +1,4 @@
-function bmp = bumpcmp(stack, indvp, depvp, regionex, roidat, zstartpos, imrate, epochts, pth_dirstack, recid, pthpre, doplt, opt)
+function bmp = bumpcmp(stack, indvp, depvp, regionex, roidat, imrate, epochts, pth_dirstack, recid, opt, doplt)
 
 
 arguments
@@ -7,22 +7,22 @@ arguments
     depvp
     regionex
     roidat
-    zstartpos
     imrate
     epochts
     pth_dirstack
     recid
-    pthpre
-    doplt
-    opt; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
+    opt
+    doplt = []
 end
 
 eval(structvars(opt).'); %bad practice; turn opt into local variables with the same name as opt fields; using this function because there are so many here, but it's bad practice
 
+pthpre = fullfile(pth_dirstack, recid);
 
 if isempty(doplt)
     doplt = any(strcmp('bmp', glb('plt')));
 end
+
 
 if numangrs
     numseg = numangrs;

@@ -49,6 +49,21 @@ elseif recdatenum>=20241120 && recdatenum<20241130
     boutinds_onecycle.dark = [9];
     boutinds_onecycle.closedfinaldark = [];
 
+elseif recdatenum>20250101
+
+    num_cycles = 27;
+    closed_final_dark_duration = 0; %final seconds
+    bout_duration_sec = 20;
+    closed_initial_light_duration = 60;
+
+    %closed initial light does not count toward boutinds_onecycle below, but is counted as bout 1 and epochind 1
+    boutinds_onecycle.closedinitiallight = [];
+    boutinds_onecycle.openslow = [1 5];
+    boutinds_onecycle.openfast = [3 7];
+    boutinds_onecycle.closed = [2 4 6 8 10];
+    boutinds_onecycle.dark = [9];
+    boutinds_onecycle.closedfinaldark = [];
+
 else
 
     num_cycles = 0;

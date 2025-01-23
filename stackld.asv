@@ -102,7 +102,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if ~isempty(md)
-        [sz, chantif] = stacksize(md, id, ic, rawstack);
+        [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack);
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -236,11 +236,13 @@ if doconvert
         inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
 
         if overflow
-            overflowinds = setxor(inds_czt_read_from, 1:size(stack,3));
-            overflowstack = stack(:, :, overflowinds); 
-            fool = stack(iy, ix, :); %stackplt(fool, dmstack='yxt', it=110097:110099)
-            if sum(all(mod(sum(fool(:,:,110097:size(fool,3)),3)/numel(110097:size(fool,3)), 1)==0))<1
-                error("IN THE OVERFLOW FRAMES, THERE ARE NO STATCOLUMNS ")
+            overflowinds = setxor(inds_czt_read_from, 1:size(stack,3)); %overflowstack = stack(:, :, overflowinds); 
+            overflow_meanframe = sum(stack(:,:,overflowinds),3)/numel(overflowinds);
+            overflow_firstframe = stack(:,:,overflowinds(1));
+            overflow_remainder = overflow_meanframe-double(overflow_firstframe);
+            if ~any(sum(overflow_remainder)==0)
+                error("THERE ARE NO COLUMNS THAT ARE STATIC ACROSS ALL OVERFLOW FRAMES; ASSUMING THERE IS REAL SIGNAL IN THE OVERFLOW FRAMES AND THROWING AN ERROR")
+            end
         end
         stack = stack(iy, ix, inds_czt_read_from); %if using tiffstack, this reads into memory; stack = stack just copies the stack object so cant do that
         stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
@@ -268,7 +270,7 @@ end
 end
 
 
-function [sz, chantif] = stacksize(md, id, ic, rawstack)
+function [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack)
 
 if isfield(md, ['chanrm_' id.suffix])
     chanrm = md.(['chanrm_' id.suffix]);
@@ -276,7 +278,7 @@ else
     if rawstack
         chanrm = [];
     else
-        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi")
+        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi" + newline + "you cabn also add the field to mdsi manually, the syntax is sprintf('"chanrm: 1" or "chanrm: 2" or "chanrm: null"')")
     end
 end
 if isempty(chanrm)
@@ -317,7 +319,7 @@ if ~isempty(md) %if you have metadata already
 else %if you don't have metadata, get it here
     md = mdsild(pthstack);
     if ~isempty(md)
-        [sz, chantif] = stacksize(md, id, ic, rawstack);
+        [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack);
     else
         errmsg = "did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
     end
