@@ -15,7 +15,7 @@ def stackshape(stack, md):
         if rmdr%1==0:
             numchan = int(rmdr)
         else:
-            raise Exception("number of stack elements must be multiple of np.prod(md['dims']), or np.prod(md['dims']) with flyback")
+            raise Exception("number of stack elements must be multiple of np.prod(md['dims']), or np.prod(md['dims']) with flyback; this error can occur if this is an aborted stack, or if something is wrong with your metadata")
 
     tzcyx = dims_onechan[0], dims_onechan[1], numchan, dims_onechan[2], dims_onechan[3]
 
