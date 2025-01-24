@@ -368,6 +368,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
             --mem-per-cpu="$mem_per_cpu_str" \
             --output="$pthout" \
             --error="$pthout" \
+            --exclude=compute-gc-17-245 \
             --mail-type=ALL,ARRAY_TASKS \
             "$requeue_str" \
             "$gres_str" \

@@ -176,14 +176,7 @@
     "dopltx": 0,
     "doroi": 0,
     "oldcarl": 0,
-    "plt": [
-      "daq",
-      "sld",
-      "ftv",
-      "roi",
-      "bmp",
-      "mf"
-    ],
+    "plt": "",
     "pltvis": 1,
     "pthpy": "",
     "pthscopas": {
@@ -196,7 +189,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025012313385310",
+    "timestr": "2025012400115932",
     "user": "youforgottossetuser"
   },
   "nestvalid": [

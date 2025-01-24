@@ -1,8 +1,24 @@
-function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs)
+function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs, ftoo)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial)
 % if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
 
+arguments
+    t
+    pth_epochinfo
+    vis
+    dirstack
+    ids
+    sampper
+    daqrs
+    use_carls_epochs
+    ftoo = []
+end
+
+
+if isduration(t)
+    t = seconds(t);
+end
 
 
 try
@@ -42,9 +58,9 @@ catch
                     minshiftsec = -15;
                     maxshiftsec = 15;
                 elseif ids.recdatenum>=20250101%% && ids.recdatenum<20241130
-                    testepochind_all = [2 3 5];
-                    minshiftsec = -3;
-                    maxshiftsec = -1;
+                    testepochind_all = [5];
+                    minshiftsec = -42;
+                    maxshiftsec = -41;
                 else
                     testepochind_all = [];
                     minshiftsec = 0;
@@ -58,8 +74,12 @@ catch
 
             ft_misoffset_sec_all = minshiftsec : sampper*0.45 : maxshiftsec;
 
+            g4ur = unwrap(daqrs.g4panels);
+
             hfg = figure;
-            hax = axes('Parent', hfg);
+            % hax = axes(Parent=hfg);
+            hax = subplot(211);
+            hax2 = subplot(212);
 
             bestshiftind_allepochs = [];
             cnt = 0;
@@ -70,32 +90,50 @@ catch
                     cnt = cnt+1;
 
                     ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
+
+                    if ~isempty(ftoo)
+                        ft_misoffset_sec = ftoo;
+                    end
                     [~, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-                    tmp = daqrs.g4panels{1}(epochinds==testepochind);
-                    if testepochind==2 || testepochind==3
-                        tmp = unwrap(tmp); %makes it easier to see
-                    end
+                    plotindssec = [1:450 3000:3500 4900:5400];
+                    plotinds = ismember(floor(t), plotindssec);
+                    figure; plot(daqrs.g4panels(plotinds)); yyaxis right; plot(epochinds(plotinds))
+
+                    tmp = g4ur(epochinds==testepochind);
 
                     if testepochind==2 || testepochind==3
-                        criter(fmsai) = numel(find(isoutlier(diff(diff(tmp))))); %minimize num unique variables in diff, since open look should have only a couple (constant vel)
+                        ddt = diff(diff(tmp));
+                        criter(fmsai) = numel(find(isoutlier(ddt))); %minimize num unique variables in diff, since open epoch should have only a couple (constant vel)
                     elseif testepochind==5
                         criter(fmsai) = var(cos(tmp)); %minimize variance of x (or y) component of circular variable, this is offset with least error
                     end
 
                     ttlstr = [criter(fmsai) ft_misoffset_sec ft_misoffset_sec];
 
+                    plotinds_sec = vec(transpose(([0:7])+(20)*[1:5]'-(4)));
+                    plotinds = ismember(floor(t), plotinds_sec);
+                    % ddtplot = ddt(plotinds);
+                    tmpshort = tmp(plotinds);
+                    % tmpplot = tmp;
                     if fmsai==1
                         hpl = plot(hax,tmp);
+                        % hpl2 = plot(hax2,ddtplot);
+                        hpl2 = plot(hax2,tmpshort);
+
+                        % yyaxis right
+                        % hpl2 = plot(hax2,ddtplot);
                         ttl = title(ttlstr);
                     else
                         hpl.YData = tmp;
+                        hpl2.YData = tmpshort;
+                        % hpl2.YData = ddtplot;
                         ttl.String = ttlstr;
                     end
 
 
-                    hax.YLim = [-30, 30];
-                    hax.XLim = [1000, 3000];
+                    % hax.YLim = [-30, 30];
+                    % hax.XLim = [1000, 3000];
 
                     fig2gif(hfg, cnt, [dirstack 'misoffset_.gif'])
 
@@ -118,6 +156,7 @@ catch
 
             [epochs, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
+            figure; plot(unwrap(daqrs.g4panels)); yyaxis right; plot(epochinds)
 
             uei = unique(epochinds(epochinds~=0), 'stable');
             cnt = 0;
@@ -125,7 +164,7 @@ catch
             hax = axes('Parent', hfg);
             for tei = 1:numel(uei)
                 cnt = cnt+1;
-                plot(hax, daqrs.g4panels{1}(epochinds==uei(tei)))
+                plot(hax, daqrs.g4panels(epochinds==uei(tei)))
                 title(['final offset, epoch ' num2str(uei(tei))])
                 fig2gif(hfg, cnt, [dirstack 'offset_final.gif'])
             end

@@ -103,6 +103,13 @@ else
     load(pth_daq, 'trialData', 'outputData')
     trialData = timetable2table(trialData);
 
+
+    pth_epochinfo = '/Users/wienecke/stacks/2025-1_ganoeb/20250105_1_1_epochinfo_.mat';
+    dirstack = glb('dirstack');
+    vis = struct;
+    [epochs, epochinds, vis] = epochld(trialData.Time, pth_epochinfo, vis, dirstack, id, sampper, trialData, 1);
+
+        
     if exist('outputData', 'var') && outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
         "TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING)"
         firstsamp = find(trialData.frameClock, 1, 'first');
