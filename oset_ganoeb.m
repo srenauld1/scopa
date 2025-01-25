@@ -3,7 +3,6 @@ function o = oset_ganoeb(o)
 regionex = {'ga', 'no', 'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 regionex = {'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
-o.mn.dodaq = 1; %process daq timeseries?
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
 o.mn.dobmp = 1; %compute bump?
@@ -13,6 +12,7 @@ o.mn.plt = [""]; %string array of subroutines that get plots; default is all of 
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
 o.daq.use_carls_epochs = 1;
+o.daq.useinds = 'vol';
 
 for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
 

@@ -44,6 +44,16 @@ maxnumts = opt.maxnumts;
 fprintf("WARNING FUNCTION tsplt MOSTLY WORKS BUT IS STILL BEING WRITTEN" + newline)
 pause(2)
 
+for k = 1:numel(ts)
+    if isvector(ts{k})
+        if isrow(ts{k})
+            ts{k} = ts{k}';
+        end
+    else
+        error("each ts input must be vector")
+    end
+end
+
 if isempty(xall)
     if isscalar(ts)
         x{1} = 1:numel(ts{1});
@@ -197,14 +207,12 @@ for k = 1:num_xy_pairs
     hpl{k} = plot(hax, tsx{k}, tsy{k}, Color=col{k}, LineStyle=lst{k}, Marker=mkr{k}); %cell expansion of ts for any number of xy pairs
 end
 hold(hax, 'off')
+hax.XLim = [tsx{k}(1) tsx{k}(end)];
+xlmcurr = hax.XLim; %change x lim on subsequent frames (if there are any)
 
 %% LOOP OVER XSEG, ADJUSTING AXES IF NECESSARY, AND WRITING TO GIF IF REQUESTED
 
 for fi = 1:size(xseg, 1)
-
-    if fi==1 %plot on first frame, change x lim on subsequent frames (if there are any)
-        xlmcurr = hax.XLim;
-    end
 
     xlmseg = xlmcurr(2) .* xseg(fi,:) + xlmcurr(1);
     hax.XLim = xlmseg;
@@ -226,11 +234,15 @@ for fi = 1:size(xseg, 1)
 
 
     if all(isfinite(ylm1)) %why did i do this? nans from dividing by zero when rescaling?
-        if ylm1(1)~=ylm1(2) %in case segment is constant, just skip setting new scale
-            hax.YLim = [ylm1(1) - range(ylm1)*yroomfac, ylm1(2) + range(ylm1)*yroomfac];
+        try
+            if ylm1(1)~=ylm1(2) %in case segment is constant, just skip setting new scale
+                hax.YLim = [ylm1(1) - range(ylm1)*yroomfac, ylm1(2) + range(ylm1)*yroomfac];
+            end
+        catch
+            fuk=2
         end
     end
-   
+
     hax.Title.String = strrep(titlein, '_', ' ');
 
     if dosave

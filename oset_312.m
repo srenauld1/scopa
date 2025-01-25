@@ -2,7 +2,6 @@ function o = oset_312(o)
 
 regionex = {'none'}; 
 
-o.mn.dodaq = 0; 
 o.mn.doftv = 0; 
 o.mn.doroi = 1; 
 o.mn.dobmp = 0; 

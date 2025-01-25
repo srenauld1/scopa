@@ -1,6 +1,5 @@
 function o = oset_yunzhi(o)
 
-o.mn.dodaq = 1; %process daq timeseries
 o.mn.doroi = 1; %make/load/process rois
 
 o.roi.domm = 1; %do draw rois (since doma=1, you will be limited to drawing one roi; morphological segmentation will occur within this drawn roi)

@@ -2,7 +2,6 @@ function o = oset_fb8c(o)
 
 regionex = {'fb8c'}; 
 
-o.mn.dodaq = 1; 
 o.mn.doftv = 0; 
 o.mn.doroi = 1; 
 o.mn.dobmp = 0; 

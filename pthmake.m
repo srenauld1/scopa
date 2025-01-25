@@ -91,9 +91,9 @@ pth_epochinfo = [dirstack recid '_epochinfo_.mat'];
 
 %% carl's old project
 
-pth_feat_save = [dirstack o.carl.feat '_lin_ds_.mat'];
-pthparent_feat = o.carl.pthparent_feat;
-pth_template = o.carl.pth_template;
+pth_feat_save = [dirstack o.feat.id '_lin_ds_.mat'];
+pthparentfeat = o.feat.pthparent;
+pthtemplate = o.feat.pthtemplate;
 
 
 %% output
@@ -116,8 +116,8 @@ pth.ts = pth_ts;
 pth.epochinds = pth_epochinds;
 pth.epochinfo = pth_epochinfo;
 pth.featsave = pth_feat_save;
-pth.parent_feat = pthparent_feat;
-pth.template = pth_template;
+pth.featparent = pthparentfeat;
+pth.template = pthtemplate;
 
 pth = structsort(pth);
 

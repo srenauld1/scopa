@@ -11,12 +11,6 @@
     "smfac": 1,
     "smlensec": 0
   },
-  "carl": {
-    "feat": "CON_51",
-    "pth_template": "/Users/wienecke/ds/data/stimuli",
-    "pthparent_feat": "/Users/wienecke/ds/data/rec",
-    "stimtype": "drone"
-  },
   "cm": {
     "bas_nonneg": 0,
     "cnn_lowest": 0,
@@ -104,6 +98,21 @@
     "voltmax": 10,
     "voltmin": 0
   },
+  "feat": {
+    "crop_edges": 1,
+    "downsample_template": 1,
+    "feat2": [],
+    "flipped": 0,
+    "getgrid": 1,
+    "gridres": 256,
+    "id": "CON_51",
+    "it": -100,
+    "pthparent": [],
+    "pthtemplate": [],
+    "rep": 1,
+    "stimtype": "drone",
+    "vistype": "plane"
+  },
   "filled": 0,
   "ftv": {
     "numpkthr": 10,
@@ -170,12 +179,11 @@
     "dirtmp": "scopatmp",
     "dmstackdf": "yxztck",
     "dobmp": 0,
-    "dodaq": 0,
+    "dofeat": 0,
     "dofit": 0,
     "doftv": 0,
     "dopltx": 0,
     "doroi": 0,
-    "oldcarl": 0,
     "plt": "",
     "pltvis": 1,
     "pthpy": "",
@@ -189,7 +197,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025012420225591",
+    "timestr": "2025012514491388",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -203,7 +211,7 @@
     "bmp",
     "mf",
     "pltx",
-    "carl",
+    "feat",
     "roi.mm",
     "roi.ma",
     "roi.cm",

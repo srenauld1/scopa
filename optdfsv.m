@@ -19,7 +19,7 @@ d.copybin = "";
 d.filled = 0;
 d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported in options struct o; options struct will make sure all of these are populated before existing oset; note some vbins are only used nested within others (e.g. mm only exists as roi.mm), but defaults for these can still be called using odf, like to invoke defaults from within the function that uses them e.g. odf('mm', unpack=1)
-    "spec", "mn", "daq", "spr", "sld", "ftv", "roi", "bmp", "mf", "pltx", "carl", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
+    "spec", "mn", "daq", "spr", "sld", "ftv", "roi", "bmp", "mf", "pltx", "feat", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
     "mf.tg", "mf.sp", "mf.tp", "mf.opg", "mf.opl", ...
     "bmp.mf", "bmp.mf.tg", "bmp.mf.sp", "bmp.mf.tp", "bmp.mf.opg", "bmp.mf.opl", ...
@@ -44,7 +44,7 @@ d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffi
 
 %% mn (ap2: main pipeline control in a2p)
 
-d.mn.dodaq = 0; %process daq data
+d.mn.dofeat = 0; %load stimulus features (carl's old project)
 d.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 d.mn.doroi = 0; %do roi extraction
 d.mn.dobmp = 0; %compute bump 
@@ -53,7 +53,6 @@ d.mn.dopltx = 0; %plot experiment (o.pltx below)
 
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-d.mn.oldcarl = 0; %run with some settings for carl's old project
 d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mf"]
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
@@ -440,10 +439,19 @@ d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is bui
 
 %% options for carl's old project
 
-d.carl.stimtype = 'drone';
-d.carl.feat = 'CON_51';
-d.carl.pthparent_feat = '/Users/wienecke/ds/data/rec';
-d.carl.pth_template = '/Users/wienecke/ds/data/stimuli';
+d.feat.stimtype = 'drone';
+d.feat.id = 'CON_51';
+d.feat.pthparent = [];
+d.feat.pthtemplate = [];
+d.feat.rep = 1;
+d.feat.feat2 = [];
+d.feat.getgrid = 1; %get the feature on a grid (phi theta if vistype is sphere, xy if gridtype is plane)
+d.feat.vistype = 'plane'; %sphere, plane, or raw 
+d.feat.it = -100;
+d.feat.gridres = 256;
+d.feat.flipped = 0;
+d.feat.downsample_template = 1; %downsamples template, then uses it, rather than using template then downsampling; fine for most cases, just looks a little rougher
+d.feat.crop_edges = 1;
 
 %% write options to file
 

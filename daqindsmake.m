@@ -22,8 +22,19 @@ end
 
 frameinds = bin2ind(frameon);
 
-if max(frameinds)/numslice_withflyback~=numvol
-    error("number of volumes computed from daq frames does not match number of stack volumes reported in scanimage metadata")
+numvol_daq = max(frameinds)/numslice_withflyback;
+
+if numvol_daq~=numvol
+    daq_underflow = numvol-numvol_daq;
+    if daq_underflow>0
+        if daq_underflow<1
+            fprintf("number of volumes computed from daq frames does not match number of stack volumes reported in scanimage metadata; will proceed because it is less than one frame underflow" + newline)
+        else
+            error("number of volumes computed from daq frames is less than number of stack volumes reported in scanimage metadata; since there are more than one underflow frames, will not proceed" + newline)
+        end
+    else
+        error("number of volumes computed from daq frames is greater than number of stack volumes reported in scanimage metadata; overflow should not occur" + newline)
+    end
 end
 if frameinds(1) == 1
     sprintf("warning, first daq sample is during an imaging frame; disregard if you're running daq in background and daq record has been cropped to start when frame starts")

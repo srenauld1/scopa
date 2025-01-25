@@ -1,6 +1,5 @@
 function o = oset_df(o)
 
-o.mn.dodaq = 1; %process daq timeseries?
 
 o.mn.plt = [""]; %by defualt plots are created from all modules that you enter (if you don't enter, with a do_*, they are ignored); uncomment this to plot nothing automatically (empty string); or uncomment and specify specific modules for plotting here; o.mn.plt = ["spr"] will plot only from spr module (stackpr); plot only from spr module (stackpr, ie the automatic gifs)
 

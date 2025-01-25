@@ -103,18 +103,19 @@ else
     load(pth_daq, 'trialData', 'outputData')
     trialData = timetable2table(trialData);
 
-    % misoffset = -42.173;
-    % t = seconds(trialData.Time);
-    % [~, epochinds] = epochset(misoffset, t, id.recdatenum);
-    % plotinds_sec  = 5000:5400;
-    % plotinds = ismember(floor(t), plotinds_sec);
-    % ptmp = trialData.g4panels(plotinds);
-    % etmp = epochinds(plotinds);
-    % ttmp = t(plotinds);
-    % figure; plot(ttmp, ptmp); yyaxis right; plot(ttmp, etmp)
-    % pth_epochinfo = '/Users/wienecke/stacks/2025-1_ganoeb/20250105_1_1_epochinfo_.mat';
-    % dirstack = glb('dirstack');
-    % vis = struct;
+
+    pth_epochinfo = '/Users/wienecke/stacks/2025-1_ganoeb/20250105_1_1_epochinfo_.mat';
+    dirstack = glb('dirstack');
+    vis = struct;
+    misoffset = -42.173;
+    t = seconds(trialData.Time);
+    [~, epochinds] = epochset(misoffset, t, id.recdatenum);
+    plotinds_sec  = 0:600;
+    plotinds = ismember(floor(t), plotinds_sec);
+    ptmp = trialData.g4panels(plotinds);
+    etmp = epochinds(plotinds);
+    ttmp = t(plotinds);
+    figure; plot(ttmp, ptmp); yyaxis right; plot(ttmp, etmp)
     % [epochs, epochinds, vis] = epochld(trialData.Time, pth_epochinfo, vis, dirstack, id, sampper, trialData, 1, );
 
         

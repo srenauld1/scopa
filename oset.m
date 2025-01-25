@@ -12,6 +12,7 @@ files = opt.files;
 
 %%%% user, path to your scopa in different filesystems, and python path %%%%
 
+usedf = 0; %use all defaults (do not enter any oset_* file)
 
 otmp.mn.user = 'cw'; %cw, wz, jf; (to route to different oset_* files below)
 otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to your scopa in filesystem a, for example, for carl fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep)
@@ -39,61 +40,71 @@ otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
 
 for k = 1:numel(otmp)
 
-    switch otmp(1).mn.user
+    if usedf
 
-        case 'wz'
+        otmp2 = otmp;
 
-            if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
+    else
 
-                otmp2 = oset_wenyi(otmp(k));
+        switch otmp(1).mn.user
 
-            end
+            case 'wz'
 
-        case 'jf'
+                if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
 
-            if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
+                    otmp2 = oset_wenyi(otmp(k));
 
-                otmp2 = oset_jingxuan(otmp(k));
+                end
 
-            end
+            case 'jf'
 
-        case 'yz'
+                if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
 
-            if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
+                    otmp2 = oset_jingxuan(otmp(k));
 
-                otmp2 = oset_yunzhi(otmp(k));
+                end
 
-            end
+            case 'yz'
 
-        case 'cw'
+                if contains(otmp(k).id.pthstack, {''}) %empty string means every recording
 
-            if contains(otmp(k).id.pthstack, {'ganopb'})
+                    otmp2 = oset_yunzhi(otmp(k));
 
-                otmp2 = oset_ganopb(otmp(k));
+                end
 
-            elseif contains(otmp(k).id.pthstack, {'ganoeb'})
+            case 'cw'
 
-                otmp2 = oset_ganoeb(otmp(k));
+                if contains(otmp(k).id.pthstack, {'ganopb'})
 
-            elseif contains(otmp(k).id.pthstack, {'fb8c'})
+                    otmp2 = oset_ganopb(otmp(k));
 
-                otmp2 = oset_fb8c(otmp(k));
+                elseif contains(otmp(k).id.pthstack, {'ganoeb'})
 
-            elseif contains(otmp(k).id.pthstack, {'mito'})
+                    otmp2 = oset_ganoeb(otmp(k));
 
-                otmp2 = oset_mito(otmp(k));
+                elseif contains(otmp(k).id.pthstack, {'fb8c'})
 
-            elseif contains(otmp(k).id.pthstack, {'312'})
+                    otmp2 = oset_fb8c(otmp(k));
 
-                otmp2 = oset_312(otmp(k));
+                elseif contains(otmp(k).id.pthstack, {'mito'})
 
-            elseif contains(otmp(k).id.pthstack, {'f91g'})
+                    otmp2 = oset_mito(otmp(k));
 
-                otmp2 = oset_t5(otmp(k));
+                elseif contains(otmp(k).id.pthstack, {'312'})
 
-            end
+                    otmp2 = oset_312(otmp(k));
+
+                elseif contains(otmp(k).id.pthstack, {'f91g'})
+
+                    otmp2 = oset_t5(otmp(k));
+
+                end
+
+        end
 
     end
+
+    otmp2 = oset_wenyi(otmp(k));
 
     o(k) = odf(otmp2, fill=1); %fill all options
 
