@@ -12,7 +12,7 @@ files = opt.files;
 
 %%%% user, path to your scopa in different filesystems, and python path %%%%
 
-usedf = 0; %use all defaults (do not enter any oset_* file)
+dodf = 0; %set to 1 use all defaults (do not enter any oset_* file)
 
 otmp.mn.user = 'cw'; %cw, wz, jf; (to route to different oset_* files below)
 otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to your scopa in filesystem a, for example, for carl fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep)
@@ -40,7 +40,7 @@ otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
 
 for k = 1:numel(otmp)
 
-    if usedf
+    if dodf
 
         otmp2 = otmp;
 
@@ -104,7 +104,6 @@ for k = 1:numel(otmp)
 
     end
 
-    otmp2 = oset_wenyi(otmp(k));
 
     o(k) = odf(otmp2, fill=1); %fill all options
 

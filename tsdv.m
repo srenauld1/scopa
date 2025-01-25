@@ -2,11 +2,11 @@
 function dv = tsdv(vartypein, inp, slopelensec, slopeord, dt)
 
 arguments
-    vartypein
-    inp
-    slopelensec
-    slopeord
-    dt
+    vartypein %normal, circular, or catergorical
+    inp %input variable to be differentiated
+    slopelensec %slope length in seconds; rounded to nearest sample
+    slopeord %order for polynomial fit to determine local slope 
+    dt %sample period
 end
 
 slopelen = round(slopelensec / dt);
@@ -17,19 +17,18 @@ end
 
 if strcmp(vartypein, 'circular') % differentiate circular variable 
 
-
     inpx = cos(inp);
     inpy = sin(inp);
 
-    inpdx = movingslope(inpx, slopelen, slopeord);
-    inpdy = movingslope(inpy, slopelen, slopeord);
+    inpdx = movingslope(inpx, slopelen, slopeord, dt);
+    inpdy = movingslope(inpy, slopelen, slopeord, dt);
 
     denom = inpx.^2 + inpy.^2;
     dv = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
 
 elseif strcmp(vartypein, 'normal') % differentiate non-circular variable 
 
-    dv = movingslope(inp, slopelen, slopeord);
+    dv = movingslope(inp, slopelen, slopeord, dt);
 
 elseif strcmp(vartypein, 'categorical') % differentiate categorical variable 
 

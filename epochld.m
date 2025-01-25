@@ -87,6 +87,17 @@ catch
 
             if isscalar(ft_misoffset_sec_all)
                 [epochs, epochinds] = epochset(ft_misoffset_sec_all, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+                g4ur = unwrap(daqrs.g4panels{1});
+
+                dv = movingslope(g4ur, 4, 2, sampper);
+
+                numsecseg = 100; %how many seconds in each segment
+                xseg = floor(numel(t)/numel(t(t<numsecseg)));
+                tsplt(dv, epochinds, xall=t, ylimtype='each', xseg=xseg);
+                fool=2
+
+
             else
                 g4ur = unwrap(daqrs.g4panels{1});
 

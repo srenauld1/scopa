@@ -46,7 +46,7 @@ pause(2)
 
 for k = 1:numel(ts)
     if isvector(ts{k})
-        if isrow(ts{k})
+        if iscolumn(ts{k})
             ts{k} = ts{k}';
         end
     else
@@ -228,18 +228,19 @@ for fi = 1:size(xseg, 1)
         else
             xrangenew1 = find(tsx{1}>=hax.XLim(1) & tsx{1}<=hax.XLim(2));
         end
-        ylm1 = [min(tsy{1}(xrangenew1), [], 'all', 'omitmissing') max(tsy{1}(xrangenew1), [], 'all', 'omitmissing')];
+
+        %was this, but if not constant y, this can clip some ts, since it's only ts{1}
+        % ylm1 = [min(tsy{1}(xrangenew1), [], 'all', 'omitmissing') max(tsy{1}(xrangenew1), [], 'all', 'omitmissing')];
+
+        ylm1(1) = min(cellfun(@(x) min(x(xrangenew1), [], 'all', 'omitmissing'), tsy));
+        ylm1(2) = max(cellfun(@(x) max(x(xrangenew1), [], 'all', 'omitmissing'), tsy));
 
     end
 
 
     if all(isfinite(ylm1)) %why did i do this? nans from dividing by zero when rescaling?
-        try
-            if ylm1(1)~=ylm1(2) %in case segment is constant, just skip setting new scale
-                hax.YLim = [ylm1(1) - range(ylm1)*yroomfac, ylm1(2) + range(ylm1)*yroomfac];
-            end
-        catch
-            fuk=2
+        if ylm1(1)~=ylm1(2) %in case segment is constant, just skip setting new scale
+            hax.YLim = [ylm1(1) - range(ylm1)*yroomfac, ylm1(2) + range(ylm1)*yroomfac];
         end
     end
 
