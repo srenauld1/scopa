@@ -41,17 +41,27 @@ axpos = opt.axpos;
 minsampperseg = opt.minsampperseg;
 maxnumts = opt.maxnumts;
 
-error("don't use this function it's being edited")
+fprintf("WARNING FUNCTION tsplt MOSTLY WORKS BUT IS STILL BEING WRITTEN" + newline)
+pause(2)
 
 if isempty(xall)
-    if mod(numel(ts),2)~=0
-        error("if xall is empty, number ts inputs must be multiple of 2 (pairs of x and y, with any x allowed to be empty vector [])")
-    end
-    for k = 1:numel(ts)/2
-        x{k} = ts{1+2*(k-1)};
-        y{k} = ts{2+2*(k-1)};
-        if numel(x{k})~=numel(y{k})
-            error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in length, but x and y in xy pair number " + num2str(k) + " do not match in length"))
+    if isscalar(ts)
+        x{1} = 1:numel(ts{1});
+        y{1} = ts{1};
+    else
+        if mod(numel(ts),2)~=0
+            error("if xall is empty, number ts inputs must be multiple of 2 (pairs of x and y, with any x allowed to be empty vector [])")
+        end
+        for k = 1:numel(ts)/2
+            if isempty(ts{1+2*(k-1)})
+                x{k} = 1:numel(ts{2+2*(k-1)});
+            else
+                x{k} = ts{1+2*(k-1)};
+            end
+            y{k} = ts{2+2*(k-1)};
+            if numel(x{k})~=numel(y{k})
+                error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in length, but x and y in xy pair number " + num2str(k) + " do not match in length"))
+            end
         end
     end
 else
@@ -125,7 +135,7 @@ if isempty(xall)
     limx = axlim(x, limtype='all', roomfac=0);
     x = rescale_to_range(x, limx, xaxis_true_lims);
     for k = 1:numel(y)
-        y{k} = interp1(1:numel(y{k}), y{k}, linspace(1, numel(y{k}), numel(xtrue)), 'linear');
+        y{k} = interp1(1:numel(y{k}), y{k}, linspace(1, numel(y{k}), numel(x{k})), 'linear');
         tsx{k} = x{k};
         tsy{k} = y{k};
     end
@@ -236,12 +246,12 @@ function spec = checkspec(spec, num_xy_pairs)
 
 vnm = inputname(1);
 if ~iscell(spec)
-    for k = 1:size(spec)
+    for k = 1:size(spec,1)
         spectmp{k} = spec(k,:);
     end
     spec = spectmp;
 end
-if numel(spec)==1
+if isscalar(spec)
     spec = repelem(spec, num_xy_pairs);
 end
 if numel(spec)~=num_xy_pairs

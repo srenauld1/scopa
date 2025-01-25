@@ -99,14 +99,14 @@ catch
                     %%
 
                     prd = 200; %period between epochs
-                    rng = 26; %range of seconds around epoch to plot
-                    nep = 26; %number epochs to plot; 
+                    rng = 60; %range of seconds around epoch to plot
+                    nep = 27; %number epochs to plot; 
                     plotinds_sec = vec(transpose(([0:rng-1])+(prd)*[1:nep]'-(floor(rng/2))));
                     plotinds = ismember(floor(t), plotinds_sec);
-                    ptmp = daqrs.g4panels(plotinds);
-                    etmp = epochinds(plotinds);
+                    ptmp = daqrs.g4panels(:);
+                    etmp = epochinds(:);
                     % figure; plot(ptmp); yyaxis right; plot(etmp)
-                    tsplt([], ptmp, [], etmp, ylimtype='each', xseg=10);
+                    tsplt([], ptmp, [], etmp, ylimtype='each', xseg=70);
                     
 %% 
 

@@ -12,6 +12,7 @@ files = opt.files;
 
 %%%% user, path to your scopa in different filesystems, and python path %%%%
 
+
 otmp.mn.user = 'cw'; %cw, wz, jf; (to route to different oset_* files below)
 otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to your scopa in filesystem a, for example, for carl fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep)
 otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to your scopa in filesystem b, for example, for carl fullfile(filesep, 'home', 'caw846', 'scopa', filesep)
