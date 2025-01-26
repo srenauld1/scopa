@@ -86,20 +86,23 @@ catch
             end
 
             if isscalar(ft_misoffset_sec_all)
+
                 [epochs, epochinds] = epochset(ft_misoffset_sec_all, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-                g4ur = unwrap(daqrs.g4panels{1});
-                dv = tsdv('circular', daqrs.g4panels{1}, sampper*3, 2, sampper);
+                %% 
+
+                boutlensec = 20; %bout length in seconds 
+                boutlensamp = boutlensec/sampper;
+                dvlensamp = 3; %minimal window length for derivative with 2nd order polynomial (unit samples)
+                dv = tsdv('circular', daqrs.g4panels{1}, sampper*dvlensamp, 2, sampper); %derivative 
                 dv = rad2deg(dv);
-
-                % dv = movingslope(g4ur, 3, 2, sampper);
-                med = movmedian(dv, [3 0]);
-
-                numsecseg = 100; %how many seconds in each segment
+                mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
+                lmin = double(islocalmin(mvar, MinSeparation=boutlensec/sampper)); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
+                numsecseg = 100; %how many seconds in each plotted segment
                 xseg = floor(numel(t)/numel(t(t<numsecseg)));
-                tsplt(dv, epochinds, xall=t, ylimtype='each', xseg=xseg);
-                fool=2
+                tsplt(daqrs.g4panels{1}, dv, mvar, lmin, xall=t, ylimtype='each', xseg=xseg);
 
+%% 
 
             else
                 g4ur = unwrap(daqrs.g4panels{1});
