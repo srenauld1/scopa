@@ -4,6 +4,7 @@ function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, 
 % if it doesn't exist, create it here with a hack, using derivative of g4panels yaw
 % for the ocld protocol, panels derivative defines each open loop condition, and everything else is closed loop
 % this algorithm assumes the bout lengths are accurate (they are)
+% this algorithm assumes that underflow frames are the same as dark epoch (overflow is when fictrac has ended before the daq ends, since fictrac starts first this can happen if fictrac hasn't been programmed in the socket code to run indefinitely)
 % the reason for using this rather than the timing information written in the socket code controlling the panels
 % is the daq record accumulates timing error; so although bouts are all very nearly 20 seconds, over time, the bouts begin later than expected (delay of ~1 second every ~20 minutes)
 % using the derivatives aligns epoch indices better than the old approach in epochld_old.m
@@ -21,66 +22,70 @@ arguments
 end
 
 
-dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 boutlensec = 20; %bout length in seconds
-dvlensamp = 3; %minimal window length for derivative with 2nd order polynomial (unit samples)
-timetol_boutlen = 0.5; %tolerance for detecting long bouts
-
-
-if isduration(t)
-    t = seconds(t);
-end
+dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
+has_cl_interleave = 1; %whether open loop bouts are interleaved with closed loop bouts
+dvlensamp = 10; %window length (unit: samples) for dvord-order polynomial fit to determine slope; 
+dvord = 2; %order of polynomial fit for extracting local slope; 
+tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
+tol_boutlensec = 0.5; %tolerance for detecting long bouts
 
 
 try
 
-    fool=ff
-    load(pth_epochinfo, 'epochs', 'epochinds', 'naninds')
-    if ~exist('epochinds', 'var')
-        error('pth_epochinfo is old, overwriting with new method')
-    end
+    load(pth_epochinfo, 'epochs', 'epochinds')
 
 catch
 
     if isfield(vis, 'yaw')
 
-        if size(t, 1)<size(t, 2)
+        if isduration(t)
+            t = seconds(t);
+        end
+        if isrow(t) %why does this matter?
             t = t';
         end
 
         fprintf("warning, epochs not saved to daq, finding epochs with panels derivatives" + newline)
 
-        [epochs, ~] = epochset(t, id.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+        ioi = boutlensec*(has_cl_interleave+1); %inter-open loop interval
+        boutlensamp = boutlensec/sampper; %bout length in samples
+        dvlensec = dvlensamp*sampper; %window length in seconds
+        halfboutlensec = boutlensec/2;
+        
+        %%% find boutlensec-second windows whose median derivative matches expected %%%
 
-        boutlensamp = boutlensec/sampper;
-        dv = tsdv('circular', vis.yaw, sampper*dvlensamp, 2, sampper); %derivative
-        dv = rad2deg(dv);
+        dv = tsdv('circular', vis.yaw, dvlensec, dvord, sampper); %derivative
+        dv = rad2deg(dv); %convert to degrees because tolerance is in degrees and we like degrees more anyway
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
-        lstarts = t(lmin)-boutlensec/2;
-        lstops = t(lmin)+boutlensec/2;
-        meds = [];
-        meds_t = [];
+        lstarts = t(lmin)-halfboutlensec; %start times for all windows
+        lstops = t(lmin)+halfboutlensec; %stop times for all windows
+        med = [];
+        tmed = [];
         for k = 1:numel(lstarts)
-            meds(k) = median(dv(t>lstarts(k) & t<lstops(k)));
-            meds_t(k) = median(t(t>lstarts(k) & t<lstops(k)));
+            idx = t>lstarts(k) & t<lstops(k);
+            med(k) = median(dv(idx)); %median slope 
+            tmed(k) = median(t(idx));
         end
-        tol = 1; %tolerance for dv relative to dvnom (bidirectional)
-        kp = any(abs(meds-dvnom')<=tol); %keep
-        meds = meds(kp);
-        meds_t = meds_t(kp);
-        medsint = interp1(dvnom,dvnom,meds,'nearest','extrap');
-        kp2 = ones(numel(medsint),1, 'logical');
+        kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes  
+        med = med(kp);
+        tmed = tmed(kp);
+        medrnd = interp1(dvnom, dvnom, med, 'nearest', 'extrap'); %round medians to nearest dvnom
+        
+        %%% discard any windows whose median doesn't follow periodic open-loop sequence of expected medians (this can be improved, there might be problems if the first median is a match, or if there are more than 2 matches in a row) %%%
+        
+        kp2 = ones(numel(medrnd), 1, 'logical');
         knew = 1;
-        for k = 1:numel(medsint)
-            idx = find(medsint(k)==dvnom);
+        for k = 1:numel(medrnd)
+            idx = find(medrnd(k)==dvnom);
             modidx = mod(knew-1,numel(dvnom))+1;
             moddiff = modidx-idx;
             badind = 0;
             if k>1
                 if ~isequal(moddiff, moddiffprev)
-                    if isequal(medsint(k), medsint(k-1))
-                        [~, rmdupe] = max(min(abs(meds(k-1:k)-dvnom')));
+                    if isequal(medrnd(k), medrnd(k-1))
+                        [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom')));
                         kp2(k-(2-rmdupe)) = 0;
                     else
                         kp2(k) = 0;
@@ -93,62 +98,58 @@ catch
                 moddiffprev = moddiff;
             end
         end
+        medrnd = medrnd(kp2);
+        tmed = tmed(kp2);
 
-        medsint = medsint(kp2);
-        meds_t = meds_t(kp2);
-        meds_t_dv = diff(meds_t);
-        longbouts = abs(meds_t_dv-boutlensec*2')>=timetol_boutlen;
+        %%% make sure all bouts are expected length, except for possible long bouts at the end (when fictrac ends before daq and those bouts get classified as dark bouts because their derivative is 0)  %%%
+
+        meds_t_dv = diff(tmed);
+        longbouts = abs(meds_t_dv-ioi')>=tol_boutlensec;
         numlb = sum(longbouts);
         if sum(longbouts(1:end-numlb))~=0
             error("longbouts can only be at the end")
         end
 
+        %%% make sure you have the expected number of bouts, and that the daq_delay is not unusual %%%
 
-        numgoodbouts_openloop = numel(meds_t)-numlb;
-        maxgoodtime = max(meds_t(1:end-numlb)); %centroid of last open loop bout
-        numbouts_ol_expected = ceil(maxgoodtime / (boutlensec*2)); %ceil, since these are centroids
-        daq_delay = t(end)-maxgoodtime-boutlensec/2; %how long the start of daq recording is delayed relative to the start of the socket code / fictrac / panels
-
+        numbouts_ol = numel(tmed)-numlb;
+        maxgoodtime = max(tmed(1:end-numlb)); %centroid of last open loop bout
+        numbouts_ol_expected = ceil(maxgoodtime / (ioi)); %ceil, since these are centroids
+        daq_delay = t(end)-maxgoodtime-halfboutlensec; %how long the start of daq recording is delayed relative to the start of the socket code / fictrac / panels
 
         if daq_delay>60
             error("warning, daq starts more than a minute after fictrac/panels/socket; this has never hapepned before, check that it is okay")
         end
+        if daq_delay<0
+            error("daq starts before fictrac; this has never happened")
+        end
 
-
-
-        fprintf("treating overflow frames as dark panels (is this true??)" + newline)
+        %%% make sure you have the expected number of bouts, and that the daq_delay is not unusual %%%
 
         numepoch = numel(dvnom)+1;
         epochinds = ones(size(t))*numepoch;
-        for k = 1:numel(meds_t)
+        for k = 1:numel(tmed)
             % [~, ttmp] = min(abs(t-meds_t(k)'));
             % tepoch(ttmp) = idxtmp; %these are the centroids, but since we don't have closed loop centroids, let's use bout edges from above (assumes bout length is accurate)
-            starttmp = meds_t(k) - boutlensec/2;
+            starttmp = tmed(k) - halfboutlensec;
             [~, idxstart] = min(abs(t-starttmp));
-            stoptmp = meds_t(k) + boutlensec/2;
+            stoptmp = tmed(k) + halfboutlensec;
             [~, idxstop] = min(abs(t-stoptmp));
-            idxtmp = find(medsint(k)==dvnom);
+            idxtmp = find(medrnd(k)==dvnom);
             epochinds(idxstart:idxstop) = idxtmp;
         end
 
         % idx(idx==0) = nan; %replace zeros (if they exist) with nan, then . . .
-        % idx = fillmissing(idx, 'nearest'); %this would fill around centroids but we don't have closed loop centroids
+        % idx = fillmissing(idx, 'nearest'); %fill around centroids; but we don't have closed loop centroids; if we did, would this be more accurate than creating the window around open-loop centroids using expected bout length?
 
-        if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
-            naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
-            vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-            vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-        else
-            naninds = [];
-        end
+        fprintf("assigned any underflow bouts to dark epoch (is this accurate? are the panels off when fictrac ends?)" + newline)
 
-        save(pth_epochinfo, 'epochs', 'epochinds', 'naninds');
+        save(pth_epochinfo, 'epochs', 'epochinds');
 
-        [epochs, epochinds_old] = epochset(ft_misoffset_sec_all, t, id.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+        [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
 
         if doplt
-            %compare to old way, epochinds_old
 
             switch id.recid % offsets just to see how much delay there is, not that it's necesaary to find epochinds (this was the old way)
                 case '20250105_1_1'
@@ -156,7 +157,6 @@ catch
             end
 
             % figure; plot(medsint)
-
             numsecseg = 100; %how many seconds in each segment
             xseg = floor(numel(t)/numel(t(t<numsecseg)));
             tsplt( vis.yaw, epochinds, xall=t, ylimtype='each', xseg=xseg);
@@ -170,6 +170,12 @@ catch
 
     end
 
+end
+
+if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
+    naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
+    vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+    vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
 end
 
 

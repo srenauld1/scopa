@@ -12,7 +12,7 @@ files = opt.files;
 
 %%%% user, path to your scopa in different filesystems, and python path %%%%
 
-dodf = 0; %set to 1 use all defaults (do not enter any oset_* file)
+dodf = 1; %set to 1 use all defaults (do not enter any oset_* file)
 
 otmp.mn.user = 'cw'; %cw, wz, jf; (to route to different oset_* files below)
 otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to your scopa in filesystem a, for example, for carl fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep)
@@ -25,9 +25,9 @@ otmp.spec.pthparent_local = fullfile(filesep, 'Users', 'wienecke', 'stacks', fil
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(otmp.spec.pth) %if you're running a2p without input arguments (ie if otmp.spec.pth is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not otmp.spec.pth is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
     otmp.spec.recdate = {'20250105'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.fly = {'1'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.trial = {'1'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.suffix = {'cmrg'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.trial = {'*'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     otmp.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 end
@@ -40,9 +40,10 @@ otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
 
 for k = 1:numel(otmp)
 
+    otmp2 = [];
     if dodf
 
-        otmp2 = otmp;
+        otmp2 = otmp(k);
 
     else
 
@@ -104,9 +105,10 @@ for k = 1:numel(otmp)
 
     end
 
-
-    o(k) = odf(otmp2, fill=1); %fill all options
-
+    if ~isempty(otmp2)
+        o(k) = odf(otmp2, fill=1); %fill all options
+    end
+    
 end
 
 
