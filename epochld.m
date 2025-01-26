@@ -86,17 +86,47 @@ catch
             end
 
             if isscalar(ft_misoffset_sec_all)
+
                 [epochs, epochinds] = epochset(ft_misoffset_sec_all, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-                g4ur = unwrap(daqrs.g4panels{1});
+                %% 
 
-                dv = movingslope(g4ur, 4, 2, sampper);
+                boutlensec = 20; %bout length in seconds 
+                boutlensamp = boutlensec/sampper;
+                dvlensamp = 3; %minimal window length for derivative with 2nd order polynomial (unit samples)
+                dv = tsdv('circular', daqrs.g4panels{1}, sampper*dvlensamp, 2, sampper); %derivative 
+                dv = rad2deg(dv);
+                mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
+                lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
+                lstarts = t(lmin)-boutlensec/2;
+                lstops = t(lmin)+boutlensec/2;
+                mns = [];
+                for k = 1:numel(lstarts)
+                    mns(k) = median(dv(t>lstarts(k) & t<lstops(k)));
+                end
+                mns = round(mns);
+                dvnom = [20 80 -20 -80 0]; %each epoch nominal derivative
+                tol = 1; %tolerance for dv relative to dvnom (bidirectional)
+                kp = any(abs(mns-dvnom')<=tol); %keep 
+                mns = mns(kp);
+                mns = interp1(dvnom,dvnom,mns,'nearest','extrap');
+                for k = 1:numel(mns)
+                    idx = find(mns(k)==dvnom);
+                    modidx = mod(k-1,numel(dvnom))+1;
+                    if k>1 && ~isequal(modidx, modidxprev)
+                        error("must have constant offset")
+                    end
+                    modidxprev = modidx;
+                end
 
-                numsecseg = 100; %how many seconds in each segment
-                xseg = floor(numel(t)/numel(t(t<numsecseg)));
-                tsplt(dv, epochinds, xall=t, ylimtype='each', xseg=xseg);
-                fool=2
+                figure; scatter(1:numel(mns), mns)
 
+                % numsecseg = 100; %how many seconds in each plotted segment
+                % xseg = floor(numel(t)/numel(t(t<numsecseg)));
+                % tsplt(daqrs.g4panels{1}, dv, mvar, double(lmin), xall=t, ylimtype='each', xseg=xseg);
+                % tsplt(daqrs.g4panels{1}, dv, epochinds, double(lmin), xall=t, ylimtype='each', xseg=xseg);
+
+%% 
 
             else
                 g4ur = unwrap(daqrs.g4panels{1});
