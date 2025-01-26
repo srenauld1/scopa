@@ -1,5 +1,11 @@
-function [epochs, epochinds] = epochset(ft_misoffset_sec, ti, recdatenum)
- 
+function [epochs, epochinds] = epochset(ti, recdatenum, ft_misoffset_sec)
+
+arguments
+    ti
+    recdatenum
+    ft_misoffset_sec = 0
+end
+
 % stimulus epoch information, hard coded
 % for old recordings; no longer necessary because epoch information is written to the daq
 

@@ -1,0 +1,234 @@
+function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs, ftoo)
+
+% if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial)
+% if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
+
+arguments
+    t
+    pth_epochinfo
+    vis
+    dirstack
+    ids
+    sampper
+    daqrs
+    use_carls_epochs
+    ftoo = []
+end
+
+
+if isduration(t)
+    t = seconds(t);
+end
+
+
+try
+
+    load(pth_epochinfo, 'epochs', 'epochinds', 'naninds')
+    if ~exist('epochinds', 'var')
+        error('pth_epochinfo is old, overwriting with new method')
+    end
+
+catch
+
+    if ismember('g4panels', daqrs.Properties.VariableNames)
+
+        if size(t, 1)<size(t, 2)
+            t = t';
+        end
+
+        if ismember('epochs', daqrs.Properties.VariableNames)
+
+            error("need to write function to process epochs from daq")
+
+        else
+
+            sprintf("warning, epochs not saved to daq, using hard coded epochs aligned by minimizing error")
+
+            if use_carls_epochs
+                if ids.recdatenum<20231119
+                    testepochind_all = [2 3];
+                    minshiftsec = -8;
+                    maxshiftsec = 3;
+                elseif ids.recdatenum>=20231119 && ids.recdatenum<20231231
+                    testepochind_all = [2 3 5];
+                    minshiftsec = -8;
+                    maxshiftsec = 3;
+                elseif ids.recdatenum>=20241120 && ids.recdatenum<20241130
+                    testepochind_all = [2 3 5];
+                    minshiftsec = -15;
+                    maxshiftsec = 15;
+                elseif ids.recdatenum>=20250101%% && ids.recdatenum<20241130
+                    testepochind_all = [5];
+                    minshiftsec = -42;
+                    maxshiftsec = -41;
+                else
+                    testepochind_all = [];
+                    minshiftsec = 0;
+                    maxshiftsec = 0;
+                end
+            else
+                testepochind_all = [];
+                minshiftsec = 0;
+                maxshiftsec = 0;
+            end
+
+
+            ft_misoffset_sec_all = minshiftsec : sampper*0.45 : maxshiftsec;
+
+
+            if isempty(ftoo)
+                switch ids.recid
+                    case '20250105_1_1'
+                        ft_misoffset_sec_all = -42.173;
+                end
+            else
+                ft_misoffset_sec_all = ftoo;
+            end
+
+            if isscalar(ft_misoffset_sec_all)
+
+                [epochs, epochinds] = epochset(ft_misoffset_sec_all, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+            else
+                g4ur = unwrap(daqrs.g4panels{1});
+
+                hfg = figure;
+                % hax = axes(Parent=hfg);
+                hax = subplot(211);
+                hax2 = subplot(212);
+
+                bestshiftind_allepochs = [];
+                cnt = 0;
+                for tei = 1:numel(testepochind_all)
+                    testepochind = testepochind_all(tei);
+                    criter = nan(numel(ft_misoffset_sec_all), 1);
+                    for fmsai = 1:numel(ft_misoffset_sec_all)
+                        cnt = cnt+1;
+
+                        ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
+
+                        [~, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+                        %%
+
+                        % prd = 200; %period between epochs
+                        % rng = 60; %range of seconds around epoch to plot
+                        % nep = 27; %number epochs to plot;
+                        % plotinds_sec = vec(transpose(([0:rng-1])+(prd)*[1:nep]'-(floor(rng/2))));
+                        % plotinds = ismember(floor(t), plotinds_sec);
+                        % ptmp = daqrs.g4panels{1}(:);
+                        % etmp = epochinds(:);
+                        % % figure; plot(ptmp); yyaxis right; plot(etmp)
+                        % % figure; plot(t, ptmp); yyaxis right; plot(t, etmp)
+                        % tsplt(ptmp, etmp, xall=t, ylimtype='each', xseg=50);
+                        %
+                        %%
+
+                        % plotinds_sec  = 0:600;
+                        % plotinds = ismember(floor(t), plotinds_sec);
+                        % ptmp = daqrs.g4panels{1}(plotinds);
+                        % etmp = epochinds(plotinds);
+                        % ttmp = t(plotinds);
+                        % figure; plot(ttmp, ptmp); yyaxis right; plot(ttmp, etmp)
+
+                        %%
+
+                        tmp = g4ur(epochinds==testepochind);
+
+                        if testepochind==2 || testepochind==3
+                            ddt = diff(diff(tmp));
+                            criter(fmsai) = numel(find(isoutlier(ddt))); %minimize num unique variables in diff, since open epoch should have only a couple (constant vel)
+                        elseif testepochind==5
+                            criter(fmsai) = var(cos(tmp)); %minimize variance of x (or y) component of circular variable, this is offset with least error
+                        end
+
+                        ttlstr = [criter(fmsai) ft_misoffset_sec ft_misoffset_sec];
+
+                        plotinds_sec = vec(transpose(([0:7])+(20)*[1:5]'-(4)));
+                        plotinds = ismember(floor(t), plotinds_sec);
+                        % ddtplot = ddt(plotinds);
+                        tmpshort = tmp(plotinds);
+                        % tmpplot = tmp;
+                        if fmsai==1
+                            hpl = plot(hax,tmp);
+                            % hpl2 = plot(hax2,ddtplot);
+                            hpl2 = plot(hax2,tmpshort);
+
+                            % yyaxis right
+                            % hpl2 = plot(hax2,ddtplot);
+                            ttl = title(ttlstr);
+                        else
+                            hpl.YData = tmp;
+                            hpl2.YData = tmpshort;
+                            % hpl2.YData = ddtplot;
+                            ttl.String = ttlstr;
+                        end
+
+
+                        % hax.YLim = [-30, 30];
+                        % hax.XLim = [1000, 3000];
+
+                        fig2gif(hfg, cnt, [dirstack 'misoffset_.gif'])
+
+                        if fmsai==numel(ft_misoffset_sec_all)
+                            critd = movingslope(criter, 20, 2, sampper);
+                            if ~(min(critd)<0 && max(critd)>0)
+                                error("error is monotonic, expand search range")
+                            end
+                            [~, bestshiftind_oneepoch] = min(criter);
+                            bestshiftind_allepochs = [bestshiftind_allepochs bestshiftind_oneepoch];
+                        end
+                    end
+                end
+
+                if ft_misoffset_sec_all==0
+                    ft_misoffset_sec = 0;
+                else
+                    ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
+                end
+
+                [epochs, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+                figure; plot(unwrap(daqrs.g4panels{1})); yyaxis right; plot(epochinds)
+
+                uei = unique(epochinds(epochinds~=0), 'stable');
+                cnt = 0;
+                hfg = figure;
+                hax = axes('Parent', hfg);
+                for tei = 1:numel(uei)
+                    cnt = cnt+1;
+                    plot(hax, daqrs.g4panels{1}(epochinds==uei(tei)))
+                    title(['final offset, epoch ' num2str(uei(tei))])
+                    fig2gif(hfg, cnt, [dirstack 'offset_final.gif'])
+                end
+
+            end
+        end
+
+        if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
+            naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
+            vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+            vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+        else
+            naninds = [];
+        end
+
+        save(pth_epochinfo, 'epochs', 'epochinds', 'naninds');
+
+    else
+
+        epochs = [];
+        epochinds = [];
+        fprintf("no g4panels data, epochs are empty" + newline)
+
+    end
+
+end
+
+% figure; plot(t, ptmp); yyaxis right; plot(t, etmp)
+numsecseg = 100; %how many seconds in each segment
+xseg = floor(numel(t)/numel(t(t<numsecseg)));
+tsplt( daqrs.g4panels{1}, epochinds, xall=t, ylimtype='each', xseg=xseg);
+
+
+

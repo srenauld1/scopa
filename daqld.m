@@ -105,7 +105,7 @@ else
 
     % misoffset = -42.173;
     % t = seconds(trialData.Time);
-    % [~, epochinds] = epochset(misoffset, t, id.recdatenum);
+    % [~, epochinds] = epochset(t, id.recdatenum, misoffset);
     % plotinds_sec  = 5000:5400;
     % plotinds = ismember(floor(t), plotinds_sec);
     % ptmp = trialData.g4panels(plotinds);

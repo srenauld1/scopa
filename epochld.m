@@ -1,19 +1,30 @@
-function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, dirstack, ids, sampper, daqrs, use_carls_epochs, ftoo)
+function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, doplt)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial)
-% if it doesn't exist, create it here, using hacks to align daq info with known epoch structure (alignment includes finding samples at the start where fictrac ran before imaging)
+% if it doesn't exist, create it here with a hack, using derivative of g4panels yaw
+% for the ocld protocol, panels derivative defines each open loop condition, and everything else is closed loop
+% this algorithm assumes the bout lengths are accurate (they are)
+% the reason for using this rather than the timing information written in the socket code controlling the panels
+% is the daq record accumulates timing error; so although bouts are all very nearly 20 seconds, over time, the bouts begin later than expected (delay of ~1 second every ~20 minutes)
+% using the derivatives aligns epoch indices better than the old approach in epochld_old.m
+
+
+%THIS ONLY WORKS FOR CARL'S OCLD PROTOCOL, ALTHOUGH MIGHT BE ADAPTED ELSEWHERE
 
 arguments
     t
     pth_epochinfo
     vis
-    dirstack
-    ids
+    id
     sampper
-    daqrs
-    use_carls_epochs
-    ftoo = []
+    doplt = []
 end
+
+
+dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
+boutlensec = 20; %bout length in seconds
+dvlensamp = 3; %minimal window length for derivative with 2nd order polynomial (unit samples)
+timetol_boutlen = 0.5; %tolerance for detecting long bouts
 
 
 if isduration(t)
@@ -23,6 +34,7 @@ end
 
 try
 
+    fool=ff
     load(pth_epochinfo, 'epochs', 'epochinds', 'naninds')
     if ~exist('epochinds', 'var')
         error('pth_epochinfo is old, overwriting with new method')
@@ -30,219 +42,91 @@ try
 
 catch
 
-    if ismember('g4panels', daqrs.Properties.VariableNames)
+    if isfield(vis, 'yaw')
 
         if size(t, 1)<size(t, 2)
             t = t';
         end
 
-        if ismember('epochs', daqrs.Properties.VariableNames)
+        fprintf("warning, epochs not saved to daq, finding epochs with panels derivatives" + newline)
 
-            error("need to write function to process epochs from daq")
+        [epochs, ~] = epochset(t, id.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-        else
-
-            sprintf("warning, epochs not saved to daq, using hard coded epochs aligned by minimizing error")
-
-            if use_carls_epochs
-                if ids.recdatenum<20231119
-                    testepochind_all = [2 3];
-                    minshiftsec = -8;
-                    maxshiftsec = 3;
-                elseif ids.recdatenum>=20231119 && ids.recdatenum<20231231
-                    testepochind_all = [2 3 5];
-                    minshiftsec = -8;
-                    maxshiftsec = 3;
-                elseif ids.recdatenum>=20241120 && ids.recdatenum<20241130
-                    testepochind_all = [2 3 5];
-                    minshiftsec = -15;
-                    maxshiftsec = 15;
-                elseif ids.recdatenum>=20250101%% && ids.recdatenum<20241130
-                    testepochind_all = [5];
-                    minshiftsec = -42;
-                    maxshiftsec = -41;
-                else
-                    testepochind_all = [];
-                    minshiftsec = 0;
-                    maxshiftsec = 0;
-                end
-            else
-                testepochind_all = [];
-                minshiftsec = 0;
-                maxshiftsec = 0;
-            end
-
-
-            ft_misoffset_sec_all = minshiftsec : sampper*0.45 : maxshiftsec;
-
-
-            if isempty(ftoo)
-                switch ids.recid
-                    case '20250105_1_1'
-                        ft_misoffset_sec_all = -42.173;
-                end
-            else
-                ft_misoffset_sec_all = ftoo;
-            end
-
-            if isscalar(ft_misoffset_sec_all)
-
-                [epochs, epochinds] = epochset(ft_misoffset_sec_all, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-
-                %% 
-
-                boutlensec = 20; %bout length in seconds 
-                boutlensamp = boutlensec/sampper;
-                dvlensamp = 3; %minimal window length for derivative with 2nd order polynomial (unit samples)
-                dv = tsdv('circular', daqrs.g4panels{1}, sampper*dvlensamp, 2, sampper); %derivative 
-                dv = rad2deg(dv);
-                mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
-                lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
-                lstarts = t(lmin)-boutlensec/2;
-                lstops = t(lmin)+boutlensec/2;
-                mns = [];
-                for k = 1:numel(lstarts)
-                    mns(k) = median(dv(t>lstarts(k) & t<lstops(k)));
-                end
-                mns = round(mns);
-                dvnom = [20 80 -20 -80 0]; %each epoch nominal derivative
-                tol = 1; %tolerance for dv relative to dvnom (bidirectional)
-                kp = any(abs(mns-dvnom')<=tol); %keep 
-                mns = mns(kp);
-                mns = interp1(dvnom,dvnom,mns,'nearest','extrap');
-                for k = 1:numel(mns)
-                    idx = find(mns(k)==dvnom);
-                    modidx = mod(k-1,numel(dvnom))+1;
-                    if k>1 && ~isequal(modidx, modidxprev)
-                        error("must have constant offset")
+        boutlensamp = boutlensec/sampper;
+        dv = tsdv('circular', vis.yaw, sampper*dvlensamp, 2, sampper); %derivative
+        dv = rad2deg(dv);
+        mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
+        lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
+        lstarts = t(lmin)-boutlensec/2;
+        lstops = t(lmin)+boutlensec/2;
+        meds = [];
+        meds_t = [];
+        for k = 1:numel(lstarts)
+            meds(k) = median(dv(t>lstarts(k) & t<lstops(k)));
+            meds_t(k) = median(t(t>lstarts(k) & t<lstops(k)));
+        end
+        tol = 1; %tolerance for dv relative to dvnom (bidirectional)
+        kp = any(abs(meds-dvnom')<=tol); %keep
+        meds = meds(kp);
+        meds_t = meds_t(kp);
+        medsint = interp1(dvnom,dvnom,meds,'nearest','extrap');
+        kp2 = ones(numel(medsint),1, 'logical');
+        knew = 1;
+        for k = 1:numel(medsint)
+            idx = find(medsint(k)==dvnom);
+            modidx = mod(knew-1,numel(dvnom))+1;
+            moddiff = modidx-idx;
+            badind = 0;
+            if k>1
+                if ~isequal(moddiff, moddiffprev)
+                    if isequal(medsint(k), medsint(k-1))
+                        [~, rmdupe] = max(min(abs(meds(k-1:k)-dvnom')));
+                        kp2(k-(2-rmdupe)) = 0;
+                    else
+                        kp2(k) = 0;
                     end
-                    modidxprev = modidx;
+                    badind = 1;
                 end
-
-                figure; scatter(1:numel(mns), mns)
-
-                % numsecseg = 100; %how many seconds in each plotted segment
-                % xseg = floor(numel(t)/numel(t(t<numsecseg)));
-                % tsplt(daqrs.g4panels{1}, dv, mvar, double(lmin), xall=t, ylimtype='each', xseg=xseg);
-                % tsplt(daqrs.g4panels{1}, dv, epochinds, double(lmin), xall=t, ylimtype='each', xseg=xseg);
-
-%% 
-
-            else
-                g4ur = unwrap(daqrs.g4panels{1});
-
-                hfg = figure;
-                % hax = axes(Parent=hfg);
-                hax = subplot(211);
-                hax2 = subplot(212);
-
-                bestshiftind_allepochs = [];
-                cnt = 0;
-                for tei = 1:numel(testepochind_all)
-                    testepochind = testepochind_all(tei);
-                    criter = nan(numel(ft_misoffset_sec_all), 1);
-                    for fmsai = 1:numel(ft_misoffset_sec_all)
-                        cnt = cnt+1;
-
-                        ft_misoffset_sec = ft_misoffset_sec_all(fmsai);
-
-                        [~, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-
-                        %%
-
-                        % prd = 200; %period between epochs
-                        % rng = 60; %range of seconds around epoch to plot
-                        % nep = 27; %number epochs to plot;
-                        % plotinds_sec = vec(transpose(([0:rng-1])+(prd)*[1:nep]'-(floor(rng/2))));
-                        % plotinds = ismember(floor(t), plotinds_sec);
-                        % ptmp = daqrs.g4panels{1}(:);
-                        % etmp = epochinds(:);
-                        % % figure; plot(ptmp); yyaxis right; plot(etmp)
-                        % % figure; plot(t, ptmp); yyaxis right; plot(t, etmp)
-                        % tsplt(ptmp, etmp, xall=t, ylimtype='each', xseg=50);
-                        %
-                        %%
-
-                        % plotinds_sec  = 0:600;
-                        % plotinds = ismember(floor(t), plotinds_sec);
-                        % ptmp = daqrs.g4panels{1}(plotinds);
-                        % etmp = epochinds(plotinds);
-                        % ttmp = t(plotinds);
-                        % figure; plot(ttmp, ptmp); yyaxis right; plot(ttmp, etmp)
-
-                        %%
-
-                        tmp = g4ur(epochinds==testepochind);
-
-                        if testepochind==2 || testepochind==3
-                            ddt = diff(diff(tmp));
-                            criter(fmsai) = numel(find(isoutlier(ddt))); %minimize num unique variables in diff, since open epoch should have only a couple (constant vel)
-                        elseif testepochind==5
-                            criter(fmsai) = var(cos(tmp)); %minimize variance of x (or y) component of circular variable, this is offset with least error
-                        end
-
-                        ttlstr = [criter(fmsai) ft_misoffset_sec ft_misoffset_sec];
-
-                        plotinds_sec = vec(transpose(([0:7])+(20)*[1:5]'-(4)));
-                        plotinds = ismember(floor(t), plotinds_sec);
-                        % ddtplot = ddt(plotinds);
-                        tmpshort = tmp(plotinds);
-                        % tmpplot = tmp;
-                        if fmsai==1
-                            hpl = plot(hax,tmp);
-                            % hpl2 = plot(hax2,ddtplot);
-                            hpl2 = plot(hax2,tmpshort);
-
-                            % yyaxis right
-                            % hpl2 = plot(hax2,ddtplot);
-                            ttl = title(ttlstr);
-                        else
-                            hpl.YData = tmp;
-                            hpl2.YData = tmpshort;
-                            % hpl2.YData = ddtplot;
-                            ttl.String = ttlstr;
-                        end
-
-
-                        % hax.YLim = [-30, 30];
-                        % hax.XLim = [1000, 3000];
-
-                        fig2gif(hfg, cnt, [dirstack 'misoffset_.gif'])
-
-                        if fmsai==numel(ft_misoffset_sec_all)
-                            critd = movingslope(criter, 20, 2, sampper);
-                            if ~(min(critd)<0 && max(critd)>0)
-                                error("error is monotonic, expand search range")
-                            end
-                            [~, bestshiftind_oneepoch] = min(criter);
-                            bestshiftind_allepochs = [bestshiftind_allepochs bestshiftind_oneepoch];
-                        end
-                    end
-                end
-
-                if ft_misoffset_sec_all==0
-                    ft_misoffset_sec = 0;
-                else
-                    ft_misoffset_sec = mean(ft_misoffset_sec_all(bestshiftind_allepochs));
-                end
-
-                [epochs, epochinds] = epochset(ft_misoffset_sec, t, ids.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-
-                figure; plot(unwrap(daqrs.g4panels{1})); yyaxis right; plot(epochinds)
-
-                uei = unique(epochinds(epochinds~=0), 'stable');
-                cnt = 0;
-                hfg = figure;
-                hax = axes('Parent', hfg);
-                for tei = 1:numel(uei)
-                    cnt = cnt+1;
-                    plot(hax, daqrs.g4panels{1}(epochinds==uei(tei)))
-                    title(['final offset, epoch ' num2str(uei(tei))])
-                    fig2gif(hfg, cnt, [dirstack 'offset_final.gif'])
-                end
-
+            end
+            knew = knew + 1 - badind;
+            if k==1
+                moddiffprev = moddiff;
             end
         end
+
+        medsint = medsint(kp2);
+        meds_t = meds_t(kp2);
+        meds_t_dv = diff(meds_t);
+        longbouts = abs(meds_t_dv-boutlensec*2')>=timetol_boutlen;
+        numlb = sum(longbouts);
+        if sum(longbouts(1:end-numlb))~=0
+            error("longbouts can only be at the end")
+        end
+
+        numgoodbouts_openloop = numel(kp2)-numlb;
+        maxgoodtime = max(meds_t(1:end-numlb));
+        maxgoodtime / boutlensec*2;
+
+
+
+
+        fprintf("treating overflow frames as dark panels (is this true??)" + newline)
+
+        numepoch = numel(dvnom)+1;
+        epochinds = ones(size(t))*numepoch;
+        for k = 1:numel(meds_t)
+            % [~, ttmp] = min(abs(t-meds_t(k)'));
+            % tepoch(ttmp) = idxtmp; %these are the centroids, but since we don't have closed loop centroids, let's use bout edges from above (assumes bout length is accurate)
+            starttmp = meds_t(k) - boutlensec/2;
+            [~, idxstart] = min(abs(t-starttmp));
+            stoptmp = meds_t(k) + boutlensec/2;
+            [~, idxstop] = min(abs(t-stoptmp));
+            idxtmp = find(medsint(k)==dvnom);
+            epochinds(idxstart:idxstop) = idxtmp;
+        end
+
+        % idx(idx==0) = nan; %replace zeros (if they exist) with nan, then . . .
+        % idx = fillmissing(idx, 'nearest'); %this would fill around centroids but we don't have closed loop centroids
 
         if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
             naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
@@ -254,6 +138,24 @@ catch
 
         save(pth_epochinfo, 'epochs', 'epochinds', 'naninds');
 
+        [epochs, epochinds_old] = epochset(ft_misoffset_sec_all, t, id.recdatenum); %%%%%% DEFINE STIM EPOCH INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+
+        if doplt
+            %compare to old way, epochinds_old
+
+            switch id.recid % offsets just to see how much delay there is, not that it's necesaary to find epochinds (this was the old way)
+                case '20250105_1_1'
+                    ft_misoffset_sec_all = -42.173;
+            end
+
+            % figure; plot(medsint)
+
+            numsecseg = 100; %how many seconds in each segment
+            xseg = floor(numel(t)/numel(t(t<numsecseg)));
+            tsplt( vis.yaw, epochinds, xall=t, ylimtype='each', xseg=xseg);
+        end
+
     else
 
         epochs = [];
@@ -264,10 +166,6 @@ catch
 
 end
 
-% figure; plot(t, ptmp); yyaxis right; plot(t, etmp)
-numsecseg = 100; %how many seconds in each segment 
-xseg = floor(numel(t)/numel(t(t<numsecseg)));
-tsplt( daqrs.g4panels{1}, epochinds, xall=t, ylimtype='each', xseg=xseg);
 
 
 
