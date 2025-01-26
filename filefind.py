@@ -234,7 +234,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
                         mdsisv(pth_readfile, pthmd, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
                         pthmd = []
-                    # elif do_copyfiles==2: #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
+                    # elif do_copyfiles==2: #REMOVED THIS BECAUSE COPYFILES 2 CAN OPERATE ON RECORDINGS THAT DIDN'T GET REGISTERED, BUT MATCHED FILE SPECS (if recid doens't include them eg) #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
                     #     raise Exception("mdsi_.txt is not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or run do_register to create them")
                 else:
                     if os.path.isfile(pthmd_old):
