@@ -250,10 +250,8 @@ if doconvert
         stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
 
         stack = permute(stack, [1 2 4 5 3]);
-        
-        fprintf("saving stack as mat file, after permuting, and optional indexing" + newline)
+        fprintf("saving stack, after op" + newline)
         save(pthmat, 'stack', 'mmd', '-v7.3', '-mat')
-        fprintf("stack saved as mat" + newline)
 
     else
 

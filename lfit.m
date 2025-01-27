@@ -22,7 +22,7 @@ arguments
     opt.usesaved = 0
     opt.chanuse = 1
     opt.imhsv = []
-    opt.flypos = []
+    opt.pos = []
     opt.pixfit = []
     opt.pthgif = []
     opt.doplt = 1
@@ -46,7 +46,7 @@ plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
 chanuse = opt.chanuse;
 imhsv = opt.imhsv;
-flypos = opt.flypos;
+pos = opt.pos;
 pixfit = opt.pixfit;
 pthgif = opt.pthgif;
 doplt = opt.doplt;
@@ -383,14 +383,14 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     pt.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
     pt.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
     pt.hpl = patch(pt.hax, nanresp, nanresp, nanresp, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
-    if ~isempty(flypos.x)
-        pt.hpl.XData = [flypos.x(1:end-1) nan]; %need the nan to make patch work
-        pt.hpl.YData = [flypos.y(1:end-1) nan]; %need the nan to make patch work
+    if ~isempty(pos.x)
+        pt.hpl.XData = [pos.x(1:end-1) nan]; %need the nan to make patch work
+        pt.hpl.YData = [pos.y(1:end-1) nan]; %need the nan to make patch work
         pt.hpl.CData = [1:numel(nanresp)-1 nan]; %need the nan to make patch work
         pt.hax.PlotBoxAspectRatio = [1 1 1];
         pt.hax.Box = 'on';
-        [pt.hax.XAxis] = axismod(pt.hax.XAxis, flypos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (6 m square)',  labeltightfac=0.7, noticks=1);
-        [pt.hax.YAxis(1)] = axismod(pt.hax.YAxis(1), flypos.y, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='',  labeltightfac=0.7, noticks=1);
+        [pt.hax.XAxis] = axismod(pt.hax.XAxis, pos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (6 m square)',  labeltightfac=0.7, noticks=1);
+        [pt.hax.YAxis(1)] = axismod(pt.hax.YAxis(1), pos.y, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='',  labeltightfac=0.7, noticks=1);
     end
 
 

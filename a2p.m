@@ -36,11 +36,11 @@ for k = 1:numel(oa) % loop over recordings
     try
         daqrs = daqld(pth.stack, o.daq);
         [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
-        [md.epochs, ts.epochinds, ts.vis] = epochld(ts.t, pth.epochinfo, ts.vis, o.id, md.sampper, daqrs);
-        [ts.flypos.x, ts.flypos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
+        [ts.pos.x, ts.pos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
+        [md.epochs, ts.epochinds, ts.vis] = epochld(ts.t, pth.epochinfo, ts.vis, o.id, md.sampper, o.daq.use_carls_epochs);
     catch ME
         fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "will continue without daq data, which may cause error downstream" + newline)
-        ftvdsrs = []; ts.flypos.x = []; ts.flypos.y = []; ts.ball = []; ts.vis = []; %init some optional variables
+        ftvdsrs = []; ts.pos.x = []; ts.pos.y = []; ts.ball = []; ts.vis = []; %init some optional variables
         ts.t = md.sampper * [1:size(stack,4)];
         ts.epochinds = ones(numel(ts.t), 1);
     end

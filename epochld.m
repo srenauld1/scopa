@@ -1,4 +1,4 @@
-function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, doplt)
+function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, use_carls_epochs, doplt)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochinds, a vector representing stimulus state for each sample of trial)
 % if it doesn't exist, create it here with a hack, using derivative of g4panels yaw
@@ -18,6 +18,7 @@ arguments
     vis
     id
     sampper
+    use_carls_epochs = []
     doplt = []
 end
 
@@ -37,7 +38,7 @@ try
 
 catch
 
-    if isfield(vis, 'yaw')
+    if isfield(vis, 'yaw') && use_carls_epochs
 
         if isduration(t)
             t = seconds(t);
@@ -174,16 +175,18 @@ catch
 
         epochs = [];
         epochinds = [];
-        fprintf("no g4panels data, epochs are empty" + newline)
+        fprintf("no g4panels data, or use_carls_epochs is false; epochs are empty" + newline)
 
     end
 
 end
 
-if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
-    naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
-    vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-    vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+if ~isempty(epochs)
+    if any(epochinds==epochs.dark) || any(epochinds==epochs.closedfinaldark)
+        naninds = epochinds==epochs.dark | epochinds==epochs.closedfinaldark; %dark gets nans
+        vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+        vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+    end
 end
 
 

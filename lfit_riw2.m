@@ -22,7 +22,7 @@ arguments
     opt.usesaved = 0
     opt.chanuse = 1
     opt.imhsv = []
-    opt.flypos = []
+    opt.pos = []
     opt.pixfit = []
     opt.pthgif = []
     opt.doplt = 1
@@ -46,7 +46,7 @@ plotlagged = opt.plotlagged;
 usesaved = opt.usesaved;
 chanuse = opt.chanuse;
 imhsv = opt.imhsv;
-flypos = opt.flypos;
+pos = opt.pos;
 pixfit = opt.pixfit;
 pthgif = opt.pthgif;
 doplt = opt.doplt;

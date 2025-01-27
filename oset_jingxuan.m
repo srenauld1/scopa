@@ -10,6 +10,8 @@ o.mn.dopltx = 0; %enter pltx for summary interactive plots?
 o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mf"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
+o.daq.slopelensec = 0.43; %this works for sample rate 5.8251; make this as short as possible while window_is_too_short is still false, where slopeord is always 2, and samprate is the voluem rate if volumetric, or framerate if non-volumetric; slopeord = 2; slopelen = round(o.daq.slopelensec / (1/samprate)); window_is_too_short = slopelen<slopeord+1
+
 o = odf(o);
 
 for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
