@@ -216,9 +216,7 @@ if iscell(stack)
         rstmp = mldivide(rsa, rsb); %two equations two unknowns
         newmax = rstmp(1);
         newmin = rstmp(2);
-        stackclass = [];
         if ~isa(stack{si}, 'single') %for the rescaling cannot be uint16
-            stackclass = class(stack{si});
             stack{si} = single(stack{si});
         end
         if stackrange==0 %if stack is a constant
