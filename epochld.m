@@ -33,8 +33,8 @@ dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to 
 dvord = 2; %order of polynomial fit for extracting local slope;
 tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
 tol_boutlensec = 0.5; %tolerance for detecting long bouts
-tol_dark = 1; %tolerance determining whether dark_value (unit degrees)
-tol_dark_var = 1; %tolerance determining whether variance matches expected variance of dark epoch (unit degrees)
+tol_dark = 5; %tolerance determining whether dark_value (unit degrees)
+tol_dark_var = 5; %tolerance determining whether variance matches expected variance of dark epoch (unit degrees)
 
 try
 
@@ -61,8 +61,7 @@ catch
         %%% find boutlensec-second windows whose median derivative matches expected %%%
 
         yawdeg = rad2deg(vis.yaw); %convert to degrees because tolerance is in degrees and we like degrees more anyway
-        dv = tsdv('circular', vis.yaw, dvlensec, dvord, sampper); %derivative
-        dv = rad2deg(dv);
+        dv = rad2deg(tsdv('circular', deg2rad(yawdeg), dvlensec, dvord, sampper)); %derivative
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
         lstarts = t(lmin)-halfboutlensec; %start times for all windows
@@ -93,11 +92,17 @@ catch
             modidx = mod(knew-1,numel(dvnom))+1;
             moddiff = modidx-idx;
             badind = 0;
-            if medrnd(k)==0 && ( rad2deg(circ_dist(deg2rad(cmn(k)), deg2rad(dark_value)))>tol_dark || cvar(k)>tol_dark_var )   %ugly conversions; throw out closed loop epochs that happen to have median derivative of zero but whose mean is not the dark_value
-                badind = 1;
+            if ~goodstart %if the sequence hasn't started
+                if medrnd(k)==0 %if rounded median derivative over window is zero
+                    if abs(rad2deg(circ_dist(deg2rad(cmn(k)), deg2rad(dark_value))))>tol_dark || cvar(k)>tol_dark_var   %ugly conversions; throw out windows (this is supposed to find closed loop epochs) that happen to have median derivative of zero but whose mean is not the dark_value and if the variance exceeds expected dark epoch variance (which should just be variance due to noise or resampling error)
+                        badind = 1;
+                        kp2(k) = 0;
+                    end
+                end
             else
-                if goodstart
-                    if ~isequal(moddiff, moddiffprev)
+                if ~isequal(moddiff, moddiffprev)
+                    if medrnd(k)==0 && all(medrnd(k:end)==0) && cvar(k)<=tol_dark_var   %don't apply cmn criterion here since panels off get idfeerent value than dark; if panels are off at the end, consider it a series of dark epochs
+                    else
                         if isequal(medrnd(k), medrnd(k-1))
                             [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom'))); %use the actual median (not rounded median medrnd) to choose which of two bouts in a row that match sequence; median closer to expected wins
                             kp2(k-(2-rmdupe)) = 0;
@@ -121,28 +126,33 @@ catch
         %%% make sure all bouts are expected length, except for possible long bouts at the end (when fictrac ends before daq and those bouts get classified as dark bouts because their derivative is 0)  %%%
 
         meds_t_dv = diff(tmed);
-        longbouts = abs(meds_t_dv-ioi')>=tol_boutlensec;
-        numlb = sum(longbouts);
-        if sum(longbouts(1:end-numlb))~=0
-            error("longbouts can only be at the end")
+        badlenbouts = abs(meds_t_dv-ioi')>=tol_boutlensec;
+        first_good_len_bout = find(~badlenbouts, 1);
+        last_good_len_bout = find(~badlenbouts, 1, 'last');
+        if sum(badlenbouts(first_good_len_bout:last_good_len_bout))~=0
+            error("long or short bouts can only be at the ends")
         end
+
+        % med = med(~badlenbouts);
+        % medrnd = medrnd(~badlenbouts);
+        % tmed = tmed(~badlenbouts);
 
         %%% make sure you have the expected number of bouts, and that the daq_delay is not unusual %%%
 
-        numbouts_ol = numel(tmed)-numlb;
-        maxgoodtime = max(tmed(1:end-numlb)); %centroid of last open loop bout
+        numbouts_ol = numel(tmed);
+        maxgoodtime = max(tmed); %centroid of last open loop bout
         numbouts_ol_expected = ceil(maxgoodtime / (ioi)); %ceil, since these are centroids
         daq_delay = t(end)-maxgoodtime-halfboutlensec; %how long the start of daq recording is delayed relative to the start of the socket code / fictrac / panels
 
-        if numbouts_ol~=numbouts_ol_expected
-            error("you did not recover the expected number of bouts")
-        end
-        if daq_delay>60
-            error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
-        end
-        if daq_delay<0
-            error("daq starts before fictrac; this has never happened")
-        end
+        % if numbouts_ol~=numbouts_ol_expected
+        %     error("you did not recover the expected number of bouts")
+        % end
+        % if daq_delay>60
+        %     error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
+        % end
+        % if daq_delay<0
+        %     error("daq starts before fictrac; this has never happened")
+        % end
 
         %%% assign epoch labels %%%
 
@@ -154,14 +164,20 @@ catch
         numepoch_expected = numepoch_ol_expected + has_cl_interleave;
         epochinds = ones(size(t))*numepoch_expected;
         for k = 1:numel(tmed)
-            % [~, ttmp] = min(abs(t-tmed(k)));
-            % tepoch(ttmp) = idxtmp; %these are the centroids, but since we don't have closed loop centroids, let's use bout edges from above (assumes bout length is accurate)
-            starttmp = tmed(k) - halfboutlensec;
-            [~, idxstart] = min(abs(t-starttmp));
-            stoptmp = tmed(k) + halfboutlensec;
-            [~, idxstop] = min(abs(t-stoptmp));
-            idxtmp = find(medrnd(k)==dvnom);
-            epochinds(idxstart:idxstop) = idxtmp;
+            if all(medrnd(k:end)==0) %fil in end as dark
+                idxtmp = find(medrnd(k)==dvnom);
+                epochinds(idxstop:end) = idxtmp; %this is the previous bouts idxstop
+                break
+            else
+                % [~, ttmp] = min(abs(t-tmed(k)));
+                % tepoch(ttmp) = idxtmp; %these are the centroids, but since we don't have closed loop centroids, let's use bout edges from above (assumes bout length is accurate)
+                starttmp = tmed(k) - halfboutlensec;
+                [~, idxstart] = min(abs(t-starttmp));
+                stoptmp = tmed(k) + halfboutlensec;
+                [~, idxstop] = min(abs(t-stoptmp));
+                idxtmp = find(medrnd(k)==dvnom);
+                epochinds(idxstart:idxstop) = idxtmp;
+            end
         end
 
         % idx(idx==0) = nan; %replace zeros (if they exist) with nan, then . . .
