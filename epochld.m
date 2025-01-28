@@ -5,7 +5,7 @@ function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, 
 % for the ocld protocol, panels derivative defines each open loop condition, and everything else is closed loop
 % this algorithm assumes the bout lengths are accurate (they are)
 % this algorithm assumes that underflow frames are the same as dark epoch (overflow is when fictrac has ended before the daq ends, since fictrac starts first this can happen if fictrac hasn't been programmed in the socket code to run indefinitely)
-% algorithm doesn't deal very well with bouts at the ends i think 
+% algorithm doesn't deal very well with bouts at the ends i think
 % the reason for using this rather than the timing information written in the socket code controlling the panels
 % is the daq record accumulates timing error; so although bouts are all very nearly 20 seconds, over time, the bouts begin later than expected (delay of ~1 second every ~20 minutes)
 % using the derivatives aligns epoch indices better than the old approach in epochld_old.m
@@ -27,8 +27,8 @@ end
 boutlensec = 20; %bout length in seconds
 dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 has_cl_interleave = 1; %whether open loop bouts are interleaved with closed loop bouts
-dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope; 
-dvord = 2; %order of polynomial fit for extracting local slope; 
+dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope;
+dvord = 2; %order of polynomial fit for extracting local slope;
 tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
 tol_boutlensec = 0.5; %tolerance for detecting long bouts
 
@@ -54,7 +54,7 @@ catch
         boutlensamp = boutlensec/sampper; %bout length in samples
         dvlensec = dvlensamp*sampper; %window length in seconds
         halfboutlensec = boutlensec/2;
-        
+
         %%% find boutlensec-second windows whose median derivative matches expected %%%
 
         dv = tsdv('circular', vis.yaw, dvlensec, dvord, sampper); %derivative
@@ -67,16 +67,16 @@ catch
         tmed = [];
         for k = 1:numel(lstarts)
             idx = t>lstarts(k) & t<lstops(k);
-            med(k) = median(dv(idx)); %median slope 
+            med(k) = median(dv(idx)); %median slope
             tmed(k) = median(t(idx));
         end
-        kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes  
+        kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes
         med = med(kp);
         tmed = tmed(kp);
         medrnd = interp1(dvnom, dvnom, med, 'nearest', 'extrap'); %round medians to nearest dvnom
-        
+
         %%% discard any windows whose median doesn't follow periodic open-loop sequence of expected medians (this can be improved, there might be problems if the first median is a match, or if there are more than 2 matches in a row) %%%
-        
+
         kp2 = ones(numel(medrnd), 1, 'logical');
         knew = 1;
         for k = 1:numel(medrnd)
@@ -159,15 +159,6 @@ catch
 
         save(pth_epochinfo, 'epochs', 'epochinds');
 
-
-        if doplt
-            % figure; plot(medsint)
-            numsecseg = 100; %how many seconds in each segment
-            xseg = floor(numel(t)/numel(t(t<numsecseg)));
-            tsplt( vis.yaw, single(epochinds), xall=t, ylimtype='each', xseg=xseg);
-            % tsplt( vis.yaw, epochinds, epochinds_old, xall=t, ylimtype='each', xseg=xseg);
-        end
-
     else
 
         epochs = [];
@@ -176,6 +167,15 @@ catch
 
     end
 
+end
+
+
+if doplt
+    % figure; plot(medsint)
+    numsecseg = 100; %how many seconds in each segment
+    xseg = floor(numel(t)/numel(t(t<numsecseg)));
+    tsplt( vis.yaw, single(epochinds), xall=t, ylimtype='each', xseg=xseg);
+    % tsplt( vis.yaw, epochinds, epochinds_old, xall=t, ylimtype='each', xseg=xseg);
 end
 
 if ~isempty(epochs)

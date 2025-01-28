@@ -71,6 +71,7 @@ if endsWith(pthstack, '.mat')
                 || ( ~isequal(mmd.it, it) && ~isequal(1:mmd.sz(5), ix) )
             error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT; YOU HAVE A MAT FILE ALREADY THAT USE A DIFFERENT SET OF OPTIONS; DELETE THAT MAT FILE OR USE THE SAME OPTIONS LISTED IN mmd IN FILE: " + pthstack)
         end
+        fprintf("loading mat file containing stack" + newline)
         load(pthstack, 'stack')
         chantif = mmd.chantif;
         doconvert = 0;

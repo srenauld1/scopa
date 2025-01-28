@@ -82,6 +82,10 @@ max_num_inds_to_print = 10;
 max_num_im_per_frame = 60;
 max_num_gif_frames = 2000;
 
+if iscell(stack) && isscalar(stack)
+    stack = stack{1};
+end
+
 if ndims(stack)>maxnumdims
     error("stack exceeds maximum allowed number dimensions")
 end

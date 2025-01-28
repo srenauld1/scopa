@@ -25,7 +25,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% load/process/visualize stack
 
-    stack = stackpr(pth.stack, o.spr);
+    stack = stackpr(pth.stack, o.spr, 1);
 
     %% load metadata
 
