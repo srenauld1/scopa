@@ -27,11 +27,14 @@ end
 boutlensec = 20; %bout length in seconds
 dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 has_cl_interleave = 1; %whether open loop bouts are interleaved with closed loop bouts
+dark_value = 180; %value given to panels when in dark epoch (unit degrees)
+
 dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope;
 dvord = 2; %order of polynomial fit for extracting local slope;
 tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
 tol_boutlensec = 0.5; %tolerance for detecting long bouts
-
+tol_dark = 1; %tolerance determining whether dark_value (unit degrees)
+tol_dark_var = 1; %tolerance determining whether variance matches expected variance of dark epoch (unit degrees)
 
 try
 
@@ -57,16 +60,21 @@ catch
 
         %%% find boutlensec-second windows whose median derivative matches expected %%%
 
+        yawdeg = rad2deg(vis.yaw); %convert to degrees because tolerance is in degrees and we like degrees more anyway
         dv = tsdv('circular', vis.yaw, dvlensec, dvord, sampper); %derivative
-        dv = rad2deg(dv); %convert to degrees because tolerance is in degrees and we like degrees more anyway
+        dv = rad2deg(dv);
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
         lstarts = t(lmin)-halfboutlensec; %start times for all windows
         lstops = t(lmin)+halfboutlensec; %stop times for all windows
+        cvar = [];
+        cmn = [];
         med = [];
         tmed = [];
         for k = 1:numel(lstarts)
             idx = t>lstarts(k) & t<lstops(k);
+            cvar(k) = rad2deg(circ_var(deg2rad(vec(yawdeg(idx)))));
+            cmn(k) = rad2deg(circ_mean(deg2rad(vec(yawdeg(idx)))));
             med(k) = median(dv(idx)); %median slope
             tmed(k) = median(t(idx));
         end
@@ -79,26 +87,32 @@ catch
 
         kp2 = ones(numel(medrnd), 1, 'logical');
         knew = 1;
+        goodstart = 0;
         for k = 1:numel(medrnd)
             idx = find(medrnd(k)==dvnom);
             modidx = mod(knew-1,numel(dvnom))+1;
             moddiff = modidx-idx;
             badind = 0;
-            if k>1
-                if ~isequal(moddiff, moddiffprev)
-                    if isequal(medrnd(k), medrnd(k-1))
-                        [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom'))); %use the actual median (not rounded median medrnd) to choose which of two bouts in a row that match sequence; median closer to expected wins
-                        kp2(k-(2-rmdupe)) = 0;
-                    else
-                        kp2(k) = 0;
+            if medrnd(k)==0 && ( rad2deg(circ_dist(deg2rad(cmn(k)), deg2rad(dark_value)))>tol_dark || cvar(k)>tol_dark_var )   %ugly conversions; throw out closed loop epochs that happen to have median derivative of zero but whose mean is not the dark_value
+                badind = 1;
+            else
+                if goodstart
+                    if ~isequal(moddiff, moddiffprev)
+                        if isequal(medrnd(k), medrnd(k-1))
+                            [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom'))); %use the actual median (not rounded median medrnd) to choose which of two bouts in a row that match sequence; median closer to expected wins
+                            kp2(k-(2-rmdupe)) = 0;
+                        else
+                            kp2(k) = 0;
+                        end
+                        badind = 1;
                     end
-                    badind = 1;
                 end
             end
-            knew = knew + 1 - badind;
-            if k==1
+            if ~goodstart && ~badind
+                goodstart = 1;
                 moddiffprev = moddiff;
             end
+            knew = knew + 1 - badind;
         end
         med = med(kp2);
         medrnd = medrnd(kp2);

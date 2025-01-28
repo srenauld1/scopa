@@ -23,7 +23,7 @@ if isequal(vec(unique(daqvarin)), [0;1])
     daqvarin = bin2ind(daqvarin);
 end
 
-daqvarout = resample_timeseries(daqvartype, daqvarin, inds, newlength); %downsample into imaging rate
+daqvarout = tsrs(daqvartype, daqvarin, inds, newlength); %downsample into imaging rate
 daqvarout_dv = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
 
 

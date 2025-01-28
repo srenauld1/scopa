@@ -5,7 +5,7 @@ function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, 
 % for the ocld protocol, panels derivative defines each open loop condition, and everything else is closed loop
 % this algorithm assumes the bout lengths are accurate (they are)
 % this algorithm assumes that underflow frames are the same as dark epoch (overflow is when fictrac has ended before the daq ends, since fictrac starts first this can happen if fictrac hasn't been programmed in the socket code to run indefinitely)
-% algorithm doesn't deal very well with bouts at the ends i think 
+% algorithm doesn't deal very well with bouts at the ends i think
 % the reason for using this rather than the timing information written in the socket code controlling the panels
 % is the daq record accumulates timing error; so although bouts are all very nearly 20 seconds, over time, the bouts begin later than expected (delay of ~1 second every ~20 minutes)
 % using the derivatives aligns epoch indices better than the old approach in epochld_old.m
@@ -27,11 +27,13 @@ end
 boutlensec = 20; %bout length in seconds
 dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 has_cl_interleave = 1; %whether open loop bouts are interleaved with closed loop bouts
-dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope; 
-dvord = 2; %order of polynomial fit for extracting local slope; 
+dark_value = 0; %value given to panels when in dark epoch (unit degrees)
+
+dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope;
+dvord = 2; %order of polynomial fit for extracting local slope;
 tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
 tol_boutlensec = 0.5; %tolerance for detecting long bouts
-
+tol_dark = 1; %tolerance determining whether dark_value (unit degrees)
 
 try
 
@@ -54,46 +56,56 @@ catch
         boutlensamp = boutlensec/sampper; %bout length in samples
         dvlensec = dvlensamp*sampper; %window length in seconds
         halfboutlensec = boutlensec/2;
-        
+
         %%% find boutlensec-second windows whose median derivative matches expected %%%
 
+        dv = rad2deg(vis.yaw); %convert to degrees because tolerance is in degrees and we like degrees more anyway
         dv = tsdv('circular', vis.yaw, dvlensec, dvord, sampper); %derivative
-        dv = rad2deg(dv); %convert to degrees because tolerance is in degrees and we like degrees more anyway
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=boutlensec/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
         lstarts = t(lmin)-halfboutlensec; %start times for all windows
         lstops = t(lmin)+halfboutlensec; %stop times for all windows
+        cmn = [];
         med = [];
         tmed = [];
         for k = 1:numel(lstarts)
             idx = t>lstarts(k) & t<lstops(k);
-            med(k) = median(dv(idx)); %median slope 
+            cmn(k) = circ_mean(vec(vis.yaw(idx)));
+            med(k) = median(dv(idx)); %median slope
             tmed(k) = median(t(idx));
         end
-        kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes  
+        kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes
         med = med(kp);
         tmed = tmed(kp);
         medrnd = interp1(dvnom, dvnom, med, 'nearest', 'extrap'); %round medians to nearest dvnom
-        
+
         %%% discard any windows whose median doesn't follow periodic open-loop sequence of expected medians (this can be improved, there might be problems if the first median is a match, or if there are more than 2 matches in a row) %%%
-        
+
         kp2 = ones(numel(medrnd), 1, 'logical');
         knew = 1;
+        goodstart = 0;
         for k = 1:numel(medrnd)
             idx = find(medrnd(k)==dvnom);
             modidx = mod(knew-1,numel(dvnom))+1;
             moddiff = modidx-idx;
             badind = 0;
-            if k>1
-                if ~isequal(moddiff, moddiffprev)
-                    if isequal(medrnd(k), medrnd(k-1))
-                        [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom'))); %use the actual median (not rounded median medrnd) to choose which of two bouts in a row that match sequence; median closer to expected wins
-                        kp2(k-(2-rmdupe)) = 0;
-                    else
-                        kp2(k) = 0;
+            if medrnd==0 && circ_diff(cmn(k), dark_value)>tol_dark %throw out closed loop epochs that happen to have median derivative of zero but whose mean is not the dark_value
+                badind = 1;
+            else
+                if goodstart
+                    if ~isequal(moddiff, moddiffprev)
+                        if isequal(medrnd(k), medrnd(k-1))
+                            [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom'))); %use the actual median (not rounded median medrnd) to choose which of two bouts in a row that match sequence; median closer to expected wins
+                            kp2(k-(2-rmdupe)) = 0;
+                        else
+                            kp2(k) = 0;
+                        end
+                        badind = 1;
                     end
-                    badind = 1;
                 end
+            end
+            if ~goodstart && ~badind
+                goodstart = 1;
             end
             knew = knew + 1 - badind;
             if k==1
@@ -124,7 +136,7 @@ catch
             error("you did not recover the expected number of bouts")
         end
         if daq_delay>60
-            error("warning, daq starts more than a minute after fictrac/panels/socket; this has never hapepned before, check that it is okay")
+            error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
         end
         if daq_delay<0
             error("daq starts before fictrac; this has never happened")
@@ -159,15 +171,6 @@ catch
 
         save(pth_epochinfo, 'epochs', 'epochinds');
 
-
-        if doplt
-            % figure; plot(medsint)
-            numsecseg = 100; %how many seconds in each segment
-            xseg = floor(numel(t)/numel(t(t<numsecseg)));
-            tsplt( vis.yaw, single(epochinds), xall=t, ylimtype='each', xseg=xseg);
-            % tsplt( vis.yaw, epochinds, epochinds_old, xall=t, ylimtype='each', xseg=xseg);
-        end
-
     else
 
         epochs = [];
@@ -176,6 +179,15 @@ catch
 
     end
 
+end
+
+
+if doplt
+    % figure; plot(medsint)
+    numsecseg = 100; %how many seconds in each segment
+    xseg = floor(numel(t)/numel(t(t<numsecseg)));
+    tsplt( vis.yaw, single(epochinds), xall=t, ylimtype='each', xseg=xseg);
+    % tsplt( vis.yaw, epochinds, epochinds_old, xall=t, ylimtype='each', xseg=xseg);
 end
 
 if ~isempty(epochs)

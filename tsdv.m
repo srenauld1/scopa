@@ -1,9 +1,9 @@
 
-function dv = tsdv(vartypein, inp, slopelensec, slopeord, dt)
+function dv = tsdv(vartypein, tsin, slopelensec, slopeord, dt)
 
 arguments
-    vartypein %normal, circular, or catergorical
-    inp %input variable to be differentiated
+    vartypein %normal, circular, or catergorical; tsin must be in radians if circular 
+    tsin %input variable to be differentiated; must be in radians if vartypein is circular
     slopelensec %slope length in seconds; rounded to nearest sample
     slopeord %order for polynomial fit to determine local slope 
     dt %sample period
@@ -17,8 +17,10 @@ end
 
 if strcmp(vartypein, 'circular') % differentiate circular variable 
 
-    inpx = cos(inp);
-    inpy = sin(inp);
+    fprintf("USER REQUESTED 'circular' vartypein, input must be in radians; assuming that it is and proceeding" + newline)
+
+    inpx = cos(tsin);
+    inpy = sin(tsin);
 
     inpdx = movingslope(inpx, slopelen, slopeord, dt);
     inpdy = movingslope(inpy, slopelen, slopeord, dt);
@@ -28,12 +30,12 @@ if strcmp(vartypein, 'circular') % differentiate circular variable
 
 elseif strcmp(vartypein, 'normal') % differentiate non-circular variable 
 
-    dv = movingslope(inp, slopelen, slopeord, dt);
+    dv = movingslope(tsin, slopelen, slopeord, dt);
 
 elseif strcmp(vartypein, 'categorical') % differentiate categorical variable 
 
     filt = [zeros(1,slopelen-1), 1, zeros(1,slopelen-1), -1]; %find diffs across larger num samples since sometimes it takes more than 2 samples to go from max to min (-pi to pi)
-    dv = conv(inp, filt, 'full');
+    dv = conv(tsin, filt, 'full');
     dv = dv((numel(filt) - 1)+1:end-(numel(filt) - (1 + (slopelen-1))));
     dv = cat(1, zeros((slopelen-1)+1, 1), dv);
 

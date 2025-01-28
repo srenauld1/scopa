@@ -77,7 +77,7 @@ filter = ydata;
 % input = [zeros( size( xdata ) ) 0.5 * sin( 2 * pi * freqi * xdata ) + 0.25 zeros( size( xdata ) )];
 % input = sinSFi(1./[.1 0.02],15003,'period',5);
 load('~/samptestdat.mat', 'B');
-B = resample_timeseries(B(1:1000), 20000);
+B = tsrs(B(1:1000), 20000);
 % input(input<0) = 0;
 if allplots
     figure; plot(B)
