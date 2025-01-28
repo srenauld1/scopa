@@ -5,6 +5,7 @@ function [epochs, epochinds, vis] = epochld(t, pth_epochinfo, vis, id, sampper, 
 % for the ocld protocol, panels derivative defines each open loop condition, and everything else is closed loop
 % this algorithm assumes the bout lengths are accurate (they are)
 % this algorithm assumes that underflow frames are the same as dark epoch (overflow is when fictrac has ended before the daq ends, since fictrac starts first this can happen if fictrac hasn't been programmed in the socket code to run indefinitely)
+% algorithm doesn't deal very well with bouts at the ends i think 
 % the reason for using this rather than the timing information written in the socket code controlling the panels
 % is the daq record accumulates timing error; so although bouts are all very nearly 20 seconds, over time, the bouts begin later than expected (delay of ~1 second every ~20 minutes)
 % using the derivatives aligns epoch indices better than the old approach in epochld_old.m
@@ -26,7 +27,7 @@ end
 boutlensec = 20; %bout length in seconds
 dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 has_cl_interleave = 1; %whether open loop bouts are interleaved with closed loop bouts
-dvlensamp = 10; %window length (unit: samples) for dvord-order polynomial fit to determine slope; 
+dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope; 
 dvord = 2; %order of polynomial fit for extracting local slope; 
 tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
 tol_boutlensec = 0.5; %tolerance for detecting long bouts
@@ -86,7 +87,7 @@ catch
             if k>1
                 if ~isequal(moddiff, moddiffprev)
                     if isequal(medrnd(k), medrnd(k-1))
-                        [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom')));
+                        [~, rmdupe] = max(min(abs(med(k-1:k)-dvnom'))); %use the actual median (not rounded median medrnd) to choose which of two bouts in a row that match sequence; median closer to expected wins
                         kp2(k-(2-rmdupe)) = 0;
                     else
                         kp2(k) = 0;
@@ -99,6 +100,7 @@ catch
                 moddiffprev = moddiff;
             end
         end
+        med = med(kp2);
         medrnd = medrnd(kp2);
         tmed = tmed(kp2);
 
@@ -122,7 +124,7 @@ catch
             error("you did not recover the expected number of bouts")
         end
         if daq_delay>60
-            error("warning, daq starts more than a minute after fictrac/panels/socket; this has never hapepned before, check that it is okay")
+            error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
         end
         if daq_delay<0
             error("daq starts before fictrac; this has never happened")
@@ -131,12 +133,12 @@ catch
         %%% assign epoch labels %%%
 
         numepoch_ol_expected = numel(dvnom);
-        numepoch_expected = numepoch_ol_expected + has_cl_interleave;
-        numepoch_ol = numel(unique(tmed));
+        numepoch_ol = numel(unique(medrnd));
         if numepoch_ol~=numepoch_ol_expected
             error("num derived epochs does not match number expected")
         end
-        epochinds = ones(size(t))*numepoch;
+        numepoch_expected = numepoch_ol_expected + has_cl_interleave;
+        epochinds = ones(size(t))*numepoch_expected;
         for k = 1:numel(tmed)
             % [~, ttmp] = min(abs(t-tmed(k)));
             % tepoch(ttmp) = idxtmp; %these are the centroids, but since we don't have closed loop centroids, let's use bout edges from above (assumes bout length is accurate)
@@ -153,22 +155,17 @@ catch
 
         fprintf("assigned any underflow bouts to dark epoch (is this accurate? are the panels off when fictrac ends?)" + newline)
 
-        save(pth_epochinfo, 'epochs', 'epochinds');
-
         [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+        save(pth_epochinfo, 'epochs', 'epochinds');
 
 
         if doplt
-
-            switch id.recid % offsets just to see how much delay there is, not that it's necesaary to find epochinds (this was the old way)
-                case '20250105_1_1'
-                    ft_misoffset_sec_all = -42.173;
-            end
-
             % figure; plot(medsint)
             numsecseg = 100; %how many seconds in each segment
             xseg = floor(numel(t)/numel(t(t<numsecseg)));
-            tsplt( vis.yaw, epochinds, xall=t, ylimtype='each', xseg=xseg);
+            tsplt( vis.yaw, single(epochinds), xall=t, ylimtype='each', xseg=xseg);
+            % tsplt( vis.yaw, epochinds, epochinds_old, xall=t, ylimtype='each', xseg=xseg);
         end
 
     else
