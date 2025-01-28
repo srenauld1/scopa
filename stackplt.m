@@ -226,9 +226,6 @@ if iscell(stack)
         else
             stack{si} = newmin + ((stack{si} - stackmin) / stackrange)*(newmax-newmin);
         end
-        if ~isempty(stackclass)
-            stack{si} = stacktype(stack{si}, stackclass);
-        end
     end
 
     clim_tmp = [0 1]; %clim is [0 1] since stacks got rescaled
