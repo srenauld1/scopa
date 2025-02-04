@@ -216,7 +216,7 @@ while plotloop %loop is turned off if no user input
 
                 tlabsp = cellfun(@(x) x.(ylim_constancy), lims_use, 'UniformOutput', false);
                 polarinds = find_polar_inds(labsp);
-                varsp(polarinds,:,:) = insert_nan_for_polar_wrap(varsp(polarinds,:,:)); %FIX FOR CHANNEL
+                varsp(polarinds,:,:) = polarnan(varsp(polarinds,:,:)); %FIX FOR CHANNEL
                 varsp = nanpadvar(varsp, numsamp_tslong_this_gif);
                 yaxis_true_lims = find_yaxis_true_lims(lrscale, lims_use);
                 varsp = rescale_to_range(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
@@ -386,10 +386,10 @@ end
 end
 
 
-function epochstring_all = make_epoch_string(epochinds)
+function epochstring_all = make_epoch_string(epochnum)
 
 delim = 'e';
-epochstring_all.short = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '', delim});
+epochstring_all.short = regexprep( mat2str(epochnum), {'\[', '\]', '\s+'}, {'', '', delim});
 [~, epochstring_all.parsed] = epochidget(epochstring_all.short);
 
 end
@@ -400,9 +400,9 @@ function pthgif = make_filename(lab, gif_scope, epochstring, pthgif_prefix, time
 
 lab = strrep(strrep(lab, 'ts.', ''), '.', '-');
 
-if strcmp(gif_scope, 'allv_alle') %one gif for all variables, all epochinds
+if strcmp(gif_scope, 'allv_alle') %one gif for all variables, all epochnum
     pthgif_suffix = {'gifscopeall'};
-elseif strcmp(gif_scope, 'allv_eache') %different gif for each epochinds
+elseif strcmp(gif_scope, 'allv_eache') %different gif for each epochnum
     pthgif_suffix = {'gifscopeepoch', ['e' epochstring.short ]};
 elseif strcmp(gif_scope, 'eachv_eache') %different gif for each variable set
     pthgif_suffix = {['v_' strjoin(lab, '_')]; ['e' epochstring.short ]};

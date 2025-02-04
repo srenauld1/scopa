@@ -1,10 +1,10 @@
-function fitin = mfit(indvp, depvp, imrate, fitopt, doplt, pthpre, epochts, stack, roidat)
+function fitin = mdlmake(indvp, depvp, imrate, fitopt, doplt, pthpre, epochts, stack, roidat)
 
 % for docs, see file mfit_notes.m
 
 % indvp and depvp are independent and dependent variables before processing
 % the unintuitive thing that needs to be changed is that depvp first dimension is the number of dependent variables (model is fit to vector dependent variables, looping over first dim),
-% while for indvp, the whole array input to mfit is the independent variable . . . need to check if there's a goodreason for this or whether tsget should output vector depvp (and input them to this function mfit)
+% while for indvp, the whole array input to mdlmake is the independent variable . . . need to check if there's a goodreason for this or whether tsget should output vector depvp (and input them to this function mdlmake)
 
 % indvp
 % depvp
@@ -39,8 +39,8 @@ fitin.vars.depvp = depvp; depvp = [];
 
 fitopt.hsv_background = "";
 
-if ~iscell(fitopt.epochinds)
-    fitopt.epochinds = {fitopt.epochinds};
+if ~iscell(fitopt.epochnum)
+    fitopt.epochnum = {fitopt.epochnum};
 end
 
 if isvector(fitin.vars.indvp) & iscolumn(fitin.vars.indvp)
@@ -67,9 +67,9 @@ fitin = mfit_prepvars(fitin, fitopt, imrate, pth_fitdata_prefix, epochts);
 
 fitin.op = mfit_setup(fitin.num_samp_mdl, fitin.num_dim_indv, fitin.num_dim_indvp, fitopt, imrate, fitin.stats, pth_fitdata_prefix);
 
-%% loop over epochinds, fitting model to each (fit to different requested subsets of indv/depv)
+%% loop over epochnum, fitting model to each (fit to different requested subsets of indv/depv)
 
-for epi = 1:length(fitopt.epochinds) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
+for epi = 1:length(fitopt.epochnum) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
     fitin = mfit_epochs(fitin, fitopt, epi, pth_fitdata_prefix);
 end
 

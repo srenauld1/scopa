@@ -114,7 +114,7 @@ numsamp = size(resp,2);
 
 %% compute correlation after applying lags
 
-[lagsec_actual, lagsamp, zero_lag_index, numlag] = compute_lags(t, lagsec); %actual lags depend on epoch (samples you're using)
+[lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(t, lagsec); %actual lags depend on epoch (samples you're using)
 
 runfit = 1;
 if usesaved
@@ -383,37 +383,6 @@ end
 end
 
 
-
-function [lagsec_actual, lagsamp, zero_lag_index, numlags] = compute_lags(t, lags_sec)
-
-ticumdiff = t - t(1);
-if isequal(lags_sec, 0)
-    lagsamp = 0;
-    lagsec_actual = 0;
-else
-    ticumdiff = ticumdiff(:); %make sure it's a column vector
-    lags_sec = lags_sec(:)';  %make sure it's a row vector
-    lags_sec_neg = abs(lags_sec(lags_sec<0));
-    [~, lags_samp_neg] = min(abs(ticumdiff-lags_sec_neg));
-    lags_sec_pos = lags_sec(lags_sec>=0);
-    [~, lags_samp_pos] = min(abs(ticumdiff-lags_sec_pos));
-    if isempty(lags_samp_neg)
-        lagsamp = lags_samp_pos;
-    elseif isempty(lags_samp_pos)
-        lagsamp = lags_samp_neg;
-    else
-        lagsamp = [-lags_samp_neg, 0, lags_samp_pos];
-    end
-    lagsamp = unique(lagsamp);
-    lagsec_actual = [vec(-ticumdiff(abs(lagsamp(lagsamp<0))+1)); vec(ticumdiff(lagsamp(lagsamp>=0)+1))];
-    lagsec_actual = unique(lagsec_actual);
-end
-
-
-zero_lag_index = find(lagsamp==0);
-numlags = numel(lagsamp);
-
-end
 
 
 function [slope_lagall, rsq_lagall, p_lagall] = lag_and_linfit(resp, stim, lagsamp, minpval, corrtype)

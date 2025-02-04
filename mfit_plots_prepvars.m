@@ -148,7 +148,7 @@ for nsi = 1:numrows_ts %for each row (arbitrarily divided into rows for visualiz
     tinds_row_nonan = cell2mat(plotvars.tinds_cont_nan_nonan(contseginds));
     tinds_row_nonan = tinds_row_nonan-(min(tinds_row_nonan)-numsampnan)+1; %subtract to start each row after numsampnan
     count = 0;
-    for epi2 = 1:length(epochs_oneset) %for each epoch within epochinds
+    for epi2 = 1:length(epochs_oneset) %for each epoch within epochnum
         tmp = find(plotvars.pureepochnan_cont==epochs_oneset(epi2));
         tmp = tmp(tmp>=min(tinds_row) & tmp<=max(tinds_row));
         shadextmp = [0 find(diff(tmp)~=1) length(tmp)];

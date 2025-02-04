@@ -66,11 +66,11 @@ here is a complete list of vbins and functions they hold options for (see also s
     roi, roimake   (called from a2p)
     ma, roimauto   (called from roimake)
     roif, roifauto   (called from a2p)
-    nrm, roiresp   (called from roimake and roifauto)
+    nrm, roits   (called from roimake and roifauto)
     pop, popcmp   (called from a2p)
-    bmp, bumpcmp   (called from popcmp)
-    mfit, mfit   (called from a2p)
-    tg, tsget   (called from, bumpcmp, mfit, and pltx)
+    bmp, bmpmake   (called from popcmp)
+    mdlmake, mdlmake   (called from a2p)
+    tg, tsget   (called from, bmpmake, mdlmake, and pltx)
     pltx, pltx   (called from a2p)
     tp, tsplt   (called from various functions for visualization) 
     sp, stackplt   (called from various functions for visualization) 
@@ -104,10 +104,10 @@ for brevity, only the deepest nesting of each unique branch is shown
 
     o.spr.sp   (stackplt called from within stackpr called from a2p)
     o.spr.sld   (stackld called from within stackpr called from a2p)
-    o.bmp   (bumpcmp called from within popcmp called from a2p)
-    o.mf.tg   (tsget called from within mfit called from a2p)
-    o.mf.sp   (stackplt called from within mfit called from a2p)
-    o.mf.tp   (tsplt called from within mfit called from a2p)
+    o.bmp   (bmpmake called from within popcmp called from a2p)
+    o.mdl.tg   (tsget called from within mdlmake called from a2p)
+    o.mdl.sp   (stackplt called from within mdlmake called from a2p)
+    o.mdl.tp   (tsplt called from within mdlmake called from a2p)
     o.pltx.tg   (tsget called from within pltx called from a2p)
     o.roi.mm   (roidraw called from within roimake called from a2p)
     o.roi.ma   (roimauto called from within roimake called from a2p)
@@ -120,7 +120,7 @@ for brevity, only the deepest nesting of each unique branch is shown
 
 a vbin can be nonscalar struct; 
 if at least one field specification for vbin includes index p, all unspecified fields for all struct indices up to index p are filled with defaults 
-(e.g see how options are set in 'mf' section below); 
+(e.g see how options are set in 'mdl' section below); 
 alternatively, struct index can be assigned in the output of odf
 nonscalar vbins are used in for loops in the pipeline (if e.g o.roi.ma has 3 elements, it means o.roi.ma(1), o.roi.ma(2), and o.roi.ma(3) are passed to roimauto sequentially (roimauto is the function corresponding to vbin ma
 

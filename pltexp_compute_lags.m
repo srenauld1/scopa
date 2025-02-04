@@ -1,5 +1,3 @@
-
-
 function [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = pltexp_compute_lags(ti, lagsxy_sec, lagsz_sec, lag_style)
 
 [lagsxy, actual_lags_xy_sec] = compute_lags_onedim(ti, lagsxy_sec);

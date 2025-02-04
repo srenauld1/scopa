@@ -1,5 +1,6 @@
 
 % see docs_a2p
+% roi.optid.superfield{chan}.field
 
 function a2p(specin)
 
@@ -27,6 +28,7 @@ for k = 1:numel(oa) % loop over recordings
 
     stack = stackpr(pth.stack, o.spr);
 
+
     %% load metadata
 
     md = mdsild(pth.stack, pth.py);
@@ -35,16 +37,20 @@ for k = 1:numel(oa) % loop over recordings
 
     try
         daqrs = daqld(pth.stack, o.daq);
-        [ts.ball, ts.vis, ts.t] = daqrename(daqrs);
-        [ts.pos.x, ts.pos.y] = ficpath(ts.ball.forvel, ts.ball.sidevel, ts.vis.yaw, ts.t, o.daq.balldia);
-        [md.epochs, ts.epochinds, ts.vis] = epochld(ts.t, pth.epochinfo, ts.vis, o.id, md.sampper, o.daq.use_carls_epochs);
+        [ball, vis, t] = daqrename(daqrs);
+        [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
+        vis = epochld(t, vis, md.sampper, o.daq.use_carls_epochs);
     catch ME
         fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "will continue without daq data, which may cause error downstream" + newline)
-        ftvdsrs = []; ts.pos.x = []; ts.pos.y = []; ts.ball = []; ts.vis = []; %init some optional variables
-        ts.t = md.sampper * [1:size(stack,4)];
-        ts.epochinds = ones(numel(ts.t), 1);
+        ball = []; vis = []; pos = []; %init some optional variables
+        t = md.sampper * [1:size(stack,4)];
+        vis.epochts = ones(numel(t), 1);
     end
 
+    figure; plot(ball.forvel); saveas( gcf, [pth.recid 'ballforvel_.fig']); close(gcf)
+    figure; plot(ball.yawvel); saveas( gcf, [pth.recid 'ballyawvel_.fig']); close(gcf)
+
+    ftvdsrs = [];
     if o.mn.doftv
         ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol, md.volrate, ...
             o.ftv.numpkthr, o.ftv.smlenpx, o.ftv.numpx, ...
@@ -52,7 +58,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
     if o.mn.dofeat
-        [ts.vis.(o.feat.id), stimvid] = featld(pth.stack, o.feat);
+        [vis.(o.feat.id), stimvid] = featld(pth.stack, o.feat);
     end
 
 
@@ -62,33 +68,41 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid
             optid = fn{m};
-            [ts.roi.(optid), roidat.(optid)] = roimake(stack, pth.stack, optid, ts.t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(optid) = roimake(stack, pth.stack, optid, t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
     %% bump
 
     if o.mn.dobmp
+        optid = 'a22';
         o.bmptmp.a1 = o.bmp; o.bmp = []; o.bmp = o.bmptmp; o = rmfield(o, 'bmptmp'); %temporary hack until opt2id accepts bmp as vbin
         fn = fieldnames(o.bmp);
-        indvp = ts.ball.yaw;
-        depvp = ts.roi.a19;
-        regionex = roidat.a19{1}.regionex;
-        roidattmp = roidat.a19{1};
+        indvp = vis.yaw;
+        depvp = roi.(optid).ts{1};
+        regionex = roi.(optid).dat{1}.regionex;
+        roidattmp = roi.(optid).dat{1};
+
+        o.bmp.a1.mdl.epochnum = 6;
+        o.bmp.a1.mdl.opl.MaxFunctionEvaluations = 1000; %3000;
+        o.bmp.a1.mdl.opl.MaxIterations = 100; %1000    else
+        epochindstmp = vis.epochts;
+        % epochindstmp(:) = 6;
+
         for m = 1:numel(fn)
-            ts.bmp = bumpcmp(stack, indvp, depvp, regionex, roidattmp, md.zstartpos, md.volrate, ts.epochinds, pth.dirstack, o.id.recid, obmptmp); %fit bump
+            bmp = bmpmake(stack, indvp, depvp, regionex, roidattmp, md.volrate, epochindstmp, pth.stack, pth.dirstack, o.id.recid, o.bmp.a1); %fit bump
         end
     end
 
-    % gatmp
-    % mitotmp
 
+    ebno({'l','r'}, vis.yaw, ball.yaw, bmp.mu, bmp.respcl, roi.a23{1}, roi.a24{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.4, szthrres=[], szmin=10, szmaxfac=70, nothr='tn', colsep=1, xyrng=[], epoch={1, 2, 3, 4, 5, 6, [1:4]}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-3:3], yconst=1, slopelensec=[]) 
+    
     %% model
 
     if o.mn.dofit
-        fn = fieldnames(o.mf);
+        fn = fieldnames(o.mdl);
         for m = 1:numel(fn)
-            ts.fit = mfit(indvp, depvp, md.volrate, o.mf.(fn{m}), doplt, pth.pre, ts.epochinds, stack, roidat.a4{1});
+            mdl = mdlmake(indvp, depvp, md.volrate, o.mdl.(fn{m}), doplt, pth.pre, vis.epochts, stack, roidat.a4{1});
         end
     end
 
@@ -98,16 +112,15 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.pltx);
         for m = 1:numel(fn)
             pltx(stack(:,:,:,fk,:), fitin.vars, o.pltx.doui,  ...
-                fitin.vnm, o.pltx.vpmap, o.pltx.epochinds, ...
+                fitin.vnm, o.pltx.vpmap, o.pltx.epochnum, ...
                 o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
-                o.pltx.plot_z_as_color, roidat.a1{1}, ts.t, md.sampper, zstartsub, ...
-                ts.epochinds, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
+                o.pltx.plot_z_as_color, roidat.a1{1}, t, md.sampper, zstartsub, ...
+                vis.epochts, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
                 o.pltx.dr, fitin.fn_save_prefix_short, fitin.pthpre, ...
                 pthroiint, nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)
         end
     end
 
-    save(pth.ts, 'ts', '-mat', '-v7.3')
 
 end
 

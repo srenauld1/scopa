@@ -2,7 +2,7 @@
 
 function plot_bump(aplot, dplot, bumpang, bumprho, cueang, ballang, ...
     ampbumpang_plot, amppeak_plot, ampmean_plot, resp_gar, resp_gal, resp_nor, resp_nol, ...
-    epochinds, t, epochts, centinds, halfcent, pltindz, numfram, startsec, stopsec,  ...
+    epochnum, t, epochts, centinds, halfcent, pltindz, numfram, startsec, stopsec,  ...
     imdata, percentile_to_plot, mask3d, mask_with_3d_mask, roiinds, plot_only_outliers, ...
     plotcolz, xlim_makeroomfac, makeroomfac_rho, makeroomfac_bumpang, ncol, ...
     gifvis, separate_cueang_and_bump, sorting_target_metric, ...
@@ -23,10 +23,10 @@ alpha_min = 0;
 
 linwid = 1.5;
 
-pthgif = [fn_prefix 'e' strrep(num2str(epochinds), ' ', '_') '_sort_' sorting_target_metric '_mthd_' num2str(bump_method_index) '_BUMP_.gif'];
+pthgif = [fn_prefix 'e' strrep(num2str(epochnum), ' ', '_') '_sort_' sorting_target_metric '_mthd_' num2str(bump_method_index) '_BUMP_.gif'];
 
-"FLIPPING ORDER OF EPOCHINDS BECAUSE PLOT IS BOTTOM TO TOP"
-epochinds = flip(epochinds);
+"FLIPPING ORDER OF EPOCHNUM BECAUSE PLOT IS BOTTOM TO TOP"
+epochnum = flip(epochnum);
 
 
 %% create sidelines
@@ -91,7 +91,7 @@ end
 %% setup subplot positions
 
 
-numr = length(epochinds)*2;
+numr = length(epochnum)*2;
 numc = 4;
 numtot = numr*numc;
 
@@ -198,8 +198,8 @@ ballang_zero = mod(ballangasclust + (halfcent_new - bumpangasclust_for_zeroing),
 %determine time axis for each epoch and bout
 for rind = 1:numr/2
 
-    if epochinds
-        indz1 = find(epochts==epochinds(rind));
+    if epochnum
+        indz1 = find(epochts==epochnum(rind));
     else
         indz1 = 1:length(epochts);
     end

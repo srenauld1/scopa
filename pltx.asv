@@ -216,7 +216,7 @@ while plotloop %loop is turned off if no user input
 
                 tlabsp = cellfun(@(x) x.(ylim_constancy), lims_use, 'UniformOutput', false);
                 polarinds = find_polar_inds(labsp);
-                varsp(polarinds,:,:) = insert_nan_for_polar_wrap(varsp(polarinds,:,:)); %FIX FOR CHANNEL
+                varsp(polarinds,:,:) = polarnan(varsp(polarinds,:,:)); %FIX FOR CHANNEL
                 varsp = nanpadvar(varsp, numsamp_tslong_this_gif);
                 yaxis_true_lims = find_yaxis_true_lims(lrscale, lims_use);
                 varsp = rescale_to_range(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);

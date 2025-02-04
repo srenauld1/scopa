@@ -15,6 +15,13 @@ switch expid
         epochs.closedinterleave = 4;
         epochs.dark = 5;
         epochs.closedfinaldark = 6;
+    case 'ocld2'
+        epochs.slowpos = 1;
+        epochs.fastpos = 2;
+        epochs.slowneg = 3;
+        epochs.fastneg = 4;
+        epochs.dark = 5;
+        epochs.closedinterleave = 6;
     case 'cl'
         epochs.closed = 1;
 end

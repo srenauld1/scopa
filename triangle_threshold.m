@@ -3,7 +3,7 @@
 % side is either 'R' or 'Right' to find a threshold on the right side of the histogram peak,
 %     or 'L' or 'Left' to find a threshold on the left side of the histogram peak.
 % Mark Hayworth
-function thresholdLevel = triangle_threshold(pixelCounts, side, showPlot)
+function thresholdLevel = triangle_threshold(pixelCounts, side, showPlot, fnsv)
 %     This technique is due to Zack (Zack GW, Rogers WE, Latt SA (1977),
 %     "Automatic measurement of sister chromatid exchange frequency",
 %     J. Histochem. Cytochem. 25 (7): 741–53, )
@@ -167,11 +167,15 @@ try
 			% Set up tick marks every 10 on the x axis.
 			xticks(0 : 10 : xl(2));
 		end
-		%close(hFig);
-	end
-	
+        %close(hFig);
+        if exist('fnsv', 'var') && ~isempty(fnsv)
+            fig2gif(hFig, 1, fnsv)
+            close all
+        end
+    end
+
 catch ME
-	% Some error happened if you get here.
+    % Some error happened if you get here.
 	errorMessage = sprintf('Error in program %s, function %s(), at line %d.\n\nError Message:\n%s', ...
 		mfilename, ME.stack(1).name, ME.stack(1).line, ME.message);
 	WarnUser(errorMessage);

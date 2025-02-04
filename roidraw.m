@@ -4,11 +4,11 @@ arguments
     stackmnt
     opt.pthstack = []
     opt.regionex = 'none'
-    opt.dmstack = []
-    opt.oneroi = 0
-    opt.chan = 1
-    opt.chancp = 1
     opt.maskname = 'none'
+    opt.chan = 1
+    opt.oneroi = 0
+    opt.dmstack = []
+    opt.chancp = 1
     opt.flag_croplim = 0
     opt.roialpha = 0.33
     opt.cmap = []

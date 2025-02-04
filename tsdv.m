@@ -9,6 +9,9 @@ arguments
     dt %sample period
 end
 
+if isempty(slopelensec)
+    slopelensec = dt*3;
+end
 slopelen = round(slopelensec / dt);
 
 if slopelen<slopeord+1

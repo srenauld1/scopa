@@ -84,7 +84,7 @@ end
 % op.opp.lb = [];
 % op.opp.ub = [];
 % op.opp.nonlcon = [];
-% op.opp.solver = d.mf.slvrl;
+% op.opp.solver = d.mdl.slvrl;
 % op.opp.options = opl;
 
 

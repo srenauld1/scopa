@@ -2,7 +2,7 @@ function tsout = tsrs(vartypein, tsin, inds, newlen)
 
 arguments
     vartypein char %if circular, tsin must be in radians
-    tsin double %must be in radians if vartypein is circular 
+    tsin double %must be in radians if vartypein is circular
     inds double = []
     newlen double = []
 end
@@ -22,7 +22,7 @@ if ~isempty(inds) %if inds are nonempty, average tsin during each index
         inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
         tsout = atan2(inpy, inpx);
     elseif strcmp(vartypein, 'categorical') %takes value nearest centroid of each frame (alt approach is mode, commented out below, seems less appropriate)
-        
+
         usi = unique(inds(inds~=0),'stable');
         cnt = zeros(numel(usi), 1, 'single');
         for ii = 1:numel(usi) %loop is much faster than using arrayfun
@@ -31,7 +31,7 @@ if ~isempty(inds) %if inds are nonempty, average tsin during each index
         nzi = find(tsin);
         tsout = interp1(nzi, tsin(nzi), cnt, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
 
-        % tsout = arrayfun(@(i)mode(tsin(inds==Au(i))),1:numel(Au)); 
+        % tsout = arrayfun(@(i)mode(tsin(inds==Au(i))),1:numel(Au));
 
     elseif strcmp(vartypein, 'normal')
         tsout = arrayfun(@(i)mean(tsin(inds==Au(i))),1:numel(Au)); %average of tsin for each frame
@@ -49,19 +49,38 @@ else %else use 'resample', looping strategy to match newlen
         inpy = sin(tsin);
 
         inpx_try = resample_padded_timeseries(inpx, dsnr, dsdr);
-        if length(inpx_try)==newlen
+        currlen = numel(inpx_try);
+        if currlen==newlen
             inpx = inpx_try;
         else
-            for upfac = 2:4
-                for tryadd = -3 : 3
+            prevmin = Inf;
+            for upfac = 1:3
+                for tryadd = -3:3
+                    for tryadd2 = -3:3
 
-                    inpx_try = resample_padded_timeseries(inpx, upfac*dsnr, upfac*dsdr+tryadd);
+                        dsnr_new = upfac*dsnr+tryadd;
+                        dsdr_new = upfac*dsdr+tryadd2;
+                        inpx_try = resample_padded_timeseries(inpx, dsnr_new, dsdr_new);
 
-                    if length(inpx_try)==newlen
-                        inpx = inpx_try;
-                        dsnr = upfac*dsnr;
-                        dsdr = upfac*dsdr+tryadd;
-                        breakout = 1;
+                        currlen = numel(inpx_try);
+
+                        if currlen==newlen
+                            inpx = inpx_try;
+                            dsnr = dsnr_new;
+                            dsdr = dsdr_new;
+                            breakout = 1;
+                            break
+                        else
+                            if currlen>newlen
+                                if currlen-newlen<prevmin
+                                    prevmin = currlen-newlen;
+                                    dsnr_sv = dsnr_new;
+                                    dsdr_sv = dsdr_new;
+                                end
+                            end
+                        end
+                    end
+                    if breakout
                         break
                     end
                 end
@@ -71,27 +90,51 @@ else %else use 'resample', looping strategy to match newlen
             end
         end
 
-        inpy = resample_padded_timeseries(inpy, dsnr, dsdr);
+        if currlen==newlen
+            inpy = resample_padded_timeseries(inpy, dsnr, dsdr);
+        else
+            fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
+            inpx = resample_padded_timeseries(inpx, dsnr_sv, dsdr_sv);
+            inpx = inpx(1:newlen);
+            inpy = resample_padded_timeseries(inpy, dsnr_sv, dsdr_sv);
+            inpy = inpy(1:newlen);
+        end
 
         tsout = atan2(inpy, inpx);
-        if length(tsout)~=newlen
-            error("failed resample")
-        end
 
     elseif strcmp(vartypein, 'normal')
 
         inp_try = resample_padded_timeseries(tsin, dsnr, dsdr);
-        if length(inp_try)==newlen
+        currlen = numel(inp_try);
+        if currlen==newlen
             tsout = inp_try;
         else
-            for upfac = 2:4
-                for tryadd = -3 : 3
+            prevmin = Inf;
+            for upfac = 1:3
+                for tryadd = -3:3
+                    for tryadd2 = -3:3
 
-                    inp_try = resample_padded_timeseries(tsin, upfac*dsnr, upfac*dsdr+tryadd);
+                        dsnr_new = upfac*dsnr+tryadd;
+                        dsdr_new = upfac*dsdr+tryadd2;
+                        inp_try = resample_padded_timeseries(tsin, dsnr_new, dsdr_new);
 
-                    if length(inp_try)==newlen
-                        tsout = inp_try;
-                        breakout = 1;
+                        currlen = numel(inp_try);
+
+                        if currlen==newlen
+                            tsout = inp_try;
+                            breakout = 1;
+                            break
+                        else
+                            if currlen>newlen
+                                if currlen-newlen<prevmin
+                                    prevmin = currlen-newlen;
+                                    dsnr_sv = dsnr_new;
+                                    dsdr_sv = dsdr_new;
+                                end
+                            end
+                        end
+                    end
+                    if breakout
                         break
                     end
                 end
@@ -99,10 +142,13 @@ else %else use 'resample', looping strategy to match newlen
                     break
                 end
             end
+            if currlen~=newlen
+                fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
+                inp_try = resample_padded_timeseries(tsin, dsnr_sv, dsdr_sv);
+                tsout = inp_try(1:newlen);
+            end
         end
-        if length(tsout)~=newlen
-            error("failed resample")
-        end
+
 
 
     elseif strcmp(vartypein, 'categorical')
@@ -111,8 +157,8 @@ else %else use 'resample', looping strategy to match newlen
         tmp = tmp(1:end-1);
         mhd = mean(diff(tmp))/2;
         tmp = tmp + mhd;
-        tmp = round(tmp); % roughly equidistant centroids 
-        nzi = find(tsin); 
+        tmp = round(tmp); % roughly equidistant centroids
+        nzi = find(tsin);
         tsout = interp1(nzi, tsin(nzi), tmp', 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
 
     end

@@ -114,10 +114,10 @@ else
     otmp = odf(otmp, 'roi', unpack=1); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function;
     otmp.regionex = 'inter';
 
-    [resp, roidat_new] = roimake(stack, '~/stacks/20241222-5/20241222_5_1_cmrg_dcdn_.mat', ti, sampper, widyxz, '', otmp, roimaskman); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    roi = roimake(stack, '~/stacks/20241222-5/20241222_5_1_cmrg_dcdn_.mat', ti, sampper, widyxz, '', otmp, roimaskman); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
 
-    resp = resp{1};
-    roipx = roidat_new{1}.roipx;
+    resp = roi.resp{1};
+    roipx = roi.roidat_new{1}.roipx;
 
 end
 

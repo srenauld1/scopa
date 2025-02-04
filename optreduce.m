@@ -27,7 +27,7 @@ switch vbin
 
         o = optreduce_roi(o);
 
-    case 'mf'
+    case 'mdl'
 
     case 'bmp'
 

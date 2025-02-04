@@ -7,7 +7,7 @@ mdl = fitin.op.mdl;
 num_dim_depvp = fitin.num_dim_depvp;
 
 normalize_depv = opts.normalize_depv;
-epochinds = opts.epochinds;
+epochnum = opts.epochnum;
 
 roipx = roidat.roipx;
 idx_vox2roi = roidat.idx_vox2roi;
@@ -56,7 +56,7 @@ switch plot_class
     case 'hsv'
         numrowsbottom = 1;
     case 'epochs'
-        numrowsbottom = length(epochinds);
+        numrowsbottom = length(epochnum);
 end
 
 numcolumnsbottom = 5; %really number grid lines in which the plots are arranged
@@ -156,8 +156,8 @@ end
 imgtmp = reshape(imgtmp, [], size(imgtmp, 4)); %collapse spatial dimensions to make pixel by time
 
 
-img = cell(1, length(epochinds));
-for epi = 1:length(epochinds)
+img = cell(1, length(epochnum));
+for epi = 1:length(epochnum)
 
     if ignorehue
         hsvmap{epi}(:,1) = 1;
@@ -221,11 +221,11 @@ htx = text( 0.02, 0.99, '', 'FontSize', fontmedium, ...
     'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
 
 
-totalplotframes = length(roiinds_plot)*length(epochinds);
+totalplotframes = length(roiinds_plot)*length(epochnum);
 
 for framecount = 1:totalplotframes
 
-    epi = ceil(framecount/length(roiinds_plot)); %index into epochinds
+    epi = ceil(framecount/length(roiinds_plot)); %index into epochnum
     ri = mod(framecount-1, length(roiinds_plot))+1; %index into roiinds_plot
 
     [py, px, pz] = ind2sub(size(stackmean), roipx{roiinds_plot(ri)}); %y, x, z of selected pixel

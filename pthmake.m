@@ -22,7 +22,7 @@ dirtmp = o.mn.dirtmp;
 dirstack = [dirstack filesep];
 
 pth_prefix = erase(pthstack, '.mat');
-pth_prefix_nosuffix = [dirstack recid '_'];
+pth_recid = [dirstack recid '_'];
 
 pth_py = o.mn.pthpy;
 
@@ -84,11 +84,6 @@ end
 
 pth_ts = [dirstack recid '_ts_.mat'];
 
-pth_epochinds = [dirstack recid '_epochinds_.bin'];
-pth_epochinfo = [dirstack recid '_epochinfo_.mat'];
-
-
-
 %% carl's old project
 
 pth_feat_save = [dirstack o.feat.id '_lin_ds_.mat'];
@@ -99,7 +94,7 @@ pthtemplate = o.feat.pthtemplate;
 %% output
 
 pth.pre = pth_prefix;
-pth.prenosuffix = pth_prefix_nosuffix;
+pth.recid = pth_recid;
 pth.py = pth_py;
 pth.dirstack = dirstack;
 pth.stack = pthstack;
@@ -113,8 +108,6 @@ pth.ftvidlog = pth_ftvidlog;
 pth.ftvid = pth_ftvid;
 pth.ftvidrs = pth_ftvidrs;
 pth.ts = pth_ts;
-pth.epochinds = pth_epochinds;
-pth.epochinfo = pth_epochinfo;
 pth.featsave = pth_feat_save;
 pth.featparent = pthparentfeat;
 pth.template = pthtemplate;

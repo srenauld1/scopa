@@ -31,7 +31,7 @@ for epi = 1:length(epochindstmp)
     epochindstmp2 = epochindstmp{epi};
     epochstring = regexprep( mat2str(epochindstmp2), {'\[', '\]', '\s+'}, {'', '', '-'});
 
-    %fn_sd_all = rdir([pth_allrec '2023*/*' num2str(epochinds{epi}) '_scatter3data.mat']);
+    %fn_sd_all = rdir([pth_allrec '2023*/*' num2str(epochnum{epi}) '_scatter3data.mat']);
     fn_sd_all = rdir([pth_allrec '*_' epochstring '_scatter4*.mat']);
     if length(fn_sd_all)~=numrecordings
         error
@@ -104,7 +104,7 @@ for epi = 1:length(epochindstmp)
     if ~isdir(fn_prefix)
         mkdir(fn_prefix)
     end
-    if epochinds~=epochindstmp2
+    if epochnum~=epochindstmp2
         error
     end
 
@@ -142,6 +142,6 @@ for epi = 1:length(epochindstmp)
     scatterplots_2d(cueang_all, cuevel_all, ballang_all, ballvel_all, ...
         bumpmu_all, bumprho_all, bumpvel_all, ampmean_all, amppeak_all, ampmu_all, ...
         respgar_all, respgal_all, respnor_all, respnol_all, meang_all, meann_all, ...
-        do3d, colorvars, manualvars, md, epochinds, epochstring, fn_prefix, gifvis)
+        do3d, colorvars, manualvars, md, epochnum, epochstring, fn_prefix, gifvis)
 
 end

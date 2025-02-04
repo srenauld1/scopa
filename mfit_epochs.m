@@ -1,6 +1,6 @@
 function fitin = mfit_epochs(fitin, opts, epi, pth_fitdata_prefix)
 
-epochinds = opts.epochinds{epi};
+epochnum = opts.epochnum{epi};
 validation_fold = opts.validation_fold;
 keep_transition_zones = opts.keep_transition_zones;
 mdlname = opts.mdlname;
@@ -18,15 +18,15 @@ pth_depvp_bin = fitin.pth_depvp_bin;
 supp = fitin.op.supp;
 op = fitin.op;
 
-if numel(epochinds)==1
-    epochinds_str = ['e_' num2str(epochinds)];
+if numel(epochnum)==1
+    epochinds_str = ['e_' num2str(epochnum)];
 else
-    epochinds_str = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'e_', '', '_'});
+    epochinds_str = regexprep( mat2str(epochnum), {'\[', '\]', '\s+'}, {'e_', '', '_'});
 end
 
 %% define indexing variables for taking subset of indv and depv (by epoch, and by train/validation set )
 
-fitin.fits.(epochinds_str) = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds);
+fitin.fits.(epochinds_str) = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum);
 
 %% loop over train/validation sets, for k-fold cross-validation
 
@@ -82,7 +82,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        for ri = 1:num_dim_depvp
+        parfor ri = 1:num_dim_depvp
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
@@ -93,7 +93,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                     sampinds_indvdepv_val, num_samp_total, supp, op, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
             
-                mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
+                % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
             end
         end
         toc
@@ -118,7 +118,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     gof_val_mean_allrois = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
 
 
-    %% output struct (indexed by epochinds and valind)
+    %% output struct (indexed by epochnum and valind)
 
     fitin.fits.(epochinds_str).(valnames{vfi}).ft = ft;
     fitin.fits.(epochinds_str).(valnames{vfi}).pred = pred;
@@ -138,7 +138,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
 end
 
-fitin.fits.(epochinds_str).epochinds = epochinds;
+fitin.fits.(epochinds_str).epochnum = epochnum;
 fitin.fits.(epochinds_str).ft_mean_allval = mean(ft_mean_allval, ndims(ft_mean_allval), 'omitmissing');
 fitin.fits.(epochinds_str).gof_mean_allval = mean(gof_mean_allval, ndims(gof_mean_allval), 'omitmissing');
 fitin.fits.(epochinds_str).gof_val_mean_allval = mean(gof_val_mean_allval, ndims(gof_val_mean_allval), 'omitmissing');

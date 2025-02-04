@@ -260,23 +260,23 @@ stackplt(mask)
 
 roiwt = mask(:)';
 
-resp_raw_raw = roiresp(single(stackraw), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-% resp_raw_dff = roiresp(single(stackraw), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+resp_raw_raw = roits(single(stackraw), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_raw_dff = roits(single(stackraw), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
 
-resp_regnopp_raw = roiresp(single(stackreg_nopp), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-% resp_regnopp_dff = roiresp(single(stackreg_nopp), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+resp_regnopp_raw = roits(single(stackreg_nopp), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_regnopp_dff = roits(single(stackreg_nopp), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
 
-% resp_regpp_raw = roiresp(single(stackreg_pp), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-% resp_regpp_dff = roiresp(single(stackreg_pp), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_regpp_raw = roits(single(stackreg_pp), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_regpp_dff = roits(single(stackreg_pp), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
 
-resp_regalt_raw = roiresp(single(stackreg_alt), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-% resp_regalt_dff = roiresp(single(stackreg_alt), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+resp_regalt_raw = roits(single(stackreg_alt), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_regalt_dff = roits(single(stackreg_alt), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
 
-resp_regsc_raw = roiresp(single(stackreg_sc), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-% resp_regsc_dff = roiresp(single(stackreg_sc), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+resp_regsc_raw = roits(single(stackreg_sc), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_regsc_dff = roits(single(stackreg_sc), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
 
-% resp_dn_raw = roiresp(single(stackreg_dn), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
-% resp_dn_dff = roiresp(single(stackreg_dn), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_dn_raw = roits(single(stackreg_dn), roiwt=roiwt); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
+% resp_dn_dff = roits(single(stackreg_dn), roiwt=roiwt, normpost = 'dff005000'); %if two channel, input resp for 2nd channel gets appended to resp that was output for first channel, with fieldnames identifying channel
 
 %% raw f comparisons
 

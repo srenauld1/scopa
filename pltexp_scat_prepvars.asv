@@ -119,13 +119,13 @@ rdummies = zeros(2, size(vars,2), 'single');
 [plotx, ploty, plotz] = remove_nans_as_group(varx_lagxyz, vary_lagxyz, varz_lagxyz);
 
 if ismember(1, find(polarinds))
-    plotx = insert_nan_for_polar_wrap(plotx);
+    plotx = polarnan(plotx);
 end
 if ismember(2, find(polarinds))
-    ploty = insert_nan_for_polar_wrap(ploty);
+    ploty = polarnan(ploty);
 end
 if ismember(3, find(polarinds))
-    plotz = insert_nan_for_polar_wrap(plotz);
+    plotz = polarnan(plotz);
 end
 
 if threshold_data

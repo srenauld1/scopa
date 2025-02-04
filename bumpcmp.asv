@@ -1,4 +1,4 @@
-function bmp = bumpcmp(stack, indvp, depvp, regionex, roidat, zstartpos, sz_crop, imrate, epochts, pth_dirstack, recid, pthpre, bumpopts, doplt)
+function bmp = bmpmake(stack, indvp, depvp, regionex, roidat, zstartpos, sz_crop, imrate, epochts, pth_dirstack, recid, pthpre, bumpopts, doplt)
 
 
 arguments
@@ -125,7 +125,7 @@ switch mthd
 
     case 'vonmises'
 
-        disp("vonmises mthd (fit vonmises to each timepoint using mfit) not written yet")
+        disp("vonmises mthd (fit vonmises to each timepoint using mdlmake) not written yet")
 
 end
 
@@ -187,18 +187,18 @@ if doplt
 
 
     filename_gif = [pthpre '_ampsortedclust_' fn{fni} '.gif'];
-    epochinds = {num2cell(unique(ts.epochinds))};
+    epochts = {num2cell(unique(ts.epochts))};
     numclusterplot = 8;
     dvecc = round(linspace(1, numseg, numclusterplot));
     countz = 0;
     framecount_gif = 0;
-    for epi = 1:length(epochinds)
+    for epi = 1:length(epochts)
         framecount_gif = framecount_gif + 1;
 
         hfg = figure;
 
-        if epochinds{epi}
-            indz = find(ts.epochinds==epochinds{epi});
+        if epochts{epi}
+            indz = find(ts.epochts==epochts{epi});
         else
             indz = 1:length(trialepochinds);
         end
@@ -208,7 +208,7 @@ if doplt
         maxall = max(vec(respcltmp(:,indz)));
         for ddi = dvecc
             countz = countz+1;
-            spl{countz} = subplot(length(epochinds),numclusterplot,countz);
+            spl{countz} = subplot(length(epochts),numclusterplot,countz);
             hold(spl{countz}, 'on')
             plot(spl{countz}, respcltmp(sub2ind(size(respcltmp), vec(md1a(ddi,:)), indz)));
             ylim([minall maxall])
@@ -218,7 +218,7 @@ if doplt
                 yticks([])
                 yticklabels([])
             end
-            sgtitle({['epoch ' epochinds{epi}]; [num2str(length(dvecc)) ' equispaced clusters of ' num2str(numseg) ' total']; ['amp-sorted per-timepoint']})
+            sgtitle({['epoch ' epochts{epi}]; [num2str(length(dvecc)) ' equispaced clusters of ' num2str(numseg) ' total']; ['amp-sorted per-timepoint']})
         end
     end
 

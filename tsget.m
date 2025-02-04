@@ -9,7 +9,7 @@ format is:
         ts.bmp.optid.name (name=extracted feature name, eg bumpang for bump mean angular position)
     when options are not variable (e.g. daq variables are currently extracted with a hard-coded options set), optid is 'none'
 tsget recovers timeseries from ts (since ts can be complex)
-mfit, feat, and pltx use tsget to simplify timeseries recovery, variable names, and file names
+mdlmake, feat, and pltx use tsget to simplify timeseries recovery, variable names, and file names
 
 tsget first argument is ts, and remaining arguments are all name-value: domain, optused, name, group
 
@@ -33,7 +33,7 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
 
     group
         group determines how output timeseries are arrayed in the 3rd dimension 
-        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mfit loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, feat loops over 3rd dim to extract features from different sets of timeseries)
+        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, feat loops over 3rd dim to extract features from different sets of timeseries)
         group can take the following values: 'all', 'domain', 'optused', 'name', 
         these refer to tsget input arguments, which can each be expanded to return multiple timeseries; 
         group determines whether output should be group according to that expansion; 
@@ -42,23 +42,23 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
             optused: array optused groups along 3rd dimension 
             name: like the invserse of 'all'; output 3rd dimension length matches number of found timeseries, and 1st dimension is singleton; 
 
-% setting mfit indv (independent variable) using tsget input struct
+% setting mdlmake indv (independent variable) using tsget input struct
     tgtmp.domain = {'daq', 'roi'} %daq domain
     tgtmp.optused = {'none' %daq variables extracted with default set of daq options 
     tgtmp.name = [] %all indices (all rois)
     tgtmp.group = 'name' %fit model to each output timeries 
-    o.mf.indv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
+    o.mdl.indv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
 
-% setting mfit depv (dependent variable) using tsget input struct
+% setting mdlmake depv (dependent variable) using tsget input struct
     tgtmp.domain = 'roi' %roi domain
     roitmp.ma.numroi = 256
     roitmp.mm.drawchan = 2
     tgtmp.optused = roitmp %struct of roi options
     tgtmp.name = [] %all indices (all rois)
     tgtmp.group = 'name' %fit model to each 
-    o.mf.depv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
+    o.mdl.depv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
 
-mfit and feat will also get optid
+mdlmake and feat will also get optid
 
 % setting pltx v1 using tsget input struct
     tgtmp.domain = 'roi' %roi domain
@@ -67,6 +67,6 @@ mfit and feat will also get optid
     tgtmp.optused = roitmp %struct of roi options
     tgtmp.name = [] %all indices (all rois)
     tgtmp.group = 'name' %plot each
-    o.mf.v1.tg = tgtmp %make v1 a struct, which will flag it to find timeseries for v1 using tg; v1 struct is itself a struct for options input to tg; 
+    o.mdl.v1.tg = tgtmp %make v1 a struct, which will flag it to find timeseries for v1 using tg; v1 struct is itself a struct for options input to tg; 
 
 %}

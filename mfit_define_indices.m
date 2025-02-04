@@ -1,19 +1,19 @@
-function out = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds)
+function out = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum)
 
 
-num_epochs = numel(epochinds);
+num_epochs = numel(epochnum);
 
 epochinds_pure_ts_indvpaug = zeros(1, size(epochinds_ts_i_m, 2));
 for eii = 1:num_epochs
-    epochinds_pure_ts_indvpaug = epochinds_pure_ts_indvpaug + epochinds(eii) * all(ismember(epochinds_ts_i_m, epochinds(eii)), 1); %epoch indices where the epoch is constant across all model timepoints
+    epochinds_pure_ts_indvpaug = epochinds_pure_ts_indvpaug + epochnum(eii) * all(ismember(epochinds_ts_i_m, epochnum(eii)), 1); %epoch indices where the epoch is constant across all model timepoints
 end
-if any(epochinds_pure_ts_indvpaug(:)>max(epochinds(:)))
+if any(epochinds_pure_ts_indvpaug(:)>max(epochnum(:)))
     error("should not have overlapping pure epoch samples")
 end
 
-if keep_transition_zones %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochinds, discards samples with any epochs not listed
-    sampinds_indvpaug = find(all(ismember_each_element(epochinds_ts_i_m, epochinds), 1)); % specify dimension (1) in case epochinds_ts_i_m is singleton
-else %do not include samples with multiple epochs, even if those epochs listed in epochinds
+if keep_transition_zones %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed
+    sampinds_indvpaug = find(all(ismember_each_element(epochinds_ts_i_m, epochnum), 1)); % specify dimension (1) in case epochinds_ts_i_m is singleton
+else %do not include samples with multiple epochs, even if those epochs listed in epochnum
     sampinds_indvpaug = find(epochinds_pure_ts_indvpaug);
 end
 
@@ -37,7 +37,7 @@ for i = 1:numel(sampinds_per_bout_ts_m)
 end
 
 for i = 1:num_epochs
-    boutind_per_epoch{i} = find(epochind_per_bout==epochinds(i));
+    boutind_per_epoch{i} = find(epochind_per_bout==epochnum(i));
     num_bout_per_epoch(i) = numel(boutind_per_epoch{i});
     num_bout_val(i) = numel(boutind_per_epoch{i}) / validation_fold;
 end

@@ -3,7 +3,7 @@ function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
     lagsz_sec, lags_to_plot, plot_z_as_color, gifvis, pthgif_prefix_short, pthgif_prefix)
 
 
-error("scatterplots is deprecated, scatterplot module within replaced by plot_experiment")
+error("scatterplots is deprecated, replaced by scatterplot routine within pltx")
 
 %don't subset the stack 
 
@@ -57,8 +57,8 @@ h = struct;
 framecount = 0;
 for ei = 1:numel(epochinds_all)
 
-    epochinds = epochinds_all{ei};
-    tinds = find(ismember_each_element(epochts, epochinds));
+    epochnum = epochinds_all{ei};
+    tinds = find(ismember_each_element(epochts, epochnum));
     tinew = ti(tinds);
 
     [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = compute_lags(tinew, lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
@@ -81,7 +81,7 @@ for ei = 1:numel(epochinds_all)
                 [polar_index, labt, labr] = find_polar_index(labx, laby, labz);
                 axtype = set_axtype(polar_index, z_is_empty, plot_z_as_color);
                 skipplot = skip_plot_criteria(laball, 'none');
-                [pthgif, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, pthgif_prefix_short, pthgif_prefix, pthgif, roi_index, sample_period_string);
+                [pthgif, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochnum, plot_z_as_color, gif_scope, varcount, ei, pthgif_prefix_short, pthgif_prefix, pthgif, roi_index, sample_period_string);
 
                 switch polar_index
                     case 1
@@ -403,7 +403,7 @@ end
 
 end
 
-function [pthgif_new, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochinds, plot_z_as_color, gif_scope, varcount, ei, pthgif_prefix_short, pthgif_prefix, pthgif_old, roi_index, sample_period_string)
+function [pthgif_new, figure_title, labx, laby, labz, labt, labr] = process_strings(labx, laby, labz, labt, labr, axtype, epochnum, plot_z_as_color, gif_scope, varcount, ei, pthgif_prefix_short, pthgif_prefix, pthgif_old, roi_index, sample_period_string)
 
 if isempty(labz)
     dimstring = '2d';
@@ -415,7 +415,7 @@ else
     end
 end
 
-epochstring = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'', '', 'e'});
+epochstring = regexprep( mat2str(epochnum), {'\[', '\]', '\s+'}, {'', '', 'e'});
 
 if strcmp(epochstring, '1')
     epochstring_parsed = 'CLOSED LOOP';
@@ -795,13 +795,13 @@ for lagind = 1:numlags
     [plotx{lagind}, ploty{lagind}, plotz{lagind}] = remove_nans_as_group(varx_lagxyz, vary_lagxyz, varz_lagxyz);
 
     if ismember(1, polar_index)
-        plotx{lagind} = insert_nan_for_polar_wrap(plotx{lagind});
+        plotx{lagind} = polarnan(plotx{lagind});
     end
     if ismember(2, polar_index)
-        ploty{lagind} = insert_nan_for_polar_wrap(plotx{lagind});
+        ploty{lagind} = polarnan(plotx{lagind});
     end
     if ismember(3, polar_index)
-        plotz{lagind} = insert_nan_for_polar_wrap(plotx{lagind});
+        plotz{lagind} = polarnan(plotx{lagind});
     end
 
     %threshold if requested

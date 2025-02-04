@@ -6,7 +6,7 @@ num_dim_indvp = fitin.num_dim_indvp;
 num_samp_indvp = fitin.num_samp_indvp;
 num_dim_depvp = fitin.num_dim_depvp;
 num_samp_depvp = fitin.num_samp_depvp;
-epochts = ts.epochinds;
+epochts = ts.epochts;
 sampper = md.sampper;
 
 time_dimension = find(size(fitin.vars.indvp)==num_samp_indvp);
@@ -79,7 +79,7 @@ indvpaug = zeros( num_dim_indv, num_samp_indvpaug ); %indv, where for each dimen
 epochinds_ts_i_m = zeros( num_samp_mdl, num_samp_indvpaug );
 for i = 1 : num_samp_indvpaug
     indvpaug(:,i) = reshape( flip(fitin.vars.indvp(:,i:i+num_samp_mdl-1), time_dimension), [], 1 ); %indvpaug makes time samples into past just another indv dim, e.g., for model with 2 dims a and b and 4 time samples into past, with lag zero, indvpaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
-    epochinds_ts_i_m(:,i) = flip(epochts(i:i+num_samp_mdl-1), time_dimension); %do the same for epochinds, to make sure model doesn't include any samples from wrong epoch
+    epochinds_ts_i_m(:,i) = flip(epochts(i:i+num_samp_mdl-1), time_dimension); %do the same for epochts, to make sure model doesn't include any samples from wrong epoch
 end
 
 %% if mdlname starts with 'ohe', one hot encode indv

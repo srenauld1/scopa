@@ -3,7 +3,7 @@
 % lfit(stim, ts.roi.a2{1}, t=ts.t, doplt=1, pixfit=1, usesaved=1, roipx=roidat.a2{1}.roipx, lagsec=0, stack=stack, sortstyle='xyz', pos=ts.pos)
 
 
-pthsync = rdir([pth.prenosuffix '*_sync.mat']);
+pthsync = rdir([pth.recid '*_sync.mat']);
 indvp = struct2cell(load(pthsync.name, 'si_frame_direction'));
 indvp = indvp{1};
 
@@ -20,12 +20,12 @@ stackplt(stack, it=ittmp)
 
 tinds = 1:15054; [sortindv,sortinds] = sort(indvp(tinds)); hfg=figure; scatter(sortindv, depvp(sortinds)); fig2gif(hfg,1)
 
-fitin = mfit(indvp, depvp, md.volrate, o.mf, doplt, pth.pre, ts.epochinds, stack, roidat.a10{1});
+fitin = mdlmake(indvp, depvp, md.volrate, o.mdl, doplt, pth.pre, epochts, stack, roidat.a10{1});
 
 
 fn = fieldnames(fitin.fits);
 if numel(fn)>1
-    error("you've requested multiple fits to different epochinds, but roi2hd operates on a single fit; decide which epochinds set you want to use to compute bump")
+    error("you've requested multiple fits to different epochts, but roi2hd operates on a single fit; decide which epochts set you want to use to compute bump")
 end
 angpref = fitin.fits.(fn{1}).indvpf_mean_allval(:)'; %row vector of preferred angle;
 

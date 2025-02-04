@@ -1,9 +1,9 @@
-function [epochs, epochinds] = epochset(ti, recdatenum, ft_misoffset_sec)
+function [epochs, epochts] = epochset(ti, recdatenum, daqdelay)
 
 arguments
     ti
     recdatenum
-    ft_misoffset_sec = 0
+    daqdelay = 0
 end
 
 % stimulus epoch information, hard coded
@@ -102,7 +102,7 @@ if ~isempty(boutinds_onecycle_vec)
 end
 num_bouts_per_cycle = max(boutinds_onecycle_vec); %cycle doesn't including non-repeating bouts, like initial and final
 
-boutendpoints_sec_epoch.closedinitiallight = [0 closed_initial_light_duration + ft_misoffset_sec];
+boutendpoints_sec_epoch.closedinitiallight = [0 closed_initial_light_duration - daqdelay];
 
 boutstarttimes(1) =  boutendpoints_sec_epoch.closedinitiallight(end);
 for bi = [1:num_bouts_per_cycle*num_cycles]+1
@@ -141,7 +141,7 @@ if closed_final_dark_duration>0
 end
 
 fn = fieldnames(boutendpoints_sec_epoch);
-epochinds = zeros(1, numel(ti));
+epochts = zeros(1, numel(ti));
 for fni = 1:numel(fn)
     if size(boutendpoints_sec_epoch.(fn{fni}), 2)==2
         mtchtmp = ti'>=boutendpoints_sec_epoch.(fn{fni})(:,1) & ti'<boutendpoints_sec_epoch.(fn{fni})(:,2);
@@ -149,10 +149,10 @@ for fni = 1:numel(fn)
         if any(mtchtmp>1)
             error("epochs misaligned")
         end
-        if any(ismember(find(epochinds), find(mtchtmp)))
+        if any(ismember(find(epochts), find(mtchtmp)))
             error("epochs misaligned")
         end
-        epochinds = epochinds + mtchtmp*fni;
+        epochts = epochts + mtchtmp*fni;
     end
 end
 

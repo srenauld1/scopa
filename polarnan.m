@@ -1,4 +1,4 @@
-function inp = insert_nan_for_polar_wrap(inp, spacing, dim, diffthresh)
+function inp = polarnan(inp, spacing, dim, diffthresh)
 
 %replace diffs (across 'spacing' samples) greater than diffthresh with nan in timeseries (to make plot easier to read)
 

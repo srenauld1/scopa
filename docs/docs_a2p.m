@@ -40,9 +40,9 @@ main processing functions:
     daqld: load/process daq data
     roimake: make manual (drawn) and/or automated morphological rois
     roifauto: process functional rois extracted in pre pipeline with caiman
-    bumpcmp: compute bump in various ways
-    popcmp: compute poulation features, currently only holds bumpcmp; eventually will be general stack and timeseries feature extraction routine, to make extracted features available to mfit routine
-    mfit: fit models to any available timeseries (derived from roi code, or feature extraction code, or direct experimental timeseries (e.g stimulus, fictrac timeseries, etc)
+    bmpmake: compute bump in various ways
+    popcmp: compute poulation features, currently only holds bmpmake; eventually will be general stack and timeseries feature extraction routine, to make extracted features available to mdlmake routine
+    mdlmake: fit models to any available timeseries (derived from roi code, or feature extraction code, or direct experimental timeseries (e.g stimulus, fictrac timeseries, etc)
 
 utility functions (and visualization functions):
     stackplt: plot stack(s) 

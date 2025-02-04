@@ -1,0 +1,422 @@
+
+function ebno(side, cue, ball, bump, eb, nol, nor, t, sampper, pthpre, opt)
+
+
+arguments
+    side
+    cue
+    ball
+    bump
+    eb
+    nol
+    nor
+    t
+    sampper
+    pthpre
+    opt.lagsampxy = 0
+    opt.lagsampz = 0
+    opt.facealpha = 0.3;
+    opt.ncol = 1 %if <=1, number colors as proportion of total number of plotted samples, otherwise number colors
+    opt.szthrxy = []
+    opt.szthrres = []
+    opt.szmin = 2;
+    opt.szmaxfac = 10
+    opt.xyrng = []
+    opt.nothr = []
+    opt.colsep = 0
+    opt.epoch = 1:6
+    opt.epochts = []
+    opt.slopelensec = []
+    opt.slopeord = 2
+    opt.fitlinealpha =  0
+    opt.yconst = 0
+    opt.plt = []
+    opt.histplt = 0
+end
+lagsampxy = opt.lagsampxy;
+lagsampz = opt.lagsampz;
+szmin = opt.szmin;
+facealpha = opt.facealpha;
+ncol = opt.ncol;
+szthrxy = opt.szthrxy;
+szthrres = opt.szthrres;
+szmaxfac = opt.szmaxfac;
+xyrng = opt.xyrng;
+nothr = opt.nothr;
+colsep = opt.colsep;
+epoch = opt.epoch;
+epochts = opt.epochts;
+slopelensec = opt.slopelensec;
+slopeord = opt.slopeord;
+fitlinealpha = opt.fitlinealpha;
+yconst = opt.yconst;
+plt = opt.plt;
+histplt = opt.histplt;
+
+for k = 1:numel(side)
+    for m = 1:numel(epoch)
+        for q = 1:numel(lagsampz)
+
+            ebno2(side{k}, cue, ball, bump, eb, nol, nor, t, sampper, pthpre, lagsampxy, lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt)
+            close all
+
+        end
+    end
+end
+
+
+end
+
+
+function ebno2(side, cue, ball, bump, eb, nol, nor, t, sampper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt)
+
+
+
+datestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
+
+epochstr = sprintf('%.0f,' , epoch);
+epochstr = epochstr(1:end-1);
+
+if ~isempty(szthrxy) && ~isempty(szthrres)
+    error("can only use szthrres or szthrxy")
+end
+
+if isempty(epoch)
+    kp1 = ones(size(epochts), 'logical');
+else
+    if isempty(epochts)
+        error("must supply name-value argument epochts if epoch is not empty")
+    end
+    kp1 = zeros(size(epochts), 'logical');
+    for k = 1:numel(epoch)
+        kp1 = kp1 | ismember(epochts, epoch(k));
+    end
+end
+
+if ~isscalar(lagsampxy) || ~isscalar(lagsampz)
+    error("make lagsec scalar for now")
+end
+
+if strcmp(side, 'l')
+    no = nol;
+elseif strcmp(side, 'r')
+    no = nor;
+elseif isempty(side)
+    no = ones(size(cue));
+end
+
+noz = zscore(no);
+nodv = tsdv('circular', no, slopelensec, slopeord, sampper);
+
+bumpdv = tsdv('circular', bump, slopelensec, slopeord, sampper);
+bumpdvrs = bumpdv*pi/max(abs(bumpdv));
+
+ballinv = -ball;
+ballinvdv = tsdv('circular', ballinv, slopelensec, slopeord, sampper);
+ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
+
+if yconst
+    limxtreme = max(abs(vec([ballinvdvrs bumpdvrs])));
+end
+
+
+%% bump only
+
+if ~isempty(plt) && plt(1)
+
+    figure;
+    imagesc(eb);
+    colormap(gray(256));
+    hold on;
+    plot(rescale(bumpnan, 1, size(eb,1)), 'r')
+
+    pthsv = [pthpre 'bump_.fig'];
+    saveas(gcf, pthsv)
+
+end
+
+%% timeseries plot
+
+if ~isempty(plt) && plt(2)
+
+    nozrs = noz*max(abs(nodv))/max(abs(noz)); %put z-score and derivative on same scale
+
+    bg = [nodv; nozrs]; %background; z-scored nodulus and derivative of nodulus
+
+    cuenan = polarnan(cue); %insert nan where wrap
+    ballinvnan = polarnan(ballinv); %insert nan where wrap
+    bumpnan = polarnan(bump); %insert nan where wrap
+
+    cmap = cmapmake(nodes={'r', 'k', 'b'});
+    maxabs = max(abs(vec(bg)));
+    hfg = figure;
+    hax = axes(Parent=hfg);
+    hpl = imagesc(hax, bg);
+    hax.Colormap = cmap;
+    hax.YDir= 'reverse';
+    hax.CLim = [-maxabs maxabs]; %zero-centered lim
+    hpl.CDataMapping = 'scaled';
+    yyaxis right;
+    hold on;
+    plot(hax, cuenan, 'g-')
+    plot(hax, ballinvnan, 'y-')
+    plot(hax, ballinvdvrs, 'm-')
+    plot(hax, bumpnan, 'c-')
+    plot(hax, bumpdvrs, 'w-')
+    title("bump cyan, ball yellow, cue green, " + side + " GLNO derivative background")
+
+    pthsv = [pthpre side '_glno_.fig'];
+    saveas(gcf, pthsv)
+
+end
+
+%% scatterplot
+
+if ~isempty(plt) && plt(3)
+
+    
+    pthsv = [pthpre 'glno_scatter_' datestr '_' side '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_.fig'];
+
+    xydist = sqrt(ballinvdvrs.^2 + bumpdvrs.^2); %distance from origin
+
+    %%%%% LAG %%%%%
+
+    [ballinvdvrs, bumpdvrs, nodv] = lagvars(ballinvdvrs, bumpdvrs, nodv, lagsampxy, lagsampz);
+    if any(any(isnan([ballinvdvrs, bumpdvrs, nodv])))
+        % [ballinvdvrs, bumpdvrs, nodv] = remove_nans_as_group(ballinvdvrs, bumpdvrs, nodv);%%plotz becomes ones if z_is_empty, is this okay??
+        error("there should not be any nans yet")
+    end
+
+
+    %%%%% COLORMAP %%%%%
+
+    [nodvsrt, idx4] = sort(nodv);
+    ballinvdvrs = ballinvdvrs(idx4);
+    bumpdvrs = bumpdvrs(idx4);
+    kp1 = kp1(idx4);
+    if ncol<=1
+        ncol = round(numel(nodvsrt)*ncol);
+    end
+    cmap = cmapmake(nodes={'r', 'k', 'b'}, ncol=floor(ncol/2));
+    if colsep %separate scales for neg and pos, but still zero centered
+        halflen = size(cmap,1)/2;
+        xref = linspace(min(nodvsrt), 0, halflen); %zero-centered colormap
+        cmapneg = interp1(xref, cmap(1:halflen,:), nodvsrt(nodvsrt<0));
+        xref = linspace(0, max(nodvsrt), halflen); %zero-centered colormap
+        cmappos = interp1(xref, cmap(halflen+1:end,:), nodvsrt(nodvsrt>=0));
+        cmap = [cmapneg; cmappos];
+    else %single scale for neg and pos, and zero centered
+        maxabs = max(abs(vec(nodvsrt)));
+        xref = linspace(-maxabs, maxabs, size(cmap,1)); %zero-centered colormap
+        cmap = interp1(xref, cmap, nodvsrt);
+    end
+
+
+    %%%%% LLS FIT %%%%%
+
+    ft = polyfit(ballinvdvrs, bumpdvrs, 1); %also do this after color sorting so you don't have to sort
+    fty = polyval(ft, ballinvdvrs);
+    resid = sqrt((fty-bumpdvrs).^2 );
+    xrng = linspace(min(ballinvdvrs), max(ballinvdvrs), 100);
+    ftline = polyval(ft, xrng);
+
+
+    %%%%% ADJUST MARKER SIZE BY DISTANCE FROM FIT LINE OR ORIGIN %%%%%
+
+    
+    if ~isempty(szthrres)
+        sztmp = resid;
+        szthr = szthrres;
+    elseif ~isempty(szthrxy)
+        sztmp = xydist;
+        szthr = szthrxy;
+    else
+        szthr = ones(size(xydist));
+        sztmp = ones(size(xydist));
+    end
+    szthr = szthr*max(abs(sztmp));
+    isminsz = sztmp<=szthr;
+    sztmp(isminsz) = szmin; %below threshold is given baseline marker size
+    sztmp = rescale(sztmp, szmin, szmin*szmaxfac); %and above is scaled up to max marker size
+
+
+
+    %%%%% EXCLUDE BY GLNO RESPONSE AMPLITUDE %%%%%
+
+    if ~isempty(nothr)
+        if ischar(nothr)
+            if strcmp(nothr, 't')
+                [hcnt, hed] = histcounts(abs(nodvsrt));
+                thrbin = triangle_threshold(hcnt, 'R', histplt, [pthsv(1:end-4) 'histABS_.gif']);
+                thrval(1) = hed(thrbin) + mean(diff(hed))/2;
+            elseif strcmp(nothr, 'tn')
+                if ~any(nodvsrt<0) || ~any(nodvsrt>0)
+                    error("must have positive and negative values to use nothr tn")
+                end
+                [hcnt, hed] = histcounts(nodvsrt);
+                thrbin = triangle_threshold(hcnt, 'R', histplt, [pthsv(1:end-4) 'histR_.gif']);
+                thrval(1) = hed(thrbin) + mean(diff(hed))/2;
+                thrbin = triangle_threshold(hcnt, 'L', histplt, [pthsv(1:end-4) 'histL_.gif']);
+                thrval(2) = hed(thrbin) - mean(diff(hed))/2;
+            end
+        else
+            thrval = max(abs(nodvsrt))*nothr;
+        end
+
+        if isscalar(thrval)
+            kp2 = nodvsrt>thrval(1);
+        else
+            if thrval(1)<thrval(2)
+                kp2 = nodvsrt>thrval(1) & nodvsrt<thrval(2);
+            else
+                kp2 = nodvsrt>thrval(1) | nodvsrt<thrval(2);
+            end
+        end
+        ballinvdvrs = ballinvdvrs(kp2);
+        bumpdvrs = bumpdvrs(kp2);
+        nodvsrt = nodvsrt(kp2);
+        sztmp = sztmp(kp2);
+        cmap = cmap(kp2,:);
+        xydist = xydist(kp2);
+    end
+
+
+    %%%%% EXCLUDE BY EPOCH %%%%%
+
+    kp1 = kp1(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
+    ballinvdvrs = ballinvdvrs(kp1);
+    bumpdvrs = bumpdvrs(kp1);
+    nodvsrt = nodvsrt(kp1);
+    sztmp = sztmp(kp1);
+    cmap = cmap(kp1,:);
+    xydist = xydist(kp1);
+
+
+
+    %%%%% EXCLUDE BY DISTANCE FROM ORIGIN %%%%%
+
+    if ~isempty(xyrng)
+        xyrng = xyrng*max(abs(xydist));
+        kp3 = xydist<xyrng;
+        ballinvdvrs = ballinvdvrs(kp3);
+        bumpdvrs = bumpdvrs(kp3);
+        nodvsrt = nodvsrt(kp3);
+        sztmp = sztmp(kp3);
+        cmap = cmap(kp3,:);
+    end
+
+
+    %%%%% PLOT %%%%%
+
+    h = initfig();
+    hax = axes(Parent=h.hfg);
+    hold(hax, 'on')
+    plot(hax, xrng, ftline, color=[0 0 0 fitlinealpha])
+    scatter(hax, ballinvdvrs, bumpdvrs, sztmp, cmap, 'filled', MarkerFaceAlpha=facealpha);
+    hold(hax, 'off')
+    axis square
+    xlabel("ball")
+    ylabel("bump")
+    if ~yconst
+        limxtreme = max(abs([hax.XLim hax.YLim]));
+    end
+    hax.XLim = [-limxtreme limxtreme];
+    hax.YLim = [-limxtreme limxtreme];
+    title({[side ' glno derivative red neg blue pos black zero']; ['lagx: ' num2str(lagsampxy) ', lagz: ' num2str(lagsampz) ', epoch: ' epochstr]})
+
+    % saveas(gcf, pthsv)
+    fig2gif(h.hfg, 1, [pthsv(1:end-4) '.gif']) %save as gif
+
+
+end
+
+%% surface fit to scatter above 
+
+if ~isempty(plt) && plt(4)
+
+    numnodes = 50;
+    xg = linspace(min(ballinvdvrs),max(ballinvdvrs),numnodes);
+    yg = linspace(min(bumpdvrs),max(bumpdvrs),numnodes);
+    zsgf = gridfit( double(ballinvdvrs), double(bumpdvrs), double(nodvsrt), double(xg), double(yg));
+    hfg = figure;
+    hax = axes(Parent=hfg);
+    hpl = surf(hax,xg,yg,zsgf);
+    if ~yconst
+        limxtreme = max(abs([hax.XLim hax.YLim]));
+    end
+    hax.XLim = [-limxtreme limxtreme];
+    hax.YLim = [-limxtreme limxtreme];
+    hax.ZLim = [-max(abs(hax.ZLim(:))) max(abs(hax.ZLim(:)))];
+    axis( hax, 'vis3d' )
+    xlabel("ball")
+    ylabel("bump")
+    zlabel("GLNO")
+    colormap(hot(256))
+    camlight right
+    lighting phong
+    pthsv = [pthpre 'glno_surf_' side '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_' datestr '_.fig'];
+    vwel = linspace(0, 50, 10);
+    vwel = vwel(1:end-1);
+    vwaz = linspace(0, 50, 10);
+    vwaz = vwaz(1:end-1);
+    [vwaz, vwel] = meshgrid(vwaz, vwel);
+    vws = [vwaz(:) vwel(:)];
+
+    fig2gif(hfg, 1, [pthsv(1:end-4) '.gif'])
+    % for k = 1:size(vws,1)
+    %     hax.View = hax.View + [vws(k,1) vws(k,2)];
+    %     fig2gif(hfg, k, [pthsv(1:end-4) '.gif'])
+    % end
+
+
+end
+
+
+end
+
+
+function [varx_lagxyz, vary_lagxyz, varz_lagxyz] = lagvars(varx, vary, varz, lagxy, lagz)
+
+%negative lag, first variable follows second (first var shifted right) (but should be opposite prob)
+%positive lag first variable precedes second (first var shifted left) (but should be opposite prob)
+
+%first apply xy lag
+if lagxy<=0
+    varx_lagxy = vec(varx(1+abs(lagxy):end));
+    vary_lagxy = vec(vary(1:end-abs(lagxy)));
+else
+    varx_lagxy = vec(varx(1:end-abs(lagxy)));
+    vary_lagxy = vec(vary(1+abs(lagxy):end));
+end
+
+%now apply z lag
+if lagz<=0
+    varx_lagxyz = vec(varx_lagxy(1+abs(lagz):end));
+    vary_lagxyz = vec(vary_lagxy(1+abs(lagz):end));
+    varz_lagxyz = vec(varz(1:end - (abs(lagxy)+abs(lagz)))); %also include lagxy for 3rd var
+else
+    varx_lagxyz = vec(varx_lagxy(1:end-abs(lagz)));
+    vary_lagxyz = vec(vary_lagxy(1:end-abs(lagz)));
+    varz_lagxyz = vec(varz( (1+abs(lagxy)+abs(lagz) ):end));
+end
+
+end
+
+
+
+function [varx_lagxyz, vary_lagxyz, varz_lagxyz] = remove_nans_as_group(varx_lagxyz, vary_lagxyz, varz_lagxyz)
+
+keepind = ~(isnan(varx_lagxyz) | isnan(vary_lagxyz));
+varz_lagxyz_isnan = isnan(varz_lagxyz);
+if any(varz_lagxyz_isnan)
+    keepind = keepind | varz_lagxyz_isnan;
+    varz_lagxyz = varz_lagxyz(keepind);
+end
+varx_lagxyz = varx_lagxyz(keepind);
+vary_lagxyz = vary_lagxyz(keepind);
+if ~any(varz_lagxyz_isnan)
+    varz_lagxyz = ones(numel(varx_lagxyz), 1);
+end
+
+end
+

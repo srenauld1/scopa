@@ -1,4 +1,4 @@
-function resp = roiresp(respin, opt)
+function resp = roits(respin, opt)
 
 %handles 
 
@@ -103,7 +103,7 @@ if uwt==0
 elseif uwt(uwt~=0)==1
     wtstr = 'n'; %no pixel weighting, just indices
     if uwt==1
-        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roiresp, or wasn't passed to roiresp
+        nowt = 1; %if roiwt is all ones, or is just 1, or is empty when passed to roits, or wasn't passed to roits
     end
 else
     wtstr = 'y'; %pixel indices with weighting

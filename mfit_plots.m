@@ -45,7 +45,7 @@ function mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
 
 
 
-%% create pixelwise fit for background of hsv plot (if requested) by calling mfit here, with pixfit==1
+%% create pixelwise fit for background of hsv plot (if requested) by calling mdlmake here, with pixfit==1
 
 if strcmp(fitopt.hsv_background, 'pixels') && pixfit==0 %only do if pixfit==0, to avoid infinite recursion
     pixfit = 1;
@@ -55,7 +55,7 @@ if strcmp(fitopt.hsv_background, 'pixels') && pixfit==0 %only do if pixfit==0, t
     fitin2.vars.depvp = depv2;
     roidat2 = roidat;
     roidat2.roipx = roipixind2;
-    mfit(stack, fitin2, roidat2, sampper, fitopt, pixfit); %call mfit on pixels if you want a pixel fit background behind your roi fit background
+    mdlmake(stack, fitin2, roidat2, sampper, fitopt, pixfit); %call mdlmake on pixels if you want a pixel fit background behind your roi fit background
     pixfit = 0; %reset to zero
 end
 
@@ -73,7 +73,7 @@ opts.plt.include_best_fit = 1;
 
 
 opts.plt.plot_indv = 1;
-opts.plt.num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochinds))), so same color is associated weith same epoch across different fits
+opts.plt.num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochnum))), so same color is associated weith same epoch across different fits
 opts.plt.max_num_indv_to_plot = 2;
 opts.plt.num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
 opts.plt.epoch_patch_face_alpha = 0.05;
@@ -126,7 +126,7 @@ for ei = 1:numel(enm)
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
         plotvars.(enm{ei}).(vnm{vi}) = mfit_plots_prepvars(indv, depv, fitin, opts.plt, roidat, ...
-            fitin.fits.(enm{ei}).epochinds, fitin.fits.(enm{ei}).(vnm{vi}), ...
+            fitin.fits.(enm{ei}).epochnum, fitin.fits.(enm{ei}).(vnm{vi}), ...
             opts.mdlname, opts.normalize_depv, enm{ei}, pth_fitdata_prefix);
     end
 end

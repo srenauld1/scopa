@@ -1,4 +1,4 @@
-function resp = roiresp(resp, roimask, stackmnt, saveresp, pthpre, sampper, t, opt, memthr, doplt)
+function resp = roits(resp, roimask, stackmnt, saveresp, pthpre, sampper, t, opt, memthr, doplt)
 
 arguments
     resp % stack (must be yxztc), or roi timeseries (roi,t,c), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)

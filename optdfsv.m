@@ -19,10 +19,10 @@ d.copybin = "";
 d.filled = 0;
 d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported in options struct o; options struct will make sure all of these are populated before existing oset; note some vbins are only used nested within others (e.g. mm only exists as roi.mm), but defaults for these can still be called using odf, like to invoke defaults from within the function that uses them e.g. odf('mm', unpack=1)
-    "spec", "mn", "daq", "spr", "sld", "ftv", "roi", "bmp", "mf", "pltx", "feat", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
+    "spec", "mn", "daq", "spr", "sld", "ftv", "roi", "bmp", "mdl", "pltx", "feat", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
-    "mf.tg", "mf.sp", "mf.tp", "mf.opg", "mf.opl", ...
-    "bmp.mf", "bmp.mf.tg", "bmp.mf.sp", "bmp.mf.tp", "bmp.mf.opg", "bmp.mf.opl", ...
+    "mdl.tg", "mdl.sp", "mdl.tp", "mdl.opg", "mdl.opl", ...
+    "bmp.mdl", "bmp.mdl.tg", "bmp.mdl.sp", "bmp.mdl.tp", "bmp.mdl.opg", "bmp.mdl.opl", ...
     "spr.sp", "spr.sld", ...
     "pltx.tg", ...
     "copybin", "filled", "id", "nestvalid", ... 
@@ -48,12 +48,12 @@ d.mn.dofeat = 0; %load stimulus features (carl's old project)
 d.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 d.mn.doroi = 0; %do roi extraction
 d.mn.dobmp = 0; %compute bump 
-d.mn.dofit = 0; %model fitting (o.mf below)
+d.mn.dofit = 0; %model fitting (o.mdl below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
 
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mf"]
+d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mdl"]
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 
@@ -239,7 +239,7 @@ d.qc.maxregperroi = 4; % for discontiguous rois
 d.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morphological mask (morph mask is all ones if you don't make one)
 
 
-%% nrm (roiresp: extract and/or normalize roi timeseries)
+%% nrm (roits: extract and/or normalize roi timeseries)
 
 % options for extraction/normalization of roi signals
 % standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.pre and nrm.post, 
@@ -259,13 +259,13 @@ d.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max 
 d.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
 d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
-%% bmp (bumpcmp: compute bump)
+%% bmp (bmpmake: compute bump)
 
-% options for bump in bumpcmp function
-% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mf.tg.v1) and all matches from o.bmp.mf.tg.v2
+% options for bump in bmpmake function
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mdl.tg.v1) and all matches from o.bmp.mdl.tg.v2
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mf.tg.v1 as the magnitude, in computing pva
-% if the regionex in o.bmp.mf.tg.v1 is in o.bmp.numangrs, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mdl.tg.v1 as the magnitude, in computing pva
+% if the regionex in o.bmp.mdl.tg.v1 is in o.bmp.numangrs, and that regionex is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
 % if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 %options for computing bump
@@ -275,42 +275,42 @@ d.bmp.scope = 'all'; %cell array of char, 'all', 'right', 'left', 'max', 'random
 d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.slopelensec = 0.4; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.smlensec = 0; %full width of gaussian smoothing window (5 times std)
-d.bmp.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average, regionex must exist in matches to o.bmp.mf.tg.v1  . . . to skip resampling for a regionex, just don't list it here, or write 'regionex-0'
-d.bmp.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
-d.bmp.rs = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+d.bmp.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average
+d.bmp.maxangrs = 8; %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs) is highest frequency you wish to capture in output)d.bmp.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
+d.bmp.dorescale = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
 d.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 
-%% mfit (mfit: fit models to individual roi responses)
+%% mdlmake (mdlmake: fit models to individual roi responses)
 
-% options for modeling depv as function of indv in mfit function
+% options for modeling depv as function of indv in mdlmake function
 
-d.mf.num_synthetic_depv = 0; %create synthetic data (using requested mdlname options, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
-d.mf.epochinds = 1;
-d.mf.mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
-d.mf.mdl_length_sec = 0; %seconds, 0 is one sample
-d.mf.keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
-d.mf.validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-d.mf.validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochinds is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochinds; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
-d.mf.slvrg = 'globalsearch';
-d.mf.max_iter_global = 3; %this will not be assigned to globalsearch object d.opg; instead is used in output function for optimization problem, to stop optimization
-d.mf.slvrl = 'fmincon'; %'lsqcurvefit';
-d.mf.mdlname = 'fnet_A01_s'; %'svd' or fnet string (see docs_mdlname.m)
-d.mf.excludeopts = '';
-d.mf.normalize_indv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
-d.mf.normalize_depv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
-d.mf.smoothdepv = 0; %gaussian window std is one fifth total length
-d.mf.smoothindv = 0; %gaussian window std is one fifth total length
-d.mf.use_saved_model = 1;
-d.mf.omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
-d.mf.optim_hist_save_iter_spacing = 0;
+d.mdl.num_synthetic_depv = 0; %create synthetic data (using requested mdlname options, within any requested bounds) for testing fit; this is number of synthetic responses to fit; 0 to skip
+d.mdl.epochnum = 1;
+d.mdl.mdl_lag_sec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
+d.mdl.mdl_length_sec = 0; %seconds, 0 is one sample
+d.mdl.keep_transition_zones = 0; %1 to keep multi-timepoint model samples that have multiple epochs
+d.mdl.validation_fold = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochnum is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochnum; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+d.mdl.validation_split_style = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochnum is divisible by validation_fold, will validate on numbouts/validation_fold bouts for each epoch in epochnum; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+d.mdl.slvrg = 'globalsearch';
+d.mdl.max_iter_global = 3; %this will not be assigned to globalsearch object d.opg; instead is used in output function for optimization problem, to stop optimization
+d.mdl.slvrl = 'fmincon'; %'lsqcurvefit';
+d.mdl.mdlname = 'fnet_A01_s'; %'svd' or fnet string (see docs_mdlname.m)
+d.mdl.excludeopts = '';
+d.mdl.normalize_indv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mdl.normalize_depv = 'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mdl.smoothdepv = 0; %gaussian window std is one fifth total length
+d.mdl.smoothindv = 0; %gaussian window std is one fifth total length
+d.mdl.use_saved_model = 1;
+d.mdl.omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
+d.mdl.optim_hist_save_iter_spacing = 0;
 
 
 %% global solver options
 
-if strcmp(d.mf.slvrg, 'globalsearch')
+if strcmp(d.mdl.slvrg, 'globalsearch')
     d.opg = GlobalSearch; %globalsearch can only use fmincon
 else
-    error("mfit currently only supports globalsearch")
+    error("mdlmake currently only supports globalsearch")
 end
 
 %these are defaults for scopa, but are not the defaults output by optimoptions 
@@ -334,10 +334,10 @@ d.opg.StartPointsToRun = 'bounds-ineqs';
 %% local solver options
 
 
-if strcmp(d.mf.slvrl, 'fmincon')
-    d.opl = optimoptions(d.mf.slvrl);
+if strcmp(d.mdl.slvrl, 'fmincon')
+    d.opl = optimoptions(d.mdl.slvrl);
 else
-    error("mfit currently only supports local solver fmincon")
+    error("mdlmake currently only supports local solver fmincon")
 end
 
 
@@ -393,7 +393,7 @@ d.pltx.lagsz_sec = [0, 0, 1, 0]; %same as lagxy_sec, except z lags are applied f
 d.pltx.lags_to_plot = 'best'; % 'zero', 'best', 'zeroandbest', 'all'
 d.pltx.plot_z_as_color = 1; %if z variable exists, 0 will make 3d scatterplot, 1 will make 2d with z variable as color
 
-d.pltx.epochinds = [1]; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
+d.pltx.epochnum = [1]; %cell array of vectors or scalars listing epochs (within single trial) to group in scatterplots, empty cell with empty vector for all epochs, like this {[]}
 
 d.pltx.iz = []; %z indices to plot, empty for all, negative for that number equidistant from all available
 d.pltx.it = []; %[3320]; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments

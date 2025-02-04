@@ -14,9 +14,10 @@ arguments
     opt.yconst {mustBeNumeric} = 0 %0 or 1 whether to update y limits for each xlim subset (if 1, will set to [min max], or length 2 vector defining constant ylim
     opt.ylimtype = 'all'
     opt.yroomfac {mustBeNumeric} = 0.1 %percentage of y range to pad above and below
+    opt.marks = [] %y positions to put markers (style mkr2); will error if there is not a common x
+    opt.mkr {mustBeText} = 'diamond' %marker for plotting optional argument 'marks',  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.col = []; %color,  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.lst {mustBeText} = '-' %linestyle, length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
-    opt.mkr {mustBeText} = 'none' %marker,  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.minsampperseg = 5 %min samples per xseg
     opt.maxnumts = 8 %max number timeseries
     opt.titlein {mustBeText} = '' %title
@@ -30,6 +31,7 @@ xseg = opt.xseg;
 yconst = opt.yconst;
 ylimtype = opt.ylimtype;
 yroomfac = opt.yroomfac;
+marks = opt.marks;
 col = opt.col;
 lst = opt.lst;
 mkr = opt.mkr;
@@ -40,6 +42,17 @@ hfg = opt.hfg;
 axpos = opt.axpos;
 minsampperseg = opt.minsampperseg;
 maxnumts = opt.maxnumts;
+
+%marks must be cell of cell 
+if ~iscell(marks)
+    marks = {marks};
+end
+for k = 1:numel(marks)
+    if ~isempty(marks{k}) && ~iscell(marks{k})
+        error("marks must be cell of cell")
+        % marks{k} = {marks{k}};
+    end
+end
 
 fprintf("WARNING FUNCTION tsplt MOSTLY WORKS BUT IS STILL BEING WRITTEN" + newline)
 pause(2)
@@ -122,7 +135,7 @@ else
     dosave = 1; %1 for now but eventually 0 here; not set up to save outside this function because of the loop, but that would be better
 end
 
-%% PARSE X AND Y INPUT DATA
+%% INERPOLATE TIMESERIES ONTO SAME RANGE
 
 default_xtrue = 0;
 if isempty(xall)
@@ -164,6 +177,9 @@ else
 end
 
 num_xy_pairs = numel(tsx);
+if ~isempty(cell2mat(cellflat(marks))) && ~isequal(numel(marks), num_xy_pairs)
+    error("marks must have same number of outer cells as xy pairs")
+end
 
 numsamp = numel(tsx{1});
 if any(cellfun(@numel, tsx)~=numsamp) || any(cellfun(@numel, tsy)~=numsamp)
@@ -183,8 +199,11 @@ end
 if isempty(col)
     col = brewermap(maxnumts, 'Dark2'); %i prefer to keep the color order constant, regardless of number of inputs (assuming user doesn't change maxnumts); another option is distinguishable_colors(maxnumts);
     col = col(1:num_xy_pairs,:);
+    col2 = brewermap(maxnumts, 'Pastel1'); %i prefer to keep the color order constant, regardless of number of inputs (assuming user doesn't change maxnumts); another option is distinguishable_colors(maxnumts);
+    col2 = col2(1:numel(marks)*num_xy_pairs,:);
 end
 col = checkspec(col, num_xy_pairs);
+col2 = checkspec(col2, numel(marks)*num_xy_pairs);
 lst = checkspec(lst, num_xy_pairs);
 mkr = checkspec(mkr, num_xy_pairs);
 
@@ -198,13 +217,27 @@ lim = axlim(tsy, limtype=ylimtype, roomfac=yroomfac);
 
 tsy = rescale_to_range(tsy, lim, yaxis_true_lims);
 
+for k = 1:num_xy_pairs
+    if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
+        for m = 1:numel(marks)
+            marksy{k}{m} = interp1(tsx{k}, tsy{k}, marks{k}{m}, 'nearest');
+        end
+    end
+end
 
 %% PLOT EVERYTHING FIRST
 
 hax = axes(Parent=hfg, Position=axpos, XColor='k', YColor='k', Box='off');
 hold(hax, 'on')
+cnt = 0;
 for k = 1:num_xy_pairs
-    hpl{k} = plot(hax, tsx{k}, tsy{k}, Color=col{k}, LineStyle=lst{k}, Marker=mkr{k}); %cell expansion of ts for any number of xy pairs
+    hpl{k} = plot(hax, tsx{k}, tsy{k}, Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+    if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
+        for m = 1:numel(marks{k})
+            cnt = cnt+1;
+            hsc{cnt} = scatter(hax, marks{k}{m}, marksy{k}{m}, 'filled', MarkerFaceColor=col2{m}, Marker=mkr{m}); %cell expansion of ts for any number of xy pairs
+        end
+    end
 end
 hold(hax, 'off')
 hax.XLim = [tsx{k}(1) tsx{k}(end)];
@@ -255,7 +288,7 @@ end
 
 end
 
-function spec = checkspec(spec, num_xy_pairs)
+function spec = checkspec(spec, num)
 
 vnm = inputname(1);
 if ~iscell(spec)
@@ -265,9 +298,9 @@ if ~iscell(spec)
     spec = spectmp;
 end
 if isscalar(spec)
-    spec = repelem(spec, num_xy_pairs);
+    spec = repelem(spec, num);
 end
-if numel(spec)~=num_xy_pairs
+if numel(spec)~=num
     error(vnm + "must be length 1, 2, or num_xy_pairs")
 end
 

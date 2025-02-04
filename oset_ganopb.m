@@ -1,14 +1,14 @@
 function o = oset_ganopb(o)
 
-% regionex = {'ga', 'no', 'pb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
-regionex = {'pb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+% regionex = {'ga', 'no', 'pb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'pb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
 o.mn.dobmp = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
-o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mf"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mdl"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
 o.daq.use_carls_epochs = 1;
@@ -31,12 +31,12 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
         o.roi.ma.numroi = 613;
         o.roi.ma.maskmake = 'edge';
         o.roi.nrm.post = {'rsc000100'};
-        o.bmp.mf.mdlname = 'fnet_v';
-        o.bmp.mf.mdl_length_sec = 0;
-        o.bmp.mf.epochinds = 4;
-        o.bmp.mf.normalize_indv = 'none';
-        % o.bmp.mf.opl.MaxFunctionEvaluations = Inf; %3000;
-        % o.bmp.mf.opl.MaxIterations = 5000; %1000    else
+        o.bmp.mdl.mdlname = 'fnet_v';
+        o.bmp.mdl.mdl_length_sec = 0;
+        o.bmp.mdl.epochnum = 4;
+        o.bmp.mdl.normalize_indv = 'none';
+        % o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
+        % o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
     elseif any(strcmp(regionex{m}, {'no', 'ga'}))
         o.roi.mm.maskname = {'left', 'right'};
     end

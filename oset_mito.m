@@ -1,13 +1,13 @@
 function o = oset_mito(o)
 
-regionex = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
 o.mn.dobmp = 0; %compute bump?
 o.mn.dofit = 1; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
-o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mf"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mdl"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
 o.daq.use_carls_epochs = 1;
@@ -27,12 +27,12 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
 
     o.roi.nrm.post = {'f'};
     
-    o.mf.mdlname = 'fnet_v';
-    o.mf.mdl_length_sec = 0;
-    o.mf.epochinds = 1;
-    o.mf.normalize_indv = 'none';
-    % o.mf.opl.MaxFunctionEvaluations = Inf; %3000;
-    % o.mf.opl.MaxIterations = 5000; %1000    else
+    o.mdl.mdlname = 'fnet_v';
+    o.mdl.mdl_length_sec = 0;
+    o.mdl.epochnum = 1;
+    o.mdl.normalize_indv = 'none';
+    % o.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
+    % o.mdl.opl.MaxIterations = 5000; %1000    else
 
     o = odf(o, 'roi', regionex{m});
 

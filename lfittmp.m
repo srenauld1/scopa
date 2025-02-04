@@ -1,5 +1,5 @@
 
-    %% linear fit and hsv map (will be moved into mfit)
+    %% linear fit and hsv map (will be moved into mdlmake)
 
     if o.mn.do_lfit
 

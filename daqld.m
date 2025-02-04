@@ -54,12 +54,6 @@ idxreg = opt.idxreg;  %work-in-progress, currently has no effect; 'start', 'end'
 
 id = idmake(pthstack); %just in case id info gets used below
 
-pth_daq_pat = [id.dirstack id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
-pth_daq = rdir(pth_daq_pat);
-if isempty(pth_daq)
-    error("this daq file does not exist: " + pth_daq_pat)
-end
-pth_daq = pth_daq.name;
 pth_daqrs = [id.dirstack id.recid '_daqrs_.mat'];
 
 pthmd = [id.dirstack id.recid '_mdsi_.txt'];
@@ -91,6 +85,13 @@ if isfile(pth_daqrs)
 else
 
     fprintf("daqrs file '" + pth_daqrs + "' does not exist; making daqrs now" + newline)
+
+    pth_daq_pat = [id.dirstack id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+    pth_daq = rdir(pth_daq_pat);
+    if isempty(pth_daq)
+        error("this daq file does not exist: " + pth_daq_pat)
+    end
+    pth_daq = pth_daq.name;
 
     pthfigpre = pth_daqrs(1:end-4);
 

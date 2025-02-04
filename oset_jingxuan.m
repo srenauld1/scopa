@@ -1,13 +1,13 @@
 function o = oset_jingxuan(o)
 
-regionex = {'none'}; % use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mfit) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+regionex = {'none'}; % use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 0; %make/load/process rois?
 o.mn.dobmp = 0; %compute bump?
 o.mn.dofit = 0; %fit model?
 o.mn.dopltx = 0; %enter pltx for summary interactive plots?
-o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mf"], so keep this commented if you want all plots; if you want none, do empty string array [""]
+o.mn.plt = [""]; %string array of subroutines that get plots; default is all of them, ["daq", "spr", "ftv", "roi", "bmp", "mdl"], so keep this commented if you want all plots; if you want none, do empty string array [""]
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
 o.daq.slopelensec = 0.43; %this works for sample rate 5.8251; make this as short as possible while window_is_too_short is still false, where slopeord is always 2, and samprate is the voluem rate if volumetric, or framerate if non-volumetric; slopeord = 2; slopelen = round(o.daq.slopelensec / (1/samprate)); window_is_too_short = slopelen<slopeord+1
