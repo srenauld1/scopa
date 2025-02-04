@@ -17,8 +17,8 @@ arguments
 end
 mthd = opt.mthd;
 omitnan = opt.omitnan;
-scope = opt.scope;
-domaintype = opt.domaintype;
+domscope = opt.domscope;
+domtype = opt.domtype;
 dorescale = opt.dorescale;
 numangrs = opt.numangrs;
 maxangrs = opt.maxangrs;
@@ -45,7 +45,7 @@ if numseg==1
 end
 
 if isodd(numseg)
-    fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (scope 'left', 'right', 'max', or a digit, or mthd is 'functional' for regionex pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
+    fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (domscope 'left', 'right', 'max', or a digit, or mthd is 'functional' for regionex pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
 end
 
 halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
@@ -61,7 +61,7 @@ stack = stackcrop(stack, pthstack, regionex);
 %% define domain (functionally or morphologically)
 
 
-if strcmp(domaintype, 'functional')
+if strcmp(domtype, 'functional')
 
     fitin = mdlmake(indvp, depvp, imrate, optmdl, doplt, pthpre, epochts, stack, roidat);
 
@@ -74,7 +74,7 @@ if strcmp(domaintype, 'functional')
         domaintmp = angpref;
     end
 
-elseif strcmp(domaintype, 'morphological') %morphological domain
+elseif strcmp(domtype, 'morphological') %morphological domain
 
     domaintmp = mod(linspace(0,4*pi,numseg+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
     domaintmp = domaintmp(1:end-1);
@@ -90,7 +90,7 @@ end
 
 %% compute bump
 
-switch scope
+switch domscope
     case 'all' %regular pva, all clusters, same as mean of both halves
         centinds = 1:numseg;
         resptmp = respcltmp;
@@ -108,17 +108,17 @@ switch scope
         centinds = 1:numseg;
         resptmp = zeros(size(respcltmp));
         resptmp(sub2ind(size(resptmp), randi([1 size(resptmp,1)],1,size(resptmp,2)), 1:size(resptmp,2))) = 1;
-    otherwise % weighted mean of both halves, if you use equal weighting (scope=50) it will be same as scope='all'
-        if isnumeric(scope)
-            wtl = scope/100;
+    otherwise % weighted mean of both halves, if you use equal weighting (domscope=50) it will be same as domscope='all'
+        if isnumeric(domscope)
+            wtl = domscope/100;
         else
-            wtl = str2double(scope)/100;
+            wtl = str2double(domscope)/100;
         end
         if isnan(wtl)
-            error("scope must be 'all', 'right', 'left', 'max', 'random', or a digit (text or numeric)")
+            error("domscope must be 'all', 'right', 'left', 'max', 'random', or a digit (text or numeric)")
         end
         if wtl<0 || wtl>1
-            error("scope must be range 0-100 if it's a digit")
+            error("domscope must be range 0-100 if it's a digit")
         end
         wtr = 1-wtl;
         centinds = 1:halfcent;
@@ -169,7 +169,7 @@ ampmean = mean(resptmp, 1, 'omitmissing')'; %find the amp, which is the mean dff
 
 %% output struct
 
-bmp.scope = scope;
+bmp.domscope = domscope;
 bmp.mthd = mthd;
 
 bmp.respcl = single(resptmp);

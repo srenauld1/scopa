@@ -1,4 +1,4 @@
-function y = resample_padded_timeseries(x, fs_new, fs_old)
+function y = tsrspad(x, fs_new, fs_old)
 
 if size(x,1) < size(x, 2)
     x = x';

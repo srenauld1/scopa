@@ -1,31 +1,31 @@
-function out = tssmooth(vartypein, inp, smlensec, dt)
+function tsout = tssmooth(vtype, tsin, smlensec, dt)
 
 arguments
-    vartypein mustBeText
-    inp
+    vtype mustBeText
+    tsin
     smlensec
     dt
 end
 
 smlen = round(smlensec / dt);
 
-if size(inp, 2)>size(inp, 1)
+if size(tsin, 2)>size(tsin, 1)
     sprintf("warning, smoothing along first dim, which is smaller than second, be sure this is what you want")
 end
 
-if strcmp(vartypein, 'circular')
+if strcmp(vtype, 'circular')
 
-    tmpx = cos(inp);
-    tmpy = sin(inp);
+    tmpx = cos(tsin);
+    tmpy = sin(tsin);
     tmpx = smoothdata(tmpx, 'gaussian', smlen, 'omitnan');
     tmpy = smoothdata(tmpy, 'gaussian', smlen, 'omitnan');
-    out = atan2(tmpy, tmpx);
+    tsout = atan2(tmpy, tmpx);
 
-elseif strcmp(vartypein, 'normal')
+elseif strcmp(vtype, 'normal')
 
-    out = smoothdata(inp, 'gaussian', smlen, 'omitnan');
+    tsout = smoothdata(tsin, 'gaussian', smlen, 'omitnan');
 
-elseif strcmp(vartypein, 'categorical')
+elseif strcmp(vtype, 'categorical')
 
     error("need to write categorical smooth (?)")
 

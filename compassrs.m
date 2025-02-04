@@ -7,7 +7,7 @@ function [roitsrs, angrs] = compassrs(roits, ang, numangrs, maxangrs, doplt, pth
 
 arguments
     roits %neural roitsonse, (roi,time), each roi represents an angle of a circle
-    ang %vector of angles represented by each roi; length must equal size(roits,1)
+    ang {mustBeVector} %vector of angles represented by each roi; length must equal size(roits,1)
     numangrs = 16 %number angles in resampled output
     maxangrs = 8 %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs is highest frequency you wish to capture in output)
     doplt = 0 %do plots
@@ -19,6 +19,10 @@ fprintf("resampling compass from " + num2str(numel(ang)) + " rois to " + num2str
 if range(ang)>2*pi
     error("in compassrs range(ang) cannot exceed 2pi")
 end
+if iscolumn(ang)
+    ang = ang(:)'; %ang must be row vector
+end
+
 [ang, idx] = sort(ang);
 roits = roits(idx,:);
 ang = [ang-2*pi ang ang+2*pi]; %bookend with the entire circle before calling resample; make angle monotonic increasing (not wrapped)

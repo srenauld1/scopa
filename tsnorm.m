@@ -90,8 +90,8 @@ for k = 1:length(normall)
             pat = '^z'; %starts with 'z'
             mtch = regexp(normtmp, pat, 'match');
             if isscalar(mtch)
-                if startsWith(tsclass, 'u')
-                    error("cannot maintain unigned integer class after z score")
+                if ~isa(ts, 'single') && ~isa(ts, 'double')
+                    fprintf("cannot maintain input class after z score, will convert input to single; output will also be single" + newline)
                 end
                 varsz = whos('ts');
                 numseg = ceil(varsz.bytes/memthr);
@@ -103,14 +103,14 @@ for k = 1:length(normall)
                         if isa(ts, 'single') || isa(ts, 'double')
                             ts(:,idx,:) = zscore(ts(:,idx,:), 1, 2); %2nd arg is 1 to use population not sample
                         else
-                            ts(:,idx,:) = vtype(zscore(single(ts(:,idx,:)), 1, 2), tsclass); %2nd arg is 1 to use population not sample
+                            ts(:,idx,:) = zscore(single(ts(:,idx,:)), 1, 2); %2nd arg is 1 to use population not sample
                         end
                     end
                 else
                     if isa(ts, 'single') || isa(ts, 'double')
                         ts = zscore(ts, 1, 2); %2nd arg is 1 to use population not sample
                     else
-                        ts = vtype(zscore(single(ts), 1, 2), tsclass); %2nd arg is 1 to use population not sample
+                        ts = zscore(single(ts), 1, 2); %2nd arg is 1 to use population not sample
                     end
                 end
             end

@@ -270,8 +270,8 @@ d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
 %options for computing bump
 d.bmp.mthd = 'pva'; %'pva' for vector average
-d.bmp.domaintype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-d.bmp.scope = 'all'; %cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
+d.bmp.domtype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
+d.bmp.domscope = 'all'; %cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
 d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.slopelensec = 0.4; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.smlensec = 0; %full width of gaussian smoothing window (5 times std)
