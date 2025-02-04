@@ -15,8 +15,17 @@ arguments
     opt
     doplt = []
 end
-
-eval(structvars(opt).'); %bad practice; turn opt into local variables with the same name as opt fields; using this function because there are so many here, but it's bad practice
+mthd = opt.mthd;
+omitnan = opt.omitnan;
+scope = opt.scope;
+domaintype = opt.domaintype;
+dorescale = opt.dorescale;
+numangrs = opt.numangrs;
+maxangrs = opt.maxangrs;
+slopelensec = opt.slopelensec;
+slopeord = opt.slopeord;
+smlensec = opt.smlensec;
+optmdl = opt.mdl;
 
 
 pthpre = fullfile(pth_dirstack, recid);
@@ -24,7 +33,6 @@ pthpre = fullfile(pth_dirstack, recid);
 if isempty(doplt)
     doplt = any(strcmp('bmp', glb('plt')));
 end
-
 
 if numangrs
     numseg = numangrs;
@@ -43,6 +51,8 @@ end
 halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
 
 sampper = 1/imrate;
+numroi = size(depvp, 1);
+numsamp = size(depvp, 2);
 
 %% crop stack
 
@@ -53,29 +63,16 @@ stack = stackcrop(stack, pthstack, regionex);
 
 if strcmp(domaintype, 'functional')
 
-    numroi = size(depvp, 1);
-    numsamp = size(depvp, 2);
-
-    doplt=0;
-
-    fitin = mdlmake(indvp, depvp, imrate, opt.mdl, doplt, pthpre, epochts, stack, roidat);
+    fitin = mdlmake(indvp, depvp, imrate, optmdl, doplt, pthpre, epochts, stack, roidat);
 
     fn = fieldnames(fitin.fits);
     angpref = fitin.fits.(fn).indvpf_mean_allval(:)'; %row vector of preferred angle;
 
-    [prefang_sorted,sinds] = sort(angpref);
-    rawsort = depvp(sinds,:);
-
     if numangrs
-        fprintf("resampling compass from " + num2str(numroi) + " rois to " + num2str(numangrs) + " rois, with 2pi domain (whether it's PB or not)" + newline)
         [respcltmp, domaintmp] = compassrs(depvp, angpref, numangrs, maxangrs, doplt);
-        respcltmp = rescale(respcltmp);
     else
         domaintmp = angpref;
     end
-
-
-    [respcltmp, domaintmp] = roi2hd(stack, regionex, indvp, depvp, pthpre, roidat, imrate, mdl, numangrs, smfac, doplt, epochts);
 
 elseif strcmp(domaintype, 'morphological') %morphological domain
 
@@ -277,99 +274,96 @@ if doplt
 
     end
 
-
-    if doplt
-
-        %preferred heading plots
-        figure;
-        subplot(4,1,1)
-        plot(angpref)
-        title("preferred angle")
-        ylim([-4 4])
-        subplot(4,1,2)
-        plot(mod(angpref, 2*pi))
-        title("preferred angle mod 2pi")
-        ylim([0 8])
-        subplot(4,1,3)
-        uwtmp = unwrap(mod(angpref, 2*pi));
-        uwtmp = uwtmp - uwtmp(1);
-        plot(uwtmp)
-        title("preferred angle unwrapped/zeroed")
-        subplot(4,1,4)
-        plot(prefang_sorted)
-        title("preferred angle sorted")
-        ylim([-4 4])
-        saveas( gcf, [pthpre '_PREFHD_.png'])
+    %preferred heading plots
+    figure;
+    subplot(4,1,1)
+    plot(angpref)
+    title("preferred angle")
+    ylim([-4 4])
+    subplot(4,1,2)
+    plot(mod(angpref, 2*pi))
+    title("preferred angle mod 2pi")
+    ylim([0 8])
+    subplot(4,1,3)
+    uwtmp = unwrap(mod(angpref, 2*pi));
+    uwtmp = uwtmp - uwtmp(1);
+    plot(uwtmp)
+    title("preferred angle unwrapped/zeroed")
+    subplot(4,1,4)
+    plot(prefang_sorted)
+    title("preferred angle sorted")
+    ylim([-4 4])
+    saveas( gcf, [pthpre '_PREFHD_.png'])
 
 
 
-        %resampled compass plot
-        if numangrs
+    %resampled compass plot
+    if numangrs
 
-            plotfull = 1;
-            plotraw = 0;
-            plothalves = 0; %will plot halves if regionex is pb, if regionex is not pb this has no effect
-            numplotinds = 50;
-            tinds = round(linspace(1, numsamp, numplotinds));
-            filename_save = [pthpre '_RESAMPCOMP_.gif'];
-            gifvis = 'on';
-            numroi_rs = size(resptmp,1);
-            % numroi_rs = numroi_rs/2
+        plotfull = 1;
+        plotraw = 0;
+        plothalves = 0; %will plot halves if regionex is pb, if regionex is not pb this has no effect
+        numplotinds = 50;
+        tinds = round(linspace(1, numsamp, numplotinds));
+        filename_save = [pthpre '_RESAMPCOMP_.gif'];
+        gifvis = 'on';
+        numroi_rs = size(resptmp,1);
+        % numroi_rs = numroi_rs/2
 
-            hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
-            hax = axes( 'Parent', hfg, 'Units', 'Normalized');
-            hax.Title.String = {"2pi all resampled (black), 2pi merged halves resampled (magenta)"; "pre-resampled angle-sorted (red), pre-resampled native sorting (green)"};
+        hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
+        hax = axes( 'Parent', hfg, 'Units', 'Normalized');
+        hax.Title.String = {"2pi all resampled (black), 2pi merged halves resampled (magenta)"; "pre-resampled angle-sorted (red), pre-resampled native sorting (green)"};
 
 
-            cnt = 0;
-            for ind = tinds
-                cnt = cnt + 1;
+        cnt = 0;
+        for ind = tinds
+            cnt = cnt + 1;
 
-                if cnt==1
-                    hold(hax, 'on');
-                    yyaxis left
-                    if plotfull
-                        % hpl1 = plot(hax, 1:numroi_rs, resptmp(:,ind), 'color', [0 0 0], 'LineStyle','-');
-                        hpl1 = plot(hax, domain, resptmp(:,ind), 'color', [0 0 0], 'LineStyle','-');
-                    end
-                    hax.YAxis(1).Color = 'k';
-                    hax.YAxis(1).Limits = [0 1];
-                    if strcmp(regionex, 'pb') && plothalves
-                        %%hpl2 = plot(hax, 1:numroi_rs, resptmp4pi(:,ind), 'color', [0 1 1]);
-                        % hpl2 = plot(hax, domain4pi, resptmp4pi(:,ind), 'color', [0 1 1]);
-                        % hpl3 = plot(hax, 1:numroi_rs, resptmp_2halves(:,ind), 'color', [1 0 1], 'LineStyle','-');
-                        hpl3 = plot(hax, domain_2halves, resptmp_2halves(:,ind), 'color', [1 0 1], 'LineStyle','-');
-                    end
-                    yyaxis right;
-                    % hpl4 = plot(hax, linspace(1, numroi_rs, numroi), rawsort(:,ind), 'color', [1 0 0], 'LineStyle','-');
-                    hpl4 = plot(hax, prefang_sorted, rawsort(:,ind), 'color', [1 0 0], 'LineStyle','-');
-                    hax.YAxis(2).Color = 'k';
-                    hax.YAxis(2).Limits = [0 1];
-                    if plotraw
-                        rawrs = rescale(depvp);
-                        hpl5 = plot(hax, linspace(min(angpref), max(angpref), numroi), rawrs(:,ind), 'color', [0.1 0.7 0.1], 'LineStyle','-');
-                    end
-
-                    hold(hax, 'off');
-                else
-                    if plotfull
-                        hpl1.YData = resptmp(:,ind);
-                    end
-                    if strcmp(regionex, 'pb') && plothalves
-                        % hpl2.YData = resptmp4pi(:,ind);
-                        hpl3.YData = resptmp_2halves(:,ind);
-                    end
-                    hpl4.YData = rawsort(:,ind);
-                    if plotraw
-                        hpl5.YData = rawrs(:,ind);
-                    end
+            if cnt==1
+                hold(hax, 'on');
+                yyaxis left
+                if plotfull
+                    % hpl1 = plot(hax, 1:numroi_rs, resptmp(:,ind), 'color', [0 0 0], 'LineStyle','-');
+                    hpl1 = plot(hax, domain, resptmp(:,ind), 'color', [0 0 0], 'LineStyle','-');
+                end
+                hax.YAxis(1).Color = 'k';
+                hax.YAxis(1).Limits = [0 1];
+                if strcmp(regionex, 'pb') && plothalves
+                    %%hpl2 = plot(hax, 1:numroi_rs, resptmp4pi(:,ind), 'color', [0 1 1]);
+                    % hpl2 = plot(hax, domain4pi, resptmp4pi(:,ind), 'color', [0 1 1]);
+                    % hpl3 = plot(hax, 1:numroi_rs, resptmp_2halves(:,ind), 'color', [1 0 1], 'LineStyle','-');
+                    hpl3 = plot(hax, domain_2halves, resptmp_2halves(:,ind), 'color', [1 0 1], 'LineStyle','-');
+                end
+                yyaxis right;
+                % hpl4 = plot(hax, linspace(1, numroi_rs, numroi), rawsort(:,ind), 'color', [1 0 0], 'LineStyle','-');
+                hpl4 = plot(hax, prefang_sorted, rawsort(:,ind), 'color', [1 0 0], 'LineStyle','-');
+                hax.YAxis(2).Color = 'k';
+                hax.YAxis(2).Limits = [0 1];
+                if plotraw
+                    rawrs = rescale(depvp);
+                    hpl5 = plot(hax, linspace(min(angpref), max(angpref), numroi), rawrs(:,ind), 'color', [0.1 0.7 0.1], 'LineStyle','-');
                 end
 
-                fig2gif(hfg, cnt, filename_save)
-
-
+                hold(hax, 'off');
+            else
+                if plotfull
+                    hpl1.YData = resptmp(:,ind);
+                end
+                if strcmp(regionex, 'pb') && plothalves
+                    % hpl2.YData = resptmp4pi(:,ind);
+                    hpl3.YData = resptmp_2halves(:,ind);
+                end
+                hpl4.YData = rawsort(:,ind);
+                if plotraw
+                    hpl5.YData = rawrs(:,ind);
+                end
             end
+
+            fig2gif(hfg, cnt, filename_save)
+
+
         end
+    end
 end
 
 

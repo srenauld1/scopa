@@ -15,8 +15,17 @@ arguments
     opt
     doplt = []
 end
-
-eval(structvars(opt).'); %bad practice; turn opt into local variables with the same name as opt fields; using this function because there are so many here, but it's bad practice
+mthd = opt.mthd;
+omitnan = opt.omitnan;
+scope = opt.scope;
+domaintype = opt.domaintype;
+dorescale = opt.dorescale;
+numangrs = opt.numangrs;
+maxangrs = opt.maxangrs;
+slopelensec = opt.slopelensec;
+slopeord = opt.slopeord;
+smlensec = opt.smlensec;
+optmdl = opt.mdl;
 
 
 pthpre = fullfile(pth_dirstack, recid);
@@ -54,10 +63,10 @@ stack = stackcrop(stack, pthstack, regionex);
 
 if strcmp(domaintype, 'functional')
 
-    fitin = mdlmake(indvp, depvp, imrate, opt.mdl, doplt, pthpre, epochts, stack, roidat);
+    mdl = mdlmake(indvp, depvp, imrate, optmdl, doplt, pthpre, epochts, stack, roidat);
 
-    fn = fieldnames(fitin.fits);
-    angpref = fitin.fits.(fn).indvpf_mean_allval(:)'; %row vector of preferred angle;
+    fn = fieldnames(mdl.fits);
+    angpref = mdl.fits.(fn).indvpf_mean_allval(:)'; %row vector of preferred angle;
 
     if numangrs
         [respcltmp, domaintmp] = compassrs(depvp, angpref, numangrs, maxangrs, doplt);

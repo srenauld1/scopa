@@ -1,24 +1,27 @@
 function [roitsrs, angrs] = compassrs(roits, ang, numangrs, maxangrs, doplt, pthgif)
 
-% use gaussian to downsample and uniformly sample compass
 % roits should be roi x time, and the rois represent positions on a circle,
-% and their sampling is not uniform, so this function resamples to make it
-% uniform, so later the PVA can be computed with less bias
+% and their sampling may not be uniform, so this function resamples to make it uniform, 
+% so later the PVA can be computed with less bias
+% range(ang) cannot exceed 2pi
 
 arguments
     roits %neural roitsonse, (roi,time), each roi represents an angle of a circle
     ang %vector of angles represented by each roi; length must equal size(roits,1)
     numangrs = 16 %number angles in resampled output
-    maxangrs = 8 %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs) is highest frequency you wish to capture in output)
+    maxangrs = 8 %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs is highest frequency you wish to capture in output)
     doplt = 0 %do plots
     pthgif = []
 end
 
 fprintf("resampling compass from " + num2str(numel(ang)) + " rois to " + num2str(numangrs) + " rois, with 2pi domain (whether it's 4pi PB or not)" + newline)
 
+if range(ang)>2*pi
+    error("in compassrs range(ang) cannot exceed 2pi")
+end
 [ang, idx] = sort(ang);
-ang = [ang-2*pi ang ang+2*pi]; %bookend with the entire circle before calling resample; make angle monotonic increasing (not wrapped)
 roits = roits(idx,:);
+ang = [ang-2*pi ang ang+2*pi]; %bookend with the entire circle before calling resample; make angle monotonic increasing (not wrapped)
 roits = repmat(roits, [3 1]);
 fs = numangrs/(2*pi);
 fmax = maxangrs/(2*pi);
