@@ -269,6 +269,7 @@ d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 % if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
 %options for computing bump
+d.bmp.chan = 1; %channel of imaging data
 d.bmp.mthd = 'pva'; %'pva' for vector average
 d.bmp.domtype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
 d.bmp.domscope = 'all'; %cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)

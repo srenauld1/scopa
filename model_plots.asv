@@ -1,5 +1,5 @@
 
-function model_plots(mdl, roidat, stack, opts, pth_fitdata_prefix)
+function model_plots(mdl, roidat, stack, opts, pthpre)
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as szf does not exceed
@@ -91,12 +91,12 @@ if doplt(4)
     if isequal(mdl, @objective_svd)
         % plot_svd(ft{epi})
     else
-        mdl(ft{epi}, indv{epi}, supp, pth_fitdata_prefix);
+        mdl(ft{epi}, indv{epi}, supp, pthpre);
     end
 end
 
 if doplt(5)
-    roivpix(depv_allrois{epi}, stack, roipx, pth_fitdata_prefix) %make gif showing roi against each of its pixels
+    roivpix(depv_allrois{epi}, stack, roipx, pthpre) %make gif showing roi against each of its pixels
 end
 
 close all

@@ -1,5 +1,6 @@
 {
   "bmp": {
+    "chan": 1,
     "domscope": "all",
     "domtype": "functional",
     "dorescale": 1,
@@ -197,7 +198,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025020517230848",
+    "timestr": "2025020613094494",
     "user": "youforgottossetuser"
   },
   "nestvalid": [

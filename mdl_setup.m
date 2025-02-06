@@ -1,5 +1,5 @@
 
-function op = mdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, imrate, inputvar_stats, pth_fitdata_prefix)
+function op = mdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, imrate, inputvar_stats, pthpre)
 
 
 mdlname = opts.mdlname;
@@ -35,7 +35,7 @@ end
 
 supp.mdlname = mdlname;
 supp.mdlclass = mdlclass;
-supp.pthspre = pth_fitdata_prefix;
+supp.pthspre = pthpre;
 supp.imrate = imrate;
 supp.sampper = 1/imrate;
 supp.num_dim_indvp = num_dim_indvp;

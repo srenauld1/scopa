@@ -1,4 +1,4 @@
-function mdl = mdl_prepvars(mdl, opts, imrate, pth_fitdata_prefix, epochts)
+function mdl = mdl_prepvars(mdl, opts, imrate, pthpre, epochts)
 
 %don't unpack mdl.vars.indvp and mdl.vars.depvp from struct in case they're large (they can be updated below, which would double memory)
 
@@ -85,7 +85,7 @@ end
 if startsWith(opts.mdlname, 'ohe') %one hot encode indv, if mdlname is 'ohe*'
     doplots_hot = 0;
     [indvpaug, num_dim_indv, num_samp_mdl, ~] = ...
-        one_hot_encode_input(opts.mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pth_fitdata_prefix, doplots_hot);
+        one_hot_encode_input(opts.mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplots_hot);
 end
 
 
@@ -94,12 +94,12 @@ end
 if ~isequal([num_dim_indv, num_samp_indvpaug], size(indvpaug))
     error("wrong write size")
 end
-pth_indvaug_bin = write_mdl_var(indvpaug, pth_fitdata_prefix, 'indvpaug');
+pth_indvaug_bin = write_mdl_var(indvpaug, pthpre, 'indvpaug');
 
 if ~isequal([ num_dim_depvp, num_samp_depvp ], size(mdl.vars.depvp))
     error("wrong write size")
 end
-pth_depvp_bin = write_mdl_var(mdl.vars.depvp, pth_fitdata_prefix, 'depvp');
+pth_depvp_bin = write_mdl_var(mdl.vars.depvp, pthpre, 'depvp');
 
 
 %% compute basic stats from depv and indv for repeated use later

@@ -26,7 +26,6 @@ arguments
     opt.dupe = 0 %allow duplicate s with different names
     opt.pthscopas = [] %by default, looks for pthscopas in glb('pthscopas')
     opt.getonly = 0; %get variable or name from file only, not allowed to write or create new
-    opt.wcpat = '*' %pattern denoting wildcard (ignore this field); for now putting this here but should probably be set in higher function
 end
 s = opt.s;
 nm = opt.nm;
@@ -34,7 +33,8 @@ useprefix = opt.useprefix;
 dupe = opt.dupe;
 pthscopas = opt.pthscopas;
 getonly = opt.getonly;
-wcpat = opt.wcpat;
+
+wcpat = '*';
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
 
@@ -66,12 +66,8 @@ end
 part = 0; %don't allow partial matches
 if ~isempty(s)
     sflat = structflat(s);
-    fnf = fieldnames(sflat);
-    for k = 1:numel(fnf)
-        if isequal(sflat.(fnf{k}), wcpat)
-            part = 1; %if any field's value is wildcard '*' allow partial matches
-            break;
-        end
+    if any(structfun(@(x) any(strcmp(x, wcpat)),sflat))
+        part = 1;
     end
 end
 
@@ -311,8 +307,8 @@ else
         end
     else
         if part
-            nmout = cell(numel(matchind), 1); 
-            sout = cell(numel(matchind), 1); 
+            nmout = cell(numel(matchind), 1);
+            sout = cell(numel(matchind), 1);
             for k = 1:numel(matchind)
                 nmout{k} = nmfile{matchind(k)};
                 sout{k} = sfile.(nmfile{matchind(k)}); %if variable matches a variable in file, give variable the name it has in file
@@ -353,6 +349,8 @@ end
 
 end
 
+
+
 function [s, sfile] = partmake(s, sfile, wcpat)
 
 s = structflat(s);
@@ -370,3 +368,4 @@ s = structunflat(s);
 sfile = structunflat(sfile);
 
 end
+

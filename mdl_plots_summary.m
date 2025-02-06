@@ -207,7 +207,7 @@ end
 title_add_each = 'MODELFIT';
 figext = '.gif';
 
-filename_save = [pth_fitdata_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
+filename_save = [pthpre '_' title_add_each '_e_' epochinds_str_all '_' figext];
 tittmp = strsplit(filename_save(1:end-4), '/');
 figure_title = strrep(tittmp{end}, '_', ' ');
 

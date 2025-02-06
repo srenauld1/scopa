@@ -15,19 +15,19 @@ arguments
     doplt = []
 end
 
-pthpre = [erase(pthstack, '.mat') optid '_'];
+pthpre = [erase(pthstack, '.mat') optid '_roi_'];
+pthroi = [pthpre '.mat'];
 
-pthroi = [pthpre 'roi_.mat'];
 try
 
     roi = load(pthroi);
     if ~isfield(roi, {'ts', 'dat'})
-        error("roi struct must contain fields 'ts' and 'dat'")
+        error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
     end
 
 catch ME
 
-    fprintf("" + ME.message + newline + "creating/saving roi struct in this file" + newline)
+    fprintf("" + ME.message + newline + "creating roi struct now" + newline)
 
     if isempty(roimask)
         maskinput = 0;

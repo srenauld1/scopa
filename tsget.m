@@ -4,11 +4,13 @@ arguments
     tsg
     opt.pthparent = []
     opt.ind = []
+    opt.chan = []
     opt.flat = 0
     opt.optid = []
 end
 pthparent = opt.pthparent;
 ind = opt.ind;
+chan = opt.chan;
 flat = opt.flat;
 optid = opt.optid;
 
@@ -33,46 +35,51 @@ end
 
 vbin = cell2mat(fieldnames(tsg));
 
-tsg = odf(tsg); %make sure any option (for the one id_capable_vbin in tsg) that is not present in tsg gets a default value before tsg goes to opt2id
+tsg = odf(tsg, wild=1); %make sure any option (for the one id_capable_vbin in tsg) that is not present in tsg gets a default value before tsg goes to opt2id
 
 tsg2 = opt2id(tsg, getonly=1);
 
-fn = fieldnames(tsg2.(vbin));
+if isempty(tsg2.(vbin))
 
-cnt = 0;
-for k = 1:numel(fn)
-    fnpat = ['*' '_' fn{k} '_' vbin '_.mat'];
-    pthpat = fullfile(pthparent, '**', fnpat);
-    pthtmp = rdir(pthpat);
-    if ~isempty(pthtmp)
-        pth = cell(numel(pthtmp), 1);
-        for m = 1:numel(pthtmp)
-            cnt = cnt+1;
-            pth{m} = pthtmp(m).name;
+    fprintf("no variable found" + newline)
+    tsout = [];
 
-            if strcmp(vbin, 'roi')
-                load(pth{m}, 'ts')
-                if numel(ts)>1
-                    error("need to add channel to tsget")
-                end
-                c = 1;
-                if flat
-                    tsout{cnt} = vec(ts{c}(ind{:}));
-                else
-                    itmp = repmat({':'},1,ndims(ts{c}));
-                    for q = 1:numel(ind)
-                        if isfinite(ind{q})
-                            itmp{q} = ind{q};
+else
+    
+    fn = fieldnames(tsg2.(vbin));
+
+    cnt = 0;
+    for k = 1:numel(fn)
+        fnpat = ['*' '_' fn{k} '_' vbin '_.mat'];
+        pthpat = fullfile(pthparent, '**', fnpat);
+        pthtmp = rdir(pthpat);
+        if ~isempty(pthtmp)
+            pth = cell(numel(pthtmp), 1);
+            for m = 1:numel(pthtmp)
+                cnt = cnt+1;
+                pth{m} = pthtmp(m).name;
+
+                if strcmp(vbin, 'roi')
+                    load(pth{m}, 'ts')
+                    if flat
+                        tsout{cnt} = vec(ts{chan}(ind{:}));
+                    else
+                        itmp = repmat({':'},1,ndims(ts{chan}));
+                        for q = 1:numel(ind)
+                            if isfinite(ind{q})
+                                itmp{q} = ind{q};
+                            end
                         end
+                        tsout{cnt} = ts{chan}(itmp{:});
                     end
-                    tsout{cnt} = ts{c}(itmp{:});
                 end
             end
         end
     end
-end
 
-tsout = reshape(cell2mat(tsout), [size(tsout{1}), numel(tsout)]);
+    tsout = reshape(cell2mat(tsout), [size(tsout{1}), numel(tsout)]);
+
+end
 
 end
 

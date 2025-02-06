@@ -1,4 +1,4 @@
-function mdl = mdl_epochs(mdl, opts, epi, pth_fitdata_prefix)
+function mdl = mdl_epochs(mdl, opts, epi, pthpre)
 
 epochinds = opts.epochinds{epi};
 validation_fold = opts.validation_fold;
@@ -54,7 +54,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     %% create save path, check if saved model already exists
 
-    [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pth_fitdata_prefix, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
+    [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
 
     %% create synthetic data to test optimization (optional)
 

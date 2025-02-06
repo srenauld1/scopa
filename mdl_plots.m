@@ -1,5 +1,5 @@
 
-function mdl_plots(mdl, roidat, stack, opts, pth_fitdata_prefix, pltstr)
+function mdl_plots(mdl, roidat, stack, opts, pthpre, pltstr)
 
 
 "EVERYTHING IN mdl_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
@@ -52,10 +52,10 @@ if strcmp(fitopt.hsv_background, 'pixels') && pixfit==0 %only do if pixfit==0, t
     roipixind2 = logical(sum(roidat.roipx)); %THESE ARE PIXEL INDICES FROM ALLROI MASK, NOT EACH ROI, ALL NOT SUPERSET OF EACH IF IF ANY ROIS ARE OVERLAPPING
     depv2 = reshape(stack, [], size(stack, 4));
     depv2 = depv2(cell2mat(roipixind2), :);
-    fitin2.vars.depvp = depv2;
+    mdl2.vars.depvp = depv2;
     roidat2 = roidat;
     roidat2.roipx = roipixind2;
-    mdlmake(stack, fitin2, roidat2, sampper, fitopt, pixfit); %call mdlmake on pixels if you want a pixel fit background behind your roi fit background
+    mdlmake(stack, mdl2, roidat2, sampper, fitopt, pixfit); %call mdlmake on pixels if you want a pixel fit background behind your roi fit background
     pixfit = 0; %reset to zero
 end
 
@@ -127,7 +127,7 @@ for ei = 1:numel(enm)
     for vi = 1:numel(vnm)
         plotvars.(enm{ei}).(vnm{vi}) = mdl_plots_prepvars(indv, depv, mdl, opts.plt, roidat, ...
             mdl.fits.(enm{ei}).epochnum, mdl.fits.(enm{ei}).(vnm{vi}), ...
-            opts.mdlname, opts.normalize_depv, enm{ei}, pth_fitdata_prefix);
+            opts.mdlname, opts.normalize_depv, enm{ei}, pthpre);
     end
 end
 
@@ -143,7 +143,7 @@ end
 
 %THIS IS STUPID, DON'T LOOP OVER EPOCH/VALIDATION SETS; NEED TO BE ABLE TO MAKE IT INNER LOOP TOO 
 
-hsv_filename = [pth_fitdata_prefix 'hsvfov_.gif'];
+hsv_filename = [pthpre 'hsvfov_.gif'];
 opts.plt.fg = 'allrois';
 opts.plt.ignoresat = 0;
 opts.plt.ignoreval = 0;
@@ -158,17 +158,17 @@ for ei = 1:numel(enm)
                 case 'sum'
                     mdl_plots_summary(mdl, opts, roidat, stackmnt)
                 case 'ts'
-                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, mdl.op.supp, pth_fitdata_prefix, epochinds_str_all)
+                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, mdl.op.supp, pthpre, epochinds_str_all)
                 case 'fov'
                     hsvplt(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
                 case 'mdl'
                     if isequal(mdlfcn, @fit_svd)
                         % plot_svd(ft{epi})
                     else
-                        mdlfcn(mdl.fits.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pth_fitdata_prefix);
+                        mdlfcn(mdl.fits.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pthpre);
                     end
                 case 'comp'
-                    roivpix(depv_allrois{epi}, stack, roipx, pth_fitdata_prefix) %make gif showing roi against each of its pixels
+                    roivpix(depv_allrois{epi}, stack, roipx, pthpre) %make gif showing roi against each of its pixels
             end
         end
     end

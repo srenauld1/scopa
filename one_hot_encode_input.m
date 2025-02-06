@@ -1,5 +1,5 @@
 function [indvpaug, num_dim_indv, num_samp_mdl, levs_full_hot] = ...
-    one_hot_encode_input(mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pth_fitdata_prefix, doplt)
+    one_hot_encode_input(mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplt)
 
 numbinhot = sscanf(mdlname, 'ohe%d');
 collapse_input_by_ineractions = 1; %default for now
@@ -15,7 +15,7 @@ for ivai = 1:size(indvpaug, 1)
     indvin_hot(ivai,:) = quantileranks(indvpaug(ivai,:), numbinhot);
     if doplt
         hp1.YData = indvpaug(ivai,1:100); yyaxis right; hp2.YData = indvin_hot(ivai,1:100);
-        filename_save_hot = [pth_fitdata_prefix '_dischot_.gif'];
+        filename_save_hot = [pthpre '_dischot_.gif'];
         fig2gif(hfg, ivai, filename_save_hot)
     end
 end
@@ -39,7 +39,7 @@ num_dim_indv = size(indvpaug, 1);
 % num_samp_mdl = 1;
 
 if doplt
-    filename_save_hot_levels = [pth_fitdata_prefix '_hotlevels_.png'];
+    filename_save_hot_levels = [pthpre '_hotlevels_.png'];
     figure; imagesc(hotcombos)
     saveas(gcf, filename_save_hot_levels)
 end

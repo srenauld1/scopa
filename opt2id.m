@@ -16,8 +16,7 @@ if isempty(user)
     error("you have not set glb('user')")
 end
 
-% id_capable_vbin = {'roi', 'mdl', 'bmp'}; %only these vbin can be distributed (optdist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
-id_capable_vbin = {'roi'}; %only these vbin can be distributed (optdist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
+id_capable_vbin = {'roi', 'mdl', 'bmp'}; %only these vbin can be distributed (optdist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
 
 if isempty(vbin)
     vbin = id_capable_vbin;
@@ -57,61 +56,66 @@ for k = 1:numel(vbin)
 
     %%%%%%%% FIND OPTIONS FILE (FOR THIS FILESYSTEM) FOR A SINGLE vbin %%%%%%%%
 
-    pthoptpat = [pthscopa 'opt' vbintmp '_' user '_*_.txt'];
+    pthoptpat = [pthscopa 'opt_' vbintmp '_' user '_*_.txt'];
 
     for m = 1:numel(o)
 
-        %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
+        if isfield(o(m), vbintmp)
+            
+            %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-        optexpall = optdist(o(m), vbintmp); %optexpall structs (fields) are temporary names assigned during distribution
+            optexpall = optdist(o(m), vbintmp); %optexpall structs (fields) are temporary names assigned during distribution
 
-        optout = [];
-        fntmp = fieldnames(optexpall);
-        for p = 1:numel(fntmp)
+            optout = [];
+            fntmp = fieldnames(optexpall);
+            for p = 1:numel(fntmp)
 
-            oone = optexpall.(fntmp{p}); %single options set after distribution of cell arrays
-            oone = structunflat(oone);
-
-
-            %%%%%%%% REDUCE OPTIONS %%%%%%%%
-
-            [optred, optreturn] = optreduce(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); optred is written to file (if it wasn't already)
+                oone = optexpall.(fntmp{p}); %single options set after distribution of cell arrays
+                oone = structunflat(oone);
 
 
-            %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
+                %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-            [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
+                [optred, optreturn] = optreduce(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); optred is written to file (if it wasn't already)
 
 
-            %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN optreduce??  %%%%%%%%
+                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
 
-            if tsgetcall && ~iscell(opttmp)
-                opttmp = {opttmp};
-                nmnew = {nmnew};
-            end
+                [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
 
-            fnr = fieldnames(optreturn);
-            if iscell(opttmp)
-                if ~tsgetcall
-                    error("opttmp cannot be cell if tsgetcall")
+
+                %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN optreduce??  %%%%%%%%
+
+                if tsgetcall && ~iscell(opttmp)
+                    opttmp = {opttmp};
+                    nmnew = {nmnew};
                 end
-                for k2 = 1:numel(opttmp)
-                    for q = 1:numel(fnr)
-                        opttmp{k2}.(fnr{q}) = optreturn.(fnr{q});
+
+                fnr = fieldnames(optreturn);
+                if iscell(opttmp)
+                    if ~tsgetcall
+                        error("opttmp cannot be cell if tsgetcall")
                     end
-                    optout.(nmnew{k2}) = opttmp{k2};
+                    for k2 = 1:numel(opttmp)
+                        if ~isempty(opttmp{k2})
+                            for q = 1:numel(fnr)
+                                opttmp{k2}.(fnr{q}) = optreturn.(fnr{q});
+                            end
+                            optout.(nmnew{k2}) = opttmp{k2};
+                        end
+                    end
+                else
+                    for q = 1:numel(fnr)
+                        opttmp.(fnr{q}) = optreturn.(fnr{q});
+                    end
+                    optout.(nmnew) = opttmp;
                 end
-            else
-                for q = 1:numel(fnr)
-                    opttmp.(fnr{q}) = optreturn.(fnr{q});
-                end
-                optout.(nmnew) = opttmp;
+
             end
+
+            o(m).(vbintmp) = optout;
 
         end
-
-        o(m).(vbintmp) = optout;
-
     end
 
 end

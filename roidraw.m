@@ -41,13 +41,13 @@ roiman_allchan = cell(numchan, 1);
 for c = 1:numchan
     chan_combine = unique([chan chancp]); %combine in case you want to copy a previously drawn channel, and also want to currently draw another channel
     if ismember(c,chan_combine)
-        fnsuffix = ['_' regionex '_' maskname '_chn' num2str(c) '_roiman'];
+        fnsuffix = ['_' regionex '_' maskname '_chn' num2str(c) '_mm'];
         pth_maskman = insertBefore(pthstack, '_.mat', fnsuffix);
         try
             roiman = struct2cell(load(pth_maskman)); %make sure it's called roiman (in case using old mask)
             roiman = roiman{1};
             if all(roiman(:)==1)
-                fprintf("WARNING, MASK MANUAL FOR CHANNEL" + num2str(c) + " IS ALL ONES FOR regionex: " + regionex + newline)
+                fprintf("MASK MANUAL IS ALL ONES FOR regionex: " + regionex + ", maskname: " + maskname + ", channel: " + num2str(c) + newline)
             end
         catch
             roiman = roidraw_onechan(stackmnt(:,:,:,:,c), regionex, maskname, c, flag_oneroi, flag_croplim, roialpha, cmap, fontsize, remove_overlap);

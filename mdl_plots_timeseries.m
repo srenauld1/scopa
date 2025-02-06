@@ -1,4 +1,4 @@
-function mdl_plots_timeseries(indv, depv, mdl, varst, plt, supp, pth_fitdata_prefix, epochinds_str_all)
+function mdl_plots_timeseries(indv, depv, mdl, varst, plt, supp, pthpre, epochinds_str_all)
 
 %use *_cont rather than *_seg, since the timeseries only plot does not truncate for space
 
@@ -24,7 +24,7 @@ depv = depv(roiinds_plot,sampinds_depvp);
 
 title_add_each = 'TIMESERIES';
 figext = '.gif';
-filename_save = [pth_fitdata_prefix '_' title_add_each '_e_' epochinds_str_all '_' figext];
+filename_save = [pthpre '_' title_add_each '_e_' epochinds_str_all '_' figext];
 
 max_numrois_to_plot_fithist = 5;
 if size(depvnan_cont, 1)>1

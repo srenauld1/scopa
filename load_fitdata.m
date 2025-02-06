@@ -1,21 +1,24 @@
-function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pth_fitdata_prefix, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
+function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
 
 if validation_fold==0
-    pth_fitdata_pattern = [pth_fitdata_prefix '_' strrep(epochinds_str, '_', ',') '_0_*_fitdata_.mat'];
+    pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_0_*_fitdata_.mat'];
 else
-    pth_fitdata_pattern = [pth_fitdata_prefix '_' strrep(epochinds_str, '_', ',') '_' num2str(vfi) '_*_fitdata_.mat'];
+    pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_' num2str(vfi) '_*_fitdata_.mat'];
 end
 
-fitdata_saved_files = rdir(pth_fitdata_pattern);
+pthfitdat = rdir(pthpat);
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 if omit_time_from_savemodel_datestr
     timestr = timestr(1:8);
 end
-pth_fitdata = strrep(pth_fitdata_pattern, '*', timestr);
+pth_fitdata = strrep(pthpat, '*', timestr);
 
-if use_saved_model && ~isempty(fitdata_saved_files)
-    fitdata_saved_files = natsortfiles(fitdata_saved_files);
-    load(fitdata_saved_files(end).name, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds') %load most recent, based on timestamp in filename
+if use_saved_model && ~isempty(pthfitdat)
+    pthfitdat = natsortfiles(pthfitdat);
+    if numel(pthfitdat)>1
+        fprintf("there are multiple fitata files, loading most recent, based on timestamp in filename" + newline)
+    end
+    load(pthfitdat(end).name, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds') 
     dofit = 0;
 else
     dofit = 1;

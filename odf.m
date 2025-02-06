@@ -32,14 +32,16 @@ arguments
     opt.files = 0 %whether to use spec to find stack files, or skip
     opt.fill = 0; %whether to fill all default nestings
     opt.unpack = 0; %if output is a single vbin in nestvalid, do not nest in enclosing struct (losing the name of the vbin in the output)
+    opt.wild = 0; %all defaults become wildcard; if empty, all defaults remain unchanged; if nonempty, all defaults become '*' 
     opt.pthopt = [] %path to default options file; if empty, uses default path
 end
 files = opt.files;
 fill = opt.fill;
 unpack = opt.unpack;
+wild = opt.wild;
 pthopt = opt.pthopt;
 
-
+metafields = {'copybin', 'id', 'filled', 'nestvalid'};
 
 if ischar(oin) || isstring(oin) || iscellstr(oin) || ( iscell(oin) && isstring(oin{1}) )  % check if oin was omitted, if so, first argument was vbin; update arguments accordingly
     vbin = oin;
@@ -63,6 +65,17 @@ end
 
 if isfile(pthopt)
     d = structtxtld(pthopt, nocells=1);
+    if wild
+        wcpat = '*';
+        d = structflat(d);
+        fnd = fieldnames(d);
+        for k = 1:numel(fnd)
+            if ~ismember(fnd{k}, metafields)
+                d.(fnd{k}) = wcpat;
+            end
+        end
+        d = structunflat(d);
+    end
 else
     error(sprintf("cannot find default options file, '" + pthopt + "', run optdfsv.m to create the default options file"))
 end
@@ -76,13 +89,16 @@ if files %if files==1, oin must be scalar
     if fill==1
         error("files cannot be true when fill is true" + newline)
     end
-    o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa); %odfs is for scalar struct o
+    if wild
+        error("files cannot be true when wild is true" + newline)
+    end
+    o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa, metafields); %odfs is for scalar struct o
 else %otherwise, oin can be nonscalar
     if isempty(oin)
-        o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa); %odfs is for scalar struct o
+        o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa, metafields); %odfs is for scalar struct o
     else
         for k = numel(oin):-1:1 %in case o is nonscalar, loop over each element, calling odfs; backwards to preallocate
-            o(k) = odfscal(d, oin(k), vbin, copybin, files, fill, pthscopa); %odfs is for scalar struct o
+            o(k) = odfscal(d, oin(k), vbin, copybin, files, fill, pthscopa, metafields); %odfs is for scalar struct o
         end
     end
 end
@@ -103,7 +119,7 @@ end
 
 
 
-function o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa)
+function o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa, metafields)
 
 
 if isfield(oin, 'filled') && oin.filled==1
@@ -113,10 +129,10 @@ end
 if fill && isfield(oin, 'filled') && oin.filled==1
     error("you cannot fill options struct (argument fill cannot equal 1) because it has already been filled (filled=1)")
 end
-
-if fill && ~isempty(vbin)
-    error("you cannot pass vbin into odf along with fill=1 (it is redundant, since fill will operate on all possible vbin)")
-end
+% 
+% if fill && ~isempty(vbin)
+%     error("you cannot pass vbin into odf along with fill=1 (it is redundant, since fill will operate on all possible vbin)")
+% end
 
 if fill && ~isempty(copybin)
     error("this should work as long as vbin is empty, but for some reason it doesn't create copybin everywhere")
@@ -178,13 +194,11 @@ else
     copybinprev = {};
 end
 
-fields_with_no_direct_user_input = {'copybin', 'id', 'filled', 'nestvalid'};
-
 structhold = struct;
-for k = 1:numel(fields_with_no_direct_user_input)
-    if isfield(oin, fields_with_no_direct_user_input{k}) %id is the one field that doesn't have defaults (it holds found files info)
-        structhold.(fields_with_no_direct_user_input{k}) = oin.(fields_with_no_direct_user_input{k}); %put it aside and put back below
-        oin = rmfield(oin, fields_with_no_direct_user_input{k});
+for k = 1:numel(metafields)
+    if isfield(oin, metafields{k}) %id is the one field that doesn't have defaults (it holds found files info)
+        structhold.(metafields{k}) = oin.(metafields{k}); %put it aside and put back below
+        oin = rmfield(oin, metafields{k});
     end
 end
 
@@ -293,9 +307,9 @@ else
 
 end
 
-for k = 1:numel(fields_with_no_direct_user_input)
-    if isfield(structhold, fields_with_no_direct_user_input{k})
-        o.(fields_with_no_direct_user_input{k}) = structhold.(fields_with_no_direct_user_input{k});
+for k = 1:numel(metafields)
+    if isfield(structhold, metafields{k})
+        o.(metafields{k}) = structhold.(metafields{k});
     end
 end
 
@@ -359,14 +373,16 @@ end
 
 if fill
 
-    if ~isfield(o, 'id')
-        o.id = d.id;
-    end
-    if ~isfield(o, 'copybin')
-        o.copybin = d.copybin;
-    end
-    if ~isfield(o, 'nestvalid')
-        o.nestvalid = d.nestvalid;
+    if isempty(vbin)
+        if ~isfield(o, 'id')
+            o.id = d.id;
+        end
+        if ~isfield(o, 'copybin')
+            o.copybin = d.copybin;
+        end
+        if ~isfield(o, 'nestvalid')
+            o.nestvalid = d.nestvalid;
+        end
     end
 
     dnestflat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.nestvalid, repelem({'.'}, numel(d.nestvalid)), 'un', false)));

@@ -1,4 +1,4 @@
-function mdl = mdlmake(indvp, depvp, imrate, pthpre, optmdl, epochts, doplt)
+function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt)
 
 % for docs, see file mdl_notes.m
 
@@ -24,15 +24,22 @@ arguments
     indvp
     depvp
     imrate
-    pthpre = []
+    pthstack
+    optid
+    opt
     epochts = []
-    fitopt
     doplt = []
 end
 
 
 %% check some inputs and prepare save path
 
+pthpre = [erase(pthstack, '.mat') optid '_mdl_'];
+pthmdl = [pthpre '.mat'];
+
+if isempty(epochts)
+    epochts = ones(1, size(depvp, 2));
+end
 if isempty(doplt)
     doplt = any(strcmp('mdl', glb('plt')));
 end
@@ -42,10 +49,10 @@ indvp = [];
 mdl.vars.depvp = depvp; 
 depvp = [];
 
-fitopt.hsv_background = "";
+opt.hsv_background = "";
 
-if ~iscell(fitopt.epochnum)
-    fitopt.epochnum = {fitopt.epochnum};
+if ~iscell(opt.epochnum)
+    opt.epochnum = {opt.epochnum};
 end
 
 if isvector(mdl.vars.indvp) & iscolumn(mdl.vars.indvp)
@@ -59,26 +66,21 @@ if mdl.num_samp_indvp~=mdl.num_samp_depvp | ndims(mdl.vars.depvp)~=2 | ndims(mdl
     error("incorrectly sized input(s)")
 end
 
-
-mdl.pthpre = pthpre;
-pth_fitdata_prefix = [mdl.pthpre  '_' fitopt.mdlname '_' num2str(fitopt.mdl_length_sec) '_' num2str(fitopt.mdl_lag_sec)];
-pth_fitdata_prefix = strrep(pth_fitdata_prefix, '.', 'p');
-
 %% prepare indv and depv
 
-mdl = mdl_prepvars(mdl, fitopt, imrate, pth_fitdata_prefix, epochts);
+mdl = mdl_prepvars(mdl, opt, imrate, pthpre, epochts);
 
 %% set up model fitting and plotting options
 
-mdl.op = mdl_setup(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, fitopt, imrate, mdl.stats, pth_fitdata_prefix);
+mdl.op = mdl_setup(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.stats, pthpre);
 
 %% loop over epochnum, fitting model to each (fit to different requested subsets of indv/depv)
 
-for epi = 1:length(fitopt.epochnum) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-    mdl = mdl_epochs(mdl, fitopt, epi, pth_fitdata_prefix);
+for epi = 1:length(opt.epochnum) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
+    mdl = mdl_epochs(mdl, opt, epi, pthpre);
 end
 
 % if doplt
-%     mdl_plots(mdl, roidat, stack, fitopt, pth_fitdata_prefix)
+%     mdl_plots(mdl, roidat, stack, opt, pthpre)
 % end
 
