@@ -239,6 +239,13 @@ else
     save(pth_daqrs, 'daqrs', '-v7.3', '-mat');
 
 
+    % ftvdsrs = [];
+    % if o.mn.doftv
+    %     ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol, md.volrate, ...
+    %         o.ftv.numpkthr, o.ftv.smlenpx, o.ftv.numpx, ...
+    %         o.ftv.smlensec, pth.ftdat, pth.ftvidlog, pth.ftlog);
+    % end
+
 end
 
 

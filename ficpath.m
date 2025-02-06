@@ -1,4 +1,4 @@
-function [posx, posy] = ficpath(vf, vs, yw, t, balld)
+function [posx, posy] = ficpath(vf, vs, yw, t, balld, doplt)
 
 arguments
     vf %forward velocity (mm/s, ie scaled by ball diameter)
@@ -6,6 +6,7 @@ arguments
     yw %heading (ie yaw)
     t %timestamps for each sample
     balld %ball diameter
+    doplt = 0
 end
 
 if isempty(vf) || isempty(vs) || isempty(yw)
@@ -24,4 +25,7 @@ else
     posy = (cumsum(dty) - dty(1)) .* ballr;
 end
 
-
+if doplt
+    figure; plot(ball.forvel); saveas( gcf, [pth.recid 'ballforvel_.fig']); close(gcf)
+    figure; plot(ball.yawvel); saveas( gcf, [pth.recid 'ballyawvel_.fig']); close(gcf)
+end

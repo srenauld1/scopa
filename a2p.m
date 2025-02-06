@@ -28,7 +28,6 @@ for k = 1:numel(oa) % loop over recordings
 
     stack = stackpr(pth.stack, o.spr);
 
-
     %% metadata
 
     md = mdsild(pth.stack, pth.py);
@@ -42,25 +41,14 @@ for k = 1:numel(oa) % loop over recordings
         vis = epochld(t, vis, md.sampper, o.daq.use_carls_epochs);
     catch ME
         fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "will continue without daq data, which may cause error downstream" + newline)
-        ball = []; vis = []; pos = []; %init some optional variables
+        ball = []; vis = []; pos = []; ftv = []; %init some optional variables
         t = md.sampper * [1:size(stack,4)];
         vis.epochts = ones(numel(t), 1);
-    end
-
-    figure; plot(ball.forvel); saveas( gcf, [pth.recid 'ballforvel_.fig']); close(gcf)
-    figure; plot(ball.yawvel); saveas( gcf, [pth.recid 'ballyawvel_.fig']); close(gcf)
-
-    ftvdsrs = [];
-    if o.mn.doftv
-        ftvdsrs = ftvproc(pth.ftvid, pth.ftvidrs, md.numvol, md.volrate, ...
-            o.ftv.numpkthr, o.ftv.smlenpx, o.ftv.numpx, ...
-            o.ftv.smlensec, pth.ftdat, pth.ftvidlog, pth.ftlog);
     end
 
     if o.mn.dofeat
         [vis.(o.feat.id), stimvid] = featld(pth.stack, o.feat);
     end
-
 
     %% rois
 
@@ -73,7 +61,6 @@ for k = 1:numel(oa) % loop over recordings
     end
 
     %% bump
-
 
     if o.mn.dobmp
         fn = fieldnames(o.bmp);
@@ -111,7 +98,7 @@ for k = 1:numel(oa) % loop over recordings
                 o.pltx.plot_z_as_color, roidat.a1{1}, t, md.sampper, zstartsub, ...
                 vis.epochts, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
                 o.pltx.dr, mdl.fn_save_prefix_short, mdl.pthpre, ...
-                pthroiint, nrm, md.widyxz, vid=ftvdsrs, stim=stimvid)
+                pthroiint, nrm, md.widyxz, vid=ftv, stim=stimvid)
         end
     end
 
