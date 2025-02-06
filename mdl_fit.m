@@ -1,13 +1,18 @@
-function [ft, pred, gof_train, gof_val] = mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
+function [ft, pred, mse_train, mse_val] = mdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
     validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
 
 
 % rng default
 
+do_nonlinear_constraint = 0;
+save_progress_files = 1; %save a dummy file on every completed fit so you can monitor progress more easily on long parallel runs
+
 if optim_hist_save_iter_spacing
-    histfit = init_optim_hist(op.opl.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
+    histfit = init_optim_hist(op.opp.options.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
     op.opg.OutputFcn = @outfcn_global;
-    op.opl.OutputFcn = @outfcn_local;
+    op.opp.options.OutputFcn = @outfcn_local;
+else
+    histfit = 1; %assign dummy var in case save_progress_files is true
 end
 
 if startsWith(mdlname, 'svd')
@@ -21,12 +26,14 @@ else
     end
 end
 
-
-if isfield(supp, 'pind_Lfree') && ~isempty(supp.pind_Lfree) || isfield(supp, 'pind_vonmises') && ~isempty(supp.pind_vonmises)
-    op.opp.nonlcon = @nlcon_fnet;
+if do_nonlinear_constraint
+    if isfield(supp, 'pind_Lfree') && ~isempty(supp.pind_Lfree) || isfield(supp, 'pind_vonmises') && ~isempty(supp.pind_vonmises)
+        op.opp.nonlcon = @nlcon_fnet;
+    end
 end
 
 %% fit model, predict response
+
 
 if startsWith(mdlname, 'svd')
     ft = op.opp.objective( indv, depv, supp.pvar);
@@ -42,16 +49,16 @@ end
 pred = zeros(num_samp_total, 1, 'single');
 
 if startsWith(mdlname, 'svd')
-    [pred(sampinds_indvdepv_train) = ft*indv;
-    gof_train = mse(depv, pred(sampinds_indvdepv_train));
+    pred(sampinds_indvdepv_train) = indv*ft;
+    mse_train = mse(depv, pred(sampinds_indvdepv_train));
 else
-    [pred(sampinds_indvdepv_train), gof_train] = mfit_predict(ft, indv, depv, op.mdl, supp);
+    [pred(sampinds_indvdepv_train), mse_train] = mdl_predict(ft, indv, depv, op.mdl, supp);
 end
 
 if validation_fold %if doing validation
-    [pred(sampinds_indvdepv_val), gof_val] = mfit_predict(ft, indv_val, depv_val, op.mdl, supp);
+    [pred(sampinds_indvdepv_val), mse_val] = mdl_predict(ft, indv_val, depv_val, op.mdl, supp);
 else
-    gof_val = nan;
+    mse_val = nan;
 end
 
 
@@ -66,14 +73,22 @@ end
 
 %% save optimization history
 
-savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
-parsave(savepath, histfit) %save histfit, must use separate function
+if optim_hist_save_iter_spacing
+    savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+    parsave(savepath, histfit) %save histfit, must use separate function
+end
+if save_progress_files
+    savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+    parsave(savepath, histfit) %save histfit, must use separate function
+end
 
 
 %% constraint function
 
 
     function [c,ceq] = nlcon_fnet(x)
+        
+        %the two vonmises constraints are not great because they force the curve max and min to match data max and min but data is noisy, so the curve won't fit optimally, would be better to match max and min of some filtered version of data, or just skip the constraint 
 
         countz = 0;
         for j = 1:length(supp.pind_Lfree)

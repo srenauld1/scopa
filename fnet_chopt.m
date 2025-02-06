@@ -4,7 +4,7 @@ arguments
     ver = 1 % version
 end
 
-% expressions for parsing fnet mdlname string in mfit_parse_mdlname_string
+% expressions for parsing fnet mdlname string in mdl_parse_mdlname_string
 
 switch ver
     case 1

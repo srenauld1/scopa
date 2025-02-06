@@ -1,5 +1,5 @@
 
-function op = mfit_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, imrate, inputvar_stats, pth_fitdata_prefix)
+function op = mdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, imrate, inputvar_stats, pth_fitdata_prefix)
 
 
 mdlname = opts.mdlname;
@@ -22,16 +22,16 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [op.mdl, opptmp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, imrate, num_dim_indvp, inputvar_stats);
+    [op.mdl, opptmp, supp] = mdl_setup_fnet(mdlname, num_samp_mdl, imrate, num_dim_indvp, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 
-    op = mfit_setup_tm(mdlname);
+    op = mdl_setup_tm(mdlname);
 
 end
 
 
-%% copy some variables from fitin (inputs above) to supp (need to fix this, it's ugly to copy)  
+%% copy some variables from mdl (inputs above) to supp (need to fix this, it's ugly to copy)  
 
 supp.mdlname = mdlname;
 supp.mdlclass = mdlclass;

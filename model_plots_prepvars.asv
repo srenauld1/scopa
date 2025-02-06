@@ -1,17 +1,17 @@
 function [indv, depv_allrois, roidat, fitdata] = ...
-    model_plots_prepvars(fitin, plt, roidat, fitdata, mdlname, normalize_indv, normalize_depv)
+    model_plots_prepvars(mdl, plt, roidat, fitdata, mdlname, normalize_indv, normalize_depv)
 
 %% organize and normalize model data into hsv map
 
-fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpf, fitdata.depvstd, plt, mdlname, fitin.stats);
+fitdata.hsvmap = compute_hsv( fitdata.ft, fitdata.gof, fitdata.indvpf, fitdata.depvstd, plt, mdlname, mdl.stats);
 
 
 %% select which rois get plotted and how they're sorted
 
 switch plt.sort_method
     case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
-        sortinds = fliplr(1:fitin.num_dim_depvp);
-        sortinds = 1:fitin.num_dim_depvp;
+        sortinds = fliplr(1:mdl.num_dim_depvp);
+        sortinds = 1:mdl.num_dim_depvp;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
         [~, sortinds] = sort(roidat.idx_vox2roi,  'descend');
     case 'gof' %sort by gof (sdata), then equidistant plt.maxnumroiplot, descending order
@@ -22,15 +22,15 @@ switch plt.sort_method
         sortinds = [sortonetmp; sorttwotmp];
 end
 
-roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvp, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvp
+roiinds_plot = unique(sortinds(round(linspace(1, mdl.num_dim_depvp, plt.maxnumroiplot)))); %unique lets this work when plt.maxnumroiplot>=mdl.num_dim_depvp
 
 
 %% read full indv and depv from bin, then subsample
 
-indv = read_mdl_var(fitin.pth_indvaug_bin);
+indv = read_mdl_var(mdl.pth_indvaug_bin);
 indv = indv(:, fitdata.sampinds_indvpaug).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-depv_allrois = read_mdl_var(fitin.pth_depvp_bin);
+depv_allrois = read_mdl_var(mdl.pth_depvp_bin);
 depv_allrois = depv_allrois(roiinds_plot, fitdata.sampinds_depvp).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
 plotvars.pred = fitdata.pred(:, roiinds_plot);
@@ -39,12 +39,12 @@ plotvars.roipx = roidat.roipx(roiinds_plot);
 %% reverse standardization, if it occurred
 
 if normalize_indv
-    indv = fitin.revstandvar_indv(indv);
+    indv = mdl.revstandvar_indv(indv);
 end
 
 if normalize_depv
-    depv_allrois = fitin.revstandvar_depv(depv_allrois);
-    fitdata.pred = fitin.revstandvar_depv(fitdata.pred);
+    depv_allrois = mdl.revstandvar_depv(depv_allrois);
+    fitdata.pred = mdl.revstandvar_depv(fitdata.pred);
 end
 
 

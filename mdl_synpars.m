@@ -1,4 +1,4 @@
-function ftsyn = mfit_synpars(x0, lb, ub, syntype)
+function ftsyn = mdl_synpars(x0, lb, ub, syntype)
 
 arguments
     x0

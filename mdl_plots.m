@@ -1,8 +1,8 @@
 
-function mfit_plots(fitin, roidat, stack, opts, pth_fitdata_prefix, pltstr)
+function mdl_plots(mdl, roidat, stack, opts, pth_fitdata_prefix, pltstr)
 
 
-"EVERYTHING IN mfit_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
+"EVERYTHING IN mdl_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as szf does not exceed
@@ -88,8 +88,8 @@ opts.plt.splitdim = 'x';
 opts.plt.splitfrac = 0.7;
 opts.plt.fontsmall = 6;
 
-opts.plt.numrows_ts2 = fitin.op.supp.num_total_model_functions/fitin.op.supp.max_num_fun_per_unit; 
-opts.plt.numcolumns_ts2 = fitin.op.supp.max_num_fun_per_unit;
+opts.plt.numrows_ts2 = mdl.op.supp.num_total_model_functions/mdl.op.supp.max_num_fun_per_unit; 
+opts.plt.numcolumns_ts2 = mdl.op.supp.max_num_fun_per_unit;
 
 opts.plt.cmap_patch = distinguishable_colors(opts.plt.num_total_possible_epochs+opts.plt.max_num_indv_to_plot+opts.plt.num_depv_to_plot);
 opts.plt.cmap_patch = opts.plt.cmap_patch(opts.plt.max_num_indv_to_plot+opts.plt.num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
@@ -103,14 +103,14 @@ end
 
 %% read / normalize indv and depv (keep seperate from plotvars in case they are large and epoch sets overlap)
 
-indv = read_mdl_var(fitin.pth_indvaug_bin);
+indv = read_mdl_var(mdl.pth_indvaug_bin);
 if ~strcmp(opts.normalize_indv, 'none')
-    indv = fitin.normmdlvar_indv(indv, 'reverse');
+    indv = mdl.normmdlvar_indv(indv, 'reverse');
 end
 
-depv = read_mdl_var(fitin.pth_depvp_bin);
+depv = read_mdl_var(mdl.pth_depvp_bin);
 if ~strcmp(opts.normalize_depv, 'none')
-    depv = fitin.normmdlvar_depv(depv, 'reverse');
+    depv = mdl.normmdlvar_depv(depv, 'reverse');
 end
 
 %% 
@@ -118,15 +118,15 @@ end
 
 opts.plt.sort_method = 'majoraxis';
 
-enm = fieldnames(fitin.fits);
+enm = fieldnames(mdl.fits);
 enm = enm(startsWith(enm, 'e_'));
 epochinds_str_all = strjoin(enm, ',,');
 for ei = 1:numel(enm)
-    vnm = fieldnames(fitin.fits.(enm{ei}));
+    vnm = fieldnames(mdl.fits.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
-        plotvars.(enm{ei}).(vnm{vi}) = mfit_plots_prepvars(indv, depv, fitin, opts.plt, roidat, ...
-            fitin.fits.(enm{ei}).epochnum, fitin.fits.(enm{ei}).(vnm{vi}), ...
+        plotvars.(enm{ei}).(vnm{vi}) = mdl_plots_prepvars(indv, depv, mdl, opts.plt, roidat, ...
+            mdl.fits.(enm{ei}).epochnum, mdl.fits.(enm{ei}).(vnm{vi}), ...
             opts.mdlname, opts.normalize_depv, enm{ei}, pth_fitdata_prefix);
     end
 end
@@ -150,22 +150,22 @@ opts.plt.ignoreval = 0;
 
 
 for ei = 1:numel(enm)
-    vnm = fieldnames(fitin.fits.(enm{ei}));
+    vnm = fieldnames(mdl.fits.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
         for fi = pltstr
             switch fi{1}
                 case 'sum'
-                    mfit_plots_summary(fitin, opts, roidat, stackmnt)
+                    mdl_plots_summary(mdl, opts, roidat, stackmnt)
                 case 'ts'
-                    mfit_plots_timeseries(indv, depv, fitin.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, fitin.op.supp, pth_fitdata_prefix, epochinds_str_all)
+                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, mdl.op.supp, pth_fitdata_prefix, epochinds_str_all)
                 case 'fov'
                     hsvplt(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
                 case 'mdl'
                     if isequal(mdlfcn, @fit_svd)
                         % plot_svd(ft{epi})
                     else
-                        mdlfcn(fitin.fits.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pth_fitdata_prefix);
+                        mdlfcn(mdl.fits.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pth_fitdata_prefix);
                     end
                 case 'comp'
                     roivpix(depv_allrois{epi}, stack, roipx, pth_fitdata_prefix) %make gif showing roi against each of its pixels

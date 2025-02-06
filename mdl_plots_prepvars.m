@@ -1,4 +1,4 @@
-function plotvars = mfit_plots_prepvars(indv, depv, fitin, plt, roidat, epochs_oneset, ...
+function plotvars = mdl_plots_prepvars(indv, depv, mdl, plt, roidat, epochs_oneset, ...
     fitdata, mdlname, normalize_depv, epochinds_str, pth_fitdata_prefix)
 
 hackindvdim = plt.hackindvdim;
@@ -17,14 +17,14 @@ cmap_patch = plt.cmap_patch;
 epochinds_str = strrep(epochinds_str, '_', ',');
 plt = plots_setup_hsv(plt, mdlname);
 
-hsvmap = hsvcmp( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=fitin.stats.indvp_lim_alldim, huelimnat2=fitin.stats.depvp_lim_alldim, mdlname=mdlname);
+hsvmap = hsvcmp( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=mdl.stats.indvp_lim_alldim, huelimnat2=mdl.stats.depvp_lim_alldim, mdlname=mdlname);
 
 %% select which rois get plotted and how they're sorted
 
 switch plt.sort_method
     case 'unbiased' %equidistant plt.maxnumroiplot, or all if there are fewer than fitopt.maxnumroiplot
-        sortinds = fliplr(1:fitin.num_dim_depvp);
-        sortinds = 1:fitin.num_dim_depvp;
+        sortinds = fliplr(1:mdl.num_dim_depvp);
+        sortinds = 1:mdl.num_dim_depvp;
     case 'majoraxis' %equidistant plt.maxnumroiplot, or all if there are fewer than plt.maxnumroiplot
         % [~, sortinds] = sort(roidat.idx_vox2roi,  'descend');
         [~, sortinds] = sort(fitdata.indvpf,  'descend');
@@ -36,7 +36,7 @@ switch plt.sort_method
         sortinds = [sortonetmp; sorttwotmp];
 end
 
-roiinds_plot = unique(sortinds(round(linspace(1, fitin.num_dim_depvp, plt.maxnumroiplot))), 'stable'); %unique lets this work when plt.maxnumroiplot>=fitin.num_dim_depvp
+roiinds_plot = unique(sortinds(round(linspace(1, mdl.num_dim_depvp, plt.maxnumroiplot))), 'stable'); %unique lets this work when plt.maxnumroiplot>=mdl.num_dim_depvp
 numroi_plot = numel(roiinds_plot);
 
 roipx = roidat.roipx(roiinds_plot);
@@ -50,7 +50,7 @@ depv = depv(roiinds_plot, fitdata.sampinds_depvp); %columns of indv and depv sho
 
 fitdata.pred = fitdata.pred.';
 if ~strcmp(normalize_depv, 'none')
-    fitdata.pred = fitin.normmdlvar_depv(fitdata.pred, 'reverse');
+    fitdata.pred = mdl.normmdlvar_depv(fitdata.pred, 'reverse');
     fitdata.pred = fitdata.pred(roiinds_plot, :); %columns of indv and depv should be number samples, could change above or just transpose here
 end
 
@@ -65,7 +65,7 @@ maxis_all = max(maxis_depv, maxis_pred);
 
 %% pad timeseries discontinuities
 
-plotvars = pad_timeseries_discontinuities(indv, depv, fitdata.pred, fitdata.epochinds_pure_ts_m, fitdata.sampinds_depvp, fitin.num_dim_indvp, numroi_plot, plt.max_tinds, plt.timeseries_numsegments, numsampnan);
+plotvars = pad_timeseries_discontinuities(indv, depv, fitdata.pred, fitdata.epochinds_pure_ts_m, fitdata.sampinds_depvp, mdl.num_dim_indvp, numroi_plot, plt.max_tinds, plt.timeseries_numsegments, numsampnan);
 
 
 %% per row variables to plot

@@ -1,6 +1,6 @@
-function fitin = mfit_epochs(fitin, opts, epi, pth_fitdata_prefix)
+function mdl = mdl_epochs(mdl, opts, epi, pth_fitdata_prefix)
 
-epochinds = opts.epochinds{epi};
+epochnum = opts.epochnum{epi};
 validation_fold = opts.validation_fold;
 keep_transition_zones = opts.keep_transition_zones;
 mdlname = opts.mdlname;
@@ -9,28 +9,28 @@ validation_split_style = opts.validation_split_style;
 omit_time_from_savemodel_datestr = opts.omit_time_from_savemodel_datestr;
 use_saved_model = opts.use_saved_model;
 num_synthetic_depv = opts.num_synthetic_depv;
-num_dim_depvp = fitin.num_dim_depvp;
-epochinds_ts_i_m = fitin.epochinds_ts_i_m;
-num_samp_mdl = fitin.num_samp_mdl;
-num_samp_lag = fitin.num_samp_lag;
-pth_indvaug_bin = fitin.pth_indvaug_bin;
-pth_depvp_bin = fitin.pth_depvp_bin;
-supp = fitin.op.supp;
-op = fitin.op;
+num_dim_depvp = mdl.num_dim_depvp;
+epochinds_ts_i_m = mdl.epochinds_ts_i_m;
+num_samp_mdl = mdl.num_samp_mdl;
+num_samp_lag = mdl.num_samp_lag;
+pth_indvaug_bin = mdl.pth_indvaug_bin;
+pth_depvp_bin = mdl.pth_depvp_bin;
+supp = mdl.op.supp;
+op = mdl.op;
 
-if numel(epochinds)==1
-    epochinds_str = ['e_' num2str(epochinds)];
+if numel(epochnum)==1
+    epochinds_str = ['e_' num2str(epochnum)];
 else
-    epochinds_str = regexprep( mat2str(epochinds), {'\[', '\]', '\s+'}, {'e_', '', '_'});
+    epochinds_str = regexprep( mat2str(epochnum), {'\[', '\]', '\s+'}, {'e_', '', '_'});
 end
 
 %% define indexing variables for taking subset of indv and depv (by epoch, and by train/validation set )
 
-fitin.fits.(epochinds_str) = mfit_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochinds);
+mdl.fits.(epochinds_str) = mdl_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum);
 
 %% loop over train/validation sets, for k-fold cross-validation
 
-valnames = fieldnames(fitin.fits.(epochinds_str));
+valnames = fieldnames(mdl.fits.(epochinds_str));
 disp(['validation fold is ' num2str(validation_fold) ' and should ideally be ' num2str(sqrt(supp.num_par_total)) ])
 
 ft_mean_allval = [];
@@ -40,7 +40,7 @@ indvpf_mean_allval = [];
 
 for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise it matches number validation sets
 
-    inds = fitin.fits.(epochinds_str).(valnames{vfi});
+    inds = mdl.fits.(epochinds_str).(valnames{vfi});
 
     %% read full indv and depv from bin, then subsample
 
@@ -62,7 +62,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         dofit = 1; %always do fit if synthesizing data anew
         doplots_syn = 1; %plot synthetic vs real data
         plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
-        [depv_allrois, num_dim_depvp, ftsyn] = mfit_synthesize_depv(supp.pthspre, supp, op.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, op.opp, plot_syn_against_single_depv, opts.normalize_depv);
+        [depv_allrois, num_dim_depvp, ftsyn] = mdl_synthesize_depv(supp.pthspre, supp, op.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, op.opp, plot_syn_against_single_depv, opts.normalize_depv);
     end
 
     %% fit model
@@ -72,8 +72,8 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         num_samp_total = inds.num_samp_total; %unpack to reduce overhead with large 'inds' struct during parfor
         sampinds_indvdepv_val = inds.sampinds_indvdepv_val; %unpack to reduce overhead with large 'inds' struct during parfor
         sampinds_indvdepv_train = inds.sampinds_indvdepv_train; %unpack to reduce overhead with large 'inds' struct during parfor
-        depvmin = fitin.stats.depvp_min_eachdim;%unpack to reduce overhead with large 'fitin' struct during parfor
-        depvmax = fitin.stats.depvp_max_eachdim;%unpack to reduce overhead with large 'fitin' struct during parfor
+        depvmin = mdl.stats.depvp_min_eachdim;%unpack to reduce overhead with large 'mdl' struct during parfor
+        depvmax = mdl.stats.depvp_max_eachdim;%unpack to reduce overhead with large 'mdl' struct during parfor
 
         ft = zeros(num_dim_depvp, supp.num_par_total); % was num_dim_indvp*num_samp_mdl, then num_dim_indvp*supp.num_par_total
         pred = zeros(num_samp_total, num_dim_depvp, depv_allrois_class);
@@ -82,28 +82,27 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        for ri = 1:num_dim_depvp
+        parfor ri = 1:num_dim_depvp
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
                 
                 [ ft(ri,:), pred(:,ri), gof(ri), gof_val(ri) ] = ...
-                    mfit_fit(indv, depv, ri, optim_hist_save_iter_spacing, ...
+                    mdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, ...
                     mdlname, validation_fold, indv_val, depv_val, sampinds_indvdepv_train, ...
                     sampinds_indvdepv_val, num_samp_total, supp, op, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
             
-                mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
+                % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
             end
         end
         toc
 
         save(pth_fitdata, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds', '-v7.3', '-mat')
 
+        mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.normalize_depv)
+
     end
-
-
-    mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.normalize_depv) 
 
     %% compute some fit metrics to be used later
 
@@ -119,18 +118,18 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     gof_val_mean_allrois = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
 
 
-    %% output struct (indexed by epochinds and valind)
+    %% output struct (indexed by epochnum and valind)
 
-    fitin.fits.(epochinds_str).(valnames{vfi}).ft = ft;
-    fitin.fits.(epochinds_str).(valnames{vfi}).pred = pred;
-    fitin.fits.(epochinds_str).(valnames{vfi}).gof = gof;
-    fitin.fits.(epochinds_str).(valnames{vfi}).gof_val = gof_val;
-    fitin.fits.(epochinds_str).(valnames{vfi}).gof_mean_allrois = gof_mean_allrois;
-    fitin.fits.(epochinds_str).(valnames{vfi}).gof_val_mean_allrois = gof_val_mean_allrois;
-    fitin.fits.(epochinds_str).(valnames{vfi}).depv_good_inds = depv_good_inds;
-    fitin.fits.(epochinds_str).(valnames{vfi}).indvpf = indvpf;
-    fitin.fits.(epochinds_str).(valnames{vfi}).depvstd = depvstd;
-    fitin.fits.(epochinds_str).(valnames{vfi}).pth_fitdata = pth_fitdata;
+    mdl.fits.(epochinds_str).(valnames{vfi}).ft = ft;
+    mdl.fits.(epochinds_str).(valnames{vfi}).pred = pred;
+    mdl.fits.(epochinds_str).(valnames{vfi}).gof = gof;
+    mdl.fits.(epochinds_str).(valnames{vfi}).gof_val = gof_val;
+    mdl.fits.(epochinds_str).(valnames{vfi}).gof_mean_allrois = gof_mean_allrois;
+    mdl.fits.(epochinds_str).(valnames{vfi}).gof_val_mean_allrois = gof_val_mean_allrois;
+    mdl.fits.(epochinds_str).(valnames{vfi}).depv_good_inds = depv_good_inds;
+    mdl.fits.(epochinds_str).(valnames{vfi}).indvpf = indvpf;
+    mdl.fits.(epochinds_str).(valnames{vfi}).depvstd = depvstd;
+    mdl.fits.(epochinds_str).(valnames{vfi}).pth_fitdata = pth_fitdata;
 
     ft_mean_allval = cat(ndims(ft)+1, ft_mean_allval, ft);
     gof_mean_allval = cat(ndims(gof)+1, gof_mean_allval, gof);
@@ -139,14 +138,14 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
 end
 
-fitin.fits.(epochinds_str).epochinds = epochinds;
-fitin.fits.(epochinds_str).ft_mean_allval = mean(ft_mean_allval, ndims(ft_mean_allval), 'omitmissing');
-fitin.fits.(epochinds_str).gof_mean_allval = mean(gof_mean_allval, ndims(gof_mean_allval), 'omitmissing');
-fitin.fits.(epochinds_str).gof_val_mean_allval = mean(gof_val_mean_allval, ndims(gof_val_mean_allval), 'omitmissing');
-fitin.fits.(epochinds_str).indvpf_mean_allval = mean(indvpf_mean_allval, ndims(indvpf_mean_allval), 'omitmissing');
+mdl.fits.(epochinds_str).epochnum = epochnum;
+mdl.fits.(epochinds_str).ft_mean_allval = mean(ft_mean_allval, ndims(ft_mean_allval), 'omitmissing');
+mdl.fits.(epochinds_str).gof_mean_allval = mean(gof_mean_allval, ndims(gof_mean_allval), 'omitmissing');
+mdl.fits.(epochinds_str).gof_val_mean_allval = mean(gof_val_mean_allval, ndims(gof_val_mean_allval), 'omitmissing');
+mdl.fits.(epochinds_str).indvpf_mean_allval = mean(indvpf_mean_allval, ndims(indvpf_mean_allval), 'omitmissing');
 
 
-fitin = structsort(fitin);
+mdl = structsort(mdl);
 
 
 

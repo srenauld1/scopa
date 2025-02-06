@@ -1,5 +1,5 @@
 
-function model_plots(fitin, roidat, stack, opts, pth_fitdata_prefix)
+function model_plots(mdl, roidat, stack, opts, pth_fitdata_prefix)
 
 %plots a square figure to make it easier to ensure native aspect ratios in subfigure
 %it may not appear to be a square, but it is, as long as szf does not exceed
@@ -45,15 +45,15 @@ if strcmp(plot_dimension_order, 'rve') %set order of plot variables prior to mod
     disp("plot dimension order is: roi, validation, epoch")
 end
 
-fitnames = fieldnames(fitin.fits);
+fitnames = fieldnames(mdl.fits);
 for ei = 1:numel(fitnames)
-    fitin.fits.(fitnames{ei})
-    plotvars = model_plots_prepvars(fitin, fitin.plt, roidat, fitin.fits.(fitnames{ei}), opts.mdlname, opts.normalize_indv, opts.normalize_depv);
+    mdl.fits.(fitnames{ei})
+    plotvars = model_plots_prepvars(mdl, mdl.plt, roidat, mdl.fits.(fitnames{ei}), opts.mdlname, opts.normalize_indv, opts.normalize_depv);
 end
 
 
 stackmean = mean(stack, 4);
-if strcmp(fitin.plt.plot_class, 'epoch') & ~fitin.plt.plot3d
+if strcmp(mdl.plt.plot_class, 'epoch') & ~mdl.plt.plot3d
     stackmean = mean(stackmean, 3);
 end
 
@@ -75,8 +75,8 @@ end
 
 %% various plots
 
-if fitin.plt.doplt(1)
-    model_plots_summary(fitin, opts, roidat, stackmean)
+if mdl.plt.doplt(1)
+    model_plots_summary(mdl, opts, roidat, stackmean)
 end
 
 if doplt(1)

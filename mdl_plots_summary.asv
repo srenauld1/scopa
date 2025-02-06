@@ -1,10 +1,10 @@
-function model_plots_summary(fitin, opts, roidat, stackmean)
+function model_plots_summary(mdl, opts, roidat, stackmean)
 
-plt = fitin.plt;
-supp = fitin.op.supp;
+plt = mdl.plt;
+supp = mdl.op.supp;
 
-mdl = fitin.op.opp.mdl;
-num_dim_depvp = fitin.num_dim_depvp;
+mdl = mdl.op.opp.mdl;
+num_dim_depvp = mdl.num_dim_depvp;
 
 normalize_depv = opts.normalize_depv;
 epochinds = opts.epochinds;

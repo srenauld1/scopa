@@ -1,10 +1,10 @@
-function [mdl, opp, supp] = mfit_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
+function [mdl, opp, supp] = mdl_setup_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats)
 
 padlen_sec = 4;
 
 multi_time_in_layer_one_only = 1;
 
-fnetspec = mfit_parse_mdlname_string(mdlname, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only);
+fnetspec = mdl_parse_mdlname_string(mdlname, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only);
 all_layers_ordered = char(('A':'Z').').'; %alphabet, capitals, to ensure layerindex order is corect
 
 lbnd = [];
@@ -25,7 +25,7 @@ freeformflag = 0;
 for k = 1:size(fnetspec, 1) %loop over all fnet units, accumulating param starting points (x0) and optional constraints
 
     [lbnd_tmp, ubnd_tmp, linineq_A_tmp, linineq_b_tmp, x0_tmp, fnettmp, freeformflagtmp] = ...
-        mfit_setup_fnet_oneunit(fnetspec(k,:), num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
+        mdl_setup_fnet_oneunit(fnetspec(k,:), num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only);
 
     lbnd = [lbnd lbnd_tmp];
     ubnd = [ubnd ubnd_tmp];

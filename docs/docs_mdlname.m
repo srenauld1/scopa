@@ -91,7 +91,7 @@
 
 %%%%EXAMPLE%%%%%
 
-% you can run mfit_parse_mdlname_string (with arbitrary values below for num_dim_input and num_samples_model) 
+% you can run mdl_parse_mdlname_string (with arbitrary values below for num_dim_input and num_samples_model) 
 % and inspect output table 'fnetspec' to see how single string modetype is transformed into a table representing a function network 
 % chopt.fnet holds the charcters and expressions for ping the string, and is copied from default_fit_params.m to run the example below  
 
@@ -121,5 +121,5 @@ chopt.fnet.lin = {'s','r','d','c','f'}; %linear functions;
 chopt.fnet.non = {'e','i','l','g','v'}; %nonlinear functions; 
 chopt.fnet.hot = {'h\d+'}; %one-hot encoding function; h followed by one or more numeric characters
 
-fnetspec = mfit_parse_mdlname_string(mdlname, chopt.fnet, num_dim_input, num_samples_model, multi_time_in_layer_one_only);
+fnetspec = mdl_parse_mdlname_string(mdlname, chopt.fnet, num_dim_input, num_samples_model, multi_time_in_layer_one_only);
 

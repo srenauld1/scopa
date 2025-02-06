@@ -68,7 +68,7 @@ end
 
 if strcmp(domtype, 'functional')
 
-    mdl = mdlmake(indvp, depvp, imrate, optmdl, doplt, pthpre, epochts, stack, roidat);
+    mdl = mdlmake(indvp, depvp, imrate, pthpre, optmdl, epochts, doplt);
 
     fn = fieldnames(mdl.fits);
     angpref = mdl.fits.(cell2mat(fn)).indvpf_mean_allval(:)'; %row vector of preferred angle;

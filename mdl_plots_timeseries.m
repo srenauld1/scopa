@@ -1,4 +1,4 @@
-function mfit_plots_timeseries(indv, depv, mdl, varst, plt, supp, pth_fitdata_prefix, epochinds_str_all)
+function mdl_plots_timeseries(indv, depv, mdl, varst, plt, supp, pth_fitdata_prefix, epochinds_str_all)
 
 %use *_cont rather than *_seg, since the timeseries only plot does not truncate for space
 

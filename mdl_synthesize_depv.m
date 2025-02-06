@@ -1,4 +1,4 @@
-function [pred_syn, numsyndepv, ftsyn] = mfit_synthesize_depv(pthspre, supp, mdl, depv, indv, doplt, numsyndepv, opp, plot_syn_against_single_depv, normalize_depv, tinds)
+function [pred_syn, numsyndepv, ftsyn] = mdl_synthesize_depv(pthspre, supp, mdl, depv, indv, doplt, numsyndepv, opp, plot_syn_against_single_depv, normalize_depv, tinds)
 
 
 %if plot_syn_against_single_depv==1 (default), arbitrarily plots synthetic depv against first roi of measured depv
@@ -36,7 +36,7 @@ end
 ftsyn = [];
 pred_syn = zeros(size(depv, 1), numsyndepv, 'single');
 for i = 1:numsyndepv
-    ftsyn(i,:) = mfit_synpars(opp.x0, opp.lb, opp.ub); %make synthetic model params, within bounds
+    ftsyn(i,:) = mdl_synpars(opp.x0, opp.lb, opp.ub); %make synthetic model params, within bounds
     pred_syn(:,i) = mdl(ftsyn(i,:), indv, supp); %replace depv with synthetic depv
 end
 
