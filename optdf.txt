@@ -1,12 +1,12 @@
 {
   "bmp": {
-    "domaintype": "functional",
+    "domscope": "all",
+    "domtype": "functional",
     "dorescale": 1,
     "maxangrs": 8,
     "mthd": "pva",
     "numangrs": 16,
     "omitnan": 1,
-    "scope": "all",
     "slopelensec": 0.4,
     "slopeord": 2,
     "smlensec": 0
@@ -197,7 +197,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025020415105699",
+    "timestr": "2025020517230848",
     "user": "youforgottossetuser"
   },
   "nestvalid": [

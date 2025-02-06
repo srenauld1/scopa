@@ -114,6 +114,14 @@ if fill && isfield(oin, 'filled') && oin.filled==1
     error("you cannot fill options struct (argument fill cannot equal 1) because it has already been filled (filled=1)")
 end
 
+if fill && ~isempty(vbin)
+    error("you cannot pass vbin into odf along with fill=1 (it is redundant, since fill will operate on all possible vbin)")
+end
+
+if fill && ~isempty(copybin)
+    error("this should work as long as vbin is empty, but for some reason it doesn't create copybin everywhere")
+end
+
 if files
     if ~isfield(oin, 'spec') && ~any(strcmp(vbin, 'spec'))
         error("if files is true, you must pass input struct with spec vbin, or pass vbin argument that includes 'spec'")
@@ -366,10 +374,10 @@ if fill
         error('copybin names cannot match any vbin names')
     end
 
-    if ~isfield(o, 'roi') || ~isstruct(o.roi) || isfield(o.roi, 'regionex')
-        o = odf(o, 'roi', d.roi.regionex);
-        copybinprev{1} = d.roi.regionex;
-    end
+    % if ~isfield(o, 'roi') || ~isstruct(o.roi) || isfield(o.roi, 'regionex')
+    %     o = odf(o, 'roi', d.roi.regionex);
+    %     copybinprev{1} = d.roi.regionex;
+    % end
 
     oflat = structflat(o);
     fnoflat = fieldnames(oflat);

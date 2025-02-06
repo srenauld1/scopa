@@ -56,11 +56,11 @@ id = idmake(pthstack); %just in case id info gets used below
 
 pth_daqrs = [id.dirstack id.recid '_daqrs_.mat'];
 
-pthmd = [id.dirstack id.recid '_mdsi_.txt'];
-numslice_withflyback = structfile(pthmd, nm='numslice_withflyback');
-numslice = structfile(pthmd, nm='numslice');
-numvol = structfile(pthmd, nm='numvol');
-volrate = structfile(pthmd, nm='volrate');
+md = mdsild(pthstack);
+numslice_withflyback = md.numslice_withflyback;
+numslice = md.numslice;
+numvol = md.numvol;
+volrate = md.volrate;
 sampper = 1/volrate;
 
 if isempty(doplt)

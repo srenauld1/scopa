@@ -76,6 +76,7 @@ for k = 1:numel(oa) % loop over recordings
 
 
   
+    tsget(o2)
 
     if o.mn.dobmp
         optid = 'a25';

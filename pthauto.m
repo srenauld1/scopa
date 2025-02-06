@@ -22,7 +22,7 @@ if isempty(dirstack)
 end
 infix = '';
 if opt.usefun
-    [~,tmp,~]=fileparts(fcnnm);
+    [~, tmp, ~] = fileparts(fcnnm);
     infix = [infix '_' tmp];
 end
 if opt.usetime

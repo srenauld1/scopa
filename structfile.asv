@@ -311,11 +311,9 @@ else
         end
     else
         if part
-            nmout = cell(numel(matchind), 1); 
-            sout = cell(numel(matchind), 1); 
             for k = 1:numel(matchind)
-                nmout{k} = nmfile{matchind(k)};
-                sout{k} = sfile.(nmfile{matchind(k)}); %if variable matches a variable in file, give variable the name it has in file
+                nmout{k} = nmfile{matchind};
+                sout{k} = sfile.(nmfile{matchind}); %if variable matches a variable in file, give variable the name it has in file
                 sfilenew = [];
             end
         else

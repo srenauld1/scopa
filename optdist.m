@@ -1,8 +1,17 @@
-function optout = optdist(optin)
+function optout = optdist(optin, vbin)
 
-% optdist in matlab gives each any functionality (distribute all combos,ie any, within each copybin, ie each), but optdist in python just gives any functionality
+% optdist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each copybin, ie each), but optdist in python just gives 'any' (not 'each') functionality
 
+optin = optin.(vbin);
 fn = fieldnames(optin);
+fndf = fieldnames(odf(vbin, unpack=1));
+if ~isempty(intersect(fn, fndf)) && ~all(structfun(@isstruct, optin)) %if any of the fields are defaults for this vbin, and not all fields are structs, this optin must not have copybin at the highest level, so create a dummy copybin before distributing options
+    optintmp.none = optin;
+    optin = [];
+    optin = optintmp;
+    optintmp = [];
+    fn = fieldnames(optin);
+end
 optout = struct;
 for k = 1:numel(fn)
     copybintmp = fn{k};

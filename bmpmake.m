@@ -27,7 +27,6 @@ slopeord = opt.slopeord;
 smlensec = opt.smlensec;
 optmdl = opt.mdl;
 
-
 pthpre = fullfile(pth_dirstack, recid);
 
 if isempty(doplt)
@@ -60,6 +59,12 @@ stack = stackcrop(stack, pthstack, regionex);
 
 %% define domain (functionally or morphologically)
 
+if dorescale
+    for k = 1:size(depvp, 1)
+        depvp(k,:) = rescale(depvp(k,:));
+    end
+end
+
 
 if strcmp(domtype, 'functional')
 
@@ -70,7 +75,10 @@ if strcmp(domtype, 'functional')
 
     if numangrs
         [respcltmp, domaintmp] = compassrs(depvp, angpref, numangrs, maxangrs, doplt);
+        % [respcltmp2, domaintmp2] = compassrs_old(depvp, angpref, 2*pi, numangrs, 1, doplt);
+        % figure; scatter(1:numel(domaintmp), respcltmp(:,100)); yyaxis right; scatter(1:numel(domaintmp), respcltmp2(:,100));
     else
+        respcltmp = depvp;
         domaintmp = angpref;
     end
 
@@ -82,11 +90,6 @@ elseif strcmp(domtype, 'morphological') %morphological domain
 
 end
 
-if dorescale
-    for di = 1:size(respcltmp, 1)
-        respcltmp(di,:) = rescale(respcltmp(di,:));
-    end
-end
 
 %% compute bump
 

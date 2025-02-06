@@ -575,6 +575,66 @@
     },
     "regionex": "no"
   },
+  "a25": {
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "nonzero",
+      "maskseg": "uniform",
+      "numroi": 16
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": 0.3,
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "eb"
+  },
+  "a26": {
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "nonzero",
+      "maskseg": "uniform",
+      "numroi": 17
+    },
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": 0.3,
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "eb"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "prefix": "a"

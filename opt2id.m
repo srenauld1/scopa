@@ -1,4 +1,4 @@
-function o = opt2id(o, vbin)
+function o = opt2id(o, vbin, opt)
 
 % python optex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
 % this function starts at distribute, and derive and check require data, so only happen in python, not here
@@ -7,7 +7,9 @@ function o = opt2id(o, vbin)
 arguments
     o %options struct
     vbin = [] %vbin to recover id (and expand)
+    opt.getonly = 0 %get ids only (cannot write to file or create new id)
 end
+getonly = opt.getonly;
 
 user = glb('user');
 if isempty(user)
@@ -27,8 +29,21 @@ end
 
 pthscopa = getpathscopa();
 
-if any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o, 'filled'))~=1)
-    error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
+callstack = dbstack();
+
+tsgetcall = 0;
+if strcmp(callstack(2).name, 'tsget')
+    tsgetcall = 1;
+end
+
+if tsgetcall && ~getonly
+    error("tsget should call opt2id with getonly=1")
+end
+
+if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o, 'filled'))~=1)
+    if ~tsgetcall %input struct does not require true 'filled' field if opt2id is called from tsget
+        error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
+    end
 end
 
 
@@ -48,7 +63,7 @@ for k = 1:numel(vbin)
 
         %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-        optexpall = optdist(o(m).(vbintmp)); %optexpall structs (fields) are temporary names assigned during distribution
+        optexpall = optdist(o(m), vbintmp); %optexpall structs (fields) are temporary names assigned during distribution
 
         optout = [];
         fntmp = fieldnames(optexpall);
@@ -62,19 +77,36 @@ for k = 1:numel(vbin)
 
             [optred, optreturn] = optreduce(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); optred is written to file (if it wasn't already)
 
-            
+
             %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
 
-            [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1);
-            
+            [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
 
-            %%%%%%%% RETURN NON FUNCTIONAL VBIN (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) )  %%%%%%%%
-            
-            fnr = fieldnames(optreturn);
-            for q = 1:numel(fnr)
-                opttmp.(fnr{q}) = optreturn.(fnr{q}); 
+
+            %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN optreduce??  %%%%%%%%
+
+            if tsgetcall && ~iscell(opttmp)
+                opttmp = {opttmp};
+                nmnew = {nmnew};
             end
-            optout.(nmnew) = opttmp;
+
+            fnr = fieldnames(optreturn);
+            if iscell(opttmp)
+                if ~tsgetcall
+                    error("opttmp cannot be cell if tsgetcall")
+                end
+                for k2 = 1:numel(opttmp)
+                    for q = 1:numel(fnr)
+                        opttmp{k2}.(fnr{q}) = optreturn.(fnr{q});
+                    end
+                    optout.(nmnew{k2}) = opttmp{k2};
+                end
+            else
+                for q = 1:numel(fnr)
+                    opttmp.(fnr{q}) = optreturn.(fnr{q});
+                end
+                optout.(nmnew) = opttmp;
+            end
 
         end
 

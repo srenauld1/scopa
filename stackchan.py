@@ -37,7 +37,7 @@ def stackchan(stack, md, chanrm, chan_primary):
             if isinstance(md['channel_save'], list):
                 stack = stack[:, :, int(md['channel_save'][0])-1, :, :].squeeze()
             elif isinstance(md['channel_save'], int):
-                stack = stack[:, :, md['channel_save'][0]-1, :, :].squeeze()
+                stack = stack[:, :, md['channel_save']-1, :, :].squeeze()
             print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN mdsisv.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
 
     #output chan_primary (which is also an input) in case it gets updated if there are two channels and chanrm is not None
