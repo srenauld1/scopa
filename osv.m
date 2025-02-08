@@ -1,4 +1,4 @@
-function osave(o)
+function osv(o)
 
 % save scalar options struct output by oset/odf 
 

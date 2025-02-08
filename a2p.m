@@ -10,7 +10,7 @@ end
 
 clear glb %clear globals
 
-optdfsv(); %just always write it; why not
+odfsv(); %just always write it; why not
 
 oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 
@@ -18,7 +18,7 @@ for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
 
-    osave(o); %save options to txt file
+    osv(o); %save options to txt file
 
     pth = pthmake(o);
 
@@ -34,6 +34,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% stim
 
+    daqrs = daqld(pth.stack, o.daq);
     try
         daqrs = daqld(pth.stack, o.daq);
         [ball, vis, t] = daqrename(daqrs);

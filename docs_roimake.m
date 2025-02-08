@@ -9,7 +9,7 @@ optid for all files in stack
 for each recording, single file holds all region (croplim), as struct 
 for each recording, single file holds all maskman (name), as struct 
 
-extract: optex, search for existing roim matching opts, load if so (make if not)
+extract: oex, search for existing roim matching opts, load if so (make if not)
 a2p: 
 
 name defines croplim

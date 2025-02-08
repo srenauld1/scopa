@@ -1,24 +1,24 @@
 
 
 import numpy as np
-from optdist import optdist
-from optreduce import optreduce
+from odist import odist
+from ored import ored
 from dictsort import dictsort
-from optex2id import optex2id
+from oexid import oexid
 from dict_unique import dict_unique
 from dicttxtld import dicttxtld
 
 
-def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, regionex, maskname):
+def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, regionex, maskname):
 
 
     # optlist hold carl's favorite options (each in a list) for tuning caiman roi extraction;
     # each option here is also an option optdf, which are default options read from the default options file, optdf.txt file; if an option is a list in optdf, it must be a list of lists in optlist
     # options in optlist will overwrite their counterparts in optdf
-    # lists are distributed into all possible combinations (using optdist) and extract.py loops over these options sets, so you can see how extraction is affected by varying these params; 
-    # any params from optex can be used here, these are just my favorite because they seem to have the largest effect, and/or are most variable across recordings 
-    # after optlist is applied/distributed, optreduce will remove any options that aren't used (since option use depend on options themselves), then dict_unique will remove any repeat sets, 
-    # then optex2id finds a unique ID by checking all options sets that have ever been run (using file optroi.txt) and assigns an ID to each option set currently in use (if it's never been used it gets a new ID and is appended to optroi.txt)
+    # lists are distributed into all possible combinations (using odist) and extract.py loops over these options sets, so you can see how extraction is affected by varying these params; 
+    # any params from oex can be used here, these are just my favorite because they seem to have the largest effect, and/or are most variable across recordings 
+    # after optlist is applied/distributed, ored will remove any options that aren't used (since option use depend on options themselves), then dict_unique will remove any repeat sets, 
+    # then oexid finds a unique ID by checking all options sets that have ever been run (using file optroi.txt) and assigns an ID to each option set currently in use (if it's never been used it gets a new ID and is appended to optroi.txt)
     # then optderive derives a few caiman options from the options the user specifies, some of which are not direct caiman options, but solely used in optderive (since, in my opinion, some caiman options are best used this way, ie options that can be made invalid or poor because of changes to the data, eg K, number of neurons, is derived because it depends o much of the data size (regionex size) and whether you are using patches)
     # then optcheck makes sure there are no problems with the options 
     # all this also occurs in oset.m, in the matlab part of the scopa pipeline (so user can run caiman extraction from matlab, or from python); running from matlab gives the user more option-specification flexibility
@@ -39,7 +39,7 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     optlist['p'] = [0, 1]
 
     optlist['method_init'] = ['graph_nmf', 'sparse_nmf', 'greedy_roi']
-    optlist['sigma_smooth_snmf_time'] = [0.5] #first element of sigma_smooth_snmf, for smoothing in time before initialization; in optex, the xyz elements are assigned the same values as gSig 
+    optlist['sigma_smooth_snmf_time'] = [0.5] #first element of sigma_smooth_snmf, for smoothing in time before initialization; in oex, the xyz elements are assigned the same values as gSig 
     optlist['perc_baseline_snmf'] = [20]
     optlist['max_iter_snmf'] = [500] 
     optlist['sparsity_penalty'] = [1, 4] #not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf)
@@ -60,7 +60,7 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
             optlist[k] = [optlist[k]]
 
 
-    # also assign a few options that are set or derived outside optex (putting them down here because they are not for user input here)
+    # also assign a few options that are set or derived outside oex (putting them down here because they are not for user input here)
     optlist['fnames'] = [ fnames ]
     optlist['regionex'] = [ regionex ] 
     optlist['methodex'] = [ methodex ] 
@@ -71,9 +71,9 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     optlist['docm'] = [ 1 ] #true whether calling extract from matlab or not
     optlist['doqc'] = [ 0 ] #false if not calling extract from matlab
 
-    ############ DISTRIBUTE OPTIONS IN LISTS (APPLY optdist TO CREATE ALL COMBINATIONS OF OPTIONS) ############
+    ############ DISTRIBUTE OPTIONS IN LISTS (APPLY odist TO CREATE ALL COMBINATIONS OF OPTIONS) ############
 
-    optsets = optdist(optlist)
+    optsets = odist(optlist)
     max_num_options_sets = 500 #error if you create more than this many options sets
     if len(optsets.map)>max_num_options_sets:
         raise Exception("WARNING, YOU HAVE CREATED MORE THAN " + str(max_num_options_sets) + " OPTIONS SETS, IF YOU REALLY WANT TO PROCEED WITH THIS NUMBER, COMMENT THIS EXCEPTION OR CHANGE max_num_options_sets")
@@ -84,14 +84,14 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
         for key,val in zip(optsets.order, opt_oneset_list):
             opt_oneset[key] = val
 
-        if extract_in_2d: #change some options from 3d to 2d (remove 3rd element), do this before optreduce, in case redundancy without 3rd element
+        if extract_in_2d: #change some options from 3d to 2d (remove 3rd element), do this before ored, in case redundancy without 3rd element
             opt_oneset = opt2dfix(opt_oneset)
     
         ############ REDUCE TO MINIMAL EFFECTIVE SET, SORT, AND REMOVE DUPLICATE SETS ############
 
-        optred = optreduce(opt_oneset, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
-        optred = dictsort(optred) #recursively order alphabetically, ignoring case
-        optredall.append(optred)
+        ored = ored(opt_oneset, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
+        ored = dictsort(ored) #recursively order alphabetically, ignoring case
+        optredall.append(ored)
     
     optredall = dict_unique(optredall) #remove redundant reduced options sets 
     
@@ -99,12 +99,12 @@ def optex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf,
     ############ GET OPTID FROM OPTIONS FILE ############
 
     optout = {}
-    for optred in optredall:
-        optid = optex2id(optred, pth_optroi)
+    for ored in optredall:
+        optid = oexid(ored, pth_optroi)
 
         ############ DERIVE SOME OPTIONS AND CHECK FOR PROBLEMS ############
 
-        optout[optid] = optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, optred)        
+        optout[optid] = optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, ored)        
         optout[optid] = optcheck(two_channel_ex, optout[optid]) #check for problems in how options were set
    
     return optout

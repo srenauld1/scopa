@@ -2,7 +2,7 @@ import json
 from dict_unique import dict_unique
 import os
 
-def optex2id(opt, pth_optroi):
+def oexid(opt, pth_optroi):
 
     if os.path.isfile(pth_optroi):
         with open(pth_optroi, 'r') as file:

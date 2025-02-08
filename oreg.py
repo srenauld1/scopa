@@ -1,6 +1,6 @@
 import numpy as np
 
-def optrg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, fnames = None):
+def oreg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, fnames = None):
 
     ### REGISTRATION OPTIONS ###
 
@@ -120,7 +120,7 @@ def optrg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None,
         'use_cuda': use_cuda,                  # flag for using a GPU
         'fr': fr,                # imaging rate in frames per second
         'dxy': dxy,          # spatial resolution of FOV in pixels per um
-        ##OPTIONS BELOW ARE NOT SET IN OPTRG ABOVE, HERE THEY GET CAIMAN DEFAULT VALUES; THEY ARE INCLUDED FOR CLARITY
+        ##OPTIONS BELOW ARE NOT SET IN OREG ABOVE, HERE THEY GET CAIMAN DEFAULT VALUES; THEY ARE INCLUDED FOR CLARITY
         'num_frames_split': 80,             # THIS APPEARS TO NOT BE USED; split across time every x frames
         'num_splits_to_process_els': None,  # DO NOT MODIFY
         'num_splits_to_process_rig': None,  # DO NOT MODIFY

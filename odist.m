@@ -1,6 +1,6 @@
-function optout = optdist(optin, vbin)
+function optout = odist(optin, vbin)
 
-% optdist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each copybin, ie each), but optdist in python just gives 'any' (not 'each') functionality
+% odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each copybin, ie each), but odist in python just gives 'any' (not 'each') functionality
 
 optin = optin.(vbin);
 fn = fieldnames(optin);

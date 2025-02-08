@@ -1,4 +1,4 @@
-function [daqvarout, daqvarout_dv] = daqproc(daqvartype, daqvarname, daqvarin, ...
+function [daqvarout, daqvarout_dv] = daqpr(daqvartype, daqvarname, daqvarin, ...
     newlength, inds, dt, voltmin, voltmax, slopelensec, slopeord, pthfigpre, doplt)
 
 % default resampling uses daq frame timestamps ('inds')
@@ -16,7 +16,7 @@ if isduration(daqvarin)
 end
 
 if strcmp(daqvartype, 'circular')
-    daqvarin = daqvarin / (voltmax-voltmin)*2*pi - pi; %put in range -pi to pi,  0 V assigned to -pi
+    daqvarin = daqvarin / (voltmax-voltmin)*2*pi - pi; %put in range -pi to pi, 0 V assigned to -pi
 end
 
 if isequal(vec(unique(daqvarin)), [0;1])

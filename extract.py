@@ -7,7 +7,7 @@ from tifffile.tifffile import imwrite, imread
 
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
-from optex import optex
+from oex import oex
 from vis_cm import caiman_plots_all
 from crop_fov import crop_fov
 from stackchan import stackchan
@@ -68,7 +68,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
             
 
             if optall:
-                optall = optex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
+                optall = oex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
 
             print("looping over " + str(len(optall)) + " unique options sets")
             

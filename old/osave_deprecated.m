@@ -1,4 +1,4 @@
-function osave(o)
+function osv(o)
 % deprecated because jsonencode does it better, although maybe less readable  
 
 % save all options (struct o, flattened) as txt file (with timestring id)

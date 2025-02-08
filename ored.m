@@ -1,4 +1,4 @@
-function [o, oreturn] = optreduce(o, vbin)
+function [o, oreturn] = ored(o, vbin)
 
 %remove redundancy in options sets (before writing to options file and assigning options set index)
 

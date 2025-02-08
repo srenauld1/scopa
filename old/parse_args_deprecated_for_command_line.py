@@ -5,7 +5,7 @@ from dictsort import dictsort
 
 
 ##THIS VERSION WAS USED IN defualt_params_batch.py still existed, allowing command line arguments to update defaults
-## but now pipeline_init is either run interactively with all arguments specified in optdfpl 
+## but now pipeline_init is either run interactively with all arguments specified in oset 
 ## or it's run from pl.sh, in which case all arguments are either written to pars file, or passed as command line, but none need defaults to be invoked, so the command line parsing has been removed
 
 class parse_pars_file():

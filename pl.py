@@ -21,9 +21,9 @@ if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from 
   makeplots = 0 #should be 0 if running job from pl on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
   do_crop_only = 0 #should be 0 if running job from pl on O2, since this is interactive drawing/cropping of FOV
   print("pth_parsfile passed as input to pl.py (in batch mode), using options from pth_parsfile (options from pl.sh)")
-else: #in interactive mode, read options set in optdfpl, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from optdfpl.py, where user sets options; 2 options, do_copyfiles and jobind, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in optdfpl
-  print("pth_parsfile not passed as input (in interactive mode), using options from optdfpl.py")
-  exec(open(currscriptdir + '/' + 'optdfpl.py').read())
+else: #in interactive mode, read options set in oset, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from oset.py, where user sets options; 2 options, do_copyfiles and jobind, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in oset
+  print("pth_parsfile not passed as input (in interactive mode), using options from oset.py")
+  exec(open(currscriptdir + '/' + 'oset.py').read())
   first_noncopy_job = 1 #this should always be 1 if you're running pl.py directly/interactively, first_noncopy_job is only used when pl.py is called from pl.sh, as part of a larger pipeline 
   jobnm = '' #empty for intyeractive mode; job name run from pl (noninteractive job identifier)
   pth_parsfile = '' #string, single element not in list, skip if empty, name of input argument txt file, convenient for passing same arguments to multiple stages of pipeline 

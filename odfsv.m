@@ -1,7 +1,7 @@
-function optdfsv(pthopt)
+function odfsv(pthopt)
  
 % default options for a2p
-% running optdfsv writes all options to txt file in scopa using jsonencode (written to file to encourage stability)  
+% running odfsv writes all options to txt file in scopa using jsonencode (written to file to encourage stability)  
 
 arguments
     pthopt = []
@@ -111,7 +111,7 @@ d.sld.iz = []; %z indices to keep and save to mat
 d.sld.it = []; %t indices to keep and save to mat 
 d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
-%% ftv (ftvproc: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
+%% ftv (ftvpr: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
 
 d.ftv.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
 d.ftv.smlenpx = 2; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
@@ -143,7 +143,7 @@ d.ma.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma fo
 d.ma.celsz = 8; %for bwmorph close after edge detection, helps connect edges
 d.ma.do3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
 
-%% cm (roifauto: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in optex)
+%% cm (roifauto: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in oex)
 
 %{
 methodex:
@@ -172,7 +172,7 @@ d.cm.p = 0; %for deconvolution model if 1 or 2, or skipping deconvolution if 0 (
 
 % INITIALIZATION
 d.cm.method_init = 'graph_nmf'; %'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi
-d.cm.sigma_smooth_snmf_time = 0.5; %first element of sigma_smooth_snmf, for smoothing in time before initialization; sigma_smooth_snmf default is [0.5, 0.5, 0.5, 0.5], which is txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have effect; consider z width, relative to xy width, when setting this; in optex, the xyz elements are assigned the same values as gSig
+d.cm.sigma_smooth_snmf_time = 0.5; %first element of sigma_smooth_snmf, for smoothing in time before initialization; sigma_smooth_snmf default is [0.5, 0.5, 0.5, 0.5], which is txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have effect; consider z width, relative to xy width, when setting this; in oex, the xyz elements are assigned the same values as gSig
 d.cm.perc_baseline_snmf = 20; % default 20; baseline percentile, removed from stack before initialization for method_init graph_nmf and sparse_nmf
 d.cm.max_iter_snmf = 500; %default 500; number iterations in initialization for method_init graph_nmf and sparse_nmf)
 

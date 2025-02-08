@@ -9,7 +9,7 @@
 # set scopa defaults above section heading "END SETTING SCOPA CAIMAN EXTRACTION DEFAULTS"
 
 # set options sweeps in map2opt
-# map2opt (called below) let's the user specify lists for any options in optex; those lists get distributed into all possible combinations of the options in map2opt
+# map2opt (called below) let's the user specify lists for any options in oex; those lists get distributed into all possible combinations of the options in map2opt
 
 # md['dims'] is dims of original fov, dims_spatial_ex is dims of extraction fov (which may be cropped, so not necessarily the same as md['dims'])
 # opttmp (in section ASSEMBLE OPTIONS DICTIONARY) has all options set here in topex; most are passed to cnmf.params.CNMFParams to create the caiman params object for use in cnmf.fit; some are used in a couple other caiman functions (noted in comments)

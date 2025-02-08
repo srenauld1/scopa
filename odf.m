@@ -60,13 +60,13 @@ if isempty(pthopt)
 end
 
 if ~isfile(pthopt)
-    optdfsv();
+    odfsv();
 end
 
 if isfile(pthopt)
     d = structtxtld(pthopt, nocells=1);
 else
-    error(sprintf("cannot find default options file, '" + pthopt + "', run optdfsv.m to create the default options file"))
+    error(sprintf("cannot find default options file, '" + pthopt + "', run odfsv.m to create the default options file"))
 end
 
 %%%% update options %%%%
@@ -199,7 +199,7 @@ end
 
 if isempty(vbin)
 
-    o = optupdate(oin, d, copybinprev, copybin);
+    o = ofill(oin, d, copybinprev, copybin);
 
 else
 
@@ -246,7 +246,7 @@ else
             if isempty(copybin) %if you're not making copybin of a nested vbin . . .
                 ignorefields_for_full_nested_vbin = unique([ignorefields_for_full_nested_vbin, copybinprev, copybin]); %just ignore coprbinprev
             else %if you're making copybin of a nested vbin . . .
-                ignorefields_for_full_nested_vbin = unique([ignorefields_for_full_nested_vbin, copybinprev, vbindeepest]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
+                ignorefields_for_full_nested_vbin = unique([ignorefields_for_full_nested_vbin, copybinprev, vbindeepest]); %must ignore copybinprev and vbindeepest in ofill on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
             end
             if ~isfield(d, vbinshallowest)
                 error(sprintf("d." + vbinshallowest) + " does not exist; nested vbin must start with primary vbin directly under o")
@@ -261,12 +261,12 @@ else
                 end
                 oindeepest.(vbindeepest) = d.(vbindeepest);
             end
-            oindeepest = optupdate(oindeepest, d, copybinprev, copybin); %update deepest vbin
+            oindeepest = ofill(oindeepest, d, copybinprev, copybin); %update deepest vbin
             eval(['oin.' vbin{k} ' = oindeepest.' vbindeepest ';']); %after updating, put deepest back into oin where it was before (ie according to vbin nesting), with possible copybin applied
             oinsub.(vbinshallowest) = oin.(vbinshallowest); %put that nested vbin aside and ...
             oin = rmfield(oin, vbinshallowest); %remove it from oin
             if k==numel(vbin)
-                o = optupdate(oinsub, d, ignorefields_for_full_nested_vbin, []); %then update the full nested vbin; don't use copybin on full nested vbin (only use it on oindeepest above); here you must ignore copybinprev_and_newvbindeepest, which contains both the enclosing vbin for the newly created copybin (vbindeepest, which will include any copybin applied to vbindeepest, and thus don't need to be listed in copybinprev_and_newvbindeepest), as well as old copybin (copybinprev); note you could break this if copybindeepest appears more than once in the nesting, then optupdate will ignore the shallower, so there's an above error to catch that
+                o = ofill(oinsub, d, ignorefields_for_full_nested_vbin, []); %then update the full nested vbin; don't use copybin on full nested vbin (only use it on oindeepest above); here you must ignore copybinprev_and_newvbindeepest, which contains both the enclosing vbin for the newly created copybin (vbindeepest, which will include any copybin applied to vbindeepest, and thus don't need to be listed in copybinprev_and_newvbindeepest), as well as old copybin (copybinprev); note you could break this if copybindeepest appears more than once in the nesting, then ofill will ignore the shallower, so there's an above error to catch that
             end
         end
 
@@ -290,7 +290,7 @@ else
         if ~isempty(copybin_inert)
             fprintf(strjoin(copybin_inert, ', ') + " has/have already been set, nothing will change in this/these copybin" + newline)
         end
-        o = optupdate(oinsub, d, copybinprev, copybin); %just update vbin
+        o = ofill(oinsub, d, copybinprev, copybin); %just update vbin
     end
     
     o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]); %combine with what was unchanged
@@ -303,7 +303,7 @@ for k = 1:numel(metafields)
     end
 end
 
-copybin = unique([copybinprev, copybin]); %must ignore copybinprev and vbindeepest in optupdate on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
+copybin = unique([copybinprev, copybin]); %must ignore copybinprev and vbindeepest in ofill on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
 if ~isempty(copybin)
     o.copybin = copybin;
 end
@@ -429,7 +429,7 @@ if fill
 
     % now set some globals, as the final step in creating options struct (we know it's final because filled=1 now)
 
-    %%%% these globals should not be edited by the user in general, so they take values from d (output from optdfsv) %%%%
+    %%%% these globals should not be edited by the user in general, so they take values from d (output from odfsv) %%%%
     if isempty(glb('pthscopa')) && isempty(glb('regionexdf')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
         xyscreen = pxscreenget;
         glb(pthscopa=pthscopa, regionexdf=d.roi.regionex, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);

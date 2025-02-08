@@ -1,4 +1,4 @@
-function optout = optupdate(optin, optdef, copybinprev, copybin)
+function optout = ofill(optin, optdef, copybinprev, copybin)
 
 arguments
     optin
@@ -39,7 +39,7 @@ else
     fn1 = fn1(~ismember(fn1, copybinprev));
     for k = 1:numel(fn1)
         if ~isfield(optdef, fn1{k})
-            error(sprintf("d." + fn1{k} + " does not exist in optdfsv"))
+            error(sprintf("d." + fn1{k} + " does not exist in odfsv"))
         end
         if isempty(copybin)
             if all(ismember(fieldnames(optin.(fn1{k})), copybinprev)) %skip if the vbin is all copybins (ie if there is are no options passed in the vbin)
@@ -101,7 +101,7 @@ end
                 if isfield(optout, fn{u})
                     if isstruct(optin.(fn{u}))
                         if ~isstruct(optout.(fn{u})) && ~isobject(optout.(fn{u})) %struct can refer to object not struct
-                            error(sprintf("d." + fn{u} + " does not exist in optdfsv"))
+                            error(sprintf("d." + fn{u} + " does not exist in odfsv"))
                         else
                             optout.(fn{u}) = optudrec(optin.(fn{u}), optout.(fn{u}), fn{u});
                         end
@@ -116,13 +116,13 @@ end
                             optout.(fn{u}) = optin.(fn{u});
                         else
                             if ~isfield(optdef, fn{u})
-                                error(sprintf("neither d." + fn{u} + " nor d." + [fnparent '.' fn{u}] + " exist in optdfsv"))
+                                error(sprintf("neither d." + fn{u} + " nor d." + [fnparent '.' fn{u}] + " exist in odfsv"))
                             else
                                 optout.(fn{u}) = optudrec(optin.(fn{u}), optdef.(fn{u}), fn{u});
                             end
                         end
                     else
-                        error(sprintf("d." + [fnparent '.' fn{u}] + " does not exist in optdfsv"))
+                        error(sprintf("d." + [fnparent '.' fn{u}] + " does not exist in odfsv"))
                     end
                 end
             end

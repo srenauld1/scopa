@@ -23,7 +23,7 @@ end
 if o.docm
 
     if any(structfun(@(x) any(strcmp(x, '*')),o.cm))
-        error("need to fix caiman optreduce for wild")
+        error("need to fix caiman ored for wild")
     end
     %%assemble reduced cmex struct (gets special attention because it's relatively more complicated)
 

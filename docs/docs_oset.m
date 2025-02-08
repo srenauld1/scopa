@@ -41,7 +41,7 @@ odf is just a wrapper for odfscal; odfscal operates on scalar struct argument oi
 
 ----- cell array options and expansion -----
 
-when options appear as cell, each cell element is applied to a unique options set (this is called 'expansion', and is performed by function opt2id)
+when options appear as cell, each cell element is applied to a unique options set (this is called 'expansion', and is performed by function oid)
 any text option that can be nonscalar must be a string array (rather than a char cell array), so that it can be placed in a cell for expansion 
 most 
 
@@ -62,7 +62,7 @@ here is a complete list of vbins and functions they hold options for (see also s
     daq, daqld   (called from a2p)
     spr, stackpr   (called from a2p)
     sld, stackld   (called from stackpr)
-    ftv, ftvproc   (called from a2p)
+    ftv, ftvpr   (called from a2p)
     roi, roimake   (called from a2p)
     ma, roimauto   (called from roimake)
     roif, roifauto   (called from a2p)

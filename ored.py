@@ -1,8 +1,8 @@
 
-def optreduce(opt, two_channel_ex):
+def ored(opt, two_channel_ex):
 
-    #create a minimal set of options output from optex (the effective set), since option use depends on other options
-    # here, scopa variables used in optex to derive caiman variables are not used; instead the derived caiman variables are used
+    #create a minimal set of options output from oex (the effective set), since option use depends on other options
+    # here, scopa variables used in oex to derive caiman variables are not used; instead the derived caiman variables are used
 
     ored = {}
 

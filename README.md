@@ -127,7 +127,7 @@ and for example, the following is valid input file on O2 (if you're not using do
 for running the pipeline in interactive mode . . . 
         entry point is pl.py for 'pre' pipeline (input raw imaging tif)
                 you can run on your local machine (e.g. in vscode), or on O2Portal (e.g., in vscode)
-                adjust input params in file optdfpl.py
+                adjust input params in file oset.py
         entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
         if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 

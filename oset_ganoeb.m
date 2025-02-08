@@ -12,6 +12,7 @@ o.mn.plt = [""]; %string array of subroutines that get plots; default is all of 
 o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 
 o.daq.use_carls_epochs = 1;
+o.daq.slopelensec = 0.01;
 
 o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.mdl_length_sec = 0;

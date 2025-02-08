@@ -11,7 +11,7 @@ from tifffile.tifffile import imwrite, imread
 import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 
-from optrg import optrg
+from oreg import oreg
 from im_montage import im_montage
 from plot_gif import plot_gif
 
@@ -66,7 +66,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
                 regtemplate = imread(pth_regtemplate).astype('float32')
             else:
                 minmovtmp = np.min(stack).astype('float32')
-                opts_dict = optrg(md, register_in_2d, minmovtmp, stack_shape_space, max_shifts_prc = max_shifts_prc) ## FOR SOME REASON CALLING optrg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
+                opts_dict = oreg(md, register_in_2d, minmovtmp, stack_shape_space, max_shifts_prc = max_shifts_prc) ## FOR SOME REASON CALLING oreg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
                 regtemplate = make_registration_template(stack, md['volrate'], stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
@@ -164,7 +164,7 @@ def make_registration_template(stack, volrate, stack_has_multiple_z_slices, regi
         time_slicer = slice(0+start_frame_template_if_not_using_caiman_default_template_frames, num_frames_template_if_not_using_caiman_default_template_frames+start_frame_template_if_not_using_caiman_default_template_frames, 1) #first num_frames_template_if_not_using_caiman_default_template_frames frames
 
 
-    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in optrg (default does not use these)
+    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in oreg (default does not use these)
         if stack_has_multiple_z_slices:
             stack = stack[time_slicer, indices[0], indices[1], :]
         else:

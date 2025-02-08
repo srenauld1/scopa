@@ -83,7 +83,7 @@ if round(slopelensec/sampper)<slopeord+1
     structtxtsv(md, pthmd)
 end
 
-if isfile(pth_daqrs)
+if isfile('fuk')
 
     load(pth_daqrs, 'daqrs')
 

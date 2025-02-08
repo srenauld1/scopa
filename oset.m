@@ -2,8 +2,8 @@ function [o, oflat] = oset(specin, opt)
 
 % see docs_oset.m
 % FIX: EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)
-% FIX: NONFUNCTIONAL (PLOTTING) OPTIONS ARE CURRENTLY ALL IN SEPARATE VBIN, SO OPT2ID EASILY DEALS WITH THEM, BUT CAN THIS ALWAYS BE THE CASE? what about redundant vbins that get removed in optreduce, they aren't returned, is that a problem? should options leaving oset always have same fields?? 
-% FIX: OPTREDUCE NEEDS TO REMOVE NONFUNCTIONAL VBIN AT ANY NESTING 
+% FIX: NONFUNCTIONAL (PLOTTING) OPTIONS ARE CURRENTLY ALL IN SEPARATE VBIN, SO OID EASILY DEALS WITH THEM, BUT CAN THIS ALWAYS BE THE CASE? what about redundant vbins that get removed in ored, they aren't returned, is that a problem? should options leaving oset always have same fields?? 
+% FIX: ORED NEEDS TO REMOVE NONFUNCTIONAL VBIN AT ANY NESTING 
 
 arguments
     specin = '' % specin can be empty, or not passed as argument, and will search for file using fspc* below; specin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, make files=0
@@ -127,7 +127,7 @@ end
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
-o = opt2id(o); %assign id to options sets, if multiple requested with cell array options
+o = oid(o); %assign id to options sets, if multiple requested with cell array options
 
 oflat = structflat(o, prefix='o'); %get flattened struct for user to see options struct organization more easily (oflat does not get used); need prefix to make valid fieldnames in case nonscalar
 

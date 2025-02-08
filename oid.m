@@ -1,6 +1,6 @@
-function o = opt2id(o, vbin, opt)
+function o = oid(o, vbin, opt)
 
-% python optex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
+% python oex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
 % this function starts at distribute, and derive and check require data, so only happen in python, not here
 % (so here we just do distribute, reduce, sort, unique, ID)
 
@@ -16,7 +16,7 @@ if isempty(user)
     error("you have not set glb('user')")
 end
 
-id_capable_vbin = {'roi', 'mdl', 'bmp'}; %only these vbin can be distributed (optdist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
+id_capable_vbin = {'roi', 'mdl', 'bmp'}; %only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
 
 if isempty(vbin)
     vbin = id_capable_vbin;
@@ -36,11 +36,11 @@ if strcmp(callstack(2).name, 'tsget')
 end
 
 if tsgetcall && ~getonly
-    error("tsget should call opt2id with getonly=1")
+    error("tsget should call oid with getonly=1")
 end
 
 if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o, 'filled'))~=1)
-    if ~tsgetcall %input struct does not require true 'filled' field if opt2id is called from tsget
+    if ~tsgetcall %input struct does not require true 'filled' field if oid is called from tsget
         error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
     end
 end
@@ -51,7 +51,7 @@ for k = 1:numel(vbin)
     vbintmp = vbin{k};
 
     if ~any(strcmp(vbintmp, id_capable_vbin))
-        error(sprintf("option module (vbin) " + vbintmp + " does not support mapping between options sets and option ids (opt2id)"))
+        error(sprintf("option module (vbin) " + vbintmp + " does not support mapping between options sets and option ids (oid)"))
     end
 
     %%%%%%%% FIND OPTIONS FILE (FOR THIS FILESYSTEM) FOR A SINGLE vbin %%%%%%%%
@@ -64,7 +64,7 @@ for k = 1:numel(vbin)
             
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-            optexpall = optdist(o(m), vbintmp); %optexpall structs (fields) are temporary names assigned during distribution
+            optexpall = odist(o(m), vbintmp); %optexpall structs (fields) are temporary names assigned during distribution
 
             optout = [];
             fntmp = fieldnames(optexpall);
@@ -76,15 +76,15 @@ for k = 1:numel(vbin)
 
                 %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-                [optred, optreturn] = optreduce(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); optred is written to file (if it wasn't already)
+                [ored, optreturn] = ored(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); ored is written to file (if it wasn't already)
 
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
 
-                [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
+                [opttmp, nmnew] = structfile(pthoptpat, s=ored, useprefix=1, getonly=getonly);
 
 
-                %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN optreduce??  %%%%%%%%
+                %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
 
                 if tsgetcall && ~iscell(opttmp)
                     opttmp = {opttmp};

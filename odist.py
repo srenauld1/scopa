@@ -1,4 +1,4 @@
-class optdist():
+class odist():
 
 
     def __init__(self, opt):
