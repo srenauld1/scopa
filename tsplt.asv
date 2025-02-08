@@ -156,8 +156,8 @@ if isempty(xall) %if xall is empty, then x could have different lengths, so inte
         if size(x{k},2)~=size(y{k},2)
             y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
         end
-        x{k} = x{k};
-        y{k} = y{k};
+        tsx{k} = x{k};
+        tsy{k} = y{k};
     end
 else
     for k = 1:numel(y)
@@ -167,27 +167,27 @@ else
         if size(x{k},2)~=size(y{k},2)
             y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
         end
-        x{k} = x{k};
-        y{k} = y{k};
+        tsx{k} = x{k};
+        tsy{k} = y{k};
     end
 end
 
-num_xy_pairs = numel(x);
+num_xy_pairs = numel(tsx);
 if ~isempty(cell2mat(cellflat(marks))) && ~isequal(numel(marks), num_xy_pairs)
     error("marks must have same number of outer cells as xy pairs")
 end
 
-numsamp = numel(x{1});
-if any(cellfun(@numel, x)~=numsamp) || any(cellfun(@(x) size(x,2), y)~=numsamp)
+numsamp = numel(tsx{1});
+if any(cellfun(@numel, tsx)~=numsamp) || any(cellfun(@(x) size(x,2), tsy)~=numsamp)
     error("after interpolation, all timeseries must match in length")
 end
-if ~all(cellfun(@isvector, x)) % || ~all(cellfun(@isvector, y)) %check this after all the manipulations, just to be sure
+if ~all(cellfun(@isvector, tsx)) % || ~all(cellfun(@isvector, tsy)) %check this after all the manipulations, just to be sure
     error("all x-timeseries must be vectors")
 end
 if num_xy_pairs>maxnumts
     error("number timeseries (x-y pairs, counted after applying all input arguments) exceeds maxnumts")
 end
-if any(size(xseg, 1)>=cellfun(@numel, x)/minsampperseg)
+if any(size(xseg, 1)>=cellfun(@numel, tsx)/minsampperseg)
     error(sprintf("you've requested an xseg that will only show " + num2str(minsampperseg) + " true samples (not interpolated samples) on each frame; if that's really what you want, change minsampperseg (default, or as name-value argument)"))
 end
 
@@ -209,23 +209,23 @@ else
     yaxis_true_lims = [0 1]; 
 end
 
-lim = axlim(y, limtype=ylimtype, roomfac=yroomfac);
+lim = axlim(tsy, limtype=ylimtype, roomfac=yroomfac);
 
-y = rescale_to_range(y, lim, yaxis_true_lims);
+tsy = rescale_to_range(tsy, lim, yaxis_true_lims);
 
 for k = 1:num_xy_pairs
     if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
         for m = 1:numel(marks)
-            marksy{k}{m} = interp1(x{k}, y{k}, marks{k}{m}, 'nearest');
+            marksy{k}{m} = interp1(tsx{k}, tsy{k}, marks{k}{m}, 'nearest');
         end
     end
 end
 
 if ~isempty(it)
-    it = indsmake(it, indsall=numel(y{k}));
+    it = indsmake(it, indsall=numel(tsy{k}));
     for k = 1:num_xy_pairs
-        x{k} = x{k}(:,it);
-        y{k} = y{k}(:,it);
+        tsx{k} = tsx{k}(:,it);
+        tsy{k} = tsy{k}(:,it);
     end
     if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
         for m = 1:numel(marks{k})
@@ -242,7 +242,7 @@ hax = axes(Parent=hfg, Position=axpos, XColor='k', YColor='k', Box='off');
 hold(hax, 'on')
 cnt = 0;
 for k = 1:num_xy_pairs
-    hpl{k} = plot(hax, x{k}, y{k}, Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+    hpl{k} = plot(hax, tsx{k}, tsy{k}, Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
     if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
         for m = 1:numel(marks{k})
             cnt = cnt+1;
@@ -251,7 +251,7 @@ for k = 1:num_xy_pairs
     end
 end
 hold(hax, 'off')
-hax.XLim = [x{k}(1) x{k}(end)];
+hax.XLim = [tsx{k}(1) tsx{k}(end)];
 xlmcurr = hax.XLim; %change x lim on subsequent frames (if there are any)
 
 %% LOOP OVER XSEG, ADJUSTING AXES IF NECESSARY, AND WRITING TO GIF IF REQUESTED
@@ -262,7 +262,7 @@ for fi = 1:size(xseg, 1)
     hax.XLim = xlmseg;
 
     if isequal(yconst,1) || numel(yconst)>1
-        ylm1 = yaxis_true_lims; %[min(y{1}) max(y{1})];
+        ylm1 = yaxis_true_lims; %[min(tsy{1}) max(tsy{1})];
     else
         % error("something is wrong with this limit computation when constany_ylim==0, maybe only with nans")
         if default_xtrue
@@ -270,14 +270,14 @@ for fi = 1:size(xseg, 1)
             xrangenew1 = floor(hax.XLim(1)):ceil(hax.XLim(2));
             xrangenew1(xrangenew1==0) = []; %remove 0 if it exists
         else
-            xrangenew1 = find(x{1}>=hax.XLim(1) & x{1}<=hax.XLim(2));
+            xrangenew1 = find(tsx{1}>=hax.XLim(1) & tsx{1}<=hax.XLim(2));
         end
 
         %was this, but if not constant y, this can clip some ts, since it's only ts{1}
-        % ylm1 = [min(y{1}(xrangenew1), [], 'all', 'omitmissing') max(y{1}(xrangenew1), [], 'all', 'omitmissing')];
+        % ylm1 = [min(tsy{1}(xrangenew1), [], 'all', 'omitmissing') max(tsy{1}(xrangenew1), [], 'all', 'omitmissing')];
 
-        ylm1(1) = min(cellfun(@(x) min(x(xrangenew1), [], 'all', 'omitmissing'), y));
-        ylm1(2) = max(cellfun(@(x) max(x(xrangenew1), [], 'all', 'omitmissing'), y));
+        ylm1(1) = min(cellfun(@(x) min(x(xrangenew1), [], 'all', 'omitmissing'), tsy));
+        ylm1(2) = max(cellfun(@(x) max(x(xrangenew1), [], 'all', 'omitmissing'), tsy));
 
     end
 

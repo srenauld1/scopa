@@ -1,5 +1,5 @@
 function [indvpaug, num_dim_indv, num_samp_mdl, levs_full_hot] = ...
-    one_hot_encode_input(mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplt)
+    mdl_ohevar(mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplt)
 
 numbinhot = sscanf(mdlname, 'ohe%d');
 collapse_input_by_ineractions = 1; %default for now

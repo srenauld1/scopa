@@ -43,18 +43,18 @@ depvp_min_eachdim = min(mdl.vars.depvp, [], 2, 'omitmissing');
 depvp_max_eachdim = max(mdl.vars.depvp, [], 2, 'omitmissing');
 
 if strcmp(opts.normalize_indv, 'zscore')
-    mdl.normmdlvar_indv = normalize_mdl_var_forward_and_reverse(opts.normalize_indv, indvp_mean_eachdim, indvp_std_eachdim, [], []); %save function handle to forward or reverse standardize later
+    mdl.normmdlvar_indv = mdl_nrmvar(opts.normalize_indv, indvp_mean_eachdim, indvp_std_eachdim, [], []); %save function handle to forward or reverse standardize later
 elseif strcmp(opts.normalize_indv, 'minmax') || strcmp(opts.normalize_indv, 'minmaxcnt')
-    mdl.normmdlvar_indv = normalize_mdl_var_forward_and_reverse(opts.normalize_indv, [], [], indvp_min_eachdim, indvp_max_eachdim); %save function handle to forward or reverse standardize later
+    mdl.normmdlvar_indv = mdl_nrmvar(opts.normalize_indv, [], [], indvp_min_eachdim, indvp_max_eachdim); %save function handle to forward or reverse standardize later
 end
 if ~strcmp(opts.normalize_indv, 'none')
     mdl.vars.indvp = mdl.normmdlvar_indv(mdl.vars.indvp, 'forward'); %normalize indv
 end
 
 if strcmp(opts.normalize_depv, 'zscore')
-    mdl.normmdlvar_depv = normalize_mdl_var_forward_and_reverse(opts.normalize_depv, depvp_mean_eachdim, depvp_std_eachdim, [], []); %save function handle to forward or reverse standardize later
+    mdl.normmdlvar_depv = mdl_nrmvar(opts.normalize_depv, depvp_mean_eachdim, depvp_std_eachdim, [], []); %save function handle to forward or reverse standardize later
 elseif strcmp(opts.normalize_depv, 'minmax') || strcmp(opts.normalize_depv, 'minmaxcnt')
-    mdl.normmdlvar_depv = normalize_mdl_var_forward_and_reverse(opts.normalize_depv, [], [], depvp_min_eachdim, depvp_max_eachdim); %save function handle to forward or reverse standardize later
+    mdl.normmdlvar_depv = mdl_nrmvar(opts.normalize_depv, [], [], depvp_min_eachdim, depvp_max_eachdim); %save function handle to forward or reverse standardize later
 end
 if ~strcmp(opts.normalize_depv, 'none')
     mdl.vars.depvp = mdl.normmdlvar_depv(mdl.vars.depvp, 'forward'); %normalize depv
@@ -87,7 +87,7 @@ end
 if startsWith(opts.mdlname, 'ohe') %one hot encode indv, if mdlname is 'ohe*'
     doplots_hot = 0;
     [indvpaug, num_dim_indv, num_samp_mdl, ~] = ...
-        one_hot_encode_input(opts.mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplots_hot);
+        mdl_ohevar(opts.mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplots_hot);
 end
 
 
@@ -96,12 +96,12 @@ end
 if ~isequal([num_dim_indv, num_samp_indvpaug], size(indvpaug))
     error("wrong write size")
 end
-pth_indvaug_bin = write_mdl_var(indvpaug, pthpre, 'indvpaug');
+pth_indvaug_bin = mdl_binsv(indvpaug, pthpre, 'indvpaug');
 
 if ~isequal([ num_dim_depvp, num_samp_depvp ], size(mdl.vars.depvp))
     error("wrong write size")
 end
-pth_depvp_bin = write_mdl_var(mdl.vars.depvp, pthpre, 'depvp');
+pth_depvp_bin = mdl_binsv(mdl.vars.depvp, pthpre, 'depvp');
 
 
 %% compute basic stats from depv and indv for repeated use later

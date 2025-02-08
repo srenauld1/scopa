@@ -144,7 +144,7 @@ for ri, _ in enumerate(pth_read_all):
             register(pth_read_all[ri], pthmd_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, methodrg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
 
         if do_denoise:
-          chanstr_primary, chanstr_secondary = zsep_todn(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, denoise_volume, chan_dn) 
+          chanstr_primary, chanstr_secondary = zsep_todn(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, pthmd_all[ri], denoise_volume, chan_dn) 
           denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_primary)
           if chanstr_secondary:
            denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)

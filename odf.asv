@@ -65,6 +65,17 @@ end
 
 if isfile(pthopt)
     d = structtxtld(pthopt, nocells=1);
+    if wild
+        wcpat = '*';
+        d = structflat(d);
+        fnd = fieldnames(d);
+        for k = 1:numel(fnd)
+            if ~ismember(fnd{k}, metafields)
+                d.(fnd{k}) = wcpat;
+            end
+        end
+        d = structunflat(d);
+    end
 else
     error(sprintf("cannot find default options file, '" + pthopt + "', run optdfsv.m to create the default options file"))
 end
@@ -81,13 +92,13 @@ if files %if files==1, oin must be scalar
     if wild
         error("files cannot be true when wild is true" + newline)
     end
-    o = odfscal(d, oin, vbin, copybin, files, fill, wild, pthscopa, metafields); %odfs is for scalar struct o
+    o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa, metafields); %odfs is for scalar struct o
 else %otherwise, oin can be nonscalar
     if isempty(oin)
-        o = odfscal(d, oin, vbin, copybin, files, fill, wild, pthscopa, metafields); %odfs is for scalar struct o
+        o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa, metafields); %odfs is for scalar struct o
     else
         for k = numel(oin):-1:1 %in case o is nonscalar, loop over each element, calling odfs; backwards to preallocate
-            o(k) = odfscal(d, oin(k), vbin, copybin, files, fill, wild, pthscopa, metafields); %odfs is for scalar struct o
+            o(k) = odfscal(d, oin(k), vbin, copybin, files, fill, pthscopa, metafields); %odfs is for scalar struct o
         end
     end
 end
@@ -108,7 +119,7 @@ end
 
 
 
-function o = odfscal(d, oin, vbin, copybin, files, fill, wild, pthscopa, metafields)
+function o = odfscal(d, oin, vbin, copybin, files, fill, pthscopa, metafields)
 
 
 if isfield(oin, 'filled') && oin.filled==1
@@ -157,11 +168,11 @@ end
 
 if isempty(oin) || isempty(fieldnames(oin))
     if isempty(vbin)
-        if fill %if fill with no vbin supplied, fill full nesting
+        if fill
             vbin_top = d.nestvalid(~contains(d.nestvalid, '.') & ~contains(d.nestvalid, metafields));
-            vbin_all = fieldnames(d);
-            oin = rmfield(d, setxor(vbin_all, vbin_top));
-        else %if not fill and no vbin, just return each unnested vbin
+            subStr = 'f1_';
+            oin = rmfield( myStruct, vbin_top( find( cellfun( @isempty, strfind( vbin_top, subStr ) ) ) ) );
+        else
             oin = d;
         end
     else
@@ -291,6 +302,7 @@ else
             fprintf(strjoin(copybin_inert, ', ') + " has/have already been set, nothing will change in this/these copybin" + newline)
         end
         o = optupdate(oinsub, d, copybinprev, copybin); %just update vbin
+    
     end
     
     o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]); %combine with what was unchanged
@@ -363,14 +375,16 @@ end
 
 if fill
 
-    if ~isfield(o, 'id')
-        o.id = d.id;
-    end
-    if ~isfield(o, 'copybin')
-        o.copybin = d.copybin;
-    end
-    if ~isfield(o, 'nestvalid')
-        o.nestvalid = d.nestvalid;
+    if isempty(vbin)
+        if ~isfield(o, 'id')
+            o.id = d.id;
+        end
+        if ~isfield(o, 'copybin')
+            o.copybin = d.copybin;
+        end
+        if ~isfield(o, 'nestvalid')
+            o.nestvalid = d.nestvalid;
+        end
     end
 
     dnestflat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.nestvalid, repelem({'.'}, numel(d.nestvalid)), 'un', false)));
@@ -493,18 +507,6 @@ if fill
 
 end
 
-
-if wild
-    wcpat = '*';
-    o = structflat(o);
-    fn = fieldnames(o);
-    for k = 1:numel(fn)
-        if ~ismember(fn{k}, metafields)
-            o.(fn{k}) = wcpat;
-        end
-    end
-    o = structunflat(o);
-end
 
 
 

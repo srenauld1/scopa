@@ -198,7 +198,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025020613094494",
+    "timestr": "2025020719413476",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -206,7 +206,6 @@
     "mn",
     "daq",
     "spr",
-    "sld",
     "ftv",
     "roi",
     "bmp",

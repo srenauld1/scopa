@@ -103,12 +103,12 @@ end
 
 %% read / normalize indv and depv (keep seperate from plotvars in case they are large and epoch sets overlap)
 
-indv = read_mdl_var(mdl.pth_indvaug_bin);
+indv = mdl_binld(mdl.pth_indvaug_bin);
 if ~strcmp(opts.normalize_indv, 'none')
     indv = mdl.normmdlvar_indv(indv, 'reverse');
 end
 
-depv = read_mdl_var(mdl.pth_depvp_bin);
+depv = mdl_binld(mdl.pth_depvp_bin);
 if ~strcmp(opts.normalize_depv, 'none')
     depv = mdl.normmdlvar_depv(depv, 'reverse');
 end

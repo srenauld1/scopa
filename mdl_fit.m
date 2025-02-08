@@ -5,7 +5,7 @@ function [ft, pred, mse_train, mse_val] = mdl_fit(indv, depv, ri, optim_hist_sav
 % rng default
 
 do_nonlinear_constraint = 0;
-save_progress_files = 1; %save a dummy file on every completed fit so you can monitor progress more easily on long parallel runs
+save_dummy_progress_files = 1; %save a dummy file on every completed fit so you can monitor progress more easily on long parallel runs
 
 if optim_hist_save_iter_spacing
     histfit = init_optim_hist(op.opp.options.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
@@ -77,8 +77,8 @@ if optim_hist_save_iter_spacing
     savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
     parsave(savepath, histfit) %save histfit, must use separate function
 end
-if save_progress_files
-    savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+if save_dummy_progress_files
+    savepath = [pth_fitdata(1:end-4) num2str(ri) '_DUMMY_.mat'];
     parsave(savepath, histfit) %save histfit, must use separate function
 end
 

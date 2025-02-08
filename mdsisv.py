@@ -97,13 +97,6 @@ def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
             'channel_offsets': mdt['channel_offsets']}
         
     
-    if not np.isin(md['channel_save'], md['channel_active']).any():
-        print("channel_save is not a subset in channel_active")
-        if len(md['channel_save'])>len(md['channel_active']):
-            print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; MAKING CHANNEL_SAVE EQUAL TO CHANNEL_ACTIVE, WHICH WILL DISREGARD THE PRESUMABLY EMPTY SAVED CHANNEL")
-            md['channel_save'] = md['channel_active']
-
-
     with open(pthmd, 'w') as file: 
         file.write(json.dumps(md, sort_keys=True, indent=4))
 

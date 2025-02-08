@@ -1,4 +1,4 @@
-function standmdlvar = normalize_mdl_var_forward_and_reverse(normtype, means, stds, mins, maxes)
+function standmdlvar = mdl_nrmvar(normtype, means, stds, mins, maxes)
 
 standmdlvar = @standardize_mdl_var_direction;
 

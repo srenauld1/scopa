@@ -26,7 +26,7 @@ end
 
 %% define indexing variables for taking subset of indv and depv (by epoch, and by train/validation set )
 
-mdl.fits.(epochinds_str) = mdl_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum);
+mdl.fits.(epochinds_str) = mdl_inds(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum);
 
 %% loop over train/validation sets, for k-fold cross-validation
 
@@ -42,19 +42,19 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     inds = mdl.fits.(epochinds_str).(valnames{vfi});
 
-    %% read full indv and depv from bin, then subsample
+    %% read full indv and depv from bin, then subsample (why not read inds directly, in case large variable?)
 
-    indv = read_mdl_var(pth_indvaug_bin);
+    indv = mdl_binld(pth_indvaug_bin);
     indv_val = indv(:, inds.sampinds_indvpaug_val).'; %columns of indv and depv should be number samples, could change above or just transpose here
     indv = indv(:, inds.sampinds_indvpaug_train).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-    [depv_allrois, depv_allrois_class] = read_mdl_var(pth_depvp_bin);
+    [depv_allrois, depv_allrois_class] = mdl_binld(pth_depvp_bin);
     depv_allrois_val = depv_allrois(:, inds.sampinds_depvp_val).';
     depv_allrois = depv_allrois(:, inds.sampinds_depvp_train).'; %columns of indv and depv should be number samples, could change above or just transpose here
 
     %% create save path, check if saved model already exists
 
-    [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
+    [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
 
     %% create synthetic data to test optimization (optional)
 
@@ -146,6 +146,8 @@ mdl.fits.(epochinds_str).indvpf_mean_allval = mean(indvpf_mean_allval, ndims(ind
 
 
 mdl = structsort(mdl);
+
+
 
 
 

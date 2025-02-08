@@ -84,3 +84,13 @@ end
 %     mdl_plots(mdl, roidat, stack, opt, pthpre)
 % end
 
+if isfile(mdl.pth_indvaug_bin)
+    delete(mdl.pth_indvaug_bin)
+end
+if isfile(mdl.pth_depvp_bin)
+    delete(mdl.pth_depvp_bin)
+end
+tmp = rdir([pthpre '*_DUMMY_.mat']);
+if ~isempty(tmp)
+    delete(tmp.name)
+end

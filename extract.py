@@ -29,7 +29,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
         stack = imread(pth_tif_read)
 
     chanrm, chan_primary_when_two, morphinpy = parse_methodex(methodex)
-    stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, chanrm, chan_primary_when_two)
+    stack, stack_secondary, two_channel_ex, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary_when_two)
 
     stack = stack_reshape_transpose_clip_zero_type(stack, md['dims'])
     print("STACK HAS SHAPE: \n" + str(stack.shape))

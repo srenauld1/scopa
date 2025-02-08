@@ -7,7 +7,7 @@ from stackchan import stackchan
 
 
 
-def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume, chan_dn):
+def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume, chan_dn):
 
     # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
@@ -28,7 +28,7 @@ def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, denoise_volume, chan_d
     if chanrm is not None:
         raise Exception("WARNING! in this function (zsep_todn), chanrm should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)")
     
-    stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, chanrm, chan_primary)
+    stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
     
     zsep_onechan(stack, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
     if stack_secondary is not None:

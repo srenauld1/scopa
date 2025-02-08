@@ -1,4 +1,4 @@
-function out = mdl_define_indices(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum)
+function out = mdl_inds(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum)
 
 
 num_epochs = numel(epochnum);

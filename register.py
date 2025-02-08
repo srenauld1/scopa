@@ -56,7 +56,7 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
     chanrm, chan_primary, methodrg = parse_methodrg(methodrg, numchan)
     
-    stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, chanrm, chan_primary)
+    stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
 
     if bglenpx:
         pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in filefind (make this more reliable)

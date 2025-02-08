@@ -1,4 +1,4 @@
-function pth_bin = write_mdl_var(mdlvar, pthpre, write_suffix)
+function pth_bin = mdl_binsv(mdlvar, pthpre, write_suffix)
 
 write_class = class(mdlvar);
 write_size = size(mdlvar);

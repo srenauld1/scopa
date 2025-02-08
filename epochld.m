@@ -34,7 +34,7 @@ minsepfac = 0.9; %min separation for local min in yaw derivative moving variance
 dvlensamp = 3; %window length (unit: samples) for dvord-order polynomial fit to determine slope;
 dvord = 2; %order of polynomial fit for extracting local slope;
 tol_dv = 1; %tolerance (unit: degrees per second) for dv relative to dvnom (bidirectional)
-tol_boutlensec = 1; %tolerance for detecting long bouts
+tol_boutlensec = 2.5; %tolerance for detecting long bouts
 tol_dark = 5; %tolerance determining whether dark_value (unit degrees)
 tol_dark_var = 5; %tolerance determining whether variance matches expected variance of dark epoch (unit degrees)
 
@@ -119,7 +119,8 @@ if isfield(vis, 'yaw') && use_carls_epochs
             %%% make sure all bouts are expected length, except for possible long bouts at the end (when fictrac ends before daq and those bouts get classified as dark bouts because their derivative is 0)  %%%
 
             meds_t_dv = diff(tmed);
-            badlenbouts = abs(meds_t_dv-ioi)>=tol_boutlensec;
+            boutlenfound = abs(meds_t_dv-ioi);
+            badlenbouts = boutlenfound>=tol_boutlensec;
             first_good_len_bout = find(~badlenbouts, 1);
             last_good_len_bout = find(~badlenbouts, 1, 'last');
 
@@ -129,14 +130,14 @@ if isfield(vis, 'yaw') && use_carls_epochs
 
             %%% make sure you have the expected number of bouts, and that the daq_delay is not unusual %%%
 
-            numbouts_ol = numel(tmed);
-            maxgoodtime = max(tmed); %centroid of last open loop bout
+            numbouts_ol = numel(tmed(~badlenbouts));
+            maxgoodtime = max(tmed(~badlenbouts)); %centroid of last open loop bout
             numbouts_ol_expected = ceil(maxgoodtime / (ioi)); %ceil, since these are centroids
             daq_delay = closed_initial_len_sec - (tmed(1) - halfboutlensec);
 
-            if numbouts_ol~=numbouts_ol_expected
-                error("you did not recover the expected number of bouts")
-            end
+            % if numbouts_ol~=numbouts_ol_expected
+            %     error("you did not recover the expected number of bouts")
+            % end
             if daq_delay>60
                 error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
             end

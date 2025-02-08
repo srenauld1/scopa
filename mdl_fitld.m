@@ -1,4 +1,4 @@
-function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = load_fitdata(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
+function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
 
 if validation_fold==0
     pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_0_*_fitdata_.mat'];

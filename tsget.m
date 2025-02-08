@@ -35,7 +35,7 @@ end
 
 vbin = cell2mat(fieldnames(tsg));
 
-tsg = odf(tsg, wild=1); %make sure any option (for the one id_capable_vbin in tsg) that is not present in tsg gets a default value before tsg goes to opt2id
+tsg = odf(tsg, fill=1, wild=1); %make sure any option (for the one id_capable_vbin in tsg) that is not present in tsg gets a default value before tsg goes to opt2id
 
 tsg2 = opt2id(tsg, getonly=1);
 
