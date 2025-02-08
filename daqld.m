@@ -78,9 +78,8 @@ if ~isstring(vcategorical)
 end
 
 if round(slopelensec/sampper)<slopeord+1
-    fprintf("WARNING, IN daqld, slopelensec is too short given slopeord and sample rate, and will cause error in tsdv; making slopelensec longer, but as short as possible without causing error")
-    slopelensec = (slopeord+1)*sampper;
-    structtxtsv(md, pthmd)
+    slopelensec_new = (slopeord+1)*sampper;
+    error("WARNING, IN daqld, slopelensec is too short given slopeord and sample rate, and will cause error in tsdv; you need to make slopelensec longer for this recording; the shortest possible value that will not cause error (and without changing slopeord) is: " + num2str(slopelensec_new))
 end
 
 if isfile(pth_daqrs)

@@ -10,7 +10,7 @@ if ~isfield(o, 'filled') || o.filled~=1
     error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
 end
 
-fnopt = [o.id.recid '_options_.txt'];
+fnopt = [o.id.recid '_opt_.txt'];
 pthopt = fullfile(o.id.dirstack, fnopt);
 
 structtxtsv(o, pthopt, overwrite=1, readonly=1)

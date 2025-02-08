@@ -38,7 +38,7 @@ switch vbin
 
     case 'roi'
 
-        o = optreduce_roi(o);
+        o = ored_roi(o);
 
     otherwise
 

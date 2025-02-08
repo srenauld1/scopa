@@ -89,9 +89,9 @@ def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, p
     
         ############ REDUCE TO MINIMAL EFFECTIVE SET, SORT, AND REMOVE DUPLICATE SETS ############
 
-        ored = ored(opt_oneset, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
-        ored = dictsort(ored) #recursively order alphabetically, ignoring case
-        optredall.append(ored)
+        optred = ored(opt_oneset, two_channel_ex) #get minimal effective set of options (ie remove options that won't be used, depending on other options)
+        optred = dictsort(optred) #recursively order alphabetically, ignoring case
+        optredall.append(optred)
     
     optredall = dict_unique(optredall) #remove redundant reduced options sets 
     
@@ -99,12 +99,12 @@ def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, p
     ############ GET OPTID FROM OPTIONS FILE ############
 
     optout = {}
-    for ored in optredall:
-        optid = oexid(ored, pth_optroi)
+    for optred in optredall:
+        optid = oexid(optred, pth_optroi)
 
         ############ DERIVE SOME OPTIONS AND CHECK FOR PROBLEMS ############
 
-        optout[optid] = optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, ored)        
+        optout[optid] = optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, optred)        
         optout[optid] = optcheck(two_channel_ex, optout[optid]) #check for problems in how options were set
    
     return optout

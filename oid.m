@@ -76,12 +76,12 @@ for k = 1:numel(vbin)
 
                 %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-                [ored, optreturn] = ored(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); ored is written to file (if it wasn't already)
+                [optred, optreturn] = ored(oone, vbintmp); %options set without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); ored is written to file (if it wasn't already)
 
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
 
-                [opttmp, nmnew] = structfile(pthoptpat, s=ored, useprefix=1, getonly=getonly);
+                [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
 
 
                 %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%

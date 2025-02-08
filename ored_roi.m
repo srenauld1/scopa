@@ -1,5 +1,5 @@
 
-function o = optreduce_roi(o)
+function o = ored_roi(o)
 
 two_channel_ex = 1; %hard coding for now, soon, parse methodex
 
