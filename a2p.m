@@ -34,7 +34,6 @@ for k = 1:numel(oa) % loop over recordings
 
     %% stim
 
-    daqrs = daqld(pth.stack, o.daq);
     try
         daqrs = daqld(pth.stack, o.daq);
         [ball, vis, t] = daqrename(daqrs);
