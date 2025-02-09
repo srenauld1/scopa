@@ -70,11 +70,13 @@ for k = 1:numel(oa) % loop over recordings
             % o2.roi.regionex = 'eb';
             % depv = tsget(o2, chan=o.bmp.(optid).chan);
             depv = roi.a25.ts{o.bmp.(optid).chan};
-            bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pth.stack, optid, o.bmp.(optid)); %fit bump 
+            bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pth.stack, optid, o.bmp.(optid)); %fit bump
         end
+
+        ebno({'r'}, vis.yaw, ball.yaw, bmp.(optid).mu, bmp.(optid).respcl, roi.a23.ts{1}, roi.a24.ts{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={6}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-2:2], yconst=1, slopelensec=[])
+
     end
 
-    ebno({'r'}, vis.yaw, ball.yaw, bmp.(optid).mu, bmp.(optid).respcl, roi.a23.ts{1}, roi.a24.ts{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={6}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-2:2], yconst=1, slopelensec=[]) 
     
     %% model
 
