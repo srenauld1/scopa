@@ -101,7 +101,7 @@ if isfield(vis, 'yaw') && use_carls_epochs
             lstops = lstops(kp);
             medrnd = interp1(dvnom, dvnom, med, 'nearest', 'extrap'); %round medians to nearest dvnom
 
-            % tsplt(vis.yaw, mvar, marks={[], {tmed_notkp1, tmed}}, xall=t, ylimtype='each', xseg=xseg);
+            % tsplt(vis.yaw, mvar, xmark={[], {tmed_notkp1, tmed}}, xall=t, ylimtype='each', xseg=xseg);
 
             %%% discard any windows whose median doesn't follow periodic open-loop sequence of expected medians (this can be improved, there might be problems if the first median is a match, or if there are more than 2 matches in a row) %%%
 
@@ -114,7 +114,7 @@ if isfield(vis, 'yaw') && use_carls_epochs
             lstarts = lstarts(kp2);
             lstops = lstops(kp2);
 
-            % tsplt(vis.yaw, mvar, marks={[], {tmed_notkp2, tmed}}, xall=t, ylimtype='each', xseg=xseg);
+            % tsplt(vis.yaw, mvar, xmark={[], {tmed_notkp2, tmed}}, xall=t, ylimtype='each', xseg=xseg);
 
             %%% make sure all bouts are expected length, except for possible long bouts at the end (when fictrac ends before daq and those bouts get classified as dark bouts because their derivative is 0)  %%%
 

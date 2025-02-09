@@ -2,7 +2,7 @@
 function lim = axlim(ts, opt)
 
 %{
-outputs struct with various versions of limits
+computes various limits for input ts, outputs struct
     lim.each gives limits for each timeseries in ts
     lim.eachxtra adds roomfac onto lim.each
     lim.all gives limits for set of all timeseries in ts (pools dim 1 and 2)

@@ -15,8 +15,8 @@ arguments
     opt.it = []
     opt.ylimtype = 'all'
     opt.yroomfac {mustBeNumeric} = 0.1 %percentage of y range to pad above and below
-    opt.marks = [] %y positions to put markers (style mkr2); will error if there is not a common x
-    opt.mkr {mustBeText} = 'diamond' %marker for plotting optional argument 'marks',  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
+    opt.xmark = [] %x positions to draw markers (style set by mkr2); if vector, will apply to all timeseries; if cell, cell index indicates which timeseries to mark; nested cell will draw multiple sets of marks on same timeseries; will error if there is not a common x
+    opt.mkr {mustBeText} = 'diamond' %marker for plotting optional argument 'xmark',  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.col = []; %color,  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.lst {mustBeText} = '-' %linestyle, length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.minsampperseg = 5 %min samples per xseg
@@ -33,7 +33,7 @@ yconst = opt.yconst;
 it = opt.it;
 ylimtype = opt.ylimtype;
 yroomfac = opt.yroomfac;
-marks = opt.marks;
+xmark = opt.xmark;
 col = opt.col;
 lst = opt.lst;
 mkr = opt.mkr;
@@ -57,15 +57,7 @@ if multidim && xseg>1
     error("all ts must be vector timeseries if xseg is greater than 1")
 end
 
-if ~iscell(marks)
-    marks = {marks}; %marks must be cell of cell 
-end
-for k = 1:numel(marks)
-    if ~isempty(marks{k}) && ~iscell(marks{k})
-        error("marks must be cell of cell")
-        % marks{k} = {marks{k}};
-    end
-end
+
 
 %% ORGANIZE ts 
 
@@ -173,11 +165,8 @@ else
 end
 
 num_xy_pairs = numel(x);
-if ~isempty(cell2mat(cellflat(marks))) && ~isequal(numel(marks), num_xy_pairs)
-    error("marks must have same number of outer cells as xy pairs")
-end
-
 numsamp = numel(x{1});
+
 if any(cellfun(@numel, x)~=numsamp) || any(cellfun(@(x) size(x,2), y)~=numsamp)
     error("after interpolation, all timeseries must match in length")
 end
@@ -192,34 +181,41 @@ if any(size(xseg, 1)>=cellfun(@numel, x)/minsampperseg)
 end
 
 
-if isempty(col)
-    col = brewermap(maxnumts, 'Dark2'); %i prefer to keep the color order constant, regardless of number of inputs (assuming user doesn't change maxnumts); another option is distinguishable_colors(maxnumts);
-    col = col(1:num_xy_pairs,:);
-    col2 = brewermap(maxnumts, 'Pastel1'); %i prefer to keep the color order constant, regardless of number of inputs (assuming user doesn't change maxnumts); another option is distinguishable_colors(maxnumts);
-    col2 = col2(1:numel(marks)*num_xy_pairs,:);
-end
-col = checkspec(col, num_xy_pairs);
-col2 = checkspec(col2, numel(marks)*num_xy_pairs);
-lst = checkspec(lst, num_xy_pairs);
-mkr = checkspec(mkr, num_xy_pairs);
+%% YLIM 
 
 if numel(yconst)>1
     yaxis_true_lims = yconst;
 else
     yaxis_true_lims = [0 1]; 
 end
-
 lim = axlim(y, limtype=ylimtype, roomfac=yroomfac);
-
 y = rescale_to_range(y, lim, yaxis_true_lims);
 
+%% markx 
+
+if ~isempty(cell2mat(cellflat(xmark))) && ~isequal(numel(xmark), num_xy_pairs)
+    error("xmark must have same number of outer cells as xy pairs")
+end
+
 for k = 1:num_xy_pairs
-    if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
-        for m = 1:numel(marks)
-            marksy{k}{m} = interp1(x{k}, y{k}, marks{k}{m}, 'nearest');
+    if ~isempty(cell2mat(cellflat(xmark))) && ~isempty(xmark{k})
+        for m = 1:numel(xmark)
+            ymark{k}{m} = interp1(x{k}, y{k}, xmark{k}{m}, 'nearest');
         end
     end
 end
+
+if ~iscell(xmark)
+    xmark = {{xmark}}; %xmark must be cell of cell 
+end
+for k = 1:numel(xmark)
+    if ~isempty(xmark{k}) && ~iscell(xmark{k})
+        % error("xmark must be cell of cell")
+        xmark{k} = {xmark{k}};
+    end
+end
+
+%% INDEX 
 
 if ~isempty(it)
     it = indsmake(it, indsall=numel(y{k}));
@@ -227,14 +223,28 @@ if ~isempty(it)
         x{k} = x{k}(:,it);
         y{k} = y{k}(:,it);
     end
-    if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
-        for m = 1:numel(marks{k})
-            error("currently cannot use marks and name-value argument 'it'")
-            %this indexing of marks is wrong ---> marks{k}{m} = marks{k}{m}(:,it);
-            %this indexing of marks is wrong ---> marksy{k}{m} = marksy{k}{m}(:,it);
+    if ~isempty(cell2mat(cellflat(xmark))) && ~isempty(xmark{k})
+        for m = 1:numel(xmark{k})
+            error("currently cannot use xmark and name-value argument 'it'")
+            %this indexing of xmark is wrong ---> xmark{k}{m} = xmark{k}{m}(:,it);
+            %this indexing of xmark is wrong ---> ymark{k}{m} = ymark{k}{m}(:,it);
         end
     end
 end
+
+%%%% COLORS %%%%
+
+if isempty(col)
+    col = brewermap(maxnumts, 'Dark2'); %i prefer to keep the color order constant, regardless of number of inputs (assuming user doesn't change maxnumts); another option is distinguishable_colors(maxnumts);
+    col = col(1:num_xy_pairs,:);
+    col2 = brewermap(maxnumts, 'Pastel1'); %i prefer to keep the color order constant, regardless of number of inputs (assuming user doesn't change maxnumts); another option is distinguishable_colors(maxnumts);
+    col2 = col2(1:numel(xmark)*num_xy_pairs,:);
+end
+col = checkspec(col, num_xy_pairs);
+col2 = checkspec(col2, numel(xmark)*num_xy_pairs);
+lst = checkspec(lst, num_xy_pairs);
+mkr = checkspec(mkr, num_xy_pairs);
+
 
 %% PLOT EVERYTHING FIRST
 
@@ -243,10 +253,10 @@ hold(hax, 'on')
 cnt = 0;
 for k = 1:num_xy_pairs
     hpl{k} = plot(hax, x{k}, y{k}, Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
-    if ~isempty(cell2mat(cellflat(marks))) && ~isempty(marks{k})
-        for m = 1:numel(marks{k})
+    if ~isempty(cell2mat(cellflat(xmark))) && ~isempty(xmark{k})
+        for m = 1:numel(xmark{k})
             cnt = cnt+1;
-            hsc{cnt} = scatter(hax, marks{k}{m}, marksy{k}{m}, 'filled', MarkerFaceColor=col2{m}, Marker=mkr{m}); %cell expansion of ts for any number of xy pairs
+            hsc{cnt} = scatter(hax, xmark{k}{m}, ymark{k}{m}, 'filled', MarkerFaceColor=col2{m}, Marker=mkr{m}); %cell expansion of ts for any number of xy pairs
         end
     end
 end
