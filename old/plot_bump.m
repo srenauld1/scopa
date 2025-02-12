@@ -406,10 +406,10 @@ for rind = 1:numr/2
     % MEANINGFUL IN Y RANGE (JUST NOT IN Y ABSOLUTE POSITION, WHICH IS WHY
     % THEY ARE Y REGISTERED AT THE START OF EACH BOUT ABOVE)
     % rescale unwrapped/shifted cueang, bumpang, ballang to cueang scale
-    % cueang2u{rind} = rescale_to_range(cueang2u{rind}, cueang2u{rind});
-    % ballang2u{rind} = rescale_to_range(ballang2u{rind}, cueang2u{rind});
+    % cueang2u{rind} = rescale2(cueang2u{rind}, cueang2u{rind});
+    % ballang2u{rind} = rescale2(ballang2u{rind}, cueang2u{rind});
     % for pii=1:length(pltindz)
-    %     mpu{rind, pltindz(pii)} = rescale_to_range(mpu{rind, pltindz(pii)}, cueang2u{rind});
+    %     mpu{rind, pltindz(pii)} = rescale2(mpu{rind, pltindz(pii)}, cueang2u{rind});
     % end
 
 

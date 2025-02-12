@@ -1,9 +1,11 @@
-function ts = tscell2mat(ts)
+
+
+function ts = vinc2m(ts)
 
 %convert cell of timeseries to matrix
 
 arguments
-    ts % timeseries to be plotted; each cell element must be timeseries vector, and cell must be vector (multiple channels not yet distinguihsed in the cell structure) 
+    ts % timeseries to be plotted; each cell element must be timeseries vector, and cell must be vector (multiple channels not yet distinguihsed in the cell structure)
 end
 
 if ~all(cellfun(@isvector, ts))
@@ -25,5 +27,7 @@ ts = cell2mat(ts);
 ts = permute(ts, [2 1 3]);
 
 if size(ts,1)>size(ts,2)
-    fprintf("warning, size of first dimension is greater than size of second dimension; 1st dimension should be timeseries index, 2nd dimension should be time; you may have this reversed")
+    fprintf("warning, size of first dimension is greater than size of second dimension; 1st dimension should be timeseries index, 2nd dimension should be time; you may have this reversed" + newline)
+end
+
 end

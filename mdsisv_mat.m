@@ -66,7 +66,7 @@ try
 catch
     md = [];
     trywrite = 0;
-    fprintf("cannot read metadata using tifreadfast and mdsisv_mat" + newline)
+    fprintf("cannot read metadata using tifreadfast and mdsisv_mat (your stack may have been acquired with an older version of scanimage, or with software other than scanimage; run scopa registration on the raw tif and the metadata file will be created, although in this case possibily with some, but not all, dummy values)" + newline)
 end
 
 if ~isempty(mdtif)

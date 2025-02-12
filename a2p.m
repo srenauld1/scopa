@@ -40,7 +40,7 @@ for k = 1:numel(oa) % loop over recordings
         [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
         vis = epochld(t, vis, md.sampper, o.daq.use_carls_epochs);
     catch ME
-        fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "will continue without daq data, which may cause error downstream" + newline)
+        fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "continuing without daq data" + newline)
         ball = []; vis = []; pos = []; ftv = []; %init some optional variables
         t = md.sampper * [1:size(stack,4)];
         vis.epochts = ones(numel(t), 1);
@@ -54,7 +54,7 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.doroi
         fn = fieldnames(o.roi);
-        for m = 1:numel(fn) %for each optid
+        for m = 1:numel(fn) %for each optid (unique set of options)
             optid = fn{m};
             roi.(optid) = roimake(stack, pth.stack, optid, t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end

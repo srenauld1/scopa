@@ -109,7 +109,7 @@ for j = 1:numsubplot
         hax{j}.YAxis(fi).FontWeight = 'bold';
 
         if rescale_timeseries
-            hax{j}.YAxis(fi).Limits = lims{k}.rsxtra(:,:,1);
+            hax{j}.YAxis(fi).Limits = lims{k}.rspad(:,:,1);
             hax{j}.YAxis(fi).TickValues = lims{k}.rs(:,:,1);
         else
             error("rescale_timeseries is currently required")

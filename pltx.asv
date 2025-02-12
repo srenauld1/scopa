@@ -219,7 +219,7 @@ while plotloop %loop is turned off if no user input
                 varsp(polarinds,:,:) = polarnan(varsp(polarinds,:,:)); %FIX FOR CHANNEL
                 varsp = nanpadvar(varsp, numsamp_tslong_this_gif);
                 yaxis_true_lims = find_yaxis_true_lims(lrscale, lims_use);
-                varsp = rescale_to_range(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
+                varsp = rescale2(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
 
                 pthgif = make_filename(labsp, gif_scope, epochstring, pthgif_prefix_short, timestr_use); %gif_scope determines whether pthgif gets updated
                 [roiindp, roi_index_str] = find_roi_index(labsp);

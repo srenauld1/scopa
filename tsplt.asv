@@ -215,8 +215,7 @@ if ~isempty(ix)
             end
         end
         if sum(idx)==0
-            error("ix is out of range for xy pair " + num2str(k))
-        end
+            error("")
         x{k} = x{k}(:,idx);
         y{k} = y{k}(:,idx);
     end
@@ -234,12 +233,15 @@ for k = 1:numel(xmark)
     end
 end
 
-if isscalar(xmark)
-    xmark = repelem(xmark, num_xy_pairs);
-else
-    if ~isequal(numel(xmark), num_xy_pairs)
-        error("xmark must have same number of outer cells as xy pairs")
+if ~isempty(cell2mat(cellflat(xmark)))
+    if isscalar(xmark)
+        xmark = repelem(xmark, num_xy_pairs);
+    else
+        if ~isequal(numel(xmark), num_xy_pairs)
+            error("xmark must have same number of outer cells as xy pairs")
+        end
     end
+
 end
 
 for k = 1:num_xy_pairs

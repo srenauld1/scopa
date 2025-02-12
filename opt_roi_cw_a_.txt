@@ -605,6 +605,46 @@
     },
     "regionex": "eb"
   },
+  "a26": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "t5"
+  },
+  "a27": {
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "mm": {
+      "chan": 1,
+      "chancp": 1,
+      "maskname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": 0.3,
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "regionex": "tm"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "prefix": "a"

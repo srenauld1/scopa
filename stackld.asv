@@ -220,8 +220,8 @@ if doconvert
             error("REQUESTED it are not subset of available stack")
         end
         if ~isempty(trm)
-            it2 = trm(1)+1:sz(5)-trm(2);
-            it = intersect(it, it2); %combine whatever t indices you requested and whatever t remove you requested
+            if 
+            it = trm(1)+1:it(end)-trm(2);
         end
     else
         if ~isempty(ic) || ~isempty(iz) || ~isempty(it)

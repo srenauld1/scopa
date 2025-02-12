@@ -186,15 +186,15 @@ rngz = range(varsz, 2);
 lims.x.each = [min(varsx, [], 2, 'omitmissing'), max(varsx, [], 2, 'omitmissing')];
 lims.y.each = [min(varsy, [], 2, 'omitmissing'), max(varsy, [], 2, 'omitmissing')];
 lims.z.each = [min(varsz, [], 2, 'omitmissing'), max(varsz, [], 2, 'omitmissing')];
-lims.x.eachxtra = [lims.x.each(:,1) - rngx*axisroomfac, lims.x.each(:,2) + rngx*axisroomfac];
-lims.y.eachxtra = [lims.y.each(:,1) - rngy*axisroomfac, lims.y.each(:,2) + rngy*axisroomfac];
-lims.z.eachxtra = [lims.z.each(:,1) - rngz*axisroomfac, lims.z.each(:,2) + rngz*axisroomfac];
+lims.x.eachpad = [lims.x.each(:,1) - rngx*axisroomfac, lims.x.each(:,2) + rngx*axisroomfac];
+lims.y.eachpad = [lims.y.each(:,1) - rngy*axisroomfac, lims.y.each(:,2) + rngy*axisroomfac];
+lims.z.eachpad = [lims.z.each(:,1) - rngz*axisroomfac, lims.z.each(:,2) + rngz*axisroomfac];
 lims.x.all = [min(lims.x.each, [], 'all', 'omitmissing'), max(lims.x.each, [], 'all', 'omitmissing')];
 lims.y.all = [min(lims.y.each, [], 'all', 'omitmissing'), max(lims.y.each, [], 'all', 'omitmissing')];
 lims.z.all = [min(lims.z.each, [], 'all', 'omitmissing'), max(lims.z.each, [], 'all', 'omitmissing')];
-lims.x.allxtra = [min(lims.x.eachxtra, [], 'all', 'omitmissing'), max(lims.x.eachxtra, [], 'all', 'omitmissing')];
-lims.y.allxtra = [min(lims.y.eachxtra, [], 'all', 'omitmissing'), max(lims.y.eachxtra, [], 'all', 'omitmissing')];
-lims.z.allxtra = [min(lims.z.eachxtra, [], 'all', 'omitmissing'), max(lims.z.eachxtra, [], 'all', 'omitmissing')];
+lims.x.allpad = [min(lims.x.eachpad, [], 'all', 'omitmissing'), max(lims.x.eachpad, [], 'all', 'omitmissing')];
+lims.y.allpad = [min(lims.y.eachpad, [], 'all', 'omitmissing'), max(lims.y.eachpad, [], 'all', 'omitmissing')];
+lims.z.allpad = [min(lims.z.eachpad, [], 'all', 'omitmissing'), max(lims.z.eachpad, [], 'all', 'omitmissing')];
 lims.t = [];
 lims.r = [];
 lims.t2 = [];
@@ -938,7 +938,7 @@ for lagind = laginds_to_plot
         h.haxscp.ThetaAxis.Label.String = ['\color{blue} Theta:' labt];
         h.haxscp.RAxis.Label.String = ['\color{red} Rho: ' labr];
         if strcmp(ylim_constancy, 'eachvar')
-            h.haxscp.RLim = lims.y.eachxtra(yi,:);
+            h.haxscp.RLim = lims.y.eachpad(yi,:);
             h.haxscp.RTick = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
             h.haxscp.RTickLabel = [];
             % for tti = 1:numel(h.haxscp.RTick)
@@ -949,7 +949,7 @@ for lagind = laginds_to_plot
         if isempty(regexp(labt, ' CUE yaw'))
             h.hpllnp.LineStyle = 'none';
         else
-            h.hpllnp.RData = [lims.y.each(yi,2) lims.y.eachxtra(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
+            h.hpllnp.RData = [lims.y.each(yi,2) lims.y.eachpad(yi,2)]; %blindspot red line from data max to xtra max, to be sure it doesn't cover data 
             h.hpllnp.LineStyle = '-';
         end
 
@@ -970,8 +970,8 @@ for lagind = laginds_to_plot
     h.hplts2.YData = ploty{lagind};
     h.haxts.XLabel.String = ['\color{blue} ' labx '    \color{red}' laby];
     if strcmp(ylim_constancy, 'eachvar')
-        h.haxts.YAxis(1).Limits = lims.x.eachxtra(xi,:);
-        h.haxts.YAxis(2).Limits = lims.y.eachxtra(yi,:);
+        h.haxts.YAxis(1).Limits = lims.x.eachpad(xi,:);
+        h.haxts.YAxis(2).Limits = lims.y.eachpad(yi,:);
         h.haxts.YAxis(1).TickValues = sort([0, lims.x.each(xi,1), lims.x.each(xi,2)]);
         h.haxts.YAxis(2).TickValues = sort([0, lims.y.each(yi,1), lims.y.each(yi,2)]);
         h.haxts.YAxis(1).TickLabels = [];
