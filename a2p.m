@@ -37,7 +37,7 @@ for k = 1:numel(oa) % loop over recordings
     daqrs = daqld(pth.stack, o.daq);
     [ball, vis, t] = daqrename(daqrs);
     [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
-    vis = epochld(t, vis, md.sampper, o.daq.use_carls_epochs);
+    vis = epochld(o.id.recdatenum, t, vis, md.sampper, o.daq.use_carls_epochs);
 
     if o.mn.dofeat
         [vis.(o.feat.id), stimvid] = featld(pth.stack, o.feat);

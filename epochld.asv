@@ -27,13 +27,12 @@ startepoch = 1; %CAREFUL, IF THIS IS WRONG IT could ALL BE WRONG; which epoch sh
 
 if recdate>20250207
     boutlensec = 8; %bout length in seconds
-    closed_initial_len_sec = 300; %length of initial closed loop epoch (used for padding because of imaging delay)
-    dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
+closed_initial_len_sec = 300; %length of initial closed loop epoch (used for padding because of imaging delay)
 else
     boutlensec = 20; %bout length in seconds
-    closed_initial_len_sec = 60; %length of initial closed loop epoch (used for padding because of imaging delay)
-    dvnom = [90 120 -90 -120 0]; %nominal derivative for each epoch
+closed_initial_len_sec = 60; %length of initial closed loop epoch (used for padding because of imaging delay)
 end
+dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 has_cl_interleave = 1; %whether open loop bouts are interleaved with closed loop bouts
 dark_value = 180; %value given to panels when in dark epoch (unit degrees)
 
@@ -52,7 +51,7 @@ xseg = floor(numel(t)/numel(t(t<numsecseg))); %number segments in tsplt plots
 
 success = 0;
 vis.epochs = [];
-vis.epochts = ones(1,numel(t));
+vis.epochts = [];
 
 if isfield(vis, 'yaw') && use_carls_epochs
 

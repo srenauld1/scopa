@@ -14,7 +14,7 @@ o.daq.use_carls_epochs = 1;
 
 o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.mdl_length_sec = 0;
-o.bmp.mdl.epochnum = 6;
+o.bmp.mdl.epochnum = 1;
 o.bmp.mdl.normalize_indv = 'none';
 % o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
 % o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
@@ -32,10 +32,10 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
 
     if strcmp(regionex{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
-        o.roi.ma.numroi = 16;
+        o.roi.ma.numroi = 32;
         o.roi.mm.maskname = 'none';
         o.roi.ma.maskmake = 'nonzero';
-    elseif any(strcmp(regionex{m}, {'no', 'ga'}))
+    elseif any(strcmp(regionex{m}, {'no'}))
         o.roi.doma = 0; %do automated morph rois
         o.roi.mm.maskname = {'left', 'right'};
     end
