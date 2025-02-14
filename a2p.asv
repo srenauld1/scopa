@@ -34,10 +34,17 @@ for k = 1:numel(oa) % loop over recordings
 
     %% stim
 
-    daqrs = daqld(pth.stack, o.daq);
-    [ball, vis, t] = daqrename(daqrs);
-    [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
-    vis = epochld(t, vis, md.sampper, o.daq.use_carls_epochs);
+    try
+        daqrs = daqld(pth.stack, o.daq);
+        [ball, vis, t] = daqrename(table);
+        [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
+        vis = epochld(t, vis, md.sampper, o.daq.use_carls_epochs);
+    catch ME
+        fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "continuing without daq data" + newline)
+        ball = []; vis = []; pos = []; ftv = []; 
+        t = md.sampper * [1:size(stack,4)];
+        vis.epochts = ones(numel(t), 1);
+    end
 
     if o.mn.dofeat
         [vis.(o.feat.id), stimvid] = featld(pth.stack, o.feat);

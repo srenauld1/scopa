@@ -14,6 +14,9 @@ if sz<=1
     szf(szf==min(szf)) = szf(szf==min(szf))*sz;
     szf(szf==max(szf)) = szf(szf==max(szf))/arat*sz;
 else
+    if sz>2
+        sz=2;
+    end
     aratrng = range(szf);
     if sz==2
         rmdr = 1;

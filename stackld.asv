@@ -220,8 +220,8 @@ if doconvert
             error("REQUESTED it are not subset of available stack")
         end
         if ~isempty(trm)
-            if 
-            it = trm(1)+1:it(end)-trm(2);
+            it2 = trm(1)+1:sz(5)-trm(2);
+            it = intersect(it, it2); %combine whatever t indices you requested and whatever t remove you requested
         end
     else
         if ~isempty(ic) || ~isempty(iz) || ~isempty(it)
@@ -233,13 +233,19 @@ if doconvert
 
     if ~isempty(md)
 
-        inds_t_read_from_all = repelem(it,numel(ic)*numel(iz));
-        inds_z_read_from_all = repmat(repelem(iz,numel(ic)), [1 numel(it)]);
-        inds_c_read_from_all = repmat(ic, [1 numel(iz)*numel(it)]);
-        inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
+        inds_t_read_from = repelem(it,numel(ic)*numel(iz));
+        inds_z_read_from = repmat(repelem(iz,numel(ic)), [1 numel(it)]);
+        inds_c_read_from = repmat(ic, [1 numel(iz)*numel(it)]);
+        inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from, inds_z_read_from, inds_t_read_from); %define 1d inds_zt_read_from for z and t
 
         if overflow
-            overflowinds = setxor(inds_czt_read_from, 1:size(stack,3)); %overflowstack = stack(:, :, overflowinds); 
+
+            inds_t_read_from_all = repelem(1:sz(5),sz(3)*sz(4)); %max possible to find overflow frames, not necessarily the same as above, hence suffix _all
+            inds_z_read_from_all = repmat(repelem(1:sz(4),sz(3)), [1 sz(5)]); %max possible to find overflow frames, not necessarily the same as above, hence suffix _all
+            inds_c_read_from_all = repmat(1:sz(3), [1 sz(4)*sz(5)]); %max possible to find overflow frames, not necessarily the same as above, hence suffix _all
+            inds_czt_read_from_all = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
+
+            overflowinds = setxor(inds_czt_read_from_all, 1:size(stack,3)); %overflowstack = stack(:, :, overflowinds); 
             overflow_meanframe = sum(stack(:,:,overflowinds),3)/numel(overflowinds);
             overflow_firstframe = stack(:,:,overflowinds(1));
             overflow_remainder = overflow_meanframe-double(overflow_firstframe);

@@ -1,14 +1,14 @@
 
-function [ball, vis, ti] = daqrename(daqrs)
+function [ball, vis, t] = daqrename(daqrs)
 
 %make sure they're all row vectors
 
 nms = daqrs.Properties.VariableNames;
 
 if any(strcmp('Time',nms))
-    ti = single(daqrs.Time{1}(:)');
+    t = single(daqrs.Time{1}(:)');
 else
-    ti = [];
+    t = [];
 end
 if any(strcmp('g4panels',nms))
     vis.yaw = single(daqrs.g4panels{1}(:)');

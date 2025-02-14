@@ -43,6 +43,9 @@ numiter = 2;
 numsecseg = 100; %how many seconds in each segment in tsplt plots
 xseg = floor(numel(t)/numel(t(t<numsecseg))); %number segments in tsplt plots
 
+success = 0;
+vis.epochs = [];
+vis.epochts = [];
 
 if isfield(vis, 'yaw') && use_carls_epochs
 
@@ -153,6 +156,8 @@ if isfield(vis, 'yaw') && use_carls_epochs
                 error("num derived epochs does not match number expected")
             end
 
+            success = 1;
+            
             break;
 
         catch ME
@@ -164,62 +169,67 @@ if isfield(vis, 'yaw') && use_carls_epochs
         end
     end
 
-    numepoch_expected = numepoch_ol_expected + has_cl_interleave;
-    epochts = ones(size(t))*numepoch_expected;
-    for k = 1:numel(tmed)
-        if all(medrnd(k:end)==0) %when fictrac turns off, consider this dark epoch
-            idxtmp = find(medrnd(k)==dvnom);
-            epochts(idxstop:end) = idxtmp; %this is the previous bout's idxstop
-            break
-        else
-            if k>1 && badlenbouts(k-1) %classify badlenbouts as dark for now
-                idxbad = t>lstarts(k-1) & t<lstops(k-1);
-                epochts(idxbad) = numepoch_expected-1;
-            else
-                starttmp = tmed(k) - halfboutlensec;
-                [~, idxstart] = min(abs(t-starttmp));
-                stoptmp = tmed(k) + halfboutlensec;
-                [~, idxstop] = min(abs(t-stoptmp));
+    %%%% APPLY EPOCHS %%%%
+
+    if success
+
+        numepoch_expected = numepoch_ol_expected + has_cl_interleave;
+        epochts = ones(size(t))*numepoch_expected;
+        for k = 1:numel(tmed)
+            if all(medrnd(k:end)==0) %when fictrac turns off, consider this dark epoch
                 idxtmp = find(medrnd(k)==dvnom);
-                epochts(idxstart:idxstop) = idxtmp;
+                epochts(idxstop:end) = idxtmp; %this is the previous bout's idxstop
+                break
+            else
+                if k>1 && badlenbouts(k-1) %classify badlenbouts as dark for now
+                    idxbad = t>lstarts(k-1) & t<lstops(k-1);
+                    epochts(idxbad) = numepoch_expected-1;
+                else
+                    starttmp = tmed(k) - halfboutlensec;
+                    [~, idxstart] = min(abs(t-starttmp));
+                    stoptmp = tmed(k) + halfboutlensec;
+                    [~, idxstop] = min(abs(t-stoptmp));
+                    idxtmp = find(medrnd(k)==dvnom);
+                    epochts(idxstart:idxstop) = idxtmp;
+                end
             end
         end
-    end
 
-    epochts = epochts(:)'; %make it row vector since time is 2nd dim for all timeseries variables (except stack)
+        epochts = epochts(:)'; %make it row vector since time is 2nd dim for all timeseries variables (except stack)
 
-    fprintf("assigned any underflow bouts to dark epoch (is this accurate? are the panels off when fictrac ends?)" + newline)
+        fprintf("assigned any underflow bouts to dark epoch (is this accurate? are the panels off when fictrac ends?)" + newline)
 
-    epochs = epochidget('ocld2');
-    %the old way used ocld (not ocld2) IN EPOCHIDGET [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+        epochs = epochidget('ocld2');
+        %the old way used ocld (not ocld2) IN EPOCHIDGET [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
-    if doplt
-        tsplt(vis.yaw, single(epochts), xall=t, ylimtype='each', xseg=xseg);
+        if doplt
+            tsplt(vis.yaw, single(epochts), xall=t, ylimtype='each', xseg=xseg);
+        end
+
+
+        vis.epochs = epochs;
+        vis.epochts = epochts;
+        if ~isempty(epochs)
+            if isfield(epochs, 'dark') && any(epochts==epochs.dark)
+                naninds = epochts==epochs.dark;
+                vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+                vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+                if isfield(epochs, 'closedfinaldark') && any(epochts==epochs.closedfinaldark)
+                    naninds = epochts==epochs.closedfinaldark; %dark gets nans
+                    vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+                    vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+                end
+            end
+        end
+
     end
 
 else
 
-    epochs = [];
-    epochts = [];
     fprintf("epochs are empty because there is no g4panels data, or because use_carls_epochs is false" + newline)
 
 end
 
-
-vis.epochs = epochs;
-vis.epochts = epochts;
-if ~isempty(epochs)
-    if isfield(epochs, 'dark') && any(epochts==epochs.dark)
-        naninds = epochts==epochs.dark;
-        vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-        vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-        if isfield(epochs, 'closedfinaldark') && any(epochts==epochs.closedfinaldark)
-            naninds = epochts==epochs.closedfinaldark; %dark gets nans
-            vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-            vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-        end
-    end
-end
 
 
 end

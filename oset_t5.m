@@ -3,6 +3,7 @@ function o = oset_t5(o)
 regionex = {'t5', 'tm'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; 
+o.mn.dofeat = 1; 
 o.mn.doroi = 1; 
 o.mn.dobmp = 0; 
 o.mn.dofit = 0; 

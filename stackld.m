@@ -233,22 +233,28 @@ if doconvert
 
     if ~isempty(md)
 
-        inds_t_read_from_all = repelem(it,numel(ic)*numel(iz));
-        inds_z_read_from_all = repmat(repelem(iz,numel(ic)), [1 numel(it)]);
-        inds_c_read_from_all = repmat(ic, [1 numel(iz)*numel(it)]);
-        inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %define 1d inds_zt_read_from for z and t
-
         if overflow
-            overflowinds = setxor(inds_czt_read_from, 1:size(stack,3)); %overflowstack = stack(:, :, overflowinds); 
+
+            inds_t_read_from_all = repelem(1:sz(5),sz(3)*sz(4)); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+            inds_z_read_from_all = repmat(repelem(1:sz(4),sz(3)), [1 sz(5)]); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+            inds_c_read_from_all = repmat(1:sz(3), [1 sz(4)*sz(5)]); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+            inds_czt_read_from_all = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+
+            overflowinds = setxor(inds_czt_read_from_all, 1:size(stack,3)); %overflowstack = stack(:, :, overflowinds); 
             overflow_meanframe = sum(stack(:,:,overflowinds),3)/numel(overflowinds);
             overflow_firstframe = stack(:,:,overflowinds(1));
             overflow_remainder = overflow_meanframe-double(overflow_firstframe);
             if ~any(sum(overflow_remainder)==0)
-                error("THERE ARE NO COLUMNS THAT ARE STATIC ACROSS ALL OVERFLOW FRAMES; ASSUMING THERE IS REAL SIGNAL IN THE OVERFLOW FRAMES AND THROWING AN ERROR")
+                % error("THERE ARE NO COLUMNS THAT ARE STATIC ACROSS ALL OVERFLOW FRAMES; ASSUMING THERE IS REAL SIGNAL IN THE OVERFLOW FRAMES AND THROWING AN ERROR; BUT IT'S ALSO POSSIBLE THE OVERFLOW FRAMES JUST DON'T ALWAYS FOLLOW THIS PATTERN; INSPECT THEM")
             else
                 fprintf("overflow frames do not appear to have any data" + newline)
             end
         end
+        inds_t_read_from = repelem(it,numel(ic)*numel(iz));
+        inds_z_read_from = repmat(repelem(iz,numel(ic)), [1 numel(it)]);
+        inds_c_read_from = repmat(ic, [1 numel(iz)*numel(it)]);
+        inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from, inds_z_read_from, inds_t_read_from); %define 1d inds_zt_read_from for z and t
+
         stack = stack(iy, ix, inds_czt_read_from); %if using tiffstack, this reads into memory; stack = stack just copies the stack object so cant do that
         stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
 
