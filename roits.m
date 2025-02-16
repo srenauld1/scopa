@@ -79,6 +79,7 @@ end
 %%%% EXTRACT RESPONSES FOR EACH ROI %%%%
 
 for k = 1:numchan
+    tsout{k} = [];
     if chanuse(k)
         if any(goodinds(:,:,k)) %some pre-normalizations (first call to tsnorm, above) will output empty (like dff when F0 is too low, divides by zero); some caiman runs (with bad params) will output all nans
             tsout{k} = zeros(numel(wtsz{k}), size(tsin,2), 'single'); %make it cell since each channel can have different number rois

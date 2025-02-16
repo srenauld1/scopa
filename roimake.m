@@ -51,7 +51,6 @@ catch ME
     end
     regionex = opt.regionex;
 
-
     if ndims(stack)<4
         error("stack must be 4d or 5d")
     end
@@ -70,13 +69,15 @@ catch ME
     %% draw rois
 
     if domm
+        maskname = opt.mm.maskname;
         if isfield(opt, 'ma') && opt.ma.numroi>1
             oneroi = 1;
         else
             oneroi = 0;
         end
-        roimask = roidraw(stackmnt, pthstack=pthstack, regionex=regionex, maskname=opt.mm.maskname, chan=opt.mm.chan, oneroi=oneroi, chancp=opt.mm.chancp);
+        roimask = roidraw(stackmnt, pthstack=pthstack, regionex=regionex, maskname=maskname, chan=opt.mm.chan, oneroi=oneroi, chancp=opt.mm.chancp);
     else
+        maskname = '';
         if ~maskinput
             roimask = cell(numchan,1); %make it empty if you didn't draw or pass in mask
         end
@@ -92,7 +93,7 @@ catch ME
     %% functional (caiman) roi responses
 
     if docm
-        [respcm, roimask] = roifauto(pthpy, opt.cm, regionex=opt.regionex, maskname=opt.mm.maskname);
+        [respcm, roimask] = roifauto(pthpy, opt.cm, regionex=opt.regionex, maskname=maskname);
     end
 
     %% quality control
@@ -103,7 +104,7 @@ catch ME
 
     %% assemble roi data into struct
 
-    roi.dat = roidatmake(stackmnt, roimask, regionex, opt.mm.maskname);
+    roi.dat = roidatmake(stackmnt, roimask, regionex, maskname, pthstack);
 
 
     %% compute roi responses (and normalize)

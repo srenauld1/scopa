@@ -32,7 +32,6 @@ arguments
     opt.fontsz = 10;
     opt.dosave = 1 %whether to write to gif
 end
-
 pthgif = opt.pthgif;
 gifvis = opt.gifvis;
 roipx = opt.roipx;
@@ -118,7 +117,13 @@ else
     szdfo = size(stack);
 end
 
-[stack, index_labels_opt] = stackind(stack, opt, dmstackdf);
+inds.iy = iy;
+inds.ix = ix;
+inds.iz = iz;
+inds.it = it;
+inds.ic = ic;
+inds.ik = ik;
+[stack, index_labels_opt] = vind(stack, dmstackdf, inds); %stack hasd been put into order dmstackdf by stackperm above, so this 
 
 
 %% dmplt (put stack into user-input plot order)

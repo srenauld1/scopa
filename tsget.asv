@@ -67,7 +67,6 @@ if isempty(optid)
     o2 = oid(o, getonly=1);
     if isempty(o2.(vbin))
         fprintf("no variable found" + newline)
-        tsout = [];
         trymatch = 0;
     end
     fn = fieldnames(o2.(vbin));
@@ -75,6 +74,7 @@ else
     fn = optid;
 end
 
+tsout = [];
 if trymatch
 
     cnt = 0;
@@ -99,9 +99,9 @@ if trymatch
                     if isempty(ic)
                         ic = find(~cellfun(@isempty, ts)); %if ic isempty, load ts for all nonempty channels
                     end
-                    for qq = 1:numel(ic)
+                    for q = 1:numel(ic)
                         cnt = cnt+1;
-                        tsout{cnt} = vind(ts{ic}, dm, itmp);
+                        tsout{cnt} = vind(ts{ic(q)}, dm, itmp);
                     end
                 end
             end
@@ -111,9 +111,10 @@ if trymatch
     end
 
     if flat
-        tsout{cnt} = cell2vec(tsout{cnt});
+        tsout = cell2vec(tsout);
+    else
+        tsout = reshape(cell2mat(tsout), [size(tsout{1}), numel(tsout)]);
     end
-    tsout = reshape(cell2mat(tsout), [size(tsout{1}), numel(tsout)]);
 
 end
 

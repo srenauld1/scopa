@@ -467,13 +467,10 @@ if fill
 
     if isempty(vbin) || isempty(setxor(vbin, vbin_top))
 
-        if isempty(o.mn.user)
+        if isempty(o.mn.user) || 
             error('o.mn.user cannot be empty')
         end
         if isempty(regexp(o.mn.user, '^[a-zA-Z]+$'))
-            if strcmp(o.mn.user, '*')
-                error('o.mn.user is an asterisk, you may have called odf with wild=1 and fill=1 and empty or absent vbin, so the entire options struct was filled with asterisks')
-            end
             error('o.mn.user can only contain alphabetic characters')
         end
 

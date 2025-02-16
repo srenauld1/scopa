@@ -135,6 +135,27 @@
     "validation_fold": 0,
     "validation_split_style": "boutsamples"
   },
+  "a3": {
+    "epochnum": 1,
+    "excludeopts": "",
+    "keep_transition_zones": 0,
+    "max_iter_global": 3,
+    "mdl_lag_sec": 1,
+    "mdl_length_sec": 1.25,
+    "mdlname": "fnet_A01_s",
+    "normalize_depv": "minmaxcnt",
+    "normalize_indv": "minmaxcnt",
+    "num_synthetic_depv": 0,
+    "omit_time_from_savemodel_datestr": 1,
+    "optim_hist_save_iter_spacing": 0,
+    "slvrg": "globalsearch",
+    "slvrl": "fmincon",
+    "smoothdepv": 0,
+    "smoothindv": 0,
+    "use_saved_model": 1,
+    "validation_fold": 0,
+    "validation_split_style": "boutsamples"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "prefix": "a"

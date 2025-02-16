@@ -90,15 +90,16 @@ if isempty(xall)
                 end
             else
                 if tp
-                x{k} = ts{1+2*(k-1)};
-                else 
-                    
+                    x{k} = transpose(ts{1+2*(k-1)});
+                else
+                    x{k} = ts{1+2*(k-1)};
+                end
             end
             if tp
                 y{k} = transpose(ts{2+2*(k-1)});
-                if size(x{k},1)~=size(y{k},1)
-                    error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
-                end
+                % if size(x{k},1)~=size(y{k},1)
+                %     error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
+                % end
             else
                 y{k} = ts{2+2*(k-1)};
                 if size(x{k},2)~=size(y{k},2)
@@ -132,9 +133,9 @@ if multidim && xseg>1
     error("all ts must be vector timeseries if xseg is greater than 1 (at least one y timeseries is not singleton first dimension")
 end
 
-if any(cellfun(@(x) size(x,1), x)>1)
-    error("all x timeseries must have singleton first dimension")
-end
+% if any(cellfun(@(x) size(x,1), x)>1)
+%     error("all x timeseries must have singleton first dimension")
+% end
 
 
 if any(cellfun(@isstring, x)) || any(cellfun(@isstring, y))
@@ -185,8 +186,14 @@ if isempty(xall)
         x = rescale2(x, limx, xaxis_true_lims);
     end
     for k = 1:numel(y)
+        if tp
+            if size(x{k},2)~=size(y{k},2)
+            y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+            end
+        else
         if size(x{k},2)~=size(y{k},2)
             y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+        end
         end
         y{k} = y{k};
     end

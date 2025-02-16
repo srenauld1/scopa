@@ -63,7 +63,7 @@ for k = 1:numel(oa) % loop over recordings
             indv = vis.yaw; %hard coding this for now
             % o2.roi.regionex = 'eb';
             % depv = tsget(o2, chan=o.bmp.(optid).chan);
-            depv = roi.a25.ts{o.bmp.(optid).chan};
+            depv = roi.a28.ts{o.bmp.(optid).chan};
             bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pth.stack, optid, o.bmp.(optid)); %fit bump
         end
 
@@ -78,6 +78,11 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.mdl);
         for m = 1:numel(fn)
             optid = fn{m};
+            tsg.roi.regionex = 't5';
+            tsg.roi.domm = 1;
+            tsg.it = 500:600;
+            tsg.ic = 1;
+            tsget(tsg)
             mdl = mdlmake(indv, depvp, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
         end
     end

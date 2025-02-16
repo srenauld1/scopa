@@ -90,7 +90,7 @@ if isempty(xall)
                 end
             else
                 if tp
-                    x{k} = ts{1+2*(k-1)};
+                    x{k} = transpose(ts{1+2*(k-1)});
                 else
                     x{k} = ts{1+2*(k-1)};
                 end
@@ -133,9 +133,9 @@ if multidim && xseg>1
     error("all ts must be vector timeseries if xseg is greater than 1 (at least one y timeseries is not singleton first dimension")
 end
 
-if any(cellfun(@(x) size(x,1), x)>1)
-    error("all x timeseries must have singleton first dimension")
-end
+% if any(cellfun(@(x) size(x,1), x)>1)
+%     error("all x timeseries must have singleton first dimension")
+% end
 
 
 if any(cellfun(@isstring, x)) || any(cellfun(@isstring, y))
@@ -186,10 +186,15 @@ if isempty(xall)
         x = rescale2(x, limx, xaxis_true_lims);
     end
     for k = 1:numel(y)
-        if size(x{k},2)~=size(y{k},2)
-            y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+        if tp
+            if size(x{k},1)~=size(y{k},1)
+                y{k} = interp1(1:size(y{k},1), y{k}, linspace(1, size(y{k},1), numel(x{k})), 'linear');
+            end
+        else
+            if size(x{k},2)~=size(y{k},2)
+                y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+            end
         end
-        y{k} = y{k};
     end
 else
     for k = 1:numel(y)
@@ -206,7 +211,12 @@ end
 num_xy_pairs = numel(x);
 numsamp = numel(x{1});
 
-if any(cellfun(@numel, x)~=numsamp) || any(cellfun(@(x) size(x,2), y)~=numsamp)
+if tp
+    tdim = 1;
+else
+    tdim = 2;
+end
+if any(cellfun(@numel, x)~=numsamp) || any(cellfun(@(x) size(x,tdim), y)~=numsamp)
     error("after interpolation, all timeseries must match in length")
 end
 if ~all(cellfun(@isvector, x)) % || ~all(cellfun(@isvector, y)) %check this after all the manipulations, just to be sure
@@ -236,11 +246,7 @@ y = rescale2(y, lim, yaxis_true_lims);
 if ~isempty(ix)
     for k = 1:num_xy_pairs
         if numel(ix)==2
-            if tp
-                idx = y{k}(:,1)>ix(1) & y{k}(:,1)<ix(2);
-            else
-                idx = x{k}>ix(1) & x{k}<ix(2);
-            end
+            idx = x{k}>ix(1) & x{k}<ix(2);
         else
             if x_is_index
                 idx = indsmake(ix, indsall=numel(x{1})); %in this situation all x should be same length, so just reference x{1} (right??)
@@ -253,6 +259,7 @@ if ~isempty(ix)
         end
         if tp
             y{k} = y{k}(idx,:);
+            x{k} = x{k}(idx,:);
         else
             x{k} = x{k}(:,idx);
             y{k} = y{k}(:,idx);
@@ -300,7 +307,11 @@ for fi = 1:size(xseg, 1)
             if k2<=size(y{k},1)
 
                 if k2==1
-                    hpl{k} = plot(hax, x{k}, y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+                    if tp
+                        hpl{k} = plot(hax, 1:numel(y{k}(1,:)), y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+                    else
+                        hpl{k} = plot(hax, x{k}, y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+                    end
                     if ~isempty(cell2mat(cellflat(xmark))) && ~isempty(xmark{k})
                         hsc{k} = scatter(hax, xmark{k}{1}, ymark{k}{1}, 'filled', MarkerFaceColor=col2{1}, Marker=mkr{1}); %cell expansion of ts for any number of xy pairs
                     end
@@ -424,13 +435,14 @@ for k = 1:num_xy_pairs
             if tp
                 xref = linspace(min(xfeat{k}{m}), max(xfeat{k}{m}), numel(x{k})+1);
                 xref = xref(1:end-1);
-                tmp = interp1(xref, x{k}, xfeat{k}{m}(idx), 'nearest', 'extrap'); %match mark to input x
+                tmp = interp1(xref, x{k}, xfeat{k}{m}(idx), 'linear', 'extrap'); %match mark to input x
                 xfeat{k} = num2cell(tmp);
+                yfeat{k}{m} = interp1(x{k}, y{k}(:,m), xfeat{k}{m}, 'nearest'); %then find corresponding y
             else
                 tmp = interp1(x{k}, x{k}, xfeat{k}{m}, 'nearest'); %match mark to input x
                 xfeat{k}{m} = tmp(~isnan(tmp));
+                yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}(m,:)), xfeat{k}{m}, 'nearest')); %then find corresponding y
             end
-            yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}(m,:)), xfeat{k}{m}, 'nearest')); %then find corresponding y
         end
     end
 end
