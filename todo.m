@@ -1,8 +1,9 @@
-function todoshow()
+function todo()
 
 
 disp("\n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??")
-
+disp("apply tsdv to daq directly, not output of tsrs")
+disp("make vsmooth for all variables rather than stacksm and tssm")
 disp("MAKE TIME ALWAYS 2ND DIM")
 disp("FIX DIFFERENT roi OPTS FOR EACH REGIONEX, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS")
 disp("CAN STACK REMAIN INT16?? zero in uint16 is nice though")

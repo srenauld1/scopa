@@ -12,7 +12,7 @@ from zstitch import stitchrg
 from registration_template import choose_registration_template
 from stackchan import stackchan
 from subtract_background import subtract_background
-from stacksmooth import stacksmooth
+from stacksm import stacksm
 from im_montage import im_montage
 from plot_gif import plot_gif
 from bidiphase import compute as bidiphase_compute
@@ -140,9 +140,9 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
     ########################## SPATIAL SMOOTHING FOR BOOSTING SNR TO COMPUTE SHIFTS (BUT NOT TO KEEP IN REGISTERED STACK) ##########################
 
     if register_presmoothed:
-        stack = stacksmooth(stack, smlenpx_mcp, md['volrate'], md['dims'][0])
+        stack = stacksm(stack, smlenpx_mcp, md['volrate'], md['dims'][0])
         # if independent_channel_reg and register_presmoothed: 
-        #     stack_secondary = stacksmooth(stack_secondary, smlenpx_mcp, md['volrate'], md['dims'][0])
+        #     stack_secondary = stacksm(stack_secondary, smlenpx_mcp, md['volrate'], md['dims'][0])
 
     ########################## MAKE OR LOAD REGISTRATION TEMPLATE ##########################
 

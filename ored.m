@@ -21,17 +21,17 @@ for m = 1:numel(nonfunctional_vbin)
     end
 end
 
-o = structflat(o);
-wcpat = '*';
-wcinds = structfun(@(x) any(strcmp(x, wcpat)),o);
-if any(wcinds) %hack for now, replace wildcard (from tsget) with 0, which will have same effect in general (but not for cm, but that will be fixed later)
-    fn = fieldnames(o);
-    o = struct2cell(o);
-    o(wcinds) = {0};
-    fnwc = fn(wcinds);
-    o = cell2struct(o, fn);
-end
-o = structunflat(o);
+% o = structflat(o);
+% wcpat = '*';
+% wcinds = structfun(@(x) any(strcmp(x, wcpat)),o);
+% if any(wcinds) %hack for now, replace wildcard (from tsget) with 0, which will have same effect in general (but not for cm, but that will be fixed later)
+%     fn = fieldnames(o);
+%     o = struct2cell(o);
+%     o(wcinds) = {0};
+%     fnwc = fn(wcinds);
+%     o = cell2struct(o, fn);
+% end
+% o = structunflat(o);
 
 
 switch vbin
@@ -47,14 +47,14 @@ switch vbin
 end
 
 
-if any(wcinds)
-    o = structflat(o);
-    fn = fieldnames(o);
-    wcinds_new = ismember(fn, fnwc);
-    o = struct2cell(o);
-    o(wcinds_new) = {wcpat};
-    o = cell2struct(o, fn);
-    o = structunflat(o);
-end
+% if any(wcinds)
+%     o = structflat(o);
+%     fn = fieldnames(o);
+%     wcinds_new = ismember(fn, fnwc);
+%     o = struct2cell(o);
+%     o(wcinds_new) = {wcpat};
+%     o = cell2struct(o, fn);
+%     o = structunflat(o);
+% end
 
 end

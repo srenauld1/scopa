@@ -1,4 +1,4 @@
-function mdlplt(mdl, supp, depv, pred, ft, indv, normalize_depv, tinds)
+function mdlplt(mdl, supp, depv, pred, ft, indv, nrmd, tinds)
 
 if ~exist('tinds', 'var') || isempty(tinds)
     tinds = 1:floor(size(depv, 1)/4);
@@ -6,7 +6,7 @@ if ~exist('tinds', 'var') || isempty(tinds)
         tinds = tinds(1:700);
     end
 end
-% if ~strcmp(normalize_depv, 'none')
+% if ~strcmp(nrmd, 'none')
 %     indv = rescale(indv, -1, 1);
 % end
 

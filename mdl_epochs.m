@@ -1,16 +1,12 @@
-function mdl = mdl_epochs(mdl, opts, epi, pthpre)
+function mdl = mdl_epochs(mdl, opts, epi, pthpre, numsyn, ld, histinc)
 
 epochnum = opts.epochnum{epi};
-validation_fold = opts.validation_fold;
-keep_transition_zones = opts.keep_transition_zones;
+valnum = opts.valnum;
+epochmix = opts.epochmix;
 mdlname = opts.mdlname;
-optim_hist_save_iter_spacing = opts.optim_hist_save_iter_spacing;
-validation_split_style = opts.validation_split_style;
-omit_time_from_savemodel_datestr = opts.omit_time_from_savemodel_datestr;
-use_saved_model = opts.use_saved_model;
-num_synthetic_depv = opts.num_synthetic_depv;
+valsplit = opts.valsplit;
 num_dim_depvp = mdl.num_dim_depvp;
-epochinds_ts_i_m = mdl.epochinds_ts_i_m;
+epochtsaug = mdl.epochtsaug;
 num_samp_mdl = mdl.num_samp_mdl;
 num_samp_lag = mdl.num_samp_lag;
 pth_indvaug_bin = mdl.pth_indvaug_bin;
@@ -26,12 +22,12 @@ end
 
 %% define indexing variables for taking subset of indv and depv (by epoch, and by train/validation set )
 
-mdl.fits.(epochinds_str) = mdl_inds(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum);
+mdl.fits.(epochinds_str) = mdl_inds(epochtsaug, num_samp_mdl, num_samp_lag, epochmix, valnum, valsplit, epochnum);
 
 %% loop over train/validation sets, for k-fold cross-validation
 
 valnames = fieldnames(mdl.fits.(epochinds_str));
-disp(['validation fold is ' num2str(validation_fold) ' and should ideally be ' num2str(sqrt(supp.num_par_total)) ])
+disp(['validation fold is ' num2str(valnum) ' and should ideally be ' num2str(sqrt(supp.num_par_total)) ])
 
 ft_mean_allval = [];
 gof_mean_allval = [];
@@ -54,15 +50,15 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     %% create save path, check if saved model already exists
 
-    [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi);
+    [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, ld, valnum, vfi);
 
     %% create synthetic data to test optimization (optional)
 
-    if num_synthetic_depv %if not 0, replace depv_allrois with synthetic data
+    if numsyn %if not 0, replace depv_allrois with synthetic data
         dofit = 1; %always do fit if synthesizing data anew
         doplots_syn = 1; %plot synthetic vs real data
         plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
-        [depv_allrois, num_dim_depvp, ftsyn] = mdl_synthesize_depv(supp.pthspre, supp, op.mdl, depv_allrois, indv, doplots_syn, num_synthetic_depv, op.opp, plot_syn_against_single_depv, opts.normalize_depv);
+        [depv_allrois, num_dim_depvp, ftsyn] = mdl_synthesize_depv(supp.pthspre, supp, op.mdl, depv_allrois, indv, doplots_syn, numsyn, op.opp, plot_syn_against_single_depv, opts.nrmd);
     end
 
     %% fit model
@@ -82,25 +78,25 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        parfor ri = 1:num_dim_depvp
+        for ri = 1:num_dim_depvp
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
                 
                 [ ft(ri,:), pred(:,ri), gof(ri), gof_val(ri) ] = ...
-                    mdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, ...
-                    mdlname, validation_fold, indv_val, depv_val, sampinds_indvdepv_train, ...
+                    mdl_fit(indv, depv, ri, histinc, ...
+                    mdlname, valnum, indv_val, depv_val, sampinds_indvdepv_train, ...
                     sampinds_indvdepv_val, num_samp_total, supp, op, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
             
-                % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.normalize_depv)
+                % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opts.nrmd)
             end
         end
         toc
 
         save(pth_fitdata, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds', '-v7.3', '-mat')
 
-        mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.normalize_depv)
+        mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opts.nrmd)
 
     end
 

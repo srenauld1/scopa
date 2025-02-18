@@ -114,7 +114,7 @@ varnm = convertStringsToChars(regexprep(tab.Field, '^s.', prefix));
 if ischar(varnm) %in case it's just one varnm, will be char; put in cell to prevent error below
     varnm = {varnm};
 end
-varnmval = replace(tab.ValidVarName,['s' delim],prefix);
+varnmval = regexprep(tab.ValidVarName, ['^s' delim], prefix);
 
 %% Create struct
 nn = numel(fn);

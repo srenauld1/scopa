@@ -137,10 +137,10 @@ for ri, _ in enumerate(pth_read_all):
           md = json.loads(file.read())
 
         if do_register:
-            try: #ftvdownsample is not essential, so putting in a try block
-              ftvdownsample(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
-            except Exception as err:
-              print("AN EXCEPTION OCCURRED DURING ftvdownsample, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
+            # try: #ftvdownsample is not essential, so putting in a try block
+            #   ftvdownsample(pth_ftvid_all[ri], pth_prefix_all[ri], makeplots) #doing this in registration because it is the beginning of the pipeline, it's fast, and doesn't require much memory 
+            # except Exception as err:
+            #   print("AN EXCEPTION OCCURRED DURING ftvdownsample, PIPELINE WILL CONTINUE BUT FICTRAC VIDEO HAS NOT BEEN SPATIALLY DOWNSAMPLED. \nTHE EXCEPTION WAS: \n", err)
             register(pth_read_all[ri], pthmd_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, methodrg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
 
         if do_denoise:

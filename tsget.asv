@@ -1,68 +1,82 @@
-function tsout = tsget(tsg, opt)
+function tsout = tsget(tg, opt)
 
-arguments
-    tsg
-    opt.flat = 0
-    opt.dm = 'it' %dim order of timeseries to be found; used to apply indices 
+arguments (Input)
+    tg
+    opt.dm = [] %dim order of timeseries to be found; used to apply indices 
     opt.pthparent = []
 end
-flat = opt.flat;
-pthparent = opt.pthparent;
+arguments (Output)
+    tsout cell
+end
 dm = opt.dm;
+pthparent = opt.pthparent;
 
 id_capable_vbin = {'roi', 'mdl', 'bmp'};
 
-if isfield(tsg, 'optid') && ~isempty(tsg.optid)
-    optid = tsg.optid;
-else
-    optid = [];
-end
-if isfield(tsg, 'ii') && ~isempty(tsg.ii)
-    ii = tsg.ii;
-else
-    ii = [];
-end
-if isfield(tsg, 'it') && ~isempty(tsg.it)
-    it = tsg.it;
-else
-    it = [];
-end
-if isfield(tsg, 'ic') && ~isempty(tsg.ic)
-    ic = tsg.ic;
-else
-    ic = [];
+if isempty(dm)
+    dm = 'it';
 end
 if isempty(pthparent)
     pthparent = glb('pthparent');
 end
 
-if flat && ~isempty(ind)
-    error("flat cannot be true if inds are nonempty")
+tg.optid
+tg.ii
+tg.it
+tg.ic
+tg.group
+
+if isfield(tg, 'optid') && ~isempty(tg.optid)
+    optid = tg.optid;
+else
+    optid = [];
 end
-if ~isscalar(tsg)
+if isfield(tg, 'ii') && ~isempty(tg.ii)
+    ii = tg.ii;
+else
+    ii = [];
+end
+if isfield(tg, 'it') && ~isempty(tg.it)
+    it = tg.it;
+else
+    it = [];
+end
+if isfield(tg, 'ic') && ~isempty(tg.ic)
+    ic = tg.ic;
+else
+    ic = [];
+end
+if isfield(tg, 'group') && ~isempty(tg.group)
+    group = tg.group;
+else
+    group = '';
+end
+
+
+if ~isscalar(tg)
     error("INPUT STRUCT TO tsget MUST BE SCALAR")
 end
-if sum(isfield(tsg, id_capable_vbin))~=1
+if sum(isfield(tg, id_capable_vbin))~=1
     error("INPUT STRUCT TO tsget MUST CONTAIN ONE AND ONLY ONE id_capable_vbin AT THE HIGHEST LEVEL")
 end
 
-vbin = id_capable_vbin(isfield(tsg, id_capable_vbin));
+vbin = id_capable_vbin(isfield(tg, id_capable_vbin));
 if isempty(vbin)
     if isempty(optid)
-        error("if there is no vbin in tsg, there must be optid")
+        error("if there is no vbin in tg, there must be optid")
     end
 elseif isscalar(vbin)
     if ~isempty(optid)
-        error("vbin and optid cannot both exist in tsg")
+        error("vbin and optid cannot both exist in tg")
     end
     vbin = cell2mat(vbin);
 else
-    error("there can only be one vbin in tsg")
+    error("there can only be one vbin in tg")
 end
 
 trymatch = 1;
 if isempty(optid)
-    tsgtmp.(vbin) = tsg.(vbin);
+    tsgtmp.(vbin) = tg.(vbin);
     o = odf(tsgtmp, vbin, fill=1, wild=1); %make sure any option (for the one id_capable_vbin in o) that is not present in o gets a default value before o goes to oid
     o2 = oid(o, getonly=1);
     if isempty(o2.(vbin))
@@ -110,10 +124,19 @@ if trymatch
         end
     end
 
-    if flat
-        tsout = cell2vec(tsout);
-    else
-        tsout = reshape(cell2mat(tsout), [size(tsout{1}), numel(tsout)]);
+
+    szt = cellfun(@(x) size(x,2), tsout, 'UniformOutput', false);
+    if numel(szt)>1 && ~isequal(szt{:}) && any(strcmp(group, {'1','3'}))
+        error("all tsout must be same size in time dimension if group is 1 or 3")
+    end
+
+    switch group
+        case '1'
+            tsout = {cell2mat(tsout(:))};
+        case '3'
+            tsout = num2cell(cell2mat(tsout(:)), 2);
+        case 'flat'
+            tsout = {transpose(cell2vec(tsout))}; %make it row vector, so time is 2nd dim
     end
 
 end

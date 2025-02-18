@@ -12,8 +12,9 @@ o.mn.plt = [""];
 o.mn.pltvis = 1; 
 
 o.spr.sld.trm = [4,2];
-o.mdl.mdl_lag_sec = 1;
-o.mdl.mdl_length_sec = 1.25;
+o.mdl.lagsec = 0;
+o.mdl.mdlname = 'svd_0.7';
+o.mdl.lensec = 1.25;
 o.feat.stimtype = 'drone';
 o.feat.id = 'CON_51';
 o.feat.pthparent = '/Users/wienecke/ds/data/rec';
@@ -22,7 +23,13 @@ o.feat.pthtemplate = '/Users/wienecke/ds/data/stimuli';
 for m = 1:numel(regionex) 
 
     o.roi.regionex = regionex{m};
-    o.roi.domm = 1; 
+    o.roi.domm = 1;
+    if strcmp(regionex{m}, 'tm')
+        o.roi.doma = 1;
+        o.roi.ma.numroi = 1024;
+    else
+        o.roi.doma = 0;
+    end
     o = odf(o, 'roi', regionex{m});
 
 end

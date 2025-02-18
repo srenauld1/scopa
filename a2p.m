@@ -78,12 +78,16 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.mdl);
         for m = 1:numel(fn)
             optid = fn{m};
-            tsg.roi.regionex = 't5';
-            tsg.roi.domm = 1;
-            tsg.it = 500:600;
-            tsg.ic = 1;
-            tsget(tsg)
-            mdl = mdlmake(indv, depvp, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
+            tg.roi.regionex = 'tm';
+            tg.roi.domm = 1;
+            indv = tsget(tg);
+            tg.roi.regionex = 't5';
+            tg.roi.domm = 1;
+            tg.group = '3';
+            depv = tsget(tg);
+
+            indv{1} = repmat(indv{1}, [200 1]);
+            mdl = mdlmake(indv, depv, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
         end
     end
 

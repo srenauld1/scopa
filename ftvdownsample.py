@@ -19,10 +19,11 @@ def ftvdownsample(pth_ftvid, pth_prefix, makeplots):
     
     if ftvcap.isOpened():
         if hack_vid_length:  #preallocation hack because CAP_PROP_FRAME_COUNT is not always accurate and I don't want to figure out how to deal with variable codec or whatever is the cause 
-            max_num_min = 60 #assume nobody makes a fictrac video longer than 60 min 
+            max_num_min = 80 #assume nobody makes a fictrac video longer than 60 min 
             approximate_ft_rate = 60 #hz
-            ftvlen = int(max_num_min*60*approximate_ft_rate)
-            print("hacking fictrac video length, if your video is longer than 60 min at ~60 Hz, preallocate larger array")
+            secpermin = 60
+            ftvlen = int(max_num_min*secpermin*approximate_ft_rate)
+            print("hacking fictrac video length, if your video has more samples than an 80 min video at 60 Hz, preallocate larger array")
         else:
             ftvlen = int(ftvcap.get(cv2.CAP_PROP_FRAME_COUNT)) #int will take floor
         ftvw  = ftvcap.get(cv2.CAP_PROP_FRAME_WIDTH)

@@ -1,18 +1,18 @@
-function out = mdl_inds(epochinds_ts_i_m, num_samp_mdl, num_samp_lag, keep_transition_zones, validation_fold, validation_split_style, epochnum)
+function out = mdl_inds(epochtsaug, num_samp_mdl, num_samp_lag, epochmix, valnum, valsplit, epochnum)
 
 
 num_epochs = numel(epochnum);
 
-epochinds_pure_ts_indvpaug = zeros(1, size(epochinds_ts_i_m, 2));
+epochinds_pure_ts_indvpaug = zeros(1, size(epochtsaug, 2));
 for eii = 1:num_epochs
-    epochinds_pure_ts_indvpaug = epochinds_pure_ts_indvpaug + epochnum(eii) * all(ismember(epochinds_ts_i_m, epochnum(eii)), 1); %epoch indices where the epoch is constant across all model timepoints
+    epochinds_pure_ts_indvpaug = epochinds_pure_ts_indvpaug + epochnum(eii) * all(ismember(epochtsaug, epochnum(eii)), 1); %epoch indices where the epoch is constant across all model timepoints
 end
 if any(epochinds_pure_ts_indvpaug(:)>max(epochnum(:)))
     error("should not have overlapping pure epoch samples")
 end
 
-if keep_transition_zones %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed
-    sampinds_indvpaug = find(all(ismember_each_element(epochinds_ts_i_m, epochnum), 1)); % specify dimension (1) in case epochinds_ts_i_m is singleton
+if epochmix %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed
+    sampinds_indvpaug = find(all(ismember_each_element(epochtsaug, epochnum), 1)); % specify dimension (1) in case epochtsaug is singleton
 else %do not include samples with multiple epochs, even if those epochs listed in epochnum
     sampinds_indvpaug = find(epochinds_pure_ts_indvpaug);
 end
@@ -39,21 +39,21 @@ end
 for i = 1:num_epochs
     boutind_per_epoch{i} = find(epochind_per_bout==epochnum(i));
     num_bout_per_epoch(i) = numel(boutind_per_epoch{i});
-    num_bout_val(i) = numel(boutind_per_epoch{i}) / validation_fold;
+    num_bout_val(i) = numel(boutind_per_epoch{i}) / valnum;
 end
-if strcmp(validation_split_style, 'bouts') && num_epochs>1 & any(mod(num_bout_val(num_bout_per_epoch>1), 1))
-    error("there are multiple epochs and at least one epoch has a number of bouts that greater than one and is not evenly divisible by validation_fold")
+if strcmp(valsplit, 'bouts') && num_epochs>1 & any(mod(num_bout_val(num_bout_per_epoch>1), 1))
+    error("there are multiple epochs and at least one epoch has a number of bouts that greater than one and is not evenly divisible by valnum")
 end
 
-if validation_fold==0
+if valnum==0
     num_valfold_loop = 1;
 else
-    num_valfold_loop = validation_fold;
+    num_valfold_loop = valnum;
 end
 
 for vfi = 1:num_valfold_loop
 
-    if validation_fold==0
+    if valnum==0
         valstr = 'v_0';
         sampinds_indvdepv_val = [];
         sampinds_indvpaug_val = [];
@@ -62,12 +62,12 @@ for vfi = 1:num_valfold_loop
         for i = 1:num_epochs %train/test split eeach epoch individually, then combine, to get equal representation in the split (since each epoch can be distributed differently)
             sampinds_indvdepv_val = [];
             sampinds_indvpaug_val = [];
-            if strcmp(validation_split_style, 'bouts') && num_bout_per_epoch(i)>1 %for now, set up to allow multi-bout epochs to be train/val split by bout epoch set, may move to making all epochs split by sample, as when an epoch has only one bout (see "else" below)
+            if strcmp(valsplit, 'bouts') && num_bout_per_epoch(i)>1 %for now, set up to allow multi-bout epochs to be train/val split by bout epoch set, may move to making all epochs split by sample, as when an epoch has only one bout (see "else" below)
                 boutinds_val_oneepoch = boutind_per_epoch{i}([1:num_bout_val(i)]+num_bout_val(i)*(vfi-1));
                 sampinds_indvdepv_val{i} = cell2mat(sampinds_per_bout_ts_m(boutinds_val_oneepoch));
-            elseif strcmp(validation_split_style, 'boutsamples')  %if split style 'bouts' and epoch has only one bout, or if split style 'sample', just split by sample
+            elseif strcmp(valsplit, 'boutsamples')  %if split style 'bouts' and epoch has only one bout, or if split style 'sample', just split by sample
                 num_samp_allbout = numel(cell2mat(sampinds_per_bout_ts_m(boutind_per_epoch{i})));
-                num_samp_val_allbout = floor(num_samp_allbout / validation_fold);
+                num_samp_val_allbout = floor(num_samp_allbout / valnum);
                 sampinds_indvdepv_val{i} = [1:num_samp_val_allbout]+num_samp_val_allbout*(vfi-1);
             end
             sampinds_indvpaug_val{i} = sampinds_indvpaug(sampinds_indvdepv_val{i});

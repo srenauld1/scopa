@@ -1,6 +1,6 @@
-function mdl = mdl_exclude_samples(excludeopts, mdl)
+function mdl = mdl_exclude_samples(rm, mdl)
 
-if strcmp(excludeopts, 'indv_triangle') %triangle threshold on indv
+if strcmp(rm, 'indv_triangle') %triangle threshold on indv
     [histdt, histx] = hist(abs(mdl.vars.indvp(:)), round(numel(mdl.vars.indvp)/10));
     thrbin = triangle_threshold(histdt, 'R', 0);
     thrvel = histx(thrbin);

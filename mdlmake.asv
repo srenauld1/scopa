@@ -1,4 +1,4 @@
-function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt)
 
 
 %{
@@ -29,9 +29,8 @@ arguments
     opt
     epochts = []
     doplt = []
-    numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
-    ld = 0 %load saved model if it exists
-    histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
+    numsyn = [] %create synthetic data (using model options in opt, within bounds of input data after processing ) for testing fit; numsyn is number of synthetic responses to fit; [] or 0 to skip
+
 end
 
 if ~iscell(indvp)
@@ -46,13 +45,13 @@ end
 
 for k = 1:numel(indvp)
     for m = 1:numel(depvp)
-        mdl = mdlmake_one(indvp{k}, depvp{m}, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc);
+        mdl = mdlmake_one(indvp{k}, depvp{m}, imrate, pthstack, optid, opt, epochts, doplt);
     end
 end
 
 end
 
-function mdl = mdlmake_one(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake_one(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt)
 
 pthpre = [erase(pthstack, '.mat') optid '_mdl_'];
 pthmdl = [pthpre '.mat'];
@@ -113,7 +112,7 @@ catch ME
     %% loop over epochnum, fitting model to each (fit to different requested subsets of indv/depv)
 
     for epi = 1:length(opt.epochnum) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-        mdl = mdl_epochs(mdl, opt, epi, pthpre, numsyn, ld, histinc);
+        mdl = mdl_epochs(mdl, opt, epi, pthpre);
     end
 
 end

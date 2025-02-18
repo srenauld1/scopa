@@ -1,6 +1,14 @@
 
-function mdl_plots(mdl, roidat, stack, opts, pthpre, pltstr)
+function mdl_plots(mdl, roidat, stack, opt, pthpre, pltstr)
 
+arguments
+    mdl
+    roidat
+    stack
+    opt
+    pthpre
+    pltstr
+end
 
 "EVERYTHING IN mdl_plots AND its subfunctions NEED TO BE RE-WRITTEN; IT IS BEING UPDATED AND IS CURRENTLY A MESS"
 
@@ -61,62 +69,62 @@ end
 
 
 
-opts.plt.maxnumroiplot = 70;
+opt.plt.maxnumroiplot = 70;
 
-opts.plt.hackindvdim = 1;
-opts.plt.numrows_ts = 6; %how many rows you want to use to spread the timeseries out
-opts.plt.max_numfits_to_plot_ts = 0;
-opts.plt.max_numfits_to_plot_par = 0;
-opts.plt.use_best_global = 1;
-opts.plt.numsampnan = 10;
-opts.plt.include_best_fit = 1;
+opt.plt.hackindvdim = 1;
+opt.plt.numrows_ts = 6; %how many rows you want to use to spread the timeseries out
+opt.plt.max_numfits_to_plot_ts = 0;
+opt.plt.max_numfits_to_plot_par = 0;
+opt.plt.use_best_global = 1;
+opt.plt.numsampnan = 10;
+opt.plt.include_best_fit = 1;
 
 
-opts.plt.plot_indv = 1;
-opts.plt.num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochnum))), so same color is associated weith same epoch across different fits
-opts.plt.max_num_indv_to_plot = 2;
-opts.plt.num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
-opts.plt.epoch_patch_face_alpha = 0.05;
-opts.plt.ylim_track_pred = 0;
-opts.plt.depv_alpha = 1;
-opts.plt.pred_alpha = 0.7;
+opt.plt.plot_indv = 1;
+opt.plt.num_total_possible_epochs = 6; %do it this way, rather than numel(unique(cell2mat(epochnum))), so same color is associated weith same epoch across different fits
+opt.plt.max_num_indv_to_plot = 2;
+opt.plt.num_depv_to_plot = 2; %this should always be 2 for depv and predddepv (unless you have multidimensional outpuut)
+opt.plt.epoch_patch_face_alpha = 0.05;
+opt.plt.ylim_track_pred = 0;
+opt.plt.depv_alpha = 1;
+opt.plt.pred_alpha = 0.7;
 
-opts.plt.numcolumns_ts = 1;
-opts.plt.marginfg = 0.04;
-opts.plt.marginax = 0.02;
-opts.plt.splitdim = 'x';
-opts.plt.splitfrac = 0.7;
-opts.plt.fontsmall = 6;
+opt.plt.numcolumns_ts = 1;
+opt.plt.marginfg = 0.04;
+opt.plt.marginax = 0.02;
+opt.plt.splitdim = 'x';
+opt.plt.splitfrac = 0.7;
+opt.plt.fontsmall = 6;
 
-opts.plt.numrows_ts2 = mdl.op.supp.num_total_model_functions/mdl.op.supp.max_num_fun_per_unit; 
-opts.plt.numcolumns_ts2 = mdl.op.supp.max_num_fun_per_unit;
+opt.plt.numrows_ts2 = mdl.op.supp.num_total_model_functions/mdl.op.supp.max_num_fun_per_unit; 
+opt.plt.numcolumns_ts2 = mdl.op.supp.max_num_fun_per_unit;
 
-opts.plt.cmap_patch = distinguishable_colors(opts.plt.num_total_possible_epochs+opts.plt.max_num_indv_to_plot+opts.plt.num_depv_to_plot);
-opts.plt.cmap_patch = opts.plt.cmap_patch(opts.plt.max_num_indv_to_plot+opts.plt.num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
-
+opt.plt.cmap_patch = distinguishable_colors(opt.plt.num_total_possible_epochs+opt.plt.max_num_indv_to_plot+opt.plt.num_depv_to_plot);
+opt.plt.cmap_patch = opt.plt.cmap_patch(opt.plt.max_num_indv_to_plot+opt.plt.num_depv_to_plot:end,:); %remove first four colors because they are b, r, g, and (almost) black, which are used for traces already
 
 plot_dimension_order = 'rev';
+
 if strcmp(plot_dimension_order, 'rve') %set order of plot variables prior to model_plots_prepvars, to keep things readable, without saving lots of variables
-    disp("plot dimension order is: roi, validation, epoch")
+    fprintf("plot dimension order is: roi, validation, epoch" + newline)
 end
 
 
 %% read / normalize indv and depv (keep seperate from plotvars in case they are large and epoch sets overlap)
 
 indv = mdl_binld(mdl.pth_indvaug_bin);
-if ~strcmp(opts.normalize_indv, 'none')
+if ~strcmp(opt.nrmi, 'none')
     indv = mdl.normmdlvar_indv(indv, 'reverse');
 end
 
 depv = mdl_binld(mdl.pth_depvp_bin);
-if ~strcmp(opts.normalize_depv, 'none')
+if ~strcmp(opt.nrmd, 'none')
     depv = mdl.normmdlvar_depv(depv, 'reverse');
 end
 
 %% 
 
 
-opts.plt.sort_method = 'majoraxis';
+opt.plt.sort_method = 'majoraxis';
 
 enm = fieldnames(mdl.fits);
 enm = enm(startsWith(enm, 'e_'));
@@ -125,15 +133,15 @@ for ei = 1:numel(enm)
     vnm = fieldnames(mdl.fits.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
-        plotvars.(enm{ei}).(vnm{vi}) = mdl_plots_prepvars(indv, depv, mdl, opts.plt, roidat, ...
+        plotvars.(enm{ei}).(vnm{vi}) = mdl_plots_prepvars(indv, depv, mdl, opt.plt, roidat, ...
             mdl.fits.(enm{ei}).epochnum, mdl.fits.(enm{ei}).(vnm{vi}), ...
-            opts.mdlname, opts.normalize_depv, enm{ei}, pthpre);
+            opt.mdlname, opt.nrmd, enm{ei}, pthpre);
     end
 end
 
 
 stackmnt = mean(stack, 4);
-if strcmp(opts.plt.plot_class, 'epoch') & ~opts.plt.plot3d
+if strcmp(opt.plt.plot_class, 'epoch') & ~opt.plt.plot3d
     stackmnt = mean(stackmnt, 3);
 end
 
@@ -144,9 +152,9 @@ end
 %THIS IS STUPID, DON'T LOOP OVER EPOCH/VALIDATION SETS; NEED TO BE ABLE TO MAKE IT INNER LOOP TOO 
 
 hsv_filename = [pthpre 'hsvfov_.gif'];
-opts.plt.fg = 'allrois';
-opts.plt.ignoresat = 0;
-opts.plt.ignoreval = 0;
+opt.plt.fg = 'allrois';
+opt.plt.ignoresat = 0;
+opt.plt.ignoreval = 0;
 
 
 for ei = 1:numel(enm)
@@ -156,11 +164,11 @@ for ei = 1:numel(enm)
         for fi = pltstr
             switch fi{1}
                 case 'sum'
-                    mdl_plots_summary(mdl, opts, roidat, stackmnt)
+                    mdl_plots_summary(mdl, opt, roidat, stackmnt)
                 case 'ts'
-                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opts.plt, mdl.op.supp, pthpre, epochinds_str_all)
+                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opt.plt, mdl.op.supp, pthpre, epochinds_str_all)
                 case 'fov'
-                    hsvplt(opts.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
+                    hsvplt(opt.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
                 case 'mdl'
                     if isequal(mdlfcn, @fit_svd)
                         % plot_svd(ft{epi})

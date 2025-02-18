@@ -28,9 +28,9 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
     o.roi.nrm.post = {'f'};
     
     o.mdl.mdlname = 'fnet_v';
-    o.mdl.mdl_length_sec = 0;
+    o.mdl.lensec = 0;
     o.mdl.epochnum = 1;
-    o.mdl.normalize_indv = 'none';
+    o.mdl.nrmi = 'none';
     % o.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
     % o.mdl.opl.MaxIterations = 5000; %1000    else
 

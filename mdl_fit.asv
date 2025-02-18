@@ -1,11 +1,11 @@
-function [ft, pred, gof_train, gof_val] = mdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
-    validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
+function [ft, pred, gof_train, gof_val] = mdl_fit(indv, depv, ri, histinc, mdlname, ...
+    valnum, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
 
 
 % rng default
 
-if optim_hist_save_iter_spacing
-    histfit = init_optim_hist(op.opl.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
+if histinc
+    histfit = init_optim_hist(op.opl.MaxIterations, op.max_iter_global, histinc, supp.num_par_total);
     op.opg.OutputFcn = @outfcn_global;
     op.opl.OutputFcn = @outfcn_local;
 end
@@ -48,7 +48,7 @@ else
     [pred(sampinds_indvdepv_train), gof_train] = mdl_predict(ft, indv, depv, op.mdl, supp);
 end
 
-if validation_fold %if doing validation
+if valnum %if doing validation
     [pred(sampinds_indvdepv_val), gof_val] = mdl_predict(ft, indv_val, depv_val, op.mdl, supp);
 else
     gof_val = nan;
@@ -99,7 +99,7 @@ parsave(savepath, histfit) %save histfit, must use separate function
         switch state
             case 'init'
             case 'iter'
-                if mod(optimValues.iteration, histfit.optim_hist_save_iter_spacing)==0
+                if mod(optimValues.iteration, histfit.histinc)==0
                     histfit.x_l(:,histfit.save_iter_count_local,histfit.save_iter_count_global) = x; %x must be a row vector.
                     % histfit.ic(histfit.save_iter_count_local,histfit.save_iter_count_global) = ic;
                     histfit.fval_l(histfit.save_iter_count_local,histfit.save_iter_count_global) = optimValues.fval;

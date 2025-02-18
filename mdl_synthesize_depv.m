@@ -1,4 +1,4 @@
-function [pred_syn, numsyndepv, ftsyn] = mdl_synthesize_depv(pthspre, supp, mdl, depv, indv, doplt, numsyndepv, opp, plot_syn_against_single_depv, normalize_depv, tinds)
+function [pred_syn, numsyndepv, ftsyn] = mdl_synthesize_depv(pthspre, supp, mdl, depv, indv, doplt, numsyndepv, opp, plot_syn_against_single_depv, nrmd, tinds)
 
 
 %if plot_syn_against_single_depv==1 (default), arbitrarily plots synthetic depv against first roi of measured depv
@@ -7,8 +7,8 @@ function [pred_syn, numsyndepv, ftsyn] = mdl_synthesize_depv(pthspre, supp, mdl,
 if ~exist('plot_syn_against_single_depv', 'var') || isempty(plot_syn_against_single_depv)
     plot_syn_against_single_depv = 1;
 end
-if ~exist('normalize_depv', 'var') || isempty(normalize_depv)
-    normalize_depv = [];
+if ~exist('nrmd', 'var') || isempty(nrmd)
+    nrmd = [];
 end
 if ~exist('tinds', 'var') || isempty(tinds)
     tinds = 1:floor(size(depv, 1)/8);
@@ -41,7 +41,7 @@ for i = 1:numsyndepv
 end
 
 if doplt
-    mdlplt(mdl, supp, depv, pred_syn, ftsyn, indv, normalize_depv, tinds)
+    mdlplt(mdl, supp, depv, pred_syn, ftsyn, indv, nrmd, tinds)
 end
 
 

@@ -18,6 +18,10 @@ end
 pthpre = [erase(pthstack, '.mat') optid '_roi_'];
 pthroi = [pthpre '.mat'];
 
+if isempty(doplt)
+    doplt = any(strcmp('roi', glb('plt')));
+end
+
 try
 
     roi = load(pthroi);
@@ -35,9 +39,6 @@ catch ME
         doma = opt.doma;
         docm = opt.docm;
         doqc = opt.doqc;
-        if isempty(doplt)
-            doplt = any(strcmp('roi', glb('plt')));
-        end
     else
         if ~iscell(roimask)
             roimask = {roimask};
@@ -70,7 +71,7 @@ catch ME
 
     if domm
         maskname = opt.mm.maskname;
-        if isfield(opt, 'ma') && opt.ma.numroi>1
+        if ~isempty(opt.ma) && opt.ma.numroi>1
             oneroi = 1;
         else
             oneroi = 0;
@@ -120,81 +121,81 @@ catch ME
 
     save(pthroi, '-struct', 'roi')
 
+end
 
-    %% plots
+%% plots
 
-    if doplt
+if doplt
 
-        chanplt = 1;
+    chanplt = 1;
 
-        imhsv = plots_setup_hsv(opt.imhsv);
-        hueft = [1:num_roim]';
-        hsvmap = hsvcmp(imhsv, hueft=hueft);
-        pthhsv = [pthpre 'hsvfov_.gif'];
-        hsvplt(imhsv, stackmnt(:,:,:,:,chanplt), hsvmap, roipx, roiwt, dohsv, pthhsv);
+    imhsv = plots_setup_hsv(opt.imhsv);
+    hueft = [1:num_roim]';
+    hsvmap = hsvcmp(imhsv, hueft=hueft);
+    pthhsv = [pthpre 'hsvfov_.gif'];
+    hsvplt(imhsv, stackmnt(:,:,:,:,chanplt), hsvmap, roipx, roiwt, dohsv, pthhsv);
 
-        ptholay = [pthpre 'roioverlay_.gif'];
-        gifvis = 'on';
-        chanplt = 1;
-        stackplt(stackmnt(:,:,:,:,chanplt), pthgif=ptholay, gifvis=gifvis, roipx=roipx, ir=roiol.ir, roicols=roiol.roicol, roialpha=roiol.roialpha) %include roipx as argument to plot roi overlay
+    ptholay = [pthpre 'roioverlay_.gif'];
+    gifvis = 'on';
+    chanplt = 1;
+    stackplt(stackmnt(:,:,:,:,chanplt), pthgif=ptholay, gifvis=gifvis, roipx=roipx, ir=roiol.ir, roicols=roiol.roicol, roialpha=roiol.roialpha) %include roipx as argument to plot roi overlay
 
-        %colormap for each roi
-        cmap = distinguishable_colors(size(roiwt,1));
-        double_colormap = 0;
-        if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
-            num_region_periods = 2; %for example, two halves of pb
-        else
-            num_region_periods = 1;
-        end
-        cmap = repmat(cmap,num_region_periods,1); %if region is periodic with multiple periods
-
-
-        %3d scatter, each roi a different hue
-        hfg = figure; hold on
-        for i = 1:num_roim %overlay each pixel in its indexed color onto the pb image
-            scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
-        end
-        %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
-        %scatter3(roicen(:,2 ), roicen(:,1), roicen(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
-        colormap(bone);
-        axis image; axis off
-        set(gca,'Visible','off')
-        set(gca,'CameraViewAngle',8)
-        rotinc = 30;
-        views = -180:rotinc:180;
-        pthgif = [pthpre 'huerois_3dspin_.gif'];
-        for framecount = 1:length(views) - 1
-            view(views(framecount)+2, 20)
-            fig2gif(hfg, framecount, pthgif)
-        end
+    %colormap for each roi
+    cmap = distinguishable_colors(size(roiwt,1));
+    double_colormap = 0;
+    if double_colormap %like for two halves of PB, etc, made this default 0 since the split is just halfway along mask (not functional)
+        num_region_periods = 2; %for example, two halves of pb
+    else
+        num_region_periods = 1;
+    end
+    cmap = repmat(cmap,num_region_periods,1); %if region is periodic with multiple periods
 
 
-
-        %mask overlay
-        overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(stackmnt, 0, 1));
-        stackplt( overlayarray, pthgif=[pthpre 'maskallroi_overlay_.gif'])
-
-        %manual roi mask
-        stackplt(roimaskman, pthgif=[pthpre 'roimaskman_.gif'])
-
-        %mask all rois (without stack background)
-        stackplt(mask_allroi, pthgif=[pthpre 'maskallroi_.gif'])
-
-        % %3d surface plot
-        % kbnd = boundary([maskx,masky,maskz]);
-        % figure;
-        % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
-        % axis image
-        % saveas( gcf, [pthpre 'maskallroi_surface_.png'])
-
-
+    %3d scatter, each roi a different hue
+    hfg = figure; hold on
+    for i = 1:num_roim %overlay each pixel in its indexed color onto the pb image
+        scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
+    end
+    %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
+    %scatter3(roicen(:,2 ), roicen(:,1), roicen(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
+    colormap(bone);
+    axis image; axis off
+    set(gca,'Visible','off')
+    set(gca,'CameraViewAngle',8)
+    rotinc = 30;
+    views = -180:rotinc:180;
+    pthgif = [pthpre 'huerois_3dspin_.gif'];
+    for framecount = 1:length(views) - 1
+        view(views(framecount)+2, 20)
+        fig2gif(hfg, framecount, pthgif)
     end
 
-    % if ~doma && strcmp(roisrt, morph_long_axis)
-    %     fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because doma is false" + newline)
-    % end
+
+
+    %mask overlay
+    overlayarray = rescale(0.2*rescale(mask_allroi) + rescale(stackmnt, 0, 1));
+    stackplt( overlayarray, pthgif=[pthpre 'maskallroi_overlay_.gif'])
+
+    %manual roi mask
+    stackplt(roimaskman, pthgif=[pthpre 'roimaskman_.gif'])
+
+    %mask all rois (without stack background)
+    stackplt(mask_allroi, pthgif=[pthpre 'maskallroi_.gif'])
+
+    % %3d surface plot
+    % kbnd = boundary([maskx,masky,maskz]);
+    % figure;
+    % trisurf(kbnd,maskx',masky',maskz','Facecolor','red','FaceAlpha',0.1)
+    % axis image
+    % saveas( gcf, [pthpre 'maskallroi_surface_.png'])
+
 
 end
+
+% if ~doma && strcmp(roisrt, morph_long_axis)
+%     fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because doma is false" + newline)
+% end
+
 
 end
 

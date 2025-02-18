@@ -141,7 +141,7 @@ for spi = 1:numel(pthstackall)
     end
     if any(smlenpx) || any(smlensec)
         imrate = structfile(pthmd, nm='volrate');
-        stack = stacksmooth(stack, method=smmthd, smlenpx=smlenpx, smlensec=smlensec, imrate=imrate);
+        stack = stacksm(stack, method=smmthd, smlenpx=smlenpx, smlensec=smlensec, imrate=imrate);
     end
 
     glb(1, stackmnt=stacktype(mean(stack, 4), class(stack))); %set mean t stack as global since it's used repeatedly, and can be a little slow to compute

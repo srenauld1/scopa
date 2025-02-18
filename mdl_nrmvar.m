@@ -1,6 +1,6 @@
 function standmdlvar = mdl_nrmvar(normtype, means, stds, mins, maxes)
 
-standmdlvar = @standardize_mdl_var_direction;
+standmdlvar = @standardize_mdl_var_direction; 
 
     function mdlvar = standardize_mdl_var_direction(mdlvar, direction)
 

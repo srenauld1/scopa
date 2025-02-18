@@ -63,3 +63,8 @@ for k = 1:numel(fn)
     optout = structsort(optout, vectype='row');
 
 end
+
+fn = fieldnames(optout);
+for k = 1:numel(fn)
+    optout.(fn{k}) = structunflat(optout.(fn{k}));
+end

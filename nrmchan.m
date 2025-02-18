@@ -1,5 +1,5 @@
 
-function resp1 = norm_cross_chan(resp1, resp2, opt)
+function resp1 = nrmchan(resp1, resp2, opt)
 
 % work in progress; 
 % remove/reduce signal that appears in both channels (eg remove brain motion artifacts in functional channel using structural channel)
@@ -15,7 +15,7 @@ arguments
     opt.pthpre = ''
     opt.mincoh = 0.7
 end
-error("make channorm=0 because norm_cross_chan is a work in progress")
+error("make channorm=0 because nrmchan is a work in progress")
 t = opt.t;
 it = opt.it;
 roiind = opt.roiind;

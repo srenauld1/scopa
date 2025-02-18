@@ -4,7 +4,7 @@ import numpy as np
 from plot_gif import plot_gif
 
 
-def stacksmooth(stack, smlenpx, volrate, numframe):
+def stacksm(stack, smlenpx, volrate, numframe):
       
         print("SMOOTHING STACK")
 

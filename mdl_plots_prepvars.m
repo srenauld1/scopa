@@ -1,5 +1,5 @@
 function plotvars = mdl_plots_prepvars(indv, depv, mdl, plt, roidat, epochs_oneset, ...
-    fitdata, mdlname, normalize_depv, epochinds_str, pthpre)
+    fitdata, mdlname, nrmd, epochinds_str, pthpre)
 
 hackindvdim = plt.hackindvdim;
 numrows_ts = plt.numrows_ts; %how many rows you want to use to spread the timeseries out
@@ -49,7 +49,7 @@ indv = indv(:, fitdata.sampinds_indvpaug); %columns of indv and depv should be n
 depv = depv(roiinds_plot, fitdata.sampinds_depvp); %columns of indv and depv should be number samples, could change above or just transpose here
 
 fitdata.pred = fitdata.pred.';
-if ~strcmp(normalize_depv, 'none')
+if ~strcmp(nrmd, 'none')
     fitdata.pred = mdl.normmdlvar_depv(fitdata.pred, 'reverse');
     fitdata.pred = fitdata.pred(roiinds_plot, :); %columns of indv and depv should be number samples, could change above or just transpose here
 end
@@ -126,11 +126,11 @@ if max_numfits_to_plot_ts>0
             for hxi = 1:numfits_to_plot
                 histxsave{ri}(hxi,:) = histxtmp(:,keepinds_histfit_ts(hxi))';
                 pred_hist{ri}(hxi,:) = mdl(histxsave{ri}(hxi,:), indv, supp);
-                % if normalize_depv
+                % if nrmd
                 %     pred_hist{ri}(hxi,:) = pred_hist{ri}(hxi,:).*depvinstds_plot{epi}(ri) + depvinmeans_plot{epi}(ri);
                 % end
             end
-            if normalize_depv
+            if nrmd
                 pred_hist{ri} = revstandvar_depv(pred_hist{ri}.');
             end
 

@@ -6,7 +6,7 @@ supp = mdl.op.supp;
 mdl = mdl.op.mdl;
 num_dim_depvp = mdl.num_dim_depvp;
 
-normalize_depv = opts.normalize_depv;
+nrmd = opts.nrmd;
 epochnum = opts.epochnum;
 
 roipx = roidat.roipx;

@@ -72,7 +72,7 @@ for c = 1:numel(chanused)
 end
 
 if channorm 
-    norm_cross_chan(resp, t=t, pthgifpre=pthpre, mincoh=0.3); %2-channel normalization based on wavelet coherence, work in progress
+    nrmchan(resp, t=t, pthgifpre=pthpre, mincoh=0.3); %2-channel normalization based on wavelet coherence, work in progress
 end
 
 end

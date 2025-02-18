@@ -1,5 +1,5 @@
-function [ft, pred, mse_train, mse_val] = mdl_fit(indv, depv, ri, optim_hist_save_iter_spacing, mdlname, ...
-    validation_fold, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
+function [ft, pred, mse_train, mse_val] = mdl_fit(indv, depv, ri, histinc, mdlname, ...
+    valnum, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
 
 
 % rng default
@@ -7,8 +7,8 @@ function [ft, pred, mse_train, mse_val] = mdl_fit(indv, depv, ri, optim_hist_sav
 do_nonlinear_constraint = 0;
 save_dummy_progress_files = 1; %save a dummy file on every completed fit so you can monitor progress more easily on long parallel runs
 
-if optim_hist_save_iter_spacing
-    histfit = init_optim_hist(op.opp.options.MaxIterations, op.max_iter_global, optim_hist_save_iter_spacing, supp.num_par_total);
+if histinc
+    histfit = init_optim_hist(op.opp.options.MaxIterations, op.max_iter_global, histinc, supp.num_par_total);
     op.opg.OutputFcn = @outfcn_global;
     op.opp.options.OutputFcn = @outfcn_local;
 else
@@ -55,7 +55,7 @@ else
     [pred(sampinds_indvdepv_train), mse_train] = mdl_predict(ft, indv, depv, op.mdl, supp);
 end
 
-if validation_fold %if doing validation
+if valnum %if doing validation
     [pred(sampinds_indvdepv_val), mse_val] = mdl_predict(ft, indv_val, depv_val, op.mdl, supp);
 else
     mse_val = nan;
@@ -73,7 +73,7 @@ end
 
 %% save optimization history
 
-if optim_hist_save_iter_spacing
+if histinc
     savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
     parsave(savepath, histfit) %save histfit, must use separate function
 end
@@ -114,7 +114,7 @@ end
         switch state
             case 'init'
             case 'iter'
-                if mod(optimValues.iteration, histfit.optim_hist_save_iter_spacing)==0
+                if mod(optimValues.iteration, histfit.histinc)==0
                     histfit.x_l(:,histfit.save_iter_count_local,histfit.save_iter_count_global) = x; %x must be a row vector.
                     % histfit.ic(histfit.save_iter_count_local,histfit.save_iter_count_global) = ic;
                     histfit.fval_l(histfit.save_iter_count_local,histfit.save_iter_count_global) = optimValues.fval;

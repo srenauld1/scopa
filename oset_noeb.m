@@ -13,9 +13,9 @@ o.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but
 o.daq.use_carls_epochs = 1;
 
 o.bmp.mdl.mdlname = 'fnet_v';
-o.bmp.mdl.mdl_length_sec = 0;
+o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
-o.bmp.mdl.normalize_indv = 'none';
+o.bmp.mdl.nrmi = 'none';
 % o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
 % o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
 

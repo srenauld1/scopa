@@ -85,7 +85,7 @@ title_prefix = ['REGIONEX: "' regionex_reformat '", MASKNAME: "' maskname  '", c
 stackmnzt = stacktype(mean(stackmnt, 3), class(stackmnt));
 % stackmnzt = stackclip(stackmnzt, clip=[0,1]);
 
-szo = size(stackmnt);
+szo = size(stackmnt, [1 2 3]);
 
 %% show mean zt and decide if you still want to draw rois
 

@@ -1,4 +1,4 @@
-function tsout = tssmooth(vtype, tsin, smlensec, dt)
+function tsout = tssm(vtype, tsin, smlensec, dt)
 
 arguments
     vtype mustBeText

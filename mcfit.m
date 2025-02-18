@@ -13,7 +13,7 @@ nmdl = 20; % number samples in model (number samples in each presentation of mov
 epochnum = [1]; %vector; which stimulus epochs to include in fit (must be elements in tsepoch); here, epochnum = [1] for single-epoch fit; but if you wanted to make azimuthal starting bar position different epochs
 nlag = 0; %number samples of lag (to shift temporal window of model); only make nonzero if you're confident there are many samples of lag between indv and depv, and including them in the model would just make it noisy
 pvar = 0.9; % range 0-1; fraction of the data variance that the linear fit should account for; if not 1, pvar eliminates smaller singular values from pseudoinverse;
-keep_transition_zones = 1; %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed; if epochnum is singleton, this is irrelevant
+epochmix = 1; %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed; if epochnum is singleton, this is irrelevant
 
 load('~/stacks/mctest.mat', 'indv', 'depv')
 indv = indv'; indv = repmat(indv, [1 2]);
@@ -43,7 +43,7 @@ if any(tsepochaug_pure(:)>max(epochnum(:)))
     error("should not have overlapping pure epoch samples")
 end
 
-if keep_transition_zones  %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed;
+if epochmix  %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed;
     tmp = zeros(size(tsepochaug));
     for k = 1:numel(epochnum)
         tmp = tmp + ismember(tsepochaug, epochnum(k));

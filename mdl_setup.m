@@ -1,8 +1,8 @@
 
-function op = mdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, imrate, inputvar_stats, pthpre)
+function op = mdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opt, imrate, inputvar_stats, pthpre)
 
 
-mdlname = opts.mdlname;
+mdlname = opt.mdlname;
 spl = strsplit(mdlname, '_');
 mdlclass = spl{1};
 
@@ -18,7 +18,11 @@ if strcmp(mdlclass, 'svd')
 
     opptmp = [];
     supp.num_total_model_functions = 1;
-    supp.pvar = sscanf(mdlname, 'svd_%d'); %numeric suffix is pvar
+    if isscalar(spl)
+        supp.pvar = 1;
+    else
+        supp.pvar = str2double(spl{2}); %numeric suffix is pvar, if it exists
+    end
 
 elseif strcmp(mdlclass, 'fnet')
 
@@ -49,19 +53,19 @@ end
 
 %% create globalsearch object and object for optimization problem
 
-op.max_iter_global = opts.max_iter_global;
+op.max_iter_global = opt.max_iter_global;
 
 
-fng = fieldnames(opts.opg);
+fng = fieldnames(opt.opg);
 tmpopts = cell(numel(fng),1);
 for k = 1:numel(fng)
     tmpopts{2*k-1} = fng{k};
-    tmpopts{2*k} = opts.opg.(fng{k});
+    tmpopts{2*k} = opt.opg.(fng{k});
 end
 op.opg = GlobalSearch(tmpopts{:});
 
 
-op.opp = createOptimProblem(opts.slvrl, options=opts.opl);
+op.opp = createOptimProblem(opt.slvrl, options=opt.opl);
 fn = fieldnames(op.opp);
 for k = 1:numel(fn)
     if isfield(opptmp, fn{k})

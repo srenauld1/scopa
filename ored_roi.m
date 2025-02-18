@@ -1,26 +1,31 @@
 
 function o = ored_roi(o)
 
+% reduce to minimal effective set based on interactions among options 
+
 two_channel_ex = 1; %hard coding for now, soon, parse methodex
 
 %% remove large submodules if they don't have do true
 
 
 if o.domm==0 && isfield(o, 'mm')
-    o = rmfield(o, 'mm');
+    o.mm = struct; %rmfield(o, 'mm');
 end
 if o.doma==0 && isfield(o, 'ma')
-    o = rmfield(o, 'ma');
+    o.ma = struct; %rmfield(o, 'ma');
 end
 if o.doqc==0 && isfield(o, 'qc')
-    o = rmfield(o, 'qc');
+    o.qc = struct; %rmfield(o, 'qc');
 end
 if o.docm==0 && isfield(o, 'cm')
-    o = rmfield(o, 'cm');
+    o.cm = struct; %rmfield(o, 'cm');
 end
 
+if o.nrm.channorm==0
+    o.nrm.mincoh = []; %rmfield(o.nrm, 'mincoh');
+end
 
-if o.docm
+if o.docm==1 %unfortunately complex reduction scheme for caiman options, since there are many interactions
 
     if any(structfun(@(x) any(strcmp(x, '*')),o.cm))
         error("need to fix caiman ored for wild")

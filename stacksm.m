@@ -1,4 +1,4 @@
-function stack = stacksmooth(stack, opt)
+function stack = stacksm(stack, opt)
 
 % uses matlab function smoothdata to smooth any number of stack dimensions, independently, in sequence;
 % currently does not suport multidimensional smoothing (e.g. with a 2d gaussian, etc)

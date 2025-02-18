@@ -1,6 +1,6 @@
-function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, omit_time_from_savemodel_datestr, use_saved_model, validation_fold, vfi)
+function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, omit_time_from_savemodel_datestr, ld, valnum, vfi)
 
-if validation_fold==0
+if valnum==0
     pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_0_*_fitdata_.mat'];
 else
     pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_' num2str(vfi) '_*_fitdata_.mat'];
@@ -13,7 +13,7 @@ if omit_time_from_savemodel_datestr
 end
 pth_fitdata = strrep(pthpat, '*', timestr);
 
-if use_saved_model && ~isempty(pthfitdat)
+if ld && ~isempty(pthfitdat)
     pthfitdat = natsortfiles(pthfitdat);
     if numel(pthfitdat)>1
         fprintf("there are multiple fitata files, loading most recent, based on timestamp in filename" + newline)

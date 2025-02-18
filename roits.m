@@ -18,7 +18,6 @@ degdtr = opt.degdtr; % detrend polynomial degree; 0 to skip detrending
 channorm = opt.channorm; %work in progress; 2-channel normalization with wavelet coherence based filtering
 mincoh = opt.mincoh; %work in progress min coherence threshold for channorm
 
-
 if ~iscell(roimask)
     roimask = {roimask};
 end
@@ -117,7 +116,7 @@ for k = 1:numchan
             tsout{k} = tsnorm(tsout{k}, normpost, sampper, memthr); %second normalization, optional
 
             if channorm
-                tsout{k} = norm_cross_chan(tsout{k}, t=t, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
+                tsout{k} = nrmchan(tsout{k}, t=t, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
             end
 
         else

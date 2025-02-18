@@ -295,9 +295,13 @@ d.mdl.slvrg = 'globalsearch';
 d.mdl.max_iter_global = 3; %this will not be assigned to globalsearch object d.opg; instead is used in output function for optimization problem, to stop optimization
 d.mdl.slvrl = 'fmincon'; %'lsqcurvefit';
 d.mdl.mdlname = 'fnet_A01_s'; %'svd' or fnet string (see docs_mdlname.m)
-d.mdl.rm = []; %options for removing samples
-d.mdl.nrmi = []; %'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
-d.mdl.nrmd = []; %'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mdl.rm = '';
+d.mdl.nrmi = 'none'; %'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mdl.nrmd = 'none'; %'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mdl.ld = 1;
+d.mdl.omit_time_from_savemodel_datestr = 1; %to prevent too many saved files, setting to 1 will use date suffix in saved model filename, rather than datetime suffix
+d.mdl.histinc = 0;
+
 
 %% global solver options
 

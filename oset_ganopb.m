@@ -32,9 +32,9 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
         o.roi.ma.maskmake = 'edge';
         o.roi.nrm.post = {'rsc000100'};
         o.bmp.mdl.mdlname = 'fnet_v';
-        o.bmp.mdl.mdl_length_sec = 0;
+        o.bmp.mdl.lensec = 0;
         o.bmp.mdl.epochnum = 4;
-        o.bmp.mdl.normalize_indv = 'none';
+        o.bmp.mdl.nrmi = 'none';
         % o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
         % o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
     elseif any(strcmp(regionex{m}, {'no', 'ga'}))

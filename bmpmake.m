@@ -151,8 +151,8 @@ mu = mu';
 rho = rho';
 
 if smlensec
-    mu = tssmooth('circular', mu, smlensec, sampper);
-    rho = tssmooth('normal', rho, smlensec, sampper);
+    mu = tssm('circular', mu, smlensec, sampper);
+    rho = tssm('normal', rho, smlensec, sampper);
 end
 
 bumpvel = tsdv('circular', mu, slopelensec, slopeord, sampper);
