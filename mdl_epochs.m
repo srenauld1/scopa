@@ -35,12 +35,14 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     %% read full indvaug and depvaug from bin, then subsample (should just read inds directly to prevent memory spike)
 
     indv = mdl_binld(pth_indvaug, inds.sampinds_indvpaug_train);
-    indv_val = indv(:, inds.sampinds_indvpaug_val).'; %columns of indv and depv should be number samples, could change above or just transpose here
-    indv = indv(:, inds.sampinds_indvpaug_train).'; %columns of indv and depv should be number samples, could change above or just transpose here
+    indv = indv.'; %columns of indv and depv should be number samples, could change above or just transpose here
+    indv_val = mdl_binld(pth_indvaug, inds.sampinds_indvpaug_val);
+    indv_val = indv_val.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-    [depv_allrois, depv_allrois_class] = mdl_binld(pth_depvp_bin);
-    depv_allrois_val = depv_allrois(:, inds.sampinds_depvp_val).';
-    depv_allrois = depv_allrois(:, inds.sampinds_depvp_train).'; %columns of indv and depv should be number samples, could change above or just transpose here
+    [depv_allrois, depv_allrois_class] = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_train);
+    depv_allrois = depv_allrois.';
+    depv_allrois_val = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_val);
+    depv_allrois_val = depv_allrois_val.';
 
     %% create save path, check if saved model (for current epoch and validation) already exists (we use this in addition to the load in mdlmake in case some epochs or validation sets finished, but not others, won't have to restart from beginning)
 
@@ -59,11 +61,12 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     if dofit
 
-        num_samp_total = inds.num_samp_total; %unpack to reduce overhead with large 'inds' struct during parfor
-        sampinds_indvdepv_val = inds.sampinds_indvdepv_val; %unpack to reduce overhead with large 'inds' struct during parfor
-        sampinds_indvdepv_train = inds.sampinds_indvdepv_train; %unpack to reduce overhead with large 'inds' struct during parfor
-        depvmin = mdl.st.depvp_min_eachdim;%unpack to reduce overhead with large 'mdl' struct during parfor
-        depvmax = mdl.st.depvp_max_eachdim;%unpack to reduce overhead with large 'mdl' struct during parfor
+        
+        num_samp_total = inds.num_samp_total; % NOTE! unpack to reduce overhead with large 'inds' struct during parfor
+        sampinds_indvdepv_val = inds.sampinds_indvdepv_val; % NOTE! unpack to reduce overhead with large 'inds' struct during parfor
+        sampinds_indvdepv_train = inds.sampinds_indvdepv_train; % NOTE! unpack to reduce overhead with large 'inds' struct during parfor
+        depvmin = mdl.st.depvp_min_eachdim;% NOTE! unpack to reduce overhead with large 'mdl' struct during parfor
+        depvmax = mdl.st.depvp_max_eachdim;% NOTE! unpack to reduce overhead with large 'mdl' struct during parfor
 
         ft = zeros(num_dim_depvp, supp.num_par_total); % was num_dim_indvp*num_samp_mdl, then num_dim_indvp*supp.num_par_total
         pred = zeros(num_samp_total, num_dim_depvp, depv_allrois_class);
@@ -108,7 +111,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     gof_val_mean_allrois = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
 
 
-    %% output struct (indexed by valind)
+    %% output struct (indexed by validation index)
 
     mdl.ft.(valnames{vfi}).ft = ft;
     mdl.ft.(valnames{vfi}).pred = pred;

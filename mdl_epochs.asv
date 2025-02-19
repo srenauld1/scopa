@@ -35,12 +35,14 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     %% read full indvaug and depvaug from bin, then subsample (should just read inds directly to prevent memory spike)
 
     indv = mdl_binld(pth_indvaug, inds.sampinds_indvpaug_train);
-    indv_val = indv(:, inds.sampinds_indvpaug_val).'; %columns of indv and depv should be number samples, could change above or just transpose here
-    indv = indv(:, inds.sampinds_indvpaug_train).'; %columns of indv and depv should be number samples, could change above or just transpose here
+    indv = indv.'; %columns of indv and depv should be number samples, could change above or just transpose here
+    indv_val = mdl_binld(pth_indvaug, inds.sampinds_indvpaug_val);
+    indv_val = indv_val.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-    [depv_allrois, depv_allrois_class] = mdl_binld(pth_depvp_bin);
-    depv_allrois_val = depv_allrois(:, inds.sampinds_depvp_val).';
-    depv_allrois = depv_allrois(:, inds.sampinds_depvp_train).'; %columns of indv and depv should be number samples, could change above or just transpose here
+    [depv_allrois, depv_allrois_class] = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_train);
+    depv_allrois = depv_allrois.';
+    depv_allrois_val = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_val);
+    depv_allrois_val = depv_allrois_val.';
 
     %% create save path, check if saved model (for current epoch and validation) already exists (we use this in addition to the load in mdlmake in case some epochs or validation sets finished, but not others, won't have to restart from beginning)
 

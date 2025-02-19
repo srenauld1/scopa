@@ -1,5 +1,5 @@
 
-function op = mdl_setup(num_samp_mdl, num_dim_indv, num_dim_indvp, opt, imrate, inputvar_stats, pthpre)
+function op = mdl_optimpr(num_samp_mdl, num_dim_indv, num_dim_indvp, opt, imrate, inputvar_stats, pthpre)
 
 
 mdlname = opt.mdlname;
@@ -26,11 +26,11 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [op.mdl, opptmp, supp] = mdl_setup_fnet(mdlname, num_samp_mdl, imrate, num_dim_indvp, inputvar_stats);
+    [op.mdl, opptmp, supp] = mdl_optimpr_fnet(mdlname, num_samp_mdl, imrate, num_dim_indvp, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 
-    op = mdl_setup_tm(mdlname);
+    op = mdl_optimpr_tm(mdlname);
 
 end
 

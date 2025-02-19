@@ -1,19 +1,11 @@
-function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt)
+function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc)
 
 
 %{
 for outdated docs, see file mdl_notes.m
 
-indvp
-depvp
-mdl.num_dim_indvp
-mdl.num_samp_indvp
-mdl.num_dim_depvp
-mdl.num_samp_depvp
-mdl.pthpre
-
 mdl_varpr adds to mdl struct with prepared vars and also outputs mdl.st
-mdl_setup output mdl.op with model options, and mdl.op.supp with model params
+mdl_optimpr output mdl.op with model options, and mdl.op.supp with model params
 mdl_epochs output mdl.fit with fit info
   within mdl_epochs is mdl_fit where fit occurs
 mdl_plots plots model
@@ -29,8 +21,9 @@ arguments
     opt
     epochts = []
     doplt = []
-    numsyn = [] %create synthetic data (using model options in opt, within bounds of input data after processing ) for testing fit; numsyn is number of synthetic responses to fit; [] or 0 to skip
-
+    numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
+    ld = 0 %load saved model if it exists
+    histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
 
 if ~iscell(indvp)
@@ -44,14 +37,14 @@ end
 
 
 for k = 1:numel(indvp)
-    for m = 1:numel(depvp)
-        mdl = mdlmake_one(indvp{k}, depvp{m}, imrate, pthstack, optid, opt, epochts, doplt);
+    parfor m = 1:numel(depvp)
+        mdl = mdlmake_one(indvp{k}, depvp{m}, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc);
     end
 end
 
 end
 
-function mdl = mdlmake_one(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt)
+function mdl = mdlmake_one(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc)
 
 pthpre = [erase(pthstack, '.mat') optid '_mdl_'];
 pthmdl = [pthpre '.mat'];
@@ -72,16 +65,7 @@ catch ME
         doplt = any(strcmp('mdl', glb('plt')));
     end
 
-    indvp = indvp;
-    indvp = [];
-    depvp = depvp;
-    depvp = [];
-
     opt.hsv_background = "";
-
-    if ~iscell(opt.epochnum)
-        opt.epochnum = {opt.epochnum};
-    end
 
     if ~isa(indvp, 'single') && ~isa(indvp, 'double')
         indvp = single(indvp);
@@ -90,7 +74,7 @@ catch ME
         depvp = single(depvp);
     end
 
-    if isvector(indvp) & iscolumn(indvp)
+    if isvector(indvp) && iscolumn(indvp)
         indvp = indvp(:)';
     end
 
@@ -103,17 +87,15 @@ catch ME
 
     %% prepare indv and depv
 
-    mdl = mdl_varpr(mdl, opt, imrate, pthpre, epochts);
+    mdl = mdl_varpr(mdl, indvp, depvp, opt, imrate, pthpre, epochts);
 
     %% set up model fitting and plotting options
 
-    mdl.op = mdl_setup(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
+    mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
 
-    %% loop over epochnum, fitting model to each (fit to different requested subsets of indv/depv)
+    %% fit model to requested subset of indv/depv
 
-    for epi = 1:length(opt.epochnum) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-        mdl = mdl_epochs(mdl, opt, epi, pthpre);
-    end
+    mdl = mdl_epochs(mdl, opt, pthpre, numsyn, ld, histinc);
 
 end
 

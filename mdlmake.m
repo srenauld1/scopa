@@ -5,7 +5,7 @@ function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, dopl
 for outdated docs, see file mdl_notes.m
 
 mdl_varpr adds to mdl struct with prepared vars and also outputs mdl.st
-mdl_setup output mdl.op with model options, and mdl.op.supp with model params
+mdl_optimpr output mdl.op with model options, and mdl.op.supp with model params
 mdl_epochs output mdl.fit with fit info
   within mdl_epochs is mdl_fit where fit occurs
 mdl_plots plots model
@@ -37,7 +37,7 @@ end
 
 
 for k = 1:numel(indvp)
-    for m = 1:numel(depvp)
+    parfor m = 1:numel(depvp)
         mdl = mdlmake_one(indvp{k}, depvp{m}, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc);
     end
 end
@@ -91,7 +91,7 @@ catch ME
 
     %% set up model fitting and plotting options
 
-    mdl.op = mdl_setup(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
+    mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
 
     %% fit model to requested subset of indv/depv
 

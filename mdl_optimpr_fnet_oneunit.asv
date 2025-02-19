@@ -1,6 +1,6 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    mdl_setup_fnet_oneunit(fnetspec, num_samp_mdl, imrate, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    mdl_optimpr_fnet_oneunit(fnetspec, num_samp_mdl, sampper, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
 
 
 
@@ -16,8 +16,6 @@ indvp_min_alldim = inputvar_stats.indvp_min_alldim;
 indvp_max_alldim = inputvar_stats.indvp_max_alldim;
 
 %% define time domain for linear filters (constants in the nested functions)
-
-sampper = 1/imrate;
 
 tmax = sampper*(num_samp_mdl-1);
 t = 0:sampper:tmax; %zero-indexed time for final/used filter
@@ -156,7 +154,7 @@ for fi = 1:num_fun
         ubnd_tmp = [inf,inf,inf,inf];
         x0_tmp = [0,0,0,0];
     elseif startsWith(fnet_onefun, 'h')
-        % previous approach ---> fnet = mdl_setup_ohe(fnet, fnetspec, fi, num_dim_indvp, num_samp_mdl, num_unit);
+        % previous approach ---> fnet = mdl_optimpr_ohe(fnet, fnetspec, fi, num_dim_indvp, num_samp_mdl, num_unit);
         num_bin_hot = sscanf(fnet_onefun, 'h%d');
         hotcombos = repmat(vec([1:num_bin_hot]), [1 num_dim_in]);
         fnet.funh{fi} = @fun_ohe;
@@ -327,4 +325,6 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     end
 
 
+sin(2*pi*x/A + 2*pi/B);
+exp(A*cos(x-B));
 end

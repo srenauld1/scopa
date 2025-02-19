@@ -1,4 +1,4 @@
-function fnet = mdl_setup_ohe(fnet, fnetspec, ni, num_dim_indvp, num_samp_mdl, num_unit)
+function fnet = mdl_optimpr_ohe(fnet, fnetspec, ni, num_dim_indvp, num_samp_mdl, num_unit)
 
 hotpower = 1;
 if any(contains(fnetspec.independently_discretized_hot_dims{ni}, 'c')) %input channel or previous layer output channels
