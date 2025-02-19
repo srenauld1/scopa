@@ -1,9 +1,11 @@
-function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, epochinds_str, omit_time_from_savemodel_datestr, ld, valnum, vfi)
+function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, ld, valnum, vfi)
+
+omit_time_from_savemodel_datestr = 1;
 
 if valnum==0
-    pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_0_*_fitdata_.mat'];
+    pthpat = [pthpre '_0_*_fitdata_.mat'];
 else
-    pthpat = [pthpre '_' strrep(epochinds_str, '_', ',') '_' num2str(vfi) '_*_fitdata_.mat'];
+    pthpat = [pthpre '_' num2str(vfi) '_*_fitdata_.mat'];
 end
 
 pthfitdat = rdir(pthpat);

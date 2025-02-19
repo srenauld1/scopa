@@ -86,7 +86,7 @@ for k = 1:numel(oa) % loop over recordings
             tg.group = '3';
             depv = tsget(tg);
 
-            indv{1} = repmat(indv{1}, [200 1]);
+            indv{1} = repmat(indv{1}, [100 1]);
             mdl = mdlmake(indv, depv, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
         end
     end

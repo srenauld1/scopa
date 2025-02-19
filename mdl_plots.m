@@ -111,7 +111,7 @@ end
 
 %% read / normalize indv and depv (keep seperate from plotvars in case they are large and epoch sets overlap)
 
-indv = mdl_binld(mdl.pth_indvaug_bin);
+indv = mdl_binld(mdl.pth_indvaug);
 if ~strcmp(opt.nrmi, 'none')
     indv = mdl.normmdlvar_indv(indv, 'reverse');
 end
@@ -126,15 +126,15 @@ end
 
 opt.plt.sort_method = 'majoraxis';
 
-enm = fieldnames(mdl.fits);
+enm = fieldnames(mdl.ft);
 enm = enm(startsWith(enm, 'e_'));
-epochinds_str_all = strjoin(enm, ',,');
+epochstr_all = strjoin(enm, ',,');
 for ei = 1:numel(enm)
-    vnm = fieldnames(mdl.fits.(enm{ei}));
+    vnm = fieldnames(mdl.ft.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
         plotvars.(enm{ei}).(vnm{vi}) = mdl_plots_prepvars(indv, depv, mdl, opt.plt, roidat, ...
-            mdl.fits.(enm{ei}).epochnum, mdl.fits.(enm{ei}).(vnm{vi}), ...
+            mdl.ft.(enm{ei}).epochnum, mdl.ft.(enm{ei}).(vnm{vi}), ...
             opt.mdlname, opt.nrmd, enm{ei}, pthpre);
     end
 end
@@ -158,7 +158,7 @@ opt.plt.ignoreval = 0;
 
 
 for ei = 1:numel(enm)
-    vnm = fieldnames(mdl.fits.(enm{ei}));
+    vnm = fieldnames(mdl.ft.(enm{ei}));
     vnm = vnm(startsWith(vnm, 'v_'));
     for vi = 1:numel(vnm)
         for fi = pltstr
@@ -166,14 +166,14 @@ for ei = 1:numel(enm)
                 case 'sum'
                     mdl_plots_summary(mdl, opt, roidat, stackmnt)
                 case 'ts'
-                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opt.plt, mdl.op.supp, pthpre, epochinds_str_all)
+                    mdl_plots_timeseries(indv, depv, mdl.op.mdl, plotvars.(enm{ei}).(vnm{vi}), opt.plt, mdl.op.supp, pthpre, epochstr_all)
                 case 'fov'
                     hsvplt(opt.plt, stackmnt, plotvars.(enm{ei}).(vnm{vi}).hsvmap, roidat.roipx, roidat.roiwt, hsv_filename);
                 case 'mdl'
                     if isequal(mdlfcn, @fit_svd)
                         % plot_svd(ft{epi})
                     else
-                        mdlfcn(mdl.fits.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pthpre);
+                        mdlfcn(mdl.ft.(enm{ei}).(vnm{vi}).ft, indv{epi}, supp, pthpre);
                     end
                 case 'comp'
                     roivpix(depv_allrois{epi}, stack, roipx, pthpre) %make gif showing roi against each of its pixels

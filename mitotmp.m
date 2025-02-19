@@ -23,9 +23,9 @@ tinds = 1:15054; [sortindv,sortinds] = sort(indvp(tinds)); hfg=figure; scatter(s
 mdl = mdlmake(indvp, depvp, md.volrate, o.mdl, doplt, pth.pre, epochts, stack, roidat.a10{1});
 
 
-fn = fieldnames(mdl.fits);
+fn = fieldnames(mdl.ft);
 if numel(fn)>1
     error("you've requested multiple fits to different epochts, but roi2hd operates on a single fit; decide which epochts set you want to use to compute bump")
 end
-angpref = mdl.fits.(fn{1}).indvpf_mean_allval(:)'; %row vector of preferred angle;
+angpref = mdl.ft.(fn{1}).indvpf_mean_allval(:)'; %row vector of preferred angle;
 

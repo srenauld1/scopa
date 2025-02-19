@@ -4,15 +4,7 @@ function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, dopl
 %{
 for outdated docs, see file mdl_notes.m
 
-indvp
-depvp
-mdl.num_dim_indvp
-mdl.num_samp_indvp
-mdl.num_dim_depvp
-mdl.num_samp_depvp
-mdl.pthpre
-
-mdl_prepvars adds to mdl struct with prepared vars and also outputs mdl.stats
+mdl_varpr adds to mdl struct with prepared vars and also outputs mdl.st
 mdl_setup output mdl.op with model options, and mdl.op.supp with model params
 mdl_epochs output mdl.fit with fit info
   within mdl_epochs is mdl_fit where fit occurs
@@ -73,48 +65,37 @@ catch ME
         doplt = any(strcmp('mdl', glb('plt')));
     end
 
-    mdl.vars.indvp = indvp;
-    indvp = [];
-    mdl.vars.depvp = depvp;
-    depvp = [];
-
     opt.hsv_background = "";
 
-    if ~iscell(opt.epochnum)
-        opt.epochnum = {opt.epochnum};
+    if ~isa(indvp, 'single') && ~isa(indvp, 'double')
+        indvp = single(indvp);
+    end
+    if ~isa(depvp, 'single') && ~isa(depvp, 'double')
+        depvp = single(depvp);
     end
 
-    if ~isa(mdl.vars.indvp, 'single') && ~isa(mdl.vars.indvp, 'double')
-        mdl.vars.indvp = single(mdl.vars.indvp);
-    end
-    if ~isa(mdl.vars.depvp, 'single') && ~isa(mdl.vars.depvp, 'double')
-        mdl.vars.depvp = single(mdl.vars.depvp);
+    if isvector(indvp) && iscolumn(indvp)
+        indvp = indvp(:)';
     end
 
-    if isvector(mdl.vars.indvp) & iscolumn(mdl.vars.indvp)
-        mdl.vars.indvp = mdl.vars.indvp(:)';
-    end
+    [ mdl.num_dim_indvp, mdl.num_samp_indvp ] = size(indvp);
+    [ mdl.num_dim_depvp, mdl.num_samp_depvp ] = size(depvp);
 
-    [ mdl.num_dim_indvp, mdl.num_samp_indvp ] = size(mdl.vars.indvp);
-    [ mdl.num_dim_depvp, mdl.num_samp_depvp ] = size(mdl.vars.depvp);
-
-    if mdl.num_samp_indvp~=mdl.num_samp_depvp | ndims(mdl.vars.depvp)~=2 | ndims(mdl.vars.indvp)~=2
+    if mdl.num_samp_indvp~=mdl.num_samp_depvp | ndims(depvp)~=2 | ndims(indvp)~=2
         error("incorrectly sized input(s)")
     end
 
     %% prepare indv and depv
 
-    mdl = mdl_prepvars(mdl, opt, imrate, pthpre, epochts);
+    mdl = mdl_varpr(mdl, indvp, depvp, opt, imrate, pthpre, epochts);
 
     %% set up model fitting and plotting options
 
-    mdl.op = mdl_setup(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.stats, pthpre);
+    mdl.op = mdl_setup(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
 
-    %% loop over epochnum, fitting model to each (fit to different requested subsets of indv/depv)
+    %% fit model to requested subset of indv/depv
 
-    for epi = 1:length(opt.epochnum) %for each indv epoch, crop indv and depv according to epoch indices, then fit model to cropped indv/depv
-        mdl = mdl_epochs(mdl, opt, epi, pthpre, numsyn, ld, histinc);
-    end
+    mdl = mdl_epochs(mdl, opt, pthpre, numsyn, ld, histinc);
 
 end
 
@@ -122,8 +103,8 @@ if doplt
     mdl_plots(mdl, roidat, stack, opt, pthpre)
 end
 
-if isfile(mdl.pth_indvaug_bin)
-    delete(mdl.pth_indvaug_bin)
+if isfile(mdl.pth_indvaug)
+    delete(mdl.pth_indvaug)
 end
 if isfile(mdl.pth_depvp_bin)
     delete(mdl.pth_depvp_bin)

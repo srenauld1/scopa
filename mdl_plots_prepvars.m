@@ -1,5 +1,5 @@
 function plotvars = mdl_plots_prepvars(indv, depv, mdl, plt, roidat, epochs_oneset, ...
-    fitdata, mdlname, nrmd, epochinds_str, pthpre)
+    fitdata, mdlname, nrmd, epochstr, pthpre)
 
 hackindvdim = plt.hackindvdim;
 numrows_ts = plt.numrows_ts; %how many rows you want to use to spread the timeseries out
@@ -14,10 +14,10 @@ cmap_patch = plt.cmap_patch;
 
 %% plotting vars
 
-epochinds_str = strrep(epochinds_str, '_', ',');
+epochstr = strrep(epochstr, '_', ',');
 plt = plots_setup_hsv(plt, mdlname);
 
-hsvmap = hsvcmp( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=mdl.stats.indvp_lim_alldim, huelimnat2=mdl.stats.depvp_lim_alldim, mdlname=mdlname);
+hsvmap = hsvcmp( plt, hueft=fitdata.ft, satft=fitdata.gof, valft=fitdata.depvstd, hueft2=fitdata.indvpf, huelimnat=mdl.st.indvp_lim_alldim, huelimnat2=mdl.st.depvp_lim_alldim, mdlname=mdlname);
 
 %% select which rois get plotted and how they're sorted
 
@@ -89,7 +89,7 @@ depvrow = cell(1, numrows_ts);
 indvrow = cell(1, numrows_ts);
 if max_numfits_to_plot_ts>0
     for ri = 1:numroi_plot %for each unit, concatenate hitfit (do before plotting loop )
-        pth_fitdata_pattern = [pthpre '_' epochinds_str '_*_' num2str(ri) '_HISTFIT_.mat'];
+        pth_fitdata_pattern = [pthpre '_' epochstr '_*_' num2str(ri) '_HISTFIT_.mat'];
         fitdata_saved_files = rdir(pth_fitdata_pattern);
         if ~isempty(fitdata_saved_files)
             fitdata_saved_files = natsortfiles(fitdata_saved_files);
@@ -110,7 +110,7 @@ if max_numfits_to_plot_ts>0
             end
 
             % if ismember(ri, rois_to_plot_fithist)
-            %     plot_fit_history(histxtmp(:,keepinds_histfit_par), pthpre, epochinds_str_all) %this way you can plot entire history before subset with keepinds_histfit
+            %     plot_fit_history(histxtmp(:,keepinds_histfit_par), pthpre, epochstr_all) %this way you can plot entire history before subset with keepinds_histfit
             % end
 
             if size(histxtmp, 2)>max_numfits_to_plot_ts

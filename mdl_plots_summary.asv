@@ -287,7 +287,7 @@ end
 minis =  min(cell2mat(cellfun(@(x) min(x(:)),  depv,  'UniformOutput',  false))); %min depv across all epochs
 maxis =  max(cell2mat(cellfun(@(x) max(x(:)),  depv,  'UniformOutput',  false))); %max depv across all epochs
 
-epochinds_str_all = strjoin(epochinds_str, ',,');
+epochstr_all = strjoin(epochstr, ',,');
 
 
 for epi = 1:length(epochinds)
@@ -302,7 +302,7 @@ if doplt(1)
     title_add_each = 'MODELFIT';
     figext = '.gif';
 
-    filename_save = [pthpre '_' title_add_each '_e_' epochinds_str_all '_' figext];
+    filename_save = [pthpre '_' title_add_each '_e_' epochstr_all '_' figext];
     tittmp = strsplit(filename_save(1:end-4), '/');
     figure_title = strrep(tittmp{end}, '_', ' ');
 
