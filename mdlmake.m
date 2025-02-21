@@ -35,12 +35,14 @@ end
 
 %% check some inputs and prepare save path
 
+[k,m] = meshgrid(1:numel(indvp), 1:numel(depvp));
+pairind = [k(:) m(:)];
+numfit = size(pairind,1);
 
-for k = 1:numel(indvp)
-    parfor m = 1:numel(depvp)
-        mdl = mdlmake_one(indvp{k}, depvp{m}, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc);
-    end
+for k = 1:numel(numfit)
+    mdl = mdlmake_one(indvp{pairind(k,1)}, depvp{pairind(k,2)}, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc);
 end
+
 
 end
 
@@ -89,7 +91,7 @@ catch ME
 
     mdl = mdl_varpr(mdl, indvp, depvp, opt, imrate, pthpre, epochts);
 
-    %% set up model fitting and plotting options
+    %% set up model params and optimization options
 
     mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
 

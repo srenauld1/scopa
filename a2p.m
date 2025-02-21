@@ -71,23 +71,31 @@ for k = 1:numel(oa) % loop over recordings
 
     end
 
-    
+
     %% model
 
     if o.mn.dofit
         fn = fieldnames(o.mdl);
         for m = 1:numel(fn)
             optid = fn{m};
-            tg.roi.regionex = 'tm';
-            tg.roi.domm = 1;
-            indv = tsget(tg);
-            tg.roi.regionex = 't5';
-            tg.roi.domm = 1;
-            tg.group = '3';
-            depv = tsget(tg);
+            
+            tgi.roi.regionex = 'tm';
+            tgi.roi.domm = 1;
+            tgi.roi.mm.maskname = 'ten';
+            indv = tsget(tgi);
+            
+            tgd.roi.regionex = 't5';
+            tgd.roi.domm = 1;
+            tgd.group = '1';
+            depv = tsget(tgd);
+
+            o.mdl.a1.mdlname = 'svd_0.97';
             mdl = mdlmake(indv, depv, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
+            
+            % t5tmp
         end
     end
+
 
     %% plots
 

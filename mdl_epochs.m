@@ -39,7 +39,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     indv_val = mdl_binld(pth_indvaug, inds.sampinds_indvpaug_val);
     indv_val = indv_val.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-    [depv_allrois, depv_allrois_class] = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_train);
+    depv_allrois = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_train);
     depv_allrois = depv_allrois.';
     depv_allrois_val = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_val);
     depv_allrois_val = depv_allrois_val.';
@@ -61,7 +61,6 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     if dofit
 
-        
         num_samp_total = inds.num_samp_total; % NOTE! unpack to reduce overhead with large 'inds' struct during parfor
         sampinds_indvdepv_val = inds.sampinds_indvdepv_val; % NOTE! unpack to reduce overhead with large 'inds' struct during parfor
         sampinds_indvdepv_train = inds.sampinds_indvdepv_train; % NOTE! unpack to reduce overhead with large 'inds' struct during parfor
@@ -69,17 +68,23 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         depvmax = mdl.st.depvp_max_eachdim;% NOTE! unpack to reduce overhead with large 'mdl' struct during parfor
 
         ft = zeros(num_dim_depvp, supp.num_par_total); % was num_dim_indvp*num_samp_mdl, then num_dim_indvp*supp.num_par_total
-        pred = zeros(num_samp_total, num_dim_depvp, depv_allrois_class);
+        pred = zeros(num_samp_total, num_dim_depvp, class(depv_allrois));
         gof = zeros(num_dim_depvp, 1);
         gof_val = zeros(num_dim_depvp, 1);
 
-        tic
         depv_good_inds = ~any(isnan(depv_allrois));
-        for ri = 1:num_dim_depvp
+
+        tic
+        % delete(gcp('nocreate'));
+        % ppp = parpool('Processes');
+        % optpp = parforOptions(ppp,RangePartitionMethod="fixed", SubrangeSize=3);
+        % ticBytes(gcp);
+
+        for ri = 1:num_dim_depvp %(ri=1:num_dim_depvp, optpp) %ri = 1:num_dim_depvp
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));
-                
+
                 [ ft(ri,:), pred(:,ri), gof(ri), gof_val(ri) ] = ...
                     mdl_fit(indv, depv, ri, histinc, ...
                     mdlname, valnum, indv_val, depv_val, sampinds_indvdepv_train, ...
@@ -89,11 +94,13 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                 % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opt.nrmd)
             end
         end
+        % tocBytes(gcp)
         toc
+
 
         save(pth_fitdata, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds', '-v7.3', '-mat')
 
-        mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opt.nrmd)
+        % mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opt.nrmd)
 
     end
 

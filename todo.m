@@ -1,6 +1,6 @@
 function todo()
 
-
+disp("write function to delete a variable in txt (not allow manual) that will also delete all associated files")
 disp("\n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??")
 disp("apply tsdv to daq directly, not output of tsrs")
 disp("make vsmooth for all variables rather than stacksm and tssm")

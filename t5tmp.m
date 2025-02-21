@@ -1,0 +1,19 @@
+
+%%
+
+optidtmp = 'a3';
+ft = mdl.ft.v_0.ft;
+fttmp = ft(2,:);
+stackmnt = roi.(optidtmp).dat{1}.stackmnt;
+roipx = roi.(optidtmp).dat{1}.roipx;
+fttmp = reshape(fttmp, numel(roipx), []);
+ftim = zeros([size(stackmnt), size(fttmp,2)]);
+for k = 1:size(ftim,3)
+    tmpim = zeros(size(stackmnt));
+    for m = 1:numel(roipx)
+        tmpim(roipx{m}) = fttmp(m,k);
+    end
+    ftim(:, :, k) = tmpim;
+end
+stackplt(ftim, dmstack='yxt')
+%%

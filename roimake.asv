@@ -76,7 +76,7 @@ catch ME
         else
             oneroi = 0;
         end
-        roimask = roidraw(stackmnt, pthstack=pthstack, regionex=regionex, maskname=maskname, chan=opt.mm.chan, oneroi=oneroi, chancp=opt.mm.chancp);
+        roimask = roidraw(stackmnt, pthstack=pthstack, regionex=regionex, croplimmaskname=maskname, chan=opt.mm.chan, oneroi=oneroi, chancp=opt.mm.chancp);
     else
         maskname = '';
         if ~maskinput

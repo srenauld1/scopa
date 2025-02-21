@@ -25,7 +25,8 @@ for m = 1:numel(regionex)
     o.roi.regionex = regionex{m};
     o.roi.domm = 1;
     if strcmp(regionex{m}, 'tm')
-        o.roi.doma = 1;
+        o.roi.doma = 0;
+        o.roi.mm.maskname = 'ten';
         o.roi.ma.numroi = 1024;
     else
         o.roi.doma = 0;

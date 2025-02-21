@@ -46,7 +46,7 @@ else
         catch ME
             clrn = structfun(@range, croplim);
             if isequal(size(stack, [1 2 3 4 5]), clrn([4 3 5 2 1])'+1)
-                fprintf(newline + "croplim indices were out of range, but croplim match the size of the input stack" + newline + "you may have applied these croplim, and then passed the cropped stack into stackcrop" + newline + "here is the error you got: " + newline)
+                fprintf(newline + "croplim indices were out of range, but croplim match the size of the input stack; you may have applied these croplim, and then passed the cropped stack into stackcrop" + newline + "here is the error you got: " + newline)
                 error(ME.message)
             end
         end

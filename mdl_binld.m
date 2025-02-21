@@ -12,17 +12,17 @@ arguments
     colinds = []
 end
 
+spl = strsplit(pth, '_');
+
+numrow = str2double(spl{end-3});
+numcol = str2double(spl{end-2});
+full_size = [numrow numcol];
+
 if nargin==2 && isempty(colinds)
 
-    out = [];
+    out = zeros(numrow,0);
 
 else
-
-    spl = strsplit(pth, '_');
-
-    numrow = str2double(spl{end-3});
-    numcol = str2double(spl{end-2});
-    full_size = [numrow numcol];
 
     if nargin==1
         colinds = 1:numcol; %read all columns if single argument 

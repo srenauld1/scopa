@@ -22,7 +22,7 @@ stackmnt = mean(stackmnt, 5); %for croplim, average channels too
 
 %% first define z limits
 
-prompt = "\n\n\nyou requested regionex '" + regionex + "'" + newline + "but there is no record of croplim named '" + nmcroplim + "' in croplim file " + pthcroplim + newline + "You will now be prompted to define z, and then xy indices (croplim) for this regionex" + newline + "Do you want to define a subset of z slices for regionex '" + regionex + "'?" + newline + "Type 1 for yes, or type 0 to use all z slices: ";
+prompt = "\n\n\nyou requested regionex '" + regionex + "'" + newline + "but there is no record of croplim named '" + nmcroplim + "' in croplim file " + pthcroplim + newline + "You will now be prompted to define z, and then xy indices (croplim) for this regionex" + newline + "Do you want to define a subset of z slices for regionex '" + regionex + "'?" + newline + "Type 1 for yes,  0 to use all z slices";
 
 commandwindow();
 define_z_lim = input(sprintf(prompt));
@@ -37,7 +37,7 @@ stackmntz = mean(stackmnt, 3);
 
 %% then xy limits
 
-prompt = "\n\n\nDo you want to define a subset of xy pixels for regionex '" + regionex + "'?" + newline + "Type 1 for yes, or type 0 to use all xy pixels: ";
+prompt = ['do you want to define a subset of xy pixels for regionex "' regionex '"? type 1 for yes, type 0 to use all xy pixels within selected z: '];
 
 commandwindow();
 define_xy_lim = input(sprintf(prompt));

@@ -32,7 +32,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
 
     if strcmp(regionex{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
-        o.roi.ma.numroi = 32;
+        o.roi.ma.numroi = 33;
         o.roi.mm.maskname = 'none';
         o.roi.ma.maskmake = 'nonzero';
     elseif any(strcmp(regionex{m}, {'no'}))
