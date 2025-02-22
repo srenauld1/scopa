@@ -1,22 +1,22 @@
 %{
 
-region (previously croplim) are unique to recording
+region (previously rg) are unique to recording
 maskname are unique to recording 
 
 optid 
 
 optid for all files in stack
-for each recording, single file holds all region (croplim), as struct 
+for each recording, single file holds all region (rg), as struct 
 for each recording, single file holds all maskman (name), as struct 
 
 extract: oex, search for existing roim matching opts, load if so (make if not)
 a2p: 
 
-name defines croplim
-name_subname_optind defines regionex (maskman is loaded using name_subname_chan)
+name defines rg
+name_subname_optind defines rgname (maskman is loaded using name_subname_chan)
 maskman just has name_subname in filename, does not need channel in filename, but includes channel as 4th dim, and requested channel must exist 
 
-we want to reuse maskman, index let's us reuse maskman, subname let's us reuse croplim 
+we want to reuse maskman, index let's us reuse maskman, subname let's us reuse rg 
 
 rgn = {'fb'}
 
@@ -44,17 +44,17 @@ post:
 oset simplifies setting options (could be reproduced with csv or json)
 pipeline_init does not have oset 
 
-oset vectors are expanded (map2opt) to create each o.roi.regionex 
-regionex is name_subname_index
-name is arbitrary, name is associated with croplim; subname means the same croplim as name, but different regionex; index is opt set index  
+oset vectors are expanded (map2opt) to create each o.roi.rgname 
+rgname is name_subname_index
+name is arbitrary, name is associated with rg; subname means the same rg as name, but different rgname; index is opt set index  
 
-all regionex are included in options_.txt
-the most recent options_.txt is searched for options matches (or regionex matches)
+all rgname are included in options_.txt
+the most recent options_.txt is searched for options matches (or rgname matches)
 
 
-user can pass regionex and opts will populate, or pass opts and regionex will populate, but not both
+user can pass rgname and opts will populate, or pass opts and rgname will populate, but not both
 there is no reason to make separate map2opt for roim and roif, because user will not want to loop through each separately 
-if user has duplicate regionex (say, some run in python, some from a2p), the most recent param file is used as lookup
+if user has duplicate rgname (say, some run in python, some from a2p), the most recent param file is used as lookup
 set includes roim and roif opt, since roim seeds roif
 python runs of extract will write opts as options_cmex, for lookup when user runs a2p
 since roim options will be missing from python runs, they are considered to have default values, as if the user ran a2p and skipped roim (draw and ma)
@@ -62,22 +62,22 @@ since roim options will be missing from python runs, they are considered to have
 roi routines 
 'seed' means draw/ma seeds caiman extraction
 'cluster' means draw/ma clusters caiman rois
-    if cluster, draw/ma has nothing to do with extract.py, so regionex run in python will be indexed differently 
+    if cluster, draw/ma has nothing to do with extract.py, so rgname run in python will be indexed differently 
     so do we need two indices (fb_l_2_22), one lookup for options_cmex, and another for options 
-    an a2p run creates all options, and checks if an options set exists in the most recent options_cmex_.txt, and populates regionexcm, use regionexcm to look up roi file(s) 
+    an a2p run creates all options, and checks if an options set exists in the most recent options_cmex_.txt, and populates rgnamecm, use rgnamecm to look up roi file(s) 
 
 run a2p
-    distribute opts, define all regionex, save o
+    distribute opts, define all rgname, save o
     search for o.roif options in options_cmex
-        exists: id regionexcm and its files
+        exists: id rgnamecm and its files
             files don't exist; flag to run
         does not exist: flag to run, pass in o.roi options 
 
 run extract.py
-    distribute opts, define all regionexcm, save ocm
+    distribute opts, define all rgnamecm, save ocm
     if seeded, check if roim file exists, if so, load and use, if not, draw roim for seed in python
 
-if you want to independently automate mrois from multiple drawn regions, use different regionex
+if you want to independently automate mrois from multiple drawn regions, use different rgname
 (they can be analzed together after extracting responses), or choose to draw discontiguous roi and that one can get passed to roimauto
 
 

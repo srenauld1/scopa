@@ -2,29 +2,6 @@
   "a1": {
     "cm": {},
     "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {},
-    "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "none"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "regionex": "t5"
-  },
-  "a2": {
-    "cm": {},
-    "docm": 0,
     "doma": 1,
     "domm": 1,
     "doqc": 0,
@@ -36,23 +13,44 @@
       "edgethr": [0.1,0.7],
       "maskmake": "nonzero",
       "maskseg": "uniform",
-      "numroi": 1024
+      "numroi": 128
     },
     "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "none"
+      "maskname": "none",
+      "methodmm": "all"
     },
     "nrm": {
       "channorm": 0,
-      "degdtr": 0,
+      "degdtr": 2,
       "mincoh": [],
-      "post": "f",
+      "post": "rsc000100",
       "pre": "f",
       "wavp": []
     },
     "qc": {},
-    "regionex": "tm"
+    "rgname": "eb"
+  },
+  "a2": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no"
   },
   "a3": {
     "cm": {},
@@ -62,41 +60,8 @@
     "doqc": 0,
     "ma": {},
     "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "ten"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "regionex": "tm"
-  },
-  "a4": {
-    "cm": {},
-    "docm": 0,
-    "doma": 1,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {
-      "celsz": 8,
-      "chan": 1,
-      "do3d": 1,
-      "edgesig": [3,3,3],
-      "edgethr": [0.1,0.7],
-      "maskmake": "nonzero",
-      "maskseg": "uniform",
-      "numroi": 32
-    },
-    "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "none"
+      "maskname": "right",
+      "methodmm": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -107,85 +72,7 @@
       "wavp": []
     },
     "qc": {},
-    "regionex": "eb"
-  },
-  "a5": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {},
-    "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "left"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 2,
-      "mincoh": [],
-      "post": "rsc000100",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "regionex": "no"
-  },
-  "a6": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {},
-    "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "right"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 2,
-      "mincoh": [],
-      "post": "rsc000100",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "regionex": "no"
-  },
-  "a7": {
-    "cm": {},
-    "docm": 0,
-    "doma": 1,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {
-      "celsz": 8,
-      "chan": 1,
-      "do3d": 1,
-      "edgesig": [3,3,3],
-      "edgethr": [0.1,0.7],
-      "maskmake": "nonzero",
-      "maskseg": "uniform",
-      "numroi": 33
-    },
-    "mm": {
-      "chan": 1,
-      "chancp": 1,
-      "maskname": "none"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 2,
-      "mincoh": [],
-      "post": "rsc000100",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "regionex": "eb"
+    "rgname": "no"
   },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",

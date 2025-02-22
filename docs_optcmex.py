@@ -16,7 +16,7 @@
 
 # downsampling options tsub, ssub, p_ssub, p_tsub have been omitted because extraction is never that slow at our typical resolutions (5-60 min per recording, just run on o2 if it's slow)
 
-# input argument fnames is used to memmap a scopa regionex within caiman; fnames is automatically derived outside this function and just put in the options dict in here
+# input argument fnames is used to memmap a scopa rgname within caiman; fnames is automatically derived outside this function and just put in the options dict in here
 
 # INDICES TO SUBSET STACK (optional input to cnmf.fit) ARE OMITTED IN SCOPA
 # DOWNSAMPLING OPTIONS ARE OMITTED IN SCOPA 

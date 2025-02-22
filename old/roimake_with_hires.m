@@ -38,7 +38,7 @@ else
     doqc = 0;
     doplt = 0; 
 end
-regionex = opt.regionex;
+rgname = opt.rgname;
 
 if isfield(opt, 'ma')
     usehires = opt.ma.usehires;
@@ -51,10 +51,10 @@ end
 pthpre = erase(pth_roim, '.mat');
 numchan = size(stack,5);
 
-%% crop movie to regionex cuboid
+%% crop movie to rgname cuboid
 
 if ~maskinput
-    [stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop, usehires, stackmnthr, hrlr);
+    [stack, zstartsub, stackmnthr, hrlr] = stackcrop(stack, rgname, zstartpos, recid, pth_dirstack, sz_crop, usehires, stackmnthr, hrlr);
 end
 
 %% draw rois (polygons/polyhedra)
@@ -65,7 +65,7 @@ if domm
     else
         oneroi = 0;
     end
-    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, regionex=regionex, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, rgname=rgname, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
 else
     if ~maskinput
         roimaskman_allchan = cell(numchan,1); %make it empty if you didn't draw or pass in mask
@@ -79,7 +79,7 @@ if doma
     for c = 1:numchan
         if ismember(c,opt.ma.chan)
             if ~isequal(numroiauto, 0)
-                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, regionex, doplt, opt.ma);
+                [roiwt{c}, roicen{c}, num_roim{c}] = roimauto(stack(:,:,:,:,c), roimaskman_allchan{c}, numroiauto, widyxz, stackmnthr, hrlr, pthpre, rgname, doplt, opt.ma);
             end
         end
     end

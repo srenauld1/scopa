@@ -16,7 +16,7 @@ import json
 
 
 
-def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_in_2d, methodex, regionex, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_in_2d, methodex, rgname, maskname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -41,7 +41,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
             raise Exception("two-channel extraction is currently not written for 3d extraction")
 
 
-    for rgn in regionex:
+    for rgn in rgname:
         
         print("STARTINNG ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
@@ -51,7 +51,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
             stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
             chanstr_seed = chanstr_primary
 
-        print("REGION EXTRACTION (regionex) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
+        print("REGION EXTRACTION (rgname) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
@@ -108,10 +108,10 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
                         cnmfpars = cnmf.params.CNMFParams(params_dict=opt)
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time
-                            print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF REGIONEX '" + rgn + "'" )
+                            print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF RGNAME '" + rgn + "'" )
                             img = stackcrop_ex[:,:,:,iz]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
-                            print("DOING 3D EXTRACTION FOR ALL SLICES IN REGIONEX '" + rgn + "'" )
+                            print("DOING 3D EXTRACTION FOR ALL SLICES IN RGNAME '" + rgn + "'" )
                             img = stackcrop_ex #can't .copy() for some reason (but that's fine as long as you don't modify img)
 
                         if two_channel_ex: 
@@ -128,7 +128,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
                             cc, dview, n_processes = cm.cluster.setup_cluster(backend=cluster_backend, n_processes=None, single_thread=False)
 
                         cnm = cnmf.CNMF(n_processes, params=cnmfpars, dview=dview, Ain=Ain)
-                        cnm = cnm.fit(img) #scopa doens't use optional input to fit, indices; instead uses regionex
+                        cnm = cnm.fit(img) #scopa doens't use optional input to fit, indices; instead uses rgname
 
                         cnm.estimates.evaluate_components(img, cnm.params, dview=dview)
                         print(('NUM GOOD ROIS ' + str(len(cnm.estimates.idx_components)) + ' NUM BAD ROIS ' + str(len(cnm.estimates.idx_components_bad))))
@@ -303,6 +303,6 @@ def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):
     stackcrop_ex = np.reshape(stackcrop_ex.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
     if stackcrop_ex.ndim==3: #if it's not volumetric
         stackcrop_ex = stackcrop_ex[...,np.newaxis] #add singleton 4th dim (z) to simplify code below
-    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION (regionex) HAS SHAPE: \n" + str(stackcrop_ex.shape))
+    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION (rgname) HAS SHAPE: \n" + str(stackcrop_ex.shape))
     return stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex
 

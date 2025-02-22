@@ -1,6 +1,6 @@
-function o = oset_ganoeb(o)
+function o = oset_noeb(o)
 
-regionex = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
@@ -16,31 +16,29 @@ o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
 o.bmp.mdl.nrmi = 'none';
-% o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
-% o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
 
 o = odf(o);
 
-for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
+for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
-    o.roi.regionex = regionex{m};
+    o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; %do draw rois
 
     o.roi.nrm.post = {'rsc000100'};
     o.roi.nrm.degdtr = 2;
 
-    if strcmp(regionex{m}, 'eb')
+    if strcmp(rgname{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
-        o.roi.ma.numroi = 33;
+        o.roi.ma.numroi = 32;
         o.roi.mm.maskname = 'none';
         o.roi.ma.maskmake = 'nonzero';
-    elseif any(strcmp(regionex{m}, {'no'}))
+    elseif any(strcmp(rgname{m}, {'no'}))
         o.roi.doma = 0; %do automated morph rois
         o.roi.mm.maskname = {'left', 'right'};
     end
 
-    o = odf(o, 'roi', regionex{m});
+    o = odf(o, 'roi', rgname{m});
 
 end
 

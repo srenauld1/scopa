@@ -9,7 +9,7 @@ from dict_unique import dict_unique
 from dicttxtld import dicttxtld
 
 
-def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, regionex, maskname):
+def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgname, maskname):
 
 
     # optlist hold carl's favorite options (each in a list) for tuning caiman roi extraction;
@@ -19,7 +19,7 @@ def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, p
     # any params from oex can be used here, these are just my favorite because they seem to have the largest effect, and/or are most variable across recordings 
     # after optlist is applied/distributed, ored will remove any options that aren't used (since option use depend on options themselves), then dict_unique will remove any repeat sets, 
     # then oexid finds a unique ID by checking all options sets that have ever been run (using file optroi.txt) and assigns an ID to each option set currently in use (if it's never been used it gets a new ID and is appended to optroi.txt)
-    # then optderive derives a few caiman options from the options the user specifies, some of which are not direct caiman options, but solely used in optderive (since, in my opinion, some caiman options are best used this way, ie options that can be made invalid or poor because of changes to the data, eg K, number of neurons, is derived because it depends o much of the data size (regionex size) and whether you are using patches)
+    # then optderive derives a few caiman options from the options the user specifies, some of which are not direct caiman options, but solely used in optderive (since, in my opinion, some caiman options are best used this way, ie options that can be made invalid or poor because of changes to the data, eg K, number of neurons, is derived because it depends o much of the data size (rgname size) and whether you are using patches)
     # then optcheck makes sure there are no problems with the options 
     # all this also occurs in oset.m, in the matlab part of the scopa pipeline (so user can run caiman extraction from matlab, or from python); running from matlab gives the user more option-specification flexibility
     # in short: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
@@ -62,7 +62,7 @@ def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, p
 
     # also assign a few options that are set or derived outside oex (putting them down here because they are not for user input here)
     optlist['fnames'] = [ fnames ]
-    optlist['regionex'] = [ regionex ] 
+    optlist['rgname'] = [ rgname ] 
     optlist['methodex'] = [ methodex ] 
     optlist['maskname'] = [ maskname ] 
 
@@ -135,10 +135,10 @@ def optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opt):
     else:
         gsiz_use = opt['gSiz']
     
-    if two_channel_ex or opt['patchfac']==0: #patches turned off (process whole regionex at once) when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
-        opt['rf'] = None # setting rf to none will run CNMF on the whole regionex
+    if two_channel_ex or opt['patchfac']==0: #patches turned off (process whole rgname at once) when seeding functional rois with automatically segmented structural channel rois; PROCESS IN PATCHES AND THEN COMBINE, patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+        opt['rf'] = None # setting rf to none will run CNMF on the whole rgname
         opt['stride'] = None       
-        total_vox_ex = np.prod(dims_spatial_ex) #total_vox_ex is in whole regionex if no patches
+        total_vox_ex = np.prod(dims_spatial_ex) #total_vox_ex is in whole rgname if no patches
     else:
         maxgsiz = np.max(gsiz_use)
         opt['rf'] = int(np.ceil(maxgsiz * opt['patchfac']))
@@ -153,13 +153,13 @@ def optderive(two_channel_ex, dims_spatial_ex, extract_in_2d, md, opt):
                 rfz = dims_spatial_ex[2]
             total_vox_ex = patchFW*patchFW*rfz #total_vox_ex is num vox per patch , if patches
 
-        if total_vox_ex>=np.prod(dims_spatial_ex): #reset total_vox_ex and rf and stride if it turns out the patch is same size as regionex or bigger
-            raise Exception("total number voxels in patch is greater than total num voxels in regionex (or full fov, if regionex is 'none'); originally this reverted patch to empty, but this means accurate patch options cannot be set in optroi.txt, since if this reverted to empty it would break the isomorphism between input options and derived options;")
+        if total_vox_ex>=np.prod(dims_spatial_ex): #reset total_vox_ex and rf and stride if it turns out the patch is same size as rgname or bigger
+            raise Exception("total number voxels in patch is greater than total num voxels in rgname (or full fov, if rgname is 'none'); originally this reverted patch to empty, but this means accurate patch options cannot be set in optroi.txt, since if this reverted to empty it would break the isomorphism between input options and derived options;")
             total_vox_ex = np.prod(dims_spatial_ex)
-            opt['rf'] = None # setting rf to none will run CNMF on the whole regionex
+            opt['rf'] = None # setting rf to none will run CNMF on the whole rgname
             opt['stride'] = None       
         
-    opt['K'] = int(np.round( total_vox_ex / np.prod(gsiz_use)*opt['roidensity']))  #K is number of components in patch, or whole regionex if rf is none (no patches)
+    opt['K'] = int(np.round( total_vox_ex / np.prod(gsiz_use)*opt['roidensity']))  #K is number of components in patch, or whole rgname if rf is none (no patches)
 
     if opt['only_init']==False: # opt below wont exist in reduced opt (passed into this function) unless only init is false
         if opt['p']!=0 and opt['deconvolution_in_each_patch']:

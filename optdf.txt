@@ -166,9 +166,8 @@
     "valsplit": "boutsamples"
   },
   "mm": {
-    "chan": 1,
-    "chancp": 1,
-    "maskname": "none"
+    "maskname": "none",
+    "methodmm": "all"
   },
   "mn": {
     "dirtmp": "scopatmp",
@@ -192,7 +191,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025022112312310",
+    "timestr": "2025022201542230",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -307,7 +306,7 @@
     "doma": 0,
     "domm": 0,
     "doqc": 0,
-    "regionex": "none"
+    "rgname": "none"
   },
   "sld": {
     "fbrm": 1,

@@ -165,7 +165,7 @@ for ci = 1:numrois
         proportion_within_mask(ci) = proportion_within_mask_3d;
         centroid_is_outside_mask(ci) = ~mask_roim_all( round(centroids_roif{ci}(subroi_primary(ci), 1)), round(centroids_roif{ci}(subroi_primary(ci), 2)), round(centroids_roif{ci}(subroi_primary(ci), 3)));
 
-        % if strcmp(regionex, 'mivesdalis')
+        % if strcmp(rgname, 'mivesdalis')
         %     proportion_within_mask(ci) = proportion_within_mask_2d;
         %     centroid_is_outside_mask(ci) = ~mask_roim_all_xy( round(centroids_roif{ci}(subroi_primary(ci), 1)), round(centroids_roif{ci}(subroi_primary(ci), 2)));
         % else

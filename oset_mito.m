@@ -1,6 +1,6 @@
 function o = oset_mito(o)
 
-regionex = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 1; %make/load/process rois?
@@ -14,9 +14,9 @@ o.daq.use_carls_epochs = 1;
 
 o = odf(o);
 
-for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
+for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
-    o.roi.regionex = regionex{m};
+    o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; %do draw rois
     o.roi.mm.maskname = {'lo'};
@@ -34,7 +34,7 @@ for m = 1:numel(regionex) %create different copybin within o.roi for each region
     % o.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
     % o.mdl.opl.MaxIterations = 5000; %1000    else
 
-    o = odf(o, 'roi', regionex{m});
+    o = odf(o, 'roi', rgname{m});
 
 end
 

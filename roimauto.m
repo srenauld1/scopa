@@ -1,10 +1,10 @@
-function roimask = roimauto(stackmnt, roimask, widyxz, regionex, opt)
+function roimask = roimauto(stackmnt, roimask, widyxz, rgname, opt)
 
 arguments
     stackmnt
     roimask
     widyxz
-    regionex
+    rgname
     opt
 end
 
@@ -21,14 +21,14 @@ numchan = size(stackmnt,5);
 for c = 1:numchan
     if ismember(c,chan)
         if ~isequal(numroi_init, 0)
-            roimask{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimask{c}, numroi_init, widyxz, regionex, maskmake, maskseg, edgethr, edgesig, celsz, do3d);
+            roimask{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimask{c}, numroi_init, widyxz, rgname, maskmake, maskseg, edgethr, edgesig, celsz, do3d);
         end
     end
 end
 
 end
 
-function roimaskout = roimauto_onechan(stackmnt, roimaskin, numroi_init, widyxz, regionex, maskmake, maskseg, edgethr, edgesig, celsz, do3d)
+function roimaskout = roimauto_onechan(stackmnt, roimaskin, numroi_init, widyxz, rgname, maskmake, maskseg, edgethr, edgesig, celsz, do3d)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -173,11 +173,11 @@ else
 
             else
 
-                error(sprintf("region '" + regionex + "' is roughly uniform blob, so maskseg 'skeleton' fails; try maskseg 'uniform' for roughly equal-volume ROIs within 2d or 3d regionex"))
+                error(sprintf("region '" + rgname + "' is roughly uniform blob, so maskseg 'skeleton' fails; try maskseg 'uniform' for roughly equal-volume ROIs within 2d or 3d rgname"))
 
             end
 
-        case {'uniform'} % create multiple roughly equal-volume roi by partitioning regionex into numroi_init groups
+        case {'uniform'} % create multiple roughly equal-volume roi by partitioning rgname into numroi_init groups
 
             if isempty(widyxz)
                 error("you did not pass argument widyxz, or you passed empty widyxz, but you also requested maskseg 'uniform', which requires nonempty argument widyxz")

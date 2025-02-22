@@ -62,7 +62,7 @@ def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extra
                     print("there are no croplim files to copy from storage path into compute path, \
                           \nyou will be prompted to create them in interactive mode; \
                           \nyou cannot run extract in batch mode without creating or loading a croplim file, \
-                          \nunless your regionex is 'fullfov'")
+                          \nunless your rgname is 'fullfov'")
             
             
             print("\n\n\ncopying this file: \n" + pth_read + "\ninto this directory: \n" + pth_fldr_copydest)

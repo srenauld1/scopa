@@ -13,7 +13,7 @@ suffix = id.suffix;
 recid = id.recid;
 datefly_hyphen = id.datefly_hyphen;
 
-regionex = fieldnames(o.roi);
+rgname = fieldnames(o.roi);
 dirtmp = o.mn.dirtmp;
 
 %% files before roimake

@@ -91,7 +91,7 @@ for rci = 1:length(region_choose)
 end
 
 
-%% define ball and metadata params (same for all regionex)
+%% define ball and metadata params (same for all rgname)
 
 f_vel = ball.f_vel;
 r_vel = ball.r_vel;

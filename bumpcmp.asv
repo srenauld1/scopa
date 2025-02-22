@@ -1,4 +1,4 @@
-function bmp = bmpmake(stack, indvp, depvp, regionex, roidat, zstartpos, sz_crop, imrate, epochts, pth_dirstack, recid, pthpre, bumpopts, doplt)
+function bmp = bmpmake(stack, indvp, depvp, rgname, roidat, zstartpos, sz_crop, imrate, epochts, pth_dirstack, recid, pthpre, bumpopts, doplt)
 
 
 arguments
@@ -6,7 +6,7 @@ arguments
     mthd = bumpopts; %'pva' for vector average, 'vonmises' for fitting von mises per timepoint doesn't exist yet
     indvp
     depvp
-    regionex
+    rgname
     roidat
     zstartpos
     sz_crop
@@ -35,7 +35,7 @@ if numseg==1
 end
 
 if isodd(numseg)
-    fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (domscope 'left', 'right', 'max', or a digit, or mthd is 'functional' for regionex pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
+    fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (domscope 'left', 'right', 'max', or a digit, or mthd is 'functional' for rgname pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
 end
 
 halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
@@ -44,7 +44,7 @@ sampper = 1/imrate;
 
 %% crop stack 
 
-stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop);
+stack = stackcrop(stack, rgname, zstartpos, recid, pth_dirstack, sz_crop);
 
 
 %% define domain (functionally or morphologically)
@@ -52,7 +52,7 @@ stack = stackcrop(stack, regionex, zstartpos, recid, pth_dirstack, sz_crop);
 
 if strcmp(domtype, 'functional')
 
-    [respcltmp, domaintmp] = roi2hd(stack, regionex, indvp, depvp, pthpre, roidat, imrate, fitopts, numangrs, smfac, doplt, epochts);
+    [respcltmp, domaintmp] = roi2hd(stack, rgname, indvp, depvp, pthpre, roidat, imrate, fitopts, numangrs, smfac, doplt, epochts);
 
 elseif strcmp(domtype, 'morphological') %morphological domain
 

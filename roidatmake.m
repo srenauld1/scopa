@@ -1,10 +1,10 @@
-function roidat = roidatmake(stackmnt, roimask, regionex, maskname, pthstack)
+function roidat = roidatmake(stackmnt, roimask, rg, mm, pthstack)
 
 arguments
     stackmnt
     roimask
-    regionex = []
-    maskname = []
+    rg = []
+    mm = []
     pthstack = []
 end
 
@@ -12,7 +12,7 @@ numchan = size(stackmnt,5);
 roidat = cell(numchan, 1);
 for c = 1:numchan
     if ~isempty(roimask{c})
-        roidat{c} = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, c, regionex, maskname, pthstack); 
+        roidat{c} = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, c, rg, mm(c), pthstack); 
     end
 end
 
@@ -21,7 +21,7 @@ end
 
 
 
-function roidat = roidatmake_onechan(stackmnt_onechan, roimask_onechan, chan, regionex, maskname, pthstack)
+function roidat = roidatmake_onechan(stackmnt_onechan, roimask_onechan, chan, rg, mm, pthstack)
 
 roiwt = roiwtmake(stackmnt_onechan, roimask_onechan);
 numroi = size(roiwt,1);
@@ -64,8 +64,8 @@ for ii = 1:numel(pixinds_allroi) %one pixel at a time
 end
 
 
-roidat.regionex = regionex;
-roidat.maskname = maskname;
+roidat.rg = rg;
+roidat.mm = mm;
 roidat.pthstack = pthstack;
 roidat.chan = chan;
 roidat.numroi = numroi;

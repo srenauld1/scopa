@@ -83,7 +83,7 @@ USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise remov
 
 METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 EXTRACT_IN_2D=(1)
-REGIONEX=('fullfov')
+RGNAME=('fullfov')
 
 USE_CLUSTER=(1) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 
@@ -102,13 +102,13 @@ if [ "$do_autoallocate" == 0 ]; then
     mem_per_cpu_autoallocate=5G
     time_autoallocate=00:10:00
 
-    cpu_per_task_register=5
-    mem_per_cpu_register=8G
+    cpu_per_task_register=3
+    mem_per_cpu_register=25G
     time_register=0:40:00
 
     cpu_per_task_stitch=1
-    mem_per_cpu_stitch=10G
-    time_stitch=00:20:00
+    mem_per_cpu_stitch=12G
+    time_stitch=00:25:00
 
     cpu_per_task_extract=1
     mem_per_cpu_extract=20G
@@ -125,7 +125,7 @@ if [ "$do_autoallocate" == 0 ]; then
     ############ SET PARAMS FOR DENOISING RESOURCE REQUEST (THIS INCLUDES GPU) ############
 
     cpu_per_task_denoise=1
-    mem_per_cpu_denoise=8G
+    mem_per_cpu_denoise=10G
 
     gpustr=rtx6000_24 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
@@ -148,7 +148,7 @@ if [ "$do_autoallocate" == 0 ]; then
     elif [ "$gpustr" == rtx6000_24 ]; then 
         gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
         gpu_partition=gpu_requeue
-        time_denoise=4:00:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+        time_denoise=5:30:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
     elif [ "$gpustr" == m40_12 ]; then 
         gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision), there's also one on gpu partition (also 24 gb, double precision), where it's the 2nd fastest, but running on gpu_requeue is preferred method on scopa
         gpu_partition=gpu_requeue
@@ -223,7 +223,7 @@ pars["STOPBAND_RSC"]="${STOPBAND_RSC[@]}"
 pars["SMLENSEC_RSC"]="${SMLENSEC_RSC[@]}"
 pars["METHODEX"]="${METHODEX[@]}"
 pars["EXTRACT_IN_2D"]="${EXTRACT_IN_2D[@]}"
-pars["REGIONEX"]="${REGIONEX[@]}"
+pars["RGNAME"]="${RGNAME[@]}"
 
 for key in "${!pars[@]}"; do
   printf '%s\0' "$key" "${pars[$key]}"

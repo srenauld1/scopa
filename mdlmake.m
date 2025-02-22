@@ -54,7 +54,7 @@ pthmdl = [pthpre '.mat'];
 try
 
     mdl = load(pthmdl);
-    % if ~isfield(mdl, {'ts', 'dat'})
+    % if any(~isfield(mdl, {'ts', 'dat'}))
     %     error("mdl struct must contain fields 'ts' and 'dat'; you may have loaded an old mdl struct")
     % end
 

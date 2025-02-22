@@ -41,7 +41,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, smlensec_rsc, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, 
+                      do_crop_only, do_extract, extract_in_2d, rgname, 
                       do_a2p, first_job):
     
     CLI=argparse.ArgumentParser()
@@ -83,10 +83,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[pth_storage_prefix],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--regionex",  # name on the CLI - drop the `--` for positional/required parameters
+        "--rgname",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*",  # 0 or more values expected => creates a list
         type=str,
-        default=[regionex],  # default if nothing is provided
+        default=[rgname],  # default if nothing is provided
     )
     CLI.add_argument(
         "--bglenpx",  # name on the CLI - drop the `--` for positional/required parameters
@@ -299,7 +299,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.epoch_choose_denoise = pars.EPOCH_CHOOSE_DENOISE
         args.smlensec_rsc = pars.SMLENSEC_RSC
         args.extract_in_2d = pars.EXTRACT_IN_2D
-        args.regionex = pars.REGIONEX
+        args.rgname = pars.RGNAME
 
 
     ##make sure parsed arguments are either singletons, or lists (not lists of lists), and for some, convert to ints
@@ -388,10 +388,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
     do_extract = int(args.do_extract[0])
     extract_in_2d = int(args.extract_in_2d[0])
 
-    if isinstance(args.regionex[0], list):
-        regionex = args.regionex[0] #keep as list
+    if isinstance(args.rgname[0], list):
+        rgname = args.rgname[0] #keep as list
     else:
-        regionex = args.regionex #keep as list
+        rgname = args.rgname #keep as list
 
     do_a2p = int(args.do_a2p[0])
     first_job = int(args.first_job[0])
@@ -414,7 +414,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, smlensec_rsc, use_scannoise_removed, 
-                      do_crop_only, do_extract, extract_in_2d, regionex, 
+                      do_crop_only, do_extract, extract_in_2d, rgname, 
                       do_a2p, first_job)
 
 

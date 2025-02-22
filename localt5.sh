@@ -3,7 +3,7 @@
 ##noglob \  #noglob is for passing this directly to zsh shell (mac terminal), not needed in bash
 /Users/wienecke/mambaforge/envs/caiman/bin/python /Users/wienecke/Documents/scopa/pl.py \
 --virtenv 'caiman' \
---regionex 'post' \
+--rgname 'post' \
 --do_background_subtraction 0 \
 --do_register 0 \
 --do_denoise 0 \

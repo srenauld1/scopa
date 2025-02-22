@@ -150,7 +150,7 @@ for running the pipeline in batch (non-interactive) mode . . .
         pl.sh and has a simple layout that can be extended/adpated 
         call it by typing pl.sh in the O2 command line 
 
-also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined regionex (or they're all 'fullfov') then it will run through all found files, whether in interactive mode or batch mode
+also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined rgname (or they're all 'fullfov') then it will run through all found files, whether in interactive mode or batch mode
 
 
 ############################## INTERACTIVE ON O2 ######################################
@@ -261,13 +261,13 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 --extraction requires either the motion correction output tif (suffix cmrg_.tif), or the denoising output tif (suffix cmrg_dcdn_.tif), depending on whether use_denoised is true of false
  --extraction can operate on 4d xyzt data (planar_extraction = False), or 3d data xyt (planar_extraction = True), where extraction operates on each z plane of the 4d data independently
  --extraction requires either the motion correction output tif, or the denoising output tif (depending on whether use_denoised is true of false)
---if regionex is not ['fullfov'], interactive plots prompt user to define regionex by setting croplim 
- regionex is a cuboid or rectangular subset of the FOV on which extraction is run (on subsequent runs, these are loaded automatically, but will error if there are multiple different croplim with the same regionex name) 
- --you can specify regionex 'fullfov' to use the whole FOV and skip drawing  
- --user can define multiple regionex
---so, here, regionex is meant to separately run extraction on regions requiring different extraction params, and/or to run the extraction faster (ie if all extraction_regions amount to less data than the full fov)  
+--if rgname is not ['fullfov'], interactive plots prompt user to define rgname by setting rg 
+ rgname is a cuboid or rectangular subset of the FOV on which extraction is run (on subsequent runs, these are loaded automatically, but will error if there are multiple different rg with the same rgname name) 
+ --you can specify rgname 'fullfov' to use the whole FOV and skip drawing  
+ --user can define multiple rgname
+--so, here, rgname is meant to separately run extraction on regions requiring different extraction params, and/or to run the extraction faster (ie if all extraction_regions amount to less data than the full fov)  
 --then, analysis of more precisely defined brain regions is done in 'post', where regions can be further split into arbitrary 2d, 3d, or 4d shapes
- --if multiple regionex are provided, the extraction part of the pipeline loops over these   
+ --if multiple rgname are provided, the extraction part of the pipeline loops over these   
  --the extraction part of the pipeline also includes the option to loop over all possible combinations of any subset of extraction parameters, defined in map2opt.py
 
  
@@ -283,7 +283,7 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 
 ############################## CROPPING SESSION ######################################
 
- do_crop_only = True will skip everything but this interactive FOV selection for all entries in regionex (and all recordings), but must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, to provide input files for cropping  
+ do_crop_only = True will skip everything but this interactive FOV selection for all entries in rgname (and all recordings), but must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, to provide input files for cropping  
 
  do_crop_only = True is convenient to cycle through many recordings that have been motion corrected (and optionally denoised), but have not been extracted, and you want to run the extraction on all of them without interruption in a separate job after the cropping session 
  
@@ -293,9 +293,9 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 post detailed notes are not well organized yet 
 
 entrypoint is a2p.m
-'post' operates on any/all regionex for any recording, or new regionex, if new regionex are listed as input to 'post'
+'post' operates on any/all rgname for any recording, or new rgname, if new rgname are listed as input to 'post'
 
- if a regionex rectangle or cuboid cannot well separate brain regions that you want separated in later analysis, 'post' gives the option to further sebset/subdivide any regionex with free drawn rois (we don't do that here because caiman cannot operate on irregularly shaped FOV)
+ if a rgname rectangle or cuboid cannot well separate brain regions that you want separated in later analysis, 'post' gives the option to further sebset/subdivide any rgname with free drawn rois (we don't do that here because caiman cannot operate on irregularly shaped FOV)
 
  hires stack processing is now deprecated; some code for it is in deprecated folder; originally the idea was for hi-z-res stack to help improve morphological roi segmentation; it helped some in the interior z of the stack, but now i image at high z res anyway, and also found the hi res did not help enough to justify the increased code complexity
 
@@ -308,7 +308,7 @@ entrypoint is a2p.m
 #register it in 3d (here in matlab) to caiman-registered functional stack
 ##(didn't see the point of registering it in python/caiman)
 
-##for each regionex, draw 2d mask
+##for each rgname, draw 2d mask
 ##3d mask is automatically extracted (using hi-z-res stack if it exists, otherwise just the lo-z-res)
 ##use 3d mask to define morphological rois, which can optionally be used in response quantification
 ##normalize responses

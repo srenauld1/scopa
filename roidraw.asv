@@ -55,7 +55,7 @@ try
     if ~isequal(mm.rg, rg)
         error("mm file exists but rg in mm file does not match current rg with same name; did you delete the rg you used to draw this mm?")
     end
-    if ~isequal(mm.maskname, maskname) || ~isequal(mm.chan, unique([chandraw, chancp]))
+    if ~isequal(mm.maskname, maskname) || ~isequal(mm.chan-1, unique([chandraw, chancp]))
         error("mm file exists but chan and/or maskname do not match")
     end
     if all(mm.mask{1}==1)

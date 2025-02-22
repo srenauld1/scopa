@@ -1,55 +1,61 @@
-function [stack, croplim] = stackcrop(stack, pthstack, regionex)
+function [stack, rg] = stackcrop(stack, pthstack, rgname)
 
-%output croplim in case updated during loop with multiple croplim with same prefix but different suffix, to prevent saving multiple
+% crop stack using user-defined region (struct rg); rg saved to txt file 
+
+arguments (Input)
+    stack %stack, dim order yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid))
+    pthstack %path to stack
+    rgname %short name for region (rg, the stack after cropping) 
+end
+
+arguments (Output)
+    stack %after cropping with rg
+    rg %rg means region; struct containing indices for cropping stack, region short name (rgname) and region full name (rgid)
+end
 
 pthscopa = getpathscopa();
 user = glb('user');
 if isempty(user)
     error("you have not set glb('user')")
 end
-pthcroplim = [pthscopa 'croplim_' user '_*_.txt'];
+pthrg = [pthscopa 'rg_' user '_*_.txt'];
 
 [~, nmstack] = fileparts(pthstack);
 if ~endsWith(nmstack, '_')
     nmstack = [nmstack '_'];
 end
-nmcroplim = [nmstack regionex];
+rgid = [nmstack rgname];
 
-regionexdf = glb('regionexdf');
-if isempty(regionexdf)
-    regionexdf = 'none'; %if you haven't set the global, glb('regionexdf'), set regionexdf here; this regionex will not prompt you to create regionex, it will just use the whole fov
+rgnamedf = glb('rgnamedf');
+if isempty(rgnamedf)
+    rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
 end
 
 
-if strcmp(regionex, regionexdf)
+rg.name = rgname; 
+rg.id = rgid; 
 
-    croplim.y = [1, size(stack, 1)];
-    croplim.x = [1, size(stack, 2)];
-    croplim.z = [1, size(stack, 3)];
-    croplim.t = [1, size(stack, 4)];
-    croplim.c = [1, size(stack, 5)];
+if strcmp(rgname, rgnamedf)
 
-    croplim = structfile(pthcroplim, s=croplim, nm=nmcroplim, useprefix=1);
+    rg.y = [1, size(stack, 1)];
+    rg.x = [1, size(stack, 2)];
+    rg.z = [1, size(stack, 3)];
+    rg.t = [1, size(stack, 4)];
+    rg.c = [1, size(stack, 5)];
+
+    rg = structfile(pthrg, s=rg, nm=rgid, useprefix=1);
 
 else
 
-    croplim = structfile(pthcroplim, s=[], nm=nmcroplim, useprefix=1);
+    rg = structfile(pthrg, s=[], nm=rgid, useprefix=1);
 
-    if isempty(croplim)
-        croplim = croplimmake(stack, pthcroplim, nmcroplim, regionex);
+    if isempty(rg)
+        rg = rgmake(stack, pthrg, rgid, rgname);
     end
 
 
-    if ~(isequal(croplim.y, [1,size(stack,1)]) && isequal(croplim.x, [1,size(stack,2)]) && isequal(croplim.z, [1,size(stack,3)]) && isequal(croplim.t, [1,size(stack,4)]) && isequal(croplim.c, [1,size(stack,5)]))
-        try
-            stack = stack(croplim.y(1):croplim.y(2), croplim.x(1):croplim.x(2), croplim.z(1):croplim.z(2), croplim.t(1):croplim.t(2), croplim.c(1):croplim.c(2)); %previously converted to single here, not sure why
-        catch ME
-            clrn = structfun(@range, croplim);
-            if isequal(size(stack, [1 2 3 4 5]), clrn([4 3 5 2 1])'+1)
-                fprintf(newline + "croplim indices were out of range, but croplim match the size of the input stack" + newline + "you may have applied these croplim, and then passed the cropped stack into stackcrop" + newline + "here is the error you got: " + newline)
-                error(ME.message)
-            end
-        end
+    if ~(isequal(rg.y, [1,size(stack,1)]) && isequal(rg.x, [1,size(stack,2)]) && isequal(rg.z, [1,size(stack,3)]) && isequal(rg.t, [1,size(stack,4)]) && isequal(rg.c, [1,size(stack,5)]))
+        stack = stack(rg.y(1):rg.y(2), rg.x(1):rg.x(2), rg.z(1):rg.z(2), rg.t(1):rg.t(2), rg.c(1):rg.c(2)); %previously converted to single here, not sure why
     end
 
 end

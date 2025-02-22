@@ -8,13 +8,13 @@ from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
 
 
-def crop_fov(stack, regionex, pth_prefix, dims):
+def crop_fov(stack, rgname, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
     
     try:
         
-        pth_croplim_pat = pth_prefix + '_' + regionex + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        pth_croplim_pat = pth_prefix + '_' + rgname + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
         pth_croplim = glob.glob(pth_croplim_pat)
         if len(pth_croplim) > 1:
             raise Exception("too many crop files")
@@ -23,7 +23,7 @@ def crop_fov(stack, regionex, pth_prefix, dims):
 
     except:
         
-        if regionex == 'fullfov':
+        if rgname == 'fullfov':
        
             croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
        
@@ -35,20 +35,20 @@ def crop_fov(stack, regionex, pth_prefix, dims):
                 stackmntz = np.mean(stackmnt, axis = 2)
             else:
                 im_montage(stackmnt) #pass whole stackmnt min and max as vmin and vmax if you don't want each slice normalized
-                print("WHAT Z SLICES DO YOU WANT TO KEEP FOR REGIONEX '" + regionex + "' \n" + \
+                print("WHAT Z SLICES DO YOU WANT TO KEEP FOR RGNAME '" + rgname + "' \n" + \
                     "EACH SLICE NORMALIZED TO RAISE CONTRAST FOR THIS PLOT \n" \
                     "WARNING, EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION, \n" \
                     "SO CHOOSE AT LEAST 3 Z SLICES FOR 3D EXTRACTION (IF extract_in_2d==0) \n" \
                     "OR YOU MUST REWRITE/ADAPT binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS")
 
-                zlimits = literal_eval(input ("CHOOSE Z LIMITS (ONE-INDEXED) FOR REGIONEX '" + regionex + "' AS TUPLE, i.e. USING FORMAT (FIRSTFRAME,LASTFRAME): "))
+                zlimits = literal_eval(input ("CHOOSE Z LIMITS (ONE-INDEXED) FOR RGNAME '" + rgname + "' AS TUPLE, i.e. USING FORMAT (FIRSTFRAME,LASTFRAME): "))
                 stackmntz = np.mean(stackmnt[:,:,zlimits[0]-1:zlimits[1]], axis = 2)
             ylimits, xlimits = draw_rect_xy(stackmntz)
             tlimits = (1, dims[0])
             croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
             
     limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-    pth_croplim = pth_prefix + '_' + regionex + '_' + limits_str + '_croplim_.npy'
+    pth_croplim = pth_prefix + '_' + rgname + '_' + limits_str + '_croplim_.npy'
     with open(pth_croplim, 'wb') as fncrop:
         np.save(fncrop, croplim) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
 

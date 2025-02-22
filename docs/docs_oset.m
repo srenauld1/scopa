@@ -132,8 +132,8 @@ currently, this is the only vbin that will hold copybins by default
 
     o.roi
 
-this is because the roi extraction part of the pipeline (functional extraction, and manual and automated morphological extraction) allows the user to identify subregions of the fov (regionex) to designate unique analysis
-if the user doesn't use any regionex, o.roi is given one copybin, named 'none', which will correspond to the entire fov
+this is because the roi extraction part of the pipeline (functional extraction, and manual and automated morphological extraction) allows the user to identify subregions of the fov (rgname) to designate unique analysis
+if the user doesn't use any rgname, o.roi is given one copybin, named 'none', which will correspond to the entire fov
 
 in general, the user can apply this feature to generate more complex options structs, which might be useful for analyzing large batches of files, or multiple cell types
 

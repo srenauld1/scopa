@@ -129,7 +129,8 @@ d.roi.doqc = 0; %do quality control (remove bad rois)
 %% mm (roidraw: mm = "morphological manual")
 
 d.mm.maskname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
-d.mm.methodmm = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels, '1cp' copies what is drawn on 1 onto 2; '2cp' copies what is drawn on 2 onto 1 
+d.mm.methodmm = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels, '1cp' c 
+d.mm.chancp = [1]; %which channel's drawn rois to copy onto the other (concatenated with any other rois on that channel, ie does not overwrite); this is not automatically done with un-drawn channel because user may not want drawn rois for one channel
 
 %% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))
 

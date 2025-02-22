@@ -1,6 +1,6 @@
 function o = oset_t5(o)
 
-regionex = {'t5', 'tm'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'t5', 'tm'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; 
 o.mn.dofeat = 1; 
@@ -20,18 +20,18 @@ o.feat.id = 'CON_51';
 o.feat.pthparent = '/Users/wienecke/ds/data/rec';
 o.feat.pthtemplate = '/Users/wienecke/ds/data/stimuli';
 
-for m = 1:numel(regionex) 
+for m = 1:numel(rgname) 
 
-    o.roi.regionex = regionex{m};
+    o.roi.rgname = rgname{m};
     o.roi.domm = 1;
-    if strcmp(regionex{m}, 'tm')
+    if strcmp(rgname{m}, 'tm')
         o.roi.doma = 0;
         o.roi.mm.maskname = 'ten';
         o.roi.ma.numroi = 1024;
     else
         o.roi.doma = 0;
     end
-    o = odf(o, 'roi', regionex{m});
+    o = odf(o, 'roi', rgname{m});
 
 end
 

@@ -1,6 +1,6 @@
 function o = oset_jingxuan(o)
 
-regionex = {'none'}; % use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any regionex you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if regionex is not 'none', regionex can be, but do not have to be cuboid subregions of fov; regionex can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'none'}; % use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doftv = 0; %process fictrac video?
 o.mn.doroi = 0; %make/load/process rois?
@@ -14,18 +14,18 @@ o.daq.slopelensec = 0.43; %this works for sample rate 5.8251; make this as short
 
 o = odf(o);
 
-for m = 1:numel(regionex) %create different copybin within o.roi for each regionex, to analyze them differently
+for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
-    o.roi.regionex = regionex{m};
+    o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; %do draw rois
     
-    if strcmp(regionex{m}, 'none')
+    if strcmp(rgname{m}, 'none')
         o.roi.mm.maskname = {'none'};
         o.roi.nrm.post = {'dff008000'};
     end
 
-    o = odf(o, 'roi', regionex{m});
+    o = odf(o, 'roi', rgname{m});
 
 end
 

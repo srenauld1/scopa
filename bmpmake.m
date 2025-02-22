@@ -42,7 +42,7 @@ if numseg==1
 end
 
 if isodd(numseg)
-    fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (domscope 'left', 'right', 'max', or a digit, or mthd is 'functional' for regionex pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
+    fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (domscope 'left', 'right', 'max', or a digit, or mthd is 'functional' for rgname pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
 end
 
 halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
@@ -245,7 +245,7 @@ if doplt
     fig2gif(hfg, cnt, pthgif)
 
 
-    if strcmp(regionex, 'pb')
+    if strcmp(rgname, 'pb')
 
         fprint("doing pb two halves resampling for optional plotting, but this is not used in the data" + newline)
 
@@ -300,7 +300,7 @@ if doplt
 
         plotfull = 1;
         plotraw = 0;
-        plothalves = 0; %will plot halves if regionex is pb, if regionex is not pb this has no effect
+        plothalves = 0; %will plot halves if rgname is pb, if rgname is not pb this has no effect
         numplotinds = 50;
         tinds = round(linspace(1, numsamp, numplotinds));
         filename_save = [pthpre '_RESAMPCOMP_.gif'];
@@ -326,7 +326,7 @@ if doplt
                 end
                 hax.YAxis(1).Color = 'k';
                 hax.YAxis(1).Limits = [0 1];
-                if strcmp(regionex, 'pb') && plothalves
+                if strcmp(rgname, 'pb') && plothalves
                     %%hpl2 = plot(hax, 1:numroi_rs, resptmp4pi(:,ind), 'color', [0 1 1]);
                     % hpl2 = plot(hax, domain4pi, resptmp4pi(:,ind), 'color', [0 1 1]);
                     % hpl3 = plot(hax, 1:numroi_rs, resptmp_2halves(:,ind), 'color', [1 0 1], 'LineStyle','-');
@@ -347,7 +347,7 @@ if doplt
                 if plotfull
                     hpl1.YData = resptmp(:,ind);
                 end
-                if strcmp(regionex, 'pb') && plothalves
+                if strcmp(rgname, 'pb') && plothalves
                     % hpl2.YData = resptmp4pi(:,ind);
                     hpl3.YData = resptmp_2halves(:,ind);
                 end

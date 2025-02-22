@@ -115,28 +115,28 @@ tsuse.vnm = cell2struct(fnflatcat(:,choosecount), fn);
 tsuse.vars = cell2struct(tsflatcat(:,choosecount), fn);
 
 
-%%% MAKE SURE THERE IS ONLY ONE REGIONEX (FOR NOW) %%%
+%%% MAKE SURE THERE IS ONLY ONE RGNAME (FOR NOW) %%%
 
-regionex_cat = [];
+rgname_cat = [];
 for fi = 1:numel(fn)
     for vni = 1:numel(tsuse.vnm.(fn{fi}))
         if startsWith(tsuse.vnm.(fn{fi}){vni}, 'resp')
             varnmtmp = strsplit(tsuse.vnm.(fn{fi}){vni}, '.');
-            tsuse.regionex = varnmtmp{2};
+            tsuse.rgname = varnmtmp{2};
             tsuse.parsex = varnmtmp{3};
             tsuse.parsnorm = varnmtmp{4};
 
-            regionex_cat = cat(1, regionex_cat, {tsuse.regionex});
-            if numel(unique(regionex_cat))~=1
-                error("tsuse cannot yet use multiple regionex across input vars; in future crop_stack will just have to loop over them and cat the regionex stacks in xy")
-                % tsuse.regionex = 'default';
+            rgname_cat = cat(1, rgname_cat, {tsuse.rgname});
+            if numel(unique(rgname_cat))~=1
+                error("tsuse cannot yet use multiple rgname across input vars; in future crop_stack will just have to loop over them and cat the rgname stacks in xy")
+                % tsuse.rgname = 'default';
             end
         end
     end
 end
 
-if ~isfield(tsuse, 'regionex')
-    tsuse.regionex = 'default';
+if ~isfield(tsuse, 'rgname')
+    tsuse.rgname = 'default';
     tsuse.parsex = 'noparsex';
     tsuse.parsnorm = 'noparsnorm';
 end
@@ -145,7 +145,7 @@ end
 %%% SET PATHS, ORDER FIELDS, AND STOP dochoose WHILE LOOP IF AT END %%%
 
 tsuse.choosecount = choosecount;
-tsuse.fn_save_prefix = [pth_stack(1:end-4) tsuse.regionex '_' tsuse.parsex '_' tsuse.parsnorm '_fit' num2str(tsuse.choosecount)];
+tsuse.fn_save_prefix = [pth_stack(1:end-4) tsuse.rgname '_' tsuse.parsex '_' tsuse.parsnorm '_fit' num2str(tsuse.choosecount)];
 tsuse.fn_save_prefix_short = [pth_stack(1:end-4) '_fit' num2str(tsuse.choosecount)];
 
 

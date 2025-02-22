@@ -1,6 +1,6 @@
 function [maskroi, flag_quit_one_roi, flag_quit_all_rois] = ...
-    roidraw_oneim(stack, regionex, title_prefix, ...
-    flag_oneim, flag_single_roi_per_stack, flag_croplim)
+    roidraw_oneim(stack, rgname, title_prefix, ...
+    flag_oneim, flag_single_roi_per_stack, flag_rg)
 
 fontsize = 15;
 
@@ -10,8 +10,8 @@ end
 if ~exist('flag_single_roi_per_stack', 'var')
     flag_single_roi_per_stack = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
 end
-if ~exist('flag_croplim', 'var')
-    flag_croplim = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
+if ~exist('flag_rg', 'var')
+    flag_rg = 0; %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
 end
 if ~exist('title_prefix', 'var')
     title_prefix = '';
@@ -27,12 +27,12 @@ h.httl.FontSize = fontsize;
 ndt = numel(h.httl.String);
 
 
-if flag_oneim && ~flag_croplim
+if flag_oneim && ~flag_rg
     tmptitle = {'THIS IS THE ONLY IMAGE IN THE STACK, OR THE MEAN Z IMAGE'};
     h.httl.String = cat(1, h.httl.String, tmptitle);
 end
 
-if flag_croplim
+if flag_rg
     tmptitle = {'YOU MUST DRAW A ROI ON THIS IMAGE'};
 else
     tmptitle = {...
@@ -97,20 +97,20 @@ while true
 
     if flag_do
         him.Parent.XLabel.String{1} = 'DRAW NOW . . . SINGLE CLICK TO PLACE VERTEX, DRAG VERTEX AFTER CLOSURE TO ADJUST, DOUBLE CLICK AFTER CLOSURE TO FINISH';
-        if flag_croplim
-            him.Parent.XLabel.String{3} = ['THE BOUNDING BOX OF THE ONE POLYGON YOU DRAW WILL COMPRISE THE XY LIMITS FOR REGION "' regionex '"'];
+        if flag_rg
+            him.Parent.XLabel.String{3} = ['THE BOUNDING BOX OF THE ONE POLYGON YOU DRAW WILL COMPRISE THE XY LIMITS FOR REGION "' rgname '"'];
         else
             if flag_oneim
                 if flag_single_roi_per_stack
-                    him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
+                    him.Parent.XLabel.String{3} = ['THE UNION OF ALL POLYGONS YOU DRAW ON THIS IMAGE WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' rgname '"'];
                 else
-                    him.Parent.XLabel.String{3} = ['EACH POLYGON, AND EACH DISCONTIGUOUS UNION, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' regionex '"'];
+                    him.Parent.XLabel.String{3} = ['EACH POLYGON, AND EACH DISCONTIGUOUS UNION, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR REGION "' rgname '"'];
                 end
             else
                 if flag_single_roi_per_stack
-                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' regionex '"'];
+                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR REGION "' rgname '"'];
                 else
-                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS CYCLE THROUGH THE STACK WILL COMPRISE A SINGLE ROI FOR REGION "' regionex '" . . . REPEAT UNTIL YOU ARE DONE'];
+                    him.Parent.XLabel.String{3} = ['ALL POLYGONS IN THIS CYCLE THROUGH THE STACK WILL COMPRISE A SINGLE ROI FOR REGION "' rgname '" . . . REPEAT UNTIL YOU ARE DONE'];
                 end
             end
         end
@@ -128,17 +128,17 @@ while true
         fclose('all');
         delete([pth_tmpfiles 'tmp_roi_flag_.bin'])
         flag_base_message = 0;
-        if tmpflag==1 && ~flag_croplim %&& ~flag_oneim
+        if tmpflag==1 && ~flag_rg %&& ~flag_oneim
             flag_exit_this_figure = 1;
             tmpone = 'PRESSED "s", SKIPPING THIS IMAGE';
             him.Parent.XLabel.String{1} = tmpone;
 
-        elseif tmpflag==2 && ~flag_croplim
+        elseif tmpflag==2 && ~flag_rg
             flag_quit_one_roi = 1;
             tmpone = 'PRESSED "r", FINISHING THIS ROI';
             him.Parent.XLabel.String{1} = tmpone;
 
-        elseif tmpflag==3 %&& ~flag_croplim
+        elseif tmpflag==3 %&& ~flag_rg
             flag_quit_all_rois = 1;
             tmpone = 'PRESSED "q", QUITTING ALL ROIS';
             him.Parent.XLabel.String{1} = tmpone;
@@ -155,13 +155,13 @@ while true
             % him.Parent.XLabel.String{2} = 'PRESSED "backspace", REMOVED LAST ROI';
 
         elseif tmpflag==6
-            if flag_xy_discontiguous==0 && ~flag_croplim
+            if flag_xy_discontiguous==0 && ~flag_rg
                 flag_xy_discontiguous = 1;
                 him.Parent.XLabel.String{2} = 'ALLOWING DISCONTIGUOUS ROI, PRESS "e" TO EXIT DISCONTIGUOUS MODE';
                 him.Parent.Title.String{end-1} = 'ALLOWING DISCONTIGUOUS ROI, PRESS "e" TO EXIT DISCONTIGUOUS MODE';
             end
 
-        elseif tmpflag==7 && ~flag_croplim % pressed e
+        elseif tmpflag==7 && ~flag_rg % pressed e
             if flag_xy_discontiguous==1
                 flag_xy_discontiguous = 0;
                 flag_roi_drawn = 1;

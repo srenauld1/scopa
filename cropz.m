@@ -1,11 +1,11 @@
-function [zinds, stackmnt] = cropz(stackmnt, regionex_nounderscore)
+function [zinds, stackmnt] = cropz(stackmnt, rgname)
 
 numslice = size(stackmnt, 3);
 
 h = stackplt(stackmnt, doui=1, dmplt='yxz', stackjust='center', szf=2);
 
 h.httl.String = {
-    ['choose z range (lower, upper) for regionex "' regionex_nounderscore '"'];
+    ['choose z range (lower, upper) for rgname "' rgname '"'];
     'digits: choose z,    delete: undo last,    enter: accept z,    q: quit,    up/down: adjust contrast';
     };
 

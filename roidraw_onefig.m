@@ -1,12 +1,12 @@
 function [maskroi, flag_quit_one_roi, flag_quit_all_rois, ircumcurr] = ...
-    roidraw_onefig(stack, flag_oneim, flag_single_roi_per_stack, flag_allz, flag_croplim, draw_on_meanzt, ir, szi, opt)
+    roidraw_onefig(stack, flag_oneim, flag_single_roi_per_stack, flag_allz, flag_rg, draw_on_meanzt, ir, szi, opt)
 
 arguments
     stack
     flag_oneim = 0 %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
     flag_single_roi_per_stack = 0 %convenience flag, will automatically proceeed after one roi is drawn (helps prevent mistake when grouping roi across images)
     flag_allz = 0
-    flag_croplim = 0
+    flag_rg = 0
     draw_on_meanzt = 0
     ir = 1
     szi = 1
@@ -22,8 +22,8 @@ cmap = opt.cmap;
 fontsize = opt.fontsize;
 remove_overlap = opt.remove_overlap;
 
-if flag_allz && flag_croplim
-    error("flag_allz and flag_croplim cannot both be true")
+if flag_allz && flag_rg
+    error("flag_allz and flag_rg cannot both be true")
 end
 
 indnz = stack~=0; %eventually would be nice to have option to rescale everything but zero (zero is mask)
@@ -32,7 +32,7 @@ numdimstack = ndims(stack);
 dmplt = 'yxz';
 dmplt = dmplt(1:numdimstack);
 
-h = stackplt(stack, doui=1, dmplt=dmplt, stackjust='center', szf=1);
+h = stackplt(stack, doui=1, dmplt=dmplt, stackjust='center', szf=1, dosave=0);
 
 if flag_single_roi_per_stack
     ttltmp = [title_prefix ', T MEAN, ' titleadd(flag_oneim, draw_on_meanzt, szi), '; DRAW THE ONE AND ONLY ROI ALLOWED ON THIS IMAGE'];
@@ -51,12 +51,12 @@ end
 h.httl.String = {ttltmp};
 h.httl.FontSize = fontsize;
 
-if flag_oneim && ~flag_croplim
+if flag_oneim && ~flag_rg
     ttltmp = {'THIS IS THE ONLY Z (OR Z MEAN)'};
     h.httl.String = cat(1, h.httl.String, ttltmp);
 end
 
-if flag_croplim || (flag_oneim && flag_single_roi_per_stack)
+if flag_rg || (flag_oneim && flag_single_roi_per_stack)
     ttltmp = {'YOU MUST DRAW A SINGLE CONTIGUOUS ROI ON THIS IMAGE'};
 else
     ttltmp = { [...
@@ -178,7 +178,7 @@ while true
         h.httl.String{ndt+1} = ['DRAW NOW ON IMAGE ' num2str(imfocus) ' (CLICK=PLACE VERTEX, DRAG=ADJUST, DOUBLE-CLICK=FINISH)'];
         if flag_allz && ~(flag_oneim && flag_single_roi_per_stack) 
             h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
-        elseif flag_croplim
+        elseif flag_rg
             h.httl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR ' title_prefix];
         else
             if flag_oneim
@@ -208,12 +208,12 @@ while true
     end
 
 
-    if strcmpi(tmp, 's') && ~flag_croplim && ~flag_allz %&& ~flag_oneim
+    if strcmpi(tmp, 's') && ~flag_rg && ~flag_allz %&& ~flag_oneim
         flag_exit_this_figure = 1;
         tmpone = 'PRESSED "s", QUITTING THIS IMAGE';
         h.httl.String{ndt+1} = tmpone;
 
-    elseif strcmpi(tmp, 'r') && ~flag_croplim
+    elseif strcmpi(tmp, 'r') && ~flag_rg
         flag_do = 0;
         flag_quit_one_roi = 1;
         tmpone = 'PRESSED "r", QUITTING THIS ROI';
@@ -230,7 +230,7 @@ while true
             tmp_ind = 1;
         end
 
-    elseif  strcmpi(tmp, 'q') %&& ~flag_croplim
+    elseif  strcmpi(tmp, 'q') %&& ~flag_rg
         flag_quit_all_rois = 1;
         tmpone = 'PRESSED "q", QUITTING ALL ROIS';
         h.httl.String{ndt+1} = tmpone;
@@ -251,12 +251,12 @@ while true
         % h.httl.String{ndt+2} = 'PRESSED "backspace", REMOVED LAST ROI';
 
     elseif strcmpi(tmp, 'd')
-        if flag_xy_discontiguous==0 && ~flag_croplim && ~flag_allz
+        if flag_xy_discontiguous==0 && ~flag_rg && ~flag_allz
             flag_xy_discontiguous = 1;
             h.httl.String{ndt+2} = 'ALLOWING DISCONTIGUOUS ROI, PRESS "e" TO EXIT DISCONTIGUOUS MODE';
         end
 
-    elseif strcmpi(tmp, 'e') && ~flag_croplim && ~flag_allz % pressed e
+    elseif strcmpi(tmp, 'e') && ~flag_rg && ~flag_allz % pressed e
         if flag_xy_discontiguous==1
             flag_xy_discontiguous = 0;
             if tmp_ind>1

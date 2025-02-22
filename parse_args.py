@@ -138,7 +138,7 @@ def parse_command_line():
         args.stopband_rsc = pars.STOPBAND_RSC
         args.smlensec_rsc = pars.SMLENSEC_RSC
         args.extract_in_2d = pars.EXTRACT_IN_2D
-        args.regionex = pars.REGIONEX
+        args.rgname = pars.RGNAME
 
 
     ############## MAKE SURE THERE ARE NO LIST OF LISTS, AND CONVERT SOME TO INT ##############
@@ -259,10 +259,10 @@ def parse_command_line():
     smlensec_rsc = float(args.smlensec_rsc[0])
     extract_in_2d = int(args.extract_in_2d[0])
 
-    if isinstance(args.regionex[0], list):
-        regionex = args.regionex[0] #keep as list
+    if isinstance(args.rgname[0], list):
+        rgname = args.rgname[0] #keep as list
     else:
-        regionex = args.regionex #keep as list
+        rgname = args.rgname #keep as list
 
 
     ############## SET THE DO OPTIONS BASED ON COMMAND LINE ARGUMENT jobnm ##############
@@ -293,7 +293,7 @@ def parse_command_line():
                       do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed, 
-                      do_extract, methodex, extract_in_2d, regionex, 
+                      do_extract, methodex, extract_in_2d, rgname, 
                       do_a2p, first_noncopy_job)
 
 
