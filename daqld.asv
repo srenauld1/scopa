@@ -266,9 +266,9 @@ end
 daq = daqrename(daq, renm);
 
 
-[daq.px, daq.py] = ficpath(daq.bfv, daq.bsv, daq.vy, daq.t, balldia);
+    [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
 
-
+    
 %%%% DERIVE EPOCHS, IF THEY'RE NOT ON DAQ %%%%
 
 if ~isfield(daq, 'epochts')

@@ -10,8 +10,6 @@ o.mn.dopltx = 0;
 o.mn.plt = [""]; 
 o.mn.pltvis = 1; 
 
-o.daq.use_carls_epochs = 1;
-
 for m = 1:numel(rgname) 
 
     o.roi.rgname = rgname{m};

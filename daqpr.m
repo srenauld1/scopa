@@ -24,7 +24,7 @@ if isequal(vec(unique(daqvarin)), [0;1])
 end
 
 daqvarout = tsrs(daqvartype, daqvarin, inds, newlength); %resample into imaging rate
-daqvarout_dv = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt);
+daqvarout_dv = tsdv(daqvartype, daqvarout, slopelensec, slopeord, dt); %find local slope 
 
 
 if doplt

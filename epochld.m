@@ -1,4 +1,4 @@
-function vis = epochld(recdate, t, vis, sampper, use_carls_epochs, doplt)
+function [visyaw, visyawvel, epochts, vepochs] = epochld(recdate, t, visyaw, visyawvel, sampper, doplt)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochts, a vector representing stimulus state for each sample of trial)
 % if it doesn't exist, create it here with a hack, using derivative of g4panels yaw
@@ -16,9 +16,9 @@ function vis = epochld(recdate, t, vis, sampper, use_carls_epochs, doplt)
 arguments
     recdate
     t
-    vis
+    visyaw
+    visyawvel
     sampper
-    use_carls_epochs = []
     doplt = []
 end
 
@@ -51,191 +51,185 @@ numsecseg = 100; %how many seconds in each segment in tsplt plots
 xseg = floor(numel(t)/numel(t(t<numsecseg))); %number segments in tsplt plots
 
 success = 0;
-vis.epochs = [];
-vis.epochts = ones(1,numel(t));
+vepochs = [];
+epochts = ones(1,numel(t));
 
-if isfield(vis, 'yaw') && use_carls_epochs
+if any(isnan(visyaw))
+    error("visyaw should not have any nans when entering this function (when exiting, it might, if dark epochs exist)")
+end
+if isduration(t)
+    t = seconds(t);
+end
+if isrow(t) %why does this matter?
+    t = t';
+end
 
-    if any(isnan(vis.yaw))
-        error("vis.yaw should not have any nans when entering this function (when exiting, it might, if dark epochs exist)")
-    end
-    if isduration(t)
-        t = seconds(t);
-    end
-    if isrow(t) %why does this matter?
-        t = t';
-    end
+fprintf("warning, epochs not saved to daq, finding epochs with panels derivatives" + newline)
 
-    fprintf("warning, epochs not saved to daq, finding epochs with panels derivatives" + newline)
+ioi = boutlensec*(has_cl_interleave+1); %inter-open loop interval
+boutlensamp = boutlensec/sampper; %bout length in samples
+dvlensec = dvlensamp*sampper; %window length in seconds
+halfboutlensec = boutlensec/2;
 
-    ioi = boutlensec*(has_cl_interleave+1); %inter-open loop interval
-    boutlensamp = boutlensec/sampper; %bout length in samples
-    dvlensec = dvlensamp*sampper; %window length in seconds
-    halfboutlensec = boutlensec/2;
+%%% find boutlensec-second windows whose median derivative matches expected %%%
 
-    %%% find boutlensec-second windows whose median derivative matches expected %%%
+for iter = 1:numiter
+    try
 
-    for iter = 1:numiter
-        try
+        if iter>1
+            %idxbad is not what we want to change
+            visyaw(idxbad) = rand(sum(idxbad), 1);
+        end
 
-            if iter>1
-                %idxbad is not what we want to change
-                vis.yaw(idxbad) = rand(sum(idxbad), 1);
-            end
+        yawdeg = rad2deg(visyaw); %convert to degrees because tolerance is in degrees and we like degrees more anyway
+        dv = rad2deg(tsdv('circular', deg2rad(yawdeg), dvlensec, dvord, sampper)); %derivative
+        mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
+        lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
+        lminfnd = find(lmin);
+        lstarts = t(lmin)-halfboutlensec; %start times for all windows
+        lstops = t(lmin)+halfboutlensec; %stop times for all windows
+        cvar = [];
+        cmn = [];
+        med = [];
+        tmed = [];
+        for k = 1:numel(lstarts)
+            idx = t>lstarts(k) & t<lstops(k);
+            cvar(k) = rad2deg(circ_var(deg2rad(vec(yawdeg(idx)))));
+            cmn(k) = rad2deg(circ_mean(deg2rad(vec(yawdeg(idx)))));
+            med(k) = median(dv(idx)); %median slope
+            tmed(k) = median(t(idx));
+        end
+        kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes
+        idxbad = t>lstarts(~kp)' & t<lstops(~kp)';
 
-            yawdeg = rad2deg(vis.yaw); %convert to degrees because tolerance is in degrees and we like degrees more anyway
-            dv = rad2deg(tsdv('circular', deg2rad(yawdeg), dvlensec, dvord, sampper)); %derivative
-            mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
-            lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
-            lminfnd = find(lmin);
-            lstarts = t(lmin)-halfboutlensec; %start times for all windows
-            lstops = t(lmin)+halfboutlensec; %stop times for all windows
-            cvar = [];
-            cmn = [];
-            med = [];
-            tmed = [];
-            for k = 1:numel(lstarts)
-                idx = t>lstarts(k) & t<lstops(k);
-                cvar(k) = rad2deg(circ_var(deg2rad(vec(yawdeg(idx)))));
-                cmn(k) = rad2deg(circ_mean(deg2rad(vec(yawdeg(idx)))));
-                med(k) = median(dv(idx)); %median slope
-                tmed(k) = median(t(idx));
-            end
-            kp = any(abs(med-dvnom')<=tol_dv); %keep windows whose median slope is within tolerance (tol_dv) of any of the expected slopes
-            idxbad = t>lstarts(~kp)' & t<lstops(~kp)';
+        tmed_notkp1 = tmed(~kp);
+        tmed = tmed(kp);
+        med = med(kp);
+        lstarts = lstarts(kp);
+        lstops = lstops(kp);
+        medrnd = interp1(dvnom, dvnom, med, 'nearest', 'extrap'); %round medians to nearest dvnom
 
-            tmed_notkp1 = tmed(~kp);
-            tmed = tmed(kp);
-            med = med(kp);
-            lstarts = lstarts(kp);
-            lstops = lstops(kp);
-            medrnd = interp1(dvnom, dvnom, med, 'nearest', 'extrap'); %round medians to nearest dvnom
+        % tsplt(visyaw, mvar, xmark={[], {tmed_notkp1, tmed}}, xall=t, ylimtype='each', xseg=xseg);
 
-            % tsplt(vis.yaw, mvar, xmark={[], {tmed_notkp1, tmed}}, xall=t, ylimtype='each', xseg=xseg);
+        %%% discard any windows whose median doesn't follow periodic open-loop sequence of expected medians (this can be improved, there might be problems if the first median is a match, or if there are more than 2 matches in a row) %%%
 
-            %%% discard any windows whose median doesn't follow periodic open-loop sequence of expected medians (this can be improved, there might be problems if the first median is a match, or if there are more than 2 matches in a row) %%%
+        kp2 = epochseq(startepoch, medrnd, dvnom, cmn, cvar, med, dark_value, tol_dark, tol_dark_var);
 
-            kp2 = epochseq(startepoch, medrnd, dvnom, cmn, cvar, med, dark_value, tol_dark, tol_dark_var);
+        tmed_notkp2 = tmed(~kp2);
+        tmed = tmed(kp2);
+        med = med(kp2);
+        medrnd = medrnd(kp2);
+        lstarts = lstarts(kp2);
+        lstops = lstops(kp2);
 
-            tmed_notkp2 = tmed(~kp2);
-            tmed = tmed(kp2);
-            med = med(kp2);
-            medrnd = medrnd(kp2);
-            lstarts = lstarts(kp2);
-            lstops = lstops(kp2);
+        % tsplt(visyaw, mvar, xmark={[], {tmed_notkp2, tmed}}, xall=t, ylimtype='each', xseg=xseg);
 
-            % tsplt(vis.yaw, mvar, xmark={[], {tmed_notkp2, tmed}}, xall=t, ylimtype='each', xseg=xseg);
+        %%% make sure all bouts are expected length, except for possible long bouts at the end (when fictrac ends before daq and those bouts get classified as dark bouts because their derivative is 0)  %%%
 
-            %%% make sure all bouts are expected length, except for possible long bouts at the end (when fictrac ends before daq and those bouts get classified as dark bouts because their derivative is 0)  %%%
+        meds_t_dv = diff(tmed);
+        boutlenfound = abs(meds_t_dv-ioi);
+        badlenbouts = boutlenfound>=tol_boutlensec;
+        first_good_len_bout = find(~badlenbouts, 1);
+        last_good_len_bout = find(~badlenbouts, 1, 'last');
 
-            meds_t_dv = diff(tmed);
-            boutlenfound = abs(meds_t_dv-ioi);
-            badlenbouts = boutlenfound>=tol_boutlensec;
-            first_good_len_bout = find(~badlenbouts, 1);
-            last_good_len_bout = find(~badlenbouts, 1, 'last');
+        if sum(badlenbouts(first_good_len_bout:last_good_len_bout))~=0
+            error("long or short bouts can only be at the ends")
+        end
 
-            if sum(badlenbouts(first_good_len_bout:last_good_len_bout))~=0
-                error("long or short bouts can only be at the ends")
-            end
+        %%% make sure you have the expected number of bouts, and that the daq_delay is not unusual %%%
 
-            %%% make sure you have the expected number of bouts, and that the daq_delay is not unusual %%%
+        numbouts_ol = numel(tmed(~badlenbouts));
+        maxgoodtime = max(tmed(~badlenbouts)); %centroid of last open loop bout
+        numbouts_ol_expected = ceil(maxgoodtime / (ioi)); %ceil, since these are centroids
+        daq_delay = closed_initial_len_sec - (tmed(1) - halfboutlensec);
 
-            numbouts_ol = numel(tmed(~badlenbouts));
-            maxgoodtime = max(tmed(~badlenbouts)); %centroid of last open loop bout
-            numbouts_ol_expected = ceil(maxgoodtime / (ioi)); %ceil, since these are centroids
-            daq_delay = closed_initial_len_sec - (tmed(1) - halfboutlensec);
+        % if numbouts_ol~=numbouts_ol_expected
+        %     error("you did not recover the expected number of bouts")
+        % end
+        if daq_delay>60
+            error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
+        end
+        if daq_delay<0
+            error("daq starts before fictrac; this has never happened")
+        end
 
-            % if numbouts_ol~=numbouts_ol_expected
-            %     error("you did not recover the expected number of bouts")
-            % end
-            if daq_delay>60
-                error("warning, daq starts more than a minute after fictrac/panels/socket; this has never happened before, check that it is okay")
-            end
-            if daq_delay<0
-                error("daq starts before fictrac; this has never happened")
-            end
+        %%% assign epoch labels %%%
 
-            %%% assign epoch labels %%%
+        numepoch_ol_expected = numel(dvnom);
+        numepoch_ol = numel(unique(medrnd));
+        if numepoch_ol~=numepoch_ol_expected
+            error("num derived epochs does not match number expected")
+        end
 
-            numepoch_ol_expected = numel(dvnom);
-            numepoch_ol = numel(unique(medrnd));
-            if numepoch_ol~=numepoch_ol_expected
-                error("num derived epochs does not match number expected")
-            end
+        success = 1;
 
-            success = 1;
-            
-            break;
+        break;
 
-        catch ME
-            fprintf("" + ME.message + newline)
-            fprintf("trying another iteration" + newline)
-            if iter==numiter
-                fprintf("could not extract epochs in numiter iterations" + newline)
-            end
+    catch ME
+        fprintf("" + ME.message + newline)
+        fprintf("trying another iteration" + newline)
+        if iter==numiter
+            fprintf("could not extract epochs in numiter iterations" + newline)
         end
     end
+end
 
-    %%%% APPLY EPOCHS %%%%
+%%%% APPLY EPOCHS %%%%
 
-    if success
+if success
 
-        numepoch_expected = numepoch_ol_expected + has_cl_interleave;
-        epochts = ones(size(t))*numepoch_expected;
-        for k = 1:numel(tmed)
-            if all(medrnd(k:end)==0) %when fictrac turns off, consider this dark epoch
-                idxtmp = find(medrnd(k)==dvnom);
-                epochts(idxstop:end) = idxtmp; %this is the previous bout's idxstop
-                break
+    numepoch_expected = numepoch_ol_expected + has_cl_interleave;
+    epochts = ones(size(t))*numepoch_expected;
+    for k = 1:numel(tmed)
+        if all(medrnd(k:end)==0) %when fictrac turns off, consider this dark epoch
+            idxtmp = find(medrnd(k)==dvnom);
+            epochts(idxstop:end) = idxtmp; %this is the previous bout's idxstop
+            break
+        else
+            if k>1 && badlenbouts(k-1) %classify badlenbouts as dark for now
+                idxbad = t>lstarts(k-1) & t<lstops(k-1);
+                epochts(idxbad) = numepoch_expected-1;
             else
-                if k>1 && badlenbouts(k-1) %classify badlenbouts as dark for now
-                    idxbad = t>lstarts(k-1) & t<lstops(k-1);
-                    epochts(idxbad) = numepoch_expected-1;
-                else
-                    starttmp = tmed(k) - halfboutlensec;
-                    [~, idxstart] = min(abs(t-starttmp));
-                    stoptmp = tmed(k) + halfboutlensec;
-                    [~, idxstop] = min(abs(t-stoptmp));
-                    idxtmp = find(medrnd(k)==dvnom);
-                    epochts(idxstart:idxstop) = idxtmp;
-                end
+                starttmp = tmed(k) - halfboutlensec;
+                [~, idxstart] = min(abs(t-starttmp));
+                stoptmp = tmed(k) + halfboutlensec;
+                [~, idxstop] = min(abs(t-stoptmp));
+                idxtmp = find(medrnd(k)==dvnom);
+                epochts(idxstart:idxstop) = idxtmp;
             end
         end
-
-        epochts = epochts(:)'; %make it row vector since time is 2nd dim for all timeseries variables (except stack)
-
-        fprintf("assigned any underflow bouts to dark epoch (is this accurate? are the panels off when fictrac ends?)" + newline)
-
-        epochs = epochidget('ocld2');
-        %the old way used ocld (not ocld2) IN EPOCHIDGET [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
-
-        if doplt
-            tsplt(vis.yaw, single(epochts), xall=t, ylimtype='each', xseg=xseg);
-        end
-
-
-        vis.epochs = epochs;
-        vis.epochts = epochts;
-        if ~isempty(epochs)
-            if isfield(epochs, 'dark') && any(epochts==epochs.dark)
-                naninds = epochts==epochs.dark;
-                vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-                vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-                if isfield(epochs, 'closedfinaldark') && any(epochts==epochs.closedfinaldark)
-                    naninds = epochts==epochs.closedfinaldark; %dark gets nans
-                    vis.yaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-                    vis.yawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
-                end
-            end
-        end
-
     end
 
-else
+    epochts = epochts(:)'; %make it row vector since time is 2nd dim for all timeseries variables (except stack)
 
-    fprintf("epochs are empty because there is no g4panels data, or because use_carls_epochs is false" + newline)
+    fprintf("assigned any underflow bouts to dark epoch (is this accurate? are the panels off when fictrac ends?)" + newline)
+
+    epochs = epochidget('ocld2');
+    %the old way used ocld (not ocld2) IN EPOCHIDGET [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
+
+    if doplt
+        tsplt(visyaw, single(epochts), xall=t, ylimtype='each', xseg=xseg);
+    end
+
+
+    vepochs = epochs;
+    % epochts = epochts;
+    if ~isempty(epochs)
+        if isfield(epochs, 'dark') && any(epochts==epochs.dark)
+            naninds = epochts==epochs.dark;
+            visyaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+            visyawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+            if isfield(epochs, 'closedfinaldark') && any(epochts==epochs.closedfinaldark)
+                naninds = epochts==epochs.closedfinaldark; %dark gets nans
+                visyaw(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+                visyawvel(naninds) = nan; %put nans where the cue doesn't exist (dark epoch)
+            end
+        end
+    end
 
 end
+
+
 
 
 

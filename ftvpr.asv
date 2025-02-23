@@ -55,10 +55,6 @@ elseif doplt==2
     gifvis = 'off';
 end
 
-if ~isempty(ftcaminds)
-    error("need to write ftcaminds")
-end
-
 try
     load(pth_vidrs, 'ftvdsrs')
 catch

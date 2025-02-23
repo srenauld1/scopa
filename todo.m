@@ -1,5 +1,9 @@
 function todo()
 
+disp("TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING) output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames")
+disp("should ftv downsampling occur in ftvpr in matlab? why do it in pythno during register?? oh it's because matlab on mac can't read it??")
+disp("daq needs toindex, like doballscale etc, to convert binary to index, right now it happens by default in daqpr for any binary variable, but what if you want it to remain binary?? it should also occur outside daqpr, like the other to* variables, but this one before daqpr")
+disp("make substr have convenient start finish markers, rather than having to use ^ and $ where the option is specified")
 disp("make methodmm sum to draw on sum of channels")
 disp("make channel consistently 5th dim index or pmt index; right now in python code it's pmt index and in matlab it's mostly stack 5th dim index")
 disp("make sure fictrac has not flatlined, epoch might be as expected despite fictrac flatline")

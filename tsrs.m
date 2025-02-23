@@ -1,49 +1,71 @@
 function tsout = tsrs(vtype, tsin, inds, newlen)
 
 arguments
-    vtype char %if circular, tsin must be in radians
-    tsin double %must be in radians if vtype is circular
-    inds double = []
-    newlen double = []
+    vtype %if circular, tsin must be in radians
+    tsin %must be in radians if vtype is circular (but doens't have to be wrapped, so not sure how to assert this other than the fprint warnings below)
+    inds = []
+    newlen = []
 end
+
 
 if size(tsin,1) < size(tsin, 2)
     tsin = tsin';
 end
 
-if ~isempty(inds) %if inds are nonempty, average tsin during each index
-
-    Au = unique(inds(inds~=0),'stable'); %index of each frame
-    if strcmp(vtype, 'circular')
-        fprintf("USER REQUESTED 'circular' vtype, input must be in radians; assuming that it is and proceeding" + newline)
-        inpcos = cos(tsin);
-        inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inpcos for each frame
-        inpsin = sin(tsin);
-        inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
-        tsout = atan2(inpy, inpx);
-    elseif strcmp(vtype, 'categorical') %takes value nearest centroid of each frame (alt approach is mode, commented out below, seems less appropriate)
-
-        usi = unique(inds(inds~=0),'stable');
-        cnt = zeros(numel(usi), 1, 'single');
-        for ii = 1:numel(usi) %loop is much faster than using arrayfun
-            cnt(ii) = round(mean(find(inds==usi(ii)))); %find center index for each frame
-        end
-        nzi = find(tsin);
-        tsout = interp1(nzi, tsin(nzi), cnt, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
-
-        % tsout = arrayfun(@(i)mode(tsin(inds==Au(i))),1:numel(Au));
-
-    elseif strcmp(vtype, 'normal')
-        tsout = arrayfun(@(i)mean(tsin(inds==Au(i))),1:numel(Au)); %average of tsin for each frame
-    end
-
-else %else use 'resample', looping strategy to match newlen
+if isempty(inds) %if inds are empty, use 'resample', looping strategy to match newlen
 
     dsfac = newlen / numel(tsin);
     [dsnr, dsdr] = rat(dsfac);
     breakout = 0;
 
-    if strcmp(vtype, 'circular')
+    if strcmp(vtype, 'normal')
+
+        inp_try = tsrspad(tsin, dsnr, dsdr);
+        currlen = numel(inp_try);
+        if currlen==newlen
+            tsout = inp_try;
+        else
+            prevmin = Inf;
+            for upfac = 1:3
+                for tryadd = -3:3
+                    for tryadd2 = -3:3
+
+                        dsnr_new = upfac*dsnr+tryadd;
+                        dsdr_new = upfac*dsdr+tryadd2;
+                        inp_try = tsrspad(tsin, dsnr_new, dsdr_new);
+
+                        currlen = numel(inp_try);
+
+                        if currlen==newlen
+                            tsout = inp_try;
+                            breakout = 1;
+                            break
+                        else
+                            if currlen>newlen
+                                if currlen-newlen<prevmin
+                                    prevmin = currlen-newlen;
+                                    dsnr_sv = dsnr_new;
+                                    dsdr_sv = dsdr_new;
+                                end
+                            end
+                        end
+                    end
+                    if breakout
+                        break
+                    end
+                end
+                if breakout
+                    break
+                end
+            end
+            if currlen~=newlen
+                fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
+                inp_try = tsrspad(tsin, dsnr_sv, dsdr_sv);
+                tsout = inp_try(1:newlen);
+            end
+        end
+
+    elseif strcmp(vtype, 'circular')
 
         inpx = cos(tsin);
         inpy = sin(tsin);
@@ -102,53 +124,6 @@ else %else use 'resample', looping strategy to match newlen
 
         tsout = atan2(inpy, inpx);
 
-    elseif strcmp(vtype, 'normal')
-
-        inp_try = tsrspad(tsin, dsnr, dsdr);
-        currlen = numel(inp_try);
-        if currlen==newlen
-            tsout = inp_try;
-        else
-            prevmin = Inf;
-            for upfac = 1:3
-                for tryadd = -3:3
-                    for tryadd2 = -3:3
-
-                        dsnr_new = upfac*dsnr+tryadd;
-                        dsdr_new = upfac*dsdr+tryadd2;
-                        inp_try = tsrspad(tsin, dsnr_new, dsdr_new);
-
-                        currlen = numel(inp_try);
-
-                        if currlen==newlen
-                            tsout = inp_try;
-                            breakout = 1;
-                            break
-                        else
-                            if currlen>newlen
-                                if currlen-newlen<prevmin
-                                    prevmin = currlen-newlen;
-                                    dsnr_sv = dsnr_new;
-                                    dsdr_sv = dsdr_new;
-                                end
-                            end
-                        end
-                    end
-                    if breakout
-                        break
-                    end
-                end
-                if breakout
-                    break
-                end
-            end
-            if currlen~=newlen
-                fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
-                inp_try = tsrspad(tsin, dsnr_sv, dsdr_sv);
-                tsout = inp_try(1:newlen);
-            end
-        end
-
 
 
     elseif strcmp(vtype, 'categorical')
@@ -160,6 +135,38 @@ else %else use 'resample', looping strategy to match newlen
         tmp = round(tmp); % roughly equidistant centroids
         nzi = find(tsin);
         tsout = interp1(nzi, tsin(nzi), tmp', 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
+
+    end
+
+
+else %if inds are nonempty, average tsin during each index of inds
+
+
+    Au = unique(inds(inds~=0),'stable'); %index of each frame
+
+    if strcmp(vtype, 'normal')
+
+        tsout = arrayfun(@(i)mean(tsin(inds==Au(i))),1:numel(Au)); %average of tsin for each frame
+
+    elseif strcmp(vtype, 'circular')
+
+        fprintf("USER REQUESTED 'circular' vtype, input must be in radians; assuming that it is and proceeding" + newline)
+        inpcos = cos(tsin);
+        inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inpcos for each frame
+        inpsin = sin(tsin);
+        inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
+        tsout = atan2(inpy, inpx);
+
+    elseif strcmp(vtype, 'categorical') %takes value nearest centroid of each frame (alt approach is mode, commented out below, seems less appropriate)
+
+        cnt = zeros(numel(Au), 1);
+        for ii = 1:numel(Au) %loop is much faster than using arrayfun
+            cnt(ii) = round(mean(find(inds==Au(ii)))); %find center index for each frame
+        end
+        nzi = find(tsin);
+        tsout = interp1(nzi, tsin(nzi), cnt, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
+
+        % tsout = arrayfun(@(i)mode(tsin(inds==Au(i))),1:numel(Au)); %much slower than for loop above
 
     end
 

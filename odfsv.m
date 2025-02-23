@@ -79,15 +79,31 @@ d.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 d.daq.slopelensec = 0.4; % window numel used to fit slope (to compute daq variable derivatives (eg velocities)
 d.daq.slopeord = 2; % order of polynomial used to fit local slope; this should probably just remain 2
 d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels"]; % list circular daq variables you want to process
-d.daq.vcategorical = ["ftcam", "cameraFrameClock"]; % list categorical daq variables you want to process
+d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list circular daq variables you want to process
+d.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list categorical daq variables you want to process
 d.daq.toballscale = ["ficTracIntSide", "ficTracIntForward"]; % define which vars to rescale from radians to mm
 d.daq.tounwrap = ["ficTracIntSide'", "ficTracIntForward"]; % define which vars to unwrap
 d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to zero (force to start at 0)
 d.daq.voltmin = 0; % daq voltage min; need to find this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
-d.daq.use_carls_epochs = 0; %1 for carl, 0 for everybody else; use vector of epoch indices defining stimulus state for each sample of trial; vector is created in socket code to control stimulus state, then saved at end of experiment; for old recordings file was not saved, so use_carls_epochs recreates that vector in the same way the socket code did
 d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
+d.daq.renm = [
+    "Time, t",
+    "epoch, epochts",
+    "g4vel, vyvnom",
+    "g4velnom, vyvnom",
+    "g4panels, vy",
+    "g4yaw, vy",
+    "g4panels_dv, vyv",
+    "g4yaw_dv, vyv",
+    "ficTracIntForward, bf",
+    "ficTracIntForward_dv, bfv",
+    "ficTracIntSide, bs",
+    "ficTracIntSide_dv, bsv",
+    "ficTracYaw, by",
+    "ficTracHeading, by",
+    "ficTracHeading_dv, byv"
+    "ficTracYaw_dv, byv"]; %string array, for each element, first string is daq original names, second is the new name 
 
 %% spr (stackpr: process stack)
 

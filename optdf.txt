@@ -62,6 +62,24 @@
   "daq": {
     "balldia": 9,
     "idxreg": "start",
+    "renm": [
+      "Time, t",
+      "epoch, epochts",
+      "g4vel, vyvnom",
+      "g4velnom, vyvnom",
+      "g4panels, vy",
+      "g4yaw, vy",
+      "g4panels_dv, vyv",
+      "g4yaw_dv, vyv",
+      "ficTracIntForward, bf",
+      "ficTracIntForward_dv, bfv",
+      "ficTracIntSide, bs",
+      "ficTracIntSide_dv, bsv",
+      "ficTracYaw, by",
+      "ficTracHeading, by",
+      "ficTracHeading_dv, byv",
+      "ficTracYaw_dv, byv"
+    ],
     "slopelensec": 0.4,
     "slopeord": 2,
     "toballscale": [
@@ -76,20 +94,23 @@
       "ficTracIntSide",
       "ficTracIntForward"
     ],
-    "use_carls_epochs": 0,
     "usefbf": 1,
     "usefbl": 1,
     "useinds": "none",
     "vcategorical": [
       "ftcam",
-      "cameraFrameClock"
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
     ],
     "vcircular": [
       "ficTracIntSide",
       "ficTracIntForward",
       "ficTracYaw",
       "ficTracHeading",
-      "g4panels"
+      "g4panels",
+      "g4yaw"
     ],
     "vnormal": [
       "Time",
@@ -191,7 +212,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025022201542230",
+    "timestr": "2025022302322277",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
