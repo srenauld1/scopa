@@ -87,7 +87,7 @@ d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to 
 d.daq.voltmin = 0; % daq voltage min; need to find this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
-d.daq.renm = [
+d.daq.renm = [  %string array, for each element, before comma is daq original names, after comma is new name 
     "Time, t",
     "epoch, epochts",
     "g4vel, vyvnom",
@@ -103,7 +103,7 @@ d.daq.renm = [
     "ficTracYaw, by",
     "ficTracHeading, by",
     "ficTracHeading_dv, byv"
-    "ficTracYaw_dv, byv"]; %string array, for each element, first string is daq original names, second is the new name 
+    "ficTracYaw_dv, byv"]; 
 
 %% spr (stackpr: process stack)
 

@@ -1,6 +1,5 @@
 
 % see docs_a2p
-% roi.optid.superfield{chan}.field %
 
 function a2p(specin)
 
