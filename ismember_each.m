@@ -1,4 +1,4 @@
-function out = ismember_each_element(A, B)
+function out = ismember_each(A, B)
 
 % ismember(A, B) will not search exclusively individual elements of B independently, so this function does that 
 % there are a few cases in this pipeline where regular ismember(A, B) differs from the output of this function   

@@ -12,7 +12,7 @@ if any(epochinds_pure_ts_indvpaug(:)>max(epochnum(:)))
 end
 
 if epochmix %if multi-sample model, include samples with multiple epochs only if those epochs are listed in epochnum, discards samples with any epochs not listed
-    sampinds_indvpaug = find(all(ismember_each_element(epochtsaug, epochnum), 1)); % specify dimension (1) in case epochtsaug is singleton
+    sampinds_indvpaug = find(all(ismember_each(epochtsaug, epochnum), 1)); % specify dimension (1) in case epochtsaug is singleton
 else %do not include samples with multiple epochs, even if those epochs listed in epochnum
     sampinds_indvpaug = find(epochinds_pure_ts_indvpaug);
 end

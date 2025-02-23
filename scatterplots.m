@@ -58,7 +58,7 @@ framecount = 0;
 for ei = 1:numel(epochinds_all)
 
     epochnum = epochinds_all{ei};
-    tinds = find(ismember_each_element(epochts, epochnum));
+    tinds = find(ismember_each(epochts, epochnum));
     tinew = ti(tinds);
 
     [actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = compute_lags(tinew, lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
@@ -202,7 +202,7 @@ lims.t3 = [];
 
 numsamp_max = 0;
 for ei = 1:numel(epochinds_all)
-    numsamp_max = max(numsamp_max, numel(find(ismember_each_element(epochts, epochinds_all{ei}))));
+    numsamp_max = max(numsamp_max, numel(find(ismember_each(epochts, epochinds_all{ei}))));
 end
 
 end

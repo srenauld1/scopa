@@ -15,6 +15,7 @@ arguments
     opt.cmap = []
     opt.fontsize = 12
     opt.remove_overlap = [] %if empty, prompt will ask user if they want to remove overlapping pixels; otherwise 0 or 1 to skip or do
+    opt.forceload = 0; %error if draw rois do not already exist
 end
 pthstack = opt.pthstack;
 rg = opt.rg;
@@ -27,6 +28,7 @@ roialpha = opt.roialpha;
 cmap = opt.cmap;
 fontsize = opt.fontsize;
 remove_overlap = opt.remove_overlap;
+forceload = opt.forceload;
 
 if ndims(stackmnt)>5
     error("stackmnt in roidraw cannot have more than 5 dimensions")
@@ -67,6 +69,9 @@ try
 
 catch ME
 
+    if forceload
+        error("you set forceload to true, but got this error: " + ME.message + newline)
+    end
     fprintf(newline + "" + ME.message + newline + "YOU WILL NOW BE PROMPTED TO DRAW ROIS" + newline)
 
     for c = chandraw

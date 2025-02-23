@@ -515,11 +515,11 @@ for j = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within
         epochstring_all{j}.short = 1;
         epochstring_all{j}.parsed = 'none';
         epochinds_pretend = 1;
-        tinds_full{j} = find(ismember_each_element(epochts, epochinds_pretend));
+        tinds_full{j} = find(ismember_each(epochts, epochinds_pretend));
         tinds_all{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
     else
         epochstring_all{j} = make_epoch_string(epochinds_all{j});
-        tinds_full{j} = find(ismember_each_element(epochts, epochinds_all{j}));
+        tinds_full{j} = find(ismember_each(epochts, epochinds_all{j}));
         tinds_all{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
     end
 end
