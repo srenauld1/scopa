@@ -1,4 +1,4 @@
-function fe = femake(stack, pthstack, optid, t, opt, doplt)
+function fe = femake(stack, pthstack, t, opt, doplt)
 
 % generalized feature extraction for any experimental domain (neurons, behavior, stimuli); 
 % contains subroutines specialized for different features (e.g., bump extracted from stack, visual features extracted from visual stimulus) 
@@ -6,13 +6,12 @@ function fe = femake(stack, pthstack, optid, t, opt, doplt)
 arguments
     stack
     pthstack
-    optid
     t = [] %only required nonempty if ~isempty(wavp) or channorm~=0 in roits
     opt = []
     doplt = []
 end
 
-pthpre = [erase(pthstack, '.mat') optid '_roi_'];
+pthpre = [erase(pthstack, '.mat') opt.optid '_roi_'];
 pthfe = [pthpre '.mat'];
 
 if isempty(doplt)
@@ -42,7 +41,7 @@ catch ME
             % o2.roi.rgname = 'eb';
             % depv = tsget(o2, chan=o.bmp.(optid).chan);
             depv = roi.a28.ts{o.bmp.(optid).chan};
-            bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pthstack, optid, o.bmp.(optid)); %fit bump
+            bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pthstack, o.bmp); %fit bump
 
         case 'flymax'
 

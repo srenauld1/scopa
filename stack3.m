@@ -13,7 +13,7 @@ arguments
     opt.dn = 0
     opt.svtype = [] %empty to skip saving, bin to save new stack to bin, mat to save new stack to mat; bin is recommended over mat; mat and bin append to file frame by frame, to minimize memory usage; bin is many times faster than mat; mat saves a file with a little compression, and can retain original shape (and has some more functionality that saving to bin does not, although none of it is necessary here); bin you have to reshape after reading in, so original shape is included in filename, along with class
     opt.szf = 1
-    opt.pthsv = []
+    opt.pthgif = []
     opt.dogif = 1
 end
 pthstack = opt.pthstack;
@@ -27,10 +27,20 @@ dn = opt.dn;
 rot = opt.rot;
 svtype = opt.svtype;
 szf = opt.szf;
-pthsv = opt.pthsv;
+pthgif = opt.pthgif;
 dogif = opt.dogif;
 
 maxnumframes = 500;
+
+
+if isempty(pthstack)
+    pthstack = glb('pthstackdir');
+end
+
+
+if ~isempty(svtype) && isempty(pthgif)
+    error("")
+end
 
 pthpre = [erase(pthstack, '.mat') 'stack3_'];
 
@@ -53,8 +63,8 @@ end
 if isempty(style)
     style = "GradientOpacity";
 end
-if isempty(pthsv)
-    pthsv = pthauto(suffix='.gif', usetime=1);
+if isempty(pthgif)
+    pthgif = pthauto(suffix='.gif', usetime=1);
 end
 
 
@@ -198,7 +208,7 @@ for k = 1:size(stack,4)
     end
 
     if dogif
-        fig2gif(hfg, k, pthsv)
+        fig2gif(hfg, k, pthgif)
     end
 
 end

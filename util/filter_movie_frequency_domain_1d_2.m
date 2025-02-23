@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain_1d_2(stack, keepfreq, dirstack, doplt)
+function imout = filter_movie_frequency_domain_1d_2(stack, keepfreq, pthstackdir, doplt)
 
 stack = double(stack);
 

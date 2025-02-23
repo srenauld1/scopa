@@ -9,7 +9,7 @@ end
 md = [];
 
 id = idmake(pthraw); %just in case id info gets used below
-pthmd = [id.dirstack id.recid '_mdsi_.txt'];
+pthmd = [id.pthstackdir id.recid '_mdsi_.txt'];
 
 [~, mdtif] = tifreadfast(pthraw, []);
 

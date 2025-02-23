@@ -1,11 +1,10 @@
-function roi = roimake(stack, pthstack, optid, t, sampper, widyxz, pthpy, opt, roimask, doplt)
+function roi = roimake(stack, pthstack, t, sampper, widyxz, pthpy, opt, roimask, doplt)
 
 % see docs_roimake.m
 
 arguments
     stack
     pthstack
-    optid
     t = [] %only required nonempty if ~isempty(wavp) or channorm~=0 in roits
     sampper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
@@ -15,7 +14,7 @@ arguments
     doplt = []
 end
 
-pthpre = [erase(pthstack, '.mat') optid '_roi_'];
+pthpre = [erase(pthstack, '.mat') opt.optid '_roi_'];
 pthroi = [pthpre '.mat'];
 
 if isempty(doplt)

@@ -1,4 +1,4 @@
-function bmp = bmpmake(indvp, depvp, imrate, epochts, pthstack, optid, opt, doplt)
+function bmp = bmpmake(indvp, depvp, imrate, epochts, pthstack, opt, doplt)
 
 
 arguments
@@ -7,7 +7,6 @@ arguments
     imrate
     epochts
     pthstack
-    optid
     opt
     doplt = []
 end
@@ -24,7 +23,7 @@ slopeord = opt.slopeord;
 smlensec = opt.smlensec;
 optmdl = opt.mdl;
 
-pthpre = [erase(pthstack, '.mat') optid '_bmp_'];
+pthpre = [erase(pthstack, '.mat') opt.optid '_bmp_'];
 pthbmp = [pthpre '.mat'];
 
 if isempty(doplt)

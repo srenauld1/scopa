@@ -11,7 +11,7 @@ if ~isfield(o, 'filled') || o.filled~=1
 end
 
 fnopt = [o.id.recid '_opt_.txt'];
-pthopt = fullfile(o.id.dirstack, fnopt);
+pthopt = fullfile(o.id.pthstackdir, fnopt);
 
 structtxtsv(o, pthopt, overwrite=1, readonly=1)
 

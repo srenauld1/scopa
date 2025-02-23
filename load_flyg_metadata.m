@@ -1,4 +1,4 @@
-function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = mdflygld(ids, pthmd_flyg, dirstack, md)
+function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = mdflygld(ids, pthmd_flyg, pthstackdir, md)
 
 % optionally output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata
 % also add scopa md to consolidate metadata fields relevant to scopa pipeline
@@ -35,7 +35,7 @@ end
 
 %% experiment metadata
 
-expMdFile = fullfile(dirstack,'csv', 'expMd.csv');
+expMdFile = fullfile(pthstackdir,'csv', 'expMd.csv');
 
 try
     expMetadata = readtable(expMdFile, 'delimiter', ',');
@@ -46,7 +46,7 @@ end
 
 %% trial metadata
 
-trialMdFile = fullfile(dirstack, [ids.datefly_hyphen, '_trialMetadata.mat']);
+trialMdFile = fullfile(pthstackdir, [ids.datefly_hyphen, '_trialMetadata.mat']);
 trialMetadata = [];
 if exist(trialMdFile,'file')
     load(trialMdFile, 'trialMetadata');

@@ -11,7 +11,7 @@ iz = 5;
 fnstack = '/Users/wienecke/stacks/20241008-3_MBON09_no_jump/oldrawnofb.mat';
 [expDir, cfn] = fileparts(fnstack);
 
-glb(dirstack = [expDir '/'])
+glb(pthstackdir = [expDir '/'])
 
 iz = 5; %z index
 

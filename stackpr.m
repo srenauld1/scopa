@@ -46,9 +46,9 @@ end
 id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
 suffixstack = id.suffix;
 recid = id.recid;
-dirstack = id.dirstack;
+pthstackdir = id.pthstackdir;
 
-pthmd = [id.dirstack id.recid '_mdsi_.txt'];
+pthmd = [id.pthstackdir id.recid '_mdsi_.txt'];
 
 if ~iscell(suffixstack)
     suffixstack = {suffixstack};
@@ -192,7 +192,7 @@ if doplt
     fn_suffix_insert = strjoin(suffixplt, '_AND_');
 
     figtitle_prefix = [recid '_' fn_suffix_insert];
-    filename_prefix = [dirstack figtitle_prefix]; % '_' izstr '_' itstr ];
+    filename_prefix = [pthstackdir figtitle_prefix]; % '_' izstr '_' itstr ];
 
     index_labels = arrayfun(@(x) 1:x(end), size(stacktmp{1}), 'UniformOutput', false); % setup labels for stack that has already been subset;
     index_labels{3} = iz; % subset the (possibly) large stacks before stackplt, rather than cat them and make a giant variable then subset in stackplt with ix,iy,iz,it

@@ -1,4 +1,4 @@
-function imout = filter_movie_frequency_domain_1d(stack, dirstack, doplt)
+function imout = filter_movie_frequency_domain_1d(stack, pthstackdir, doplt)
 
 error("somewhat deprecated function")
 numfreqtozero = 50;
@@ -87,7 +87,7 @@ if 0
 
         swapdim = 1;
         ncol = 128;
-        pthgif = [dirstack '/imout.gif'];
+        pthgif = [pthstackdir '/imout.gif'];
         hfg = figure;
         for mmi = 1:300
             plot(imfm_log(:,mmi))
@@ -95,7 +95,7 @@ if 0
         end
         %%
 
-        stackplt(rescale(stack(:,1:30)), pthgif=[dirstack '/imout.gif'])
+        stackplt(rescale(stack(:,1:30)), pthgif=[pthstackdir '/imout.gif'])
 
 
         catstack = cat(1, ...
@@ -104,7 +104,7 @@ if 0
             rescale(log(abs(imff(:,:,plotindz)))), ...
             rescale(imout(:,:,plotindz)));
 
-        stackplt( catstack, pthgif=[dirstack '/finalcat.gif'])
+        stackplt( catstack, pthgif=[pthstackdir '/finalcat.gif'])
 
     end
 end

@@ -58,7 +58,7 @@ idxreg = opt.idxreg;  %work-in-progress, currently has no effect; 'start', 'end'
 id = idmake(pthstack); %just in case id info gets used below
 
 if isempty(pth_daqrs)
-    pth_daqrs = [id.dirstack id.recid '_daqrs_.mat'];
+    pth_daqrs = [id.pthstackdir id.recid '_daqrs_.mat'];
 end
 
 md = mdsild(pthstack);
@@ -101,7 +101,7 @@ try
         fprintf("processed/resampled daq file '" + pth_daqrs + "' does not exist; making it now" + newline)
 
         if isempty(pth_daq)
-            pth_daq_pat = [id.dirstack id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+            pth_daq_pat = [id.pthstackdir id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
             pth_daq = rdir(pth_daq_pat);
             if isempty(pth_daq)
                 error("no daq file matching this pattern: " + pth_daq_pat)

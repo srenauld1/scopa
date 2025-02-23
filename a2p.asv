@@ -4,20 +4,23 @@
 function a2p(specin)
 
 arguments
-    specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset
+    specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
 end
 
 clear glb %clear globals
 
-odfsv(); %just always write it; why not
+odfsv(); %write default options to txt file
 
 oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 
 for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
+
+    %% paths
+
     pth = pthmake(o);
-    glb(1, dirstack=pth.dirstack); %set/update data folder path as global (use first argument 1 since you might be looping over k)
+    glb(1, pthstackdir=pth.pthstackdir, pthstack=pth.stack); %update some globals
 
     %% stack
 
@@ -27,7 +30,7 @@ for k = 1:numel(oa) % loop over recordings
 
     md = mdsild(pth.stack, pth.py);
 
-    %% stim
+    %% stimuli
 
     daq = daqld(pth.stack, o.daq);
     t = daq.t;
@@ -52,7 +55,7 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
-    %% model
+    %% models
 
     if o.mn.dofit
         fn = fieldnames(o.mdl);
@@ -91,7 +94,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% tmp
+    %% specialized
 
     % ebno({'r'}, vis.yaw, ball.yaw, fe.(optid).mu, fe.(optid).respcl, roi.a23.ts{1}, roi.a24.ts{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={6}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-2:2], yconst=1, slopelensec=[])
     % t5tmp

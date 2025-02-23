@@ -19,7 +19,7 @@ fndn = fullfile(expDir, '20241008_3_1_cmrg_dcdn_.mat');
 expID = cfn(1:10);
 trialNum = get_trialNum(fnraw);
 
-glb(dirstack = [expDir '/'])
+glb(pthstackdir = [expDir '/'])
 
 
 %%  RUN JF PIPELINE (WITH AND WITHOUT CLIPPING/SMOOTHING, ie dopp)

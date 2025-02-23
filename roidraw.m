@@ -87,11 +87,9 @@ catch ME
 
     end
 
+    save(pthmm, '-struct', 'mm', '-v7.3') %save each channel's mask separately (could do it together instead, either way is fine right?)
+
 end
-
-
-save(pthmm, '-struct', 'mm', '-v7.3') %save each channel's mask separately (could do it together instead, either way is fine right?)
-
 
 end
 

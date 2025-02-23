@@ -1,4 +1,4 @@
-function mdl = mdlmake(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake(indvp, depvp, imrate, pthstack, opt, epochts, doplt, numsyn, ld, histinc)
 
 
 %{
@@ -17,7 +17,6 @@ arguments
     depvp %dependent variable(s) before processing; if indvp and depvp are cells, separate models are fit to all indvp/depvp pairs (loop over mdlmake_one), if mat, only one model is fit
     imrate %imaging rate
     pthstack %path to stack
-    optid
     opt
     epochts = []
     doplt = []
@@ -40,15 +39,15 @@ pairind = [k(:) m(:)];
 numfit = size(pairind,1);
 
 for k = 1:numel(numfit)
-    mdl = mdlmake_one(indvp{pairind(k,1)}, depvp{pairind(k,2)}, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc);
+    mdl = mdlmake_one(indvp{pairind(k,1)}, depvp{pairind(k,2)}, imrate, pthstack, opt, epochts, doplt, numsyn, ld, histinc);
 end
 
 
 end
 
-function mdl = mdlmake_one(indvp, depvp, imrate, pthstack, optid, opt, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake_one(indvp, depvp, imrate, pthstack, opt, epochts, doplt, numsyn, ld, histinc)
 
-pthpre = [erase(pthstack, '.mat') optid '_mdl_'];
+pthpre = [erase(pthstack, '.mat') opt.optid '_mdl_'];
 pthmdl = [pthpre '.mat'];
 
 try

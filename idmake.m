@@ -12,8 +12,8 @@ for k = 1:numel(pthstacks)
 
     pthstacktmp = pthstacks{k};
 
-    [dirstack, fnin, ~] = fileparts(pthstacktmp);
-    dirstack = [dirstack filesep];
+    [pthstackdir, fnin, ~] = fileparts(pthstacktmp);
+    pthstackdir = [pthstackdir filesep];
 
     spl = strjoin(strsplit(fnin, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
     spl = strsplit(spl, '_'); %then separate by underscore
@@ -53,7 +53,7 @@ for k = 1:numel(pthstacks)
     id(k).stackid = stackid;
     id(k).datefly_hyphen = datefly_hyphen; %for some flyg files
 
-    id(k).dirstack = dirstack;
+    id(k).pthstackdir = pthstackdir;
     id(k).pthstack = pthstacktmp;
 
 end

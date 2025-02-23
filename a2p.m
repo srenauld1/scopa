@@ -16,8 +16,11 @@ oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
+
+    %% paths
+
     pth = pthmake(o);
-    glb(1, dirstack=pth.dirstack); %set current data folder path as global
+    glb(1, pthstackdir=pth.pthstackdir, pthstack=pth.stack); %update some globals
 
     %% stack
 
@@ -27,7 +30,7 @@ for k = 1:numel(oa) % loop over recordings
 
     md = mdsild(pth.stack, pth.py);
 
-    %% stim
+    %% stimuli
 
     daq = daqld(pth.stack, o.daq);
     t = daq.t;
@@ -38,7 +41,7 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.roi);
         for m = 1:numel(fn) %for each optid (unique set of options)
             optid = fn{m};
-            roi.(optid) = roimake(stack, pth.stack, optid, t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(optid) = roimake(stack, pth.stack, t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -48,11 +51,11 @@ for k = 1:numel(oa) % loop over recordings
         fn = fieldnames(o.fe);
         for m = 1:numel(fn)
             optid = fn{m};
-            fe.(optid) = femake(stack, pth.stack, optid, t, o.fe.(optid)); %extract features from stack, stim, or behavior (e.g. bump from stack, optic flow from visual stimulus)
+            fe.(optid) = femake(stack, pth.stack, t, o.fe.(optid)); %extract features from stack, stim, or behavior (e.g. bump from stack, optic flow from visual stimulus)
         end
     end
 
-    %% model
+    %% models
 
     if o.mn.dofit
         fn = fieldnames(o.mdl);
@@ -70,7 +73,7 @@ for k = 1:numel(oa) % loop over recordings
             depv = tsget(tgd);
 
             o.mdl.a1.mdlname = 'svd_0.97';
-            mdl = mdlmake(indv, depv, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
+            mdl = mdlmake(indv, depv, md.volrate, pth.stack, o.mdl.(optid), vis.epochts);
             
         end
     end
@@ -91,7 +94,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% tmp
+    %% specialized
 
     % ebno({'r'}, vis.yaw, ball.yaw, fe.(optid).mu, fe.(optid).respcl, roi.a23.ts{1}, roi.a24.ts{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={6}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-2:2], yconst=1, slopelensec=[])
     % t5tmp

@@ -5,7 +5,7 @@ pthparent_local = strrep(pthparent_local, '\', filesep);
 if endsWith(pthparent_local, filesep)
     pthparent_local = pthparent_local(1:end-1);
 end
-[~, dirstack, ~] = fileparts(pthparent_local);
+[~, pthstackdir, ~] = fileparts(pthparent_local);
 
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
@@ -17,7 +17,7 @@ if ~isempty(regexp( envname, 'compute-', 'once' ))
         if isempty(username)
             error("scopa may not be in your O2 home folder, make sure to git clone scopa into your O2 home folder")
         end
-        pthparent = fullfile('/', 'n', 'scratch', 'users', username(1), username, dirstack);
+        pthparent = fullfile('/', 'n', 'scratch', 'users', username(1), username, pthstackdir);
     else
         if endsWith(pthparent_o2, filesep)
             pthparent = pthparent_o2(1:end-1);

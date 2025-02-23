@@ -32,6 +32,12 @@ dogif = opt.dogif;
 
 maxnumframes = 500;
 
+
+if isempty(pthgif)
+    pthgif = pthauto(suffix='.gif', usetime=1);
+end
+
+
 pthpre = [erase(pthstack, '.mat') 'stack3_'];
 
 if isempty(it)
@@ -170,6 +176,9 @@ for k = 1:size(stack,4)
     vsh(1).Data = stack(:,:,:,k);
 
     if ~isempty(svtype)
+        obj = ancestor(vsh(1),'figure','toplevel');
+        I = getframe(obj);
+        tmp = I.cdata;
         vclass = class(tmp);
         szstr = sprintf('%.0f_', size(stack));
         szstr = szstr(1:end-1);

@@ -35,7 +35,7 @@ iz = opt.iz;
 it = opt.it;
 
 id = idmake(pthtif); %just in case id info gets used below
-pthmd = [id.dirstack id.recid '_mdsi_.txt'];
+pthmd = [id.pthstackdir id.recid '_mdsi_.txt'];
 numslice_withflyback = structfile(pthmd, nm='numslice_withflyback');
 if isempty(numslice_withflyback)
     error("some metadata is missing")

@@ -1,7 +1,7 @@
 function pthsv = pthauto(opt)
 
 arguments
-    opt.glbvar = 'dirstack'
+    opt.glbvar = 'pthstackdir'
     opt.suffix = ''
     opt.usetime = 1
     opt.usefun = 1
@@ -15,8 +15,8 @@ if numel(callstack) >= 2
 else
     fcnnm = 'unknownfunction';
 end
-dirstack = glb(opt.glbvar);
-if isempty(dirstack)
+pthstackdir = glb(opt.glbvar);
+if isempty(pthstackdir)
     vnm = inputname(1);
     error(sprintf("glbvaral variable " + opt.glbvar + " has not been set" + newline + "and a save path was not passed as argument into function " + fcnnm + newline + "do one or the other"))
 end
@@ -34,6 +34,6 @@ infix = [fndefault infix];
 if ~startsWith(opt.suffix, '_')
     opt.suffix = ['_' opt.suffix];
 end
-pthsv = [dirstack infix opt.suffix];
+pthsv = [pthstackdir infix opt.suffix];
 
 end
