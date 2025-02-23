@@ -1,6 +1,5 @@
 
 % see docs_a2p
-% roi.optid.superfield{chan}.field %
 
 function a2p(specin)
 
@@ -17,12 +16,8 @@ oa = oset(specin); % set options; oa stands for o all (ie all recordings)
 for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
-
-    osv(o); %save options to txt file
-
     pth = pthmake(o);
-
-    glb(1, dirstack=pth.dirstack); %set/update data folder path as global (update option since you might be looping over k)
+    glb(1, dirstack=pth.dirstack); %set/update data folder path as global (use first argument 1 since you might be looping over k)
 
     %% stack
 
@@ -34,14 +29,8 @@ for k = 1:numel(oa) % loop over recordings
 
     %% stim
 
-    daqrs = daqld(pth.stack, o.daq);
-    [ball, vis, t] = daqrename(daqrs);
-    [pos.x, pos.y] = ficpath(ball.forvel, ball.sidevel, vis.yaw, t, o.daq.balldia);
-    vis = epochld(o.id.recdatenum, t, vis, md.sampper, o.daq.use_carls_epochs);
-
-    if o.mn.dofeat
-        [vis.(o.feat.id), stimvid] = featld(pth.stack, o.feat);
-    end
+    daq = daqld(pth.stack, o.daq);
+    t = daq.t;
 
     %% rois
 
@@ -52,25 +41,16 @@ for k = 1:numel(oa) % loop over recordings
             roi.(optid) = roimake(stack, pth.stack, optid, t, md.sampper, md.widyxz, pth.py, o.roi.(optid)); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
-2
-    %% bump
 
+    %% features
 
-    if o.mn.dobmp
-        fn = fieldnames(o.bmp);
+    if o.mn.dofe
+        fn = fieldnames(o.fe);
         for m = 1:numel(fn)
             optid = fn{m};
-            indv = vis.yaw; %hard coding this for now
-            % o2.roi.rgname = 'eb';
-            % depv = tsget(o2, chan=o.bmp.(optid).chan);
-            depv = roi.a28.ts{o.bmp.(optid).chan};
-            bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pth.stack, optid, o.bmp.(optid)); %fit bump
+            fe.(optid) = femake(stack, pth.stack, optid, t, o.fe.(optid)); %extract features from stack, stim, or behavior (e.g. bump from stack, optic flow from visual stimulus)
         end
-
-        ebno({'r'}, vis.yaw, ball.yaw, bmp.(optid).mu, bmp.(optid).respcl, roi.a23.ts{1}, roi.a24.ts{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={6}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-2:2], yconst=1, slopelensec=[])
-
     end
-
 
     %% model
 
@@ -92,10 +72,8 @@ for k = 1:numel(oa) % loop over recordings
             o.mdl.a1.mdlname = 'svd_0.97';
             mdl = mdlmake(indv, depv, md.volrate, pth.stack, optid, o.mdl.(optid), vis.epochts);
             
-            % t5tmp
         end
     end
-
 
     %% plots
 
@@ -111,6 +89,13 @@ for k = 1:numel(oa) % loop over recordings
                 pthroiint, nrm, md.widyxz, vid=ftv, stim=stimvid)
         end
     end
+
+
+    %% tmp
+
+    % ebno({'r'}, vis.yaw, ball.yaw, fe.(optid).mu, fe.(optid).respcl, roi.a23.ts{1}, roi.a24.ts{1}, t, md.sampper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={6}, epochts=vis.epochts, lagsampxy=0, lagsampz=[-2:2], yconst=1, slopelensec=[])
+    % t5tmp
+    % mitotmp
 
 
 end
