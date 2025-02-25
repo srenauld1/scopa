@@ -15,6 +15,7 @@ arguments
     opt.cmap = []
     opt.fontsize = 12
     opt.remove_overlap = [] %if empty, prompt will ask user if they want to remove overlapping pixels; otherwise 0 or 1 to skip or do
+    opt.forceload = 0; %error if draw rois do not already exist
 end
 pthstack = opt.pthstack;
 rg = opt.rg;
@@ -27,6 +28,7 @@ roialpha = opt.roialpha;
 cmap = opt.cmap;
 fontsize = opt.fontsize;
 remove_overlap = opt.remove_overlap;
+forceload = opt.forceload;
 
 if ndims(stackmnt)>5
     error("stackmnt in roidraw cannot have more than 5 dimensions")
@@ -49,49 +51,52 @@ pthmm = insertBefore(pthstack, '_.mat', fnsuffix);
 try
 
     mm = load(pthmm);
-    if any(~isfield(mm, {'mask', 'maskname', 'chan', 'rg'}))
-        error("mm struct must contain fields 'mask', 'maskname', 'chan', 'rg'; you may have loaded an old mm struct")
+
+    if any(~isfield(mm{1}, {'mask', 'maskname', 'chan', 'methodmm', 'rg'})) || numel(mm)==2 && any(~isfield(mm{2}, {'mask', 'maskname', 'chan', 'methodmm', 'rg'}))
+        error("mm struct must contain fields 'mask', 'maskname', 'chan', 'methodmm', 'rg'; you may have loaded an old mm struct")
     end
-    if ~isequal(mm.rg, rg)
-        error("mm file exists but rg in mm file does not match current rg with same name; did you delete the rg you used to draw this mm?")
+    if ~isequal(mm{1}.rg, rg) || numel(mm)==2 && ~isequal(mm{2}.rg, rg) 
+        error("mm file exists but for at least one channel rg in mm file does not match current rg with same name; did you delete the rg you used to draw this mm?")
     end
-    if ~isequal(mm.maskname, maskname) || ~isequal(mm.chan-1, unique([chandraw, chancp]))
-        error("mm file exists but chan and/or maskname do not match")
+    if ~isequal(mm{1}.maskname, maskname) || ~isequal(mm{1}.methodmm, methodmm) || ( numel(mm)==2 && ~isequal(mm{2}.maskname, maskname) || ~isequal(mm{2}.methodmm, methodmm) )
+        error("mm file exists but maskname and/or methodmm do not match for at least one channel")
     end
-    if all(mm.mask{1}==1)
-        fprintf("MANUAL ROI MASK IS ALL ONES FOR rgname: " + rgname + ", maskname: " + maskname + ", channel 1: " + newline + "YOU PROBABLY CHOSE TO SKIP DRAWING" + newline)
+    if all(mm{1}.mask==1)
+        fprintf("NOTE MANUAL ROI MASK IS ALL ONES FOR rgname: " + rgname + ", maskname: " + maskname + ", channel 1: " + newline + "YOU PROBABLY CHOSE TO SKIP DRAWING" + newline)
     end
-    if numel(mm.mask)==2 && all(mm.mask{2}==1)
-        fprintf("MANUAL ROI MASK IS ALL ONES FOR rgname: " + rgname + ", maskname: " + maskname + ", channel 2: " + newline + "YOU PROBABLY CHOSE TO SKIP DRAWING" + newline)
+    if numel(mm)==2 && all(mm{2}.mask==1)
+        fprintf("NOTE MANUAL ROI MASK IS ALL ONES FOR rgname: " + rgname + ", maskname: " + maskname + ", channel 2: " + newline + "YOU PROBABLY CHOSE TO SKIP DRAWING" + newline)
     end
 
 catch ME
 
+    if forceload
+        error("you set forceload to true, but got this error: " + ME.message + newline)
+    end
     fprintf(newline + "" + ME.message + newline + "YOU WILL NOW BE PROMPTED TO DRAW ROIS" + newline)
 
     for c = chandraw
 
-        mm.mask{c} = roidraw_onechan(stackmnt(:,:,:,:,c), rgname, maskname, c, flag_oneroi, flag_rg, roialpha, cmap, fontsize, remove_overlap);
-        mm.maskname = maskname;
-        mm.chan = c;
-        mm.rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
+        mm{c}.mask = roidraw_onechan(stackmnt(:,:,:,:,c), rgname, maskname, c, flag_oneroi, flag_rg, roialpha, cmap, fontsize, remove_overlap);
+        mm{c}.maskname = maskname;
+        mm{c}.methodmm = methodmm;
+        mm{c}.chan = c;
+        mm{c}.rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
 
         if ~isempty(chancp)
             chanreceive = setxor(chancp, [1,2]);
             fprintf("chancp is " + num2str(chancp) + "; COPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(chancp) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
-            if all(mm.mask{chancp}==1, 'all') && ~all(mm.mask{chanreceive}==1, 'all')
+            if all(mm{chancp}.mask==1, 'all') && ~all(mm{chanreceive}.mask==1, 'all')
                 fprintf("warning projecting a manual mask of all ones onto a manual mask that is not all ones" + newline);
             end
-            mm.mask{chanreceive} = mm.mask{chancp};
+            mm{chanreceive}.mask = mm{chancp}.mask;
         end
 
     end
 
+    save(pthmm, 'mm', '-v7.3') %save each channel's mask separately (could do it together instead, either way is fine right?)
+
 end
-
-
-save(pthmm, '-struct', 'mm', '-v7.3') %save each channel's mask separately (could do it together instead, either way is fine right?)
-
 
 end
 

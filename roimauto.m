@@ -1,7 +1,7 @@
-function roimask = roimauto(stackmnt, roimask, widyxz, rgname, opt)
+function roimask = roimauto(stack, roimask, widyxz, rgname, opt)
 
 arguments
-    stackmnt
+    stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
     roimask
     widyxz
     rgname
@@ -16,6 +16,13 @@ edgethr = opt.edgethr;
 edgesig = opt.edgesig;
 celsz = opt.celsz;
 do3d = opt.do3d;
+
+if size(stack,4)>1
+    stackmnt = mean(stack,4);
+else
+    stackmnt = stack;
+end
+
 
 numchan = size(stackmnt,5);
 for c = 1:numchan

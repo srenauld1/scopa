@@ -104,6 +104,9 @@ for k = 1:numel(vbin)
                     for q = 1:numel(fnr)
                         opttmp.(fnr{q}) = optreturn.(fnr{q});
                     end
+                    if ~isfield(opttmp, 'optid') %if optid itself is not field (shouldn't ever be right?) add it here 
+                        opttmp.optid = nmnew;
+                    end
                     optout.(nmnew) = opttmp;
                 end
 

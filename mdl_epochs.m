@@ -80,7 +80,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         % optpp = parforOptions(ppp,RangePartitionMethod="fixed", SubrangeSize=3);
         % ticBytes(gcp);
 
-        for ri = 1:num_dim_depvp %(ri=1:num_dim_depvp, optpp) %ri = 1:num_dim_depvp
+        parfor ri = 1:num_dim_depvp %(ri=1:num_dim_depvp, optpp) %ri = 1:num_dim_depvp
             if depv_good_inds(ri)
                 depv = double(depv_allrois(:, ri));
                 depv_val = double(depv_allrois_val(:, ri));

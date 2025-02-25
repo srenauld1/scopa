@@ -2,13 +2,7 @@ function o = oset_fb8c(o)
 
 rgname = {'fb8c'}; 
 
-o.mn.doftv = 0; 
 o.mn.doroi = 1; 
-o.mn.dobmp = 0; 
-o.mn.dofit = 0; 
-o.mn.dopltx = 0; 
-o.mn.plt = [""]; 
-o.mn.pltvis = 1; 
 
 for m = 1:numel(rgname) 
 

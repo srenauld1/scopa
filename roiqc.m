@@ -1,7 +1,7 @@
 function roiqc(stack, pth_roif, opt)
 
 arguments
-    stack
+    stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
     pth_roif
     roitype
     opt.minpixperreg = 3 % min pix in each distongiguous region, roi selection criterion
@@ -31,7 +31,11 @@ mask_roim_all = opt.mask_allroi;
 
 
 numbins = 20;
-stackmnt = single(mean(stack, [4 5]));
+if size(stack,4)>1
+    stackmnt = mean(stack,4);
+else
+    stackmnt = stack;
+end
 
 
 %% prepare vars

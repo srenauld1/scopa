@@ -19,7 +19,7 @@ d.copybin = "";
 d.filled = 0;
 d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported in options struct o; options struct will make sure all of these are populated before existing oset; note some vbins are only used nested within others (e.g. mm only exists as roi.mm), but defaults for these can still be called using odf, like to invoke defaults from within the function that uses them e.g. odf('mm', unpack=1)
-    "spec", "mn", "daq", "spr", "ftv", "roi", "bmp", "mdl", "pltx", "feat", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
+    "spec", "mn", "daq", "spr", "ftv", "roi", "bmp", "mdl", "pltx", "fmf", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
     "mdl.tg", "mdl.sp", "mdl.tp", "mdl.opg", "mdl.opl", ...
     "bmp.mdl", "bmp.mdl.tg", "bmp.mdl.sp", "bmp.mdl.tp", "bmp.mdl.opg", "bmp.mdl.opl", ...
@@ -44,12 +44,10 @@ d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffi
 
 %% mn (ap2: main pipeline control in a2p)
 
-d.mn.dofeat = 0; %load stimulus features (carl's old project)
-d.mn.doftv = 0; %temporal resample fictrac video to match imaging (only relevant if you've not set up proper sync to daq)
 d.mn.doroi = 0; %do roi extraction
-d.mn.dobmp = 0; %compute bump 
 d.mn.dofit = 0; %model fitting (o.mdl below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
+d.mn.fe = [""]; %list of feature extraction subroutines to run (bmp for bmpmake, fmf for flymaxfe)
 
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
@@ -274,6 +272,7 @@ d.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max 
 d.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
 d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
+
 %% bmp (bmpmake: compute bump)
 
 % options for bump in bmpmake function
@@ -447,21 +446,21 @@ d.imhsv.ignorehue = 0; %when creating and plotting variable 'img', which is buil
 d.imhsv.ignoresat = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores sat in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 d.imhsv.ignoreval = 0;  %when creating and plotting variable 'img', which is built from variable 'hsvmap', 1 ignores val in variable 'hsvmap', makes constant 1, but does not change 'hsvmap'
 
-%% options for carl's old project
+%% fmf (flymaxfe: flymax visual stimulus feature extraction)
 
-d.feat.stimtype = 'drone';
-d.feat.id = 'CON_51';
-d.feat.pthparent = [];
-d.feat.pthtemplate = [];
-d.feat.rep = 1;
-d.feat.feat2 = [];
-d.feat.getgrid = 1; %get the feature on a grid (phi theta if vistype is sphere, xy if gridtype is plane)
-d.feat.vistype = 'plane'; %sphere, plane, or raw 
-d.feat.it = -100;
-d.feat.gridres = 256;
-d.feat.flipped = 0;
-d.feat.downsample_template = 1; %downsamples template, then uses it, rather than using template then downsampling; fine for most cases, just looks a little rougher
-d.feat.crop_edges = 1;
+d.fmf.stimtype = 'drone';
+d.fmf.id = 'CON_51';
+d.fmf.pthparent = [];
+d.fmf.pthtemplate = [];
+d.fmf.rep = 1;
+d.fmf.feat2 = [];
+d.fmf.getgrid = 1; %get the feature on a grid (phi theta if vistype is sphere, xy if gridtype is plane)
+d.fmf.vistype = 'plane'; %sphere, plane, or raw 
+d.fmf.it = -100;
+d.fmf.gridres = 256;
+d.fmf.flipped = 0;
+d.fmf.downsample_template = 1; %downsamples template, then uses it, rather than using template then downsampling; fine for most cases, just looks a little rougher
+d.fmf.crop_edges = 1;
 
 
 %% write options to file

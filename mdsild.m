@@ -1,8 +1,15 @@
 function md = mdsild(pthstack, pthpy)
 
 arguments
-    pthstack
+    pthstack = []
     pthpy = []
+end
+
+if isempty(pthstack)
+    pthstack = glb('pthstack');
+    if isempty(pthstack)
+        error("you must either pass argument pthstack or set glb('pthstack')")
+    end
 end
 
 id = idmake(pthstack); %just in case id info gets used below

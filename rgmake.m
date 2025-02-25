@@ -95,7 +95,6 @@ rg.z = [iz(1), iz(2)];
 rg.t = [it(1), it(2)];
 rg.c = [ic(1), ic(2)];
 
-rg = structfile(pthrg, s=rg, nm=rgid, useprefix=1); 
 
 
 

@@ -29,7 +29,7 @@ if ~iscell(indvp)
     indvp = {indvp};
 end
 if ~iscell(depvp)
-    indvp = {indvp};
+    depvp = {depvp};
 end
 
 %% check some inputs and prepare save path

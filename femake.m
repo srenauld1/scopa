@@ -1,51 +1,42 @@
-function fe = femake(stack, pthstack, t, opt, doplt)
+function fe = femake(fetype, pthstack, opt, stack, doplt)
 
-% generalized feature extraction for any experimental domain (neurons, behavior, stimuli); 
-% contains subroutines specialized for different features (e.g., bump extracted from stack, visual features extracted from visual stimulus) 
+% currently just a wrapper for feature extraction routines for all experimental domains (neurons, behavior, stimuli);
+% this function will eventuallty operate on features to derive new features
 
 arguments
-    stack
+    fetype
     pthstack
-    t = [] %only required nonempty if ~isempty(wavp) or channorm~=0 in roits
     opt = []
+    stack = []
     doplt = []
 end
 
-pthpre = [erase(pthstack, '.mat') opt.optid '_roi_'];
-pthfe = [pthpre '.mat'];
-
 if isempty(doplt)
-    doplt = any(strcmp('fe', glb('plt')));
+    doplt = any(strcmp('fe', glb('fe')));
 end
 
-if ~isempty(opt)
-    fetype = opt.fetype;
-end
+fe = [];
 
-try
+for k = 1:numel(fetype)
 
-    fe = load(pthfe);
-    % if any(~isfield(roi, {'ts', 'dat'})) || any(~isfield(roi, {'ts', 'dat'}))
-    %     error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
-    % end
-
-catch ME
-
-    fprintf("" + ME.message + newline + "creating fe struct now" + newline)
-
-    switch fetype
+    switch fetype{k}
 
         case 'bmp'
 
-            indv = vis.yaw; %hard coding this for now
-            % o2.roi.rgname = 'eb';
-            % depv = tsget(o2, chan=o.bmp.(optid).chan);
-            depv = roi.a28.ts{o.bmp.(optid).chan};
-            bmp.(optid) = bmpmake(indv, depv, md.volrate, vis.epochts, pthstack, o.bmp); %fit bump
+            fn = fieldnames(o.bmp);
+            for m = 1:numel(fn)
+                optid = fn{m};
+                indv = daq.vy; %hard coding this for now
+                % o2.roi.regionex = 'eb';
+                % depv = tsget(o2, chan=o.bmp.(optid).chan);
+                depv = roi.a5.ts{1};
+                fe.bmp.(optid) = bmpmake(indv, depv, md.volrate, daq.epochts, pthstack, o.bmp.(optid)); %fit bump
+            end
 
-        case 'flymax'
+        case 'fmf'
 
-            [vis.(o.feat.id), stimvid] = featld(pthstack, o.feat);
+            [fe.fmf.(opt.fmf.id), fmfvid] = flymaxfe(pthstack, opt.fmf);
+
 
     end
 

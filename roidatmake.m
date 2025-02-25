@@ -1,18 +1,27 @@
-function roidat = roidatmake(stackmnt, roimask, rg, mm, pthstack)
+function roidat = roidatmake(stack, roimask, rg, mm, pthstack)
 
 arguments
-    stackmnt
+    stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
     roimask
     rg = []
     mm = []
     pthstack = []
 end
 
+if ~iscell(roimask)
+    roimask = {roimask};
+end
+if size(stack,4)>1
+    stackmnt = mean(stack,4);
+else
+    stackmnt = stack;
+end
+
 numchan = size(stackmnt,5);
 roidat = cell(numchan, 1);
 for c = 1:numchan
     if ~isempty(roimask{c})
-        roidat{c} = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, c, rg, mm(c), pthstack); 
+        roidat{c} = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, c, rg, mm{c}, pthstack); %this creates a temporary variable for one channel of stackmnt, but stackmnt should never be very large since t has been averaged, so keeping it this way for simplicity
     end
 end
 

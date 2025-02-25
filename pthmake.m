@@ -86,9 +86,9 @@ pth_ts = [pthstackdir recid '_ts_.mat'];
 
 %% carl's old project
 
-pth_feat_save = [pthstackdir o.feat.id '_lin_ds_.mat'];
-pthparentfeat = o.feat.pthparent;
-pthtemplate = o.feat.pthtemplate;
+pth_feat_save = [pthstackdir o.fmf.id '_lin_ds_.mat'];
+pthparentfeat = o.fmf.pthparent;
+pthtemplate = o.fmf.pthtemplate;
 
 
 %% output

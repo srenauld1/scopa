@@ -1,8 +1,8 @@
 function roifauto(pthpy, optcm, opt)
 
 arguments
-    pthpy
-    optcm
+    pthpy = []
+    optcm = []
     opt.rgname = 'none'
     opt.maskname = 'none'
 end
@@ -13,6 +13,11 @@ if isempty(pthpy)
     if isempty(pthpy)
         error("you have not set glb('pthpy'), and you didn't pass in argument pthpy; you must do one or the other" + newline)
     end
+end
+if isempty(optcm)
+    fprintf("user did not pass options as argument, using all defaults")
+    tmp = odf('roi.cm', fill=1, unpack=1);
+    optcm = tmp.cm;
 end
 
 pthscopa = getpathscopa();

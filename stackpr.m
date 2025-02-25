@@ -12,10 +12,22 @@ if you're plotting multiple stacks in their entirity, this strategy is less effi
 %}
 
 arguments
-    pthstack
-    opt
+    pthstack = []
+    opt = []
     doplt = []
 end
+
+if isempty(pthstack)
+    pthstack = glb('pthstack');
+    if isempty(pthstack)
+        error("you must either pass argument pthstack or set glb('pthstack')")
+    end
+end
+if isempty(opt)
+    fprintf("user did not pass options as argument, using all defaults")
+    opt = odf('spr', fill=1, unpack=1);
+end
+
 optsld = opt.sld;
 stackdtype = opt.stackdtype;
 zerostack = opt.zerostack;

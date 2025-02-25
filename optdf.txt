@@ -120,7 +120,8 @@
     "voltmax": 10,
     "voltmin": 0
   },
-  "feat": {
+  "filled": 0,
+  "fmf": {
     "crop_edges": 1,
     "downsample_template": 1,
     "feat2": [],
@@ -135,7 +136,6 @@
     "stimtype": "drone",
     "vistype": "plane"
   },
-  "filled": 0,
   "ftv": {
     "numpkthr": 10,
     "numpx": 10,
@@ -193,12 +193,10 @@
   "mn": {
     "dirtmp": "scopatmp",
     "dmstackdf": "yxztck",
-    "dobmp": 0,
-    "dofeat": 0,
     "dofit": 0,
-    "doftv": 0,
     "dopltx": 0,
     "doroi": 0,
+    "fe": "",
     "plt": "",
     "pltvis": 1,
     "pthpy": "",
@@ -212,7 +210,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025022311502019",
+    "timestr": "2025022422505225",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -225,7 +223,7 @@
     "bmp",
     "mdl",
     "pltx",
-    "feat",
+    "fmf",
     "roi.mm",
     "roi.ma",
     "roi.cm",

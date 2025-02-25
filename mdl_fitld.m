@@ -1,6 +1,6 @@
 function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, ld, valnum, vfi)
 
-omit_time_from_savemodel_datestr = 0;
+omit_time_from_savemodel_datestr = 1;
 
 if valnum==0
     pthpat = [pthpre '_0_*_fitdata_.mat'];

@@ -2,13 +2,7 @@ function o = oset_312(o)
 
 rgname = {'none'}; 
 
-o.mn.doftv = 0; 
 o.mn.doroi = 1; 
-o.mn.dobmp = 0; 
-o.mn.dofit = 0; 
-o.mn.dopltx = 0; 
-o.mn.plt = ["spr"]; 
-o.mn.pltvis = 1; 
 
 o.spr.sld.ic = [];
 

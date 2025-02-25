@@ -63,9 +63,11 @@ end
 if strcmp(domtype, 'functional')
 
     optidmdl = 'a1';
-    mdl = mdlmake(indvp, depvp, imrate, pthstack, optidmdl, optmdl, epochts, doplt);
+    optmdl.optid = optidmdl;
+    mdl = mdlmake(indvp, depvp, imrate, pthstack, optmdl, epochts, doplt, 0, 1);
 
-    angpref = mdl.ft.(cell2mat(fieldnames(mdl.ft))).indvpf_mean_allval(:)'; %row vector of preferred angle;
+    vfoldhack = 'v_0';
+    angpref = mdl.ft.indvpf_mean_allval(:)'; %row vector of preferred angle;
 
     if numangrs
         [respcltmp, domaintmp] = compassrs(depvp, angpref, numangrs, maxangrs, doplt);

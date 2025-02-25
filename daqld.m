@@ -31,11 +31,22 @@ function daq = daqld(pthstack, opt, doplt, pth_daq, pth_daqrs)
 
 
 arguments
-    pthstack
-    opt
+    pthstack = []
+    opt = []
     doplt = []
     pth_daq = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack)
     pth_daqrs = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack)
+end
+
+if isempty(pthstack)
+    pthstack = glb('pthstack');
+    if isempty(pthstack)
+        error("you must either pass argument pthstack or set glb('pthstack')")
+    end
+end
+if isempty(opt)
+    fprintf("user did not pass options as argument, using all defaults")
+    opt = odf('daq', fill=1, unpack=1);
 end
 
 balldia = opt.balldia; % mm, used to convert fictrac variables into mm

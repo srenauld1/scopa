@@ -1,130 +1,147 @@
-function roi = roimake(stack, pthstack, optid, t, sampper, widyxz, pthpy, opt, roimask, doplt)
+function roi = roimake(stack, pthstack, t, sampper, widyxz, opt, pthpy, roimask, doplt)
 
 % see docs_roimake.m
 
 arguments
     stack
     pthstack
-    optid
     t = [] %only required nonempty if ~isempty(wavp) or channorm~=0 in roits
     sampper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
-    pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     opt = []
+    pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     roimask = []
     doplt = []
 end
 
-pthpre = [erase(pthstack, '.mat') optid '_roi_'];
+pthpre = [erase(pthstack, '.mat') opt.optid '_roi_'];
 pthroi = [pthpre '.mat'];
 
 if isempty(doplt)
     doplt = any(strcmp('roi', glb('plt')));
 end
 
+if ndims(stack)<4
+    error("stack must be 4d or 5d")
+end
+
+numchan = size(stack,5);
+
+
+if isempty(roimask)
+    maskin = 0;
+    roimask = cell(numchan,1);
+    if opt.domm
+        maskname = opt.mm.maskname;
+    else
+        maskname = 'none';
+    end
+else
+    maskin = 1;
+    if ~iscell(roimask)
+        roimask = {roimask};
+    end
+end
+
+
+
 try
 
+
     roi = load(pthroi);
-    if any(~isfield(roi, {'ts', 'dat'})) || any(~isfield(roi, {'ts', 'dat'}))
+    if any(~isfield(roi, {'ts', 'dat'}))
         error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
     end
+    [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg 
+    mm = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack herem, just loading mm
+    if ~isequal(roi.dat{1}.rg, rg) || ~isequal(roi.dat{1}.mm, mm{1}) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat{1}.rg, rg) || ~isequal(roi.dat{1}.mm, mm) ) )
+        error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
+    end
+
 
 catch ME
 
+
     fprintf("" + ME.message + newline + "creating roi struct now" + newline)
 
-    if isempty(roimask)
-        maskinput = 0;
-        domm = opt.domm;
-        doma = opt.doma;
-        docm = opt.docm;
-        doqc = opt.doqc;
-    else
-        if ~iscell(roimask)
-            roimask = {roimask};
-        end
-        maskinput = 1;
-        domm = 0;
-        doma = 0;
-        docm = 0;
-        doqc = 0;
-        doplt = 0; %force 0 here
-    end
-    rgname = opt.rgname;
+    
 
-    if ndims(stack)<4
-        error("stack must be 4d or 5d")
-    end
+    %%%% CROP stack TO rg CUBOID %%%%
 
-    numchan = size(stack,5);
-
-
-    %% crop movie to rgname cuboid
-
-    if ~maskinput
-        [stack, rg] = stackcrop(stack, pthstack, rgname);
+    if ~maskin
+        [stack, rg] = stackcrop(stack, pthstack, opt.rgname);
     end
 
     stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (don't use glb('stackmnt') because that is the whole fov)
 
-    %% draw rois
 
-    if domm
-        maskname = opt.mm.maskname;
+
+    %%%% DRAW ROIS %%%%
+
+    if opt.domm && ~maskin
         if ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1
-            oneroi = 1;
+            oneroidraw = 1;
         else
-            oneroi = 0;
+            oneroidraw = 0;
         end
-        mm = roidraw(stackmnt, pthstack=pthstack, rg=rg, maskname=maskname, methodmm=opt.mm.methodmm, oneroi=oneroi);
-        roimask = mm.mask;
-    else
-        maskname = 'none';
-        roimask = cell(numchan,1);
+        mm = roidraw(stack, pthstack, rg=rg, maskname=maskname, methodmm=opt.mm.methodmm, oneroi=oneroidraw);
+        for k = 1:numel(mm)
+            roimask{k} = mm{k}.mask; 
+        end
     end
 
 
-    %% make morphological roi mask (from manual mask plus automated mask, or just manual mask, or just automated mask), and compute some roi info and save in struct roidat
 
-    if doma
-        roimask = roimauto(stackmnt, roimask, widyxz, rgname, opt.ma);
+    %%%% AUTOMATED MORPHOLOGICAL SEGMENTATION %%%%
+
+    if opt.doma && ~maskin
+        roimask = roimauto(stackmnt, roimask, widyxz, opt.rgname, opt.ma); 
     end
 
-    %% functional (caiman) roi responses
 
-    if docm
+
+    %%%% AUTOMATED FUNCTIONAL SEGMENTATION (CAIMAN) %%%%
+
+    if opt.docm && ~maskin
         [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, maskname=maskname);
     end
 
-    %% quality control
 
-    if doqc
+
+    %%%% QUALITY CONTROL %%%%
+
+    if opt.doqc && ~maskin
         roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm = trm, roicen = roidat.roicen, mask_allroi = roidat.mask_allroi);
     end
 
-    %% assemble roi data into struct
+
+
+    %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
 
     roi.dat = roidatmake(stackmnt, roimask, rg, mm, pthstack);
 
 
-    %% compute roi responses (and normalize)
 
-    if docm
-        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
-    else
+    %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
+
+    if ~exist('respcm', 'var')
         roi.ts = roits(stack, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
+    else
+        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
     end
 
 
-    %% save
+    %%%% SAVE %%%%
 
     save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
 
 end
 
-%% plots
 
-if doplt
+
+%%%% PLOTS %%%%
+
+if doplt && ~maskin
 
     chanplt = 1;
 

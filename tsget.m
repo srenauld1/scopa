@@ -149,7 +149,7 @@ format is:
         ts.bmp.optid.name (name=extracted feature name, eg bumpang for bump mean angular position)
     when options are not variable (e.g. daq variables are currently extracted with a hard-coded options set), optid is 'none'
 tsget recovers timeseries from ts (since ts can be complex)
-mdlmake, feat, and pltx use tsget to simplify timeseries recovery, variable names, and file names
+mdlmake, fmf, and pltx use tsget to simplify timeseries recovery, variable names, and file names
 
 tsget first argument is ts, and remaining arguments are all name-value: domain, optused, name, group
 
@@ -173,7 +173,7 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
 
     group
         group determines how output timeseries are arrayed in the 3rd dimension 
-        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, feat loops over 3rd dim to extract features from different sets of timeseries)
+        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, fmf loops over 3rd dim to extract features from different sets of timeseries)
         group can take the following values: 'all', 'domain', 'optused', 'name', 
         these refer to tsget input arguments, which can each be expanded to return multiple timeseries; 
         group determines whether output should be group according to that expansion; 
@@ -198,7 +198,7 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
     tgtmp.group = 'name' %fit model to each 
     o.mdl.depv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
 
-mdlmake and feat will also get optid
+mdlmake and fmf will also get optid
 
 % setting pltx v1 using tsget input struct
     tgtmp.domain = 'roi' %roi domain
