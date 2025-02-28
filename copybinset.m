@@ -1,0 +1,65 @@
+function optout = copybinset(opt, vbin, copybin)
+
+% put a vbin from the options struct into a copybin
+% if no copybin is passed as input, will use the default copybin (copybindf) 
+% if input opt is already a vbin within a copybin, nothing happens 
+% will error if apparently wrong struct is passed in (incorrect vbin, for example)
+% this is very similar to one of the functions of odf, but this can deal
+% with options structs that already have copybins; this function is really
+% only used to make sure options struct is formatted correctly before it
+% enters some functions, for example, to help prevent errors if the user
+% passes in a nested options struct one level lower than it should be, this
+% will create the higher level to prevent error downstream
+
+arguments
+    opt
+    vbin
+    copybin = []
+end
+
+if isempty(copybin)
+    copybin = glb('copybindf');
+    if isempty(copybin)
+        error("you must pass copybin or set glb('copybindf')")
+    end
+end
+
+lowered = 0;
+if isequal(unique(fieldnames(opt)), {vbin})
+    opt = opt.(vbin);
+    lowered = 1;
+end
+
+for k = numel(opt):-1:1 %backwards to preallocate
+    
+    opttmp = opt(k);
+    
+    fn = fieldnames(opttmp);
+    fndf = fieldnames(odf(vbin, unpack=1));
+    fn_invalid = fn(~ismember(fn, fndf) & ~structfun(@isstruct, opttmp) & ~structfun(@isempty, opttmp));
+    
+    if ~isempty(fn_invalid) %if there are any fields that are not default, and are not structs, and are not empty, you may have the wrong vbin
+        error("you must have passed in the wrong vbin")
+    else
+        if all(structfun(@isstruct, opttmp))
+            opttmpnest = opttmp.(fn{1})(1); %in case it's nonscalar
+            fnnest = fieldnames(opttmpnest);
+            fn_invalid_nest = fnnest(~ismember(fnnest, fndf) & ~structfun(@isstruct, opttmpnest) & ~structfun(@isempty, opttmpnest));
+            if isempty(intersect(fnnest, fndf))
+                error("you must have passed in the wrong vbin within a copybin")
+            end
+            % if isempty(fn_invalid_nest)
+            %     error("you must have passed in the intended vbin with the wrong name; like if opt.roi is correctly formatted but named opt.rois")
+            % end
+            optnew(k) = opttmp;
+        else
+            optnew.(copybin)(k) = opttmp;
+        end
+    end
+end
+
+if lowered
+    optout.(vbin) = optnew;
+else
+    optout = optnew;
+end

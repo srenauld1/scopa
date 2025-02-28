@@ -25,6 +25,9 @@ else
     posy = (cumsum(dty) - dty(1)) .* ballr;
 end
 
+posx = posx(:)'; %row vector so time is 2nd dim
+posy = posy(:)'; %row vector so time is 2nd dim
+
 if doplt
     figure; plot(ball.forvel); saveas( gcf, [pth.recid 'ballforvel_.fig']); close(gcf)
     figure; plot(ball.yawvel); saveas( gcf, [pth.recid 'ballyawvel_.fig']); close(gcf)

@@ -9,27 +9,42 @@ function resp1 = nrmchan(resp1, resp2, opt)
 arguments
     resp1
     resp2
-    opt.t = 1:size(resp1,2)
+    opt.t = []
+    opt.srate = [] %sample rate
     opt.it = 1:size(resp1,2)
     opt.roiind = 1:size(resp1,1)
     opt.pthpre = ''
     opt.mincoh = 0.7
 end
-error("make channorm=0 because nrmchan is a work in progress")
+
+error("make channorm=0 to not enter this function because nrmchan is a work in progress")
+
+srate = opt.srate;
 t = opt.t;
 it = opt.it;
 roiind = opt.roiind;
 pthpre = opt.pthpre;
 mincoh = opt.mincoh;
 
+if isempty(t)
+    error("i think you might actually need t for this function, cannot replace with srate, right?? need to check")
+    t = 1:size(resp1,2);
+    if isempty(srate)
+        error("either t or srate must be nonempty")
+    end
+    fs = srate;
+else
+    fs = 1/median(diff(t));
+end
+
 for ri = 1:numel(roiind)
-    resp1(ri,it) = normcrosschan_oneroi(resp1(roiind,it),resp2(roiind,it),t(it),pthpre,mincoh);
+    resp1(ri,it) = normcrosschan_oneroi(resp1(roiind,it),resp2(roiind,it),t(it),fs,pthpre,mincoh);
 end
 
 
 end
 
-function respnew = normcrosschan_oneroi(resp1,resp2,t,pthpre,mincoh)
+function respnew = normcrosschan_oneroi(resp1,resp2,t,fs,pthpre,mincoh)
 
 titlein = 'normcrosschan';
 maxseg = 128;
@@ -47,7 +62,6 @@ if ~isa(t, 'double')
 end
 
 numsamp = numel(resp1);
-fs = 1/median(diff(t));
 lev = floor(log2(numsamp));
 
 fngif = [pthpre(1:end-4) 'resp_mra_.gif'];

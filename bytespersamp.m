@@ -1,4 +1,4 @@
-function nb = bps(v)
+function nb = bytespersamp(v)
 
 if isnumeric(v) || islogical(v)
     v = class(v);

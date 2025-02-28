@@ -207,7 +207,7 @@ elseif ischar(inp) %getting globals
         outp = [];
     else
         outp = gset.(inp);
-        fprintf("getting global variable '" + inp + "'" + newline)
+        % fprintf("getting global variable '" + inp + "'" + newline)
     end
 else
     fprintf("your input to 'glb' does nothing" + newline)

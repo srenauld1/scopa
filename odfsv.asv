@@ -87,7 +87,7 @@ d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to 
 d.daq.voltmin = 0; % daq voltage min; need to find this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
-d.daq.renm = [  %string array, for each element, name after final comma is new name (which will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging), names before final comma are possible old names mapped to the new name; if old name exists, it gets new name; if no old name exists, the new name is given empty value; note new name can be derived from multiple old names, which is why there can be multiple old names per new name
+d.daq.renm = [  %string array, for each element, before comma is daq original name, after comma is new name (which will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging); if old name exists, it gets new name; if it doesn't exist, nothing happens; note new name can be derived from multiple old names, which is why new names can appear multiple times in renm
     "Time, t",
     "epoch, epochts",
     "g4vel, g4velnom, vyvnom",

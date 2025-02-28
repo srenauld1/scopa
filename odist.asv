@@ -1,8 +1,6 @@
 function optout = odist(optin, vbin)
 
-
 % odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each copybin, ie each), but odist in python just gives 'any' (not 'each') functionality
-% optin can be a vbin, or a higher struct containing the vbin (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this) 
 
 if isfield(optin, vbin)
     optin = optin.(vbin);

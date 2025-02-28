@@ -5,7 +5,7 @@ function roi = roimake(stack, pthstack, t, sampper, widyxz, opt, pthpy, roimask,
 arguments
     stack
     pthstack
-    t = [] %only required nonempty if ~isempty(wavp) or channorm~=0 in roits
+    t = [] %only required nonempty if channorm~=0 in roits
     sampper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
     opt = []
@@ -49,10 +49,14 @@ try
 
 
     roi = load(pthroi);
-    if any(~isfield(roi, {'ts', 'dat'}))
+
+    if any(~isfield(roi, {'ts', 'dat', 'maketime_optfile_roi'}))
         error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
     end
-    [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg 
+    if ~isequal(maketime_optfile_roi, glb('maketime_roi'))
+        error("roi id is derived from an optid file different from original")
+    end
+    [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg
     mm = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack herem, just loading mm
     if ~isequal(roi.dat{1}.rg, rg) || ~isequal(roi.dat{1}.mm, mm{1}) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat{2}.rg, rg) || ~isequal(roi.dat{2}.mm, mm{2}) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
@@ -133,6 +137,8 @@ catch ME
 
     %%%% SAVE %%%%
 
+
+    roi.maketime_optfile_roi = glb('maketime_roi');
     save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
 
 end

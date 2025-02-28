@@ -2,33 +2,24 @@
   "a1": {
     "cm": {},
     "docm": 0,
-    "doma": 1,
+    "doma": 0,
     "domm": 1,
     "doqc": 0,
-    "ma": {
-      "celsz": 8,
-      "chan": 1,
-      "do3d": 1,
-      "edgesig": [3,3,3],
-      "edgethr": [0.1,0.7],
-      "maskmake": "nonzero",
-      "maskseg": "uniform",
-      "numroi": 128
-    },
+    "ma": {},
     "mm": {
       "maskname": "none",
       "methodmm": "all"
     },
     "nrm": {
       "channorm": 0,
-      "degdtr": 2,
+      "degdtr": 0,
       "mincoh": [],
-      "post": "rsc000100",
+      "post": "f",
       "pre": "f",
       "wavp": []
     },
     "qc": {},
-    "rgname": "eb"
+    "rgname": "t5"
   },
   "a2": {
     "cm": {},
@@ -38,74 +29,21 @@
     "doqc": 0,
     "ma": {},
     "mm": {
-      "maskname": "left",
+      "maskname": "ten",
       "methodmm": "all"
     },
     "nrm": {
       "channorm": 0,
-      "degdtr": 2,
+      "degdtr": 0,
       "mincoh": [],
-      "post": "rsc000100",
+      "post": "f",
       "pre": "f",
       "wavp": []
     },
     "qc": {},
-    "rgname": "no"
+    "rgname": "tm"
   },
   "a3": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {},
-    "mm": {
-      "maskname": "right",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 2,
-      "mincoh": [],
-      "post": "rsc000100",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "no"
-  },
-  "a4": {
-    "cm": {},
-    "docm": 0,
-    "doma": 1,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {
-      "celsz": 8,
-      "chan": 1,
-      "do3d": 1,
-      "edgesig": [3,3,3],
-      "edgethr": [0.1,0.7],
-      "maskmake": "nonzero",
-      "maskseg": "uniform",
-      "numroi": 32
-    },
-    "mm": {
-      "maskname": "none",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 2,
-      "mincoh": [],
-      "post": "rsc000100",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "eb"
-  },
-  "a5": {
     "cm": {},
     "docm": 0,
     "doma": 1,
@@ -138,5 +76,6 @@
   },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
+  "maketime": "2025022620592498",
   "prefix": "a"
 }

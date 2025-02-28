@@ -78,10 +78,11 @@ for iter = 1:numiter
 
         if iter>1
             %idxbad is not what we want to change
-            visyaw(idxbad) = rand(sum(idxbad), 1);
+            visyawtmp = visyaw;
+            visyawtmp(idxbad) = rand(sum(idxbad), 1);
         end
 
-        yawdeg = rad2deg(visyaw); %convert to degrees because tolerance is in degrees and we like degrees more anyway
+        yawdeg = rad2deg(visyawtmp); %convert to degrees because tolerance is in degrees and we like degrees more anyway
         dv = rad2deg(tsdv('circular', deg2rad(yawdeg), dvlensec, dvord, sampper)); %derivative
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window

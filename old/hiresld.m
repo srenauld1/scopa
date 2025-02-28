@@ -6,9 +6,9 @@ function [stackmnthr, hrlr] = hiresld(recid, pth, stack, md, opts_hires)
 pth_hires_tif = [pth.hires_prefix '.tif'];
 
 pixdist_z_lr = md.widyxz(3);
-pos_lr_cntrs = compute_z_centers(pixdist_z_lr, md.numslice );
+pos_lr_cntrs = slicemid(pixdist_z_lr, md.numslice );
 pixdist_z_hr = md.md_hires.widyxz(3);
-pos_hr_cntrs = compute_z_centers(pixdist_z_hr, md.md_hires.sz(3) );
+pos_hr_cntrs = slicemid(pixdist_z_hr, md.md_hires.sz(3) );
 
 hrlr = [];
 for phri = 1:length(pos_hr_cntrs)

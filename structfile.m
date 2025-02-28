@@ -38,6 +38,9 @@ wcpat = '*';
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
 
+if startsWith(pth, ['~' filesep])
+    error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
+end
 pthscopa = getpathscopa();
 pthall = rdir(pth);
 
@@ -80,7 +83,7 @@ if useprefix
         error("pth does not contain filename suffix (for prefix) in correct position")
     end
     if ~isscalar(regexp(pth, '*'))
-        error("if useprefix is true, pth must contain one and only one *")
+        error("if useprefix is true, pth must contain one and only one *, in this suffix of the the filename, like this: '_*_.txt'")
     end
     if isempty(pthscopas)
         pthscopas = glb('pthscopas');
@@ -93,6 +96,7 @@ if useprefix
     if ~isempty(pthall)
         for k = 1:numel(pthall) %if pth contains wildcard, it's because it's filesystem protected, so find the file for this filesystem
             sfile = structtxtld(pthall(k).name, nocells=1);
+
             if ~isfield(sfile, 'loc') || ~isfield(sfile, 'prefix')
                 error("useprefix is true but pth is a file that previously did not use prefix")
             end
@@ -107,7 +111,7 @@ if useprefix
         end
     end
     if filesystem_matched==0
-        fprintf("no file on current filesystem found; creating one" + newline)
+        fprintf("no file on current filesystem found; will create one if sfilenew is nonempty" + newline)
         pftmp = struct2cell(pthscopas);
         for k = 1:numel(pftmp)
             if ~isempty(pftmp{k}) && ~endsWith(pftmp{k}, filesep)
@@ -143,11 +147,18 @@ end
 %%%%% INSPECT FILE %%%%%
 
 [pthdir, flnm, ~] = fileparts(pth);
+flnmsplit = strsplit(flnm, '_');
 loc = [pthdir filesep];
 
 if isfile(pth)
 
     sfile = structtxtld(pth, nocells=1); %load from file
+    if isfield(sfile, 'maketime')
+        maketime = sfile.maketime;
+        sfile = rmfield(sfile, 'maketime');
+    else
+        error("file must have maketime recording when it was first created (to reliably map to other files with ids contained in this file); you may have an old file")
+    end
     if isfield(sfile, 'loc')
         if ~useprefix
             error("useprefix must be true since pth exists and previously used prefix")
@@ -190,8 +201,7 @@ if isfile(pth)
                 error("default pattern can only use one prefix")
             end
             prefix_derived = cell2mat(prefix_derived);
-            prefix_in_filename = strsplit(flnm, '_');
-            prefix_in_filename = prefix_in_filename{end-1};
+            prefix_in_filename = flnmsplit{end-1};
             if ~isequal(prefix, prefix_derived, prefix_field, prefix_in_filename) %make sure input prefix matches sfile.prefix and prefixes in each variable name in file
                 error("input prefix must match prefix in variable names in file, prefix in prefix field in file, and prefix in filename")
             end
@@ -223,11 +233,16 @@ else
 
     sfile = struct;
     nmfile = fieldnames(sfile);
+    maketime = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
 end
 
 
 %%%%% GET MATCHED VARIABLE FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
+
+if ~isempty(nm) && startsWith(nm, prefix)
+    fprintf("warning, nm starts with prefix, you may be intending to find variable [prefix nm]; if you do not get the results you want, try not including prefix in nm" + newline)
+end
 
 if ~isfile(pth)
     if getonly
@@ -342,10 +357,44 @@ else
     if autonm_write
         sfile.autonm = 1;
     end
+    sfile.maketime = maketime;
     sfile.(nmout) = sfilenew;
     structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 end
 
+%%%%% SET GLOBALS %%%%%
+
+if ~strcmp(flnmsplit{1}, 'opt')
+    error("filename should be opt then vbin then user then prefix then .txt")
+end
+
+% previously tried to set globals as struct, but currently won't allow updating fields within maketime struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(vbin) = maketime; glb(maketime=maketime_glb)
+
+vbin = flnmsplit{2};
+switch vbin
+    case 'roi'
+        if isempty(glb('maketime_roi'))
+            glb(maketime_roi=maketime);
+        end
+    case 'mdl'
+        if isempty(glb('maketime_mdl'))
+            glb(maketime_mdl=maketime);
+        end
+    case 'bmp'
+        if isempty(glb('maketime_bmp'))
+            glb(maketime_bmp=maketime);
+        end
+    case 'daq'
+        if isempty(glb('maketime_daq'))
+            glb(maketime_daq=maketime);
+        end
+    case 'rg'
+        if isempty(glb('maketime_rg'))
+            glb(maketime_rg=maketime);
+        end
+    otherwise
+        error("vbin must be roi, mdl, bmp, rg, or daq")
+end
 
 end
 

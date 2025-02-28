@@ -7,7 +7,7 @@ arguments
     vbin
 end
 
-nonfunctional_vbin = {'sp', 'tp', 'imhsv', 'optid'};
+nonfunctional_vbin = {'sp', 'tp', 'imhsv', 'optid', 'tg', 'indv', 'depv'};
 
 if isfield(o, vbin)
     error("you passed o with substruct " + vbin + " but should pass that substruct itself")

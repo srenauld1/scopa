@@ -24,9 +24,10 @@ end
 
 chanuse = ~cellfun(@isempty, roimask);
 
+srate = 1/sampper;
 
-if isempty(t) && ( ~isempty(wavp) || channorm~=0 )
-    error("must pass t if passing wavp or channorm (must have t to apply wavelet filtering or wavelet cohernece based 2-channel normalization)")
+if isempty(t) && channorm~=0
+    error("must pass t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
 end
 
 numchan = size(stackmnt,5);
@@ -110,13 +111,13 @@ for k = 1:numchan
             end
 
             if ~isempty(wavp)
-                tsout{k} = wavflt(tsout{k}, t=t, wavp=wavp, doplt=0); %wavelet bandpass filtering (within range wavp)
+                tsout{k} = wavflt(tsout{k}, t=t, srate=srate, wavp=wavp, doplt=0); %wavelet bandpass filtering (within range wavp)
             end
 
             tsout{k} = tsnorm(tsout{k}, normpost, sampper, memthr); %second normalization, optional
 
             if channorm
-                tsout{k} = nrmchan(tsout{k}, t=t, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
+                tsout{k} = nrmchan(tsout{k}, t=t, srate=srate, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
             end
 
         else

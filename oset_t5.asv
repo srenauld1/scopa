@@ -15,6 +15,10 @@ otmp.tg.roi.rgname = 'tm';
 otmp.tg.roi.domm = 1;
 otmp.tg.roi.mm.maskname = 'ten';
 
+otmp.tg.roi.rgname = 'tm';
+otmp.tg.roi.domm = 1;
+otmp.tg.roi.mm.maskname = 'ten';
+
 o.mdl.indv = otmp;
 
 otmp.tg.roi.rgname = 't5';

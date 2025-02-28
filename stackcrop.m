@@ -31,7 +31,7 @@ user = glb('user');
 if isempty(user)
     error("you have not set glb('user')")
 end
-pthrg = [pthscopa 'rg_' user '_*_.txt'];
+pthrg = [pthscopa 'opt_rg_' user '_*_.txt'];
 
 [~, nmstack] = fileparts(pthstack);
 if ~endsWith(nmstack, '_')

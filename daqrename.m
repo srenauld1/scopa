@@ -1,20 +1,23 @@
 
 function daqnew = daqrename(daq, renm)
 
-%make sure they're all row vectors
+%make sure they're all row vectors, or empty
 
-nms = daq.Properties.VariableNames;
+fnold = fieldnames(daq);
 
 daqnew = struct;
 for k = 1:numel(renm)
     renmtmp = strtrim(strsplit(renm{k}, ','));
-    nmold = renmtmp{1};
-    nmnew = renmtmp{2};
-    if any(strcmp(nmold,nms))
-        daqnew.(nmnew) = daq.(nmold){1}(:)';
+    nmold = renmtmp(1:end-1);
+    nmnew = renmtmp{end};
+    if any(ismember(fnold,nmold))
+        nmoldtmp = fnold(ismember(fnold, nmold));
+        nmoldtmp = nmoldtmp{1}; %in case there are multiple (there probably won't be), just choose one
+        daqnew.(nmnew) = daq.(nmoldtmp)(:)';
+        daq = rmfield(daq, nmold(isfield(daq, nmold))); %remove as you rename, so you can append remaining fields to new daq
+    else
+        daqnew.(nmnew) = []; %if there are no old names corresponding to the new name, make it empty
     end
 end
-
-
 
 

@@ -1,13 +1,13 @@
 {
   "bmp": {
     "chan": 1,
-    "domscope": "all",
     "domtype": "functional",
     "dorescale": 1,
     "maxangrs": 8,
     "mthd": "pva",
     "numangrs": 16,
     "omitnan": 1,
+    "scope": "all",
     "slopelensec": 0.4,
     "slopeord": 2,
     "smlensec": 0
@@ -65,20 +65,16 @@
     "renm": [
       "Time, t",
       "epoch, epochts",
-      "g4vel, vyvnom",
-      "g4velnom, vyvnom",
-      "g4panels, vy",
-      "g4yaw, vy",
-      "g4panels_dv, vyv",
-      "g4yaw_dv, vyv",
+      "g4vel, g4velnom, vyvnom",
+      "g4panels, g4yaw, vy",
+      "g4panels_dv, g4yaw_dv, vyv",
       "ficTracIntForward, bf",
       "ficTracIntForward_dv, bfv",
       "ficTracIntSide, bs",
       "ficTracIntSide_dv, bsv",
-      "ficTracYaw, by",
-      "ficTracHeading, by",
-      "ficTracHeading_dv, byv",
-      "ficTracYaw_dv, byv"
+      "ficTracYaw, ficTracHeading, by",
+      "ficTracYaw_dv, ficTracHeading_dv, byv",
+      "ftcam, ftcam"
     ],
     "slopelensec": 0.4,
     "slopeord": 2,
@@ -172,8 +168,10 @@
     "numroi": 128
   },
   "mdl": {
+    "depv": [],
     "epochmix": 0,
     "epochnum": 1,
+    "indv": [],
     "lagsec": 0,
     "lensec": 0,
     "max_iter_global": 3,
@@ -191,12 +189,19 @@
     "methodmm": "all"
   },
   "mn": {
+    "copybindf": "none",
     "dirtmp": "scopatmp",
     "dmstackdf": "yxztck",
     "dofit": 0,
     "dopltx": 0,
     "doroi": 0,
     "fe": "",
+    "id_capable_vbin": [
+      "roi",
+      "mdl",
+      "bmp",
+      "daq"
+    ],
     "plt": "",
     "pltvis": 1,
     "pthpy": "",
@@ -210,7 +215,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025022422505225",
+    "timestr": "2025022719222362",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -218,7 +223,6 @@
     "mn",
     "daq",
     "spr",
-    "ftv",
     "roi",
     "bmp",
     "mdl",
@@ -231,20 +235,19 @@
     "roi.nrm",
     "roi.sp",
     "roi.imhsv",
-    "mdl.tg",
     "mdl.sp",
     "mdl.tp",
     "mdl.opg",
     "mdl.opl",
     "bmp.mdl",
-    "bmp.mdl.tg",
+    "bmp.mdl",
     "bmp.mdl.sp",
     "bmp.mdl.tp",
     "bmp.mdl.opg",
     "bmp.mdl.opl",
     "spr.sp",
     "spr.sld",
-    "pltx.tg",
+    "daq.ftv",
     "copybin",
     "filled",
     "id",
@@ -386,7 +389,8 @@
     "ic": [],
     "ii": [],
     "it": [],
-    "optid": []
+    "optid": [],
+    "vnm": []
   },
   "tp": {
     "max_tinds": 1000,

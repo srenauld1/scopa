@@ -1,0 +1,30 @@
+
+function daqnew = daqrename(daq, renm)
+
+%make sure they're all row vectors, or empty
+
+fn = fieldnames(daq);
+
+daqnew = struct;
+for k = 1:numel(renm)
+    renmtmp = strtrim(strsplit(renm{k}, ','));
+    nmold = renmtmp{1};
+    nmnew = renmtmp{2};
+    if any(strcmp(nmold,fn))
+        daqnew.(nmnew) = daq.(nmold)(:)';
+        daq = rmfield(daq, nmold); %remove as you rename, so you can append remaining fields to new daq 
+    else
+        if ~any(strcmp(nmnew,fieldnames(daqnew))) %in case you just created a field, renamed from an alternate old name, don't overwrite with empty 
+            daqnew.(nmnew) = [];
+        end
+    end
+end
+
+fn = fieldnames(daq);
+for k = 1:numel(fn) 
+    daqnew.(fn{k}) = daq.
+
+end
+
+
+

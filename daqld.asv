@@ -320,6 +320,7 @@ try
         end
 
 
+        daq.recid = id.recid;
         daq.maketime_optfile_daq = glb('maketime_daq');
         save(pth_daqrs, '-struct', 'daq', '-v7.3', '-mat');
 

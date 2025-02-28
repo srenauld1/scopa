@@ -44,7 +44,7 @@ else
     pth_daq = pth_daq.name;
 end
 
-pth_daqrs = [pthstackdir recid '_daqrs_.mat'];
+pth_daqrs = [pthstackdir recid '_daq_.mat'];
 
 % pth_ftvid_pat = [pthstackdir 'FicTracData' filesep 'fictrac-raw-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.avi']; %original ft video
 pth_ftdat_pat = [pthstackdir 'FicTracData' filesep 'fictrac-' num2str(recdatenum) '*_trial_' sprintf( '%03d', trialnum ) '.dat']; %
@@ -82,7 +82,6 @@ else
     pth_ftvidrs = [pth_ftvid(1:end-4) 'RS_.mat'];
 end
 
-pth_ts = [pthstackdir recid '_ts_.mat'];
 
 %% carl's old project
 
@@ -107,7 +106,6 @@ pth.ftlog = pth_ftlog;
 pth.ftvidlog = pth_ftvidlog;
 pth.ftvid = pth_ftvid;
 pth.ftvidrs = pth_ftvidrs;
-pth.ts = pth_ts;
 pth.featsave = pth_feat_save;
 pth.featparent = pthparentfeat;
 pth.template = pthtemplate;

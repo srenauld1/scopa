@@ -30,7 +30,7 @@ else
 
     vclass = spl{end-4};
 
-    bytespersamp = bps(vclass);
+    bytespersamp = bytespersamp(vclass);
 
     switch vclass
         case {'int64', 'uint64', 'double'}

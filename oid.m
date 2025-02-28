@@ -16,12 +16,18 @@ if isempty(user)
     error("you have not set glb('user')")
 end
 
-id_capable_vbin = {'roi', 'mdl', 'bmp'}; %only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; vbin 'daq', for example, requires options that are arrays of strings, which would require some ugly ad hoc solution to maintain consistency across all vbin if it were included here)
+id_capable_vbin = glb('id_capable_vbin');
+if isempty(id_capable_vbin)
+    fprintf("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb" + newline)
+    id_capable_vbin = {'roi', 'mdl', 'bmp', 'daq'};
+end
+if isstring(id_capable_vbin)
+    id_capable_vbin = convertStringsToChars(id_capable_vbin);
+end
 
 if isempty(vbin)
     vbin = id_capable_vbin;
 end
-
 if ~iscell(vbin)
     vbin = {vbin};
 end
@@ -31,7 +37,7 @@ pthscopa = getpathscopa();
 callstack = dbstack();
 
 tsgetcall = 0;
-if strcmp(callstack(2).name, 'tsget')
+if strcmp(callstack(2).name, 'tsget') || strcmp(callstack(2).name, 'tsget_one')
     tsgetcall = 1;
 end
 
@@ -64,7 +70,7 @@ for k = 1:numel(vbin)
             
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-            optexpall = odist(o(m), vbintmp); %optexpall structs (fields) are temporary names assigned during distribution
+            optexpall = odist(o(m), vbintmp); %optexpall substructs (fields) are temporary names assigned during distribution
 
             optout = [];
             fntmp = fieldnames(optexpall);

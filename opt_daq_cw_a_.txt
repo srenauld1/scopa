@@ -1,0 +1,197 @@
+{
+  "a1": {
+    "balldia": 9,
+    "idxreg": "start",
+    "renm": [
+      "Time, t",
+      "epoch, epochts",
+      "g4vel, vyvnom",
+      "g4velnom, vyvnom",
+      "g4panels, vy",
+      "g4yaw, vy",
+      "g4panels_dv, vyv",
+      "g4yaw_dv, vyv",
+      "ficTracIntForward, bf",
+      "ficTracIntForward_dv, bfv",
+      "ficTracIntSide, bs",
+      "ficTracIntSide_dv, bsv",
+      "ficTracYaw, by",
+      "ficTracHeading, by",
+      "ficTracHeading_dv, byv",
+      "ficTracYaw_dv, byv"
+    ],
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "toballscale": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "tounwrap": [
+      "ficTracIntSide'",
+      "ficTracIntForward"
+    ],
+    "tozero": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
+    ],
+    "vcircular": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
+    ],
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0
+  },
+  "a2": {
+    "balldia": 9,
+    "ftv": {
+      "numpkthr": 10,
+      "numpx": 10,
+      "smlenpx": 2,
+      "smlensec": 1
+    },
+    "idxreg": "start",
+    "renm": [
+      "Time, t",
+      "epoch, epochts",
+      "g4vel, vyvnom",
+      "g4velnom, vyvnom",
+      "g4panels, vy",
+      "g4yaw, vy",
+      "g4panels_dv, vyv",
+      "g4yaw_dv, vyv",
+      "ficTracIntForward, bf",
+      "ficTracIntForward_dv, bfv",
+      "ficTracIntSide, bs",
+      "ficTracIntSide_dv, bsv",
+      "ficTracYaw, by",
+      "ficTracHeading, by",
+      "ficTracHeading_dv, byv",
+      "ficTracYaw_dv, byv"
+    ],
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "toballscale": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "tounwrap": [
+      "ficTracIntSide'",
+      "ficTracIntForward"
+    ],
+    "tozero": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
+    ],
+    "vcircular": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
+    ],
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0
+  },
+  "a3": {
+    "balldia": 9,
+    "ftv": {
+      "numpkthr": 10,
+      "numpx": 10,
+      "smlenpx": 2,
+      "smlensec": 1
+    },
+    "idxreg": "start",
+    "renm": [
+      "Time, t",
+      "epoch, epochts",
+      "g4vel, g4velnom, vyvnom",
+      "g4panels, g4yaw, vy",
+      "g4panels_dv, g4yaw_dv, vyv",
+      "ficTracIntForward, bf",
+      "ficTracIntForward_dv, bfv",
+      "ficTracIntSide, bs",
+      "ficTracIntSide_dv, bsv",
+      "ficTracYaw, ficTracHeading, by",
+      "ficTracYaw_dv, ficTracHeading_dv, byv",
+      "ftcam, ftcam"
+    ],
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "toballscale": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "tounwrap": [
+      "ficTracIntSide'",
+      "ficTracIntForward"
+    ],
+    "tozero": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
+    ],
+    "vcircular": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
+    ],
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0
+  },
+  "autonm": 1,
+  "loc": "/Users/wienecke/scopa/",
+  "maketime": "2025022620592547",
+  "prefix": "a"
+}

@@ -2,7 +2,7 @@ function cb = default_cbflags(cb, varargin)
 
 if isempty(cb)
     if ~all(strcmp('all', varargin))
-        error("if cb is empty, reset domscope must be 'all'")
+        error("if cb is empty, reset domain must be 'all'")
     end
 end
 

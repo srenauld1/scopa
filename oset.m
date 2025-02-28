@@ -1,9 +1,15 @@
 function [o, oflat] = oset(specin, opt)
 
-% see docs_oset.m
-% FIX: EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)
-% FIX: NONFUNCTIONAL (PLOTTING) OPTIONS ARE CURRENTLY ALL IN SEPARATE VBIN, SO OID EASILY DEALS WITH THEM, BUT CAN THIS ALWAYS BE THE CASE? what about redundant vbins that get removed in ored, they aren't returned, is that a problem? should options leaving oset always have same fields?? 
-% FIX: ORED NEEDS TO REMOVE NONFUNCTIONAL VBIN AT ANY NESTING 
+%{
+see docs_oset.m
+FIX: EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)
+FIX: NONFUNCTIONAL (PLOTTING) OPTIONS ARE CURRENTLY ALL IN SEPARATE VBIN, SO OID EASILY DEALS WITH THEM, BUT CAN THIS ALWAYS BE THE CASE? what about redundant vbins that get removed in ored, they aren't returned, is that a problem? should options leaving oset always have same fields?? 
+FIX: ORED NEEDS TO REMOVE NONFUNCTIONAL VBIN AT ANY NESTING 
+when constructing o, you can only append vbin or option listed in odfsv;
+options can be structs themselves, but defaults for all fields have to be defined oin odfsv
+the only time a struct can appear within an option is struct tg, which
+has special handling in odf
+%}
 
 arguments
     specin = '' % specin can be empty, or not passed as argument, and will search for file using fspc* below; specin can be full path to filename, or cell array of one or multiple full paths to filename(s); if you just want access to params and do not want to search for files, make files=0

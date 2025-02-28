@@ -2,10 +2,10 @@
   "a1": {
     "epochmix": 0,
     "epochnum": 1,
-    "lagsec": 0,
-    "lensec": 0,
+    "lagsec": 1,
+    "lensec": 1.25,
     "max_iter_global": 3,
-    "mdlname": "fnet_A01_s",
+    "mdlname": "svd_0.95",
     "nrmd": [],
     "nrmi": [],
     "opg": {
@@ -53,17 +53,11 @@
     "rm": [],
     "slvrg": "globalsearch",
     "slvrl": "fmincon",
-    "tg": {
-      "group": [],
-      "ic": [],
-      "ii": [],
-      "it": [],
-      "optid": []
-    },
     "valnum": 0,
     "valsplit": "boutsamples"
   },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
+  "maketime": "2025022620592521",
   "prefix": "a"
 }

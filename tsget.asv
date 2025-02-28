@@ -1,8 +1,9 @@
 function tsout = tsget(tg, opt)
 
+
 arguments (Input)
     tg
-    opt.dm = [] %dim order of timeseries to be found; used to apply indices 
+    opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.pthparent = []
 end
 arguments (Output)
@@ -11,8 +12,6 @@ end
 dm = opt.dm;
 pthparent = opt.pthparent;
 
-id_capable_vbin = {'roi', 'mdl', 'bmp'};
-
 if isempty(dm)
     dm = 'it';
 end
@@ -20,17 +19,40 @@ if isempty(pthparent)
     pthparent = glb('pthparent');
 end
 
-tg.optid
-tg.ii
-tg.it
-tg.ic
-tg.group
+if all(strcmp(fieldnames(tg), 'tg'))
+    tg = tg.tg;
+else
+    error("struct must contain substruct tg (which can be nonscalar) and nothing else")
+end
+
+for m = 1:numel(tg) %loop over tg elements
+    tsout = tsget_one(tg(m), dm, pthparent);
+end
+
+end
+
+
+function tsout = tsget_one(tg, dm, pthparent)
+
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
     optid = tg.optid;
 else
     optid = [];
 end
+if ~iscell(optid)
+    optid = {optid};
+end
+if isfield(tg, 'vnm') && ~isempty(tg.vnm)
+    vnm = tg.vnm;
+else
+    vnm = [];
+end
+if ~iscell(vnm)
+    vnm = {vnm};
+end
+vnm = transpose(vnm(:));
+
 if isfield(tg, 'ii') && ~isempty(tg.ii)
     ii = tg.ii;
 else
@@ -53,74 +75,109 @@ else
 end
 
 
+id_capable_vbin = glb('id_capable_vbin');
+if isempty(id_capable_vbin)
+    fprintf("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb" + newline)
+    id_capable_vbin = {'roi', 'mdl', 'bmp', 'daq'};
+end
+if isstring(id_capable_vbin)
+    id_capable_vbin = convertStringsToChars(id_capable_vbin);
+end
+
 if ~isscalar(tg)
     error("INPUT STRUCT TO tsget MUST BE SCALAR")
 end
-if sum(isfield(tg, id_capable_vbin))~=1
-    error("INPUT STRUCT TO tsget MUST CONTAIN ONE AND ONLY ONE id_capable_vbin AT THE HIGHEST LEVEL")
+
+cnt = 0;
+vbin = [];
+for k = 1:numel(id_capable_vbin)
+    if isfield(tg, id_capable_vbin{k}) && ~isempty(tg.(id_capable_vbin{k}))
+        cnt = cnt + 1;
+        vbin = id_capable_vbin(k);
+    end
+    if cnt>1
+        error("INPUT STRUCT TO tsget MUST CONTAIN ONE AND ONLY ONE id_capable_vbin AT THE HIGHEST LEVEL")
+    end
 end
 
-vbin = id_capable_vbin(isfield(tg, id_capable_vbin));
 if isempty(vbin)
-    if isempty(optid)
+    if isempty(cell2mat(optid))
         error("if there is no vbin in tg, there must be optid")
     end
 elseif isscalar(vbin)
-    if ~isempty(optid)
+    vbin = vbin{1};
+    if ~isempty(cell2mat(optid))
         error("vbin and optid cannot both exist in tg")
     end
-    vbin = cell2mat(vbin);
 else
     error("there can only be one vbin in tg")
 end
 
+
+
+
 trymatch = 1;
-if isempty(optid)
-    tsgtmp.(vbin) = tg.(vbin);
-    o = odf(tsgtmp, vbin, fill=1, wild=1); %make sure any option (for the one id_capable_vbin in o) that is not present in o gets a default value before o goes to oid
-    o2 = oid(o, getonly=1);
-    if isempty(o2.(vbin))
+if isempty(cell2mat(optid))
+    tgopt.(vbin) = tg.(vbin);
+    tgopt = odf(tgopt, vbin, fill=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
+    tgopt = oid(tgopt, getonly=1);
+    if ~isempty(tgopt.(vbin))
+        optid = fieldnames(tgopt.(vbin));
+    else
         fprintf("no variable found" + newline)
         trymatch = 0;
     end
-    fn = fieldnames(o2.(vbin));
-else
-    fn = optid;
 end
 
 tsout = [];
 if trymatch
 
     cnt = 0;
-    for k = 1:numel(fn)
-        optid_match = fn{k};
-        fnpat = ['*' '_' optid_match '_' vbin '_.mat'];
+    for k = 1:numel(optid)
+        optid_tmp = optid{k};
+        fnpat = ['*' '_' optid_tmp '_' vbin '_.mat'];
         pthpat = fullfile(pthparent, '**', fnpat);
         pthtmp = rdir(pthpat);
-        if ~isempty(pthtmp)
+        if isscalar(pthtmp)
             pth = cell(numel(pthtmp), 1);
             for m = 1:numel(pthtmp)
                 pth{m} = pthtmp(m).name;
 
-                if strcmp(vbin, 'roi')
-                    fprintf("loading data file for domain '" + vbin + "', optid '" + optid_match + "'" + newline)
-                    load(pth{m}, 'ts')
-                    if all(cellfun(@isempty, ts))
+                fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)
+                tmp = load(pth{m}); 
+                if isempty(vnm)
+                    vnm = transpose(fieldnames(tmp)); % all variables if vnm is empty
+                end
+                for f = vnm
+                    tmp2 = tmp.(f);
+                    if all(cellfun(@isempty, tmp2))
                         error("you are trying to load an empty roi; you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
                     end
                     itmp.ii = ii;
                     itmp.it = it;
-                    if isempty(ic)
-                        ic = find(~cellfun(@isempty, ts)); %if ic isempty, load ts for all nonempty channels
-                    end
-                    for q = 1:numel(ic)
-                        cnt = cnt+1;
-                        tsout{cnt} = vind(ts{ic(q)}, dm, itmp);
+
+                    if iscell(tmp2)
+                        if isempty(ic)
+                            ic = find(~cellfun(@isempty, tmp2)); %if ic isempty, load ts for all nonempty channels
+                        end
+                        for q = 1:numel(ic)
+                            cnt = cnt+1;
+                            tsout{cnt} = vind(tmp2{ic(q)}, dm, itmp);
+                        end
+                    else
+                        if isempty(ic)
+                            cnt = cnt+1;
+                            tsout{cnt} = vind(tmp2, dm, itmp);
+                        else
+                            error("ic is not valid for indexing anything but cell array right now")
+                        end
                     end
                 end
             end
-        else
-            fprintf("WARNING, optid '" + optid_match + "' was matched but there is no corresponding data file for domain '" + vbin + "'; you may have created it and then deleted it; skipping this optid" + newline)
+        elseif numel(pthtmp)>1
+            error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (cmrg, dcdn, etc); need to make this fixible; for now just rename one" + newline)
+        elseif isempty(pthtmp)
+            fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + vbin + "'; you may have created it and then deleted it; skipping this optid" + newline)
         end
     end
 
@@ -143,20 +200,21 @@ end
 
 end
 
+
 %{
 
-ts holds timeseries, column vectors, same length, aligned
-format is:
-    ts.domain.optid.name
-    examples from different domains:
-        ts.roi.optid.name (name=roi index ie ind1, ind2, . . . indN)
-        ts.daq.optid.name (name=daq variable name, eg fv for forward velocity or g4pos for g4 bar position or t for timestamp)
-        ts.bmp.optid.name (name=extracted feature name, eg bumpang for bump mean angular position)
-    when options are not variable (e.g. daq variables are currently extracted with a hard-coded options set), optid is 'none'
-tsget recovers timeseries from ts (since ts can be complex)
-mdlmake, feat, and pltx use tsget to simplify timeseries recovery, variable names, and file names
+these docs are a bit outdated
 
-tsget first argument is ts, and remaining arguments are all name-value: domain, optused, name, group
+each domain has a different set of available timeseries 
+    roi: ts
+    mdl: pred
+    bmp: respcl, mu, rho, ampmean, amppeak, ampmu, vel, offset
+    fmf: every feature id (like CON_51)
+    daq: t, bf, bfv, bs, bsv, by, byv, vy, vyv, vyvnom
+
+tsget recovers timeseries from saved files, using the options used to create the timeseries, or various identifiers  
+
+
 
     domain
         domain is char array, must exist in ts
@@ -178,7 +236,7 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
 
     group
         group determines how output timeseries are arrayed in the 3rd dimension 
-        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, feat loops over 3rd dim to extract features from different sets of timeseries)
+        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, fmf loops over 3rd dim to extract features from different sets of timeseries)
         group can take the following values: 'all', 'domain', 'optused', 'name', 
         these refer to tsget input arguments, which can each be expanded to return multiple timeseries; 
         group determines whether output should be group according to that expansion; 
@@ -186,32 +244,5 @@ tsget first argument is ts, and remaining arguments are all name-value: domain, 
             domain: array domain groups along 3rd dimension 
             optused: array optused groups along 3rd dimension 
             name: like the invserse of 'all'; output 3rd dimension length matches number of found timeseries, and 1st dimension is singleton; 
-
-% setting mdlmake indv (independent variable) using tsget input struct
-    tgtmp.domain = {'daq', 'roi'} %daq domain
-    tgtmp.optused = {'none' %daq variables extracted with default set of daq options 
-    tgtmp.name = [] %all indices (all rois)
-    tgtmp.group = 'name' %fit model to each output timeries 
-    o.mdl.indv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
-
-% setting mdlmake depv (dependent variable) using tsget input struct
-    tgtmp.domain = 'roi' %roi domain
-    roitmp.ma.numroi = 256
-    roitmp.mm.drawchan = 2
-    tgtmp.optused = roitmp %struct of roi options
-    tgtmp.name = [] %all indices (all rois)
-    tgtmp.group = 'name' %fit model to each 
-    o.mdl.depv.tg = tgtmp %make depv a struct, which will flag it to find timeseries for depv using tg; depv struct is itself a struct for options input to tg; 
-
-mdlmake and feat will also get optid
-
-% setting pltx v1 using tsget input struct
-    tgtmp.domain = 'roi' %roi domain
-    roitmp.ma.numroi = 256
-    roitmp.mm.drawchan = 2
-    tgtmp.optused = roitmp %struct of roi options
-    tgtmp.name = [] %all indices (all rois)
-    tgtmp.group = 'name' %plot each
-    o.mdl.v1.tg = tgtmp %make v1 a struct, which will flag it to find timeseries for v1 using tg; v1 struct is itself a struct for options input to tg; 
 
 %}
