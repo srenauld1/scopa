@@ -1,5 +1,8 @@
 function todo()
 
+disp("should empty optid be part of each struct in defaults? or only added after oid, as it does now?")
+disp("change names for tsget group")
+disp("tsget defaults are never filled in on purpose, but is that right?")
 disp("make daqld ftv have a dotfv, just like roimake")
 disp("consider making default nested opts rather than using nestvalid; for example, d.roi.cm = [], etc")
 disp("optid for stackpr, since it affects the rois")

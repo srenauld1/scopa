@@ -1,5 +1,5 @@
 
-function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, sampper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp)
 
 "WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN uiapply "
 
@@ -28,7 +28,7 @@ try
                     error("v must match cnt")
                 end
 
-                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, widyxz, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_roim_interactive); % cb.delete.roicen{cb.val.v}
+                [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, widyxz, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sper, pth_roim_interactive); % cb.delete.roicen{cb.val.v}
                 roipx = cat(1, roipx, roipixind_new);
                 disp("warning, hard coding parsex and parsnorm, fix this now")
                 labs{j} = {['resp.fullfov.moex_interactive.in_imf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of tsget
@@ -79,7 +79,7 @@ varcombos = make_varcombos(vars);
 end
 
 
-function [roipx, resp] = make_ui_roi(roicen, newroicen_all, widyxz, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sampper, pth_roim_interactive)
+function [roipx, resp] = make_ui_roi(roicen, newroicen_all, widyxz, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sper, pth_roim_interactive)
 
 ywid = widyxz(1);
 xwid = widyxz(2);
@@ -114,7 +114,7 @@ else
     otmp = odf(otmp, 'roi', unpack=1); %call odf to retrieve params used in a2p so you don't have to pass big param structs all the way down into this function;
     otmp.rgname = 'inter';
 
-    roi = roimake(stack, '~/stacks/20241222-5/20241222_5_1_cmrg_dcdn_.mat', ti, sampper, widyxz, '', otmp, roimaskman); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    roi = roimake(stack, '~/stacks/20241222-5/20241222_5_1_cmrg_dcdn_.mat', ti, sper, widyxz, '', otmp, roimaskman); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
 
     resp = roi.resp{1};
     roipx = roi.roidat_new{1}.roipx;

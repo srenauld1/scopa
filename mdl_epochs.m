@@ -74,11 +74,14 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         depv_good_inds = ~any(isnan(depv_allrois));
 
-        tic
-        % delete(gcp('nocreate'));
-        % ppp = parpool('Processes');
-        % optpp = parforOptions(ppp,RangePartitionMethod="fixed", SubrangeSize=3);
-        % ticBytes(gcp);
+        partest = 1;
+        if partest
+            tic
+            delete(gcp('nocreate'));
+            ppp = parpool('Processes');
+            optpp = parforOptions(ppp,RangePartitionMethod="fixed", SubrangeSize=3);
+            ticBytes(gcp);
+        end
 
         parfor ri = 1:num_dim_depvp %(ri=1:num_dim_depvp, optpp) %ri = 1:num_dim_depvp
             if depv_good_inds(ri)
@@ -94,8 +97,11 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                 % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opt.nrmd)
             end
         end
-        % tocBytes(gcp)
-        toc
+
+        if partest
+            tocBytes(gcp)
+            toc
+        end
 
         save(pth_fitdata, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds', '-v7.3', '-mat')
 

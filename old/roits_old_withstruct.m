@@ -7,7 +7,7 @@ arguments
     opt.roiwt = [] % weighting; size [n,s] where each row n is a roi, and each column s is a subroi; subroi is pixel if respin is stack, otherwise subroi is a roi within response n
     opt.normpre = 'f' % normalization before clustering of pixels into rois, or subrois into rois (ie normalization applied to each pixel or subroi)
     opt.normpost = 'f'%n ormalization after clustering of pixels into rois, or subrois into rois (ie normalization applied to each roi)
-    opt.sampper = [] % sample period
+    opt.sper = [] % sample period
     opt.resp = struct % if resp is passed as input, this function's output resp is appended to it
     opt.wavp = [] % keep periods in range wavp, using continuous wavelet transform and inverse; empty to skip
     opt.degdtr = 0 % detrend polynomial degree; 0 to skip detrending
@@ -19,7 +19,7 @@ end
 roiwt = opt.roiwt;
 normpre = opt.normpre;
 normpost = opt.normpost;
-sampper = opt.sampper;
+sper = opt.sper;
 resp = opt.resp;
 wavp = opt.wavp;
 channorm = opt.channorm;
@@ -64,9 +64,9 @@ for c = 1:numel(chanused)
             respin_onechan = respin_onechan(kp);
             fntmp = erase(fn(kp), chanpat); %erase because channel fieldname suffix is moved from end of current fieldname to end of new fieldname, which begins with the current prefix
             respin_onechan = cell2struct(respin_onechan, fntmp);
-            resp = roits_onechan(respin_onechan, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
+            resp = roits_onechan(respin_onechan, roiwt, normpre, normpost, sper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         else
-            resp = roits_onechan(c, respin, roiwt, normpre, normpost, sampper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
+            resp = roits_onechan(c, respin, roiwt, normpre, normpost, sper, chanpat, resp, wavp, degdtr, t, pthpre, doplt);
         end
     end
 end
@@ -78,7 +78,7 @@ end
 end
 
 
-function resp = roits_onechan(chan, respin, roiwt, normpre, normpost, sampper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
+function resp = roits_onechan(chan, respin, roiwt, normpre, normpost, sper, fnchan, resp, wavp, degdtr, t, pthpre, doplt)
 
 arguments
     chan
@@ -86,7 +86,7 @@ arguments
     roiwt
     normpre
     normpost
-    sampper
+    sper
     fnchan
     resp
     wavp
@@ -125,7 +125,7 @@ for k = 1:length(fnin)
 
     resp1.f = respin.(fnin{k}); %assign the no-normalization default
 
-    resp1 = tsnorm(resp1.f, normpre, sampper);
+    resp1 = tsnorm(resp1.f, normpre, sper);
 
     fn1 = fieldnames(resp1);
 
@@ -180,7 +180,7 @@ for k = 1:length(fnin)
             resp2.f = wavflt(resp2.f, t=t, wavp=wavp, doplt=0); %pth_roim_prefix
         end
 
-        resp2 = tsnorm(resp2.f, normpost, sampper);
+        resp2 = tsnorm(resp2.f, normpost, sper);
 
         fn2 = fieldnames(resp2);
         for fni2 = 1:length(fn2)

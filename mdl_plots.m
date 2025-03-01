@@ -63,7 +63,7 @@ if strcmp(fitopt.hsv_background, 'pixels') && pixfit==0 %only do if pixfit==0, t
     mdl2.vars.depvp = depv2;
     roidat2 = roidat;
     roidat2.roipx = roipixind2;
-    mdlmake(stack, mdl2, roidat2, sampper, fitopt, pixfit); %call mdlmake on pixels if you want a pixel fit background behind your roi fit background
+    mdlmake(stack, mdl2, roidat2, sper, fitopt, pixfit); %call mdlmake on pixels if you want a pixel fit background behind your roi fit background
     pixfit = 0; %reset to zero
 end
 

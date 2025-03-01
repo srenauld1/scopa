@@ -1,34 +1,10 @@
 function o = oset_noeb(o)
 
-rgname = {'eb'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doroi = 1; 
 o.mn.dofit = 1; 
-% o.mn.fe = ["bmp"];
-
-
-otmp.tg(1).roi.rgname = 'eb';
-otmp.tg(1).roi.domm = 1;
-otmp.tg(1).roi.mm.maskname = 'none';
-otmp.tg(1).vnm = 'ts';
-otmp.tg(1).it = 20:200;
-otmp.tg(1).ic = 1;
-
-otmp.tg(2).daq.useinds = 'none';
-otmp.tg(2).daq.usefbl = 1;
-otmp.tg(2).ii = 20:200;
-
-o.mdl.indv = otmp;
-
-otmp = [];
-otmp.tg(1).roi.rgname = 'no';
-otmp.tg(1).roi.domm = 1;
-otmp.tg(1).group = '1';
-o.mdl.depv = otmp;
-
-o.mdl.lagsec = 1;
-o.mdl.mdlname = 'svd_0.95';
-o.mdl.lensec = 1.25;
+o.mn.fe = ["bmp"];
 
 o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;

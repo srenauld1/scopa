@@ -1,4 +1,4 @@
-function roi = roimake(stack, pthstack, t, sampper, widyxz, opt, pthpy, roimask, doplt)
+function roi = roimake(stack, pthstack, t, sper, widyxz, opt, pthpy, roimask, doplt)
 
 % see docs_roimake.m
 
@@ -6,7 +6,7 @@ arguments
     stack
     pthstack
     t = [] %only required nonempty if channorm~=0 in roits
-    sampper = [] %only required nonempty for normalizing by moving window in tsnorm
+    sper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
     opt = []
     pthpy = [] %only required to run caiman from matlab (roi.docm=1)
@@ -129,9 +129,9 @@ catch ME
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
     if ~exist('respcm', 'var')
-        roi.ts = roits(stack, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
+        roi.ts = roits(stack, roimask, stackmnt, pthpre, sper, t, opt.nrm);
     else
-        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
+        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sper, t, opt.nrm);
     end
 
 

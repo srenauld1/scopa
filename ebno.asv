@@ -55,13 +55,11 @@ histplt = opt.histplt;
 
 for k = 1:numel(side)
     for m = 1:numel(epoch)
-        for q = 1:numel(lagsampz)
-            for q2 = 1:numel(lagsampxy)
+        for q = 1:numel(lagsampxy)
 
-                ebno_one(side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt)
-                close all
+            ebno2(side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt)
+            close all
 
-            end
         end
     end
 end
@@ -70,7 +68,7 @@ end
 end
 
 
-function ebno_one(side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt)
+function ebno2(side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt)
 
 
 
@@ -125,8 +123,6 @@ end
 %% bump only
 
 if ~isempty(plt) && plt(1)
-
-    bumpnan = polarnan(bump); %insert nan where wrap
 
     figure;
     imagesc(eb);
@@ -238,10 +234,9 @@ if ~isempty(plt) && plt(3)
         szthr = ones(size(xydist));
         sztmp = ones(size(xydist));
     end
-    % szthr = szthr*max(abs(sztmp));
-    szthr = quantile(sztmp, szthr);
+    szthr = szthr*max(abs(sztmp));
     isminsz = sztmp<=szthr;
-    sztmp(isminsz) = min(sztmp(:)); %below threshold is given baseline marker size
+    sztmp(isminsz) = szmin; %below threshold is given baseline marker size
     sztmp = rescale(sztmp, szmin, szmin*szmaxfac); %and above is scaled up to max marker size
 
 

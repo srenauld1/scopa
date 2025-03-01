@@ -2,50 +2,6 @@
   "a1": {
     "cm": {},
     "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {},
-    "mm": {
-      "maskname": "none",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "t5"
-  },
-  "a2": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "ma": {},
-    "mm": {
-      "maskname": "ten",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "tm"
-  },
-  "a3": {
-    "cm": {},
-    "docm": 0,
     "doma": 1,
     "domm": 1,
     "doqc": 0,
@@ -74,8 +30,52 @@
     "qc": {},
     "rgname": "eb"
   },
+  "a2": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no"
+  },
+  "a3": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {},
+    "mm": {
+      "maskname": "right",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
-  "maketime": "2025022620592498",
+  "maketime": "2025022812025988",
   "prefix": "a"
 }

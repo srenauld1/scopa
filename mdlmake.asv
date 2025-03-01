@@ -35,28 +35,37 @@ if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv), ~isempty(opt.depv)
     error("indv and depv must both be empty or nonempty")
 end
 
+pthscopa = getpathscopa();
+user = glb('user');
+if isempty(user)
+    error("you have not set glb('user')")
+end
+pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
+
 
 %% loop over indv/depv
 
 if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
 
     if isstruct(opt.indv) && all(startsWith(fieldnames(opt.indv), 'tg')) 
-        indv = tsget(opt.indv);
+        [indv, dat_indv] = tsget(opt.indv);
     elseif isnumeric(opt.indv) || iscell(opt.indv) && all(cellfun(@isnumeric, cellflat(opt.indv))) && all(~cellfun(@isempty, cellflat(opt.indv)))
         indv = opt.indv;
+        dat_indv = [];
     else
         error("if indv is defined in opt, it must be numeric, or nonempty numeric cells, or struct tg (to define options for tsget)")
     end
 
     if isstruct(opt.depv) && all(strcmp(fieldnames(opt.depv), 'tg'))
-        depv = tsget(opt.depv);
+        [depv, dat_depv] = tsget(opt.depv);
     elseif isnumeric(opt.depv) || iscell(opt.depv) && all(cellfun(@isnumeric, cellflat(opt.depv))) && all(~cellfun(@isempty, cellflat(opt.depv)))
         depv = opt.depv;
+        dat_depv = [];
     else
         error("if depv is defined in opt, it must be numeric, or nonempty numeric cells, or struct tg (to define options for tsget)")
     end
 
-    if isempty(indv) || isempty(depv)
+    if all(cellfun(@isempty, indv)) || all(cellfun(@isempty, depv))
         error("depv and indv must both be nonempty; tsget did not find indv and/or depv")
     end
 
@@ -73,14 +82,24 @@ end
 pairind = [tmpc(:) tmpr(:)];
 numfit = size(pairind,1);
 
+
 for k = 1:numel(numfit) %loop over indv/depv pairs
-    mdl = mdlmake_one(indv{pairind(k,1)}, depv{pairind(k,2)}, opt, imrate, pthstack, epochts, doplt, numsyn, ld, histinc);
+
+    if isempty(dat_indv)
+        varid = '00';
+    else
+        dat_pair(1) = dat_indv{pairind(k,1)};
+        dat_pair(2) = dat_depv{pairind(k,2)};
+        [dat_pair, varid] = structfile(pthvar, s=dat_pair, useprefix=1);
+    end
+
+    mdl = mdlmake_one(indv{pairind(k,1)}, depv{pairind(k,2)}, opt, varid, imrate, pthstack, epochts, doplt, numsyn, ld, histinc);
 end
 
 
 end
 
-function mdl = mdlmake_one(indvp, depvp, opt, imrate, pthstack, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake_one(indvp, depvp, opt, varid, imrate, pthstack, epochts, doplt, numsyn, ld, histinc)
 
 pthpre = [erase(pthstack, '.mat') opt.optid '_mdl_'];
 pthmdl = [pthpre '.mat'];

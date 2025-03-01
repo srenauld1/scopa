@@ -113,7 +113,7 @@ if ~isfield(md,'zstartpos')%do this after conversion to double
 end
 
 md.widyxz = [md.ywid, md.xwid, md.zwid];
-md.sampper = 1/md.volrate;
+md.sper = 1/md.volrate;
 
 md = structsort(md, vectype='row');
 

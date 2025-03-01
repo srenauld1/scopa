@@ -20,13 +20,13 @@
         fvd = abs(fvd);
         fvd = smoothdata(fvd, 'gaussian', 12, 'omitnan');
         % fvdflt = wavflt(fvd, t=ts.t, wavp=[2 20]); %pth_roim_prefix
-        % fvdflt = tsdv('normal', fvdflt, 3, 2, md.sampper);
+        % fvdflt = tsdv('normal', fvdflt, 3, 2, md.sper);
         % tsplt(fvdflt, y2=fvd, xseg=1);
 
         yvd = ts.ball.yawvel;
         % yvd = abs(yvd);
         yvd = smoothdata(yvd, 'gaussian', 12, 'omitnan');
-        %%yvd = tsdv('normal', yvd, 0.4, 2, md.sampper);
+        %%yvd = tsdv('normal', yvd, 0.4, 2, md.sper);
 
         tinds = 3000:4000;
         xtrem = max(abs([vec(fvd(tinds)); vec(ts.ball.forvel(tinds))]));

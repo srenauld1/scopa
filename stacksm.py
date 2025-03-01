@@ -26,8 +26,8 @@ def stacksm(stack, smlenpx, volrate, numframe):
         stack = mdflt(stack, size=smlentmp, axes=smax)
 
         # removed temporal smoothing below; spatial seems better for registration
-        # sampper = 1/volrate
-        # smlensamp = smlensec / sampper  
+        # sper = 1/volrate
+        # smlensamp = smlensec / sper  
         # smsdt = (smlensamp - 1) / numsmsd
         # stack = gflt(stack, sigma=smsdt, mode='reflect', truncate=numsmsd, axes=0)
         # stack = mdflt(stack, size=smlensamp, axes=0)

@@ -1,6 +1,6 @@
 function pltx(stack, vars, doui, labs, vpmap, ...
     epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    roidat, ti, sampper, zstartpos, epochts, gifvis, ...
+    roidat, ti, sper, zstartpos, epochts, gifvis, ...
     iz, it, drvid, pthgif_prefix_short, pthgif_prefix, ...
     pth_roim_interactive, normopt, widyxz, opt)
 
@@ -17,7 +17,7 @@ arguments
     plot_z_as_color = []
     roidat = []
     ti = []
-    sampper = []
+    sper = []
     zstartpos = []
     epochts = []
     gifvis = []
@@ -180,7 +180,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sampper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -223,7 +223,7 @@ while plotloop %loop is turned off if no user input
 
                 pthgif = make_filename(labsp, gif_scope, epochstring, pthgif_prefix_short, timestr_use); %gif_scope determines whether pthgif gets updated
                 [roiindp, roi_index_str] = find_roi_index(labsp);
-                figure_title = make_figure_title(pthgif_prefix_short, epochstring, sampper, roi_index_str);
+                figure_title = make_figure_title(pthgif_prefix_short, epochstring, sper, roi_index_str);
                 labsp = process_labels(labsp, roiindp);
 
                 roipixindp = cell(numel(roiindp),1);
@@ -414,11 +414,11 @@ pthgif = [pthgif_prefix '_' strrep(strjoin(pthgif_suffix), ' ', '_') '_' timestr
 end
 
 
-function figure_title = make_figure_title(pthgif_prefix_short, epochstring, sampper, roi_index_str)
+function figure_title = make_figure_title(pthgif_prefix_short, epochstring, sper, roi_index_str)
 
 stackidtmp = strsplit(pthgif_prefix_short, filesep);
 stackid = stackidtmp{end};
-sample_period_string = make_sample_period_string(sampper);
+sample_period_string = make_sample_period_string(sper);
 figure_title = [strrep(stackid, '_', ' ') ',   ' epochstring.parsed  ',   ' sample_period_string ' SAMPLES,    ROI #' roi_index_str];
 figure_title = upper(figure_title);
 
@@ -456,9 +456,9 @@ lab = upper(lab);
 end
 
 
-function sample_period_string = make_sample_period_string(sampper)
+function sample_period_string = make_sample_period_string(sper)
 
-sample_period_string = [num2str(sampper*1000, 4) ' ms']; %'%.2g'
+sample_period_string = [num2str(sper*1000, 4) ' ms']; %'%.2g'
 
 end
 

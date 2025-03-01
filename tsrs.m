@@ -126,7 +126,7 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
 
 
 
-    elseif strcmp(vtype, 'categorical')
+    elseif strcmp(vtype, 'categorical') %would mode be better than nearest for categorical variables?
 
         tmp = linspace(1,numel(tsin),newlen+1);
         tmp = tmp(1:end-1);

@@ -1,5 +1,5 @@
 function scatterplots(stack, varsx, varsy, varsz, labsx, labsy, labsz, ...
-    epochinds_all, roidat, ti, sampper, zstartpos, epochts, lagsxy_sec, ...
+    epochinds_all, roidat, ti, sper, zstartpos, epochts, lagsxy_sec, ...
     lagsz_sec, lags_to_plot, plot_z_as_color, gifvis, pthgif_prefix_short, pthgif_prefix)
 
 
@@ -17,7 +17,7 @@ maxlablength = 10000; %making this large to skip, isn't necessary so far
 mkrsz = 4; %scatter marker size
 fontmedium = 11;
 ylim_constancy = 'eachvar';  %allvars, eachvar, none
-sample_period_string = [num2str(sampper*1000, '%.2g') ' ms'];
+sample_period_string = [num2str(sper*1000, '%.2g') ' ms'];
 
 % stack = roidat.roi_overlay;
 roi_type = 'rois';

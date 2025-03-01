@@ -37,11 +37,8 @@ end
 switch vbin
 
     case 'roi'
-
         o = ored_roi(o);
-
     otherwise
-
         fprintf("currently no reduction required for opt " + vbin + newline)
 
 end

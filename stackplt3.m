@@ -1,4 +1,4 @@
-function stack3(stack, opt)
+function stackplt3(stack, opt)
 
 arguments
     stack
@@ -34,7 +34,7 @@ maxnumframes = 500;
 
 
 if isempty(pthstack)
-    pthstack = glb('pthstackdir');
+    pthstack = glb('pthstack');
 end
 
 
@@ -78,7 +78,6 @@ end
 if ~isempty(iz) && ~isequal(iz(:)', 1:size(stack,3))
     stack = stack(:,:,iz,:,:);
 end
-
 if ~isequal(it, 1:size(stack,4))
     stack = stack(:,:,:,it);
 end
@@ -151,11 +150,6 @@ vwr.BackgroundGradient='off';
 vwr.GradientColor=[0 0 0.2];
 vwr.BackgroundColor=[1 1 1];
 
-% vwr.CropRegion = [5 5 5; 20 20 20];
-
-vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -11.5898];
-vwr.CameraPosition = [30.1300 -58.6419 12.7833]; %20250209
-
 vsh(1) = volshow(stack(:,:,:,1,1), Parent=vwr);
 
 vsh(1).RenderingStyle=style;
@@ -163,6 +157,13 @@ vsh(1).OverlayRenderingStyle="GradientOverlay";
 vsh(1).GradientOpacityValue = 0.9;
 vsh(1).Colormap = cmap;
 vsh(1).Alphamap = 1;
+
+% vwr.CropRegion = [5 5 5; 20 20 20];
+
+% vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -11.5898]; %20250209
+vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -10.1692]; %20250221_1_2
+vwr.CameraPosition = [30.1300 -58.6419 12.7833]; %20250209, 20250221_1_2
+
 
 if size(stack,5)>1
     %or don't use vsh(2) and instead use vsh(1).OverlayData = stack(:,:,:,:,2):

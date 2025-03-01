@@ -1,4 +1,4 @@
-function resp = roits(resp, roimask, stackmnt, saveresp, pthpre, sampper, t, opt, memthr, doplt)
+function resp = roits(resp, roimask, stackmnt, saveresp, pthpre, sper, t, opt, memthr, doplt)
 
 arguments
     resp % stack (must be yxztc), or roi timeseries (roi,t,c), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
@@ -6,7 +6,7 @@ arguments
     stackmnt
     saveresp
     pthpre
-    sampper
+    sper
     t
     opt
     memthr = 1e9 %memory threshold (bytes); input resp greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
@@ -72,7 +72,7 @@ catch
         stack_input = 0;
     end
 
-    resp = tsnorm(resp, normpre, sampper, memthr); %first normalization, optional
+    resp = tsnorm(resp, normpre, sper, memthr); %first normalization, optional
 
     if ndims(resp)~=2 && ndims(resp)~=3
         error("here, resp must be 2d (if 1 channel) or 3d (if 2-channel)")
@@ -120,7 +120,7 @@ catch
                     respnew{k} = wavflt(respnew{k}, t=t, wavp=wavp, doplt=0); %wavelet bandpass filtering (within range wavp)
                 end
 
-                respnew{k} = tsnorm(respnew{k}, normpost, sampper, memthr); %second normalization, optional
+                respnew{k} = tsnorm(respnew{k}, normpost, sper, memthr); %second normalization, optional
 
                 if channorm
                     respnew{k} = nrmchan(respnew{k}, t=t, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress

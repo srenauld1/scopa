@@ -263,8 +263,6 @@ if ~isfile(pth)
         sfilenew = s;
     end
 else
-
-    dotranspose = 0;
     matchind = [];
     for k = 1:numel(nmfile)
         if isempty(s)
@@ -288,7 +286,7 @@ else
             else
                 if isequal(s, sfile.(nmfile{k})) || ~isscalar(s) && isequal(transpose(s), sfile.(nmfile{k}))
                     smatched = 1;
-                    if ~isscalar(s) && isequal(transpose(s), sfile.(nmfile{k}))
+                    if ~isscalar(s) && isequal(transpose(s), sfilepart)
                         dotranspose = 1;
                     end
                 end

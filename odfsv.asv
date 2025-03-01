@@ -55,6 +55,7 @@ d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", 
 d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but does not show them
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 d.mn.copybindf = 'none'; %default name for copybin (assigned if user did not assign one)
+d.mn.optiddf = 'z0'; %if user doesn't use oid to map options sets and variables to optid, optiddf is used instead (in filenames, figures, and struct naming) 
 d.mn.id_capable_vbin = ["roi", "mdl", "bmp", "daq"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
 
 d.mn.user = 'youforgottossetuser';
@@ -72,34 +73,34 @@ d.mn.pthpy = ''; %path to python executable
 
 %% daq (daqld: load, process daq)
 
+d.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
+d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
+d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
+d.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
+d.daq.toballscale = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to rescale from radians to mm
+d.daq.tounwrap = ["ficTracIntSide'", "ficTracIntForward"]; % list which vars to unwrap
+d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %list which vars to zero (force to start at 0)
+d.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
+d.daq.slopeord = 2; % order of polynomial used to fit local slope
 d.daq.useinds = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
 d.daq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if useinds is not 'none')
 d.daq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if useinds is not 'none')
 d.daq.balldia = 9; % mm, used to convert fictrac variables into mm
-d.daq.slopelensec = 0.4; % window numel used to fit slope (to compute daq variable derivatives (eg velocities)
-d.daq.slopeord = 2; % order of polynomial used to fit local slope; this should probably just remain 2
-d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list circular daq variables you want to process
-d.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list categorical daq variables you want to process
-d.daq.toballscale = ["ficTracIntSide", "ficTracIntForward"]; % define which vars to rescale from radians to mm
-d.daq.tounwrap = ["ficTracIntSide'", "ficTracIntForward"]; % define which vars to unwrap
-d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %define which vars to zero (force to start at 0)
-d.daq.voltmin = 0; % daq voltage min; need to find this in metadata
+d.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
-d.daq.idxreg = 'start';  %work-in-progress, currently has no effect; 'start', 'end', 'center'; index represents the start, end, center of bin
-d.daq.renm = [  %string array, for each element, before comma is daq original name, after comma is new name (which will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging); if old name exists, it gets new name; if it doesn't exist, nothing happens; note new name can be derived from multiple old names, which is why new names can appear multiple times in renm
-    "Time, t",
-    "epoch, epochts",
-    "g4vel, g4velnom, vyvnom",
-    "g4panels, g4yaw, vy",
-    "g4panels_dv, g4yaw_dv, vyv",
-    "ficTracIntForward, bf",
-    "ficTracIntForward_dv, bfv",
-    "ficTracIntSide, bs",
-    "ficTracIntSide_dv, bsv",
-    "ficTracYaw, ficTracHeading, by",
-    "ficTracYaw_dv, ficTracHeading_dv, byv"
-    "ftcam, ftcam"]; 
+d.daq.vrenm = [  %string array; each element is "newname: oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames
+    "t: Time, time, T, t";
+    "epochts: epoch";
+    "vyvnom: g4vel, g4velnom";
+    "vy: g4panels, g4yaw";
+    "vyv: g4panels_dv, g4yaw_dv";
+    "bf: ficTracIntForward";
+    "bfv: ficTracIntForward_dv";
+    "bs: ficTracIntSide";
+    "bsv: ficTracIntSide_dv";
+    "by: ficTracYaw, ficTracHeading";
+    "byv: ficTracYaw_dv, ficTracHeading_dv";
+    "ftcam: ftcam"]; 
 
 %% spr (stackpr: process stack)
 
@@ -389,6 +390,7 @@ d.tg.ii = [];
 d.tg.it = [];
 d.tg.ic = [];
 d.tg.group = [];
+d.tg.groupout = [];
 
 %% pltx (pltx: explore various components of experiment in interactive plots, e.g. brain images, timeseries, stimulus videos, scatterplots, fictive path, model components)
 
@@ -463,6 +465,10 @@ d.fmf.crop_edges = 1;
 
 %% write options to file
 
+spl = split(d.daq.vrenm, ':');
+if ~strcmp(spl(:,1)', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
+    error("you cannot change new names for the daq in d.daq.vrenm if you're running a2p")
+end
 if ~isequal(d, structunflat(structflat(d)))
     error("at least one of the default values above must be an empty struct; empty structs are not allowed to be default values (although empty vector, cell, char, and string are allowed); empty structs are used in oid to eliminate options structs that depend on other options, before writing to the options file ")
 end

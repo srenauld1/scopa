@@ -61,21 +61,6 @@
   "copybin": "",
   "daq": {
     "balldia": 9,
-    "idxreg": "start",
-    "renm": [
-      "Time, t",
-      "epoch, epochts",
-      "g4vel, g4velnom, vyvnom",
-      "g4panels, g4yaw, vy",
-      "g4panels_dv, g4yaw_dv, vyv",
-      "ficTracIntForward, bf",
-      "ficTracIntForward_dv, bfv",
-      "ficTracIntSide, bs",
-      "ficTracIntSide_dv, bsv",
-      "ficTracYaw, ficTracHeading, by",
-      "ficTracYaw_dv, ficTracHeading_dv, byv",
-      "ftcam, ftcam"
-    ],
     "slopelensec": 0.4,
     "slopeord": 2,
     "toballscale": [
@@ -114,7 +99,27 @@
       "virmenIteration"
     ],
     "voltmax": 10,
-    "voltmin": 0
+    "voltmin": 0,
+    "vrenm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
+    "vtime": [
+      "Time",
+      "time",
+      "T",
+      "t"
+    ]
   },
   "filled": 0,
   "fmf": {
@@ -202,6 +207,7 @@
       "bmp",
       "daq"
     ],
+    "optiddf": "z0",
     "plt": "",
     "pltvis": 1,
     "pthpy": "",
@@ -215,7 +221,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025022719222362",
+    "timestr": "2025030114433499",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -386,6 +392,7 @@
   },
   "tg": {
     "group": [],
+    "groupout": [],
     "ic": [],
     "ii": [],
     "it": [],

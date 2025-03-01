@@ -1,15 +1,15 @@
 
-function daqnew = daqrename(daq, renm)
+function daqnew = daqrename(daq, vrenm)
 
 %make sure they're all row vectors, or empty
 
 fnold = fieldnames(daq);
 
 daqnew = struct;
-for k = 1:numel(renm)
-    renmtmp = strtrim(strsplit(renm{k}, ','));
-    nmold = renmtmp(1:end-1);
-    nmnew = renmtmp{end};
+for k = 1:numel(vrenm)
+    renmtmp = strtrim(strsplit(vrenm{k}, ':'));
+    nmnew = renmtmp{1};
+    nmold = strtrim(strsplit(renmtmp{2}, ','));
     if any(ismember(fnold,nmold))
         nmoldtmp = fnold(ismember(fnold, nmold));
         nmoldtmp = nmoldtmp{1}; %in case there are multiple (there probably won't be), just choose one

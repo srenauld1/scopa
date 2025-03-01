@@ -4,10 +4,10 @@ function bmp = bmpmake(indvp, depvp, opt, imrate, epochts, pthstack, doplt)
 arguments
     indvp
     depvp
+    opt
     imrate
     epochts
     pthstack
-    opt
     doplt = []
 end
 chan = opt.chan;
@@ -30,6 +30,13 @@ if isempty(doplt)
     doplt = any(strcmp('bmp', glb('plt')));
 end
 
+if iscell(indvp)
+    indvp = indvp{1};
+end
+if iscell(depvp)
+    depvp = depvp{1};
+end
+
 if numangrs
     numseg = numangrs;
 else
@@ -46,7 +53,7 @@ end
 
 halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
 
-sampper = 1/imrate;
+sper = 1/imrate;
 numroi = size(depvp, 1);
 numsamp = size(depvp, 2);
 
@@ -64,7 +71,7 @@ if strcmp(domtype, 'functional')
 
     optidmdl = 'a1';
     optmdl.optid = optidmdl;
-    mdl = mdlmake(indvp, depvp, imrate, pthstack, optmdl, epochts, doplt, 0, 1);
+    mdl = mdlmake(optmdl, indvp, depvp, imrate, pthstack, epochts, doplt, 0, 1);
 
     angpref = mdl.ft.indvpf_mean_allval(:)'; %row vector of preferred angle;
 
@@ -151,11 +158,11 @@ mu = mu';
 rho = rho';
 
 if smlensec
-    mu = tssm('circular', mu, smlensec, sampper);
-    rho = tssm('normal', rho, smlensec, sampper);
+    mu = tssm('circular', mu, smlensec, sper);
+    rho = tssm('normal', rho, smlensec, sper);
 end
 
-bumpvel = tsdv('circular', mu, slopelensec, slopeord, sampper);
+bumpvel = tsdv('circular', mu, slopelensec, slopeord, sper);
 offset = circ_dist_nan(indvp.', mu);
 
 [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point

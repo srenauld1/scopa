@@ -9,6 +9,9 @@ when constructing o, you can only append vbin or option listed in odfsv;
 options can be structs themselves, but defaults for all fields have to be defined oin odfsv
 the only time a struct can appear within an option is struct tg, which
 has special handling in odf
+
+**** NB: DO NOT USE CELLS UNLESS YOU INTEND THEM FOR DISTRIBUTION****
+
 %}
 
 arguments

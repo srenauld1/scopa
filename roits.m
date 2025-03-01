@@ -1,11 +1,11 @@
-function tsout = roits(tsin, roimask, stackmnt, pthpre, sampper, t, opt, memthr, doplt)
+function tsout = roits(tsin, roimask, stackmnt, pthpre, sper, t, opt, memthr, doplt)
 
 arguments
     tsin % stack (must be yxztc), or roi timeseries (roi,t,c), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
     roimask
     stackmnt
     pthpre
-    sampper
+    sper
     t
     opt
     memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
@@ -24,7 +24,7 @@ end
 
 chanuse = ~cellfun(@isempty, roimask);
 
-srate = 1/sampper;
+srate = 1/sper;
 
 if isempty(t) && channorm~=0
     error("must pass t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
@@ -64,7 +64,7 @@ else
     stack_input = 0;
 end
 
-tsin = tsnorm(tsin, normpre, sampper, memthr); %first normalization, optional
+tsin = tsnorm(tsin, normpre, sper, memthr); %first normalization, optional
 
 if ndims(tsin)~=2 && ndims(tsin)~=3
     error("here, tsin must be 2d (if 1 channel) or 3d (if 2-channel)")
@@ -114,7 +114,7 @@ for k = 1:numchan
                 tsout{k} = wavflt(tsout{k}, t=t, srate=srate, wavp=wavp, doplt=0); %wavelet bandpass filtering (within range wavp)
             end
 
-            tsout{k} = tsnorm(tsout{k}, normpost, sampper, memthr); %second normalization, optional
+            tsout{k} = tsnorm(tsout{k}, normpost, sper, memthr); %second normalization, optional
 
             if channorm
                 tsout{k} = nrmchan(tsout{k}, t=t, srate=srate, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress

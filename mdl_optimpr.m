@@ -41,7 +41,7 @@ supp.mdlname = mdlname;
 supp.mdlclass = mdlclass;
 supp.pthspre = pthpre;
 supp.imrate = imrate;
-supp.sampper = 1/imrate;
+supp.sper = 1/imrate;
 supp.num_dim_indvp = num_dim_indvp;
 supp.num_samp_mdl = num_samp_mdl;
 if strcmp(mdlclass, 'svd') || strcmp(mdlclass, 'ohe') || strcmp(mdlclass, 'ohe_svd')

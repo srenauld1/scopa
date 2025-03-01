@@ -1,4 +1,4 @@
-function [visyaw, visyawvel, epochts, vepochs] = epochld(recdate, t, visyaw, visyawvel, sampper, doplt)
+function [visyaw, visyawvel, epochts, vepochs] = epochld(recdate, t, visyaw, visyawvel, sper, doplt)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochts, a vector representing stimulus state for each sample of trial)
 % if it doesn't exist, create it here with a hack, using derivative of g4panels yaw
@@ -18,7 +18,7 @@ arguments
     t
     visyaw
     visyawvel
-    sampper
+    sper
     doplt = []
 end
 
@@ -67,8 +67,8 @@ end
 fprintf("warning, epochs not saved to daq, finding epochs with panels derivatives" + newline)
 
 ioi = boutlensec*(has_cl_interleave+1); %inter-open loop interval
-boutlensamp = boutlensec/sampper; %bout length in samples
-dvlensec = dvlensamp*sampper; %window length in seconds
+boutlensamp = boutlensec/sper; %bout length in samples
+dvlensec = dvlensamp*sper; %window length in seconds
 halfboutlensec = boutlensec/2;
 
 %%% find boutlensec-second windows whose median derivative matches expected %%%
@@ -83,9 +83,9 @@ for iter = 1:numiter
         end
 
         yawdeg = rad2deg(visyawtmp); %convert to degrees because tolerance is in degrees and we like degrees more anyway
-        dv = rad2deg(tsdv('circular', deg2rad(yawdeg), dvlensec, dvord, sampper)); %derivative
+        dv = rad2deg(tsdv('circular', deg2rad(yawdeg), dvlensec, dvord, sper)); %derivative
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
-        lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sampper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
+        lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
         lminfnd = find(lmin);
         lstarts = t(lmin)-halfboutlensec; %start times for all windows
         lstops = t(lmin)+halfboutlensec; %stop times for all windows

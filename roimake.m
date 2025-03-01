@@ -1,4 +1,4 @@
-function roi = roimake(stack, pthstack, t, sampper, widyxz, opt, pthpy, roimask, doplt)
+function roi = roimake(stack, pthstack, t, sper, widyxz, opt, pthpy, roimask, doplt)
 
 % see docs_roimake.m
 
@@ -6,7 +6,7 @@ arguments
     stack
     pthstack
     t = [] %only required nonempty if channorm~=0 in roits
-    sampper = [] %only required nonempty for normalizing by moving window in tsnorm
+    sper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
     opt = []
     pthpy = [] %only required to run caiman from matlab (roi.docm=1)
@@ -53,7 +53,7 @@ try
     if any(~isfield(roi, {'ts', 'dat', 'maketime_optfile_roi'}))
         error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
     end
-    if ~isequal(maketime_optfile_roi, glb('maketime_roi'))
+    if ~isequal(roi.maketime_optfile_roi, glb('maketime_roi'))
         error("roi id is derived from an optid file different from original")
     end
     [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg
@@ -129,9 +129,9 @@ catch ME
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
     if ~exist('respcm', 'var')
-        roi.ts = roits(stack, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
+        roi.ts = roits(stack, roimask, stackmnt, pthpre, sper, t, opt.nrm);
     else
-        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sampper, t, opt.nrm);
+        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sper, t, opt.nrm);
     end
 
 

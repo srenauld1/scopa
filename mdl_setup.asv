@@ -1,5 +1,5 @@
 
-function op = mdl_optimpr(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, sampper, inputvar_stats, pthpre)
+function op = mdl_optimpr(num_samp_mdl, num_dim_indv, num_dim_indvp, opts, sper, inputvar_stats, pthpre)
 
 
 mdlname = opts.mdlname;
@@ -21,7 +21,7 @@ if strcmp(mdlclass, 'svd')
 
 elseif strcmp(mdlclass, 'fnet')
 
-    [op.mdl, opptmp, supp] = mdl_optimpr_fnet(mdlname, num_samp_mdl, sampper, num_dim_indvp, inputvar_stats);
+    [op.mdl, opptmp, supp] = mdl_optimpr_fnet(mdlname, num_samp_mdl, sper, num_dim_indvp, inputvar_stats);
 
 elseif strcmp(mdlclass, 'tm')
 
@@ -35,7 +35,7 @@ end
 supp.mdlname = mdlname;
 supp.mdlclass = mdlclass;
 supp.pthspre = pthpre;
-supp.sampper = sampper;
+supp.sper = sper;
 supp.num_dim_indvp = num_dim_indvp;
 supp.num_samp_mdl = num_samp_mdl;
 if strcmp(mdlclass, 'svd') || strcmp(mdlclass, 'ohe') || strcmp(mdlclass, 'ohe_svd')

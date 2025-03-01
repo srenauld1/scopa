@@ -30,20 +30,9 @@ else
 
     vclass = spl{end-4};
 
-    bytespersamp = bytespersamp(vclass);
+    bps = bytespersamp(vclass);
 
-    switch vclass
-        case {'int64', 'uint64', 'double'}
-            bytespersamp = 8;
-        case {'int32', 'uint32', 'single'}
-            bytespersamp = 4;
-        case {'int16', 'uint16'}
-            bytespersamp = 2;
-        case {'int8', 'uint8'}
-            bytespersamp = 1;
-    end
-
-    bytespercol = numrow*bytespersamp;
+    bytespercol = numrow*bps;
 
     fid = fopen(pth, 'r');
 

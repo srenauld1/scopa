@@ -2,10 +2,10 @@
   "a1": {
     "epochmix": 0,
     "epochnum": 1,
-    "lagsec": 1,
-    "lensec": 1.25,
+    "lagsec": 0,
+    "lensec": 0,
     "max_iter_global": 3,
-    "mdlname": "svd_0.95",
+    "mdlname": "fnet_A01_s",
     "nrmd": [],
     "nrmi": [],
     "opg": {
@@ -58,6 +58,6 @@
   },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
-  "maketime": "2025022620592521",
+  "maketime": "2025022812030006",
   "prefix": "a"
 }

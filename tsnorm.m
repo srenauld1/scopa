@@ -1,9 +1,9 @@
-function ts = tsnorm(ts, normall, sampper, memthr)
+function ts = tsnorm(ts, normall, sper, memthr)
 
 arguments
     ts
     normall
-    sampper
+    sper
     memthr = 1e9
 end
 
@@ -56,10 +56,10 @@ for k = 1:length(normall)
                     wlen = 0;
                 end
                 if wlen
-                    if isempty(sampper)
-                        error("sampper (sample period) must not be empty if using a dff window")
+                    if isempty(sper)
+                        error("sper (sample period) must not be empty if using a dff window")
                     end
-                    wlen = round(wlen / sampper);
+                    wlen = round(wlen / sper);
                     % f0 = RankOrderFilter(ts, wlen, f0_pct);
                     f0 = rofilt(ts, wlen, f0_pct);
                 else

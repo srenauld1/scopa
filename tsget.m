@@ -1,4 +1,4 @@
-function tsout = tsget(tg, opt)
+function [tsout, dat] = tsget(tg, opt)
 
 
 arguments (Input)
@@ -8,6 +8,7 @@ arguments (Input)
 end
 arguments (Output)
     tsout cell
+    dat cell
 end
 dm = opt.dm;
 pthparent = opt.pthparent;
@@ -25,33 +26,93 @@ else
     error("struct must contain substruct tg (which can be nonscalar) and nothing else")
 end
 
+tsout = [];
+dattmp = [];
+dat = [];
 for m = 1:numel(tg) %loop over tg elements
-    tsout = tsget_one(tg(m), dm, pthparent);
+    [tsout{m}, dattmp{m}] = tsget_one(tg(m), dm, pthparent);
+end
+
+
+if isempty(getfieldns(tg, 'groupout'))
+    tmp = getfieldns(tg, 'group');
+    if ~isempty(tmp)
+        tmp = unique(tmp(~cellfun(@isempty, tmp)));
+    end
+    if isscalar(tmp)
+        groupout = tmp{1};
+        fprintf("groupout is empty, setting default groupout to " + tmp{1} + " since this is the nonempty value of group for all elements of tg" + newline)
+    else
+        groupout = '3';
+        fprintf("groupout is empty, and not all elements use the same value for groupsetting default groupout '3', nothing will be grouped at the outer level" + newline)
+    end
+else
+    tmp = getfieldns(tg, 'groupout');
+    tmp = unique(tmp(~cellfun(@isempty, tmp)));
+    if isscalar(tmp)
+        groupout = tmp{1};
+    else
+        error("groupout must be equal (or empty) for all elements of tg")
+    end
+end
+
+tstmp = vec(cellflat(tsout));
+tstmp = cellfun(@single, tstmp, 'UniformOutput', false);
+switch groupout
+    case '1'
+        for k = 1:numel(dattmp)
+            dat = cat(2, dat, dattmp{k});
+        end
+        dat = {dat};
+        tsout = {cell2mat(tstmp)};
+    case '3'
+        cnt = 0;
+        for k = 1:numel(dattmp)
+            for m = 1:numel(dattmp{k})
+                cnt = cnt+1;
+                dat{cnt} = dattmp{k}(m);
+            end
+        end
+        tsout = num2cell(cell2mat(tstmp), 2);
+    case 'flat'
+        for k = 1:numel(dattmp)
+            dat = cat(2, dat, dattmp{k});
+        end
+        dat = {dat};
+        tsout = {transpose(cell2vec(tstmp))}; %make it row vector, so time is 2nd dim
+    otherwise
+        error("groupout must be 1, 3, or flat")
 end
 
 end
 
 
-function tsout = tsget_one(tg, dm, pthparent)
+function [tsout, dat] = tsget_one(tg, dm, pthparent)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
     optid = tg.optid;
+    if isstring(optid)
+        optid = convertStringsToChars(optid);
+    end
+    if ~iscell(optid)
+        optid = {optid};
+    end
 else
-    optid = [];
-end
-if ~iscell(optid)
-    optid = {optid};
+    optid = {};
 end
 optid = transpose(optid(:));
 
 if isfield(tg, 'vnm') && ~isempty(tg.vnm)
     vnm = tg.vnm;
+    if isstring(vnm)
+        vnm = convertStringsToChars(vnm);
+    end
+    if ~iscell(vnm)
+        vnm = {vnm};
+    end
 else
-    vnm = [];
-end
-if ~iscell(vnm)
-    vnm = {vnm};
+    vnm = {};
 end
 vnm = transpose(vnm(:));
 
@@ -76,7 +137,15 @@ end
 if isfield(tg, 'group') && ~isempty(tg.group)
     group = tg.group;
 else
-    group = '';
+    fprintf("group is empty, setting default group '3', all found variables will be considered separate" + newline)
+    group = '3';
+end
+
+if isfield(tg, 'groupout') && ~isempty(tg.groupout)
+    groupout = tg.groupout;
+else
+    fprintf("groupout is empty, leaving empty for now, to be set in tsget, outside tsget_one" + newline)
+    groupout = [];
 end
 
 
@@ -135,6 +204,8 @@ if isempty(cell2mat(optid))
 end
 
 tsout = [];
+dattmp = [];
+dat = [];
 if trymatch
 
     cnt = 0;
@@ -144,19 +215,18 @@ if trymatch
         pthpat = fullfile(pthparent, '**', fnpat);
         pthtmp = rdir(pthpat);
         if isscalar(pthtmp)
-            pth = cell(numel(pthtmp), 1);
             for m = 1:numel(pthtmp)
-                pth{m} = pthtmp(m).name;
+                pth = pthtmp(m).name;
 
                 fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)
-                saved_struct = load(pth{m}); 
+                saved_struct = load(pth);
                 if isempty(cell2mat(vnm))
                     vnm = transpose(fieldnames(saved_struct)); % all variables if vnm is empty
                 end
                 for f = vnm
                     saved_var = saved_struct.(f{1});
-                    if all(cellfun(@isempty, saved_var))
-                        error("you are trying to load an empty roi; you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
+                    if isempty(saved_var)
+                        error("you are trying to load an empty variable; if this is domain 'roi', you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
                     end
                     itmp.ii = ii;
                     itmp.it = it;
@@ -168,15 +238,18 @@ if trymatch
                         for q = 1:numel(ic)
                             cnt = cnt+1;
                             tsout{cnt} = vind(saved_var{ic(q)}, dm, itmp);
+                            dattmp{cnt} = tgdatmake(pth, f, ii, it, ic, group, groupout);
                         end
                     else
                         if isempty(ic)
                             cnt = cnt+1;
                             tsout{cnt} = vind(saved_var, dm, itmp);
+                            dattmp{cnt} = tgdatmake(pth, f, ii, it, ic, group, groupout);
                         else
                             error("ic is not valid for indexing anything but cell array right now")
                         end
                     end
+
                 end
             end
         elseif numel(pthtmp)>1
@@ -194,17 +267,47 @@ if trymatch
 
     switch group
         case '1'
+            for k = 1:numel(dattmp)
+                dat = cat(2, dat, dattmp{k});
+            end
             tsout = {cell2mat(tsout(:))};
         case '3'
+            for k = 1:numel(dattmp)
+                dattmp2 = repelem(dattmp{k}, size(tsout{k},1));
+                for m = 1:numel(dattmp2)
+                    if isempty(dattmp2(m).ii)
+                        dattmp2(m).ii = m;
+                    else
+                        dattmp2(m).ii = dattmp2(m).ii(m);
+                    end
+                end
+                dat = cat(2, dat, dattmp2);
+            end
             tsout = num2cell(cell2mat(tsout(:)), 2);
         case 'flat'
+            for k = 1:numel(dattmp)
+                dat = cat(2, dat, dattmp{k});
+            end
             tsout = {transpose(cell2vec(tsout))}; %make it row vector, so time is 2nd dim
+        otherwise
+            error("group must be 1, 3, or flat")
     end
 
-end
 
 end
 
+end
+
+
+function dat = tgdatmake(pth, f, ii, it, ic, group, groupout)
+dat.pth = pth;
+dat.vnm = f{1};
+dat.ii = ii;
+dat.it = it;
+dat.ic = ic;
+dat.group = group;
+dat.groupout = groupout;
+end
 
 %{
 
