@@ -1,0 +1,40 @@
+{
+  "a1": {
+    "clip": [0,1],
+    "dostats": 0,
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "savemem": 0,
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 1
+  },
+  "a2": {
+    "clip": [0,1],
+    "dostats": 0,
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "savemem": 0,
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [4,2],
+    "zerostack": 1
+  },
+  "autonm": 1,
+  "loc": "/Users/wienecke/scopa/",
+  "maketime": "2025030314405608",
+  "prefix": "a"
+}

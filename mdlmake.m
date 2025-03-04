@@ -32,7 +32,7 @@ arguments
 end
 
 if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv), ~isempty(opt.depv))
-    error("indv and depv must both be empty or nonempty")
+    error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 
 pthscopa = getpathscopa();
@@ -88,22 +88,56 @@ for k = 1:numel(numfit) %loop over indv/depv pairs
 
     if isempty(dat_indv)
         varid = 'z0';
+        pthmdl = [erase(pthstack, '.mat') varid opt.optid '_mdl_.mat'];
     else
         dat_pair(1) = dat_indv{pairind(k,1)};
         dat_pair(2) = dat_depv{pairind(k,2)};
-        [dat_pair, varid] = structfile(pthvar, s=dat_pair, useprefix=1);
+        [dat_pair_copy, varid] = structfile(pthvar, s=dat_pair, useprefix=1);
+        pthtmp = {dat_pair.pth};
+
+        pthcommon = intersectchar(pthtmp);
+        pthcommon = fileparts(pthcommon); %crop to nearest folder
+        if ~endsWith(pthcommon, filesep)
+            pthcommon = [pthcommon filesep];
+        end
+
+        pthmdl = [pthcommon varid opt.optid '_mdl_.mat'];
+
     end
 
-    mdl = mdlmake_one(indv{pairind(k,1)}, depv{pairind(k,2)}, opt, varid, imrate, pthstack, epochts, doplt, numsyn, ld, histinc);
+    mdl = mdlmake_one(indv, depv{pairind(k,2)}, opt, varid, imrate, pthmdl, epochts, doplt, numsyn, ld, histinc);
+end
+
+for k = 1:numel(numfit) %loop over indv/depv pairs
+
+    if isempty(dat_indv)
+        varid = 'z0';
+        pthmdl = [erase(pthstack, '.mat') varid opt.optid '_mdl_.mat'];
+    else
+        dat_pair(1) = dat_indv{pairind(k,1)};
+        dat_pair(2) = dat_depv{pairind(k,2)};
+        [dat_pair_copy, varid] = structfile(pthvar, s=dat_pair, useprefix=1);
+        pthtmp = {dat_pair.pth};
+
+        pthcommon = intersectchar(pthtmp);
+        pthcommon = fileparts(pthcommon); %crop to nearest folder
+        if ~endsWith(pthcommon, filesep)
+            pthcommon = [pthcommon filesep];
+        end
+
+        pthmdl = [pthcommon varid opt.optid '_mdl_.mat'];
+
+    end
+
+    mdl = mdlmake_one(indv{pairind(k,1)}, depv{pairind(k,2)}, opt, varid, imrate, pthmdl, epochts, doplt, numsyn, ld, histinc);
 end
 
 
 end
 
-function mdl = mdlmake_one(indvp, depvp, opt, varid, imrate, pthstack, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake_one(indvp, depvp, opt, varid, imrate, pthmdl, epochts, doplt, numsyn, ld, histinc)
 
-pthpre = [erase(pthstack, '.mat') opt.optid varid '_mdl_'];
-pthmdl = [pthpre '.mat'];
+pthpre = erase(pthmdl, '.mat');
 
 try
 

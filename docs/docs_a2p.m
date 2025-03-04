@@ -36,7 +36,7 @@ variables:
 
 
 main processing functions:
-    stackpr: load stacks; plot stacks for comparison
+    stackseries: load stacks; plot stacks for comparison
     daqld: load/process daq data
     roimake: make manual (drawn) and/or automated morphological rois
     roifauto: process functional rois extracted in pre pipeline with caiman

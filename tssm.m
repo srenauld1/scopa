@@ -1,13 +1,15 @@
-function tsout = tssm(vtype, tsin, smlensec, dt)
+function tsout = tssm(vtype, tsin, smlensec, sper)
+
+% need to generalize this function for nd
 
 arguments
-    vtype mustBeText
+    vtype {mustBeText}
     tsin
     smlensec
-    dt
+    sper
 end
 
-smlen = round(smlensec / dt);
+smlen = round(smlensec / sper);
 
 if size(tsin, 2)>size(tsin, 1)
     sprintf("warning, smoothing along first dim, which is smaller than second, be sure this is what you want")

@@ -6,6 +6,8 @@ o.mn.doroi = 1;
 o.mn.dofit = 1; 
 o.mn.fe = ["bmp"];
 
+o.daq.useinds = ['none'];
+
 o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;

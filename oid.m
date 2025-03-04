@@ -18,8 +18,7 @@ end
 
 id_capable_vbin = glb('id_capable_vbin');
 if isempty(id_capable_vbin)
-    fprintf("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb" + newline)
-    id_capable_vbin = {'roi', 'mdl', 'bmp', 'daq'};
+    error("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
 end
 if isstring(id_capable_vbin)
     id_capable_vbin = convertStringsToChars(id_capable_vbin);

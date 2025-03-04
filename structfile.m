@@ -413,8 +413,12 @@ switch vbin
         if isempty(glb('maketime_var'))
             glb(maketime_var=maketime);
         end
+    case 'sld'
+        if isempty(glb('maketime_sld'))
+            glb(maketime_sld=maketime);
+        end
     otherwise
-        error("vbin must be roi, mdl, bmp, rg, var, or daq")
+        error("vbin must be roi, mdl, bmp, rg, var, sld, or daq")
 end
 
 end
@@ -423,6 +427,7 @@ end
 
 function [s, sfile] = partmake(s, sfile, wcpat)
 
+sfile_save = sfile; %in case s is all wild and becomes all empty
 s = structflat(s, Prefix='s'); %use prefix in case nonscalar, it won't affect this function 
 sfile = structflat(sfile, Prefix='s');  %use prefix in case nonscalar, it won't affect this function 
 fnf = fieldnames(s);
@@ -442,10 +447,15 @@ for k = 1:numel(fnf)
     end
 end
 
-s = structunflat(s);
-s = s.s; %get rid of the prefix assigned above in call to structfile
-sfile = structunflat(sfile);
-sfile = sfile.s; %get rid of the prefix assigned above in call to structfile
+if isempty(fieldnames(s))
+    s = sfile_save;
+    sfile = sfile_save;
+else
+    s = structunflat(s);
+    s = s.s; %get rid of the prefix assigned above in call to structfile
+    sfile = structunflat(sfile);
+    sfile = sfile.s; %get rid of the prefix assigned above in call to structfile
+end
 
 end
 

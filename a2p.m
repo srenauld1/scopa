@@ -17,12 +17,14 @@ for k = 1:numel(oa) % loop over recordings
 
     %% paths
 
-    pth = pthmake(o);
-    glb(1, pthstackdir=pth.pthstackdir, pthstack=pth.stack); %update some globals
+    pth = pthmake(o.id.pthstack);
+    glb(1, pthstackdir=pth.stackdir, pthstack=pth.stack); %update some globals
 
     %% stack
 
-    stack = stackpr(pth.stack, o.spr); %load/process stack
+    for m = transpose(fieldnames(o.sld))
+        stack = stackld(pth.stack, o.sld.(m{1})); %load/process stack
+    end
 
     %% metadata
 
@@ -32,7 +34,11 @@ for k = 1:numel(oa) % loop over recordings
 
     for m = transpose(fieldnames(o.daq))
         daq.(m{1}) = daqld(o.daq.(m{1})); %process daq
-        t = daq.(m{1}).t; %hack for now
+    end
+
+    try
+        t = daq.(m{1}).t; 
+    catch
         t = md.sper:md.sper:md.numvol*md.sper;
     end
 
@@ -40,17 +46,10 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.doroi
         for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(stack, pth.stack, t, md.sper, md.widyxz, o.roi.(m{1})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(m{1}) = roimake(stack, pth.stack, o.roi.(m{1}), md.sper, md.widyxz, t); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
-    % epochtmp = 6;
-    % te2 = find(daq.a3.epochts==epochtmp);
-    % te2 = te2(1):te2(find(diff(te2)~=1, 1)); %one bout
-    % te2 = [te2(1)-numel(te2):te2(end)];
-    % inc = 5;
-    % te2 = te2(1) : inc : te2(end);
-    % stackplt3(stack, it=te2, style='MaximumIntensityProjection')
 
     %% features (bump, optic flow, etc)
 
@@ -58,16 +57,18 @@ for k = 1:numel(oa) % loop over recordings
         switch f
             case 'bmp'
                 for m = transpose(fieldnames(o.(f)))
-                    indv = daq.a3.vy; %hard coding this for now
+                    o2.tg.vnm = 'vy';
+                    o2.tg.mdl = 'var';
+                    stim = tsget(o2);
                     o2.tg.roi.rgname = 'eb';
                     o2.tg.roi.domm = 1;
                     o2.tg.vnm = 'ts';
                     o2.tg.group = '1';
-                    depv = tsget(o2);
-                    bmp.(m{1}) = bmpmake(indv, depv, o.bmp.(m{1}), md.volrate, daq.a3.epochts, pth.stack); %fit bump
+                    resp = tsget(o2);
+                    bmp.(m{1}) = bmpmake(o.bmp.(m{1}), md.volrate, daq.a3.epochts, pth.stack); %fit bump
                 end
             case 'fmf'
-                [fmf.(o.fmf.id), fmfvid] = flymaxfe(pth.stack, o.fmf); %extract flymac visual features
+                [fmf.(o.fmf.id), fmfvid] = flymaxfe(pth.stack, o.fmf); %extract flymax visual features
         end
     end
 
@@ -99,12 +100,17 @@ for k = 1:numel(oa) % loop over recordings
 
     ebno({'r'}, daq.a3.vy, daq.a3.by, bmp.a1.mu, bmp.a1.respcl, roi.a2.ts{1}, roi.a3.ts{1}, t, md.sper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.a3.epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[])
     
-    
-    %% 
-    
     % t5tmp
     % ebtmp
     % mitotmp
+
+    % epochtmp = 6;
+    % te2 = find(daq.a3.epochts==epochtmp);
+    % te2 = te2(1):te2(find(diff(te2)~=1, 1)); %one bout
+    % te2 = [te2(1)-numel(te2):te2(end)];
+    % inc = 5;
+    % te2 = te2(1) : inc : te2(end);
+    % stackplt3(stack, it=te2, style='MaximumIntensityProjection')
 
 
 end

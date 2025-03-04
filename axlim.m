@@ -33,6 +33,7 @@ chanpool = opt.chanpool;
 omitnan = opt.omitnan;
 limtype = opt.limtype;
 
+
 collapse_first_cell_dim = 1; %for now hard coding, in case cell arrays have multiple timeseries each (size first dim>1), consider each cell one; could allow this to be an option with a couple small changes
 
 for k = 1:nargin

@@ -4,7 +4,7 @@ rgname = {'none'};
 
 o.mn.doroi = 1; 
 
-o.spr.sld.ic = [];
+o.sld.ic = [];
 
 for m = 1:numel(rgname) 
 

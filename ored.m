@@ -1,6 +1,8 @@
 function [o, oreturn] = ored(o, vbin)
 
-%remove redundancy in options sets (before writing to options file and assigning options set index)
+% ored ("options reduce") removes options that have no effect on the data (like plotting options), 
+% and also removes redundancy (since options can depend on each other) 
+% ored is called before assigning id (optid) to an options set (using structfile in oid)
 
 arguments
     o
@@ -21,37 +23,17 @@ for m = 1:numel(nonfunctional_vbin)
     end
 end
 
-% o = structflat(o);
-% wcpat = '*';
-% wcinds = structfun(@(x) any(strcmp(x, wcpat)),o);
-% if any(wcinds) %hack for now, replace wildcard (from tsget) with 0, which will have same effect in general (but not for cm, but that will be fixed later)
-%     fn = fieldnames(o);
-%     o = struct2cell(o);
-%     o(wcinds) = {0};
-%     fnwc = fn(wcinds);
-%     o = cell2struct(o, fn);
-% end
-% o = structunflat(o);
-
-
 switch vbin
 
     case 'roi'
         o = ored_roi(o);
+    case 'sld'
+        % sld.dostats, sld.savemem
+        % o = ored_sld(o);
     otherwise
         fprintf("currently no reduction required for opt " + vbin + newline)
 
 end
 
-
-% if any(wcinds)
-%     o = structflat(o);
-%     fn = fieldnames(o);
-%     wcinds_new = ismember(fn, fnwc);
-%     o = struct2cell(o);
-%     o(wcinds_new) = {wcpat};
-%     o = cell2struct(o, fn);
-%     o = structunflat(o);
-% end
 
 end

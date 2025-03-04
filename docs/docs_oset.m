@@ -60,8 +60,8 @@ here is a complete list of vbins and functions they hold options for (see also s
     mn, a2p
     spec, stackfind   (called from odf)
     daq, daqld   (called from a2p)
-    spr, stackpr   (called from a2p)
-    sld, stackld   (called from stackpr)
+    spr, stackseries   (called from a2p)
+    sld, stackld   (called from stackseries)
     ftv, ftvpr   (called from a2p)
     roi, roimake   (called from a2p)
     ma, roimauto   (called from roimake)
@@ -102,8 +102,8 @@ here are the current valid vbin nestings within o (reflecting organization of ma
 these nested vbins will be set in o, by user or by default
 for brevity, only the deepest nesting of each unique branch is shown
 
-    o.spr.sp   (stackplt called from within stackpr called from a2p)
-    o.spr.sld   (stackld called from within stackpr called from a2p)
+    o.spr.sp   (stackplt called from within stackseries called from a2p)
+    o.spr.sld   (stackld called from within stackseries called from a2p)
     o.bmp   (bmpmake called from within popcmp called from a2p)
     o.mdl.tg   (tsget called from within mdlmake called from a2p)
     o.mdl.sp   (stackplt called from within mdlmake called from a2p)

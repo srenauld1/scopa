@@ -1,25 +1,24 @@
-function roi = roimake(stack, pthstack, t, sper, widyxz, opt, pthpy, roimask, doplt)
+function roi = roimake(stack, pthstack, opt, sper, widyxz, t, pthpy, doplt, opt2)
 
 % see docs_roimake.m
 
 arguments
     stack
     pthstack
-    t = [] %only required nonempty if channorm~=0 in roits
+    opt = []
     sper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
-    opt = []
+    t = [] %only required nonempty if channorm~=0 in roits
     pthpy = [] %only required to run caiman from matlab (roi.docm=1)
-    roimask = []
     doplt = []
+    opt2.roimask = []
 end
+
+[opt, optid, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
 
 pthpre = [erase(pthstack, '.mat') opt.optid '_roi_'];
 pthroi = [pthpre '.mat'];
 
-if isempty(doplt)
-    doplt = any(strcmp('roi', glb('plt')));
-end
 
 if ndims(stack)<4
     error("stack must be 4d or 5d")
@@ -28,7 +27,7 @@ end
 numchan = size(stack,5);
 
 
-if isempty(roimask)
+if isempty(opt2.roimask)
     maskin = 0;
     roimask = cell(numchan,1);
     if opt.domm
@@ -38,6 +37,7 @@ if isempty(roimask)
     end
 else
     maskin = 1;
+    roimask = opt2.roimask;
     if ~iscell(roimask)
         roimask = {roimask};
     end

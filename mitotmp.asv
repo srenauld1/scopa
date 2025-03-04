@@ -1,4 +1,4 @@
-% stim = struct2cell(load([pth.pthstackdir '20241218_3_2_wsraw_0001_sync.mat'], 'si_frame_direction'));
+% stim = struct2cell(load([pth.stackdir '20241218_3_2_wsraw_0001_sync.mat'], 'si_frame_direction'));
 % stim = stim{1};
 % lfit(stim, ts.roi.a2{1}, t=ts.t, doplt=1, pixfit=1, usesaved=1, roipx=roidat.a2{1}.roipx, lagsec=0, stack=stack, sortstyle='xyz', pos=ts.pos)
 

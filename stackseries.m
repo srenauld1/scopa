@@ -1,14 +1,24 @@
 
 
-function stack = stackpr(pthstack, opt, doplt)
+function stack = stackseries(pthstack, opt, doplt)
 
 %{
-load (and optionally process and plot) a single image stack (pthstack) created by scopa script pl.sh, or the raw stack output by scanimage
+
+this function works, but i don't think the main stack loading function
+(stackld) should be buried in a stack plotting function (this function), so
+this should be moved into stackplt, as an option, like series=1, or
+suffix=list of suffixes to plot; it is also overly complicated because it
+wraps around stackld and stackplt, and saves memory; soon it will be
+deprecated/moved into stackplt
+
+plot multiple stacks created in different stages of scopa pipeline, in a single figure (saved as gif)
+stacks to plot denoted by suffixplt
+loads stacks and creates temporary stacks (subset according to user index inputs) one at a time, in a loop, then plots the accumulated stacks variable; 
+it does it this way because stacks are often large and opening multiple stacks at once could crash ram
+if you're plotting multiple stacks in their entirity, this strategy is less efficient
 calls stackld to load the stack; in stackld, if mat doesn't exist, will read tif and save as mat
-can also plot (but not output) multiple stacks created in different stages of scopa pipeline, in a single figure (saved as gif) for comparison
-any processing options are applied after loading from mat, and are applied to all plotted stacks 
-stack plots create temporary stacks (subset according to user index inputs) one at a time, in a loop, then plots the accumulated stacks variable, since opening multiple stacks at once could crash ram
-if you're plotting multiple stacks in their entirity, this strategy is less efficient, but that seems unlikely
+will also output one stack (the one listed in pthstack), not all in the series
+if suffixplt or doplt is empty, nothing will be plotted, but pthstack will be loaded and output
 %}
 
 arguments
@@ -27,19 +37,24 @@ if isempty(opt)
     fprintf("user did not pass options as argument, using all defaults")
     opt = odf('spr', fill=1, unpack=1);
 end
+if isfield(opt, 'sld')
+    optsld = opt.sld;
+else
+    fprintf("user did not pass substruct sld within spr, using all defaults for sld")
+    optsld = odf('sld', unpack=1);
+end
+if isfield(opt, 'sp')
+    optsp = opt.sp;
+else
+    fprintf("user did not pass substruct sld within spr, using all defaults for sld")
+    optsp = odf('sp', unpack=1);
+end
+it = optsp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
+iz = optsp.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
+dr = optsp.dr;
 
-optsld = opt.sld;
-stackdtype = opt.stackdtype;
-zerostack = opt.zerostack;
-clip = opt.clip;
-smlenpx = opt.smlenpx;
-smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
-smmthd = opt.smmthd;
-dostats = opt.dostats;
 suffixplt = opt.suffixplt;
-it = opt.sp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
-iz = opt.sp.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
-dr = opt.sp.dr;
+
 
 suffixplt = convertStringsToChars(suffixplt);
 if ~isempty(suffixplt) && ~iscell(suffixplt)
@@ -51,7 +66,7 @@ if isempty(doplt)
 end
 
 if ~doplt
-    fprintf("in stackpr, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted" + newline)
+    fprintf("in stackseries, doplt or glb('plt') is set to 0, so any stacks listed in suffixplt will not be plotted" + newline)
     suffixplt = [];
 end
 
@@ -60,7 +75,6 @@ suffixstack = id.suffix;
 recid = id.recid;
 pthstackdir = id.pthstackdir;
 
-pthmd = [id.pthstackdir id.recid '_mdsi_.txt'];
 
 if ~iscell(suffixstack)
     suffixstack = {suffixstack};
@@ -75,7 +89,7 @@ if ~isempty(suffixplt)
         fprintf("dr is longer than suffixplt; using first " + num2str(numel(suffixplt)) + " elements from dr" + newline)
         dr = dr(1:numel(suffixplt));
     elseif numel(dr)<numel(suffixplt)
-        if numel(dr)==1
+        if isscalar(dr)
             dr = repelem(dr, numel(suffixplt));
         else
             error("dr is shorter than suffixplt, but is not length 1; you must supply " + num2str(numel(suffixplt)) + " elements in dr, or one elements to apply to all suffixplt")
@@ -95,9 +109,9 @@ if isempty(suffixplt)
     suffixld = suffixstack;
 else
     if any(strcmp(suffixstack, suffixplt))
-        suffixld = [setxor(suffixstack, suffixplt, 'stable') suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackpr without having to hold plot stacks in memory)
+        suffixld = [setxor(suffixstack, suffixplt, 'stable') suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackseries without having to hold plot stacks in memory)
     else
-        suffixld = [suffixplt suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackpr without having to hold plot stacks in memory)
+        suffixld = [suffixplt suffixstack]; % make suffixstack last to minimize memory (so it can overwrite any plot stacks, after they are subset for plotting, and be output from stackseries without having to hold plot stacks in memory)
     end
 end
 indsdst = find(strcmp(suffixstack, suffixld));
@@ -123,7 +137,7 @@ end
 pthstackall = flip(pthstackall); %since spi was backwards above, and pthstackall was indexed with a loop increment cnt
 
 if isempty(suffixplt) %if it's empty after looking for files, set doplt to 0
-    fprintf(newline + "in stackpr, suffixplt is empty (either because the user made it empty, or none of the stacks listed in suffixplt were found), so doplt is now set to 0, regardless of how it was set entering stackpr" + newline)
+    fprintf(newline + "in stackseries, suffixplt is empty (either because the user made it empty, or none of the stacks listed in suffixplt were found), so doplt is now set to 0, regardless of how it was set entering stackseries" + newline)
     doplt = 0;
 end
 
@@ -135,26 +149,10 @@ stackmntmp = cell(numel(suffixplt), 1); %make it cell column so first dim is cat
 
 
 cnt = 0;
+chantif = cell(numel(pthstackall),1);
 for spi = 1:numel(pthstackall)
 
     [stack, chantif{spi}] = stackld(pthstackall{spi}, optsld);
-
-    if dostats
-        stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstackall{spi}(1:end-4))
-    end
-    if any(clip) && ~isequal(clip, [0,1])
-        stack = stackclip(stack, clip=clip);
-    end
-    if zerostack
-        stack = stack - min(stack, [], [1 2 3 4], 'omitmissing'); %subtract min for each channel
-    end
-    if ~isa(stack, stackdtype)
-        stack = stacktype(stack, stackdtype);
-    end
-    if any(smlenpx) || any(smlensec)
-        imrate = structfile(pthmd, nm='volrate');
-        stack = stacksm(stack, method=smmthd, smlenpx=smlenpx, smlensec=smlensec, imrate=imrate);
-    end
 
     glb(1, stackmnt=stacktype(mean(stack, 4), class(stack))); %set mean t stack as global since it's used repeatedly, and can be a little slow to compute
 

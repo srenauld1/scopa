@@ -19,11 +19,10 @@ d.copybin = "";
 d.filled = 0;
 d.id = [];
 d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, organized by function hierarchy) currently supported in options struct o; options struct will make sure all of these are populated before existing oset; note some vbins are only used nested within others (e.g. mm only exists as roi.mm), but defaults for these can still be called using odf, like to invoke defaults from within the function that uses them e.g. odf('mm', unpack=1)
-    "spec", "mn", "daq", "spr", "roi", "bmp", "mdl", "pltx", "fmf", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
+    "spec", "mn", "daq", "sld", "roi", "bmp", "mdl", "pltx", "fmf", ... %standalone vbins; these vbins only exist from within others: "mm", "ma", "cm", "qc", "nrm", "imhsv", "tp", "sp", "tg"
     "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", "roi.sp", "roi.imhsv", ...   
     "mdl.sp", "mdl.tp", "mdl.opg", "mdl.opl", ...
     "bmp.mdl", "bmp.mdl", "bmp.mdl.sp", "bmp.mdl.tp", "bmp.mdl.opg", "bmp.mdl.opl", ...
-    "spr.sp", "spr.sld", ...
     "daq.ftv", ...
     "copybin", "filled", "id", "nestvalid", ... 
     ];
@@ -56,7 +55,7 @@ d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 d.mn.copybindf = 'none'; %default name for copybin (assigned if user did not assign one)
 d.mn.optiddf = 'z0'; %if user doesn't use oid to map options sets and variables to optid, optiddf is used instead (in filenames, figures, and struct naming) 
-d.mn.id_capable_vbin = ["roi", "mdl", "bmp", "daq"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
+d.mn.id_capable_vbin = ["sld", "daq", "roi", "bmp", "mdl"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
 
 d.mn.user = 'youforgottossetuser';
 
@@ -102,18 +101,11 @@ d.daq.vrenm = [  %string array; each element is "newname: oldnames", where newna
     "byv: ficTracYaw_dv, ficTracHeading_dv";
     "ftcam: ftcam"]; 
 
-%% spr (stackpr: process stack)
+%% spr (stackseries: plot stacks from different stages of preprocessing)
 
-d.spr.zerostack = 1; %subtract min to make min zero
-d.spr.clip = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
-d.spr.stackdtype = 'uint16';
-d.spr.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
-d.spr.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
-d.spr.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
-d.spr.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.spr.suffixplt = [ d.spec.suffixvalid ]; %stack suffixes to plot together in a gif; default tries to plot all d.spec.suffixvalid; nonexistent or invalid suffixes are ignored; these stacks are also converted from tif to mat (along with d.spec.suffix, in case user doesn't list it here)
 
-%% sld (stackld: load stack from tif / save to mat )
+%% sld (stackld: load/process stack from tif / save to mat )
 
 d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist, before saving to mat
 d.sld.trm = []; %how many samples to remove from [start, end] of stack, before saving to mat; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
@@ -122,6 +114,13 @@ d.sld.ix = []; %x indices to keep and save to mat
 d.sld.ic = []; %c indices to keep and save to mat; this is channel index in the stack to keep (not pmt index); for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1; empty to keep all; will error if you request channel that doens't exist
 d.sld.iz = []; %z indices to keep and save to mat
 d.sld.it = []; %t indices to keep and save to mat 
+d.sld.zerostack = 1; %subtract min to make min zero
+d.sld.clip = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
+d.sld.stackdtype = 'uint16';
+d.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
+d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
+d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
 %% ftv (ftvpr: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
@@ -385,6 +384,7 @@ d.opl.OutputFcn = [];
 %% tg (tsget: get timeseries, using various filters to choose from all saved variables in filesystem)
 
 d.tg.optid = [];
+d.tg.vbin = [];
 d.tg.vnm = [];
 d.tg.ii = [];
 d.tg.it = [];

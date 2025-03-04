@@ -202,10 +202,11 @@
     "doroi": 0,
     "fe": "",
     "id_capable_vbin": [
+      "sld",
+      "daq",
       "roi",
-      "mdl",
       "bmp",
-      "daq"
+      "mdl"
     ],
     "optiddf": "z0",
     "plt": "",
@@ -221,14 +222,14 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025030114433499",
+    "timestr": "2025030322163764",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
     "spec",
     "mn",
     "daq",
-    "spr",
+    "sld",
     "roi",
     "bmp",
     "mdl",
@@ -251,8 +252,6 @@
     "bmp.mdl.tp",
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "spr.sp",
-    "spr.sld",
     "daq.ftv",
     "copybin",
     "filled",
@@ -337,6 +336,8 @@
     "rgname": "none"
   },
   "sld": {
+    "clip": [0,1],
+    "dostats": 0,
     "fbrm": 1,
     "ic": [],
     "it": [],
@@ -344,7 +345,12 @@
     "iy": [],
     "iz": [],
     "savemem": 0,
-    "trm": []
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 1
   },
   "sp": {
     "dr": [0,1],
@@ -374,12 +380,6 @@
     "trial": ""
   },
   "spr": {
-    "clip": [0,1],
-    "dostats": 0,
-    "smlenpx": [0,0,0],
-    "smlensec": 0,
-    "smmthd": "gaussian",
-    "stackdtype": "uint16",
     "suffixplt": [
       "raw",
       "cmrg",
@@ -387,8 +387,7 @@
       "bksb_cmrg",
       "bksb_cmrg_dcdn",
       "bksb_cmrg_dcdn_nosn"
-    ],
-    "zerostack": 1
+    ]
   },
   "tg": {
     "group": [],
@@ -397,6 +396,7 @@
     "ii": [],
     "it": [],
     "optid": [],
+    "vbin": [],
     "vnm": []
   },
   "tp": {

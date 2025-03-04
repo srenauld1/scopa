@@ -74,6 +74,50 @@
     "qc": {},
     "rgname": "no"
   },
+  "a4": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "t5"
+  },
+  "a5": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "ma": {},
+    "mm": {
+      "maskname": "ten",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "tm"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "maketime": "2025022812025988",

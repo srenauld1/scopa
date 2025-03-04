@@ -8,23 +8,29 @@ o.mn.dofit = 1;
 o.mn.fe = ["fmf"]; 
 
 
-o.spr.sld.trm = [4,2];
+o.sld.trm = [4,2];
 
 
 otmp.tg.roi.rgname = 'tm';
 otmp.tg.roi.domm = 1;
 otmp.tg.roi.mm.maskname = 'ten';
+otmp.tg.vnm = 'ts';
 
 o.mdl.indv = otmp;
+otmp = [];
 
 otmp.tg.roi.rgname = 't5';
 otmp.tg.roi.domm = 1;
 otmp.tg.group = '1';
+otmp.tg.vnm = 'ts';
+
 o.mdl.depv = otmp;
+otmp = [];
 
 o.mdl.lagsec = 1;
 o.mdl.mdlname = 'svd_0.95';
 o.mdl.lensec = 1.25;
+
 o.fmf.stimtype = 'drone';
 o.fmf.id = 'CON_51';
 o.fmf.pthparent = '/Users/wienecke/ds/data/rec';

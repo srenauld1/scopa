@@ -1,10 +1,12 @@
-function tsout = tsrs(vtype, tsin, inds, newlen)
+function tsout = tsrs(vtype, tsin, newlen, inds)
+
+% need to generalize this function for nd
 
 arguments
-    vtype %if circular, tsin must be in radians
+    vtype {mustBeText} %if circular, tsin must be in radians
     tsin %must be in radians if vtype is circular (but doens't have to be wrapped, so not sure how to assert this other than the fprint warnings below)
-    inds = []
-    newlen = []
+    newlen = [] %new length of resampled timeseries
+    inds = [] %resampling indices; if empty, resample tsin using resample function, to make tsout length match newlen; if numeric, resample using these indices, if cell, resample using these indices
 end
 
 
@@ -142,31 +144,53 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
 else %if inds are nonempty, average tsin during each index of inds
 
 
-    Au = unique(inds(inds~=0),'stable'); %index of each frame
+    if isnumeric(inds)
+        riu = unique(inds(inds~=0),'stable'); %index of each frame
+        inds_tmp = cell(numel(riu), 1);
+        for k = 1:numel(riu)
+            inds_tmp{k} = find(inds==riu(k)); %do this once, before taking mean, etc, since this is the slow part
+        end
+    elseif iscell(inds)
+        inds_tmp = inds;
+    else
+        error("inds must be cell by this point")
+    end
+
+    nrs = numel(inds_tmp);
+    if ~isequal(newlen, nrs)
+        error("if using inds to resample, number cells must match newlen")
+    end
 
     if strcmp(vtype, 'normal')
 
-        tsout = arrayfun(@(i)mean(tsin(inds==Au(i))),1:numel(Au)); %average of tsin for each frame
+        tsout = zeros(nrs, 1);
+        for k = 1:nrs
+            tsout(k) = mean(tsin(inds_tmp{k})); %this is fast and arrayfun is not faster
+        end
 
     elseif strcmp(vtype, 'circular')
 
         fprintf("USER REQUESTED 'circular' vtype, input must be in radians; assuming that it is and proceeding" + newline)
-        inpcos = cos(tsin);
-        inpx = arrayfun(@(i)mean(inpcos(inds==Au(i))),1:numel(Au)); %average of inpcos for each frame
-        inpsin = sin(tsin);
-        inpy = arrayfun(@(i)mean(inpsin(inds==Au(i))),1:numel(Au)); %average of inpsin for each frame
-        tsout = atan2(inpy, inpx);
 
-    elseif strcmp(vtype, 'categorical') %takes value nearest centroid of each frame (alt approach is mode, commented out below, seems less appropriate)
+        tsinx = cos(tsin);
+        tsiny = sin(tsin);
 
-        cnt = zeros(numel(Au), 1);
-        for ii = 1:numel(Au) %loop is much faster than using arrayfun
-            cnt(ii) = round(mean(find(inds==Au(ii)))); %find center index for each frame
+        tsoutx = zeros(nrs, 1);
+        tsouty = zeros(nrs, 1);
+        for k = 1:nrs
+            tsoutx(k) = mean(tsinx(inds_tmp{k})); %this is fast and arrayfun is not faster
+            tsouty(k) = mean(tsiny(inds_tmp{k})); %this is fast and arrayfun is not faster
+        end
+        tsout = atan2(tsouty, tsoutx);
+
+    elseif strcmp(vtype, 'categorical') %takes value nearest centroid of each frame (alt approach was mode, seems less appropriate)
+
+        cntr = zeros(nrs, 1);
+        for k = 1:nrs %loop is much faster than using arrayfun
+            cntr(k) = round(mean(inds_tmp{k})); %find center index for each frame
         end
         nzi = find(tsin);
-        tsout = interp1(nzi, tsin(nzi), cnt, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
-
-        % tsout = arrayfun(@(i)mode(tsin(inds==Au(i))),1:numel(Au)); %much slower than for loop above
+        tsout = interp1(nzi, tsin(nzi), cntr, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
 
     end
 

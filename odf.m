@@ -30,7 +30,7 @@ arguments
     vbin = '' %char, or cell of char; empty char '' is the same as all vbin (do not use []); if nonempty, and copybin is nonempty, update vbin and place results in copybin, and update ~vbin without placing in copybin; if nonempty and copybin is empty, just update vbin; if empty and copybin is nonempty, update all and place all in copybin
     copybin = '' %char, or cell of char, or empty to skip; subfields into which vbin is copied
     opt.files = 0 %whether to use spec to find stack files, or skip
-    opt.fill = 0; %whether to fill all default nestings
+    opt.fill = 0; %whether to fill all default nestings; if vbin is nonempty, will fill listed vbin, if vbin is empty will fill entire options struct; fill is not necessary for a vbin that has no nested vbin (so it will error in this case)
     opt.unpack = 0; %if output is a single vbin in nestvalid, do not nest in enclosing struct (losing the name of the vbin in the output)
     opt.wild = 0; %all defaults become wildcard; if empty, all defaults remain unchanged; if nonempty, all defaults become '*'
     opt.pthopt = [] %path to default options file; if empty, uses default path

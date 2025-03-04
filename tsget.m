@@ -5,6 +5,7 @@ arguments (Input)
     tg
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.pthparent = []
+    opt.user = []
 end
 arguments (Output)
     tsout cell
@@ -12,25 +13,33 @@ arguments (Output)
 end
 dm = opt.dm;
 pthparent = opt.pthparent;
+user = opt.user;
 
+if isempty(user)
+    user = glb('user');
+    if isempty(user)
+        error("you must pass in user or set glb('user')")
+    end
+end
 if isempty(dm)
     dm = 'it';
 end
 if isempty(pthparent)
     pthparent = glb('pthparent');
 end
-
 if all(strcmp(fieldnames(tg), 'tg'))
     tg = tg.tg;
 else
     error("struct must contain substruct tg (which can be nonscalar) and nothing else")
 end
 
+pthscopa = getpathscopa();
+
 tsout = [];
 dattmp = [];
 dat = [];
 for m = 1:numel(tg) %loop over tg elements
-    [tsout{m}, dattmp{m}] = tsget_one(tg(m), dm, pthparent);
+    [tsout{m}, dattmp{m}] = tsget_one(tg(m), dm, pthparent, user, pthscopa);
 end
 
 
@@ -87,7 +96,7 @@ end
 end
 
 
-function [tsout, dat] = tsget_one(tg, dm, pthparent)
+function [tsout, dat] = tsget_one(tg, dm, pthparent, user, pthscopa)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -102,6 +111,19 @@ else
     optid = {};
 end
 optid = transpose(optid(:));
+
+if isfield(tg, 'varid') && ~isempty(tg.varid)
+    varid = tg.varid;
+    if isstring(varid)
+        varid = convertStringsToChars(varid);
+    end
+    if ~iscell(varid)
+        varid = {varid};
+    end
+else
+    varid = {};
+end
+varid = transpose(varid(:));
 
 if isfield(tg, 'vnm') && ~isempty(tg.vnm)
     vnm = tg.vnm;
@@ -151,8 +173,7 @@ end
 
 id_capable_vbin = glb('id_capable_vbin');
 if isempty(id_capable_vbin)
-    fprintf("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb" + newline)
-    id_capable_vbin = {'roi', 'mdl', 'bmp', 'daq'};
+    error("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
 end
 if isstring(id_capable_vbin)
     id_capable_vbin = convertStringsToChars(id_capable_vbin);
@@ -165,53 +186,61 @@ end
 cnt = 0;
 vbin = [];
 for k = 1:numel(id_capable_vbin)
-    if isfield(tg, id_capable_vbin{k}) && ~isempty(tg.(id_capable_vbin{k}))
+    if isfield(tg, id_capable_vbin{k})
         cnt = cnt + 1;
         vbin = id_capable_vbin(k);
     end
     if cnt>1
         error("INPUT STRUCT TO tsget MUST CONTAIN ONE AND ONLY ONE id_capable_vbin AT THE HIGHEST LEVEL")
     end
+    if isscalar(vbin)
+        vbin = vbin{1};
+        if ~isempty(cell2mat(optid))
+            error("vbin substruct and optid cannot both exist in tg")
+        end
+    end
 end
+
 
 if isempty(vbin)
-    if isempty(cell2mat(optid))
-        error("if there is no vbin in tg, there must be optid")
-    end
-elseif isscalar(vbin)
-    vbin = vbin{1};
-    if ~isempty(cell2mat(optid))
-        error("vbin and optid cannot both exist in tg")
+    error("vbin, or substruct var, must be passed implicitly as options struct")
+end
+
+if isfield(tg, 'var')
+    if isempty(cell2mat(varid))
+        pthvarpat = [pthscopa 'opt_var_' user '_*_.txt'];
+        [~, varid] = structfile(pth=pthvarpat, )
+    else
+        error("vbin substruct and varid cannot both exist in tg")
     end
 else
-    error("there can only be one vbin in tg")
+    error("vbin, or substruct var, must be passed implicitly as options struct")
 end
 
 
-
-
-trymatch = 1;
 if isempty(cell2mat(optid))
     tgopt.(vbin) = tg.(vbin);
+    if isempty(tgopt.(vbin))
+        tgopt = [];
+    end
     tgopt = odf(tgopt, vbin, fill=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
     tgopt = oid(tgopt, getonly=1);
     if ~isempty(tgopt.(vbin))
         optid = transpose(fieldnames(tgopt.(vbin))); %make it row vector, although here i don't think it matters
     else
         fprintf("no variable found" + newline)
-        trymatch = 0;
     end
 end
 
 tsout = [];
 dattmp = [];
 dat = [];
-if trymatch
-
-    cnt = 0;
+cnt = 0;
+for w = 1:numel(varid)
+    varid_tmp = varid{w};
     for k = 1:numel(optid)
         optid_tmp = optid{k};
-        fnpat = ['*' '_' optid_tmp '_' vbin '_.mat'];
+        fnpat = ['*' varid_tmp optid_tmp '_' vbin '_.mat'];
         pthpat = fullfile(pthparent, '**', fnpat);
         pthtmp = rdir(pthpat);
         if isscalar(pthtmp)
@@ -220,9 +249,14 @@ if trymatch
 
                 fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)
                 saved_struct = load(pth);
+                if isfield(saved_struct, vbin)
+                    saved_struct = saved_struct.(vbin);
+                    fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with vbin" + newline)
+                end
                 if isempty(cell2mat(vnm))
                     vnm = transpose(fieldnames(saved_struct)); % all variables if vnm is empty
                 end
+
                 for f = vnm
                     saved_var = saved_struct.(f{1});
                     if isempty(saved_var)
@@ -259,42 +293,43 @@ if trymatch
         end
     end
 
-
-    szt = cellfun(@(x) size(x,2), tsout, 'UniformOutput', false);
-    if numel(szt)>1 && ~isequal(szt{:}) && any(strcmp(group, {'1','3'}))
-        error("all tsout must be same size in time dimension if group is 1 or 3")
-    end
-
-    switch group
-        case '1'
-            for k = 1:numel(dattmp)
-                dat = cat(2, dat, dattmp{k});
-            end
-            tsout = {cell2mat(tsout(:))};
-        case '3'
-            for k = 1:numel(dattmp)
-                dattmp2 = repelem(dattmp{k}, size(tsout{k},1));
-                for m = 1:numel(dattmp2)
-                    if isempty(dattmp2(m).ii)
-                        dattmp2(m).ii = m;
-                    else
-                        dattmp2(m).ii = dattmp2(m).ii(m);
-                    end
-                end
-                dat = cat(2, dat, dattmp2);
-            end
-            tsout = num2cell(cell2mat(tsout(:)), 2);
-        case 'flat'
-            for k = 1:numel(dattmp)
-                dat = cat(2, dat, dattmp{k});
-            end
-            tsout = {transpose(cell2vec(tsout))}; %make it row vector, so time is 2nd dim
-        otherwise
-            error("group must be 1, 3, or flat")
-    end
-
-
 end
+
+szt = cellfun(@(x) size(x,2), tsout, 'UniformOutput', false);
+if numel(szt)>1 && ~isequal(szt{:}) && any(strcmp(group, {'1','3'}))
+    error("all tsout must be same size in time dimension if group is 1 or 3")
+end
+
+switch group
+    case '1'
+        for k = 1:numel(dattmp)
+            dat = cat(2, dat, dattmp{k});
+        end
+        tsout = {cell2mat(tsout(:))};
+    case '3'
+        for k = 1:numel(dattmp)
+            dattmp2 = repelem(dattmp{k}, size(tsout{k},1));
+            for m = 1:numel(dattmp2)
+                if isempty(dattmp2(m).ii)
+                    dattmp2(m).ii = m;
+                else
+                    dattmp2(m).ii = dattmp2(m).ii(m);
+                end
+            end
+            dat = cat(2, dat, dattmp2);
+        end
+        tsout = num2cell(cell2mat(tsout(:)), 2);
+    case 'flat'
+        for k = 1:numel(dattmp)
+            dat = cat(2, dat, dattmp{k});
+        end
+        tsout = {transpose(cell2vec(tsout))}; %make it row vector, so time is 2nd dim
+    otherwise
+        error("group must be 1, 3, or flat")
+end
+
+
+
 
 end
 

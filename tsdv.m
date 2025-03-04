@@ -1,22 +1,24 @@
 
-function dv = tsdv(vtype, tsin, slopelensec, slopeord, dt)
+function dv = tsdv(vtype, tsin, slopelensec, slopeord, sper)
+
+% need to generalize this function for nd
 
 arguments
-    vtype %normal, circular, or catergorical; tsin must be in radians if circular 
+    vtype {mustBeText} %normal, circular, or catergorical; tsin must be in radians if circular 
     tsin %input variable to be differentiated; must be in radians if vtype is circular
     slopelensec %slope length in seconds; rounded to nearest sample
     slopeord %order for polynomial fit to determine local slope 
-    dt %sample period
+    sper %sample period
 end
 
 if isempty(slopelensec)
-    slopelensec = dt*slopeord+1;
+    slopelensec = sper*slopeord+1;
     error("WARNING, IN daqld, slopelensec is too short given slopeord and sample rate, and will cause error in tsdv; you need to make slopelensec longer for this recording; the shortest possible value that will not cause error (and without changing slopeord) is: " + num2str(slopelensec_new))
 end
-slopelen = round(slopelensec / dt);
+slopelen = round(slopelensec / sper);
 
 if slopelen<slopeord+1
-    error("movingslope will error because slopelen is less than slopeord+1; your value of slopelensec, given value of dt (sample period), gives slopelen less than slopeord+1; use a different slopelen and/or slopeord (likely just slopelen should be changed)")
+    error("movingslope will error because slopelen is less than slopeord+1; your value of slopelensec, given value of sper (sample period), gives slopelen less than slopeord+1; use a different slopelen and/or slopeord (likely just slopelen should be changed)")
 end
 
 if strcmp(vtype, 'circular') % differentiate circular variable 
@@ -26,15 +28,15 @@ if strcmp(vtype, 'circular') % differentiate circular variable
     inpx = cos(tsin);
     inpy = sin(tsin);
 
-    inpdx = movingslope(inpx, slopelen, slopeord, dt);
-    inpdy = movingslope(inpy, slopelen, slopeord, dt);
+    inpdx = movingslope(inpx, slopelen, slopeord, sper);
+    inpdy = movingslope(inpy, slopelen, slopeord, sper);
 
     denom = inpx.^2 + inpy.^2;
     dv = (-inpy ./ denom).*inpdx + (inpx ./ denom).*inpdy; %formula for derivative of atan2(y,x)
 
 elseif strcmp(vtype, 'normal') % differentiate non-circular variable 
 
-    dv = movingslope(tsin, slopelen, slopeord, dt);
+    dv = movingslope(tsin, slopelen, slopeord, sper);
 
 elseif strcmp(vtype, 'categorical') %differentiate categorical variable 
 

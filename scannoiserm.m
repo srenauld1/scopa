@@ -46,11 +46,11 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
-o.spr.smlensec = smlensec; 
-o.spr.zerostack = zerostack; 
-o = odf(o, 'spr');
+o.sld.smlensec = smlensec; 
+o.sld.zerostack = zerostack; 
+o = odf(o, 'sld');
 
-stack = stackpr(pthstack, o.spr);
+stack = stackld(pthstack, o.sld);
 
 
 %% index into frameinds, if nonempty

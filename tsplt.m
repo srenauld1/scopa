@@ -53,7 +53,11 @@ maxnumxmark = opt.maxnumxmark;
 
 fprintf("WARNING FUNCTION tsplt MOSTLY WORKS BUT IS STILL BEING WRITTEN" + newline)
 
-
+for k = 1:numel(ts)
+    if isduration(ts{k})
+        ts{k} = seconds(ts{k});
+    end
+end
 
 %% ORGANIZE ts
 
@@ -182,8 +186,11 @@ if isempty(xall)
     szx = cellfun(@(x) size(x,2), x, 'UniformOutput', false);
     if ~isscalar(x) && ~isequal(szx{:}) %if user didnt pass in xall, and the x are not equal in length, interpolate them onto single x axis (0-1)
         xaxis_true_lims = [0 1];
-        limx = axlim(x, limtype='all', roomfac=0);
+        limx = axlim(x{:}, limtype='all', roomfac=0);
         x = rescale2(x, limx, xaxis_true_lims);
+        for k = 1:numel(x)
+            x{k} = interp1(1:numel(x{k}), x{k}, limx(1):limx(end), 'linear', 'extrap');
+        end
     end
     for k = 1:numel(y)
         if tp
@@ -193,6 +200,7 @@ if isempty(xall)
         else
             if size(x{k},2)~=size(y{k},2)
                 y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+                y{k} = y{k}';
             end
         end
     end
@@ -201,10 +209,15 @@ else
         if isempty(x{k}) || isempty(y{k})
             error("you passed an empty array as an x or y argument, but also passed name-value argument xall; delete the empty argument to use xall, since xall reinterprets all xy arguments as y, and applies xall to all of them; using an empty array is valid for x when you don't use xall because it sets x to 1:numel(y) for it's corresponding y")
         end
-        if size(x{k},2)~=size(y{k},2)
-            y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+        if tp
+            error("")
+        else
+            if size(x{k},2)~=size(y{k},2)
+                y{k} = transpose(interp1(1:size(y{k},2), transpose(y{k}), linspace(1, size(y{k},2), numel(x{k})), 'linear'));
+                y{k} = y{k}';
+            end
         end
-        y{k} = y{k};
+        % y{k} = y{k};
     end
 end
 
@@ -243,6 +256,7 @@ y = rescale2(y, lim, yaxis_true_lims);
 
 %% INDEX
 
+idx = [];
 if ~isempty(ix)
     for k = 1:num_xy_pairs
         if numel(ix)==2

@@ -1,4 +1,4 @@
-function [stack, chantif] = stackld(pthstack, opt)
+function [stack, chantif] = stackld(pthstack, opt, doplt)
 
 %{
 
@@ -20,9 +20,13 @@ TIFFStack seems to fail reading floats
 %}
 
 arguments
-    pthstack
-    opt
+    pthstack = []
+    opt = []
+    doplt = []
 end
+
+[opt, optid, pthstack, doplt] = fset('sld', opt, pthstack, doplt);
+
 fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
 trm = opt.trm; %num frames to crop from [start, end]; [] to skip
 iy = opt.iy; %y indices to keep and save to mat
@@ -30,6 +34,13 @@ ix = opt.ix; %x indices to keep and save to mat
 ic = opt.ic; %c indices to keep and save to mat
 iz = opt.iz; %z indices to keep and save to mat
 it = opt.it; %t indices to keep and save to mat 
+stackdtype = opt.stackdtype;
+zerostack = opt.zerostack;
+clip = opt.clip;
+smlenpx = opt.smlenpx;
+smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
+smmthd = opt.smmthd;
+dostats = opt.dostats;
 savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
@@ -61,19 +72,25 @@ end
 doconvert = 1;
 if endsWith(pthstack, '.mat')
     try
-        load(pthstack, 'mmd')
-        if ~isequal(mmd.fbrm, fbrm) ... %if mat already exists, error if current settings do not match (and are not functionally equivalent to) settings previously used to convert tif to mat
-                || ~isequal(mmd.trm, trm) ...
-                || ( ~isequal(mmd.iy, iy) && ~isequal(1:mmd.sz(1), ix) ) ...
-                || ( ~isequal(mmd.ix, ix) && ~isequal(1:mmd.sz(2), ix) ) ...
-                || ( ~isequal(mmd.ic, ic) && ~isequal(mmd.chantif, ic) ) ...
-                || ( ~isequal(mmd.iz, iz) && ~isequal(1:mmd.sz(4), ix) ) ...
-                || ( ~isequal(mmd.it, it) && ~isequal(1:mmd.sz(5), ix) )
+        load(pthstack, 'opt_save', 'chantif_save', 'sz_save')
+        if ~isequal(opt_save.fbrm, fbrm) ... %if mat already exists, error if current settings do not match (and are not functionally equivalent to) settings previously used to convert tif to mat; comparing them individually because some can change after input, and also some don't matter functionally
+                || ~isequal(opt_save.trm, trm) ...
+                || ~isequal(opt_save.stackdtype, stackdtype) ...
+                || ~isequal(opt_save.zerostack, zerostack) ...
+                || ~isequal(opt_save.clip, clip) ...
+                || ~isequal(opt_save.smlenpx, smlenpx) ...
+                || ~isequal(opt_save.smlensec, smlensec) ...
+                || ~isequal(opt_save.smmthd, smmthd) ...
+                || ( ~isequal(opt_save.iy, iy) && ~isequal(1:sz_save(1), iy) ) ... 
+                || ( ~isequal(opt_save.ix, ix) && ~isequal(1:sz_save(2), ix) ) ...
+                || ( ~isequal(opt_save.ic, ic) && ~isequal(chantif_save, ic) ) ...
+                || ( ~isequal(opt_save.iz, iz) && ~isequal(1:sz_save(4), iz) ) ...
+                || ( ~isequal(opt_save.it, it) && ~isequal(1:sz_save(5), it) )
             error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT; YOU HAVE A MAT FILE ALREADY THAT USE A DIFFERENT SET OF OPTIONS; DELETE THAT MAT FILE OR USE THE SAME OPTIONS LISTED IN mmd IN FILE: " + pthstack)
         end
         fprintf("loading mat file containing stack" + newline)
-        load(pthstack, 'stack')
-        chantif = mmd.chantif;
+        load(pthstack, 'stack') %not loading with optid infix because stacks are large, instead, 
+        chantif = chantif_save;
         doconvert = 0;
     catch ME
         fprintf("cannot load mat file stack and/or tif conversion metadata (mmd); error message is: " + ME.message + newline)
@@ -171,16 +188,9 @@ if doconvert
 
     %%%% RECORD SETTINGS FOR CONVERTING TIF TO MAT %%%%
 
-    mmd.fbrm = fbrm;
-    mmd.trm = trm;
-    mmd.iy = iy;
-    mmd.ix = ix;
-    mmd.ic = ic;
-    mmd.iz = iz;
-    mmd.it = it;
-    mmd.sz = sz;
-    mmd.chantif = chantif;
-
+    sz_save = sz;
+    chantif_save = chantif;
+    opt_save = opt;
 
     %%%% CHECK ANY INDICES FOR PROBLEMS %%%%
 
@@ -259,9 +269,28 @@ if doconvert
         stack = reshape(stack, numel(iy), numel(ix), numel(ic), numel(iz), numel(it) );
 
         stack = permute(stack, [1 2 4 5 3]);
+
+
+        if dostats
+            error("stackstats function needs to be updated, leave dostats=0 for now")
+            stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstack)
+        end
+        if any(clip) && ~isequal(clip, [0,1])
+            stack = stackclip(stack, clip=clip);
+        end
+        if zerostack
+            stack = stack - min(stack, [], [1 2 3 4], 'omitmissing'); %subtract min for each channel
+        end
+        if ~isa(stack, stackdtype)
+            stack = stacktype(stack, stackdtype);
+        end
+        if any(smlenpx) || any(smlensec)
+            stack = stacksm(stack, method=smmthd, smlenpx=smlenpx, smlensec=smlensec, imrate=md.volrate);
+        end
+
         
         fprintf("saving stack as mat file, after permuting, and optional indexing" + newline)
-        save(pthmat, 'stack', 'mmd', '-v7.3', '-mat')
+        save(pthmat, 'stack', 'chantif_save', 'sz_save', 'opt_save', '-v7.3', '-mat')
         fprintf("stack saved as mat" + newline)
 
     else
