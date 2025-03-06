@@ -1,4 +1,4 @@
-function mdl = mdlmake(opt, indv, depv, imrate, pthstack, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake(opt, indv, depv, pthstack, imrate, epochts, doplt, numsyn, ld, histinc)
 
 
 %{
@@ -19,11 +19,11 @@ mdl_plots plots model
 %}
 
 arguments
-    opt
-    indv = [] %independent variable(s) before processing; if indvp and depvp are cells, separate models are fit to all indvp/depvp pairs (loop over mdlmake_one), if mat, only one model is fit
-    depv = [] %dependent variable(s) before processing; if indvp and depvp are cells, separate models are fit to all indvp/depvp pairs (loop over mdlmake_one), if mat, only one model is fit
-    imrate = [] %imaging rate
+    opt = []
+    indv = [] %independent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
+    depv = [] %dependent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
     pthstack = [] %path to stack
+    imrate = [] %imaging rate
     epochts = []
     doplt = []
     numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
@@ -31,43 +31,28 @@ arguments
     histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
 
-if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv), ~isempty(opt.depv))
+[opt, pthstack, doplt] = fset('mdl', opt, pthstack, doplt);
+
+%% set up indv/depv
+
+if ~isscalar(opt.indv) || ~isscalar(opt.depv)
+    error("indv and depv must be scalar, tg can be nonscalar though")
+end
+
+if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
     error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 
-pthscopa = getpathscopa();
-user = glb('user');
-if isempty(user)
-    error("you have not set glb('user')")
-end
-pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
-
-
-%% loop over indv/depv
-
-dat_indv = [];
+dat_var = [];
+iv = [1 1];
 if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
 
-    if isstruct(opt.indv) && all(startsWith(fieldnames(opt.indv), 'tg')) 
-        [indv, dat_indv] = tsget(opt.indv);
-    elseif isnumeric(opt.indv) || iscell(opt.indv) && all(cellfun(@isnumeric, cellflat(opt.indv))) && all(~cellfun(@isempty, cellflat(opt.indv)))
-        indv = opt.indv;
-        dat_indv = [];
+    if isstruct(opt.indv) && all(startsWith(fieldnames(opt.indv), 'tg')) && isstruct(opt.depv) && all(strcmp(fieldnames(opt.depv), 'tg'))
+        [vartmp, dat_var, pthcommon, varid, iv] = tsget(opt.indv, opt.depv);
+        indv = vartmp{1};
+        depv = vartmp{2};
     else
-        error("if indv is defined in opt, it must be numeric, or nonempty numeric cells, or struct tg (to define options for tsget)")
-    end
-
-    if isstruct(opt.depv) && all(strcmp(fieldnames(opt.depv), 'tg'))
-        [depv, dat_depv] = tsget(opt.depv);
-    elseif isnumeric(opt.depv) || iscell(opt.depv) && all(cellfun(@isnumeric, cellflat(opt.depv))) && all(~cellfun(@isempty, cellflat(opt.depv)))
-        depv = opt.depv;
-        dat_depv = [];
-    else
-        error("if depv is defined in opt, it must be numeric, or nonempty numeric cells, or struct tg (to define options for tsget)")
-    end
-
-    if all(cellfun(@isempty, indv)) || all(cellfun(@isempty, depv))
-        error("depv and indv must both be nonempty; tsget did not find indv and/or depv")
+        error("if indv/depv is defined in opt, it must be struct tg (to define options for tsget)")
     end
 
 end
@@ -79,71 +64,34 @@ if ~iscell(depv)
     depv = {depv};
 end
 
-[tmpc,tmpr] = meshgrid(1:numel(indv), 1:numel(depv));
-pairind = [tmpc(:) tmpr(:)];
-numfit = size(pairind,1);
+for k = 1:size(iv,1) 
 
-
-for k = 1:numel(numfit) %loop over indv/depv pairs
-
-    if isempty(dat_indv)
+    if isempty(dat_var)
         varid = 'z0';
         pthmdl = [erase(pthstack, '.mat') varid opt.optid '_mdl_.mat'];
     else
-        dat_pair(1) = dat_indv{pairind(k,1)};
-        dat_pair(2) = dat_depv{pairind(k,2)};
-        [dat_pair_copy, varid] = structfile(pthvar, s=dat_pair, useprefix=1);
-        pthtmp = {dat_pair.pth};
-
-        pthcommon = intersectchar(pthtmp);
-        pthcommon = fileparts(pthcommon); %crop to nearest folder
-        if ~endsWith(pthcommon, filesep)
-            pthcommon = [pthcommon filesep];
-        end
-
-        pthmdl = [pthcommon varid opt.optid '_mdl_.mat'];
-
+        pthmdl = [pthcommon{k} varid{k} opt.optid '_mdl_.mat'];
     end
 
-    mdl = mdlmake_one(indv, depv{pairind(k,2)}, opt, varid, imrate, pthmdl, epochts, doplt, numsyn, ld, histinc);
-end
+    mdl = mdlmake2(indv{iv(k,1)}, depv{iv(k,2)}, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ld, histinc);
 
-for k = 1:numel(numfit) %loop over indv/depv pairs
-
-    if isempty(dat_indv)
-        varid = 'z0';
-        pthmdl = [erase(pthstack, '.mat') varid opt.optid '_mdl_.mat'];
-    else
-        dat_pair(1) = dat_indv{pairind(k,1)};
-        dat_pair(2) = dat_depv{pairind(k,2)};
-        [dat_pair_copy, varid] = structfile(pthvar, s=dat_pair, useprefix=1);
-        pthtmp = {dat_pair.pth};
-
-        pthcommon = intersectchar(pthtmp);
-        pthcommon = fileparts(pthcommon); %crop to nearest folder
-        if ~endsWith(pthcommon, filesep)
-            pthcommon = [pthcommon filesep];
-        end
-
-        pthmdl = [pthcommon varid opt.optid '_mdl_.mat'];
-
-    end
-
-    mdl = mdlmake_one(indv{pairind(k,1)}, depv{pairind(k,2)}, opt, varid, imrate, pthmdl, epochts, doplt, numsyn, ld, histinc);
 end
 
 
 end
 
-function mdl = mdlmake_one(indvp, depvp, opt, varid, imrate, pthmdl, epochts, doplt, numsyn, ld, histinc)
+
+
+function mdl = mdlmake2(indv, depv, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ld, histinc)
+
 
 pthpre = erase(pthmdl, '.mat');
 
 try
 
     mdl = load(pthmdl);
-    if any(~isfield(mdl, {'ft', 'st', 'op', 'maketime_optfile_mdl'}))
-        error("mdl struct must contain fields 'ft', 'st', 'op', 'maketime_optfile_mdl'; you may have loaded an old roi struct")
+    if any(~isfield(mdl, {'ft', 'st', 'op', 'opt', 'varid', 'maketime_optfile_mdl'}))
+        error("mdl struct must contain fields 'ft', 'st', 'op', 'maketime_optfile_mdl'; you may have loaded an old mdl struct")
     end
     if ~isequal(mdl.maketime_optfile_mdl, glb('maketime_mdl'))
         error("mdl id is derived from an optid file different from original")
@@ -151,36 +99,36 @@ try
 
 catch ME
 
-    if isempty(epochts)
-        epochts = ones(1, size(depvp, 2));
+    if isempty(indv) || isempty(depv)
+        error("depv and indv must both be nonempty; tsget did not find indv and/or depv")
     end
-    if isempty(doplt)
-        doplt = any(strcmp('mdl', glb('plt')));
+    if isempty(epochts)
+        epochts = ones(1, size(depv, 2));
     end
 
     opt.hsv_background = "";
 
-    if ~isa(indvp, 'single') && ~isa(indvp, 'double')
-        indvp = single(indvp);
+    if ~isa(indv, 'single') && ~isa(indv, 'double')
+        indv = single(indv);
     end
-    if ~isa(depvp, 'single') && ~isa(depvp, 'double')
-        depvp = single(depvp);
-    end
-
-    if isvector(indvp) && iscolumn(indvp)
-        indvp = indvp(:)';
+    if ~isa(depv, 'single') && ~isa(depv, 'double')
+        depv = single(depv);
     end
 
-    [ mdl.num_dim_indvp, mdl.num_samp_indvp ] = size(indvp);
-    [ mdl.num_dim_depvp, mdl.num_samp_depvp ] = size(depvp);
+    if isvector(indv) && iscolumn(indv)
+        indv = indv(:)';
+    end
 
-    if mdl.num_samp_indvp~=mdl.num_samp_depvp | ndims(depvp)~=2 | ndims(indvp)~=2
+    [ mdl.num_dim_indvp, mdl.num_samp_indvp ] = size(indv);
+    [ mdl.num_dim_depvp, mdl.num_samp_depvp ] = size(depv);
+
+    if mdl.num_samp_indvp~=mdl.num_samp_depvp || ~ismatrix(depv) || ~ismatrix(indv)
         error("incorrectly sized input(s)")
     end
 
     %% prepare indv and depv
 
-    mdl = mdl_varpr(mdl, indvp, depvp, opt, imrate, pthpre, epochts);
+    mdl = mdl_varpr(mdl, indv, depv, opt, imrate, pthpre, epochts);
 
     %% set up model params and optimization options
 
@@ -192,6 +140,8 @@ catch ME
 
     %% save
 
+    mdl.optid = opt.optid;
+    mdl.varid = varid;
     mdl.maketime_optfile_mdl = glb('maketime_mdl');
     save(pthmdl, '-struct', 'mdl', '-v7.3', '-mat')
 

@@ -11,23 +11,20 @@ o.mn.fe = ["fmf"];
 o.sld.trm = [4,2];
 
 
-otmp.tg.roi.rgname = 'tm';
-otmp.tg.roi.domm = 1;
-otmp.tg.roi.mm.maskname = 'ten';
-otmp.tg.vnm = 'ts';
+mdlindv.tg.roi.rgname = 'tm';
+mdlindv.tg.roi.domm = 1;
+mdlindv.tg.roi.mm.maskname = 'ten';
+mdlindv.tg.vnm = 'ts';
 
-o.mdl.indv = otmp;
-otmp = [];
+o.mdl.indv = mdlindv;
 
-otmp.tg.roi.rgname = 't5';
-otmp.tg.roi.domm = 1;
-otmp.tg.group = '1';
-otmp.tg.vnm = 'ts';
+mdldepv.tg.roi.rgname = 't5';
+mdldepv.tg.roi.domm = 1;
+mdldepv.tg.group = '1';
+mdldepv.tg.vnm = 'ts';
 
-o.mdl.depv = otmp;
-otmp = [];
+o.mdl.depv = mdldepv;
 
-o.mdl.lagsec = 1;
 o.mdl.mdlname = 'svd_0.95';
 o.mdl.lensec = 1.25;
 

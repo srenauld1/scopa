@@ -23,7 +23,7 @@ for k = 1:numel(oa) % loop over recordings
     %% stack
 
     for m = transpose(fieldnames(o.sld))
-        stack = stackld(pth.stack, o.sld.(m{1})); %load/process stack
+        stack = stackld(o.sld.(m{1})); %load/process stack
     end
 
     %% metadata
@@ -57,15 +57,8 @@ for k = 1:numel(oa) % loop over recordings
         switch f
             case 'bmp'
                 for m = transpose(fieldnames(o.(f)))
-                    o2.tg.vnm = 'vy';
-                    o2.tg.mdl = 'var';
-                    stim = tsget(o2);
-                    o2.tg.roi.rgname = 'eb';
-                    o2.tg.roi.domm = 1;
-                    o2.tg.vnm = 'ts';
-                    o2.tg.group = '1';
-                    resp = tsget(o2);
-                    bmp.(m{1}) = bmpmake(o.bmp.(m{1}), md.volrate, daq.a3.epochts, pth.stack); %fit bump
+                    epochtmp = daq.a11.epochts;
+                    bmp.(m{1}) = bmpmake(o.bmp.(m{1}), [], [], [], md.volrate, epochtmp); %fit bump
                 end
             case 'fmf'
                 [fmf.(o.fmf.id), fmfvid] = flymaxfe(pth.stack, o.fmf); %extract flymax visual features

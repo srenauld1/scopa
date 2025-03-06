@@ -24,25 +24,28 @@ for k = 1:numel(fn)
     fnnew = [copybintmp '_' num2str(1)];
     tmp = [];
     tmp.(fnnew) = struct;
-    expandinds = zeros(numel(fnflat), 1, 'logical');
-    for m = 1:numel(fnflat)
-        tmpset = fieldnames(tmp);
-        optidnums = numel(tmpset);
-        tmpval = optflat.(fnflat{m});
-        if isstring(tmpval) && numel(tmpval)>1
-            fprintf("string" + newline)
-            % error("string arrays are not allowed in vbin that can undergo expansion / optid mapping; strings must be scalar, or in cell arrays (to be expanded)")
-        elseif iscell(tmpval) && numel(tmpval)>1
-            expandinds(m) = 1;
-            for w = 1:numel(tmpval)
-                for p = 1:optidnums
-                    newind = p+numel(optidnums)*(w-1);
-                    fnnew = [copybintmp '_' num2str(newind)];
-                    tmp.(fnnew).(fnflat{m}) = tmpval{w};
-                end
+
+    optflatcex = struct2cell(optflat);
+    expandinds = cellfun(@iscell, optflatcex) & cellfun(@(x) numel(x)>1, optflatcex);
+    if any(expandinds)
+        fnflatex = fnflat(expandinds);
+        optflatcex = optflatcex(expandinds);
+        for m = 1:numel(optflatcex)
+            if all(cellfun(@isnumeric,optflatcex{m}))
+                optflatcex{m} = num2cell(unique(cellfun(@unique, optflatcex{m})));
+            else
+                optflatcex{m} = unique(optflatcex{m}); %make sure no accidental repeats
+            end
+        end
+        combos = combinations(optflatcex{:});
+        for m = 1:size(combos,1)
+            fnnew = [copybintmp '_' num2str(m)];
+            for mm = 1:numel(fnflatex)
+                tmp.(fnnew).(fnflatex{mm}) = combos{m,mm}{1};
             end
         end
     end
+
     tmpset = fieldnames(tmp);
     optidnums = numel(tmpset);
     for m = 1:numel(fnflat)

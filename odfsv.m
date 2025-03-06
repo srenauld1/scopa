@@ -55,7 +55,8 @@ d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 d.mn.copybindf = 'none'; %default name for copybin (assigned if user did not assign one)
 d.mn.optiddf = 'z0'; %if user doesn't use oid to map options sets and variables to optid, optiddf is used instead (in filenames, figures, and struct naming) 
-d.mn.id_capable_vbin = ["sld", "daq", "roi", "bmp", "mdl"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
+d.mn.ided_vbin = ["sld", "daq", "roi", "bmp", "mdl"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
+d.mn.inert_vbin = ["sp", "tp", "imhsv", "tg", "savemem", "optid"]; %vbin or options that have no functional effect (set to empty in txt files recording options, and not considered when deriving optid)
 
 d.mn.user = 'youforgottossetuser';
 
@@ -77,7 +78,7 @@ d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not
 d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
 d.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
 d.daq.toballscale = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to rescale from radians to mm
-d.daq.tounwrap = ["ficTracIntSide'", "ficTracIntForward"]; % list which vars to unwrap
+d.daq.tounwrap = ["ficTracIntSide", "ficTracIntForward"]; % list which vars to unwrap
 d.daq.tozero = ["ficTracIntSide", "ficTracIntForward"]; % %list which vars to zero (force to start at 0)
 d.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
 d.daq.slopeord = 2; % order of polynomial used to fit local slope
@@ -120,7 +121,6 @@ d.sld.stackdtype = 'uint16';
 d.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
 d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
 d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
-d.sld.dostats = 0; %turns on/off do_plot_stack_stats, which is old/inefficient and needs to be updated, but is not useless
 d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
 %% ftv (ftvpr: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
@@ -280,6 +280,8 @@ d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 % if the rgname in o.bmp.mdl.tg.v1 is in o.bmp.numangrs, and that rgname is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
 % if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
+d.bmp.indv = struct('tg', []);
+d.bmp.depv = struct('tg', []);
 d.bmp.chan = 1; %channel of imaging data
 d.bmp.mthd = 'pva'; %'pva' for vector average
 d.bmp.domtype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
@@ -294,8 +296,8 @@ d.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph
 
 %% mdlmake (mdlmake: fit model, depv as function of indv)
  
-d.mdl.indv = [];
-d.mdl.depv = [];
+d.mdl.indv = struct('tg', []);
+d.mdl.depv = struct('tg', []);
 d.mdl.epochnum = 1;
 d.mdl.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
 d.mdl.lensec = 0; %seconds, 0 is one sample
@@ -477,7 +479,7 @@ if ~strcmp(cell2mat(vec(fieldnames(d.mn.pthscopas))'), 'abcdefgh')
 end
 
 fprintf("writing default options to: " + pthopt + newline)
-structtxtsv(d, pthopt, overwrite=1, readonly=1)
+structsv(d, pthopt, overwrite=1, readonly=1)
 
 glb(dfset=1); %mark defaults have been set in globals
 

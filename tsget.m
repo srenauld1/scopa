@@ -1,8 +1,11 @@
-function [tsout, dat] = tsget(tg, opt)
+function [tsout, dat, pthc, varid, iv] = tsget(tg, opt)
 
+%var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files 
 
-arguments (Input)
+arguments (Repeating, Input)
     tg
+end
+arguments (Input)
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.pthparent = []
     opt.user = []
@@ -10,10 +13,21 @@ end
 arguments (Output)
     tsout cell
     dat cell
+    pthc cell
+    varid cell
+    iv
 end
 dm = opt.dm;
 pthparent = opt.pthparent;
 user = opt.user;
+
+pthscopa = getpathscopa();
+user = glb('user');
+if isempty(user)
+    error("you have not set glb('user')")
+end
+pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
+
 
 if isempty(user)
     user = glb('user');
@@ -27,46 +41,108 @@ end
 if isempty(pthparent)
     pthparent = glb('pthparent');
 end
-if all(strcmp(fieldnames(tg), 'tg'))
-    tg = tg.tg;
-else
-    error("struct must contain substruct tg (which can be nonscalar) and nothing else")
-end
 
-pthscopa = getpathscopa();
-
-tsout = [];
-dattmp = [];
-dat = [];
+tsout = cell(numel(tg),1);
+dat = cell(numel(tg),1);
 for m = 1:numel(tg) %loop over tg elements
-    [tsout{m}, dattmp{m}] = tsget_one(tg(m), dm, pthparent, user, pthscopa);
+    [tsout{m}, dat{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
 end
 
 
-if isempty(getfieldns(tg, 'groupout'))
-    tmp = getfieldns(tg, 'group');
-    if ~isempty(tmp)
-        tmp = unique(tmp(~cellfun(@isempty, tmp)));
+if any(~cellfun(@isempty, cellflat(tsout))) %if any are nonempty
+
+    if any(cellfun(@isempty, cellflat(tsout))) %if any are empty
+        error("for all tg input, output must be empty or not")
     end
-    if isscalar(tmp)
-        groupout = tmp{1};
-        fprintf("groupout is empty, setting default groupout to " + tmp{1} + " since this is the nonempty value of group for all elements of tg" + newline)
+
+    if isscalar(tg)
+        iv = 1;
+    elseif numel(tg)==2
+        [ivc,ivr] = meshgrid(1:numel(tsout{1}), 1:numel(tsout{2}));
+        iv = [ivc(:) ivr(:)];
     else
-        groupout = '3';
-        fprintf("groupout is empty, and not all elements use the same value for groupsetting default groupout '3', nothing will be grouped at the outer level" + newline)
+        error("write this for more than 2 tg inputs")
     end
+
+    pthc = cell(size(iv,1),1);
+    varid = cell(size(iv,1),1);
+    for k = 1:size(iv,1) %loop over var combos
+
+        for m = 1:size(iv,2) %loop over number vars in combo
+            if m==1
+                datcombo = dat{m}{iv(k,m)};
+            else
+                datcombo(m) = dat{m}{iv(k,m)};
+            end
+        end
+
+        [datcombo_copy, varid{k}] = structfile(pthvar, s=datcombo, useprefix=1);
+        if size(iv,2)==1
+            pthtmp = datcombo.pth;
+        else
+            pthtmp = {datcombo.pth};
+            pthtmp = intersectchar(pthtmp);
+        end
+        pthc{k} = fileparts(pthtmp); %crop to nearest folder
+        if ~endsWith(pthc{k}, filesep)
+            pthc{k} = [pthc{k} filesep];
+        end
+
+    end
+
+else %if all empty
+
+    iv = [];
+    pthc = {};
+    varid = {};
+
+end
+
+end
+
+function [tsout, dat] = tsget2(tg, dm, pthparent, user, pthscopa)
+
+tg = tg.tg; %since the input is named tg
+
+tsout = cell(numel(tg),1);
+dattmp = cell(numel(tg),1);
+group = cell(numel(tg),1);
+for m = 1:numel(tg) %loop over tg elements
+    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, user, pthscopa);
+end
+
+
+if all(cellfun(@isempty, cellflat(tsout))) %isempty(cell2mat(vec(cellflat(tsout))))
+    groupout = '1';
 else
-    tmp = getfieldns(tg, 'groupout');
-    tmp = unique(tmp(~cellfun(@isempty, tmp)));
-    if isscalar(tmp)
-        groupout = tmp{1};
+    if isempty(getfieldns(tg, 'groupout'))
+        tmp = group;
+        if ~isempty(tmp)
+            tmp = unique(tmp(~cellfun(@isempty, tmp)));
+        end
+        if isscalar(tmp)
+            groupout = tmp{1};
+            fprintf("groupout is empty, setting default groupout to " + tmp{1} + " since this is the nonempty value of group for all elements of tg" + newline)
+        else
+            groupout = '3';
+            fprintf("groupout is empty, and not all elements use the same value for groupsetting default groupout '3', nothing will be grouped at the outer level" + newline)
+        end
     else
-        error("groupout must be equal (or empty) for all elements of tg")
+        tmp = getfieldns(tg, 'groupout');
+        tmp = unique(tmp(~cellfun(@isempty, tmp)));
+        if isscalar(tmp)
+            groupout = tmp{1};
+        else
+            error("groupout must be equal (or empty) for all elements of tg")
+        end
     end
 end
 
 tstmp = vec(cellflat(tsout));
 tstmp = cellfun(@single, tstmp, 'UniformOutput', false);
+
+
+dat = [];
 switch groupout
     case '1'
         for k = 1:numel(dattmp)
@@ -96,7 +172,7 @@ end
 end
 
 
-function [tsout, dat] = tsget_one(tg, dm, pthparent, user, pthscopa)
+function [tsout, dat, group] = tsget3(tg, dm, pthparent, user, pthscopa)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -166,55 +242,50 @@ end
 if isfield(tg, 'groupout') && ~isempty(tg.groupout)
     groupout = tg.groupout;
 else
-    fprintf("groupout is empty, leaving empty for now, to be set in tsget, outside tsget_one" + newline)
+    fprintf("groupout is empty, leaving empty for now, to be set in tsget, outside tsget3" + newline)
     groupout = [];
 end
 
 
-id_capable_vbin = glb('id_capable_vbin');
-if isempty(id_capable_vbin)
-    error("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
+ided_vbin = glb('ided_vbin');
+if isempty(ided_vbin)
+    error("ided_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
 end
-if isstring(id_capable_vbin)
-    id_capable_vbin = convertStringsToChars(id_capable_vbin);
+if isstring(ided_vbin)
+    ided_vbin = convertStringsToChars(ided_vbin);
 end
 
 if ~isscalar(tg)
     error("INPUT STRUCT TO tsget MUST BE SCALAR")
 end
 
-cnt = 0;
-vbin = [];
-for k = 1:numel(id_capable_vbin)
-    if isfield(tg, id_capable_vbin{k})
-        cnt = cnt + 1;
-        vbin = id_capable_vbin(k);
-    end
-    if cnt>1
-        error("INPUT STRUCT TO tsget MUST CONTAIN ONE AND ONLY ONE id_capable_vbin AT THE HIGHEST LEVEL")
-    end
-    if isscalar(vbin)
-        vbin = vbin{1};
-        if ~isempty(cell2mat(optid))
-            error("vbin substruct and optid cannot both exist in tg")
-        end
+
+
+
+
+
+nonemptyinds = [];
+ided_vbin_in_tg = ided_vbin(isfield(tg, ided_vbin));
+for k = 1:numel(ided_vbin_in_tg)
+    if ~isempty(tg.(ided_vbin_in_tg{k}))
+        nonemptyinds = [nonemptyinds k];
     end
 end
 
-
-if isempty(vbin)
-    error("vbin, or substruct var, must be passed implicitly as options struct")
-end
-
-if isfield(tg, 'var')
-    if isempty(cell2mat(varid))
-        pthvarpat = [pthscopa 'opt_var_' user '_*_.txt'];
-        [~, varid] = structfile(pth=pthvarpat, )
+if isscalar(ided_vbin_in_tg)
+    vbin = cell2mat(ided_vbin_in_tg(1));
+elseif numel(ided_vbin_in_tg)>1
+    if isscalar(nonemptyinds)
+        vbin = cell2mat(ided_vbin_in_tg(nonemptyinds));
     else
-        error("vbin substruct and varid cannot both exist in tg")
+        error("vbin can be empty if there is only one; if there are multiple, they must all be empty except one")
     end
-else
-    error("vbin, or substruct var, must be passed implicitly as options struct")
+elseif isempty(ided_vbin_in_tg)
+    error("there are no vbin in tg")
+end
+
+if isequal(tg.(vbin), '*')
+    tg.(vbin) = []; %now that you've distinguished the vbin from other potentially empty vbin, you can set it to empty if it was star, since star is meant to be empty
 end
 
 
@@ -230,11 +301,28 @@ if isempty(cell2mat(optid))
     else
         fprintf("no variable found" + newline)
     end
+else
+    if ~isempty(tg.(vbin))
+        error("vbin substruct and optid cannot both exist in tg")
+    end
 end
 
-tsout = [];
-dattmp = [];
-dat = [];
+
+
+if isfield(tg, 'var')
+    if isempty(cell2mat(varid))
+        pthvarpat = [pthscopa 'opt_var_' user '_*_.txt'];
+        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, useprefix=1);
+    else
+        error("var substruct and varid cannot both exist in tg")
+    end
+else
+    varid = {''};
+end
+
+
+tsout = {};
+dattmp = {};
 cnt = 0;
 for w = 1:numel(varid)
     varid_tmp = varid{w};
@@ -272,13 +360,13 @@ for w = 1:numel(varid)
                         for q = 1:numel(ic)
                             cnt = cnt+1;
                             tsout{cnt} = vind(saved_var{ic(q)}, dm, itmp);
-                            dattmp{cnt} = tgdatmake(pth, f, ii, it, ic, group, groupout);
+                            dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, groupout);
                         end
                     else
                         if isempty(ic)
                             cnt = cnt+1;
                             tsout{cnt} = vind(saved_var, dm, itmp);
-                            dattmp{cnt} = tgdatmake(pth, f, ii, it, ic, group, groupout);
+                            dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, groupout);
                         else
                             error("ic is not valid for indexing anything but cell array right now")
                         end
@@ -300,48 +388,52 @@ if numel(szt)>1 && ~isequal(szt{:}) && any(strcmp(group, {'1','3'}))
     error("all tsout must be same size in time dimension if group is 1 or 3")
 end
 
-switch group
-    case '1'
-        for k = 1:numel(dattmp)
-            dat = cat(2, dat, dattmp{k});
-        end
-        tsout = {cell2mat(tsout(:))};
-    case '3'
-        for k = 1:numel(dattmp)
-            dattmp2 = repelem(dattmp{k}, size(tsout{k},1));
-            for m = 1:numel(dattmp2)
-                if isempty(dattmp2(m).ii)
-                    dattmp2(m).ii = m;
-                else
-                    dattmp2(m).ii = dattmp2(m).ii(m);
-                end
+dat = [];
+if ~isempty(szt)
+    switch group
+        case '1'
+            for k = 1:numel(dattmp)
+                dat = cat(2, dat, dattmp{k});
             end
-            dat = cat(2, dat, dattmp2);
-        end
-        tsout = num2cell(cell2mat(tsout(:)), 2);
-    case 'flat'
-        for k = 1:numel(dattmp)
-            dat = cat(2, dat, dattmp{k});
-        end
-        tsout = {transpose(cell2vec(tsout))}; %make it row vector, so time is 2nd dim
-    otherwise
-        error("group must be 1, 3, or flat")
+            tsout = {cell2mat(tsout(:))};
+        case '3'
+            for k = 1:numel(dattmp)
+                dattmp2 = repelem(dattmp{k}, size(tsout{k},1));
+                for m = 1:numel(dattmp2)
+                    if isempty(dattmp2(m).ii)
+                        dattmp2(m).ii = m;
+                    else
+                        dattmp2(m).ii = dattmp2(m).ii(m);
+                    end
+                end
+                dat = cat(2, dat, dattmp2);
+            end
+            tsout = num2cell(cell2mat(tsout(:)), 2);
+        case 'flat'
+            for k = 1:numel(dattmp)
+                dat = cat(2, dat, dattmp{k});
+            end
+            tsout = {transpose(cell2vec(tsout))}; %make it row vector, so time is 2nd dim
+        otherwise
+            error("group must be 1, 3, or flat")
+    end
+end
+
 end
 
 
 
+function dat = tgdatmake(pth, optid, f, ii, it, ic, group, groupout)
 
-end
-
-
-function dat = tgdatmake(pth, f, ii, it, ic, group, groupout)
 dat.pth = pth;
+dat.optid = optid;
 dat.vnm = f{1};
 dat.ii = ii;
 dat.it = it;
 dat.ic = ic;
 dat.group = group;
 dat.groupout = groupout;
+
 end
 
 %{

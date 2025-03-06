@@ -2,7 +2,6 @@ function o = oset_noeb(o)
 
 rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
-
 %%%% MN AND DAQ %%%%
 
 o.mn.doroi = 1; 
@@ -10,12 +9,11 @@ o.mn.dofit = 1;
 o.mn.fe = ["bmp"];
 
 o.daq.useinds = ['none'];
-o.daq.slopeord = 3;
-
+o.sld.balldia = {1};
 
 %%%% BMP %%%%
 
-bmpindv.tg.daq = ['*'];
+bmpindv.tg.daq = [];
 bmpindv.tg.vnm = 'vy';
 
 o.bmp.indv = bmpindv;
@@ -34,11 +32,11 @@ o.bmp.mdl.nrmi = 'none';
 
 %%%% MDL %%%%
 
-mdlindv.tg.bmp = ['*'];
+mdlindv.tg.bmp = [];
 mdlindv.tg.vnm = 'vel';
 mdlindv.tg.groupout = '1';
-mdlindv.tg(2).daq = ['*'];
-mdlindv.tg(2).vnm = 'byv';
+mdlindv(2).tg.daq = [];
+mdlindv(2).tg.vnm = 'byv';
 
 o.mdl.indv = mdlindv;
 

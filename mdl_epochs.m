@@ -39,10 +39,10 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     indv_val = mdl_binld(pth_indvaug, inds.sampinds_indvpaug_val);
     indv_val = indv_val.'; %columns of indv and depv should be number samples, could change above or just transpose here
 
-    depv_allrois = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_train);
-    depv_allrois = depv_allrois.';
-    depv_allrois_val = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_val);
-    depv_allrois_val = depv_allrois_val.';
+    depv_all = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_train);
+    depv_all = depv_all.';
+    depv_all_val = mdl_binld(pth_depvp_bin, inds.sampinds_depvp_val);
+    depv_all_val = depv_all_val.';
 
     %% create save path, check if saved model (for current epoch and validation) already exists (we use this in addition to the load in mdlmake in case some epochs or validation sets finished, but not others, won't have to restart from beginning)
 
@@ -50,11 +50,11 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
     %% create synthetic data to test optimization (optional)
 
-    if numsyn %if not 0, replace depv_allrois with synthetic data
+    if numsyn %if not 0, replace depv_all with synthetic data
         dofit = 1; %always do fit if synthesizing data anew
         doplots_syn = 1; %plot synthetic vs real data
         plot_syn_against_single_depv = 1; %plot each synthetic timeseries against a single depv timeseries (the first, arbitrarily)
-        [depv_allrois, num_dim_depvp, ftsyn] = mdl_synthesize_depv(supp.pthspre, supp, op.mdl, depv_allrois, indv, doplots_syn, numsyn, op.opp, plot_syn_against_single_depv, opt.nrmd);
+        [depv_all, num_dim_depvp, ftsyn] = mdl_synthesize_depv(supp.pthspre, supp, op.mdl, depv_all, indv, doplots_syn, numsyn, op.opp, plot_syn_against_single_depv, opt.nrmd);
     end
 
     %% fit model
@@ -68,11 +68,11 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         depvmax = mdl.st.depvp_max_eachdim;% NOTE! unpack to reduce overhead with large 'mdl' struct during parfor
 
         ft = zeros(num_dim_depvp, supp.num_par_total); % was num_dim_indvp*num_samp_mdl, then num_dim_indvp*supp.num_par_total
-        pred = zeros(num_samp_total, num_dim_depvp, class(depv_allrois));
+        pred = zeros(num_samp_total, num_dim_depvp, class(depv_all));
         gof = zeros(num_dim_depvp, 1);
         gof_val = zeros(num_dim_depvp, 1);
 
-        depv_good_inds = ~any(isnan(depv_allrois));
+        depv_good_inds = ~any(isnan(depv_all));
 
         partest = 1;
         if partest
@@ -85,8 +85,8 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         parfor ri = 1:num_dim_depvp %(ri=1:num_dim_depvp, optpp) %ri = 1:num_dim_depvp
             if depv_good_inds(ri)
-                depv = double(depv_allrois(:, ri));
-                depv_val = double(depv_allrois_val(:, ri));
+                depv = double(depv_all(:, ri));
+                depv_val = double(depv_all_val(:, ri));
 
                 [ ft(ri,:), pred(:,ri), gof(ri), gof_val(ri) ] = ...
                     mdl_fit(indv, depv, ri, histinc, ...
@@ -94,7 +94,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                     sampinds_indvdepv_val, num_samp_total, supp, op, ...
                     depvmin(ri), depvmax(ri), pth_fitdata);
             
-                % mdlplt(op.mdl, supp, depv_allrois(:,ri), pred(:,ri), ft(ri,:), indv, opt.nrmd)
+                % mdlplt(op.mdl, supp, depv_all(:,ri), pred(:,ri), ft(ri,:), indv, opt.nrmd)
             end
         end
 
@@ -105,13 +105,13 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
         save(pth_fitdata, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds', '-v7.3', '-mat')
 
-        % mdlplt(op.mdl, supp, depv_allrois, pred, ft, indv, opt.nrmd)
+        % mdlplt(op.mdl, supp, depv_all, pred, ft, indv, opt.nrmd)
 
     end
 
     %% compute some fit metrics to be used later
 
-    depvstd = std(depv_allrois,1); %2nd arg is 1 to normalize by n, not n-1
+    depvstd = std(depv_all,1); %2nd arg is 1 to normalize by n, not n-1
 
     indvpf = zeros(num_dim_depvp, 1);
     for ri = 1:size(pred, 2)
@@ -119,8 +119,8 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     end
     indvpf(~depv_good_inds) = nan;
 
-    gof_mean_allrois = mean(gof); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
-    gof_val_mean_allrois = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
+    gof_mean_all = mean(gof); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
+    gof_val_mean_all = mean(gof_val); %mean of all depv (e.g. all rois) gof, returns nan if not doing validation since gof_val is empty
 
 
     %% output struct (indexed by validation index)
@@ -129,8 +129,8 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     mdl.ft.(valnames{vfi}).pred = pred;
     mdl.ft.(valnames{vfi}).gof = gof;
     mdl.ft.(valnames{vfi}).gof_val = gof_val;
-    mdl.ft.(valnames{vfi}).gof_mean_allrois = gof_mean_allrois;
-    mdl.ft.(valnames{vfi}).gof_val_mean_allrois = gof_val_mean_allrois;
+    mdl.ft.(valnames{vfi}).gof_mean_all = gof_mean_all;
+    mdl.ft.(valnames{vfi}).gof_val_mean_all = gof_val_mean_all;
     mdl.ft.(valnames{vfi}).depv_good_inds = depv_good_inds;
     mdl.ft.(valnames{vfi}).indvpf = indvpf;
     mdl.ft.(valnames{vfi}).depvstd = depvstd;

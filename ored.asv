@@ -21,14 +21,18 @@ end
 
 o = structflat(o, delim=delim);
 fnoflat = fieldnames(o);
-expr = [strcat('^', inert_vbin, delim), strcat(delim, inert_vbin, delim), strcat(delim, inert_vbin, '$'), strcat('^', inert_vbin, '$')]; %all possible positions of inert vbin in the flattened names
+expr = [strcat('^', inert_vbin, delim), strcat(delim, inert_vbin, delim), strcat(delim, inert_vbin, '$')];
 mtch = zeros(numel(fnoflat), 1, 'logical');
 mtch_is_struct = zeros(numel(fnoflat), 1, 'logical');
+mtch_is_tg = zeros(numel(fnoflat), 1, 'logical');
 for k = 1:numel(expr)
     mtchtmp = ~cellfun(@isempty, regexp(fnoflat, expr{k}));
     mtch = mtch | mtchtmp;
     if endsWith(expr{k}, delim)
         mtch_is_struct = mtch_is_struct | mtchtmp;
+    end
+    if contains(expr{k}, ['^tg' delim]) || contains(expr{k}, [delim 'tg' delim]) || contains(expr{k}, [delim 'tg$'])
+        mtch_is_tg = mtch_is_tg | mtchtmp;
     end
 end
 
@@ -38,12 +42,16 @@ optinert = o(mtch);
 fninert = fnoflat(mtch);
 optinert = cell2struct(optinert, fninert);
 
+%previously removed inert_vbin, now just making them empty
+% o = o(~mtch);
+% fnoflat = fnoflat(~mtch);
 dupes = [];
 for k = 1:numel(inert_vbin)
-    fnoflat(mtch_is_struct) = regexprep(fnoflat(mtch_is_struct), [inert_vbin{k} '.*'], inert_vbin{k});
+    rminds = mtch_is_struct;% & ~mtch_is_tg;
+    fnoflat(rminds) = regexprep(fnoflat(rminds), [inert_vbin{k} '.*'], inert_vbin{k});
     [~, w] = unique( fnoflat, 'stable' );
     tmp = setdiff( 1:numel(fnoflat), w );
-    dupes = [dupes; tmp(:)];
+    dupes = [dupes; tmp];
 end
 
 o(mtch) = {[]};
@@ -54,7 +62,7 @@ o = cell2struct(o, fnoflat);
 o = structunflat(o, delim);
 
 
-switch vbin %further specialized reduction by vbin
+switch vbin
     case 'roi'
         o = ored_roi(o);
 end

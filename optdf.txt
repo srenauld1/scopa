@@ -1,8 +1,14 @@
 {
   "bmp": {
     "chan": 1,
+    "depv": {
+      "tg": []
+    },
     "domtype": "functional",
     "dorescale": 1,
+    "indv": {
+      "tg": []
+    },
     "maxangrs": 8,
     "mthd": "pva",
     "numangrs": 16,
@@ -68,7 +74,7 @@
       "ficTracIntForward"
     ],
     "tounwrap": [
-      "ficTracIntSide'",
+      "ficTracIntSide",
       "ficTracIntForward"
     ],
     "tozero": [
@@ -173,10 +179,14 @@
     "numroi": 128
   },
   "mdl": {
-    "depv": [],
+    "depv": {
+      "tg": []
+    },
     "epochmix": 0,
     "epochnum": 1,
-    "indv": [],
+    "indv": {
+      "tg": []
+    },
     "lagsec": 0,
     "lensec": 0,
     "max_iter_global": 3,
@@ -201,12 +211,21 @@
     "dopltx": 0,
     "doroi": 0,
     "fe": "",
-    "id_capable_vbin": [
+    "ided_vbin": [
       "sld",
       "daq",
       "roi",
       "bmp",
       "mdl"
+    ],
+    "inert_vbin": [
+      "sp",
+      "tp",
+      "imhsv",
+      "optid",
+      "tg",
+      "savemem",
+      "rgname"
     ],
     "optiddf": "z0",
     "plt": "",
@@ -222,7 +241,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025030322163764",
+    "timestr": "2025030617562680",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -337,7 +356,6 @@
   },
   "sld": {
     "clip": [0,1],
-    "dostats": 0,
     "fbrm": 1,
     "ic": [],
     "it": [],

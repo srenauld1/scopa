@@ -11,21 +11,23 @@ arguments
 end
 getonly = opt.getonly;
 
+delim = '__';
+
 user = glb('user');
 if isempty(user)
     error("you have not set glb('user')")
 end
 
-id_capable_vbin = glb('id_capable_vbin');
-if isempty(id_capable_vbin)
-    error("id_capable_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
+ided_vbin = glb('ided_vbin');
+if isempty(ided_vbin)
+    error("ided_vbin must be defined in glb")
 end
-if isstring(id_capable_vbin)
-    id_capable_vbin = convertStringsToChars(id_capable_vbin);
+if isstring(ided_vbin)
+    ided_vbin = convertStringsToChars(ided_vbin);
 end
 
 if isempty(vbin)
-    vbin = id_capable_vbin;
+    vbin = ided_vbin;
 end
 if ~iscell(vbin)
     vbin = {vbin};
@@ -36,7 +38,7 @@ pthscopa = getpathscopa();
 callstack = dbstack();
 
 tsgetcall = 0;
-if strcmp(callstack(2).name, 'tsget') || strcmp(callstack(2).name, 'tsget_one')
+if strcmp(callstack(2).name, 'tsget3')
     tsgetcall = 1;
 end
 
@@ -55,7 +57,7 @@ for k = 1:numel(vbin)
 
     vbintmp = vbin{k};
 
-    if ~any(strcmp(vbintmp, id_capable_vbin))
+    if ~any(strcmp(vbintmp, ided_vbin))
         error(sprintf("option module (vbin) " + vbintmp + " does not support mapping between options sets and option ids (oid)"))
     end
 
@@ -69,50 +71,55 @@ for k = 1:numel(vbin)
             
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-            optexpall = odist(o(m), vbintmp); %optexpall substructs (fields) are temporary names assigned during distribution
+            optdist = odist(o(m), vbintmp); %optdist substructs (fields) are temporary names assigned during distribution
 
             optout = [];
-            fntmp = fieldnames(optexpall);
+            fntmp = fieldnames(optdist);
             for p = 1:numel(fntmp)
 
                 %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-                [optred, optreturn] = ored(optexpall.(fntmp{p}), vbintmp); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optreturn); ored is written to file (if it wasn't already)
+                [optred, optinert] = ored(optdist.(fntmp{p}), vbintmp, delim); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optinert); ored is written to file (if it wasn't already)
 
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
 
-                [opttmp, nmnew] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
+                [opttmp, optid] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
 
 
-                %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting) ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
+                %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
 
+                
                 if tsgetcall && ~iscell(opttmp)
                     opttmp = {opttmp};
-                    nmnew = {nmnew};
+                    optid = {optid};
                 end
 
-                fnr = fieldnames(optreturn);
+                fnr = fieldnames(optinert);
                 if iscell(opttmp)
                     if ~tsgetcall
                         error("opttmp cannot be cell if tsgetcall")
                     end
                     for k2 = 1:numel(opttmp)
                         if ~isempty(opttmp{k2})
+                            opttmp{k2} = structflat(opttmp{k2}, delim=delim);
                             for q = 1:numel(fnr)
-                                opttmp{k2}.(fnr{q}) = optreturn.(fnr{q});
+                                opttmp{k2}.(fnr{q}) = optinert.(fnr{q});
                             end
-                            optout.(nmnew{k2}) = opttmp{k2};
+                            opttmp{k2} = structunflat(opttmp{k2}, delim);
+                            optout.(optid{k2}) = opttmp{k2};
                         end
                     end
                 else
+                    opttmp = structflat(opttmp, delim=delim);
                     for q = 1:numel(fnr)
-                        opttmp.(fnr{q}) = optreturn.(fnr{q});
+                        opttmp.(fnr{q}) = optinert.(fnr{q});
                     end
+                    opttmp = structunflat(opttmp, delim);
                     if ~isfield(opttmp, 'optid') %if optid itself is not field (shouldn't ever be right?) add it here 
-                        opttmp.optid = nmnew;
+                        opttmp.optid = optid;
                     end
-                    optout.(nmnew) = opttmp;
+                    optout.(optid) = opttmp;
                 end
 
             end

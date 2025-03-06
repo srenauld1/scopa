@@ -1,4 +1,4 @@
-function structtxtsv(s, pth, opt)
+function structsv(s, pth, opt)
 
 
 arguments

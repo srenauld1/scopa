@@ -1,13 +1,13 @@
-function mdl = mdl_varpr(mdl, indvp, depvp, opt, imrate, pthpre, epochts)
+function mdl = mdl_varpr(mdl, indv, depv, opt, imrate, pthpre, epochts)
 
-%don't unpack indvp and depvp from struct in case they're large (they can be updated below, which would double memory)
+%don't unpack indv and depv from struct in case they're large (they can be updated below, which would double memory)
 
 num_dim_indvp = mdl.num_dim_indvp;
 num_samp_indvp = mdl.num_samp_indvp;
 num_dim_depvp = mdl.num_dim_depvp;
 num_samp_depvp = mdl.num_samp_depvp;
 
-time_dimension = find(size(indvp)==num_samp_indvp);
+time_dimension = find(size(indv)==num_samp_indvp);
 
 
 %% exclude samples (optional)
@@ -18,18 +18,18 @@ end
 
 %% standardize indv and depv (optional)
 
-indvp_mean_eachdim = mean(indvp, 2, 'omitmissing');
-indvp_std_eachdim = std(indvp, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
-indvp_min_eachdim = min(indvp, [], 2, 'omitmissing');
-indvp_max_eachdim = max(indvp, [], 2, 'omitmissing');
+indvp_mean_eachdim = mean(indv, 2, 'omitmissing');
+indvp_std_eachdim = std(indv, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
+indvp_min_eachdim = min(indv, [], 2, 'omitmissing');
+indvp_max_eachdim = max(indv, [], 2, 'omitmissing');
 
-depvp_mean_eachdim = mean(depvp, 2, 'omitmissing');
-depvp_std_eachdim = std(depvp, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
-depvp_min_eachdim = min(depvp, [], 2, 'omitmissing');
-depvp_max_eachdim = max(depvp, [], 2, 'omitmissing');
+depvp_mean_eachdim = mean(depv, 2, 'omitmissing');
+depvp_std_eachdim = std(depv, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
+depvp_min_eachdim = min(depv, [], 2, 'omitmissing');
+depvp_max_eachdim = max(depv, [], 2, 'omitmissing');
 
-indvp = mdl_nrmvar(indvp, 'forward', opt.nrmi, indvp_mean_eachdim, indvp_std_eachdim, indvp_min_eachdim, indvp_max_eachdim);
-depvp = mdl_nrmvar(depvp, 'forward', opt.nrmd, depvp_mean_eachdim, depvp_std_eachdim, depvp_min_eachdim, depvp_max_eachdim);
+indv = mdl_nrmvar(indv, 'forward', opt.nrmi, indvp_mean_eachdim, indvp_std_eachdim, indvp_min_eachdim, indvp_max_eachdim);
+depv = mdl_nrmvar(depv, 'forward', opt.nrmd, depvp_mean_eachdim, depvp_std_eachdim, depvp_min_eachdim, depvp_max_eachdim);
 
 %% reorganize indv into size [dimensions, samples]
 
@@ -40,18 +40,18 @@ end
 num_samp_lag = round(opt.lagsec*imrate);
 
 num_dim_indv = num_dim_indvp*num_samp_mdl;
-num_samp_indvpaug = num_samp_indvp-(num_samp_mdl-1)-num_samp_lag;
+num_samp_indvaug = num_samp_indvp-(num_samp_mdl-1)-num_samp_lag;
 
-epochtsaug = zeros( num_samp_mdl, num_samp_indvpaug );
+epochtsaug = zeros( num_samp_mdl, num_samp_indvaug );
 
 write_class = 'double';
-write_size = [num_dim_indv, num_samp_indvpaug];
+write_size = [num_dim_indv, num_samp_indvaug];
 
 pth_indvaug = [pthpre '_' write_class '_' num2str(write_size(1)) '_' num2str(write_size(2)) '_indvaug_.bin'];
 fid = fopen(pth_indvaug, 'w');
 
-for k = 1 : num_samp_indvpaug
-    tmp = reshape( flip(indvp(:,k:k+num_samp_mdl-1), time_dimension), [], 1 ); %indvpaug makes time samples into past just another indv dim, e.g., for model with 2 dims a and b and 4 time samples into past, with lag zero, indvpaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
+for k = 1 : num_samp_indvaug
+    tmp = reshape( flip(indv(:,k:k+num_samp_mdl-1), time_dimension), [], 1 ); %indvaug makes time samples into past just another indv dim, e.g., for model with 2 dims a and b and 4 time samples into past, with lag zero, indvaug element order in 1st dim, for each sample (2nd dim), is at-3, bt-3, at-2, bt-2, at-1, bt-1, at-0, bt-0 (lag will just shift t by lag)
     fwrite(fid, tmp, write_class); %write one column at a time, in case it's a large variable, to prevent memory spike (ie if entire array were preallocated), since, during fitting, in mdl_epochs, only subsets of the array are often used at a time (ie subsets read from bin, also to prevent memory soike)
     epochtsaug(:,k) = flip(epochts(k:k+num_samp_mdl-1), time_dimension); %do the same for epochts, to make sure model doesn't include any samples from wrong epoch
 end
@@ -61,44 +61,44 @@ fclose(fid);
 %% if mdlname starts with 'ohe', one hot encode indv
 
 if startsWith(opt.mdlname, 'ohe') %one hot encode indv, if mdlname is 'ohe*'
-    error("this needs to be moved since indvpaug has now been written into bin")
+    error("this needs to be moved since indvaug has now been written into bin")
     doplots_hot = 0;
-    [indvpaug, num_dim_indv, num_samp_mdl, ~] = mdl_ohevar(opt.mdlname, indvpaug, num_dim_indvp, num_samp_mdl, pthpre, doplots_hot);
+    [indvaug, num_dim_indv, num_samp_mdl, ~] = mdl_ohevar(opt.mdlname, indvaug, num_dim_indvp, num_samp_mdl, pthpre, doplots_hot);
 end
 
-%% write depvp to bin
+%% write depv to bin
 
-if ~isequal([ num_dim_depvp, num_samp_depvp ], size(depvp))
+if ~isequal([ num_dim_depvp, num_samp_depvp ], size(depv))
     error("wrong write size")
 end
-pth_depvp_bin = mdl_binsv(depvp, pthpre, 'depvp');
+pth_depvp_bin = mdl_binsv(depv, pthpre, 'depv');
 
 
 %% compute stats (substruct st) from depv and indv for use later (some were computed above, but are recomputed here because normalization could have changed them)
 
-mdl.st.indvp_min_alldim = min(abs(indvp(:)));
-mdl.st.indvp_max_alldim = max(abs(indvp(:)));
+mdl.st.indvp_min_alldim = min(abs(indv(:)));
+mdl.st.indvp_max_alldim = max(abs(indv(:)));
 mdl.st.indvp_lim_alldim = [mdl.st.indvp_min_alldim mdl.st.indvp_max_alldim];
-mdl.st.indvp_extreme_alldim = max(abs(indvp(:)));
-mdl.st.indvp_mean_alldim = mean(indvp(:), "omitmissing");
-mdl.st.indvp_std_alldim = std(indvp(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
+mdl.st.indvp_extreme_alldim = max(abs(indv(:)));
+mdl.st.indvp_mean_alldim = mean(indv(:), "omitmissing");
+mdl.st.indvp_std_alldim = std(indv(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
 
-mdl.st.depvp_min_alldim = min(abs(depvp(:)));
-mdl.st.depvp_max_alldim = max(abs(depvp(:)));
+mdl.st.depvp_min_alldim = min(abs(depv(:)));
+mdl.st.depvp_max_alldim = max(abs(depv(:)));
 mdl.st.depvp_lim_alldim = [mdl.st.depvp_min_alldim mdl.st.depvp_max_alldim];
-mdl.st.depvp_extreme_alldim = max(abs(depvp(:)));
-mdl.st.depvp_mean_alldim = mean(depvp(:), "omitmissing");
-mdl.st.depvp_std_alldim = std(depvp(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
+mdl.st.depvp_extreme_alldim = max(abs(depv(:)));
+mdl.st.depvp_mean_alldim = mean(depv(:), "omitmissing");
+mdl.st.depvp_std_alldim = std(depv(:), 1, "omitmissing"); %2nd arg is 1 to normalize by n, not n-1
 
-indvp_mean_eachdim = mean(indvp, 2, 'omitmissing');
-indvp_std_eachdim = std(indvp, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
-indvp_min_eachdim = min(indvp, [], 2, 'omitmissing');
-indvp_max_eachdim = max(indvp, [], 2, 'omitmissing');
+indvp_mean_eachdim = mean(indv, 2, 'omitmissing');
+indvp_std_eachdim = std(indv, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
+indvp_min_eachdim = min(indv, [], 2, 'omitmissing');
+indvp_max_eachdim = max(indv, [], 2, 'omitmissing');
 
-depvp_mean_eachdim = mean(depvp, 2, 'omitmissing');
-depvp_std_eachdim = std(depvp, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
-depvp_min_eachdim = min(depvp, [], 2, 'omitmissing');
-depvp_max_eachdim = max(depvp, [], 2, 'omitmissing');
+depvp_mean_eachdim = mean(depv, 2, 'omitmissing');
+depvp_std_eachdim = std(depv, 1, 2, 'omitmissing'); %2nd arg is 1 to normalize by n, not n-1
+depvp_min_eachdim = min(depv, [], 2, 'omitmissing');
+depvp_max_eachdim = max(depv, [], 2, 'omitmissing');
 
 mdl.st.indvp_mean_eachdim = indvp_mean_eachdim;
 mdl.st.indvp_std_eachdim = indvp_std_eachdim;
@@ -117,7 +117,7 @@ end
 %% output struct
 
 mdl.num_dim_indv = num_dim_indv;
-mdl.num_samp_indvpaug = num_samp_indvpaug;
+mdl.num_samp_indvaug = num_samp_indvaug;
 mdl.num_samp_mdl = num_samp_mdl;
 mdl.num_samp_lag = num_samp_lag;
 mdl.epochtsaug = epochtsaug;

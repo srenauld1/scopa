@@ -15,10 +15,6 @@ end
 
 %% set up indv/depv
 
-if ~isscalar(opt.indv) || ~isscalar(opt.depv)
-    error("indv and depv must be scalar, tg can be nonscalar though")
-end
-
 if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
     error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end

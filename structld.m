@@ -1,4 +1,4 @@
-function s = structtxtld(pth, opt)
+function s = structld(pth, opt)
 
 arguments
     pth %path to txt file containing struct

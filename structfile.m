@@ -98,7 +98,7 @@ if useprefix
     filesystem_matched = 0;
     if ~isempty(pthall)
         for k = 1:numel(pthall) %if pth contains wildcard, it's because it's filesystem protected, so find the file for this filesystem
-            sfile = structtxtld(pthall(k).name, nocells=1);
+            sfile = structld(pthall(k).name, nocells=1);
 
             if ~isfield(sfile, 'loc') || ~isfield(sfile, 'prefix')
                 error("useprefix is true but pth is a file that previously did not use prefix")
@@ -155,7 +155,7 @@ loc = [pthdir filesep];
 
 if isfile(pth)
 
-    sfile = structtxtld(pth, nocells=1); %load from file
+    sfile = structld(pth, nocells=1); %load from file
     if isfield(sfile, 'maketime')
         maketime = sfile.maketime;
         sfile = rmfield(sfile, 'maketime');
@@ -376,7 +376,7 @@ else
     end
     sfile.maketime = maketime;
     sfile.(nmout) = sfilenew;
-    structtxtsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
+    structsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 end
 
 %%%%% SET GLOBALS %%%%%
@@ -409,13 +409,13 @@ switch vbin
         if isempty(glb('maketime_rg'))
             glb(maketime_rg=maketime);
         end
-    case 'var'
-        if isempty(glb('maketime_var'))
-            glb(maketime_var=maketime);
-        end
     case 'sld'
         if isempty(glb('maketime_sld'))
             glb(maketime_sld=maketime);
+        end
+    case 'var'
+        if isempty(glb('maketime_var'))
+            glb(maketime_var=maketime);
         end
     otherwise
         error("vbin must be roi, mdl, bmp, rg, var, sld, or daq")

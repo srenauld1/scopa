@@ -17,7 +17,7 @@ arguments
     opt.yroomfac {mustBeNumeric} = 0.1 %percentage of y range to pad above and below
     opt.xmark = [] %x positions to draw markers (style set by mkr2); nearest interp to x; no extrapolation performed (outside domain is discarded); if vector, will apply to all timeseries; if cell, cell index indicates which timeseries to mark; nested cell will draw multiple sets of marks on same timeseries; will error if there is not a common x
     opt.xln = []
-    opt.tp = 0
+    opt.tsp = 0
     opt.mkr {mustBeText} = 'diamond' %marker for plotting optional argument 'xmark',  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.col = []; %color,  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.lst {mustBeText} = '-' %linestyle, length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
@@ -38,7 +38,7 @@ ylimtype = opt.ylimtype;
 yroomfac = opt.yroomfac;
 xmark = opt.xmark;
 xln = opt.xln;
-tp = opt.tp;
+tsp = opt.tsp;
 col = opt.col;
 lst = opt.lst;
 mkr = opt.mkr;
@@ -73,7 +73,7 @@ x_is_index = 0;
 if isempty(xall)
     if isscalar(ts)
         x_is_index = 1;
-        if tp
+        if tsp
             x{1} = 1:size(ts{1},1);
             y{1} = transpose(ts{1});
         else
@@ -87,19 +87,19 @@ if isempty(xall)
         for k = 1:numel(ts)/2
             if isempty(ts{1+2*(k-1)})
                 x_is_index = 1;
-                if tp
+                if tsp
                     x{k} = 1:size(ts{2+2*(k-1)},1);
                 else
                     x{k} = 1:size(ts{2+2*(k-1)},2);
                 end
             else
-                if tp
+                if tsp
                     x{k} = transpose(ts{1+2*(k-1)});
                 else
                     x{k} = ts{1+2*(k-1)};
                 end
             end
-            if tp
+            if tsp
                 y{k} = transpose(ts{2+2*(k-1)});
                 % if size(x{k},1)~=size(y{k},1)
                 %     error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
@@ -115,7 +115,7 @@ if isempty(xall)
 else
     for k = 1:numel(ts)
         x{k} = xall;
-        if tp
+        if tsp
             y{k} = transpose(ts{k});
         else
             y{k} = ts{k};
@@ -193,7 +193,7 @@ if isempty(xall)
         end
     end
     for k = 1:numel(y)
-        if tp
+        if tsp
             if size(x{k},1)~=size(y{k},1)
                 y{k} = interp1(1:size(y{k},1), y{k}, linspace(1, size(y{k},1), numel(x{k})), 'linear');
             end
@@ -209,7 +209,7 @@ else
         if isempty(x{k}) || isempty(y{k})
             error("you passed an empty array as an x or y argument, but also passed name-value argument xall; delete the empty argument to use xall, since xall reinterprets all xy arguments as y, and applies xall to all of them; using an empty array is valid for x when you don't use xall because it sets x to 1:numel(y) for it's corresponding y")
         end
-        if tp
+        if tsp
             error("")
         else
             if size(x{k},2)~=size(y{k},2)
@@ -224,7 +224,7 @@ end
 num_xy_pairs = numel(x);
 numsamp = numel(x{1});
 
-if tp
+if tsp
     tdim = 1;
 else
     tdim = 2;
@@ -271,7 +271,7 @@ if ~isempty(ix)
         if sum(idx)==0
             error("ix is out of range for xy pair " + num2str(k))
         end
-        if tp
+        if tsp
             y{k} = y{k}(idx,:);
             x{k} = x{k}(idx,:);
         else
@@ -283,8 +283,8 @@ end
 
 %% markx
 
-[xmark,ymark] = xfeatproc(xmark, idx, x, y, num_xy_pairs, tp);
-[xln, ~] = xfeatproc(xln, idx, x, y, num_xy_pairs, tp);
+[xmark,ymark] = xfeatproc(xmark, idx, x, y, num_xy_pairs, tsp);
+[xln, ~] = xfeatproc(xln, idx, x, y, num_xy_pairs, tsp);
 
 numxmark = max(numel(xmark), numel(xln));
 
@@ -321,7 +321,7 @@ for fi = 1:size(xseg, 1)
             if k2<=size(y{k},1)
 
                 if k2==1
-                    if tp
+                    if tsp
                         hpl{k} = plot(hax, 1:numel(y{k}(1,:)), y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
                     else
                         hpl{k} = plot(hax, x{k}, y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
@@ -413,7 +413,7 @@ end
 
 
 
-function [xfeat,yfeat] = xfeatproc(xfeat, idx, x, y, num_xy_pairs, tp)
+function [xfeat,yfeat] = xfeatproc(xfeat, idx, x, y, num_xy_pairs, tsp)
 
 if ~iscell(xfeat)
     xfeat = {{xfeat}}; %xmark must be cell of cell
@@ -437,7 +437,7 @@ yfeat = [];
 for k = 1:num_xy_pairs
     if ~isempty(cell2mat(cellflat(xfeat{k}))) && ~isempty(xfeat{k})
         if isscalar(xfeat{k})
-            if ~tp
+            if ~tsp
                 xfeat{k} = repelem(xfeat{k}, size(y{k},1));
             end
         else
@@ -446,7 +446,7 @@ for k = 1:num_xy_pairs
             end
         end
         for m = 1:numel(xfeat{k})
-            if tp
+            if tsp
                 xref = linspace(min(xfeat{k}{m}), max(xfeat{k}{m}), numel(x{k})+1);
                 xref = xref(1:end-1);
                 tmp = interp1(xref, x{k}, xfeat{k}{m}(idx), 'linear', 'extrap'); %match mark to input x

@@ -61,7 +61,7 @@ arguments
     pth_ftvidrs = []%can optionally pass save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack)
 end
 
-[opt, optid, pthstack, doplt] = fset('daq', opt, pthstack, doplt);
+[opt, pthstack, doplt] = fset('daq', opt, pthstack, doplt);
 
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
@@ -79,7 +79,7 @@ balldia = opt.balldia; % mm, used to convert fictrac variables into mm
 voltmin = opt.voltmin; % daq voltage min; need to find this in metadata
 voltmax = opt.voltmax; % daq voltage max, need to find this in metadata
 vrenm = opt.vrenm; %optional new names for each daq variable
-
+optid = opt.optid;
 
 idxreg = 'start';  %hard coding this because its effect on our 10khz daqs miniscule; idx can be 'start', 'end', 'center', denoting whether each daq sample represents the start, end, or center of the time bin (ie, start means first sample is t=0)
 
@@ -122,7 +122,7 @@ try
         if ~isequal(daq.maketime_optfile_daq, glb('maketime_daq'))
             error("daq id is derived from an optid file different from original")
         end
-        if ~isequal(daq.md, md) || ~isequal(daq.opt, opt) || ~isequal(daq.recid, recid)
+        if ~isequal(daq.md, md) || ~isequal(daq.recid, id.recid) %|| ~isequal(daq.opt, opt)
             error("md, or opt, or recid in saved/loaded daq file does not match current/expected")
         end
 
@@ -301,21 +301,18 @@ try
                         end
 
                         if any(strcmp(daqvars.(vartype){ii}, tounwrap))
-                            tmp = unwrap(tmp); %convert to mm (not for tmpdv)
+                            tmp = unwrap(tmp);  %unwrap circular 
                         end
                         if any(strcmp(daqvars.(vartype){ii}, tozero))
-                            tmp = tmp - tmp(1); %convert to mm (not for tmpdv)
+                            tmp = tmp - tmp(1); %zero 
                         end
                         if any(strcmp(daqvars.(vartype){ii}, toballscale))
-                            tmp = tmp*balldia/2; %convert to mm
+                            tmp = tmp*balldia/2; %convert from radians to mm
                             tmpdv = tmpdv*balldia/2; %convert to mm
                         end
-                        if ~strcmp(varname, vtime) %we don't care to create 'Time_dv'
-                            tmpdv = tmpdv / sper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
-                        end
+                        tmpdv = tmpdv / sper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
                         if strcmp(varname, vtime) && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
                             tmp(1) = 0;
-                            tmpdv(1) = tmp(2) - tmp(1); %also update first diff, not that it matters
                         end
                         if isrow(tmp) %each daq var must be column; will be column for useinds 'none', will be row for useinds 'all' and 'vol'
                             tmp = tmp';

@@ -1,4 +1,4 @@
-function [stack, chantif] = stackld(pthstack, opt, doplt)
+function [stack, chantif] = stackld(opt, pthstack, doplt)
 
 %{
 
@@ -20,12 +20,12 @@ TIFFStack seems to fail reading floats
 %}
 
 arguments
-    pthstack = []
     opt = []
+    pthstack = []
     doplt = []
 end
 
-[opt, optid, pthstack, doplt] = fset('sld', opt, pthstack, doplt);
+[opt, pthstack, doplt] = fset('sld', opt, pthstack, doplt);
 
 fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
 trm = opt.trm; %num frames to crop from [start, end]; [] to skip
@@ -40,7 +40,6 @@ clip = opt.clip;
 smlenpx = opt.smlenpx;
 smlensec = opt.smlensec; %smooth the stack in time, 0 to skip
 smmthd = opt.smmthd;
-dostats = opt.dostats;
 savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
@@ -271,8 +270,8 @@ if doconvert
         stack = permute(stack, [1 2 4 5 3]);
 
 
-        if dostats
-            error("stackstats function needs to be updated, leave dostats=0 for now")
+        if doplt
+            error("stackstats function needs to be updated, leave doplt false for now")
             stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstack)
         end
         if any(clip) && ~isequal(clip, [0,1])

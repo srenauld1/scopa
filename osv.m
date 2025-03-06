@@ -13,6 +13,6 @@ end
 fnopt = [o.id.recid '_opt_.txt'];
 pthopt = fullfile(o.id.pthstackdir, fnopt);
 
-structtxtsv(o, pthopt, overwrite=1, readonly=1)
+structsv(o, pthopt, overwrite=1, readonly=1)
 
 end

@@ -4,7 +4,7 @@ function roi = roimake(stack, pthstack, opt, sper, widyxz, t, pthpy, doplt, opt2
 
 arguments
     stack
-    pthstack
+    pthstack = []
     opt = []
     sper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
@@ -14,10 +14,11 @@ arguments
     opt2.roimask = []
 end
 
-[opt, optid, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
+[opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
 
-pthpre = [erase(pthstack, '.mat') opt.optid '_roi_'];
-pthroi = [pthpre '.mat'];
+pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];
+pthpre = erase(pthroi, '.mat');
+
 
 
 if ndims(stack)<4
