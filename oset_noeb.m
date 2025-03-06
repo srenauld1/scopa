@@ -6,8 +6,8 @@ rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter
 %%%% MN AND DAQ %%%%
 
 o.mn.doroi = 1; 
+o.mn.dobmp = 1; 
 o.mn.dofit = 1; 
-o.mn.fe = ["bmp"];
 
 o.daq.useinds = ['none'];
 o.daq.slopeord = 3;

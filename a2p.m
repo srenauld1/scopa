@@ -30,7 +30,7 @@ for k = 1:numel(oa) % loop over recordings
 
     md = mdsild(pth.stack); 
 
-    %% stimuli
+    %% daq
 
     for m = transpose(fieldnames(o.daq))
         daq.(m{1}) = daqld(o.daq.(m{1})); %process daq
@@ -51,17 +51,20 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% features (bump, optic flow, etc)
+    %% bump
 
-    for f = o.mn.fe
-        switch f
-            case 'bmp'
-                for m = transpose(fieldnames(o.(f)))
-                    epochtmp = daq.a11.epochts;
-                    bmp.(m{1}) = bmpmake(o.bmp.(m{1}), [], [], [], md.volrate, epochtmp); %fit bump
-                end
-            case 'fmf'
-                [fmf.(o.fmf.id), fmfvid] = flymaxfe(pth.stack, o.fmf); %extract flymax visual features
+    if o.mn.dobmp
+        for m = transpose(fieldnames(o.bmp))
+            epochtmp = daq.a11.epochts;
+            bmp.(m{1}) = bmpmake(o.bmp.(m{1}), [], [], [], md.volrate, epochtmp); %fit bump
+        end
+    end
+
+    %% flymax
+
+    if o.mn.dofmf
+        for m = transpose(fieldnames(o.fmf))
+            [fmf.(o.fmf.id), fmfvid] = flymaxfe(pth.stack, o.fmf); %extract flymax visual features
         end
     end
 
@@ -89,7 +92,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% specialized
+    %% specific
 
     ebno({'r'}, daq.a3.vy, daq.a3.by, bmp.a1.mu, bmp.a1.respcl, roi.a2.ts{1}, roi.a3.ts{1}, t, md.sper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.a3.epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[])
     

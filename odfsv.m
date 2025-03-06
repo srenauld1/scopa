@@ -44,9 +44,10 @@ d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffi
 %% mn (ap2: main pipeline control in a2p)
 
 d.mn.doroi = 0; %do roi extraction
+d.mn.dobmp = 0; %model fitting (o.mdl below)
+d.mn.dofmf = 0; %model fitting (o.mdl below)
 d.mn.dofit = 0; %model fitting (o.mdl below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
-d.mn.fe = [""]; %list of feature extraction subroutines to run (bmp for bmpmake, fmf for flymaxfe)
 
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
