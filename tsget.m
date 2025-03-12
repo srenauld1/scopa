@@ -44,7 +44,7 @@ end
 
 tsout = cell(numel(tg),1);
 dat = cell(numel(tg),1);
-for m = 1:numel(tg) %loop over tg elements
+for m = 1:numel(tg) %loop over number of repeated tg inputs
     [tsout{m}, dat{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
 end
 

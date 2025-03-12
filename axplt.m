@@ -1,6 +1,6 @@
 
 function [h, framecount, cb] = axplt(h, stack, stackp, vid, framecount, varsp, ...
-    vpmapflat_axid, ti, tinds, cols, roialpha, roipixindp, ...
+    varaxside, ti, tinds, cols, roialpha, roipixindp, ...
     pthgif, figure_title, varsz, doui, timestr_ui, sampinc, ...
     varsp_sc, labp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot, ...
     cols_sc, scdimmin, scdimsd, vidrot)
@@ -39,7 +39,7 @@ tloop = 1;
 
 % dlg = uicontrol();
 
-vpmap_nonempty = find(vpmapflat_axid);
+vpmap_nonempty = find(varaxside);
 roiplotinds = find(~cellfun(@isempty, roipixindp));
 roipixindp_plane = {};
 for k = 1:numel(roiplotinds)

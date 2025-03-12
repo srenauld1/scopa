@@ -1,6 +1,10 @@
-function [ft, pred, mse_train, mse_val] = mdl_fit(indv, depv, ri, histinc, mdlname, ...
-    valnum, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, num_samp_total, supp, op, depvmin, depvmax, pth_fitdata)
+function [ft, pred, resid, mse_train, mse_val] = mdl_fit(indv, depv, ri, histinc, ...
+    valnum, indv_val, depv_val, sampinds_indvdepv_train, sampinds_indvdepv_val, ...
+    num_samp_total, supp, op, depvmin, depvmax, pthvalsv, nrmd, doplt)
 
+if ~exist('doplt', 'var')
+    doplt = 0;
+end
 
 % rng default
 
@@ -15,7 +19,7 @@ else
     histfit = 1; %assign dummy var in case save_progress_files is true
 end
 
-if startsWith(mdlname, 'svd')
+if startsWith(supp.mdlname, 'svd')
     op.opp.objective = @objective_svd;
 else
     if strcmp(op.opp.solver, 'fmincon')
@@ -35,7 +39,7 @@ end
 %% fit model, predict response
 
 
-if startsWith(mdlname, 'svd')
+if startsWith(supp.mdlname, 'svd')
     ft = op.opp.objective( indv, depv, supp.pvar);
     %mdl_toy %synthetic data toy
 else
@@ -48,15 +52,11 @@ end
 
 pred = zeros(num_samp_total, 1, 'single');
 
-if startsWith(mdlname, 'svd')
-    pred(sampinds_indvdepv_train) = indv*ft;
-    mse_train = mse(depv, pred(sampinds_indvdepv_train));
-else
-    [pred(sampinds_indvdepv_train), mse_train] = mdl_predict(ft, indv, depv, op.mdl, supp);
-end
+
+[pred(sampinds_indvdepv_train), resid(sampinds_indvdepv_train), mse_train] = mdl_predict(ft, indv, depv, op.mdl, supp);
 
 if valnum %if doing validation
-    [pred(sampinds_indvdepv_val), mse_val] = mdl_predict(ft, indv_val, depv_val, op.mdl, supp);
+    [pred(sampinds_indvdepv_val), resid(sampinds_indvdepv_val), mse_val] = mdl_predict(ft, indv_val, depv_val, op.mdl, supp);
 else
     mse_val = nan;
 end
@@ -74,12 +74,19 @@ end
 %% save optimization history
 
 if histinc
-    savepath = [pth_fitdata(1:end-4) num2str(ri) '_HISTFIT_.mat'];
+    savepath = [pthvalsv(1:end-4) num2str(ri) '_HISTFIT_.mat'];
     parsave(savepath, histfit) %save histfit, must use separate function
 end
 if save_dummy_progress_files
-    savepath = [pth_fitdata(1:end-4) num2str(ri) '_DUMMY_.mat'];
+    savepath = [pthvalsv(1:end-4) num2str(ri) '_DUMMY_.mat'];
     parsave(savepath, histfit) %save histfit, must use separate function
+end
+
+
+%% plot
+
+if doplt
+    mdlplt(op.mdl, supp, depv, pred, ft', indv, nrmd, mse_train)
 end
 
 

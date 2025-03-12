@@ -1,7 +1,7 @@
 function spec = mdl_parse_mdlname_string(mdlname, num_dim_indvp, num_samp_mdl, multi_time_in_layer_one_only)
 
 
-% soon remove this to increment layer, since won't require exact channel matching isequal(channel_onelayer, 1:num_unit_previous_layer) 
+% soon won't require exact channel matching, so we can remove this ----> isequal(channel_onelayer, 1:num_unit_previous_layer) 
 
 
 chopt = fnet_chopt();
@@ -148,9 +148,11 @@ if strcmp(mdlclass, 'fnet')
             if numel(strlin)>1 && ~combo_syntax
                 error("only one linear function allowed (for now), unless unit is specified with combo syntax (unit substring begins with x prefix)")
             end
-            if num_samp_mdl>1 && isempty(strlin) && layerindex==1 && multi_time_in_layer_one_only
-                error("missing linear function specifier for multi-timepoint model; curently no available nonlinear functions accept multi-timepoint input")
-            end
+            % if num_samp_mdl>1
+            %     if layerindex>1 && multi_time_in_layer_one_only %&& isempty(strlin)
+            %         error("missing linear function specifier for multi-timepoint model; curently no available nonlinear functions accept multi-timepoint input")
+            %     end
+            % end
 
             total_num_function_strings = length(strlin) + length(strnon_nothot) + length(strhot); %hot strings have multiple chars, all others have one
 

@@ -1,5 +1,7 @@
 function todo()
 
+disp("deal with stackplt looking dim")
+disp("deal with stackplt not working to show rois for non volumetric stack ")
 disp("eventually make rg and mm have check that stack input has not changed, with stack's optid from sld")
 disp("make all pthscopa calls glb?")
 disp("fix all eval calls, eg in structunflat")

@@ -74,6 +74,11 @@ end
 pth_depvp_bin = mdl_binsv(depv, pthpre, 'depv');
 
 
+%% train/test indices for k-fold cross-validation
+
+mdl.ft = mdl_inds(epochtsaug, num_samp_mdl, num_samp_lag, opt.epochmix, opt.valnum, opt.valsplit, opt.epochnum);
+
+
 %% compute stats (substruct st) from depv and indv for use later (some were computed above, but are recomputed here because normalization could have changed them)
 
 mdl.st.indvp_min_alldim = min(abs(indv(:)));
@@ -125,6 +130,8 @@ mdl.num_dim_indv = num_dim_indv;
 mdl.pth_depvp_bin = pth_depvp_bin;
 mdl.pth_indvaug = pth_indvaug;
 
+fntmp = fieldnames(mdl.ft);
+mdl.num_samp_data_train = mdl.ft.(fntmp{1}).num_samp_data_train; %set to all be equal, if multiple, so take first fieldname is fine
 
 mdl = structsort(mdl);
 

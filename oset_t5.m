@@ -10,16 +10,16 @@ o.sld.trm = [4,2];
 
 
 mdlindv.tg.roi.rgname = 'tm';
-mdlindv.tg.roi.domm = 1;
-mdlindv.tg.roi.mm.maskname = 'ten';
+mdlindv.tg.roi.mm.maskname = 'eleven';
 mdlindv.tg.vnm = 'ts';
+mdlindv.tg.group = '1';
 
 o.mdl.indv = mdlindv;
 
 mdldepv.tg.roi.rgname = 't5';
-mdldepv.tg.roi.domm = 1;
-mdldepv.tg.group = '1';
+mdldepv.tg.roi.mm.maskname = 'none';
 mdldepv.tg.vnm = 'ts';
+mdldepv.tg.group = '3';
 
 o.mdl.depv = mdldepv;
 
@@ -36,8 +36,8 @@ for m = 1:numel(rgname)
     o.roi.rgname = rgname{m};
     o.roi.domm = 1;
     if strcmp(rgname{m}, 'tm')
+        o.roi.mm.maskname = 'eleven';
         o.roi.doma = 0;
-        o.roi.mm.maskname = 'ten';
         o.roi.ma.numroi = 1024;
     else
         o.roi.doma = 0;

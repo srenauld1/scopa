@@ -1,9 +1,8 @@
 
-function ebno(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, opt)
+function ebno(side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, opt)
 
 
 arguments
-    stack
     side
     cue
     ball
@@ -61,7 +60,7 @@ for k = 1:numel(side)
         for q = 1:numel(lagsampz)
             for q2 = 1:numel(lagsampxy)
 
-                ebno_one(stack, side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain)
+                ebno_one(side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain)
                 close all
 
                 if ~plt(3) && ~plt(4) %don't loop over conditions if you're just plotting timeseries or bump (only loop for scatterplots)
@@ -77,7 +76,7 @@ end
 end
 
 
-function ebno_one(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain)
+function ebno_one(side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain)
 
 
 
@@ -137,12 +136,10 @@ if ~isempty(plt) && plt(1)
 
 
     limtmp = [360 373];
-    limtmp = [453 470];
+    limtmp = [400 430];
     [~,linds(1)] = min(abs(t-limtmp(1)));
     [~,linds(2)] = min(abs(t-limtmp(2)));
     lindsnew = linds(1):linds(2);
-
-    % stackplt3(stack, it=lindsnew, style='MaximumIntensityProjection')
 
 
     bumpnan = polarnan(bump); %insert nan where wrap

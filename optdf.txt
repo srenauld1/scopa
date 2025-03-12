@@ -1,8 +1,14 @@
 {
   "bmp": {
     "chan": 1,
+    "depv": {
+      "tg": []
+    },
     "domtype": "functional",
     "dorescale": 1,
+    "indv": {
+      "tg": []
+    },
     "maxangrs": 8,
     "mthd": "pva",
     "numangrs": 16,
@@ -61,21 +67,6 @@
   "copybin": "",
   "daq": {
     "balldia": 9,
-    "idxreg": "start",
-    "vrenm": [
-      "t: Time",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "slopelensec": 0.4,
     "slopeord": 2,
     "toballscale": [
@@ -83,7 +74,7 @@
       "ficTracIntForward"
     ],
     "tounwrap": [
-      "ficTracIntSide'",
+      "ficTracIntSide",
       "ficTracIntForward"
     ],
     "tozero": [
@@ -114,7 +105,27 @@
       "virmenIteration"
     ],
     "voltmax": 10,
-    "voltmin": 0
+    "voltmin": 0,
+    "vrenm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
+    "vtime": [
+      "Time",
+      "time",
+      "T",
+      "t"
+    ]
   },
   "filled": 0,
   "fmf": {
@@ -168,10 +179,14 @@
     "numroi": 128
   },
   "mdl": {
-    "depv": [],
+    "depv": {
+      "tg": []
+    },
     "epochmix": 0,
     "epochnum": 1,
-    "indv": [],
+    "indv": {
+      "tg": []
+    },
     "lagsec": 0,
     "lensec": 0,
     "max_iter_global": 3,
@@ -192,15 +207,25 @@
     "copybindf": "none",
     "dirtmp": "scopatmp",
     "dmstackdf": "yxztck",
+    "dobmp": 0,
     "dofit": 0,
+    "dofmf": 0,
     "dopltx": 0,
     "doroi": 0,
-    "fe": "",
     "ided_vbin": [
+      "sld",
+      "daq",
       "roi",
-      "mdl",
       "bmp",
-      "daq"
+      "mdl"
+    ],
+    "inert_vbin": [
+      "sp",
+      "tp",
+      "imhsv",
+      "tg",
+      "savemem",
+      "optid"
     ],
     "optiddf": "z0",
     "plt": "",
@@ -216,14 +241,14 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025030112460590",
+    "timestr": "2025031212382550",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
     "spec",
     "mn",
     "daq",
-    "spr",
+    "sld",
     "roi",
     "bmp",
     "mdl",
@@ -246,8 +271,6 @@
     "bmp.mdl.tp",
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "spr.sp",
-    "spr.sld",
     "daq.ftv",
     "copybin",
     "filled",
@@ -332,6 +355,7 @@
     "rgname": "none"
   },
   "sld": {
+    "clip": [0,1],
     "fbrm": 1,
     "ic": [],
     "it": [],
@@ -339,7 +363,12 @@
     "iy": [],
     "iz": [],
     "savemem": 0,
-    "trm": []
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 1
   },
   "sp": {
     "dr": [0,1],
@@ -369,12 +398,6 @@
     "trial": ""
   },
   "spr": {
-    "clip": [0,1],
-    "dostats": 0,
-    "smlenpx": [0,0,0],
-    "smlensec": 0,
-    "smmthd": "gaussian",
-    "stackdtype": "uint16",
     "suffixplt": [
       "raw",
       "cmrg",
@@ -382,8 +405,7 @@
       "bksb_cmrg",
       "bksb_cmrg_dcdn",
       "bksb_cmrg_dcdn_nosn"
-    ],
-    "zerostack": 1
+    ]
   },
   "tg": {
     "group": [],
@@ -392,6 +414,7 @@
     "ii": [],
     "it": [],
     "optid": [],
+    "vbin": [],
     "vnm": []
   },
   "tp": {

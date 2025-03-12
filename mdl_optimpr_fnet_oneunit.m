@@ -1,6 +1,7 @@
 
 function [lbnd, ubnd, linineq_A, linineq_b, x0, fnet, freeformflag] = ...
-    mdl_optimpr_fnet_oneunit(fnetspec, num_samp_mdl, imrate, num_dim_indvp, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
+    mdl_optimpr_fnet_oneunit(fnetspec, num_samp_mdl, num_samp_data_train, ...
+    imrate, padlen_sec, inputvar_stats, multi_time_in_layer_one_only)
 
 
 
@@ -81,7 +82,7 @@ if strcmp(fnetspec.layer_in{1}, 'A')
     num_dim_in = numel(fnetspec.channel_in{1})*num_samp_mdl; %account for mdl samples on first layer, which currently only layer allowing multi mdl samples
 else
     if multi_time_in_layer_one_only
-    num_dim_in = numel(fnetspec.channel_in{1});
+        num_dim_in = numel(fnetspec.channel_in{1});
     else
         error("check this")
     end
@@ -95,6 +96,8 @@ unit_ind_total = 0;
 num_par_this_unit_cum = 0;
 
 for fi = 1:num_fun
+
+    outtmp = [];
 
     fun_name = fnet_funlist.Properties.VariableNames{fi};
 
@@ -145,11 +148,36 @@ for fi = 1:num_fun
         x0_tmp = [1,1,1,0];
     elseif strcmp(fnet_onefun, 'v')
         fnet.funh{fi} = @fun_vonmises;
-        % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
-        lbnd_tmp = [-inf,-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
-        ubnd_tmp = [inf,inf,pi,inf];
-        % x0_tmp = [con_genlog_asympleft(3),8,0,0];
-        x0_tmp = [1,0.1,0,0];
+        if num_dim_in==1
+            % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            lbnd_tmp = [-inf,-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            lbnd_tmp = [-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            ubnd_tmp = [inf,inf,pi,inf];
+            ubnd_tmp = [inf,pi,inf];
+            % x0_tmp = [con_genlog_asympleft(3),8,0,0];
+            x0_tmp = [1,0.1,0,0];
+            x0_tmp = [0.1,0.1,0.1];
+        else
+            num_dim_in_adaptive_vonmises = num_dim_in+1;
+            % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            % lbnd_tmp = [-inf,-inf,-inf,-inf,-inf,-inf,-inf,-inf,-inf,-inf,-inf,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            lbnd_tmp = ones(1, num_dim_in_adaptive_vonmises)*-inf;
+            % ubnd_tmp = [inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf,inf];
+            ubnd_tmp = ones(1, num_dim_in_adaptive_vonmises)*inf;
+            % x0_tmp = [con_genlog_asympleft(3),8,0,0];
+            % x0_tmp = [1,0.1,0,0,0,0,0,0,0,0,0,0];
+            % x0_tmp = [1,0.1,0,0,0,0,0,0,0,0,0,0];
+            x0_tmp = zeros(1, num_dim_in_adaptive_vonmises);
+            x0_tmp(1) = 0.1;
+            outtmp = zeros(num_samp_data_train, num_dim_in);
+            par1 = ones(1, num_dim_in);
+            par2 = zeros(1, num_dim_in);
+            par3 = zeros(1, num_dim_in);
+            par4 = zeros(1, num_dim_in);
+            inrange = 1:num_dim_in;
+        end
+
+
     elseif strcmp(fnet_onefun, 'n')
         fnet.funh{fi} = @fun_sin;
         lbnd_tmp = [-inf,-inf,-inf,-inf];
@@ -187,7 +215,6 @@ for fi = 1:num_fun
     linineq_b(unit_ind_total) = 0 + linineq_min_difference;
 
 end
-
 
 
 fnet.num_fun = num_fun;
@@ -283,7 +310,21 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
     function [out, out2] = fun_vonmises(in, typeflag, doplt, outflag, pars)
 
         out2 = [];
-        out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
+        if num_dim_in==1
+            % out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
+            out = 1*exp(pars(1)*cos(in-pars(2)))+pars(3);
+        else
+            % par1(:) = pars(1);
+            par2(:) = pars(1);
+            par3(:) = pars(2:end);
+            % par4(:) = pars(4);
+            % outtmp(:) = 0;
+            % for k = 1:num_dim_in
+            %     outtmp(:,k) = par1.*exp(par2.*cos(in-par3))+par4;
+            % end
+            % out = sum(outtmp,2);
+            out = sum(par1.*exp(par2.*cos(in-par3))+par4,2); %sum output of x von mises for x timepoints
+        end
 
     end
 

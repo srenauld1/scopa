@@ -1,4 +1,4 @@
-function mdl = mdlmake(opt, indv, depv, pthstack, imrate, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake(opt, indv, depv, pthstack, imrate, epochts, doplt, ldval, numsyn, histinc)
 
 
 %{
@@ -26,8 +26,8 @@ arguments
     imrate = [] %imaging rate
     epochts = []
     doplt = []
+    ldval = 0 %load saved model if it exists
     numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
-    ld = 0 %load saved model if it exists
     histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
 
@@ -73,7 +73,7 @@ for k = 1:size(iv,1)
         pthmdl = [pthcommon{k} varid{k} opt.optid '_mdl_.mat'];
     end
 
-    mdl = mdlmake2(indv{iv(k,1)}, depv{iv(k,2)}, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ld, histinc);
+    mdl = mdlmake2(indv{iv(k,1)}, depv{iv(k,2)}, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ldval, histinc);
 
 end
 
@@ -82,7 +82,7 @@ end
 
 
 
-function mdl = mdlmake2(indv, depv, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ld, histinc)
+function mdl = mdlmake2(indv, depv, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ldval, histinc)
 
 
 pthpre = erase(pthmdl, '.mat');
@@ -132,25 +132,25 @@ catch ME
 
     %% set up model params and optimization options
 
-    mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, opt, imrate, mdl.st, pthpre);
+    mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, mdl.num_samp_data_train, opt, imrate, mdl.st, pthpre);
 
     %% fit model to requested subset of indv/depv
 
-    mdl = mdl_epochs(mdl, opt, pthpre, numsyn, ld, histinc);
+    mdl = mdl_epochs(mdl, opt, pthpre, numsyn, ldval, histinc, doplt);
 
     %% save
 
     mdl.optid = opt.optid;
     mdl.varid = varid;
     mdl.maketime_optfile_mdl = glb('maketime_mdl');
-    save(pthmdl, '-struct', 'mdl', '-v7.3', '-mat')
+    %save(pthmdl, '-struct', 'mdl', '-v7.3', '-mat')
 
 end
 
 %% plot
 
 if doplt
-    mdl_plots(mdl, roidat, stack, opt, pthpre)
+    % mdl_plots(mdl, roidat, stack, opt, pthpre)
 end
 
 %% clean up

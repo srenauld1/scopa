@@ -103,5 +103,14 @@ for vfi = 1:num_valfold_loop
     out.(valstr).epochinds_pure_ts_m = epochinds_pure_ts_m;
     out.(valstr).sampinds_per_bout_ts_m = sampinds_per_bout_ts_m;
 
+    if vfi==1
+        num_samp_data_train_check = num_samp_data_train;
+    else
+        if ~isequal(num_samp_data_train_check, num_samp_data_train)
+            error("right now all val sets must use same number of samples, although this is just to simplify setting optim params in mdl_optimpr; if this occurs you can just adapt mdl_optimpr to deal with it")
+        end
+    end
+
 end
+
 

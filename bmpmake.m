@@ -141,7 +141,12 @@ catch ME
 
     elseif strcmp(domtype, 'morphological') %morphological domain
 
-        domaintmp = mod(linspace(0,4*pi,numseg+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
+        pb = 0; %what flag to use? rg name?
+        if pb
+            domaintmp = mod(linspace(0,4*pi,numseg+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
+        else
+            domaintmp = linspace(0,2*pi,numseg+1) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
+        end
         domaintmp = domaintmp(1:end-1);
         respcltmp = depv; %no downsampling for morphological domain
 

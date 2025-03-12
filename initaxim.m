@@ -1,24 +1,27 @@
-function h = initaxim(hfg, ax, stack, opt)
+function h = initaxim(hfg, ax, im, opt)
 
 %init axes for images 
 
 arguments
     hfg
     ax struct
-    stack
+    im
     opt.ydir = 'reverse' %default reverses y for images because we typically think of them top-to-bottom 
     opt.stackp = [] %hack for rgb image for now
     opt.cmap = gray(256) %cmap or 'rgb'
     opt.txtvar = []
     opt.dr = [0,1]
     opt.sector_ind = 1
-    opt.subplot_ind = 1:size(stack,3)
+    opt.subplot_ind = 1:size(im,3)
     opt.widfac = 1
     opt.htfac = 1
     opt.fontsz = [6 11 15]
     opt.colmaj = 0
     opt.dool = 0
     opt.doui = 0
+    opt.notim = 0 %if what you're plotting is not actually an image (e.g., if it's some neural responses, concatenated along one dimension), let matlab determine the aspect ratio
+    opt.notb = 0
+    opt.noax = 1
 end
 ydir = opt.ydir;
 stackp = opt.stackp;
@@ -33,9 +36,12 @@ fontsz = opt.fontsz;
 colmaj = opt.colmaj;
 dool = opt.dool;
 doui = opt.doui;
+notim = opt.notim;
+notb = opt.notb;
+noax = opt.noax;
 
 if ~isempty(stackp)
-    stack = stackp;
+    im = stackp;
     stackp = [];
 end
 
@@ -44,17 +50,17 @@ fontsmall = fontsz(1);
 fontmedium = fontsz(2);
 fontlarge = fontsz(3);
 
-numxpix = size(stack,2);
-numypix = size(stack,1);
-numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if fdimnum==2)
-numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
+numxpix = size(im,2);
+numypix = size(im,1);
+numim_per_frame = size(im,3); %after reshaping, size of 3rd dim is number of figures (for each input im) in a single frame (will be singleton if fdimnum==2)
+numframes = size(im,4); %after reshaping, size of 4th dim is number gif frames
 dummyim = nan(numypix, numxpix);
 
 imroi = zeros(numypix, numxpix, 3, 'single'); %make ones here, so only alphadata has to change later (showing the ones where the roi is located, scaled by alphafac)
 imroialpha = zeros(numypix, numxpix, 'single');
 
-stackmin = double(min(stack(:)));
-stackmax = double(max(stack(:)));
+stackmin = double(min(im(:)));
+stackmax = double(max(im(:)));
 stackrange = stackmax-stackmin;
 
 
@@ -72,14 +78,16 @@ for j = 1:numsubplot
     end
     hax{j}.InnerPosition(3) = ax(sector_ind).w(widfac);
     hax{j}.InnerPosition(4) = ax(sector_ind).h(htfac);
-    hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
+    if ~notim
+        hax{j}.DataAspectRatio = [1 1 1]; 
+    end
     % hax{j}.XLim = [1 numxpix]; %this cuts edge pixels in half, which makes aspect ratio actually wrong; does it do anything else?why do this instead of axis image or dataaspectratio 1 1 1????
     % hax{j}.YLim = [1 numypix]; %this cuts edge pixels in half, which makes aspect ratio actually wrong; does it do anything else?why do this instead of axis image or dataaspectratio 1 1 1???
     if stackrange==0
         hax{j}.CLim = dr+stackmin;
-        htx2{j} = text(hax{j}, 0.5, 0.25, 'STACK IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'red');
-        htx2{j} = text(hax{j}, 0.5, 0.5, 'STACK IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'green');
-        htx2{j} = text(hax{j}, 0.5, 0.75, 'STACK IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'blue');
+        htx2{j} = text(hax{j}, 0.5, 0.25, 'im IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'red');
+        htx2{j} = text(hax{j}, 0.5, 0.5, 'im IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'green');
+        htx2{j} = text(hax{j}, 0.5, 0.75, 'im IS A CONSTANT', 'Units', 'normalized', 'FontSize', fontmedium, 'Color', 'blue');
         htx2{j}.PickableParts = 'none'; %so you can capture click on image beneath the text
         htx2{j}.HorizontalAlignment = 'center';
         htx2{j}.VerticalAlignment = 'middle';
@@ -87,16 +95,23 @@ for j = 1:numsubplot
         hax{j}.CLim = stackrange*dr+stackmin;
         htx2{j} = [];
     end
-    hax{j}.Toolbar.Visible = 'off';
+
+    if notb
+        hax{j}.Toolbar.Visible = 'off';
+    end
 
     % hax{j}.XLabel.String = xlab;
     % hax{j}.YLabel.String = ylab;
 
     hax{j}.Colormap = cmap;
-    hax{j}.Visible = 'off';
+    if noax
+        hax{j}.Visible = 'off';
+    else
+        axis tight;
+    end
     hax{j}.YDir = ydir;
 
-    hpl{j} = image(hax{j}, 'CData', dummyim); 
+    hpl{j} = image(hax{j}, 'CData', im(:,:,j)); %if there are non singleton 4th and higher dimensions, this just plots first of them, since this function is just for initialization of the axis
     hpl{j}.CDataMapping = 'scaled'; %scaled maps full range of any data type to colormap range
 
     if dool
@@ -122,7 +137,7 @@ for j = 1:numsubplot
     hlnx{j} = xline(hax{j}, nan, 'w', 'LineStyle', 'none');
     hlny{j} = yline(hax{j}, nan, 'w', 'LineStyle', 'none');
     if ~isempty(txtvar)
-        htx{j} = text(hax{j}, size(stack, 2), size(stack, 1), num2str(txtvar(j), 4), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
+        htx{j} = text(hax{j}, size(im, 2), size(im, 1), num2str(txtvar(j), 4), 'Units', 'data', 'FontSize', fontmedium, 'Color', 'white');
     else
         htx{j} = [];
     end

@@ -1,13 +1,13 @@
 function [init_scatter, scatter_type, varsp_sc, labsp_sc, rdummies, cmp, ccr, pval_norm, laginds_to_plot] = ...
     pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, vars, threshold_data, labs, ...
-    vpmapflat_axid_use, plot_z_as_color, polarinds, numsamp_max, zero_lag_index, ...
+    varaxside_use, plot_z_as_color, polarinds, numsamp_max, zero_lag_index, ...
     lags_to_plot, pval_siglev, bar_contrast)
 
 persistent polarinds_prev
 
-nonempty_plotinds = find(vpmapflat_axid_use);
+nonempty_plotinds = find(varaxside_use);
 
-nonempty_plotinds = find(vpmapflat_axid_use(scinds));
+nonempty_plotinds = find(varaxside_use(scinds));
 
 if numel(nonempty_plotinds)<2
     init_scatter = 0;

@@ -84,7 +84,7 @@ catch ME
     %%%% DRAW ROIS %%%%
 
     if opt.domm && ~maskin
-        if ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1
+        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1
             oneroidraw = 1;
         else
             oneroidraw = 0;

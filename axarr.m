@@ -19,6 +19,7 @@ xy order:
     use entries in subfield colmaj, with ydir 'down', to have subplot indices order top to bottom left to right
     use entries in subfield colmaj, with ydir 'up', to have subplot indices order bottom to top left to right 
     there is not an option for right-to-left order
+note: if you pass in something that isn't an image in place of stack in layout, aspect ratio may not actually be what you want, and can cause error
 %}
 
 arguments

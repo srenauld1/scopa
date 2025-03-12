@@ -70,7 +70,7 @@ ylim_constancy = 'all';  %'all', 'each', or '' (empty); 'all' means y axis will 
 lrscale = 'equal'; %whether left and right have relative scaling
 sampinc = 40; %sample increment per gif frame; sampinc~=1 will include lower bound, but not necessarily upper, since sample=lower:sampinc:upper"
 roialpha = 0.2; %transparency in roi overlay
-rescale_timeseries = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
+dors = 1; %leave this as 1 to plot all timeseries on same scale (but keep tick labels at original scale)
 skipnan_rescale = 0; %making 0 makes missing channel nan, which is good i think . . . previously thought leave this as 1, skip nanes when rescaling to plot timeseries on same axis
 newroirad = 10;%3*widyxz(1); %radius (microns) for user input rois
 numfr_gif_max = 2000; %throw error if there will be more
@@ -154,7 +154,7 @@ for j = 1:numel(vars)
     lims{j} = axlim(vars{j}, roomfac=yaxisroomfac);
 end
 
-[vpmapflat, vpmapflat_axid] = translate_vpmap(vpmap);
+[vpmapflat, varaxside] = translate_vpmap(vpmap);
 vars = vars(vpmapflat);
 labs = labs(vpmapflat);
 lims = lims(vpmapflat);
@@ -229,11 +229,11 @@ while plotloop %loop is turned off if no user input
                 roipixindp = cell(numel(roiindp),1);
                 roipixindp(~cellfun(@isempty, roiindp)) = roipixind_use([roiindp{:}]);
 
-                vpmapflat_axid_use = flag_empty_timeseries(varsp, vpmapflat_axid, timedim);
+                varaxside_use = flag_empty_timeseries(varsp, varaxside, timedim);
 
                 "WARNING HARD CODING CHANNEL 1 FOR PREPVARS SCAT"
                 [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
-                    pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, varsp(:,:,1), labsp, cols, threshold_data, vpmapflat_axid_use, ...
+                    pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, varsp(:,:,1), labsp, cols, threshold_data, varaxside_use, ...
                     plot_z_as_color, polarinds, numsamp_tslong_this_gif, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast);
 
                 if size(stack, 5)==2
@@ -265,7 +265,7 @@ while plotloop %loop is turned off if no user input
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    h.ts = initaxts(h.hfg, ax, doui, numsamp_tslong_this_gif, vpmapflat_axid_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, rescale_timeseries);
+                    h.ts = initaxts(h.hfg, ax, doui, numsamp_tslong_this_gif, varaxside_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, dors);
 
 
                     sector_ind = 1;
@@ -292,7 +292,7 @@ while plotloop %loop is turned off if no user input
 
                 %%%% PLOT AXES %%%%
                 [h, framecount, cb] = axplt(h, stack, stackp, vid, ...
-                    framecount, varsp, vpmapflat_axid_use, ti, tinds, cols, ...
+                    framecount, varsp, varaxside_use, ti, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, doui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
                     ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd, vidrot);
@@ -540,16 +540,16 @@ end
 end
 
 
-function vpmapflat_axid = flag_empty_timeseries(vars, vpmapflat_axid, timedim)
-% vpmapflat_axid(all(isnan(sum(vars,3,'omitmissing')),timedim)) = 0;
-vpmapflat_axid(all(isnan(vars(:,:,1)),timedim)) = 0; %do it this way (rather than vpmapflat_axid(all(isnan(vars(:,:,1)),timedim)) ) so nans in one missing channel don't get flagged as a missing variable
+function varaxside = flag_empty_timeseries(vars, varaxside, timedim)
+% varaxside(all(isnan(sum(vars,3,'omitmissing')),timedim)) = 0;
+varaxside(all(isnan(vars(:,:,1)),timedim)) = 0; %do it this way (rather than varaxside(all(isnan(vars(:,:,1)),timedim)) ) so nans in one missing channel don't get flagged as a missing variable
 end
 
 function polarinds = find_polar_inds(labsp)
 polarinds = (contains(labsp, 'yaw', 'IgnoreCase', true) | contains(labsp, 'ang', 'IgnoreCase', true)) & ~contains(labsp, 'vel', 'IgnoreCase', true);
 end
 
-function [vpmapflat, vpmapflat_axid] = translate_vpmap(vpmap)
+function [vpmapflat, varaxside] = translate_vpmap(vpmap)
 
 if any(~structfun(@isvector, vpmap))
     error("each field of vpmap must contain a vector")
@@ -561,12 +561,12 @@ if numel(vpmapflat)~=numel(unique(vpmapflat))
     error("vpmap cannot have repeated elements")
 end
 
-vpmapflat_axid = zeros(numel(vpmapflat), 1);
+varaxside = zeros(numel(vpmapflat), 1);
 fn = fieldnames(vpmap);
 for j = 1:numel(vpmapflat)
     for k = 1:numel(fn)
         if ismember(vpmapflat(j), vpmap.(fn{k}))
-            vpmapflat_axid(j) = k;
+            varaxside(j) = k;
         end
     end
 

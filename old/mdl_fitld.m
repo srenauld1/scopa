@@ -1,4 +1,4 @@
-function [dofit, pth_fitdata, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, ld, valnum, vfi)
+function [dofit, pthvalsv, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, ld, valnum, vfi)
 
 omit_time_from_savemodel_datestr = 1;
 
@@ -13,7 +13,7 @@ timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 if omit_time_from_savemodel_datestr
     timestr = timestr(1:8);
 end
-pth_fitdata = strrep(pthpat, '*', timestr);
+pthvalsv = strrep(pthpat, '*', timestr);
 
 if ld && ~isempty(pthfitdat)
     pthfitdat = natsortfiles(pthfitdat);

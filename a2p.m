@@ -55,7 +55,7 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.dobmp
         for m = transpose(fieldnames(o.bmp))
-            epochtmp = daq.a11.epochts;
+            epochtmp = daq.a1.epochts;
             bmp.(m{1}) = bmpmake(o.bmp.(m{1}), [], [], [], md.volrate, epochtmp); %fit bump
         end
     end
@@ -72,7 +72,63 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.dofit
         for m = transpose(fieldnames(o.mdl))
-            mdl = mdlmake(o.mdl.(m{1}));
+
+            o.mdl.(m{1}).indv.tg=[];
+            o.mdl.(m{1}).depv.tg=[];
+
+            bmpmu = bmp.a1.mu;
+            bmpvel = tsdv('circular', bmpmu, 0.2, 2, md.sper);
+            ballyaw = daq.a1.by;
+            ballvel = tsdv('circular', -ballyaw, 0.2, 2, md.sper);
+            cueyaw = daq.a1.vy;
+            cuevel = tsdv('circular', cueyaw, 0.2, 2, md.sper);
+
+            indv = [ballvel; bmpvel];
+            indv = [ballvel; cuevel];
+            % indv = [ballvel; cueyaw];
+            %indv = [ballyaw; cueyaw];
+            % indv = [ballvel];
+            % indv = [ballyaw; cueyaw];
+
+            noresp = roi.a2.ts{1};
+            noz = zscore(noresp);
+            % nodv = tsdv('normal', noresp, 0.2, 2, md.sper);
+            % nozdv = tsdv('normal', noz, 0.2, 2, md.sper);
+            depv = noz;
+            % depv = nozdv;
+
+
+            o.mdl.(m{1}).epochnum = [2 3 4 5];
+            o.mdl.(m{1}).mdlname = 'svd_0.9999999';
+            o.mdl.(m{1}).mdlname = 'fnet_A01_v_A02_v_B_f';
+            o.mdl.(m{1}).mdlname = 'svd_0.9';
+            o.mdl.(m{1}).lensec = 0.5;
+            o.mdl.(m{1}).lagsec = 0;
+            o.mdl.(m{1}).valnum = 1;
+            o.mdl.(m{1}).opl.MaxFunctionEvaluations = Inf;
+            o.mdl.(m{1}).opl.MaxIterations = Inf;
+            dopltmdl = 1;
+            ldval = 0;
+            mdl.(m{1}) = mdlmake(o.mdl.(m{1}), indv, depv, pth.stack, md.volrate, daq.a1.epochts, dopltmdl, ldval);
+            
+            %% 
+
+            epochtmp = 4;
+            btind = 2;
+            blen = 122;
+            te2 = find(daq.a1.epochts==epochtmp);
+            bst = find(diff(te2)~=1);
+            te3 = te2(bst(btind)); %one bout
+            % te2 = te3:te3+blen*2;
+            te2 = te3-blen*2:te3;
+            % te2 = [te2(1)-numel(te2):te2(end)];
+            figure; plot(roi.a2.ts{1}(te2)); hold on; yyaxis right; hold on; plot(ballvel(te2), '-r'); plot(bmpvel(te2), '-m')
+            % figure; plot(roi.a2.ts{1}(te2)); hold on; plot(roi.a3.ts{1}(te2)); yyaxis right; hold on; plot(ballvel(te2), 'c'); plot(bmpvel(te2), 'g')
+            % ha = area([4 6], [10 10]);
+            figure; imagesc(bmp.a1.respcl(:, te2));
+
+            %% 
+
         end
     end
 
@@ -94,7 +150,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% specific
 
-    ebno({'r'}, daq.a3.vy, daq.a3.by, bmp.a1.mu, bmp.a1.respcl, roi.a2.ts{1}, roi.a3.ts{1}, t, md.sper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.a3.epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[])
+    ebno(stack, {'r'}, daq.a1.vy, daq.a1.by, bmp.a1.mu, bmp.a1.respcl, roi.a2.ts{1}, roi.a3.ts{1}, t, md.sper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.a1.epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[0.4], bmpdomain=bmp.a1.domain)
     
     % t5tmp
     % ebtmp

@@ -13,7 +13,11 @@ arguments (Output)
     rg %rg means region; struct containing indices for cropping stack, region short name (rgname) and region full name (rgid)
 end
 
-isTilde = detectOutputSuppression(nargout);
+try
+    isTilde = detectOutputSuppression(nargout);
+catch
+    isTilde = 1;
+end
 if isempty(stack) && ~isTilde(1)
     error("if input stack is empty, output stack should be suppressed with tilde")
 end

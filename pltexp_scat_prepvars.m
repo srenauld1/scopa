@@ -1,18 +1,18 @@
 function [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc_sc, ccr, pval_norm, laginds_to_plot] = ...
     pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, vars, labs, cols, threshold_data, ...
-    vpmapflat_axid_use, plot_z_as_color, polarinds, numsamp_max, zero_lag_index, ...
+    varaxside_use, plot_z_as_color, polarinds, numsamp_max, zero_lag_index, ...
     lags_to_plot, pval_siglev, bar_contrast)
 
 persistent polarinds_prev
 
 try
-    vpmapflat_axid_use(scinds);
+    varaxside_use(scinds);
 catch ME
     sprintf("scinds requests a nonempty plot index that does not exist, even after removing scinds(3)")
     error(ME.message)
 end
 
-nonempty_plotinds = find(vpmapflat_axid_use(scinds));
+nonempty_plotinds = find(varaxside_use(scinds));
 if numel(scinds)~=numel(nonempty_plotinds)
     sprintf("SCINDS REQUESTED 3D BUT SCATTERPLOT WILL BE 2D BECAUSE ONE SCIND IS EMPTY")
 end

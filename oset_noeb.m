@@ -68,7 +68,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
-        o.roi.mm.maskname = 'none';
+        o.roi.mm.maskname = 'eb';
         o.roi.ma.maskmake = 'edge';
     elseif any(strcmp(rgname{m}, {'no'}))
         o.roi.doma = 0; %do automated morph rois

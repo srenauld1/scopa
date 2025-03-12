@@ -1,9 +1,15 @@
 
 %%
 
-optidtmp = 'a3';
-ft = mdl.ft.v_0.ft;
-fttmp = ft(2,:);
+hackdim = 1;
+vindtmp = 16;
+pattmp = ['~/stacks/t5/22*/a' num2str(vindtmp) 'a17_mdl_.mat'];
+pthtmp = rdir(pattmp);
+load(pthtmp.name)
+optidtmp = 'a8';
+optidtmpmdl = 'a17';
+ft = mdl.(optidtmpmdl).ft.v_0.ft;
+fttmp = ft(hackdim,:);
 stackmnt = roi.(optidtmp).dat{1}.stackmnt;
 roipx = roi.(optidtmp).dat{1}.roipx;
 fttmp = reshape(fttmp, numel(roipx), []);
