@@ -5,10 +5,12 @@ import shutil
 from stackchan import stackchan
 from check_aborted_stack import check_aborted_stack
 from flybackrm import flybackrm
+from helpers import stack_reshape_transpose_clip_zero_type 
 
 
 
-def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume, chan_dn, dnraw):
+
+def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume, chan_dn, dnraw, clip):
 
     # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
@@ -35,11 +37,16 @@ def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume,
     
     stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
 
-    stack = flybackrm(stack, md['dims'], md['flyback']) #fine to run this whether flyback exists in stack (if dnraw is true) or not, it costs nothing
+    if dnraw:
+        stack = flybackrm(stack, md['dims'], md['flyback']) #fine to run this whether flyback exists in stack (if dnraw is true) or not, it costs nothing
+        stack = stack_reshape_transpose_clip_zero_type(stack, md['dims'], clip=clip)
+
     zsep_onechan(stack, md['dims'], denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
     if stack_secondary is not None:
         stack = None
-        stack_secondary = flybackrm(stack_secondary, md['dims'], md['flyback']) #fine to run this whether flyback exists in stack (if dnraw is true) or not, it costs nothing
+        if dnraw:
+            stack_secondary = flybackrm(stack_secondary, md['dims'], md['flyback']) #fine to run this whether flyback exists in stack (if dnraw is true) or not, it costs nothing
+            stack_secondary = stack_reshape_transpose_clip_zero_type(stack_secondary, md['dims'], clip=clip)
         zsep_onechan(stack_secondary, md['dims'], denoise_volume, pth_denoising, fn_prefix, chanstr_secondary)
 
     return chanstr_primary, chanstr_secondary
