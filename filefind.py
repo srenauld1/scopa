@@ -67,7 +67,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
         pth_allfiles_scopa = glob.glob(pth_allrec + '**/*' + filepatspec[3] + '*/**/' + fn_pattern_scopa, recursive=True)
         pth_allfiles = pth_allfiles + pth_allfiles_scopa #combine with empty (functionally pointless here, just for readability/symmetry with pattern below
 
-        if do_register: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern 
+        if do_register or do_denoise and dnraw: #(ie if you're looking for the raw files, the first to enter the pipeline) find files matching flyg default output pattern, or carl's old project output pattern 
             
             if filepatspec[2]=='*':
                 fn_suffix_flyg = '_*_trial_*_*.tif'
@@ -115,7 +115,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
     except:
         raise Exception("fn_suffix_scopa IS NOT DEFINED; jobind (jobind IN pl.sh) FOR THIS JOB MAY BE OUTSIDE THE RANGE OF AVAILABLE FILES, IN WHICH CASE THIS JOB, AND ALL DEPENDENT JOBS, WILL ERROR; THIS IS NOT A PROBLEM EXCEPT IT MEANS YOU'RE REQUESTING BUT NOT USING RESOURCES ON O2; MAKE SURE jobind ONLY LISTS INDICES FOR FILES THAT EXIST")
 
-    if do_register:
+    if do_register or do_denoise and dnraw:
         fn_suffixes_all = [fn_suffix_scopa, fn_suffix_flyg, fn_suffix_carlold]
     else:
         if do_remove or do_a2p:
