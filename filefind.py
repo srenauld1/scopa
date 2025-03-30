@@ -51,7 +51,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
-        if do_denoise and not dnraw or do_stitch or do_extract or do_crop_only or do_remove or do_a2p:
+        if do_denoise and not dnraw or do_stitch and not dnraw or do_extract or do_crop_only or do_remove or do_a2p:
             fn_suffix_scopa = '_cmrg' 
             if use_background_subtracted:
                 fn_suffix_scopa = '_bksb' + fn_suffix_scopa
