@@ -277,7 +277,6 @@ def parse_command_line():
     do_autoallocate = int(jobnm==['alo'])
     do_register = int(jobnm==['mcp'])
     do_denoise = int(jobnm==['dnp'])
-    dnraw = int(jobnm==['dnraw'])
     do_stitch = int(jobnm==['stc'])
     do_extract = int(jobnm==['exp'])
     do_remove = int(jobnm==['rsc'])

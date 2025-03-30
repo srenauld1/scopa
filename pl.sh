@@ -24,7 +24,7 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
+do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
 do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_a2p)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
@@ -32,7 +32,7 @@ do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_a2p=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobind=( 0-2 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobind; if this bash variable can be turned into a list of vectors, then pl will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
+jobind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobind; if this bash variable can be turned into a list of vectors, then pl will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
 
 do_autoallocate=0 #do_autoallocate=1 uses transfer partition to look into server and find size of stack in raw scanimage tif, but doesn't copy anything; stack size determines all resource requests; do_autoallocate=0 uses resources set by user below
 fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a previous pl run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let pl assign a new FNIND_FN_PREFIX
@@ -49,8 +49,8 @@ fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a pre
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20250209')
-FLY=('*')
+RECDATE=('20250329')
+FLY=('3')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
 FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
@@ -108,7 +108,7 @@ if [ "$do_autoallocate" == 0 ]; then
     time_register=0:40:00
 
     cpu_per_task_stitch=1
-    mem_per_cpu_stitch=12G
+    mem_per_cpu_stitch=20G
     time_stitch=00:25:00
 
     cpu_per_task_extract=1
@@ -126,7 +126,7 @@ if [ "$do_autoallocate" == 0 ]; then
     ############ SET PARAMS FOR DENOISING RESOURCE REQUEST (THIS INCLUDES GPU) ############
 
     cpu_per_task_denoise=1
-    mem_per_cpu_denoise=10G
+    mem_per_cpu_denoise=18G
 
     gpustr=rtx6000_24 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
@@ -149,7 +149,7 @@ if [ "$do_autoallocate" == 0 ]; then
     elif [ "$gpustr" == rtx6000_24 ]; then 
         gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
         gpu_partition=gpu_requeue
-        time_denoise=5:30:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+        time_denoise=8:30:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
     elif [ "$gpustr" == m40_12 ]; then 
         gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision), there's also one on gpu partition (also 24 gb, double precision), where it's the 2nd fastest, but running on gpu_requeue is preferred method on scopa
         gpu_partition=gpu_requeue
