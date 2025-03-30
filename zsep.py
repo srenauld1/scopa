@@ -35,11 +35,11 @@ def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume,
     
     stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
 
-    stack = flybackrm(stack, md['dims'], md['flyback'])
+    stack = flybackrm(stack, md['dims'], md['flyback']) #fine to run this whether flyback exists in stack (if dnraw is true) or not, it costs nothing
     zsep_onechan(stack, md['dims'], denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
     if stack_secondary is not None:
         stack = None
-        stack = flybackrm(stack, md['dims'], md['flyback'])
+        stack_secondary = flybackrm(stack_secondary, md['dims'], md['flyback']) #fine to run this whether flyback exists in stack (if dnraw is true) or not, it costs nothing
         zsep_onechan(stack_secondary, md['dims'], denoise_volume, pth_denoising, fn_prefix, chanstr_secondary)
 
     return chanstr_primary, chanstr_secondary
