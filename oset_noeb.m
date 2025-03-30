@@ -10,7 +10,7 @@ o.mn.dobmp = 1;
 o.mn.dofit = 1; 
 
 o.daq.useinds = ['none'];
-o.daq.slopeord = 3;
+o.daq.slopeord = 2;
 
 
 %%%% BMP %%%%
@@ -30,13 +30,12 @@ o.bmp.depv = bmpdepv;
 o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
-o.bmp.mdl.nrmi = 'none';
 
 %%%% MDL %%%%
 
 mdlindv.tg.bmp = ['*'];
 mdlindv.tg.vnm = 'vel';
-mdlindv.tg.groupout = '1';
+mdlindv.tg.group2 = '1';
 mdlindv.tg(2).daq = ['*'];
 mdlindv.tg(2).vnm = 'byv';
 

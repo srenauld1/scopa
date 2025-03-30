@@ -3,11 +3,12 @@ import os
 from tifffile.tifffile import imwrite, imread
 import shutil
 from stackchan import stackchan
+from check_aborted_stack import check_aborted_stack
+from flybackrm import flybackrm
 
 
 
-
-def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume, chan_dn):
+def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume, chan_dn, dnraw):
 
     # prepare files for denoising by writing each z slice to different tif and putting in separate folders if denoise_volume = 0 
     # if using denoise_volume = 1, saves all separate tifs into one folder 
@@ -15,25 +16,31 @@ def zsep_todn(pth_tif_read, fn_prefix, pth_denoising, md, pthmd, denoise_volume,
 
     print("\n\n\nseparating z slices, and writing as separate tifs, to prepare data for deepcad denoising")
         
-    dims = md['dims']
-
     stack = imread(pth_tif_read)
     
     chanrm = None #WARNING! in this function, chanrm should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)
+    if chanrm is not None:
+        raise Exception("WARNING! in this function (zsep_todn), chanrm should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)")
     if chan_dn == ['all'] or chan_dn=='all': #ignored if it's not a 2-channel recording according to metadata md
         chan_primary = 1 #can be any number from existing channels if chan_dn is 'all'; just sets which is denoised first
     else:
         chan_primary = chan_dn 
 
-    if chanrm is not None:
-        raise Exception("WARNING! in this function (zsep_todn), chanrm should always be None so tmp files for input to denoising have chn* infix if it's a 2-channel recording, even if you want to only denoise one channel (in case you want to do the other later)")
+    if md['dims'][1]>1:
+        stackisvol = 1
+    else:
+        stackisvol = 0
+
+    md = check_aborted_stack(md, pthmd, stack, stackisvol) #fine to run this whether dnraw is true or false, it costs nothing
     
     stack, stack_secondary, two_channel_dn, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
-    
-    zsep_onechan(stack, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
+
+    stack = flybackrm(stack, md['dims'], md['flyback'])
+    zsep_onechan(stack, md['dims'], denoise_volume, pth_denoising, fn_prefix, chanstr_primary)
     if stack_secondary is not None:
         stack = None
-        zsep_onechan(stack_secondary, dims, denoise_volume, pth_denoising, fn_prefix, chanstr_secondary)
+        stack = flybackrm(stack, md['dims'], md['flyback'])
+        zsep_onechan(stack_secondary, md['dims'], denoise_volume, pth_denoising, fn_prefix, chanstr_secondary)
 
     return chanstr_primary, chanstr_secondary
 

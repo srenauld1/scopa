@@ -43,7 +43,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, jobind, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, methodrg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
-                      do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      do_denoise, dnraw, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed,
                       do_extract, methodex, extract_in_2d, rgname, 
@@ -112,9 +112,9 @@ if do_copyfiles==0 and do_autoallocate==0:
     import io
 
 
-[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all] = \
+[pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_opt_all, carls_old_project_all] = \
   filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
+                 do_copyfiles, do_register, do_denoise, dnraw, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 
 
@@ -122,12 +122,12 @@ for ri, _ in enumerate(pth_read_all):
    
     if do_autoallocate==1: 
       
-      autoallocate(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pthmd_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_croplim_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+      autoallocate(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pthmd_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_opt_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
 
     else:
       
       if do_copyfiles!=0: #copy data (from storage to compute filesystem, or vice versa)
-        filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pthmd_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_croplim_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
+        filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, pth_read_all[ri], pthmd_all[ri], pth_daq_all[ri], pth_ftvid_all[ri], pth_ftdat_all[ri], pth_opt_all[ri], pth_fldr_copydest_prefix, pth_fldr_all[ri], folder_with_all_recordings_on_storage_and_compute_filesystems)
           
       elif do_copyfiles==0: #analyze data 
         
@@ -144,7 +144,7 @@ for ri, _ in enumerate(pth_read_all):
             register(pth_read_all[ri], pthmd_all[ri], pth_prefix_all[ri], pth_allrec, md, scopatmplt, clip, methodrg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend, use_cluster, makeplots)
 
         if do_denoise:
-          chanstr_primary, chanstr_secondary = zsep_todn(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, pthmd_all[ri], denoise_volume, chan_dn) 
+          chanstr_primary, chanstr_secondary = zsep_todn(pth_read_all[ri], fn_prefix_all[ri], pth_denoising, md, pthmd_all[ri], denoise_volume, chan_dn, dnraw) 
           denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_primary)
           if chanstr_secondary:
            denoise(pth_denoising, fn_prefix_all[ri], md['dims'], md['volrate'], denoise_slice_index, denoise_volume, num_epochs_denoise, carls_old_project_all[ri], chanstr_secondary)

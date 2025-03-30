@@ -17,9 +17,9 @@ M = linspace(-10, 10, 30); % width
 Q = linspace(0, 0, 1);%xshift (center)
 C = [0]; %yshift (baseline)
 x = linspace(-pi,pi,10000); %indv;
-% genlog(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [outmin outmax])
-% genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [inmin inmax], [-2 2])
-genlog('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [-4 4], [0 2]);
+% test_nonlin(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [outmin outmax])
+% test_nonlin('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [inmin inmax], [-2 2])
+test_nonlin('vonmises', x, [],[],[],V,M,Q,C, 1, pth_save, [-4 4], [0 2]);
 
 %% 
 
@@ -36,8 +36,8 @@ M = linspace(0, 0, 1); %[1]; %x shift, larger and more direct effect than Q
 Q = [1];%linspace(1, 1, 1); %[-1.2 -0.8 -.1 0 0.1 0.8 1.2];  %kind of like x shift / when curve starts to rise  (i think this needs to be positive??)
 C = [1]; %maybe can force this to be 1, changes right asymptote value, above 1 makes it exponentially closer to lower asymptote, and below eponentially furthe
 x = linspace(inmin, inmax, 1000);
-% genlog(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [outmin outmax])
-genlog(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [-2 2])
+% test_nonlin(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [outmin outmax])
+test_nonlin(x, B,A,K,V,M,Q,C, 1, pth_save, [inmin inmax], [-2 2])
 
 
 %%

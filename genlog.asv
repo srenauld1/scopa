@@ -1,4 +1,4 @@
-function [out, out_all, nonlinear_transformation_all, nlparams_all] = genlog(func, x, B,A,K,V,M,Q,C, doplt, filename_save, xlimin, ylimin)
+function [out, out_all, nonlinear_transformation_all, nlparams_all] = test_nonlin(func, x, B,A,K,V,M,Q,C, doplt, filename_save, xlimin, ylimin)
 
 if doplt
     fontmedium = 12;
@@ -15,7 +15,7 @@ if doplt
     hax = axes( 'Parent', hfg, 'Position', [0.1, 0.1, 0.8, 0.8] );
 end
 
-if strcmp(func, 'genlog')
+if strcmp(func, 'test_nonlin')
 
     countz = 0;
     for ci = 1:length(C) %changes right asymptote value, above 1 makes it exponentially closer to lower asymptote, and below eponentially further, maybe force to be 1?

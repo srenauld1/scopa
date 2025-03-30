@@ -417,6 +417,10 @@ switch vbin
         if isempty(glb('maketime_var'))
             glb(maketime_var=maketime);
         end
+    case 'fmf'
+        if isempty(glb('maketime_fmf'))
+            glb(maketime_fmf=maketime);
+        end
     otherwise
         error("vbin must be roi, mdl, bmp, rg, var, sld, or daq")
 end

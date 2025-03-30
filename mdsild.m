@@ -13,13 +13,13 @@ if isempty(pthstack)
 end
 
 id = idmake(pthstack); %just in case id info gets used below
-pthmd = [id.pthstackdir id.recid '_mdsi_.txt'];
+pthmd = [id.pthrec '_mdsi_.txt'];
 
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
     fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using tifreadfast (from within mdsisv_mat), and if that fils, using python function mdsisv, and if that fails, calling mdsisv_pymat" + newline)
-    pthrawpt = [id.pthstackdir id.recid '_raw_.tif'];
+    pthrawpt = [id.pthrec '_raw_.tif'];
     pthraw = rdir(pthrawpt);
     if isempty(pthraw)
         pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trialnum ) '_*.tif'];

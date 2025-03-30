@@ -37,13 +37,8 @@ if isempty(user)
 end
 pthrg = [pthscopa 'opt_rg_' user '_*_.txt'];
 
-[~, nmstack] = fileparts(pthstack);
-if ~endsWith(nmstack, '_')
-    nmstack = [nmstack '_'];
-end
-rgid = [nmstack rgname];
-
-
+id = idmake(pthstack);
+rgid = [id.recid '_' rgname];
 
 rg = structfile(pthrg, s=[], nm=rgid, useprefix=1);
 

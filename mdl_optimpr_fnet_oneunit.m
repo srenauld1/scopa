@@ -150,13 +150,13 @@ for fi = 1:num_fun
         fnet.funh{fi} = @fun_vonmises;
         if num_dim_in==1
             % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
-            lbnd_tmp = [-inf,-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
-            lbnd_tmp = [-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
+            % lbnd_tmp = [-inf,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
             ubnd_tmp = [inf,inf,pi,inf];
-            ubnd_tmp = [inf,pi,inf];
+            % ubnd_tmp = [inf,pi,inf];
             % x0_tmp = [con_genlog_asympleft(3),8,0,0];
             x0_tmp = [1,0.1,0,0];
-            x0_tmp = [0.1,0.1,0.1];
+            % x0_tmp = [0.1,0.1,0.1];
         else
             num_dim_in_adaptive_vonmises = num_dim_in+1;
             % lbnd_tmp = [-inf,0,-pi,-inf]; %for width param, negative is not just inverse of positive, although for much of the parameter space it is
@@ -311,8 +311,8 @@ fnet.max_num_fun_per_unit = max_num_fun_per_unit;
 
         out2 = [];
         if num_dim_in==1
-            % out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
-            out = 1*exp(pars(1)*cos(in-pars(2)))+pars(3);
+            %out = 1*exp(pars(1)*cos(in-pars(2)))+pars(3);
+            out = pars(1)*exp(pars(2)*cos(in-pars(3)))+pars(4);
         else
             % par1(:) = pars(1);
             par2(:) = pars(1);

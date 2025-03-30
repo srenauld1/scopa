@@ -8,18 +8,20 @@ def stackshape(stack, md):
     dims_onechan = md['dims']
 
     if isinstance(md['channel_save'], list):
-        numchan = len(md['channel_save'][0])
+        numchan = len(md['channel_save']) # why was it this?? len(md['channel_save'][0])
     elif isinstance(md['channel_save'], int):
         numchan = 1
 
     rmdr = np.prod(stack.shape)/np.prod(dims_onechan)/numchan
+    hasfb = 0
 
     if rmdr!=1:
         dims_onechan = [md['dims'][0], md['dims'][1]+md['flyback'], md['dims'][2], md['dims'][3]]
+        hasfb = 1
         rmdr = np.prod(stack.shape)/np.prod(dims_onechan)/numchan
         if rmdr!=1:
             raise Exception("number of stack elements must equal numchan*np.prod(md['dims']), or numchan*np.prod(md['dims']) with flyback; this error can occur if this is an aborted stack, or if something is wrong with your metadata")
 
     tzcyx = dims_onechan[0], dims_onechan[1], numchan, dims_onechan[2], dims_onechan[3]
 
-    return tzcyx, numchan
+    return tzcyx, numchan, hasfb

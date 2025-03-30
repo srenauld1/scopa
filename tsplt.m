@@ -51,6 +51,8 @@ minsampperseg = opt.minsampperseg;
 maxnumts = opt.maxnumts;
 maxnumxmark = opt.maxnumxmark;
 
+dosqueeze = 1; %iof requested ix are discontiguous, squeeze and renumber indices (if you don't there will be separated regiones where discontiguous, which might be nice sometimes to mark discontinuity
+
 fprintf("WARNING FUNCTION tsplt MOSTLY WORKS BUT IS STILL BEING WRITTEN" + newline)
 
 for k = 1:numel(ts)
@@ -272,10 +274,18 @@ if ~isempty(ix)
             error("ix is out of range for xy pair " + num2str(k))
         end
         if tsp
-            y{k} = y{k}(idx,:);
-            x{k} = x{k}(idx,:);
+            if dosqueeze && any(diff(idx)>1)
+                error("what do we do here?")
+            else
+                y{k} = y{k}(idx,:);
+                x{k} = x{k}(idx,:);
+            end
         else
-            x{k} = x{k}(:,idx);
+            if dosqueeze && any(diff(idx)>1)
+                x{k} = x{k}(:,1:numel(idx));
+            else
+                x{k} = x{k}(:,idx);
+            end
             y{k} = y{k}(:,idx);
         end
     end
@@ -308,13 +318,14 @@ mkr = checkspec(mkr, num_xy_pairs);
 
 maxnumplt = max(cellfun(@(x) size(x,1), y));
 hax = axes(Parent=hfg, Position=axpos, XColor='k', YColor='k', Box='off');
+fcnt = 0;
 for fi = 1:size(xseg, 1)
 
 
     %%%% PLOT EVERYTHING FIRST %%%%
 
     hold(hax, 'on')
-    fcnt = 0;
+    % fcnt = 0; %why was this here?
     for k2 = 1:maxnumplt
         for k = 1:numel(x)
 
@@ -378,10 +389,11 @@ for fi = 1:size(xseg, 1)
 
                 hax.Title.String = strrep(titlein, '_', ' ');
 
-                if dosave && k==numel(x)
-                    fcnt = fcnt + 1;
-                    fig2gif(hfg, fcnt, pthgif)
-                end
+            end
+
+            if dosave && k==numel(x)
+                fcnt = fcnt + 1;
+                fig2gif(hfg, fcnt, pthgif)
             end
 
         end

@@ -1,5 +1,5 @@
 
-function ebno(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, opt)
+function ebnotmp(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, opt)
 
 
 arguments
@@ -34,6 +34,7 @@ arguments
     opt.plt = []
     opt.histplt = 0
     opt.bmpdomain = [];
+    opt.tsub = []
 end
 lagsampxy = opt.lagsampxy;
 lagsampz = opt.lagsampz;
@@ -55,13 +56,14 @@ yconst = opt.yconst;
 plt = opt.plt;
 histplt = opt.histplt;
 bmpdomain = opt.bmpdomain;
+tsub = opt.tsub;
 
 for k = 1:numel(side)
     for m = 1:numel(epoch)
         for q = 1:numel(lagsampz)
             for q2 = 1:numel(lagsampxy)
 
-                ebno_one(stack, side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain)
+                ebno_one(stack, side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub)
                 close all
 
                 if ~plt(3) && ~plt(4) %don't loop over conditions if you're just plotting timeseries or bump (only loop for scatterplots)
@@ -77,13 +79,12 @@ end
 end
 
 
-function ebno_one(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain)
+function ebno_one(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub)
 
 
 
 datestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
-cord = colororder;
 
 epochstr = sprintf('%.0f,' , epoch);
 epochstr = epochstr(1:end-1);
@@ -131,35 +132,33 @@ if yconst
 end
 
 
+tsubsamp = t2samp(t, tsub);
+limt = [min(tsubsamp) max(tsubsamp)];
+
+
+
 %% bump only
 
 if ~isempty(plt) && plt(1)
 
+    maxnumts = 8;
+    cmap = lines(maxnumts); %'lines' predefined colormap is the default for function 'plot'
+    cmap = cat(1, cmap, [0 0 0]); %add black
 
-    limtmp = [360 373];
-    limtmp = [453 470];
-    [~,linds(1)] = min(abs(t-limtmp(1)));
-    [~,linds(2)] = min(abs(t-limtmp(2)));
-    lindsnew = linds(1):linds(2);
-
-    % stackplt3(stack, it=lindsnew, style='MaximumIntensityProjection')
-
+    % stackplt3(stack, it=limtsamp, style='MaximumIntensityProjection')
 
     bumpnan = polarnan(bump); %insert nan where wrap
     ballinvnan = polarnan(ballinv); %insert nan where wrap
     cuenan = polarnan(cue); %insert nan where wrap
 
 
-    donewbump = 1;
     slopelensec_eb = 0.2;
     slopeord_eb = 2;
-    if donewbump
-        eb2 = eb;
-        for k = 1:size(eb2,1)
-            % eb(k,:) = rescale(eb(k,:));
-            eb2(k,:) = tsdv('normal', eb2(k,:), slopelensec_eb, slopeord_eb, sper);
-            eb2(k,:) = zscore(eb2(k,:));
-        end
+    eb2 = eb;
+    for k = 1:size(eb2,1)
+        % eb(k,:) = rescale(eb(k,:));
+        eb2(k,:) = tsdv('normal', eb2(k,:), slopelensec_eb, slopeord_eb, sper);
+        eb2(k,:) = zscore(eb2(k,:));
     end
     % eb2 = imgaussfilt(eb2, [0.1 0.1]);
 
@@ -180,7 +179,7 @@ if ~isempty(plt) && plt(1)
             [~, tmp] = max(eb2);
             bump2 = interp1(linspace(-pi, pi, size(eb2,1)+1), tmp);
         case 'pva'
-            [bump2, bmprho, circvar] = circmnvar(bmpdomain(:)', eb2, 0);
+            [bump2, bmprho, circvar] = circmnvar(bmpdomain(:)', eb2-min(eb2), 0);
     end
 
     bump2nan = polarnan(bump2); %insert nan where wrap
@@ -198,44 +197,43 @@ if ~isempty(plt) && plt(1)
     if dodv
         ballplot = tsdv('circular', ballinv, 0.2, 2, sper);
         cueplot = tsdv('circular', cue, 0.2, 2, sper);
+        bumpplot = tsdv('circular', bump, 0.2, 2, sper);
+        bump2plot = tsdv('circular', bump2, 0.2, 2, sper);
     else
-        cueplot = cuenan;
         ballplot = ballinvnan;
+        cueplot = cuenan;
+        bumpplot = bumpnan;
+        bump2plot = bump2nan;
     end
 
-    ballmaxabs = max(abs(ballplot));
-    rsfac = nozmaxabs/ballmaxabs;
-    ballplot = ballplot*rsfac;
+    ballplot = ballplot*nozmaxabs/max(abs(ballplot));
+    cueplot = cueplot*nozmaxabs/max(abs(cueplot));
+    bumpplot = bumpplot*nozmaxabs/max(abs(bumpplot));
+    bump2plot = bump2plot*nozmaxabs/max(abs(bump2plot));
 
-    ballmaxabs = max(abs(ballinvnan));
-    rsfac = nozmaxabs/ballmaxabs;
-    ballinvnan = ballinvnan*rsfac;
-
-    cuemaxabs = max(abs(cueplot));
-    rsfac = nozmaxabs/cuemaxabs;
-    cueplot = cueplot*rsfac;
-    %%
+    %% timeseries 
 
 
-    figure;
-    hold on;
-    plot(t, bump2nan, '-b');
-    plot(t, bumpnan, '-r');
-    plot(t, cueplot, color='k');
-    plot(t, ballplot, 'r');
-    plot(t, -nozinv,'b');
-    % plot(t, ballinvnan, color=cord(6,:));
-    % plot(t, zscore(nol), 'g');
-    xlim(limtmp)
-    ylim(limpad)
-    yline(0, '-k')
+    hfg = figure;
+    hax = axes(parent=hfg);
+    hold(hax, 'on')
+    plot(hax, t, zscore(nor), color=cmap(1,:));
+    plot(hax, t, zscore(nol), color=cmap(2,:));
+    plot(hax, t, cueplot, color=cmap(3,:));
+    plot(hax, t, ballplot, color=cmap(4,:));
+    plot(hax, t, bumpplot, color=cmap(5,:));
+    % plot(hax, t, bump2plot, color=cmap(5,:), linestyle='--');
+    xlim(hax, limt)
+    ylim(hax, limpad)
+    yline(hax, 0, '-k')
+    hold(hax, 'off')
 
-    title("cue direction black, negative ball direction red, z-scored glno blue")
+    title(hax, "cue direction black, negative ball direction red, z-scored glno blue")
 
     pthsv = [pthpre 'bump_.fig'];
     saveas(gcf, pthsv)
 
-    %%
+    %% bump as heatmap
 
 
     ax = axarr([4,1]);
@@ -249,10 +247,10 @@ if ~isempty(plt) && plt(1)
     h.st.hpl{1}.XData = t;
     plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), 'm')
     %plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color=cord(2,:))
-    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cord(3,:))
-    xlim(limtmp)
+    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(3,:))
+    xlim(limt)
     numxtick = 20;
-    h.st.hax{1}.XTick = linspace(limtmp(1), limtmp(2), numxtick);
+    h.st.hax{1}.XTick = linspace(limt(1), limt(2), numxtick);
     h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
     hold(h.st.hax{1}, "on")
 
@@ -264,10 +262,10 @@ if ~isempty(plt) && plt(1)
     h.st.hpl{1}.XData = t;
     plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), 'm')
     %plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color=cord(2,:))
-    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cord(3,:))
-    xlim(limtmp)
+    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(3,:))
+    xlim(limt)
     numxtick = 20;
-    h.st.hax{1}.XTick = linspace(limtmp(1), limtmp(2), numxtick);
+    h.st.hax{1}.XTick = linspace(limt(1), limt(2), numxtick);
     h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
     hold(h.st.hax{1}, "on")
 
@@ -282,29 +280,29 @@ if ~isempty(plt) && plt(1)
     saveas(gcf, pthsv)
 
 
-    %%
+    %% bump as line over time
 
     pthgif = pthauto(suffix='.gif', usetime=1);
 
     hfg = figure;
     hax = axes(Parent=hfg);
     hpl = plot(hax, bmpdomain, eb2(:,1));
-    %hln1 = xline(hax, 0, color=cord(1,:));
-    %hln2 = xline(hax, 0, color=cord(2,:));
-    hln3 = xline(hax, 0, color=cord(3,:));
+    hln1 = xline(hax, 0, color=cmap(1,:));
+    hln2 = xline(hax, 0, color=cmap(2,:));
+    hln3 = xline(hax, 0, color=cmap(3,:));
     %hln4 = xline(hax, 0, color=cord(4,:));
     ttl = title('');
     hax.YLim = [-4 4];
-    hax.YLim = [0 1];
+    % hax.YLim = [0 1];
     hax.XLim = [-pi pi]*1.2;
-    for k = 1:numel(lindsnew)
-        % hpl.YData = eb2(:,lindsnew(k));
-        hpl.YData = eb(:,lindsnew(k));
-        %hln1.Value = bump2(lindsnew(k));
-        %hln2.Value = bump(lindsnew(k));
-        hln3.Value = cue(lindsnew(k));
-        %hln4.Value = ballinv(lindsnew(k));
-        ttl.String = ['t: ' num2str(t(lindsnew(k))) ', epoch: ' num2str(epochts(lindsnew(k)))];
+    for k = 1:numel(tsubsamp)
+        hpl.YData = eb2(:,tsubsamp(k));
+        %hpl.YData = eb(:,limtsamp(k));
+        hln1.Value = bump2(tsubsamp(k));
+        hln2.Value = bump(tsubsamp(k));
+        hln3.Value = cue(tsubsamp(k));
+        %hln4.Value = ballinv(limtsamp(k));
+        ttl.String = ['t: ' num2str(t(tsubsamp(k))) ', epoch: ' num2str(epochts(tsubsamp(k)))];
         fig2gif(hfg,k,pthgif)
     end
 

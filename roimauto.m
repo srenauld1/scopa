@@ -23,6 +23,8 @@ else
     stackmnt = stack;
 end
 
+% stack = stackwarp(stack, [], rot, doplt=doplt);
+
 
 numchan = size(stackmnt,5);
 for c = 1:numchan
@@ -140,6 +142,46 @@ if numroi_init == 1 %for finding a single centroid
 else
 
     switch maskseg
+
+        case 'ell' % create multiple roughly equal-volume roi along skeleton of mask
+
+            stackyx = sum(permute(stackmnt, [3 2 1]), 3);
+            hfg = figure;
+            imagesc(stackyx);
+            hell = drawellipse();
+            input('') %move on once user presses enter, after adjusting the ellipse
+            mask = createMask(hell);
+            close(hfg);
+
+            mid = bwmorph(mask,'remove');
+            [midy,midx] = find(mid);                                              %by definition, the skeleton has to be at least as long as the min width of the roi, so shave out subbranches that are shorter than that.
+            ep = bwmorph(mid,'endpoints');                               %find the endpoints of the midline
+            [midx,midy] = graph_sort(midx,midy);                                      %align the points of the midline starting at the first pointpoint and going around in a circle. this requires that the midline be continuous!
+            xq = linspace(1,length(midy),2*(numroi_init) + 1)';                         %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that clusters on the edges arent clipped
+            centmp = [interp1(1:length(midy),midy,xq),interp1(1:length(midx),midx,xq)];  %interpolate x and y coordinates, now that they are ordered, into evenly spaced centroids (this allows one to oversample the number of pixels, if desired)
+            centmp = centmp(2:2:end-1,:);                                                 %take every other so that we dont start at the edges, and all are same size
+            if centmp(1,1) < centmp(end,1)
+                centmp = flipud(centmp);
+            end
+            centmp(:,3) = mean(1:size(stackmnt,1));
+
+            hfg = figure;
+            imagesc(subplot(2,1,1),mask); colormap(bone); xticks([]); yticks([])
+            fig2gif(hfg, 1, pthauto(suffix='.gif', usetime=1))
+            close(hfg);
+
+            hfg = figure; clf
+            imagesc(stackyx)                                      %plot the image again with max intensity over time to show the whole pb
+            colormap(bone)
+            hold on
+            plot(midx,midy,'w')                                                   %plot the midline in white
+            cmap = distinguishable_colors(numroi_init);
+            scatter(centmp(:,2),centmp(:,1),[],cmap,'filled')         %show the centroids in each of their colors
+            axis equal tight
+            fig2gif(hfg, 1, pthauto(suffix='.gif', usetime=1))
+            close(hfg);
+
+
 
         case 'skeleton' % create multiple roughly equal-volume roi along skeleton of mask
 

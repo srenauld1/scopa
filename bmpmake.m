@@ -1,71 +1,78 @@
-function bmp = bmpmake(opt, indv, depv, pthstack, imrate, epochts, doplt)
+function bmp = bmpmake(opt, depv, indv, pthstack, imrate, epochts, opt2)
 
 
 arguments
     opt = []
-    indv = []
     depv = []
+    indv = []
     pthstack = []
     imrate = []
     epochts = []
-    doplt = []
+    opt2.doplt = []
 end
+doplt = opt2.doplt;
 
 [opt, pthstack, doplt] = fset('bmp', opt, pthstack, doplt);
 
+if isempty(imrate)
+    md = glb('md');
+    imrate = md.volrate;
+    if isempty(imrate)
+        error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
+    end
+end
+if isempty(epochts)
+    epochts = glb('epochts');
+    if isempty(epochts)
+        error("must pass in epochts or set glb('epochts')")
+    end
+end
+
 %% set up indv/depv
 
-if ~isscalar(opt.indv) || ~isscalar(opt.depv)
-    error("indv and depv must be scalar, tg can be nonscalar though")
+if strcmp(opt.domtype, 'f') && ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
+    error("if domtype is 'f', indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
-
-if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
-    error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
-end
-
-dat_var = [];
-iv = [1 1];
-if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
-
-    if isstruct(opt.indv) && all(startsWith(fieldnames(opt.indv), 'tg')) && isstruct(opt.depv) && all(strcmp(fieldnames(opt.depv), 'tg'))
-        [vartmp, dat_var, pthcommon, varid, iv] = tsget(opt.indv, opt.depv);
-        indv = vartmp{1};
-        depv = vartmp{2};
-    else
-        error("if indv/depv is defined in opt, it must be struct tg (to define options for tsget)")
+if strcmp(opt.domtype, 'm')
+    indv = []; 
+    opt.indv = []; 
+    if ~isequal(isempty(depv), ~isempty(opt.depv.tg))
+        error("if domtype is 'm', depv must be empty or nonempty, with opt.depv the inverse; indv and opt.indv will be set to empty and ignored")
     end
-
 end
 
-if ~iscell(indv)
-    indv = {indv};
-end
-if ~iscell(depv)
-    depv = {depv};
-end
+its = 0;
+while true
+    its = its+1;
 
-for k = 1:size(iv,1)
-
-    if isempty(dat_var)
+    if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
+        [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
+        varid = vdat.varid;
+        last = vdat.last;
+        pthbmp = [vdat.pthc vdat.varid opt.optid '_bmp_.mat'];
+    else
         varid = 'z0';
+        last = 1;
         pthbmp = [erase(pthstack, '.mat') varid opt.optid '_bmp_.mat'];
-    else
-        pthbmp = [pthcommon{k} varid{k} opt.optid '_bmp_.mat'];
     end
 
-    bmp = bmpmake2(indv{iv(k,1)}, depv{iv(k,2)}, opt, varid, pthbmp, imrate, epochts, doplt);
+    bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt);
 
+    if last
+        break
+    end
 end
 
 end
 
-function bmp = bmpmake2(indv, depv, opt, varid, pthbmp, imrate, epochts, doplt)
+function bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt)
 
 chan = opt.chan;
 mthd = opt.mthd;
 omitnan = opt.omitnan;
 scope = opt.scope;
 domtype = opt.domtype;
+numcirc = opt.numcirc;
 dorescale = opt.dorescale;
 numangrs = opt.numangrs;
 maxangrs = opt.maxangrs;
@@ -87,12 +94,8 @@ try
 
 catch ME
 
-    if iscell(indv)
-        indv = indv{1};
-    end
-    if iscell(depv)
-        depv = depv{1};
-    end
+    numroi = size(depv, 1);
+    numsamp = size(depv, 2);
 
     if numangrs
         numseg = numangrs;
@@ -105,7 +108,7 @@ catch ME
     end
 
     if isodd(numseg)
-        fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (scope 'left', 'right', 'max', or a digit, or mthd is 'functional' for rgname pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
+        fprintf("WARNING, numseg IS ODD, SO IF BUMP COMPUTATION INVOLVES HALVING THE COMPASS (scope 'left', 'right', 'max', or a digit, or mthd is 'f' for rgname pb), BUMP CAN BE INACCURATE, SINCE THOSE METHODS ASSUME EVEN numseg (ONE SEGMENT WILL BE MISSING)" + newline)
     end
 
     halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
@@ -121,12 +124,9 @@ catch ME
     end
 
 
-    if strcmp(domtype, 'functional')
+    if strcmp(domtype, 'f') %functional domain (each roi's preferred angle derived from fit) 
 
-        numsyn = 0;
-        ld = 1;
-        histinc = 0;
-        bmp = mdlmake(opt.mdl, indv, depv, pthbmp, imrate, epochts, doplt, numsyn, ld, histinc);
+        bmp = mdlmake(opt.mdl, indv, depv, pthbmp, imrate, epochts, doplt=doplt, ld=1, numsyn=0, histinc=0);
 
         angpref = bmp.ft.indvpf_mean_allval(:)'; %row vector of preferred angle;
 
@@ -139,14 +139,12 @@ catch ME
             domaintmp = angpref;
         end
 
-    elseif strcmp(domtype, 'morphological') %morphological domain
+    elseif strcmp(domtype, 'm') %morphological domain
 
-        pb = 0; %what flag to use? rg name?
-        if pb
-            domaintmp = mod(linspace(0,4*pi,numseg+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
-        else
-            domaintmp = linspace(0,2*pi,numseg+1) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
+        if ~ismember(numcirc, [1,2])
+            error("can only extract bump from 1 or 2 circles right now")
         end
+        domaintmp = mod(linspace(0,numcirc*2*pi,numseg+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
         domaintmp = domaintmp(1:end-1);
         respcltmp = depv; %no downsampling for morphological domain
 
@@ -197,21 +195,40 @@ catch ME
 
     switch mthd
 
-        case 'pva'
+        case 'pva' %regular pva, use if you want to not weight by magnitude (pva angle will be pulled toward largest response, regardless of sign, ie furthest from negative infinity)
 
-            [mu, rho, circvar] = circmnvar(domain, resptmp, omitnan); %alternative form of circ_mean and circ_var above, same result but ignores nans
-            % mu2 = circ_mean(repmat(domain', [1 size(resptmp, 2)]), resptmp);
-            % [rho, ~, sel] = circ_var(repmat(domain', [1 size(resptmp, 2)]), resptmp);
-            % for rti = 1:size(resptmp, 2)
-            %     mu_true(:, rti) = deg2rad(weighted_circular_mean(rad2deg(domain), resptmp(:,rti))); % "true circular mean", so far results are not very different
-            %     rho_true(:, rti) = weighted_circular_std(rad2deg(domain), resptmp(:,rti)); % std based on "true circular mean",
-            % end
+            mu = circ_mean(domain, resptmp, 2);
+            rho = circ_var(domain, resptmp, [], 2);
 
+        case 'pvas' %"pva signed", use if you want to weight by magnitude (eg large magnitude negative responses can pull pva angle toward them)
 
-        case 'vonmises'
+            [mu, rho, circvar] = circmnvar(domain, resptmp, omitnan);
 
-            disp("vonmises mthd (fit vonmises to each timepoint using mdlmake) not written yet")
+        case 'vm'
 
+            rho2 = nan(numsamp,1); 
+            mu = nan(numsamp,1);
+            ampmu = nan(numsamp,1);
+            rho = nan(numsamp,1); %was 'width'
+
+            fo = fitoptions( ...
+                Method='NonlinearLeastSquares',...
+                Lower=[-inf,-inf,0,-pi],...  [a,c,k,u]
+                Upper=[inf,inf,inf,pi],... [a,c,k,u]
+                StartPoint=[1,0.1,1,0] ...
+                );
+            ft = fittype('a*exp(k*cos(x-u))+c','options',fo);
+
+            for k = 1:numsamp
+                [f, gof] = fit(domain', resptmp(:,k), ft, MaxIter=20000, MaxFunEvals=20000);
+                % rho2(k) = gof.adjrsquare;
+                rho2(k) = gof.adjrsquare;
+                mu(k) = f.u;
+                ampmu(k) = f.a * ( exp(f.k) - exp(-f.k) );
+                % width(k) = 2 * abs( acos( 1/f.k * log( 1/2 *( exp(f.k) + exp(-f.k) ))));
+                rho(k) = 2 * abs( acos( 1/f.k * log( 1/2 *( exp(f.k) + exp(-f.k) ))));
+                fprintf('frame %i / %i\n', k, n_frame)
+            end
     end
 
     mu = mu';
@@ -267,8 +284,6 @@ if doplt
 
     error("bmpmake plots need to be rewritten")
 
-    numroi = size(depv, 1);
-    numsamp = size(depv, 2);
 
     indz = 1:size(mu,1);
 

@@ -1,139 +1,185 @@
-function [tsout, dat, pthc, varid, iv] = tsget(tg, opt)
+function [datout, tsout] = tsget(its, tg, opt)
 
-%var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files 
-
+%var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files
+arguments (Input)
+    its
+end
 arguments (Repeating, Input)
     tg
 end
 arguments (Input)
+    opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
-    opt.pthparent = []
     opt.user = []
+    opt.pthparent = []
 end
 arguments (Output)
-    tsout cell
-    dat cell
-    pthc cell
-    varid cell
-    iv
+    datout
 end
+arguments (Repeating, Output)
+    tsout
+end
+
 dm = opt.dm;
-pthparent = opt.pthparent;
 user = opt.user;
+pthparent = opt.pthparent;
+
+numvarout = numel(tg); %number of independent output variables (number of input arguments to tsget)
+tsout = cell(1, numvarout);
+persistent dattmp
+persistent tsouttmp
 
 pthscopa = getpathscopa();
-user = glb('user');
-if isempty(user)
-    error("you have not set glb('user')")
-end
 pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
 
+if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
 
-if isempty(user)
-    user = glb('user');
-    if isempty(user)
-        error("you must pass in user or set glb('user')")
+    dattmp = cell(numvarout,1);
+    tsouttmp = cell(numvarout,1);
+
+    if isempty(dm)
+        dm = 'it';
     end
-end
-if isempty(dm)
-    dm = 'it';
-end
-if isempty(pthparent)
-    pthparent = glb('pthparent');
+    if isempty(user)
+        user = glb('user');
+        if isempty(user)
+            error("you must pass in user or set glb('user')")
+        end
+    end
+    if isempty(pthparent)
+        pthparent = glb('pthparent');
+        if isempty(pthparent)
+            error("you must pass in pthparent or set glb('pthparent')")
+        end
+    end
+
+    for m = 1:numvarout %loop over number of repeated tg inputs
+        [tsouttmp{m}, dattmp{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
+    end
+
+    datflat = cellflat(dattmp);
+    for k = 1:numel(datflat)
+        md = mdsild(datflat{k}.pth);
+        if k==1
+            vrtmp = md.volrate;
+            eptmp = glb('epochts');
+        else
+            if ~isequal(vrtmp, md.volrate) || ~isequal(eptmp, glb('epochts'))
+                error("metadata does not agree across found ts, need to write how to deal with this")
+            end
+        end
+    end
+
 end
 
-tsout = cell(numel(tg),1);
-dat = cell(numel(tg),1);
-for m = 1:numel(tg) %loop over number of repeated tg inputs
-    [tsout{m}, dat{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
-end
+%%% SELECT FROM FOUND VARIABLES (PERSISTENT) USING INDEX OF ITS FROM ALL COMBOS %%%% 
+last = 0;
+if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
 
-
-if any(~cellfun(@isempty, cellflat(tsout))) %if any are nonempty
-
-    if any(cellfun(@isempty, cellflat(tsout))) %if any are empty
+    if any(cellfun(@isempty, cellflat(tsouttmp))) %if any are empty
         error("for all tg input, output must be empty or not")
     end
 
     if isscalar(tg)
         iv = 1;
-    elseif numel(tg)==2
-        [ivc,ivr] = meshgrid(1:numel(tsout{1}), 1:numel(tsout{2}));
+    elseif numvarout==2
+        [ivc,ivr] = meshgrid(1:numel(tsouttmp{1}), 1:numel(tsouttmp{2}));
         iv = [ivc(:) ivr(:)];
     else
         error("write this for more than 2 tg inputs")
     end
 
-    pthc = cell(size(iv,1),1);
-    varid = cell(size(iv,1),1);
-    for k = 1:size(iv,1) %loop over var combos
+    if its>size(iv,1)
+        error("requested index is too great")
+    end
 
-        for m = 1:size(iv,2) %loop over number vars in combo
-            if m==1
-                datcombo = dat{m}{iv(k,m)};
+    for k = 1:size(iv,1) %loop over var combos
+        if isequal(k, its)
+
+            if isequal(k, size(iv,1)) %if on final var combo
+                last = 1;
+            end
+
+            for m = 1:size(iv,2) %loop over number vars in combo
+                tsout{m} = tsouttmp{m}{iv(k,m)};
+                if m==1
+                    datcombo = dattmp{m}{iv(k,m)};
+                else
+                    datcombo(m) = dattmp{m}{iv(k,m)};
+                end
+            end
+
+            [~, varid] = structfile(pthvar, s=datcombo, useprefix=1);
+            if size(iv,2)==1
+                pthc = datcombo.pth;
             else
-                datcombo(m) = dat{m}{iv(k,m)};
+                pthc = {datcombo.pth};
+                pthc = intersectchar(pthc);
+            end
+            pthc = fileparts(pthc); %crop to nearest folder
+            if ~endsWith(pthc, filesep)
+                pthc = [pthc filesep];
             end
         end
-
-        [datcombo_copy, varid{k}] = structfile(pthvar, s=datcombo, useprefix=1);
-        if size(iv,2)==1
-            pthtmp = datcombo.pth;
-        else
-            pthtmp = {datcombo.pth};
-            pthtmp = intersectchar(pthtmp);
-        end
-        pthc{k} = fileparts(pthtmp); %crop to nearest folder
-        if ~endsWith(pthc{k}, filesep)
-            pthc{k} = [pthc{k} filesep];
-        end
-
+        datout.vdat = datcombo;
+        datout.varid = varid;
+        datout.pthc = pthc;
+        datout.last = last;
     end
 
 else %if all empty
 
-    iv = [];
-    pthc = {};
-    varid = {};
+    tsout = [];
+    datout.vdat = [];
+    datout.varid = [];
+    datout.pthc = [];
+    datout.last = 1;
 
 end
+
+
 
 end
 
 function [tsout, dat] = tsget2(tg, dm, pthparent, user, pthscopa)
 
-tg = tg.tg; %since the input is named tg
+if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
+    tg = tg.tg; %since the input to this function is also named tg
+else
+    error("each input to tsget must be scalar struct containing field tg, and nothing else")
+end
 
-tsout = cell(numel(tg),1);
-dattmp = cell(numel(tg),1);
-group = cell(numel(tg),1);
-for m = 1:numel(tg) %loop over tg elements
+numtg = numel(tg); %number of separate structs used to find variables (all results will be concatenated)
+tsout = cell(numtg,1);
+dattmp = cell(numtg,1);
+group = cell(numtg,1);
+for m = 1:numtg %loop over tg elements
     [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, user, pthscopa);
 end
 
 
 if all(cellfun(@isempty, cellflat(tsout))) %isempty(cell2mat(vec(cellflat(tsout))))
-    groupout = '1';
+    group2 = '1';
 else
-    if isempty(getfieldns(tg, 'groupout'))
+    if isempty(getfieldns(tg, 'group2'))
         tmp = group;
         if ~isempty(tmp)
             tmp = unique(tmp(~cellfun(@isempty, tmp)));
         end
         if isscalar(tmp)
-            groupout = tmp{1};
-            fprintf("groupout is empty, setting default groupout to " + tmp{1} + " since this is the nonempty value of group for all elements of tg" + newline)
+            group2 = tmp{1};
+            fprintf("group2 is empty, setting default group2 to " + tmp{1} + " since this is the nonempty value of group for all elements of tg" + newline)
         else
-            groupout = '3';
-            fprintf("groupout is empty, and not all elements use the same value for groupsetting default groupout '3', nothing will be grouped at the outer level" + newline)
+            group2 = '3';
+            fprintf("group2 is empty, and not all elements use the same value for groupsetting default group2 '3', nothing will be grouped at the outer level" + newline)
         end
     else
-        tmp = getfieldns(tg, 'groupout');
+        tmp = getfieldns(tg, 'group2');
         tmp = unique(tmp(~cellfun(@isempty, tmp)));
         if isscalar(tmp)
-            groupout = tmp{1};
+            group2 = tmp{1};
         else
-            error("groupout must be equal (or empty) for all elements of tg")
+            error("group2 must be equal (or empty) for all elements of tg")
         end
     end
 end
@@ -143,7 +189,7 @@ tstmp = cellfun(@single, tstmp, 'UniformOutput', false);
 
 
 dat = [];
-switch groupout
+switch group2
     case '1'
         for k = 1:numel(dattmp)
             dat = cat(2, dat, dattmp{k});
@@ -166,7 +212,7 @@ switch groupout
         dat = {dat};
         tsout = {transpose(cell2vec(tstmp))}; %make it row vector, so time is 2nd dim
     otherwise
-        error("groupout must be 1, 3, or flat")
+        error("group2 must be 1, 3, or flat")
 end
 
 end
@@ -232,6 +278,18 @@ else
     ic = [];
 end
 
+if isfield(tg, 'recid') && ~isempty(tg.recid)
+    recid = tg.recid;
+    if isstring(recid)
+        recid = convertStringsToChars(recid);
+    end
+    if ~iscell(recid)
+        recid = {recid};
+    end
+else
+    recid = {'curr'};
+end
+
 if isfield(tg, 'group') && ~isempty(tg.group)
     group = tg.group;
 else
@@ -239,11 +297,11 @@ else
     group = '3';
 end
 
-if isfield(tg, 'groupout') && ~isempty(tg.groupout)
-    groupout = tg.groupout;
+if isfield(tg, 'group2') && ~isempty(tg.group2)
+    group2 = tg.group2;
 else
-    fprintf("groupout is empty, leaving empty for now, to be set in tsget, outside tsget3" + newline)
-    groupout = [];
+    fprintf("group2 is empty, leaving empty for now, to be set in tsget, outside tsget3" + newline)
+    group2 = [];
 end
 
 
@@ -259,7 +317,9 @@ if ~isscalar(tg)
     error("INPUT STRUCT TO tsget MUST BE SCALAR")
 end
 
-
+if strcmp(recid, 'curr')
+    recid = {glb('recid')};
+end
 
 
 
@@ -330,57 +390,63 @@ for w = 1:numel(varid)
         optid_tmp = optid{k};
         fnpat = ['*' varid_tmp optid_tmp '_' vbin '_.mat'];
         pthpat = fullfile(pthparent, '**', fnpat);
-        pthtmp = rdir(pthpat);
-        if isscalar(pthtmp)
-            for m = 1:numel(pthtmp)
-                pth = pthtmp(m).name;
-
-                fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)
-                saved_struct = load(pth);
-                if isfield(saved_struct, vbin)
-                    saved_struct = saved_struct.(vbin);
-                    fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with vbin" + newline)
-                end
-                if isempty(cell2mat(vnm))
-                    vnm = transpose(fieldnames(saved_struct)); % all variables if vnm is empty
-                end
-
-                for f = vnm
-                    saved_var = saved_struct.(f{1});
-                    if isempty(saved_var)
-                        error("you are trying to load an empty variable; if this is domain 'roi', you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
-                    end
-                    itmp.ii = ii;
-                    itmp.it = it;
-
-                    if iscell(saved_var)
-                        if isempty(ic)
-                            ic = find(~cellfun(@isempty, saved_var)); %if ic isempty, load ts for all nonempty channels
-                        end
-                        for q = 1:numel(ic)
-                            cnt = cnt+1;
-                            tsout{cnt} = vind(saved_var{ic(q)}, dm, itmp);
-                            dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, groupout);
-                        end
-                    else
-                        if isempty(ic)
-                            cnt = cnt+1;
-                            tsout{cnt} = vind(saved_var, dm, itmp);
-                            dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, groupout);
-                        else
-                            error("ic is not valid for indexing anything but cell array right now")
-                        end
-                    end
-
-                end
+        pthtmpall = rdir(pthpat);
+        pthtmp = cell(numel(pthtmpall),1);
+        for m = 1:numel(pthtmpall)
+            [~, fntmp, fnext] = fileparts(pthtmpall(m).name);
+            fnpat2 = regexprep(strcat(regexprep(strcat('^', recid), '*', '\\d*'), fnpat, '$'), '*', '.*');
+            if any(cellfun(@(x) isequal(x,1), regexp([fntmp, fnext], fnpat2))) %filter by recid
+                pthtmp{m} = pthtmpall(m).name;
             end
-        elseif numel(pthtmp)>1
-            error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (cmrg, dcdn, etc); need to make this fixible; for now just rename one" + newline)
-        elseif isempty(pthtmp)
+        end
+        pthtmp = pthtmp(~cellfun(@isempty, pthtmp));
+        if isempty(cell2mat(pthtmp))
             fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + vbin + "'; you may have created it and then deleted it; skipping this optid" + newline)
+        else
+            if numel(pthtmp)>1
+                error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (cmrg, dcdn, etc); need to make this fixible; for now just rename one" + newline)
+            end
+            pth = pthtmp{1}; %there should only be one here
+            fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)
+            saved_struct = load(pth);
+            if isfield(saved_struct, vbin)
+                saved_struct = saved_struct.(vbin);
+                fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with vbin" + newline)
+            end
+            if isempty(cell2mat(vnm))
+                vnm = transpose(fieldnames(saved_struct)); % all variables if vnm is empty
+            end
+
+            for f = vnm
+                saved_var = saved_struct.(f{1});
+                if isempty(saved_var)
+                    error("you are trying to load an empty variable; if this is domain 'roi', you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
+                end
+                itmp.ii = ii;
+                itmp.it = it;
+
+                if iscell(saved_var)
+                    if isempty(ic)
+                        ic = find(~cellfun(@isempty, saved_var)); %if ic isempty, load ts for all nonempty channels
+                    end
+                    for q = 1:numel(ic)
+                        cnt = cnt+1;
+                        tsout{cnt} = vind(saved_var{ic(q)}, dm, itmp);
+                        dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
+                    end
+                else
+                    if isempty(ic)
+                        cnt = cnt+1;
+                        tsout{cnt} = vind(saved_var, dm, itmp);
+                        dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
+                    else
+                        error("ic is not valid for indexing anything but cell array right now")
+                    end
+                end
+
+            end
         end
     end
-
 end
 
 szt = cellfun(@(x) size(x,2), tsout, 'UniformOutput', false);
@@ -423,7 +489,7 @@ end
 
 
 
-function dat = tgdatmake(pth, optid, f, ii, it, ic, group, groupout)
+function dat = tgdatmake(pth, optid, f, ii, it, ic, group, group2)
 
 dat.pth = pth;
 dat.optid = optid;
@@ -432,7 +498,7 @@ dat.ii = ii;
 dat.it = it;
 dat.ic = ic;
 dat.group = group;
-dat.groupout = groupout;
+dat.group2 = group2;
 
 end
 

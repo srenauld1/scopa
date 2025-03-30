@@ -111,6 +111,7 @@ def parse_command_line():
         args.methodrg = pars.METHODRG
         args.clipinterp = pars.CLIPINTERP
         args.chan_dn = pars.CHAN_DN
+        args.dnraw = pars.DNRAW
         args.methodex = pars.METHODEX
 
         args.folder_with_all_recordings_on_storage_and_compute_filesystems = pars.FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS
@@ -180,6 +181,12 @@ def parse_command_line():
         chan_dn = args.chan_dn #keep as list
     if chan_dn != ['all']:
         chan_dn = int(chan_dn[0]) #convert to int if not 'all'
+
+    if isinstance(args.dnraw[0], list):
+        dnraw = args.dnraw[0] #keep as list
+    else:
+        dnraw = args.dnraw #keep as list
+    dnraw = int(dnraw[0])
 
 
     if isinstance(args.methodex[0], list):
@@ -265,11 +272,12 @@ def parse_command_line():
         rgname = args.rgname #keep as list
 
 
-    ############## SET THE DO OPTIONS BASED ON COMMAND LINE ARGUMENT jobnm ##############
+    ############## SET THE DO OPTIONS USING COMMAND LINE ARGUMENT jobnm ##############
 
     do_autoallocate = int(jobnm==['alo'])
     do_register = int(jobnm==['mcp'])
     do_denoise = int(jobnm==['dnp'])
+    dnraw = int(jobnm==['dnraw'])
     do_stitch = int(jobnm==['stc'])
     do_extract = int(jobnm==['exp'])
     do_remove = int(jobnm==['rsc'])
@@ -290,7 +298,7 @@ def parse_command_line():
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
                       recdate, fly, trial, folder_substring, jobind, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, methodrg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
-                      do_denoise, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
+                      do_denoise, dnraw, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
                       do_remove, stopband_rsc, smlensec_rsc, use_scannoise_removed, 
                       do_extract, methodex, extract_in_2d, rgname, 

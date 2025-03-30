@@ -26,20 +26,30 @@ for k = 1:numel(pthstacks)
         suffix = 'raw';
     else
         trial = spl{3};
-        suffix = strjoin(spl(4:end), '_');
+        if numel(spl)>3
+            suffix = strjoin(spl(4:end), '_');
+        else
+            suffix = '';
+        end
     end
 
     recdatenum = str2double(recdate);
     flynum = str2double(fly);
     trialnum = str2double(trial);
 
-    if strcmp(suffix(end), '_')
-        suffix = suffix(1:end-1);
-    end
+
 
     datefly_hyphen = [recdate '-' fly];
     recid = [recdate '_' fly '_' trial];
-    stackid = [recdate '_' fly '_' trial '_' suffix];
+    if isempty(suffix)
+        stackid = '';
+        pthstacktmp = ''; %since we don't know suffix, you must haver passed in pthrec, so make pthstack empty
+    else
+        if strcmp(suffix(end), '_')
+            suffix = suffix(1:end-1);
+        end
+        stackid = [recdate '_' fly '_' trial '_' suffix];
+    end
 
     id(k).recdate = recdate;
     id(k).fly = fly;
@@ -55,5 +65,6 @@ for k = 1:numel(pthstacks)
 
     id(k).pthstackdir = pthstackdir;
     id(k).pthstack = pthstacktmp;
+    id(k).pthrec = [pthstackdir recid];
 
 end

@@ -23,7 +23,6 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     o.mdl.mdlname = 'fnet_v';
     o.mdl.lensec = 0;
     o.mdl.epochnum = 1;
-    o.mdl.nrmi = 'none';
     % o.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
     % o.mdl.opl.MaxIterations = 5000; %1000    else
 

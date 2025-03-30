@@ -2,7 +2,7 @@
   "a1": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": [],
       "ii": 1,
       "it": [],
@@ -12,7 +12,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -24,7 +24,7 @@
   "a2": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": [],
       "ii": 1,
       "it": [],
@@ -34,7 +34,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -46,7 +46,7 @@
   "a3": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": [],
       "ii": 1,
       "it": [],
@@ -56,7 +56,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -68,7 +68,7 @@
   "a4": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -78,7 +78,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -90,7 +90,7 @@
   "a5": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -100,7 +100,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -112,7 +112,7 @@
   "a6": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 2,
       "it": [],
@@ -122,7 +122,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -134,7 +134,7 @@
   "a7": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 3,
       "it": [],
@@ -144,7 +144,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -156,7 +156,7 @@
   "a8": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 4,
       "it": [],
@@ -166,7 +166,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -178,7 +178,7 @@
   "a9": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 5,
       "it": [],
@@ -188,7 +188,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -200,7 +200,7 @@
   "a10": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 6,
       "it": [],
@@ -210,7 +210,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -222,7 +222,7 @@
   "a11": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 7,
       "it": [],
@@ -232,7 +232,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -244,7 +244,7 @@
   "a12": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 8,
       "it": [],
@@ -254,7 +254,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -266,7 +266,7 @@
   "a13": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 9,
       "it": [],
@@ -276,7 +276,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -288,7 +288,7 @@
   "a14": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 10,
       "it": [],
@@ -298,7 +298,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -310,7 +310,7 @@
   "a15": [
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 11,
       "it": [],
@@ -320,7 +320,7 @@
     },
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -332,7 +332,7 @@
   "a16": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -342,7 +342,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -354,7 +354,7 @@
   "a17": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -364,7 +364,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 2,
       "it": [],
@@ -376,7 +376,7 @@
   "a18": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -386,7 +386,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 3,
       "it": [],
@@ -398,7 +398,7 @@
   "a19": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -408,7 +408,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 4,
       "it": [],
@@ -420,7 +420,7 @@
   "a20": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -430,7 +430,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 5,
       "it": [],
@@ -442,7 +442,7 @@
   "a21": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -452,7 +452,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 6,
       "it": [],
@@ -464,7 +464,7 @@
   "a22": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -474,7 +474,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 7,
       "it": [],
@@ -486,7 +486,7 @@
   "a23": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
@@ -496,7 +496,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 8,
       "it": [],
@@ -508,7 +508,7 @@
   "a24": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -518,7 +518,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -530,7 +530,7 @@
   "a25": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -540,7 +540,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 2,
       "it": [],
@@ -552,7 +552,7 @@
   "a26": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -562,7 +562,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 3,
       "it": [],
@@ -574,7 +574,7 @@
   "a27": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -584,7 +584,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 4,
       "it": [],
@@ -596,7 +596,7 @@
   "a28": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -606,7 +606,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 5,
       "it": [],
@@ -618,7 +618,7 @@
   "a29": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -628,7 +628,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 6,
       "it": [],
@@ -640,7 +640,7 @@
   "a30": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -650,7 +650,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 7,
       "it": [],
@@ -662,7 +662,7 @@
   "a31": [
     {
       "group": "1",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 1,
       "it": [],
@@ -672,7 +672,7 @@
     },
     {
       "group": "3",
-      "groupout": [],
+      "group2": [],
       "ic": 1,
       "ii": 8,
       "it": [],
@@ -681,6 +681,46 @@
       "vnm": "ts"
     }
   ],
+  "a32": {
+    "group": "3",
+    "group2": [],
+    "ic": 1,
+    "ii": 1,
+    "it": [],
+    "optid": "a13",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a13_roi_.mat",
+    "vnm": "ts"
+  },
+  "a33": {
+    "group": "3",
+    "group2": [],
+    "ic": 1,
+    "ii": 1,
+    "it": [],
+    "optid": "a14",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a14_roi_.mat",
+    "vnm": "ts"
+  },
+  "a34": {
+    "group": "3",
+    "group2": [],
+    "ic": 1,
+    "ii": 1,
+    "it": [],
+    "optid": "a15",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a15_roi_.mat",
+    "vnm": "ts"
+  },
+  "a35": {
+    "group": "3",
+    "group2": [],
+    "ic": 1,
+    "ii": 1,
+    "it": [],
+    "optid": "a16",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a16_roi_.mat",
+    "vnm": "ts"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "maketime": "2025030622112795",

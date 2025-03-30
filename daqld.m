@@ -55,10 +55,10 @@ arguments
     opt = []
     pthstack = []
     doplt = []
-    pth_daq = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack)
-    pth_daqrs = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack)
-    pth_ftvid = []%can optionally pass path to downsampled (in scopa/register.py) fictrac video (if you don't it will be derived from pthstack)
-    pth_ftvidrs = []%can optionally pass save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack)
+    pth_daq = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack/pthrec)
+    pth_daqrs = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack/pthrec)
+    pth_ftvid = []%can optionally pass path to downsampled (in scopa/register.py) fictrac video (if you don't it will be derived from pthstack/pthrec)
+    pth_ftvidrs = []%can optionally pass save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack/pthrec)
 end
 
 [opt, pthstack, doplt] = fset('daq', opt, pthstack, doplt);
@@ -88,17 +88,17 @@ if ~isstring(vnormal)
     vnormal = string(vnormal); %could also convert to char here
 end
 if ~isstring(vcircular)
-    vcircular = string(vcircular);%could also convert to char here
+    vcircular = string(vcircular); %could also convert to char here
 end
 if ~isstring(vcategorical)
-    vcategorical = string(vcategorical);%could also convert to char here
+    vcategorical = string(vcategorical); %could also convert to char here
 end
 
 
-id = idmake(pthstack); %just in case id info gets used below
+id = idmake(pthstack); 
 
 if isempty(pth_daqrs)
-    pthpre = [id.pthstackdir id.recid '_' optid '_daq_'];
+    pthpre = [id.pthrec '_' optid '_daq_'];
     pth_daqrs = [pthpre '.mat'];
 end
 
@@ -140,10 +140,10 @@ try
         end
 
         if isempty(pth_ftvid)
-            pth_ftvid = [id.pthstackdir id.recid '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
+            pth_ftvid = [id.pthrec '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
         end
         if isempty(pth_ftvidrs)
-            pth_ftvidrs = [id.pthstackdir id.recid '_FTV_DS_RS_.mat']; %downsampled ft video (downsampled in register.py)
+            pth_ftvidrs = [id.pthrec '_FTV_DS_RS_.mat']; %downsampled ft video (downsampled in register.py)
         end
 
         daqvars.normal = vnormal;
@@ -392,6 +392,7 @@ try
         save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
 
     end
+    
 
 catch ME
 

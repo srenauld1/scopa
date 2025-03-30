@@ -2,9 +2,12 @@ function stackplt3(stack, opt)
 
 arguments
     stack
+    opt.t = []
+    opt.epochts = []
     opt.pthstack = []
     opt.iz = []
     opt.it = []
+    opt.its = []
     opt.ic = []
     opt.cmap = []
     opt.style = []
@@ -16,8 +19,11 @@ arguments
     opt.pthgif = []
     opt.dogif = 1
 end
+t = opt.t;
+epochts = opt.epochts;
 pthstack = opt.pthstack;
 iz = opt.iz;
+its = opt.its;
 it = opt.it;
 ic = opt.ic;
 cmap = opt.cmap;
@@ -36,20 +42,45 @@ maxnumframes = 500;
 if isempty(pthstack)
     pthstack = glb('pthstack');
 end
-
+if isempty(t)
+    t = glb('t');
+    if isempty(t)
+        error("must pass in t or set glb('t')")
+    end
+end
+if isempty(epochts)
+    epochts = glb('epochts');
+    if isempty(epochts)
+        error("must pass in epochts or set glb('epochts')")
+    end
+end
 
 if ~isempty(svtype) && isempty(pthgif)
     error("")
 end
 
+id = idmake(pthstack);
+recid = id.recid;
+
 pthpre = [erase(pthstack, '.mat') 'stack3_'];
 
-if isempty(it)
-    it = 1:size(stack,4);
+if ~isempty(it)
+    if isempty(t)
+        error("if it is nonempty, t must be nonempty")
+    end
+    if ~isempty(its)
+        error("its and it cannot both be nonempty")
+    end
+    its = t2samp(t, it);
 end
-it = indsmake(it, indsall=size(stack,4));
-if numel(it)>maxnumframes
-    it = it(1:maxnumframes);
+
+
+if isempty(its)
+    its = 1:size(stack,4);
+end
+its = indsmake(its, indsall=size(stack,4));
+if numel(its)>maxnumframes
+    its = its(1:maxnumframes);
     fprintf("you have requested a volume with more than 500 frames, just plotting the first 200 frames of the set; if you want you can change maxnumframes (hard coded in stack3)")
 end
 
@@ -78,8 +109,8 @@ end
 if ~isempty(iz) && ~isequal(iz(:)', 1:size(stack,3))
     stack = stack(:,:,iz,:,:);
 end
-if ~isequal(it, 1:size(stack,4))
-    stack = stack(:,:,:,it);
+if ~isequal(its, 1:size(stack,4))
+    stack = stack(:,:,:,its);
 end
 
 
@@ -160,10 +191,17 @@ vsh(1).Alphamap = 1;
 
 % vwr.CropRegion = [5 5 5; 20 20 20];
 
-% vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -11.5898]; %20250209
-vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -10.1692]; %20250221_1_2
-vwr.CameraPosition = [30.1300 -58.6419 12.7833]; %20250209, 20250221_1_2
-
+switch recid
+    case {'20250209_1_1'}
+        vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -11.5898]; %20250209
+        vwr.CameraPosition = [30.1300 -58.6419 12.7833]; %20250209, 20250221_1_2
+    case {'20250221_1_2'}
+        vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167  -10.1692]; %20250221_1_2
+        vwr.CameraPosition = [30.1300 -58.6419 12.7833]; %20250209, 20250221_1_2
+    case {'20250316_1_1'}
+        vwr.CameraPosition = [60.9303   93.0271   10.0094]; %20250209, 20250221_1_2
+        vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167   -8.7669]; %20250221_1_2
+end
 
 if size(stack,5)>1
     %or don't use vsh(2) and instead use vsh(1).OverlayData = stack(:,:,:,:,2):
@@ -176,9 +214,12 @@ if size(stack,5)>1
 end
 
 
+ttl = title("t: " + num2str(t(1)) + "epoch: " + num2str(epochts(1)));
 for k = 1:size(stack,4)
 
     vsh(1).Data = stack(:,:,:,k);
+    ttl.String = "t: " + num2str(t(k)) + "epoch: " + num2str(epochts(k));
+
 
     if ~isempty(svtype)
         obj = ancestor(vsh(1),'figure','toplevel');

@@ -13,7 +13,7 @@ from pthmakepy import getpathscopa
 
 
 def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
-                 do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed, 
+                 do_copyfiles, do_register, do_denoise, dnraw, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
     # chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
@@ -51,7 +51,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
-        if do_denoise or do_stitch or do_extract or do_crop_only or do_remove or do_a2p:
+        if do_denoise and not dnraw or do_stitch or do_extract or do_crop_only or do_remove or do_a2p:
             fn_suffix_scopa = '_cmrg' 
             if use_background_subtracted:
                 fn_suffix_scopa = '_bksb' + fn_suffix_scopa
@@ -152,12 +152,12 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
     pth_daq_all = []
     pth_ftvid_all = []
     pth_ftdat_all = []
-    pth_croplim_all = []
+    pth_opt_all = []
     carls_old_project_all = []
-    countz = 0
+    k = 0
     for pth_readfile in pth_allfiles: #loop over all found files
             
-        if not first_noncopy_job or (first_noncopy_job and ( jobind == ['all'] or (jobind !=['all'] and np.isin(countz, jobind).any()) ) ): #if first_noncopy_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in jobind; but if not first_noncopy_job (always first_noncopy_job in interactive mode, but only on first run in batch mode), don't apply this selection because it's been written into the fnind file that the file specifiers are read from
+        if not first_noncopy_job or (first_noncopy_job and ( jobind == ['all'] or (jobind !=['all'] and np.isin(k, jobind).any()) ) ): #if first_noncopy_job . . .  if 'all', do all files matching pattern, otherwise only file whose index is in jobind; but if not first_noncopy_job (always first_noncopy_job in interactive mode, but only on first run in batch mode), don't apply this selection because it's been written into the fnind file that the file specifiers are read from
 
             print("\n\n\nPREPARING FILE: \n" + pth_readfile)
 
@@ -195,8 +195,8 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
                 pth_daq = pth_daq[0]
 
             pthscopa = getpathscopa()
-            pth_croplim_pattern = pthscopa + 'croplim_*_.txt' # copy all croplim files from server to O2 
-            pth_croplim = glob.glob(pth_croplim_pattern)
+            pth_opt_pattern = pthscopa + 'opt_*_*_*_.txt' # copy all opt files from server to O2 
+            pth_opt = glob.glob(pth_opt_pattern)
                 
             fn_pattern_ftvid = fldr + 'FicTracData/fictrac-raw-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
             pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
@@ -211,7 +211,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
-                if re.search('trial', fname) or re.search('stackraw', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
+                if re.search('trial', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
                     [pth_readfile, fname] = rename_files(pth_readfile, fname, fn_prefix, fldr)
             
             mat_file_shape = None
@@ -229,7 +229,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             pthmd_old = pth_prefix + '_metadatanew_.npy'
             pthmd_matold = pthmd_old[:-4] + '.mat'  
             if not os.path.isfile(pthmd): #if scanimage metadata file (*mdsi_.txt) is not present, make it
-                if do_register: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
+                if do_register or do_denoise and dnraw: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
                         mdsisv(pth_readfile, pthmd, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
@@ -257,11 +257,11 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             pth_daq_all.append(pth_daq)
             pth_ftvid_all.append(pth_ftvid)
             pth_ftdat_all.append(pth_ftdat)
-            pth_croplim_all.append(pth_croplim)
+            pth_opt_all.append(pth_opt)
             carls_old_project_all.append(carls_old_project)
             
         
-        countz = countz + 1
+        k = k + 1
 
     ######### IF FIRST JOB IN PIPELINE, WRITE FILE SPECIFIERS INTO FILE FOR LATER JOBS #########
 
@@ -288,4 +288,4 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
 
 
 
-    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_croplim_all, carls_old_project_all) 
+    return (pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_opt_all, carls_old_project_all) 

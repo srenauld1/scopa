@@ -18,6 +18,8 @@ from plot_gif import plot_gif
 from bidiphase import compute as bidiphase_compute
 from bidiphase import shift as bidiphase_shift
 from stackshape import stackshape
+from check_aborted_stack import check_aborted_stack
+from flybackrm import flybackrm
 
 
 def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, methodrg, register_in_2d, bglenpx, max_shifts_prc, smlenpx_mcp, clipinterp, registration_template_group_id, cluster_backend='ipyparallel', use_cluster=0, makeplots=0):
@@ -40,19 +42,19 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
         
         
     if md['dims'][1]>1:
-        stack_has_multiple_z_slices = 1
+        stackisvol = 1
         indzall = np.arange(md['dims'][1])
     else:
-        stack_has_multiple_z_slices = 0
+        stackisvol = 0
         indzall = [0]
         if not register_in_2d:
             register_in_2d = 1
             print("stack does not have multiple slices but register_in_2d is set to false, changing register_in_2d to true now")
 
 
-    md = check_aborted_stack(md, pthmd, stack, stack_has_multiple_z_slices)
+    md = check_aborted_stack(md, pthmd, stack, stackisvol)
 
-    tzcyx, numchan = stackshape(stack, md)
+    tzcyx, numchan, hasfb = stackshape(stack, md)
 
     chanrm, chan_primary, methodrg = parse_methodrg(methodrg, numchan)
     
@@ -80,16 +82,15 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
         pth_tif_write_presmoothed_tmp_prefix = []
 
 
+    stack = flybackrm(stack, md['dims'], md['flyback'])
 
-    stack = cropflyback(stack, md['dims'], md['flyback'])
-
-    bidiphase_frame_increment = 8 #use subset of frames because bidiphase_compute uses complex doubles, increasing size of array 8 times, also bidiphase should be constant throughout recording
+    bidiphase_frame_increment = 8 #use subset of frames because bidiphase_compute uses complex doubles, increasing size of array 8 times, so making this 8 to make RAM the same as later stack operations that preserve its type, also bidiphase should be constant throughout recording
     phoff = bidiphase_compute(stack[::bidiphase_frame_increment,...]) #compute bidirectional phase offset, can be zero 
     if phoff:
         bidiphase_shift(stack, phoff) #correct any bidirectional phase offset if nonzero
     stack = stack_reshape_transpose_clip_zero_type(stack, md['dims'], clip=clip)
     if two_channel_reg:
-        stack_secondary = cropflyback(stack_secondary, md['dims'], md['flyback'])
+        stack_secondary = flybackrm(stack_secondary, md['dims'], md['flyback'])
         phoff = bidiphase_compute(stack_secondary[::bidiphase_frame_increment,...])
         if phoff:
             bidiphase_shift(stack_secondary, phoff)
@@ -148,7 +149,7 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
     if scopatmplt:
         registration_template_group_id = [ pth_prefix.split('/')[-1] + '_' + pth_prefix.split('/')[-2] ]
-    regtemplate = choose_registration_template(stack, md, registration_template_group_id, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stack_has_multiple_z_slices, makeplots) #if making a template, use stack rather than stack_secondary
+    regtemplate = choose_registration_template(stack, md, registration_template_group_id, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stackisvol, makeplots) #if making a template, use stack rather than stack_secondary
         
     ########################## REGISTRATION (CAIMAN NORMCORRE) ##########################
 
@@ -164,17 +165,17 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
     for iz in indz: #for each slice (or all slices if register_in_2d = false)
 
         mc = None #reset caiman motion correction object
-        if register_in_2d and stack_has_multiple_z_slices: #for 2d registration take on z slice at a time
+        if register_in_2d and stackisvol: #for 2d registration take on z slice at a time
             stack_sub = stack[:,:,:,iz]
             print("DOING 2d registration FOR SLICE " + str(iz))
         else: # for 3d registration keep all z slices (for now, until implement z ranges)
             stack_sub = stack #can't .copy() for some reason (but that's fine as long as you don't modify stack_sub, which we dont)
-            if stack_has_multiple_z_slices:
+            if stackisvol:
                 print("DOING 3D REGISTRATION FOR ALL SLICES")
             else:
                 print("DOING 2d REGISTRATION FOR THE ONLY SLICE IN THE STACK")
 
-        if register_in_2d and stack_has_multiple_z_slices and regtemplate is not None:
+        if register_in_2d and stackisvol and regtemplate is not None:
             regtemplate_sub = regtemplate[:,:,iz]
         else:
             regtemplate_sub = regtemplate
@@ -271,15 +272,6 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 ########################################################################################################################################################
 
 
-def check_aborted_stack(md, pthmd, stack, stack_has_multiple_z_slices):
-    if stack_has_multiple_z_slices==0 and md['dims'][0] != stack.shape[0]:
-        print("stack cannot be reshaped into dimensions reported in tif header, but since it is not volumetric, assuming user aborted acquisition and updating metadata to match stack dimensions")
-        md['numvol'] = stack.shape[0]
-        md['dims'][0] = md['numvol']
-    with open(pthmd, 'w') as file: 
-        file.write(json.dumps(md, sort_keys=True, indent=4))
-    return md
-
 
 def parse_methodrg(methodrg, numchan):
 
@@ -310,15 +302,6 @@ def parse_methodrg(methodrg, numchan):
         raise Exception('methodrg must be first, second, both, 12, or 21')
 
     return chanrm, chan_primary, methodrg
-
-
-def cropflyback(stack, dims, flyback):
-    stack = stack.reshape(dims[0], dims[1]+flyback, dims[2], dims[3])
-    if flyback!=0:    
-        stack = stack[:,:-flyback,:,:] #crop flyback frames
-    stack = stack.reshape(dims[0]*dims[1], dims[2], dims[3])
-    return stack
-
 
 
 def write_supp_stack(stack, pth_tif_write_supp_prefix, register_in_2d, indzall, msgstr):

@@ -6,7 +6,7 @@ import os
 
 
 def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extract, do_crop_only, do_a2p, 
-                     pth_read, pthmd, pth_daq, pth_ftvid, pth_ftdat, pth_croplim, pth_fldr_copydest_prefix, fldr, 
+                     pth_read, pthmd, pth_daq, pth_ftvid, pth_ftdat, pth_opt, pth_fldr_copydest_prefix, fldr, 
                      folder_with_all_recordings_on_storage_and_compute_filesystems):
 
 
@@ -53,15 +53,15 @@ def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extra
                 time.sleep(5) 
             
             if do_extract or do_crop_only or do_a2p:
-                if pth_croplim:
-                    for pcl in pth_croplim:
+                if pth_opt:
+                    for pcl in pth_opt:
                         print("\n\n\ncopying this file: \n" + pcl + "\ninto this directory: \n" + pth_fldr_copydest)
                         shutil.copy2(pcl, pth_fldr_copydest)
                         time.sleep(5) 
                 else:
-                    print("there are no croplim files to copy from storage path into compute path, \
+                    print("there are no opt files to copy from storage path into compute path, \
                           \nyou will be prompted to create them in interactive mode; \
-                          \nyou cannot run extract in batch mode without creating or loading a croplim file, \
+                          \nyou cannot run extract in batch mode without creating or loading a opt file, \
                           \nunless your rgname is 'fullfov'")
             
             

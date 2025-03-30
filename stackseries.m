@@ -70,7 +70,7 @@ if ~doplt
     suffixplt = [];
 end
 
-id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
+id = idmake(pthstack); 
 suffixstack = id.suffix;
 recid = id.recid;
 pthstackdir = id.pthstackdir;

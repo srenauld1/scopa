@@ -4,7 +4,7 @@
     "depv": {
       "tg": []
     },
-    "domtype": "functional",
+    "domtype": "m",
     "dorescale": 1,
     "indv": {
       "tg": []
@@ -12,7 +12,9 @@
     "maxangrs": 8,
     "mthd": "pva",
     "numangrs": 16,
+    "numcirc": 1,
     "omitnan": 1,
+    "rot": [0,0,0],
     "scope": "all",
     "slopelensec": 0.4,
     "slopeord": 2,
@@ -217,7 +219,8 @@
       "daq",
       "roi",
       "bmp",
-      "mdl"
+      "mdl",
+      "fmf"
     ],
     "inert_vbin": [
       "sp",
@@ -241,7 +244,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025031212382550",
+    "timestr": "2025032622105882",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -408,12 +411,14 @@
     ]
   },
   "tg": {
-    "group": [],
-    "groupout": [],
+    "group": "1",
+    "group2": "1",
     "ic": [],
     "ii": [],
     "it": [],
     "optid": [],
+    "recid": "curr",
+    "stackid": "curr",
     "vbin": [],
     "vnm": []
   },

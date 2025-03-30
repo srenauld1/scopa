@@ -1,0 +1,182 @@
+{
+  "a1": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a1_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a2": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a1_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a3": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a18",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a18_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a4": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_cmrg_dcdn_a1_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a5": [
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a8",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "3",
+      "group2": [],
+      "ic": 1,
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a6": [
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a22",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a22_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "3",
+      "group2": [],
+      "ic": 1,
+      "ii": 1,
+      "it": [],
+      "optid": "a21",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a21_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a7": [
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a22",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a22_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "3",
+      "group2": [],
+      "ic": 1,
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a8": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a1_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "autonm": 1,
+  "loc": "/Users/wienecke/scopa/",
+  "maketime": "2025031519252622",
+  "prefix": "a"
+}

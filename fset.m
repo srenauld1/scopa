@@ -1,13 +1,16 @@
-function [opt, pthstack, doplt] = fset(vbin, opt, pthstack, doplt)
+function [opt, pthdat, doplt] = fset(vbin, opt, pthdat, doplt)
+
 
 if isempty(opt)
     fprintf("user did not pass options as argument, using all defaults")
     opt = odf(vbin, fill=1, unpack=1);
 end
-if isempty(pthstack)
-    pthstack = glb('pthstack');
-    if isempty(pthstack)
-        error("you must either pass argument pthstack or set glb('pthstack')")
+
+vnm = inputname(3);
+if isempty(pthdat)
+    pthdat = glb(vnm);
+    if isempty(pthdat)
+        error("you must either pass argument " + vnm + " or set glb('" + vnm + "')")
     end
 end
 

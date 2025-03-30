@@ -55,7 +55,7 @@ elseif mod(indsin, 1)~=0
     numseg = mod(indsin, 1)*factmp;
     numseg = round(numseg);
     segspacing = floor(numel(indsall)/numseg);
-    inds = [1:seglength]+segspacing*([1:numseg]'-1)+segspacing-seglength;
+    inds = [1:seginc:seglength]+segspacing*([1:numseg]'-1)+segspacing-seglength;
     for j = 1:size(inds,1)
         indslab{j} = [num2str(inds(j,1)) '-' num2str(inds(j,end))];
     end

@@ -6,7 +6,7 @@ def stackchan(stack, md, pthmd, chanrm, chan_primary):
     
     #determine which channels are present and separate the channels, also output channel info strings; this function is used in several parts of the python pipeline (registration, denoising, and roi extraction)
 
-    tzcyx, numchan = stackshape(stack, md)
+    tzcyx, numchan, hasfb = stackshape(stack, md)
 
     use_two_channels = 0
     stack_secondary = None

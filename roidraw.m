@@ -39,8 +39,9 @@ if isempty(rg)
 end
 rgname = rg.name;
 
+id = idmake(pthstack);
 fnsuffix = ['_' rgname '_' maskname '_mm'];
-pthmm = insertBefore(pthstack, '_.mat', fnsuffix);
+pthmm = [id.pthrec, fnsuffix, '_.mat'];
 
 if size(stack,4)>1
     stackmnt = mean(stack,4);

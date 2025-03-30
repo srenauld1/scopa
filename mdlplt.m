@@ -29,7 +29,7 @@ if size(indv, 2)==1
     indvdims = indvdims(1);
 end
 
-if ~isempty(mse_train)
+if ~isempty(mse_train) && isscalar(mse_train)
     msestr = ['mse: ' num2str(mse_train)];
 else
     msestr = '';

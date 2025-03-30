@@ -56,7 +56,7 @@ elseif strcmp(mdlname, 'l')
             gethue = @(ft, indvpf) ft(1);
             gethr_native = @(limi,limd) error("NO NATIVE LOC NORMALIZATION FOR LINEAR MODEL, SINCE SLOPE IS UNBOUNDED"); %was [-1 1] which doesn't make sense;
         case 'wid'
-            error("NO WID PARAM FOR GENLOG MODEL")
+            error("NO WID PARAM FOR test_nonlin MODEL")
         case 'amp'
             gethue = @(ft, indvpf) ft(2);
             gethr_native = @(limi,limd) limd;

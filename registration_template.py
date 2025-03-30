@@ -16,7 +16,7 @@ from im_montage import im_montage
 from plot_gif import plot_gif
 
 
-def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stack_has_multiple_z_slices, makeplots):
+def choose_registration_template(stack, md, registration_template_group_id_all, pth_allrec, pth_prefix, register_in_2d, max_shifts_prc, stack_shape_space, stackisvol, makeplots):
 
     # make or load registration template; sleep until it's available, if necessary (error after waiting 5 min)
 
@@ -68,7 +68,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
                 minmovtmp = np.min(stack).astype('float32')
                 opts_dict = oreg(md, register_in_2d, minmovtmp, stack_shape_space, max_shifts_prc = max_shifts_prc) ## FOR SOME REASON CALLING oreg OUTSIDE iz LOOP CAUSES ALL LOOP ITERATIONS EXCEPT THE FIRST TO HAVE PROBLEMS (PRESUMABLY SOME PARAM IS CHANGED ON EACH LOOP) FOR NOW PLACE IT INSIDE LOOP TO RESET ALL OPTS SO EACH SLICE GETS THE SAME 
                 opts = cnmf.params.CNMFParams(params_dict=opts_dict)
-                regtemplate = make_registration_template(stack, md['volrate'], stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
+                regtemplate = make_registration_template(stack, md['volrate'], stackisvol, register_in_2d, pth_regtemplate, opts.motion['max_shifts'], opts.motion['indices'])
         
         else: #load template if this recording is not meant to be the template, or it is and the template has already been made  
         
@@ -115,7 +115,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
         print("\n\n\nUSING REGISTRATION TEMPLATE, TEMPLATE FILE IS: \n" + pth_regtemplate + "\n\n\n")
 
 
-        if stack_has_multiple_z_slices:     
+        if stackisvol:     
             if not np.array_equal(regtemplate.shape, md['dims'][1:]):
                 raise Exception ("\n\n\nERROR, REGTEMPLATE SIZE DOES NOT MATCH SIZE OF RECORDING IT IS BEING USED FOR ")
             regtemplate = np.transpose(regtemplate, (2, 1, 0))
@@ -134,7 +134,7 @@ def choose_registration_template(stack, md, registration_template_group_id_all, 
 
 
 
-def make_registration_template(stack, volrate, stack_has_multiple_z_slices, register_in_2d, pth_regtemplate, max_shifts, indices=(slice(None), slice(None)), subidx=slice(None, None, 1), gSig_filt=None):
+def make_registration_template(stack, volrate, stackisvol, register_in_2d, pth_regtemplate, max_shifts, indices=(slice(None), slice(None)), subidx=slice(None, None, 1), gSig_filt=None):
 
     # takes subset of frames across entire stack, take mean over small windows of that subset, then take median
     # by default in 4d if stack is 4d, in 3d if stack is 3d
@@ -156,7 +156,7 @@ def make_registration_template(stack, volrate, stack_has_multiple_z_slices, regi
     Ts = stack.shape[0] # Ts = np.arange(T)[subidx].shape[0]
          
     if use_caiman_default_template_frames:
-        step = Ts // 10 if stack_has_multiple_z_slices else Ts // 50 #this is caiman's default 
+        step = Ts // 10 if stackisvol else Ts // 50 #this is caiman's default 
         time_slicer = slice(subidx.start, subidx.stop, step + 1)
     else:
         if subidx.start is not None or subidx.stop is not None:
@@ -164,8 +164,8 @@ def make_registration_template(stack, volrate, stack_has_multiple_z_slices, regi
         time_slicer = slice(0+start_frame_template_if_not_using_caiman_default_template_frames, num_frames_template_if_not_using_caiman_default_template_frames+start_frame_template_if_not_using_caiman_default_template_frames, 1) #first num_frames_template_if_not_using_caiman_default_template_frames frames
 
 
-    if register_in_2d or not stack_has_multiple_z_slices: #indices to take subset of FOV, set in oreg (default does not use these)
-        if stack_has_multiple_z_slices:
+    if register_in_2d or not stackisvol: #indices to take subset of FOV, set in oreg (default does not use these)
+        if stackisvol:
             stack = stack[time_slicer, indices[0], indices[1], :]
         else:
             stack = stack[time_slicer, indices[0], indices[1]].squeeze()
@@ -178,7 +178,7 @@ def make_registration_template(stack, volrate, stack_has_multiple_z_slices, regi
     if gSig_filt is not None:
         stack = cm.movie(np.array([cm.motion_correction.high_pass_filter_space(m_, gSig_filt) for m_ in stack]))
     
-    if stack_has_multiple_z_slices: 
+    if stackisvol: 
         regtemplate = cm.motion_correction.bin_median_3d(stack, window=windowlen_mean) # motion_correct_3d has not been implemented in 'movies' yet - instead initialize to just median image
         regtemplate = np.transpose(regtemplate, (2, 1, 0))
     else:

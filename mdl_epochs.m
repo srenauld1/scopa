@@ -52,23 +52,25 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         pthvalsv = [pthpre '_val_' num2str(vfi) '_' timestr '_.mat'];
     end
 
+    dofit = 1;
     if ldval
-
         pthpatld = strrep(pthvalsv, [timestr '_.mat'], [timestr(1:numchar_timestr) '*_.mat']);
         pthvalld = rdir(pthpatld);
-        if isempty(pthvalld)
-            fprintf("there are no saved val files to load, proceeding with model fit" + newline)
-        else
+        if ~isempty(pthvalld)
             pthvalld = {pthvalld(:).name};
             pthvalld = pthvalld(~cellfun(@isempty, regexp(pthvalld, [timestr(1:numchar_timestr) '\d+_.mat'])));
             pthvalld = natsortfiles(pthvalld);
-            if ~isscalar(pthvalld)
-                fprintf("there are multiple saved val files, loading most recent, based on timestamp in filename" + newline)
+            if ~isempty(pthvalld)
+                if ~isscalar(pthvalld)
+                    fprintf("there are multiple saved val files, loading most recent, based on timestamp in filename" + newline)
+                end
+                load(pthvalld{end}, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds')
+                dofit = 0;
             end
-            load(pthvalld{end}, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds')
         end
+    end
 
-    else
+    if dofit
 
         %%%% create synthetic data to test optimization (optional) %%%%
 
@@ -136,8 +138,11 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
     end
 
     if doplt && ~doplt2
-        mdlplt(op.mdl, supp, depv_val, pred(sampinds_indvdepv_val), ft, indv_val, opt.nrmd, gof)
-        mdlplt(op.mdl, supp, depv_all, pred, ft, indv, opt.nrmd, gof)
+        if valnum
+            mdlplt(op.mdl, supp, depv_val, pred(sampinds_indvdepv_val), ft, indv_val, opt.nrmd, gof)
+        else
+            mdlplt(op.mdl, supp, depv_all, pred, ft, indv, opt.nrmd, gof)
+        end
     end
 
     %% compute some fit metrics to be used later

@@ -1,8 +1,24 @@
 function [mu, rho, var] = circmnvar(ang, wt, omitnan)
 
-%circular mean and variance 
-%uses atan2 and hypot instead of cart2pol for transparency
-%rho computed differently for signed/unsigned weights
+%{
+circular mean and variance for signed responses 
+circmnvar is modified to combine circ_mean and circ_var, 
+and deal with signed responses (weights magnitude, not just order), 
+also can ignore nans 
+so if responses includes negatives and positives, circmnvar will not give the same output as circ_mean and circ_var
+uses atan2 and hypot instead of cart2pol for transparency
+
+compare with:             
+    mu = circ_mean(repmat(domain', [1 size(resptmp, 2)]), resptmp);
+    [rho, ~, sel] = circ_var(repmat(domain', [1 size(resptmp, 2)]), resptmp);
+
+can also compare with alternative FEX functions below . . . I'm not sure if these  
+    for rti = 1:size(resptmp, 2)
+        mu_true(:, rti) = deg2rad(weighted_circular_mean(rad2deg(domain), resptmp(:,rti))); % "true circular mean", so far results are not very different
+        rho_true(:, rti) = weighted_circular_std(rad2deg(domain), resptmp(:,rti)); % std based on "true circular mean",
+    end
+
+%}
 
 if ~exist('omitnan', 'var')
     omitnan = 0;

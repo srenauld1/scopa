@@ -56,7 +56,7 @@ d.mn.pltvis = 1; %1 shows requested plots (o.mn.plt) and saves them, 0 saves but
 d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
 d.mn.copybindf = 'none'; %default name for copybin (assigned if user did not assign one)
 d.mn.optiddf = 'z0'; %if user doesn't use oid to map options sets and variables to optid, optiddf is used instead (in filenames, figures, and struct naming) 
-d.mn.ided_vbin = ["sld", "daq", "roi", "bmp", "mdl"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
+d.mn.ided_vbin = ["sld", "daq", "roi", "bmp", "mdl", "fmf"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
 d.mn.inert_vbin = ["sp", "tp", "imhsv", "tg", "savemem", "optid"]; %vbin or options that have no functional effect (set to empty in txt files recording options, and not considered when deriving optid)
 
 d.mn.user = 'youforgottossetuser';
@@ -284,9 +284,11 @@ d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 d.bmp.indv = struct('tg', []);
 d.bmp.depv = struct('tg', []);
 d.bmp.chan = 1; %channel of imaging data
-d.bmp.mthd = 'pva'; %'pva' for vector average
-d.bmp.domtype = 'functional'; %'functional' to define circular domain with fit to each roi, or 'morphological' to define as circle across region mask
-d.bmp.scope = 'all'; %cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
+d.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
+d.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
+d.bmp.rot = [0 0 0]; %rotation angles, [x y z], 
+d.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
+d.bmp.scope = 'all'; %which part of compass to use in computing bump parameters, using anything but 'all' doesn't make much sense uunless you have a 2-circle structure, like pb; cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
 d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.slopelensec = 0.4; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 d.bmp.smlensec = 0; %full width of gaussian smoothing window (5 times std)
@@ -386,14 +388,16 @@ d.opl.OutputFcn = [];
 % 
 %% tg (tsget: get timeseries, using various filters to choose from all saved variables in filesystem)
 
+d.tg.recid = 'curr';
+d.tg.stackid = 'curr';
 d.tg.optid = [];
 d.tg.vbin = [];
 d.tg.vnm = [];
 d.tg.ii = [];
 d.tg.it = [];
 d.tg.ic = [];
-d.tg.group = [];
-d.tg.groupout = [];
+d.tg.group = '1';
+d.tg.group2 = '1';
 
 %% pltx (pltx: explore various components of experiment in interactive plots, e.g. brain images, timeseries, stimulus videos, scatterplots, fictive path, model components)
 

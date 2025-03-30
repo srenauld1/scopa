@@ -1,4 +1,4 @@
-function mdl = mdlmake(opt, indv, depv, pthstack, imrate, epochts, doplt, ldval, numsyn, histinc)
+function mdl = mdlmake(opt, indv, depv, pthstack, imrate, epochts, opt2)
 
 
 %{
@@ -25,56 +25,59 @@ arguments
     pthstack = [] %path to stack
     imrate = [] %imaging rate
     epochts = []
-    doplt = []
-    ldval = 0 %load saved model if it exists
-    numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
-    histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
+    opt2.doplt = []
+    opt2.ldval = 0 %load saved model if it exists
+    opt2.numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
+    opt2.histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
+doplt = opt2.doplt;
+ldval = opt2.ldval;
+numsyn = opt2.numsyn;
+histinc = opt2.histinc;
 
 [opt, pthstack, doplt] = fset('mdl', opt, pthstack, doplt);
 
-%% set up indv/depv
-
-if ~isscalar(opt.indv) || ~isscalar(opt.depv)
-    error("indv and depv must be scalar, tg can be nonscalar though")
+if isempty(imrate)
+    md = glb('md');
+    imrate = md.volrate;
+    if isempty(imrate)
+        error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
+    end
 end
+if isempty(epochts)
+    epochts = glb('epochts');
+    if isempty(epochts)
+        error("must pass in epochts or set glb('epochts')")
+    end
+end
+
+%% set up indv/depv
 
 if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
     error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 
-dat_var = [];
-iv = [1 1];
-if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
+its = 0;
+while true
+    its = its+1;
 
-    if isstruct(opt.indv) && all(startsWith(fieldnames(opt.indv), 'tg')) && isstruct(opt.depv) && all(strcmp(fieldnames(opt.depv), 'tg'))
-        [vartmp, dat_var, pthcommon, varid, iv] = tsget(opt.indv, opt.depv);
-        indv = vartmp{1};
-        depv = vartmp{2};
+    if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
+        [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
+        pthmdl = [vdat.pthc vdat.varid opt.optid '_mdl_.mat'];
+        varid = vdat.varid;
+        last = vdat.last;
     else
-        error("if indv/depv is defined in opt, it must be struct tg (to define options for tsget)")
-    end
-
-end
-
-if ~iscell(indv)
-    indv = {indv};
-end
-if ~iscell(depv)
-    depv = {depv};
-end
-
-for k = 1:size(iv,1) 
-
-    if isempty(dat_var)
         varid = 'z0';
-        pthmdl = [erase(pthstack, '.mat') varid opt.optid '_mdl_.mat'];
-    else
-        pthmdl = [pthcommon{k} varid{k} opt.optid '_mdl_.mat'];
+        id = idmake(pthstack);
+        pthmdl = [id.pthstackdir varid opt.optid '_mdl_.mat'];
+        last = 1;
     end
 
-    mdl = mdlmake2(indv{iv(k,1)}, depv{iv(k,2)}, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ldval, histinc);
+    mdl = mdlmake2(indv, depv, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ldval, histinc);
 
+    if last
+        break
+    end
 end
 
 

@@ -11,6 +11,7 @@ o.sld.trm = [4,2];
 
 mdlindv.tg.roi.rgname = 'tm';
 mdlindv.tg.roi.mm.maskname = 'eleven';
+mdlindv.tg.roi.nrm.post = 'dff015020';
 mdlindv.tg.vnm = 'ts';
 mdlindv.tg.group = '1';
 
@@ -18,6 +19,7 @@ o.mdl.indv = mdlindv;
 
 mdldepv.tg.roi.rgname = 't5';
 mdldepv.tg.roi.mm.maskname = 'none';
+mdldepv.tg.roi.nrm.post = 'dff015020';
 mdldepv.tg.vnm = 'ts';
 mdldepv.tg.group = '3';
 
@@ -42,6 +44,7 @@ for m = 1:numel(rgname)
     else
         o.roi.doma = 0;
     end
+    o.roi.nrm.post = 'dff015020';
     o = odf(o, 'roi', rgname{m});
 
 end

@@ -1,24 +1,36 @@
-function roi = roimake(stack, pthstack, opt, sper, widyxz, t, pthpy, doplt, opt2)
+function roi = roimake(stack, opt, pthstack, sper, widyxz, t, pthpy, opt2)
 
 % see docs_roimake.m
 
 arguments
     stack
-    pthstack = []
     opt = []
+    pthstack = []
     sper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
     t = [] %only required nonempty if channorm~=0 in roits
     pthpy = [] %only required to run caiman from matlab (roi.docm=1)
-    doplt = []
+    opt2.doplt = []
     opt2.roimask = []
 end
+doplt = opt2.doplt;
+roimask = opt2.roimask;
 
 [opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
 
+md = glb('md');
+if isempty(sper)
+    sper = md.sper;
+end
+if isempty(widyxz)
+    widyxz = md.widyxz;
+end
+if isempty(t)
+    t = glb('t');
+end
+
 pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];
 pthpre = erase(pthroi, '.mat');
-
 
 
 if ndims(stack)<4
@@ -28,7 +40,7 @@ end
 numchan = size(stack,5);
 
 
-if isempty(opt2.roimask)
+if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1);
     if opt.domm
@@ -38,7 +50,6 @@ if isempty(opt2.roimask)
     end
 else
     maskin = 1;
-    roimask = opt2.roimask;
     if ~iscell(roimask)
         roimask = {roimask};
     end
