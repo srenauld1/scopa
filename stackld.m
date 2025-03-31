@@ -110,7 +110,7 @@ if doconvert
     [~, fn, ~] = fileparts(pthstack);
     pthmat = regexprep(pthstack, '.tif', '.mat');
 
-    if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw')
+    if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw_.')
         rawstack = 1;
     else
         rawstack = 0;

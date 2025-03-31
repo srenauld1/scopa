@@ -69,7 +69,7 @@ end
 
 if stack_size_is_known
 
-    if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw')
+    if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw_.')
         sz = [yxzt(1), yxzt(2), numel(channel_save), numslice_withflyback, yxzt(4)]; %z dimension of sz includes flyback frames for raw stack
     else
         sz = [yxzt(1), yxzt(2), numel(channel_save), yxzt(3), yxzt(4)]; %yxzt; %all other stacks do not have flyback frames, so fullsize is same as yxzt
@@ -113,7 +113,7 @@ try
         it = it);
 catch ME
     if strcmp(ME.message, '*** TIFFStack: Index exceeds stack dimensions.')
-        if ~( contains(fn, 'trial_') && contains(fn, '-') ) && ~contains(fn, 'raw')
+        if ~( contains(fn, 'trial_') && contains(fn, '-') ) && ~contains(fn, 'raw_.')
             fprintf("you may have discarded a channel in creating " + fn + ext + " trying to load again, this time as single channel" + newline)
             sz(3) = 1;
             ic = 1;
