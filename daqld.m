@@ -367,7 +367,7 @@ try
         daq = daqrename(daq, vrenm);
 
 
-        for m = 1:numel(daq) %in case you used multiple registers with daqinds, daq struct will be nonscalar
+        for m = 1:numel(daq) %in case you used multiple regi1sters with daqinds, daq struct will be nonscalar
 
             %%%% FLY PATH %%%%
 

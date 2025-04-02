@@ -46,8 +46,6 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
-
-
     %% bump
 
     if o.mn.dobmp

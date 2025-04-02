@@ -175,6 +175,16 @@
       "vnm": "ts"
     }
   ],
+  "a9": {
+    "group": "1",
+    "group2": [],
+    "ic": 1,
+    "ii": [],
+    "it": [],
+    "optid": "a24",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a24_roi_.mat",
+    "vnm": "ts"
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "maketime": "2025031519252622",
