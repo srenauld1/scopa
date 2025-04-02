@@ -70,7 +70,10 @@
   "daq": {
     "balldia": 9,
     "slopelensec": 0.4,
+    "slopelensec_supp": 0.4,
     "slopeord": 2,
+    "slopeord_supp": 2,
+    "supprate": [],
     "toballscale": [
       "ficTracIntSide",
       "ficTracIntForward"
@@ -244,7 +247,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025032622105882",
+    "timestr": "2025040208094908",
     "user": "youforgottossetuser"
   },
   "nestvalid": [
@@ -393,6 +396,7 @@
     "suffixvalid": [
       "raw",
       "cmrg",
+      "raw_dcdn",
       "cmrg_dcdn",
       "bksb_cmrg",
       "bksb_cmrg_dcdn",
@@ -404,6 +408,7 @@
     "suffixplt": [
       "raw",
       "cmrg",
+      "raw_dcdn",
       "cmrg_dcdn",
       "bksb_cmrg",
       "bksb_cmrg_dcdn",

@@ -45,4 +45,8 @@ elseif strcmp(vtype, 'categorical') %differentiate categorical variable
     dv = dv((numel(filt) - 1)+1:end-(numel(filt) - (1 + (slopelen-1))));
     dv = cat(1, zeros((slopelen-1)+1, 1), dv);
 
+else
+
+    error("vtype must be circular, normal, or categorical")
+
 end
