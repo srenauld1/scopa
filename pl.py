@@ -111,7 +111,7 @@ if do_copyfiles==0 and do_autoallocate==0:
     import matlab.engine
     import io
 
-
+dnraw=0
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_opt_all, carls_old_project_all] = \
   filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, dnraw, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
