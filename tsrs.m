@@ -14,6 +14,8 @@ if size(tsin,1) < size(tsin, 2)
     tsin = tsin';
 end
 
+tryrange = 3;
+
 if isempty(inds) %if inds are empty, use 'resample', looping strategy to match newlen
 
     dsfac = newlen / numel(tsin);
@@ -29,11 +31,17 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
         else
             prevmin = Inf;
             for upfac = 1:3
-                for tryadd = -3:3
-                    for tryadd2 = -3:3
+                for tryadd = -tryrange:tryrange
+                    for tryadd2 = -tryrange:tryrange
 
                         dsnr_new = upfac*dsnr+tryadd;
+                        if dsnr_new<0
+                            dsnr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
+                        end
                         dsdr_new = upfac*dsdr+tryadd2;
+                        if dsdr_new<0
+                            dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
+                        end
                         inp_try = tsrspad(tsin, dsnr_new, dsdr_new);
 
                         currlen = numel(inp_try);
@@ -79,11 +87,18 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
         else
             prevmin = Inf;
             for upfac = 1:3
-                for tryadd = -3:3
-                    for tryadd2 = -3:3
+                for tryadd = -tryrange:tryrange
+                    for tryadd2 = -tryrange:tryrange
 
                         dsnr_new = upfac*dsnr+tryadd;
+                        if dsnr_new<0
+                            dsnr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
+                        end
                         dsdr_new = upfac*dsdr+tryadd2;
+                        if dsdr_new<0
+                            dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
+                        end
+
                         inpx_try = tsrspad(inpx, dsnr_new, dsdr_new);
 
                         currlen = numel(inpx_try);
