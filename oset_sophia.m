@@ -5,7 +5,7 @@ rgname = {'none'}; % use 'none' to skip prompt to define substack (will enter ro
 o.daq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
 o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
 o.daq.slopeord = 2; % order of polynomial used to fit local slope
-o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
+o.daq.slopelensec_supp = 0.05; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 o.daq.slopeord_supp = 2; 
 
 o = odf(o);
@@ -18,7 +18,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     
     if strcmp(rgname{m}, 'none')
         o.roi.mm.maskname = {'none'};
-        o.roi.nrm.post = {'dff008000'};
+        o.roi.nrm.post = {'dff005000'};
     end
 
     o = odf(o, 'roi', rgname{m});

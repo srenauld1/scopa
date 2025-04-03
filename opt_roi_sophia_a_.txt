@@ -1,0 +1,34 @@
+{
+  "a1": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "dff005000",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "autonm": 1,
+  "loc": "/Users/sophiarenauld/scopa/",
+  "maketime": "2025040312014822",
+  "prefix": "a"
+}

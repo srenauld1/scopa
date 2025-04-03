@@ -1,5 +1,6 @@
 
 % see docs_a2p
+% smr test
 
 function a2p(specin)
 

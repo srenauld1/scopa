@@ -1,0 +1,22 @@
+{
+  "a1": {
+    "clip": [0,1],
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "savemem": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 1
+  },
+  "autonm": 1,
+  "loc": "/Users/sophiarenauld/scopa/",
+  "maketime": "2025040312014792",
+  "prefix": "a"
+}

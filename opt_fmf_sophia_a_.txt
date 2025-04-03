@@ -1,0 +1,21 @@
+{
+  "a1": {
+    "crop_edges": 1,
+    "downsample_template": 1,
+    "feat2": [],
+    "flipped": 0,
+    "getgrid": 1,
+    "gridres": 256,
+    "id": "CON_51",
+    "it": -100,
+    "pthparent": [],
+    "pthtemplate": [],
+    "rep": 1,
+    "stimtype": "drone",
+    "vistype": "plane"
+  },
+  "autonm": 1,
+  "loc": "/Users/sophiarenauld/scopa/",
+  "maketime": "2025040312014865",
+  "prefix": "a"
+}
