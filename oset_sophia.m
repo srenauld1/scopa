@@ -8,6 +8,8 @@ o.daq.slopeord = 2; % order of polynomial used to fit local slope
 o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 o.daq.slopeord_supp = 2; 
 
+o.mn.doroi = 1;
+
 o = odf(o);
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
