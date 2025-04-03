@@ -35,11 +35,11 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
                     for tryadd2 = -tryrange:tryrange
 
                         dsnr_new = upfac*dsnr+tryadd;
-                        if dsnr_new<0
+                        if dsnr_new<=0
                             dsnr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
                         dsdr_new = upfac*dsdr+tryadd2;
-                        if dsdr_new<0
+                        if dsdr_new<=0
                             dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
                         inp_try = tsrspad(tsin, dsnr_new, dsdr_new);
@@ -91,11 +91,11 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
                     for tryadd2 = -tryrange:tryrange
 
                         dsnr_new = upfac*dsnr+tryadd;
-                        if dsnr_new<0
+                        if dsnr_new<=0
                             dsnr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
                         dsdr_new = upfac*dsdr+tryadd2;
-                        if dsdr_new<0
+                        if dsdr_new<=0
                             dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
 
