@@ -63,7 +63,7 @@ if ndims(tsin)>3 %if tsin is greater than 3d, it is stack (not roi timeseries), 
 else
     stack_input = 0;
 end
-
+% this doesn't do anythign for current data
 tsin = tsnorm(tsin, normpre, sper, memthr); %first normalization, optional
 
 if ndims(tsin)~=2 && ndims(tsin)~=3

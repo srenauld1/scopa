@@ -7,6 +7,7 @@ o.daq.slopelensec = 0.6; % window length in seconds used to fit slope to each da
 o.daq.slopeord = 2; % order of polynomial used to fit local slope
 o.daq.slopelensec_supp = 0.05; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 o.daq.slopeord_supp = 2; 
+o.mn.doroi = 1;
 
 o = odf(o);
 
@@ -19,6 +20,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'none')
         o.roi.mm.maskname = {'none'};
         o.roi.nrm.post = {'dff005000'};
+        %o.roi.degdtr = 0; %degree of polynomial fit for baseline subtraction of each roi (2 is baseline)
     end
 
     o = odf(o, 'roi', rgname{m});
