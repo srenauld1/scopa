@@ -339,8 +339,7 @@ try
                             tmp_supp = tmp_supp*balldia/2; %convert from radians to mm
                             tmpdv_supp = tmpdv_supp*balldia/2; %convert to mm
                         end
-                        tmpdv = tmpdv / sper; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
-                        tmpdv_supp = tmpdv_supp / sper_supp; %convert to per second using mean sample period (could scale by each Time_dv, but this is more stable against dropped samples)
+                        
                         if strcmp(varname, vtime) && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
                             tmp(1) = 0;
                         end
