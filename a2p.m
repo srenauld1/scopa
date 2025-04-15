@@ -16,9 +16,6 @@ for k = 1:numel(oa) % loop over recordings
     o = oa(k); %index into options for one recording, o
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals for this element of o
 
-    % while 1
-    %     ff=1;
-    % end
     %% paths
 
     pth = pthmake(o.id.pthstack);
