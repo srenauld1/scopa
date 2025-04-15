@@ -289,7 +289,6 @@ d.bmp.depv = struct('tg', []);
 d.bmp.chan = 1; %channel of imaging data
 d.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
 d.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
-d.bmp.rot = [0 0 0]; %rotation angles, [x y z], 
 d.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
 d.bmp.scope = 'all'; %which part of compass to use in computing bump parameters, using anything but 'all' doesn't make much sense uunless you have a 2-circle structure, like pb; cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
 d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)

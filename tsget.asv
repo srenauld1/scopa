@@ -1,6 +1,7 @@
 function [datout, tsout] = tsget(its, tg, opt)
 
 %var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files
+
 arguments (Input)
     its
 end
@@ -25,8 +26,7 @@ user = opt.user;
 pthparent = opt.pthparent;
 
 numvarin = numel(tg); %number of independent output variables (number of nonempty input arguments to tsget)
-numvarout = numel(find(cellfun(@isempty, tg))); %number of independent output variables (number of nonempty input arguments to tsget)
-tsout = cell(1, numvarout);
+tsout = cell(1, numvarin);
 persistent dattmp
 persistent tsouttmp
 
@@ -35,8 +35,8 @@ pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
 
-    dattmp = cell(numvarout,1);
-    tsouttmp = cell(numvarout,1);
+    dattmp = cell(numvarin,1);
+    tsouttmp = cell(numvarin,1);
 
     if isempty(dm)
         dm = 'it';
@@ -87,10 +87,16 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
     %     error("for all tg input, output must be empty or not") <----this is no longer always required 
     % end
 
-    if numvarout==1
+    if numvarin==1
         iv = 1;
-    elseif numvarout==2
-        [ivc,ivr] = meshgrid(1:numel(tsouttmp{1}), 1:numel(tsouttmp{2}));
+    elseif numvarin==2
+        if isempty(tsouttmp{1})
+            [ivc,ivr] = meshgrid(1, 1:numel(tsouttmp{2}));
+        elseif isempty(tsouttmp{2})
+            [ivc,ivr] = meshgrid(1:numel(tsouttmp{1}), 1);
+        else
+            [ivc,ivr] = meshgrid(1:numel(tsouttmp{1}), 1:numel(tsouttmp{2}));
+        end
         iv = [ivc(:) ivr(:)];
     else
         error("write this for more than 2 tg inputs")
@@ -100,23 +106,27 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
         error("requested index is too great")
     end
 
+    kcnt = 0;
     for k = 1:size(iv,1) %loop over var combos
-        if isequal(k, its)
+        if isempty(its) || isequal(k, its)
+            kcnt = kcnt + 1;
 
             if isequal(k, size(iv,1)) %if on final var combo
                 last = 1;
             end
 
             cnt = 0;
-            while cnt<size(iv,2) %loop over number vars in combo
-                cnt = cnt+1;
+            for m = 1:numel(tsouttmp) %loop over number vars in combo, previously was 1:size(iv,2)
                 if ~isempty(tsouttmp{m})
-                    tsout{m} = tsouttmp{m}{iv(k,cnt)};
-                    if cnt==1
+                    tsout{m,k} = tsouttmp{m}{iv(k,m)};
+                    cnt = cnt+1;
+                    if cnt==1 %when writing datcombo, just omit empty (rather than writing an empty)
                         datcombo = dattmp{m}{iv(k,cnt)};
                     else
                         datcombo(cnt) = dattmp{m}{iv(k,cnt)};
                     end
+                else
+                    tsout{m,k} = [];
                 end
             end
 
@@ -132,10 +142,10 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
                 pthc = [pthc filesep];
             end
         end
-        datout.vdat = datcombo;
-        datout.varid = varid;
-        datout.pthc = pthc;
-        datout.last = last;
+        datout(kcnt).vdat = datcombo;
+        datout(kcnt).varid = varid;
+        datout(kcnt).pthc = pthc;
+        datout(kcnt).last = last;
     end
 
 else %if all empty

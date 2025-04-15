@@ -340,7 +340,7 @@ if doplt
     fig2gif(hfg, cnt, pthgif)
 
 
-    if strcmp(rgname, 'pb')
+    if strcmp(rgname, 'pb') %alternative for pb, down here in plotting because i decided not to use it, should i use it?
 
         fprint("doing pb two halves resampling for optional plotting, but this is not used in the data" + newline)
 

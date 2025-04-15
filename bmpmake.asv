@@ -31,10 +31,14 @@ end
 %% set up indv/depv
 
 if strcmp(opt.domtype, 'f') && ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
-    error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
+    error("if domtype is 'f', indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
-if strcmp(opt.domtype, 'm') && ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
-    error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
+if strcmp(opt.domtype, 'm')
+    indv = []; 
+    opt.indv = []; 
+    if ~isequal(isempty(depv), ~isempty(opt.depv.tg))
+        error("if domtype is 'm', depv must be empty or nonempty, with opt.depv the inverse; indv and opt.indv will be set to empty and ignored")
+    end
 end
 
 its = 0;
@@ -43,13 +47,13 @@ while true
 
     if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
         [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
-        pthbmp = [vdat.pthc vdat.varid opt.optid '_bmp_.mat'];
         varid = vdat.varid;
         last = vdat.last;
+        pthbmp = [vdat.pthc vdat.varid opt.optid '_bmp_.mat'];
     else
-        pthbmp = [erase(pthstack, '.mat') varid opt.optid '_bmp_.mat'];
         varid = 'z0';
         last = 1;
+        pthbmp = [erase(pthstack, '.mat') varid opt.optid '_bmp_.mat'];
     end
 
     bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt);
@@ -69,7 +73,6 @@ omitnan = opt.omitnan;
 scope = opt.scope;
 domtype = opt.domtype;
 numcirc = opt.numcirc;
-rot = opt.rot;
 dorescale = opt.dorescale;
 numangrs = opt.numangrs;
 maxangrs = opt.maxangrs;
@@ -144,8 +147,6 @@ catch ME
         domaintmp = mod(linspace(0,numcirc*2*pi,numseg+1), 2*pi) - pi; %this way allows odd number of clusters (only occurs if nonoverlapping)
         domaintmp = domaintmp(1:end-1);
         respcltmp = depv; %no downsampling for morphological domain
-
-        stack = stackwarp(stack, [], rot, doplt=doplt);
 
     end
 
@@ -339,7 +340,7 @@ if doplt
     fig2gif(hfg, cnt, pthgif)
 
 
-    if strcmp(rgname, 'pb')
+    if strcmp(rgname, 'pb') %alternative for pb, down here in plotting because i decided not to use it, should i use it?
 
         fprint("doing pb two halves resampling for optional plotting, but this is not used in the data" + newline)
 
