@@ -55,7 +55,7 @@ for k = 1:length(normall)
                 else
                     wlen = 0;
                 end
-                ts = ts - min(ts, [], 2); %make it nonnegative before dff 
+                ts = ts - min(ts(:)); %in case there are 
                 if wlen
                     if isempty(sper)
                         error("sper (sample period) must not be empty if using a dff window")
@@ -66,7 +66,7 @@ for k = 1:length(normall)
                 else
                     f0 = prctile(ts, f0_pct, 2); %static baseline
                 end
-                ts = (ts - f0) ./ f0; %dff
+                ts = (ts - f0) ./ f0; %df/f
             end
         end
 
@@ -121,8 +121,7 @@ for k = 1:length(normall)
             pat = '^nn'; %starts with 'nn'
             mtch = regexp(normtmp, pat, 'match');
             if isscalar(mtch)
-                % ts = ts - min(ts, [], 2) + 1; %nonnegative (why plus 1, to avoid divide by zero later?)?
-                ts = ts - min(ts, [], 2); %nonnegative 
+                ts = ts - min(ts, [], 2) + 1; %nonnegative
             end
         end
 
