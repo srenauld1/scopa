@@ -22,7 +22,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'none')
         o.roi.mm.maskname = {'none'};
         o.roi.nrm.post = {'dff005000'};
-        %o.roi.degdtr = 0; %degree of polynomial fit for baseline subtraction of each roi (2 is baseline)
+        %o.roi.nrm.degdtr = 2; %degree of polynomial fit for baseline subtraction of each roi (2 is baseline)
     end
 
     o = odf(o, 'roi', rgname{m});
