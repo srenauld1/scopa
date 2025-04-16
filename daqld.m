@@ -372,6 +372,10 @@ try
 
             [daq(m).px, daq(m).py] = ficpath(daq(m).bfv, daq(m).bsv, daq(m).vy, daq(m).t, balldia);
 
+            if supprate
+                [daq(m).px_supp, daq(m).py_supp] = ficpath(daq(m).bfv_supp, daq(m).bsv_supp, daq(m).vy_supp, daq(m).t_supp, balldia);
+            end
+
 
             %%%% EPOCHS (ADJUST FROM DAQ, OR DERIVE FROM  %%%%
 

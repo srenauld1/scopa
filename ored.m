@@ -49,18 +49,23 @@ end
 % o = o2;
 o(mtch) = {[]};
 o(mtch_is_struct) = {struct('tg', [])};
+% for kjkj = 1:numel(mtch_is_struct)
+%     o(mtch_is_struct{kjkj}) = struct('tg', []);
+% end
 o(dupes) = [];
 fnoflat(dupes) = [];
 o = cell2struct(o, fnoflat);
 o = structunflat(o, delim);
 % structsv(o, '~/scopa/fool.txt', overwrite=1);
 % o = structld('~/scopa/fool.txt');
-% o3 = structflat(o); 
+% o3 = structflat(o);
 % o3.depv
 
 switch vbin %further specialized reduction by vbin
     case 'roi'
         o = ored_roi(o);
+    case 'bmp'
+        o = ored_bmp(o);
 end
 
 

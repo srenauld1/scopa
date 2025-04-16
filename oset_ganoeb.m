@@ -5,16 +5,9 @@ rgname = {'eb', 'gal', 'gar', 'no'}; %use 'none' to skip prompt to define substa
 o.mn.doroi = 1; 
 o.mn.dobmp = 1; 
 
-o.daq.supprate = 59;
-o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
-o.daq.slopeord = 2; % order of polynomial used to fit local slope
-o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
-o.daq.slopeord_supp = 2; 
-
 %%%% BMP %%%%
 
 o.bmp.domtype = 'm';
-o.bmp.rot = [90 0 0];
 
 bmpindv.tg.daq = ['*'];
 bmpindv.tg.vnm = 'vy';
@@ -42,7 +35,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     o.roi.domm = 1; %do draw rois
 
     o.roi.nrm.post = {'rsc000100'};
-    o.roi.nrm.degdtr = 2;
+    o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
