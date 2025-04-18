@@ -52,7 +52,8 @@ def oreg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, 
 
         if max_shifts[2]==0:
             if stack_shape_space[2]<4:
-                raise Exception("max z shifts for stack with fewer than 4 slices is 1; do you really want this?")
+                # raise Exception("max z shifts for stack with fewer than 4 slices is 1; do you really want this?")
+                print("max z shifts for stack with fewer than 4 slices is 1; do you really want this?")
             else:
                 print("\changing z max_shifts for 3d registration from 0 to 1")
                 max_shifts[2]=1
