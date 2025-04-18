@@ -14,7 +14,6 @@
     "numangrs": 16,
     "numcirc": 1,
     "omitnan": 1,
-    "rot": [0,0,0],
     "scope": "all",
     "slopelensec": 0.4,
     "slopeord": 2,
@@ -179,9 +178,10 @@
     "do3d": 1,
     "edgesig": [3,3,3],
     "edgethr": [0.1,0.7],
-    "maskmake": "nonzero",
+    "maskmake": "none",
     "maskseg": "uniform",
-    "numroi": 128
+    "numroi": 128,
+    "roirad": []
   },
   "mdl": {
     "depv": {
@@ -247,7 +247,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025041513271065",
+    "timestr": "2025041715410243",
     "user": "youforgottossetuser"
   },
   "nestvalid": [

@@ -26,8 +26,10 @@ def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
 
         if mdt['numslice']==1 and mdt['numslice_withflyback']==1:
             if re.findall( 'hStackManager.enable = (.*)', meta)[0]!='false': #if it's a single slice
-                raise Exception("if numslice is 1, hStackManager.enable should be false")
-            print("hStackManager.enable is false, treating stack as planar yxt")
+                # raise Exception("if numslice is 1, hStackManager.enable should be false")
+                print("if numslice is 1, hStackManager.enable should be false, but it's not, maybe your scanimage is different than mine")
+            else:
+                print("hStackManager.enable is false, treating stack as planar yxt")
             mdt['numvol'] = int(re.findall( 'framesPerSlice = (.*)', meta)[0])
         else:
             try:

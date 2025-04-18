@@ -159,10 +159,6 @@ else
 
         case 'ell' % create multiple roughly equal-volume roi along skeleton of mask
 
-            if ndims(stackmnt)<3
-                error("stackseg 'ell' requires nonsingleton yxz dimensions (can't be planar right now)")
-            end
-
             stackzx = sum(permute(stackmnt, [3 2 1]), 3);
             hfg = figure;
             imagesc(stackzx);

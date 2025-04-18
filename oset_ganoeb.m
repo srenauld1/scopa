@@ -41,8 +41,9 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
         o.roi.mm.maskname = 'eb';
-        o.roi.ma.maskmake = 'edge';
+        o.roi.ma.maskmake = 'none';
         o.roi.ma.maskseg = 'ell';
+        o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, {'gal', 'gar'}))
         o.roi.doma = 0; %do automated morph rois
         o.roi.mm.maskname = {'dorsal', 'ventral'};

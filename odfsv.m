@@ -151,8 +151,9 @@ d.mm.methodmm = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first chan
 
 d.ma.chan = 1; %which channel for auto roi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
 d.ma.numroi = 128; %partition rgname into num_roim_auto morphological rois; a drawn roi, if it exists, masks the rgname prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single rgname)
-d.ma.maskmake = 'nonzero'; %'nonzero'; %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+d.ma.maskmake = 'none'; %'nonzero'; 'none' to skip %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 d.ma.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
+d.ma.roirad = []; %radius of roi in pixels (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance
 d.ma.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 d.ma.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 d.ma.celsz = 8; %for bwmorph close after edge detection, helps connect edges
