@@ -89,6 +89,27 @@
     "slopeord": 2,
     "smlensec": 0
   },
+  "a2": {
+    "chan": 1,
+    "depv": {
+      "tg": []
+    },
+    "domtype": "m",
+    "dorescale": 1,
+    "indv": {
+      "tg": []
+    },
+    "maxangrs": [],
+    "mdl": {},
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "smlensec": 0
+  },
   "autonm": 1,
   "loc": "/Users/sophiarenauld/scopa/",
   "maketime": "2025040312014837",

@@ -40,14 +40,14 @@ for k = 1:numel(oa) % loop over recordings
     glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
 
     %% normalize for PMT offset
-    minval = prctile(stack(:), 2);
-    stack_minremove=stack - minval;
+    % minval = prctile(stack(:), 2);
+    % stack_minremove=stack - minval;
     
     %% rois
 
     if o.mn.doroi
         for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(stack_minremove, o.roi.(m{1})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(m{1}) = roimake(stack, o.roi.(m{1})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 

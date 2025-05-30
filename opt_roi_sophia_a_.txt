@@ -55,6 +55,202 @@
       "tg": []
     }
   },
+  "a3": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": [],
+      "post": "dff002000",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a4": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "dff002000",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a5": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a6": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none2",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a7": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none2",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "dff005000",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a8": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "dff002060",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a9": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "dff002020",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
   "autonm": 1,
   "loc": "/Users/sophiarenauld/scopa/",
   "maketime": "2025040312014822",
