@@ -5,7 +5,7 @@
       "tg": []
     },
     "domtype": "m",
-    "dorescale": 1,
+    "dorescale": 0,
     "indv": {
       "tg": []
     },
@@ -247,7 +247,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025041715410243",
+    "timestr": "2025060515393029",
     "user": "youforgottossetuser"
   },
   "nestvalid": [

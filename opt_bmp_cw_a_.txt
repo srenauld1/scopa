@@ -836,6 +836,56 @@
     "slopeord": 2,
     "smlensec": 0
   },
+  "a11": {
+    "chan": 1,
+    "depv": {
+      "tg": {
+        "tg": []
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "indv": {
+      "tg": {
+        "tg": []
+      }
+    },
+    "maxangrs": [],
+    "mdl": {},
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "smlensec": 0
+  },
+  "a12": {
+    "chan": 1,
+    "depv": {
+      "tg": {
+        "tg": []
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "indv": {
+      "tg": {
+        "tg": []
+      }
+    },
+    "maxangrs": [],
+    "mdl": {},
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "slopelensec": 0.5185,
+    "slopeord": 2,
+    "smlensec": 0
+  },
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
   "maketime": "2025030622044584",

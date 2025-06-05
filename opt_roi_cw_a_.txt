@@ -689,7 +689,7 @@
       "edgesig": [3,3,3],
       "edgethr": [0.1,0.7],
       "maskmake": "edge",
-      "maskseg": "ell",
+      "maskseg": "torus",
       "numroi": 32
     },
     "mm": {
@@ -726,7 +726,7 @@
       "edgesig": [3,3,3],
       "edgethr": [0.1,0.7],
       "maskmake": "edge",
-      "maskseg": "ell",
+      "maskseg": "torus",
       "numroi": 32
     },
     "mm": {
@@ -931,7 +931,7 @@
       "edgesig": [3,3,3],
       "edgethr": [0.1,0.7],
       "maskmake": "edge",
-      "maskseg": "ell",
+      "maskseg": "torus",
       "numroi": 32
     },
     "mm": {
@@ -1136,7 +1136,7 @@
       "edgesig": [3,3,3],
       "edgethr": [0.1,0.7],
       "maskmake": "none",
-      "maskseg": "ell",
+      "maskseg": "torus",
       "numroi": 32
     },
     "mm": {
@@ -1173,7 +1173,7 @@
       "edgesig": [3,3,3],
       "edgethr": [0.1,0.7],
       "maskmake": "none",
-      "maskseg": "ell",
+      "maskseg": "torus",
       "numroi": 32,
       "roirad": 3
     },
@@ -1191,6 +1191,872 @@
     },
     "qc": {},
     "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a41": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a42": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a43": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "right",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a44": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "dff008z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a45": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "dff008z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a46": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "right",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "dff008z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a47": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 3,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb2",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a48": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a49": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a50": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "right",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "z",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a51": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a52": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a53": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "right",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a54": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a55": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "left",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a56": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "right",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a57": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 8,
+      "roirad": 6
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a58": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 6
+    },
+    "mm": {
+      "maskname": "eb",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a59": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "edge",
+      "maskseg": "uniform",
+      "numroi": 128,
+      "roirad": []
+    },
+    "mm": {
+      "maskname": "el",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 2,
+      "mincoh": [],
+      "post": "rsc000100",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "el",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a60": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "dorsal",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "gal",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a61": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "ventral",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "gal",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a62": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "dorsal",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "gar",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a63": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "ventral",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "gar",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a64": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "el",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "el",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a65": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "left2",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a66": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "right2",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no",
+    "sp": {
+      "tg": []
+    }
+  },
+  "a67": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "none",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 3
+    },
+    "mm": {
+      "maskname": "el2",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "el",
     "sp": {
       "tg": []
     }
