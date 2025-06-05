@@ -44,9 +44,9 @@ if nargin < 2 || isempty(w)
   % assume no binning has taken place
 	w = ones(size(alpha));
 else
-  if size(w,2) ~= size(alpha,2) || size(w,1) ~= size(alpha,1) 
-    error('Input dimensions do not match');
-  end 
+  % if size(w,2) ~= size(alpha,2) || size(w,1) ~= size(alpha,1) 
+  %   error('Input dimensions do not match');
+  % end 
 end
 
 % compute mean resultant vector length

@@ -26,8 +26,7 @@ for mi = 1:numroi
     else
         error("dmroi must be 2 or 3")
     end
-    [maskytmp, maskxtmp, maskztmp] = ind2sub(size(tmp), find(tmp));
-    roiwt(mi, sub2ind(size(tmp), maskytmp, maskxtmp, maskztmp)) = true; %indices of each roi
+    roiwt(mi, logical(tmp)) = true; %indices of each roi
 end
 
 end

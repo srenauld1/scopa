@@ -3,7 +3,7 @@ function [datout, tsout] = tsget(its, tg, opt)
 %var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files
 
 arguments (Input)
-    its
+    its = []
 end
 arguments (Repeating, Input)
     tg
@@ -35,8 +35,8 @@ pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
 
-    dattmp = cell(numvarin,1);
-    tsouttmp = cell(numvarin,1);
+    dattmp_hold = cell(numvarin,1); %use hold tmp variable, don't assign variable until end of this if clause 
+    tsouttmp_hold = cell(numvarin,1);  %use hold tmp variable, don't assign variable until end of this if clause 
 
     if isempty(dm)
         dm = 'it';
@@ -56,16 +56,17 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})
-            [tsouttmp{m}, dattmp{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
         end
     end
 
-    datflat = cellflat(dattmp);
+    datflat = cellflat(dattmp_hold);
+    datflat = [datflat{:}];
     cnt = 0;
     for k = 1:numel(datflat)
-        if ~isempty(datflat{k})
+        if ~isempty(datflat(k))
             cnt = cnt+1;
-            md = mdsild(datflat{k}.pth);
+            md = mdsild(datflat(k).pth);
             if cnt==1
                 vrtmp = md.volrate;
                 eptmp = glb('epochts');
@@ -76,6 +77,9 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
             end
         end
     end
+
+    tsouttmp = tsouttmp_hold;
+    dattmp = dattmp_hold;
 
 end
 
@@ -118,15 +122,16 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
             cnt = 0;
             for m = 1:numel(tsouttmp) %loop over number vars in combo, previously was 1:size(iv,2)
                 if ~isempty(tsouttmp{m})
-                    tsout{m,k} = tsouttmp{m}{iv(k,m)};
+                    tsout{m,kcnt} = tsouttmp{m}{iv(k,m)};
                     cnt = cnt+1;
                     if cnt==1 %when writing datcombo, just omit empty (rather than writing an empty)
                         datcombo = dattmp{m}{iv(k,cnt)};
                     else
-                        datcombo(cnt) = dattmp{m}{iv(k,cnt)};
+                        newinds = cnt:cnt+numel(dattmp{m}{iv(k,cnt)})-1;
+                        datcombo(newinds) = dattmp{m}{iv(k,cnt)};
                     end
                 else
-                    tsout{m,k} = [];
+                    tsout{m,kcnt} = [];
                 end
             end
 
@@ -141,11 +146,12 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
             if ~endsWith(pthc, filesep)
                 pthc = [pthc filesep];
             end
+            datout(kcnt).vdat = datcombo;
+            datout(kcnt).varid = varid;
+            datout(kcnt).pthc = pthc;
+            datout(kcnt).last = last;
         end
-        datout(kcnt).vdat = datcombo;
-        datout(kcnt).varid = varid;
-        datout(kcnt).pthc = pthc;
-        datout(kcnt).last = last;
+
     end
 
 else %if all empty
@@ -441,7 +447,7 @@ for w = 1:numel(varid)
             for f = vnm
                 saved_var = saved_struct.(f{1});
                 if isempty(saved_var)
-                    error("you are trying to load an empty variable; if this is domain 'roi', you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
+                    error("you are trying to load an empty variable; if this is domain 'roi', you may intend these to be pixel rois, which are not created separately from the stack; need to write this option here, where if domain is roi, we load or point to a spacetime reshaped stack")
                 end
                 itmp.ii = ii;
                 itmp.it = it;

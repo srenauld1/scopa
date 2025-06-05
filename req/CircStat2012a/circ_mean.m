@@ -37,9 +37,9 @@ if nargin < 2 || isempty(w)
   % assume no binning has taken place
 	w = ones(size(alpha));
 else
-  if size(w,2) ~= size(alpha,2) || size(w,1) ~= size(alpha,1) 
-    error('Input dimensions do not match');
-  end 
+  % if size(w,2) ~= size(alpha,2) || size(w,1) ~= size(alpha,1) 
+  %   error('Input dimensions do not match');
+  % end 
 end
 
 % compute weighted sum of cos and sin of angles
@@ -47,6 +47,12 @@ r = sum(w.*exp(1i*alpha),dim);
 
 % obtain mean by
 mu = angle(r);
+
+% compute weighted sum of cos and sin of angles
+r = sum(w.*exp(1i*alpha),dim);
+
+% obtain length 
+r = abs(r)./sum(w,dim);
 
 % confidence limits if desired
 if nargout > 1

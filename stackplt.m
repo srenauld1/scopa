@@ -78,7 +78,7 @@ end
 dimlabels = vec(num2cell(dmstackdf));
 maxnumdims = numel(dmstackdf);
 max_num_inds_to_print = 10;
-max_num_im_per_frame = 60;
+max_num_im_per_frame = 64;
 max_num_gif_frames = 2000;
 
 if iscell(stack) && isscalar(stack)
@@ -176,7 +176,7 @@ else
     end
 end
 
-if isequal(dm_eachframe(1), 'x') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim
+if isequal(dm_eachframe(1), 'x')% || isequal(dm_eachframe(1), 'z') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim
     ydir = 'normal';
 else
     ydir = 'reverse';

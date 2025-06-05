@@ -71,9 +71,11 @@ if ~isempty(it)
     if ~isempty(its)
         error("its and it cannot both be nonempty")
     end
-    its = t2samp(t, it);
+    its = t2samp(it, t);
+    if isempty(its)
+        error("none of your requested t indices exist")
+    end
 end
-
 
 if isempty(its)
     its = 1:size(stack,4);
@@ -81,7 +83,7 @@ end
 its = indsmake(its, indsall=size(stack,4));
 if numel(its)>maxnumframes
     its = its(1:maxnumframes);
-    fprintf("you have requested a volume with more than 500 frames, just plotting the first 200 frames of the set; if you want you can change maxnumframes (hard coded in stack3)")
+    fprintf("you have requested more than 500 frames, just plotting the first 200 frames of the set; you can change it, its, or maxnumframes" + newline)
 end
 
 if isempty(cmap)
@@ -201,6 +203,9 @@ switch recid
     case {'20250316_1_1'}
         vwr.CameraPosition = [60.9303   93.0271   10.0094]; %20250209, 20250221_1_2
         vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167   -8.7669]; %20250221_1_2
+    case {'20240729_1_1'}
+        vwr.CameraPosition = [137.0422   68.1293   81.2709]; 
+        % vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167   -8.7669]; %20250221_1_2
 end
 
 if size(stack,5)>1

@@ -48,7 +48,7 @@ end
 
 % o = o2;
 o(mtch) = {[]};
-o(mtch_is_struct) = {struct('tg', [])};
+o(mtch_is_struct) = {struct('tg', [])}; %insert empty tg field for json to write empty tg properly (hack needs top be fixed)
 % for kjkj = 1:numel(mtch_is_struct)
 %     o(mtch_is_struct{kjkj}) = struct('tg', []);
 % end

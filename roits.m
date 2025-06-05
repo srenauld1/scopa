@@ -98,7 +98,7 @@ for k = 1:numchan
                 end
             else
                 if ~isempty(goodinds) && ~all(goodinds(:,:,k))
-                    tsout{k} = roiwt(wtsz{k},goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),:,k)) ./ sum(roiwt(wtsz{k},goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
+                    tsout{k} = roiwt(wtsz{k}, goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),:,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
                 else
                     tsout{k} = roiwt(wtsz{k},:) * single(tsin(:,:,k)) ./ sum(roiwt(wtsz{k},:),2); %summed fluorescence in each roi, normalized by total intensity
                 end
