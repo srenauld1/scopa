@@ -57,11 +57,15 @@ if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.de
     error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 
+if isempty(indv) && isempty(depv)
+    dotsget = 1;
+end
+
 its = 0;
 while true
     its = its+1;
 
-    if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
+    if dotsget %if indv/depv are defined in the options struct, instead of passed in as arguments
         [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
         pthmdl = [vdat.pthc vdat.varid opt.optid '_mdl_.mat'];
         varid = vdat.varid;

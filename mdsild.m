@@ -22,7 +22,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
     pthrawpt = [id.pthrec '_raw_.tif'];
     pthraw = rdir(pthrawpt);
     if isempty(pthraw)
-        pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trialnum ) '_*.tif'];
+        pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '_*.tif'];
         pthraw = rdir(pthrawpt);
     end
     if isempty(pthraw)

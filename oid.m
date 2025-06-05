@@ -103,6 +103,9 @@ for k = 1:numel(vbin)
                     for k2 = 1:numel(opttmp)
                         if ~isempty(opttmp{k2})
                             opttmp{k2} = structflat(opttmp{k2}, delim=delim);
+                            fnor = fieldnames(opttmp{k2});
+                            tghold = fnor(endsWith(fnor, ['tg' delim 'tg']));
+                            opttmp{k2} = rmfield(opttmp{k2}, tghold);
                             for q = 1:numel(fnr)
                                 opttmp{k2}.(fnr{q}) = optinert.(fnr{q});
                             end
@@ -112,6 +115,9 @@ for k = 1:numel(vbin)
                     end
                 else
                     opttmp = structflat(opttmp, delim=delim);
+                    fnor = fieldnames(opttmp);
+                    tghold = fnor(endsWith(fnor, ['tg' delim 'tg']));
+                    opttmp = rmfield(opttmp, tghold); %remove the empty tg field you had to insert for json to write empty tg properly (hack needs top be fixed)
                     for q = 1:numel(fnr)
                         opttmp.(fnr{q}) = optinert.(fnr{q});
                     end

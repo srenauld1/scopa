@@ -36,7 +36,6 @@ arguments
     opt.histplt = 0
     opt.bmpdomain = [];
     opt.tsub = []
-    opt.dozscore = []
     opt.drawrot = []
     opt.sliceeb = []
 end
@@ -62,7 +61,6 @@ plt = opt.plt;
 histplt = opt.histplt;
 bmpdomain = opt.bmpdomain;
 tsub = opt.tsub;
-dozscore = opt.dozscore;
 drawrot = opt.drawrot;
 sliceeb = opt.sliceeb;
 
@@ -78,7 +76,7 @@ for k = 1:numel(side)
         for q = 1:numel(lagsampz)
             for q2 = 1:numel(lagsampxy)
 
-                ebno_one(stack, side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, dozscore, drawrot, sliceeb)
+                ebno_one(stack, side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, drawrot, sliceeb)
                 % close all
 
                 if ~plt(3) && ~plt(4) %don't loop over conditions if you're just plotting timeseries or bump (only loop for scatterplots)
@@ -94,7 +92,7 @@ end
 end
 
 
-function ebno_one(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, dozscore, drawrot, sliceeb)
+function ebno_one(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, drawrot, sliceeb)
 
 
 
@@ -155,7 +153,7 @@ if yconst
     limxtreme = max(abs(vec([ballinvdvrs bumpdvrs])));
 end
 
-tsubsamp = t2samp(tsub, t);
+tsubsamp = t2samp(t, tsub);
 limt = [min(t) max(t)];
 limsamp = [min(tsubsamp) max(tsubsamp)];
 limtsub = [min(tsub) max(tsub)];
@@ -314,13 +312,10 @@ if ~isempty(plt) && plt(1)
 
     %% bump as curve over time
 
-    if isempty(dozscore)
-        prompt = sprintf("ENTER 1 TO ZSCORE EB ROIS, 0 TO NOT: ");
-        commandwindow();
-        dozscore = input(prompt);
-    end
-
-    if dozscore
+    prompt = sprintf("ENTER 1 TO ZSCORE EB ROIS, 0 TO NOT: ");
+    commandwindow();
+    doz = input(prompt);
+    if doz
         for k = 1:size(eb,1)
             % eb(k,:) = rescale(eb(k,:));
             % eb(k,:) = tsdv('normal', eb(k,:), slopelensec_eb, slopeord_eb, sper);
@@ -581,11 +576,18 @@ if ~isempty(plt) && plt(3)
 
     %%%%% EXCLUDE BY GLNO RESPONSE AMPLITUDE %%%%%
 
-    nodvtmp = tsdv('circular', nodv, 0.3, 2, sper);
-    kp33 = nodvtmp<0;
-    kp33 = nodvtmp>0;
-    [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp33, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
 
+    kp2 = zeros(size(nodvsrt));
+
+    fuk = tsdv('circular', nodv, 0.3, 2, sper);
+    kp33 = fuk<0;
+    %kp33 = fuk>0;
+    ballinvdvrs = ballinvdvrs(kp33);
+    bumpdvrs = bumpdvrs(kp33);
+    nodvsrt = nodvsrt(kp33);
+    sztmp = sztmp(kp33);
+    cmap = cmap(kp33,:);
+    xydist = xydist(kp33);
 
     if ~isempty(nothr)
         if ischar(nothr)
@@ -617,15 +619,25 @@ if ~isempty(plt) && plt(3)
             end
         end
 
-        [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp2, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
-
+        ballinvdvrs = ballinvdvrs(kp2);
+        bumpdvrs = bumpdvrs(kp2);
+        nodvsrt = nodvsrt(kp2);
+        sztmp = sztmp(kp2);
+        cmap = cmap(kp2,:);
+        xydist = xydist(kp2);
     end
 
 
     %%%%% EXCLUDE BY EPOCH %%%%%
 
     kp1 = kp1(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
-    [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp1, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
+    ballinvdvrs = ballinvdvrs(kp1);
+    bumpdvrs = bumpdvrs(kp1);
+    nodvsrt = nodvsrt(kp1);
+    sztmp = sztmp(kp1);
+    cmap = cmap(kp1,:);
+    xydist = xydist(kp1);
+
 
 
     %%%%% EXCLUDE BY DISTANCE FROM ORIGIN %%%%%
@@ -633,7 +645,11 @@ if ~isempty(plt) && plt(3)
     if ~isempty(xyrng)
         xyrng = xyrng*max(abs(xydist));
         kp3 = xydist<xyrng;
-        [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp3, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
+        ballinvdvrs = ballinvdvrs(kp3);
+        bumpdvrs = bumpdvrs(kp3);
+        nodvsrt = nodvsrt(kp3);
+        sztmp = sztmp(kp3);
+        cmap = cmap(kp3,:);
     end
 
 
@@ -752,5 +768,30 @@ end
 end
 
 
+function ts = tscrop(kp, ts)
 
+
+arguments (Input)
+    kp
+end
+arguments (Input, Repeating)
+    ts
+end
+arguments (Output, Repeating)
+    ts
+end
+
+
+%%%%% EXCLUDE BY EPOCH %%%%%
+
+kp1 = kp1(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
+ballinvdvrs = ballinvdvrs(kp1);
+bumpdvrs = bumpdvrs(kp1);
+nodvsrt = nodvsrt(kp1);
+sztmp = sztmp(kp1);
+cmap = cmap(kp1,:);
+xydist = xydist(kp1);
+
+
+end
 

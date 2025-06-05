@@ -34,18 +34,22 @@ if strcmp(opt.domtype, 'f') && ~isequal(isempty(indv), isempty(depv), ~isempty(o
     error("if domtype is 'f', indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 if strcmp(opt.domtype, 'm')
-    indv = []; 
-    opt.indv = []; 
+    % indv = []; 
+    % opt.indv = []; 
     if ~isequal(isempty(depv), ~isempty(opt.depv.tg))
         error("if domtype is 'm', depv must be empty or nonempty, with opt.depv the inverse; indv and opt.indv will be set to empty and ignored")
     end
+end
+
+if isempty(indv) && isempty(depv)
+    dotsget = 1;
 end
 
 its = 0;
 while true
     its = its+1;
 
-    if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
+    if dotsget %if indv/depv are defined in the options struct, instead of passed in as arguments
         [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
         varid = vdat.varid;
         last = vdat.last;
@@ -191,14 +195,14 @@ catch ME
             resptmp = reshape(resptmp, size(respcltmp(centinds,:)));
     end
 
-    domain = domaintmp(centinds);
+    domain = vec(domaintmp(centinds));
 
     switch mthd
 
         case 'pva' %regular pva, use if you want to not weight by magnitude (pva angle will be pulled toward largest response, regardless of sign, ie furthest from negative infinity)
 
-            mu = circ_mean(domain, resptmp, 2);
-            rho = circ_var(domain, resptmp, [], 2);
+            mu = circ_mean(domain, resptmp);
+            rho = circ_var(domain, resptmp, []);
 
         case 'pvas' %"pva signed", use if you want to weight by magnitude (eg large magnitude negative responses can pull pva angle toward them)
 
@@ -220,7 +224,7 @@ catch ME
             ft = fittype('a*exp(k*cos(x-u))+c','options',fo);
 
             for k = 1:numsamp
-                [f, gof] = fit(domain', resptmp(:,k), ft, MaxIter=20000, MaxFunEvals=20000);
+                [f, gof] = fit(domain, resptmp(:,k), ft, MaxIter=20000, MaxFunEvals=20000);
                 % rho2(k) = gof.adjrsquare;
                 rho2(k) = gof.adjrsquare;
                 mu(k) = f.u;
@@ -242,9 +246,9 @@ catch ME
     bumpvel = tsdv('circular', mu, slopelensec, slopeord, sper);
     offset = circ_dist_nan(indv.', mu);
 
-    [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point
-    i2 = ii' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
-    ampmu = mean(resptmp(i2), 1, 'omitmissing')'; %extract amplitude at mu position
+    [~, k] = mink(abs(domain'-mu), numcirc, 2); %find indexes corresponding to bump position in each time point
+    k = k' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
+    ampmu = mean(resptmp(k), 1, 'omitmissing')'; %extract amplitude at mu position (mean of each circle, if multiple)
     amppeak = max(resptmp, [], 1, 'omitmissing')'; %extract max amplitude at each time point
     ampmean = mean(resptmp, 1, 'omitmissing')'; %find the amp, which is the mean dff in the whole mask
 

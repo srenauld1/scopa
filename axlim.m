@@ -6,7 +6,7 @@ computes various limits for input ts, outputs struct
     lim.each gives limits for each timeseries in ts
     lim.eachpad adds roomfac onto lim.each
     lim.all gives limits for set of all timeseries in ts (pools dim 1 and 2)
-    lim.eachpad adds roomfac onto lim.all
+    lim.allpad adds roomfac onto lim.all
     lim.rs gives limits of timeseries if they are rescaled onto newlim (name-value argument with default [0 1])
     lim.eachpad adds roomfac onto lim.rs
 %}

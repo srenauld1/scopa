@@ -12,7 +12,8 @@ x = x(v);                           %reorder the coordinates in order of discove
 y = y(v);
 
 %% OLD CODE
-% I = knnsearch([x,y],[x,y],'k',8,'Distance','Chebychev');   %find the 3 nearest neighbors to each point (including self) in chebychev distance (chess move distance). basically picks out the two pixels each pixel is touching
+
+% I = knnsearch([x,y],[x,y],'k',8,'Distance','Chebychev');  %find the 3 nearest neighbors to each point (including self) in chebychev distance (chess move distance). basically picks out the two pixels each pixel is touching
 % G = graph;                          %initialize a graph object
 % s = 1:size(x);                      %set nodes as the index to each point
 % G = addedge(G,s,I(:,2));            %add an edge connecting each point to its nearest neighbor

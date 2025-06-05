@@ -153,7 +153,7 @@ d.ma.chan = 1; %which channel for auto roi extraction (for now all options below
 d.ma.numroi = 128; %partition rgname into num_roim_auto morphological rois; a drawn roi, if it exists, masks the rgname prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single rgname)
 d.ma.maskmake = 'none'; %'nonzero'; 'none' to skip %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 d.ma.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
-d.ma.roirad = []; %radius of roi in pixels (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance
+d.ma.roirad = []; %radius of roi (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance; units are length of pixel in x (if z length is double x and y length, roirad 6 is 2 pixels in x and y, and 1 in z)
 d.ma.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
 d.ma.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
 d.ma.celsz = 8; %for bwmorph close after edge detection, helps connect edges
@@ -297,7 +297,7 @@ d.bmp.slopelensec = 0.4; %order of polynomial used to fit local slope (e.g. to c
 d.bmp.smlensec = 0; %full width of gaussian smoothing window (5 times std)
 d.bmp.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average
 d.bmp.maxangrs = 8; %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs) is highest frequency you wish to capture in output)d.bmp.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
-d.bmp.dorescale = 1; %just before computing bump, rescale each cluster's timeseries to range 0-1
+d.bmp.dorescale = 0; %just before computing bump, rescale each cluster's timeseries to range 0-1
 d.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
 
 %% mdlmake (mdlmake: fit model, depv as function of indv)
@@ -361,7 +361,7 @@ d.opl.FiniteDifferenceType = 'central';
 % d.opl.MaxIterations = 10000;
 d.opl.OutputFcn = [];
 
-%these are the defaults output by optimoptions, contained in d.opl (except any updates above, shown here, commented out, for convenience)
+% these are the defaults output by optimoptions, contained in d.opl (except any updates above, shown here, commented out, for convenience)
 % d.opl.Algorithm = 'interior-point'; %algorithm chosen automatically?? . . . was using 'Algorithm', 'interior-point'); % https://www.mathworks.com/help/optim/ug/choosing-the-algorithm.html
 % d.opl.BarrierParamUpdate = 'monotone';
 % d.opl.CheckGradients = false;
@@ -388,7 +388,6 @@ d.opl.OutputFcn = [];
 % d.opl.TypicalX = 'ones(numberOfVariables,1)';
 % d.opl.UseParallel = 0;
 
-% 
 %% tg (tsget: get timeseries, using various filters to choose from all saved variables in filesystem)
 
 d.tg.recid = 'curr';
