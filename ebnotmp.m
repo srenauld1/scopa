@@ -329,7 +329,7 @@ if ~isempty(plt) && plt(1)
     end
 
     sznew = 40; %max(size(stackmnt));
-    stackeb = stackcrop(stack, glb('pthstack'), 'el');
+    stackeb = stackcrop(stack, glb('pthstack'), 'eb');
 
     stackeb = stackeb(:,:,:,tsubsamp);
 
@@ -510,6 +510,7 @@ if ~isempty(plt) && plt(3)
     bumpdvrs = mean(eb);
     bumpdvrs = eb(30,:);
     ballinvdvrs = norz3;
+    ballinvdvrs = nolz3;
 
 
     pthsv = [pthpre 'glno_scatter_' datestr '_' side '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_.fig'];
@@ -581,10 +582,10 @@ if ~isempty(plt) && plt(3)
 
     %%%%% EXCLUDE BY GLNO RESPONSE AMPLITUDE %%%%%
 
-    nodvtmp = tsdv('circular', nodv, 0.3, 2, sper);
-    kp33 = nodvtmp<0;
-    kp33 = nodvtmp>0;
-    [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp33, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
+    % nodvtmp = tsdv('circular', nodv, 0.3, 2, sper);
+    % kp33 = nodvtmp<0;
+    % % kp33 = nodvtmp>0;
+    % [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp33, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
 
 
     if ~isempty(nothr)

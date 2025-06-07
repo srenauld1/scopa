@@ -464,7 +464,7 @@ if isempty(drawslice)
 
 else
 
-    doellipse = 0;
+    doellipse = 1;
 
     stack = mean(stack(:,:,drawslice),3);
     hfg = figure;

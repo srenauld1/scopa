@@ -44,6 +44,30 @@ the environment is called deepcad, and the deepcad repository (where changes you
      /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad/lib/python3.9/site-packages/deepcad
 
 
+############################## RUNNING pl.sh ######################################
+
+# see pl.py and README.md for more details 
+
+# TO USE pl.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2  #
+
+# pl.sh runs the entire preprocessing pipeline by specifying params for pl.py
+# run as ./pl.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
+# CURRENTLY YOU CANNOT SUBMIT JOBS WITH PL WHILE ANOTHER SET OF JOBS SUBMITTED BY PL IS RUNNING 
+# pl.py is called from sbatch file pl.sbatch, which is itself called below,
+# pl.sbatch is called in different way, depending on user input
+# pl.sbatch can run multiple times in parallel if jobind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
+# each sbatch file below is called in a 3-iteration for loop, the first iteration (when do_copyfiles=1) copies files required for whatever job is running from storage server to scratch on O2, the second (when do_copyfiles=0) operates on them, the third (when do_copyfiles=2) copies new files back to the storage server  
+# using do_copyfiles requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
+
+# pl.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
+
+# note bash variables below are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
+# bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
+
+# emails sent to user for all tasks, all job states, to avoid clutter, you can configure your email to store all slurm emails in a slurm folder 
+
+# variables with names in all capital letters are passed into pipeline_init, where they overwrite default values of their lowercase counterparts in default_params_batch.py
+
 
 ############################## GENERAL ######################################
 

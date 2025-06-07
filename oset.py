@@ -4,7 +4,7 @@
 
 ## CHOOSE WHAT PARTS OF THE PIPELINE TO RUN (IN INTERACTIVE MODE, ONELY ONE do_* CAN BE TRUE AT A TIME, FOR NOW; THIS IS NOT THE CASE IN pl.sh) ## 
 
-do_register = 1 #caiman normCorre registration 
+do_register = 0 #caiman normCorre registration 
 do_denoise = 0 #deepcad denoising (from the more recent deepcadrt, although this is not real time), input must be motion_corrected 
 do_stitch = 0 #stitch deepcad denoised slices into stack of original size and put in data folder (before stitch, denoised data is in temporary 'denoising' directory)
 do_remove = 0 #remove scan noise (matlab script, but filefind uses filefind function below)

@@ -95,6 +95,8 @@ for k = 1:numel(oa) % loop over recordings
     bi = cell2mat(fieldnames(o.bmp));
     nri = 'a65';
     nli = 'a66';
+    nri = 'a52';
+    nli = 'a53';
     ebnotmp(stack, {'r'}, daq.(di).vy, daq.(di).by, bmp.(bi).mu, bmp.(bi).respcl, roi.(nri).ts{1}, roi.(nli).ts{1}, glb('t'), md.sper, pth.pre, plt=[1 1 0 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.(di).epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[0.4], bmpdomain=bmp.(bi).domain, widyxz=md.widyxz, drawrot=[], sliceeb=[])
 
     % t5tmp
@@ -104,7 +106,7 @@ for k = 1:numel(oa) % loop over recordings
     %%
 
     ebnotmp(stack, {'r'}, daq.(di).vy, daq.(di).by, bmp.(bi).mu, bmp.(bi).respcl, roi.(nri).ts{1}, roi.(nli).ts{1}, glb('t'), md.sper, pth.pre, ...
-        plt=[1 0 1 0], ...
+        plt=[1 0 0 0], ...
         facealpha=1, ...
         szthrres=[], ...
         szmin=15, ...
@@ -120,8 +122,8 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(bi).domain, ...
         widyxz=md.widyxz, ...
-        tsub=0:.01:1, ...
-        dozscore=0, ...
+        tsub=700:.01:800, ...
+        dozscore=1, ...
         drawrot=90, ...
         sliceeb=6)
 
@@ -163,6 +165,36 @@ for k = 1:numel(oa) % loop over recordings
         hpl.YData = ydatall(q,:);
         fig2gif(hfg, q)
     end
+
+
+    %%
+
+    gld = roi.a60.ts{1};
+    glv = roi.a61.ts{1};
+    grd = roi.a62.ts{1};
+    grv = roi.a63.ts{1};
+
+    hfg = figure;
+    hax = axes(parent=hfg);
+    hold on;
+    % scatter(gld, grd)
+    % scatter(glv, grv)
+    scatter(gld, glv)
+    scatter(grd, grv)
+
+    %%
+
+    hfg = figure;
+    hax = axes(parent=hfg);
+    hold on;
+    plot(roi.a60.ts{1});
+    plot(roi.a61.ts{1});
+    plot(roi.a62.ts{1});
+    plot(roi.a63.ts{1});
+    ylim([hax.YLim(1)/2, hax.YLim(2)*2]);
+    yyaxis right;
+    hpl2 = plot(daq.a7.vy);
+    hpl2 = plot(daq.a7.by, '-k');
 
     %%
 
