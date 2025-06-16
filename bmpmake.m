@@ -1,5 +1,7 @@
 function bmp = bmpmake(opt, depv, indv, pthstack, imrate, epochts, opt2)
 
+%depv (roi,time), or empty if using opt to define depv via tsget 
+%indv (roi,time), or empty if using opt to define indv via tsget 
 
 arguments
     opt = []
@@ -71,7 +73,6 @@ end
 
 function bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt)
 
-chan = opt.chan;
 mthd = opt.mthd;
 omitnan = opt.omitnan;
 scope = opt.scope;
@@ -83,8 +84,6 @@ maxangrs = opt.maxangrs;
 slopelensec = opt.slopelensec;
 slopeord = opt.slopeord;
 smlensec = opt.smlensec;
-
-pthpre = erase(pthbmp, '.mat');
 
 try
 
@@ -285,6 +284,8 @@ end
 %% plots
 
 if doplt
+
+    pthpre = erase(pthbmp, '.mat');
 
     error("bmpmake plots need to be rewritten")
 

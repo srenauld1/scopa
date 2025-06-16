@@ -837,7 +837,6 @@
     "smlensec": 0
   },
   "a11": {
-    "chan": 1,
     "depv": {
       "tg": {
         "tg": []

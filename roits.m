@@ -1,15 +1,21 @@
-function tsout = roits(tsin, roimask, stackmnt, pthpre, sper, t, opt, memthr, doplt)
+function tsout = roits(tsin, roimask, stackmnt, sper, t, opt, opt2)
+
+%{
+compute roi timeseries, with various normalization options, given stack and roimasks
+tsout is 2-element cell for 2-channel data (even if only one channel has rois, ie if roimask is cell with one empty element), each cell is size(roi,time); 
+for single-channel data, tsout is not cell, it is just matrix size (roi,time)
+%}
 
 arguments
     tsin % stack (must be yxztc), or roi timeseries (roi,t,c), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
     roimask
     stackmnt
-    pthpre
     sper
     t
     opt
-    memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
-    doplt = 0
+    opt2.pthpre = []
+    opt2.memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
+    opt2.doplt = 0
 end
 normpre = opt.pre; % normalization before clustering of pixels into rois, or subrois into rois (ie normalization applied to each pixel or subroi)
 normpost = opt.post; %normalization after clustering of pixels into rois, or subrois into rois (ie normalization applied to each roi)
@@ -18,7 +24,28 @@ degdtr = opt.degdtr; % detrend polynomial degree; 0 to skip detrending
 channorm = opt.channorm; %work in progress; 2-channel normalization with wavelet coherence based filtering
 mincoh = opt.mincoh; %work in progress min coherence threshold for channorm
 
-if ~iscell(roimask)
+pthpre = opt2.pthpre;
+memthr = opt2.memthr;
+doplt = opt2.doplt;
+
+if isempty(pthpre)
+    pthpre = pthauto();
+end
+
+numchan = size(stackmnt,5);
+
+cellout = 0;
+if iscell(roimask)
+    if numel(roimask)>1
+        cellout = 1;
+        if numchan==1
+            error("if numchan==1, roimask must be cell with numchan elements")
+        end
+    end
+else
+    if numchan>1
+        error("if numchan>1, roimask must be cell with numchan elements")
+    end
     roimask = {roimask};
 end
 
@@ -30,12 +57,11 @@ if isempty(t) && channorm~=0
     error("must pass t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
 end
 
-numchan = size(stackmnt,5);
 roiwt = [];
 wtsz = cell(numchan,1);
 for k = 1:numchan
     if chanuse(k)
-        roiwttmp = roiwtmake(stackmnt(:,:,:,:,k), roimask{k});
+        roiwttmp = roiwtmake(roimask{k});
         if k==1
             wtsz{k} = [1:size(roiwttmp,1)];
         elseif k==2
@@ -117,7 +143,7 @@ for k = 1:numchan
             tsout{k} = tsnorm(tsout{k}, normpost, sper, memthr); %second normalization, optional
 
             if channorm
-                tsout{k} = nrmchan(tsout{k}, t=t, srate=srate, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
+                tsout{k} = nrmchan(tsout{k}, t=t, srate=srate, pthpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
             end
 
         else
@@ -126,8 +152,13 @@ for k = 1:numchan
 
         end
     end
+
 end
 
+
+if ~cellout
+    tsout = cell2mat(tsout);
+end
 
 if doplt
 

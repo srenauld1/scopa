@@ -1,18 +1,18 @@
 function o = oset_noeb(o)
 
-rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'eb4', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doroi = 1; 
 o.mn.dobmp = 1; 
 
 %%%% DAQ %%%%
 
-o.daq.slopelensec = 0.5185;
+o.daq.slopelensec = 0.4;
 
 %%%% BMP %%%%
 
 
-o.bmp.slopelensec = 0.5185;
+o.bmp.slopelensec = 0.4;
 o.bmp.domtype = 'm';
 
 bmpindv.tg.daq = ['*'];
@@ -66,11 +66,11 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     % o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = [];
 
-    if strcmp(rgname{m}, 'eb')
+    if strcmp(rgname{m}, 'eb4')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
-        o.roi.mm.maskname = 'eb';
-        o.roi.ma.maskmake = 'none';
+        o.roi.mm.maskname = 'eb4';
+        o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, 'no'))

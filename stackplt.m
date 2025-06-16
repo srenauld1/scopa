@@ -149,8 +149,8 @@ dimorder_notaveraged = zeros(1, numel(dmplt_all));
 for k = 1:numel(dmplt_all)
     dimorder_notaveraged(k) = strfind(dmstackdf, dmplt_all(k));
 end
-dimorder = [dimorder_notaveraged setxor(dimorder_notaveraged, 1:numel(dmstackdf))];
-dimorder_averaged = setxor(1:numel(dimorder_notaveraged), 1:numel(dmstackdf));
+dimorder = [dimorder_notaveraged setdiff(1:numel(dmstackdf), dimorder_notaveraged)];
+dimorder_averaged = setdiff(1:numel(dmstackdf), 1:numel(dimorder_notaveraged));
 
 if iscell(stack)
     for k = 1:numel(stack)

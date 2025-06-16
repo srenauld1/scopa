@@ -114,7 +114,7 @@ for k = 1:numel(oa) % loop over recordings
         nothr='', ...
         colsep=0, ...
         xyrng=[], ...
-        epoch={}, ...{[1], [2], [3], [4], [5], [6]}, ...
+        epoch={[1,2], [4:5]}, ...{[1], [2], [3], [4], [5], [6]}, ...
         epochts=daq.(di).epochts, ...
         lagsampxy=-1, ...
         lagsampz=0, ...
@@ -122,10 +122,10 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(bi).domain, ...
         widyxz=md.widyxz, ...
-        tsub=700:.01:800, ...
+        tsub=405:.01:430, ... 50:.01:200, ...
         dozscore=1, ...
         drawrot=90, ...
-        sliceeb=6)
+        sliceeb=8)
 
 
     %%
@@ -179,24 +179,58 @@ for k = 1:numel(oa) % loop over recordings
     hold on;
     % scatter(gld, grd)
     % scatter(glv, grv)
-    scatter(gld, glv)
-    scatter(grd, grv)
+    scatter(hax, gld, glv)
+    scatter(hax, grd, grv)
 
     %%
+
+    cmap = lines(8); %'lines' predefined colormap is the default for function 'plot'
+    cmap = cat(1, cmap, [0 0 0]); %add black
+
+    t = glb('t');
 
     hfg = figure;
     hax = axes(parent=hfg);
     hold on;
-    plot(roi.a60.ts{1});
-    plot(roi.a61.ts{1});
-    plot(roi.a62.ts{1});
-    plot(roi.a63.ts{1});
-    ylim([hax.YLim(1)/2, hax.YLim(2)*2]);
+    plot(t, gld, color=cmap(1,:), linestyle='-');
+    plot(t, glv, color=cmap(1,:), linestyle=':', linewidth=2);
+    plot(t, grd, color=cmap(2,:), linestyle='-');
+    plot(t, grv, color=cmap(2,:), linestyle=':', linewidth=2);
+    ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;
-    hpl2 = plot(daq.a7.vy);
-    hpl2 = plot(daq.a7.by, '-k');
+    hpl21 = plot(t, daq.a7.vy, color=cmap(3,:), linestyle='-');
+    hpl22 = plot(t, -daq.a7.by, color=cmap(end,:), linestyle='-');
+    hpl21.Parent.YAxis(2).Color = [0 0 0];
+    pthsv = ['~/stacks/gall.fig'];
+    saveas(gcf, pthsv)
 
     %%
+
+    dvlen = md.sper*6;
+    dvord = 3;
+
+    gld_dv = tsdv('normal', gld, md.sper*6, dvord, md.sper);
+    glv_dv = tsdv('normal', glv, md.sper*6, dvord, md.sper);
+    grd_dv = tsdv('normal', grd, md.sper*6, dvord, md.sper);
+    grv_dv = tsdv('normal', grv, md.sper*6, dvord, md.sper);
+
+    t = glb('t');
+
+    hfg = figure;
+    hax = axes(parent=hfg);
+    hold on;
+    plot(t, gld_dv, color=cmap(1,:), linestyle='-');
+    plot(t, glv_dv, color=cmap(1,:), linestyle=':', linewidth=2);
+    plot(t, grd_dv, color=cmap(2,:), linestyle='-');
+    plot(t, grv_dv, color=cmap(2,:), linestyle=':', linewidth=2);
+    ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
+    yyaxis right;
+    hpl21 = plot(t, daq.a7.vy, color=cmap(3,:), linestyle='-');
+    hpl22 = plot(t, -daq.a7.by, color=cmap(end,:), linestyle='-');
+    hpl21.Parent.YAxis(2).Color = [0 0 0];
+
+    %% 
+
 
     cmap = lines(8);
     cmap = cat(1, cmap, [0 0 0]); %add black
@@ -218,7 +252,5 @@ for k = 1:numel(oa) % loop over recordings
 
 
 end
-
-
 
 

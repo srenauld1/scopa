@@ -28,18 +28,18 @@
       "ic": [],
       "ii": 1,
       "it": [],
-      "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
-      "vnm": "byv"
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "vnm": "vy"
     },
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 1,
+      "ii": [],
       "it": [],
-      "optid": "a2",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a2_roi_.mat",
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -50,31 +50,9 @@
       "ic": [],
       "ii": 1,
       "it": [],
-      "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
-      "vnm": "byv"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 1,
-      "it": [],
-      "optid": "a3",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a3_roi_.mat",
-      "vnm": "ts"
-    }
-  ],
-  "a4": [
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 1,
-      "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
+      "vnm": "vy"
     },
     {
       "group": "1",
@@ -82,8 +60,30 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a18",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a18_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a4": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_cmrg_dcdn_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -99,10 +99,10 @@
       "vnm": "ts"
     },
     {
-      "group": "1",
+      "group": "3",
       "group2": [],
       "ic": 1,
-      "ii": [],
+      "ii": 1,
       "it": [],
       "optid": "a7",
       "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
@@ -111,42 +111,42 @@
   ],
   "a6": [
     {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 2,
-      "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a22",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a22_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "3",
+      "group2": [],
+      "ic": 1,
+      "ii": 1,
+      "it": [],
+      "optid": "a21",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a21_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a7": [
     {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 3,
-      "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
+      "it": [],
+      "optid": "a22",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a22_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "3",
+      "group2": [],
+      "ic": 1,
+      "ii": 1,
       "it": [],
       "optid": "a7",
       "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
@@ -157,12 +157,12 @@
     {
       "group": "3",
       "group2": [],
-      "ic": 1,
-      "ii": 4,
+      "ic": [],
+      "ii": 1,
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
+      "vnm": "vy"
     },
     {
       "group": "1",
@@ -170,42 +170,30 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
-  "a9": [
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 5,
-      "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "1",
-      "group2": [],
-      "ic": 1,
-      "ii": [],
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
-      "vnm": "ts"
-    }
-  ],
+  "a9": {
+    "group": "1",
+    "group2": [],
+    "ic": 1,
+    "ii": [],
+    "it": [],
+    "optid": "a24",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a24_roi_.mat",
+    "vnm": "ts"
+  },
   "a10": [
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 6,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
+      "optid": "a24",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a24_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -214,20 +202,20 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a25",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a25_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a11": [
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 7,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
+      "optid": "a24",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a24_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -236,43 +224,31 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
-  "a12": [
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 8,
-      "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "1",
-      "group2": [],
-      "ic": 1,
-      "ii": [],
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
-      "vnm": "ts"
-    }
-  ],
+  "a12": {
+    "group": "1",
+    "group2": [],
+    "ic": 1,
+    "ii": [],
+    "it": [],
+    "optid": "a40",
+    "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a40_roi_.mat",
+    "vnm": "ts"
+  },
   "a13": [
     {
       "group": "3",
       "group2": [],
-      "ic": 1,
-      "ii": 9,
+      "ic": [],
+      "ii": 1,
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
+      "vnm": "vy"
     },
     {
       "group": "1",
@@ -280,8 +256,8 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -289,12 +265,12 @@
     {
       "group": "3",
       "group2": [],
-      "ic": 1,
-      "ii": 10,
+      "ic": [],
+      "ii": 1,
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "optid": "a5",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a5_daq_.mat",
+      "vnm": "vy"
     },
     {
       "group": "1",
@@ -302,8 +278,8 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -311,12 +287,12 @@
     {
       "group": "3",
       "group2": [],
-      "ic": 1,
-      "ii": 11,
+      "ic": [],
+      "ii": 1,
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a7_daq_.mat",
+      "vnm": "vy"
     },
     {
       "group": "1",
@@ -324,405 +300,1129 @@
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a16": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 1,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a17": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 2,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a18": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 3,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a19": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     },
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 4,
+      "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a44",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a20": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a1",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 5,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a44",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a21": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 6,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a44",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a22": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 7,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a44",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a23": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
       "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 8,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a41",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a41_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a24": [
     {
-      "group": "1",
-      "group2": [],
-      "ic": 1,
-      "ii": 1,
-      "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
       "group": "3",
       "group2": [],
-      "ic": 1,
+      "ic": [],
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a41",
+      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a41_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a25": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 1,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 2,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a48",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a48_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a26": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 1,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 3,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a27": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 1,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
+      "optid": "a40",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a40_roi_.mat",
       "vnm": "ts"
     },
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 4,
+      "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a54",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a54_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a28": [
     {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 1,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 5,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a29": [
     {
+      "group": [],
+      "group2": [],
+      "ic": [],
+      "ii": [],
+      "it": [],
+      "optid": [],
+      "pth": [],
+      "vnm": []
+    },
+    {
       "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 1,
+      "ii": [],
       "it": [],
-      "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
-    },
-    {
-      "group": "3",
-      "group2": [],
-      "ic": 1,
-      "ii": 6,
-      "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_cmrg_dcdn_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a30": [
     {
-      "group": "1",
+      "group": "3",
       "group2": [],
-      "ic": 1,
+      "ic": [],
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
+      "vnm": "by"
     },
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 7,
+      "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_cmrg_dcdn_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
   "a31": [
     {
-      "group": "1",
+      "group": "3",
       "group2": [],
-      "ic": 1,
+      "ic": [],
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a8_roi_.mat",
-      "vnm": "ts"
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
+      "vnm": "by"
     },
     {
-      "group": "3",
+      "group": "1",
       "group2": [],
       "ic": 1,
-      "ii": 8,
+      "ii": [],
       "it": [],
-      "optid": "a7",
-      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_cmrg_dcdn_a7_roi_.mat",
+      "optid": "a57",
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_cmrg_dcdn_a57_roi_.mat",
       "vnm": "ts"
     }
   ],
-  "a32": {
-    "group": "3",
-    "group2": [],
-    "ic": 1,
-    "ii": 1,
-    "it": [],
-    "optid": "a13",
-    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a13_roi_.mat",
-    "vnm": "ts"
-  },
-  "a33": {
-    "group": "3",
-    "group2": [],
-    "ic": 1,
-    "ii": 1,
-    "it": [],
-    "optid": "a14",
-    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a14_roi_.mat",
-    "vnm": "ts"
-  },
-  "a34": {
-    "group": "3",
-    "group2": [],
-    "ic": 1,
-    "ii": 1,
-    "it": [],
-    "optid": "a15",
-    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a15_roi_.mat",
-    "vnm": "ts"
-  },
-  "a35": {
-    "group": "3",
-    "group2": [],
-    "ic": 1,
-    "ii": 1,
-    "it": [],
-    "optid": "a16",
-    "pth": "/Users/wienecke/stacks/ganoeb/20250223-1_d05_s8m_016_s8m/20250223_1_1_cmrg_dcdn_a16_roi_.mat",
-    "vnm": "ts"
-  },
+  "a32": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a8",
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
+      "vnm": "by"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a58",
+      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_cmrg_dcdn_a58_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a33": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a34": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a35": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/untitled folder 2/20250525_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a64",
+      "pth": "/Users/wienecke/stacks/noel/untitled folder 2/20250525_1_1_cmrg_dcdn_a64_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a36": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a64",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_cmrg_dcdn_a64_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a37": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a2",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a18",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a18_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a19",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a19_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a64",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a64_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a38": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a64",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a64_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a39": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a67",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a67_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a40": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250601-1_508_s8f_018_s8f/20250601_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a67",
+      "pth": "/Users/wienecke/stacks/noel/20250601-1_508_s8f_018_s8f/20250601_1_1_cmrg_dcdn_a67_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a41": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250601-2_508_s8f_018_s8f/20250601_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a67",
+      "pth": "/Users/wienecke/stacks/noel/20250601-2_508_s8f_018_s8f/20250601_2_1_cmrg_dcdn_a67_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a42": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250601-3_f02_s8s_018_s8m/20250601_3_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250601-3_f02_s8s_018_s8m/20250601_3_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a43": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a44": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a8",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a45": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a46": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a8",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a47": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a69",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a69_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a48": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a8",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a69",
+      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_cmrg_dcdn_a69_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a49": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a67",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a67_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a73",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a73_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a50": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a67",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a67_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a71",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a71_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a73",
+      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_cmrg_dcdn_a73_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a51": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a64",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_cmrg_dcdn_a64_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a74",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_cmrg_dcdn_a74_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a52": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a75",
+      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_cmrg_dcdn_a75_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a53": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a70",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_cmrg_dcdn_a70_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a54": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a70",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_cmrg_dcdn_a70_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a76",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_cmrg_dcdn_a76_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a55": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_a7_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a76",
+      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_cmrg_dcdn_a76_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a56": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "by"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a57": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a8",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a8_daq_.mat",
+      "vnm": "by"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a51",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a51_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
+  "a58": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a7",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "vnm": "by"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": 1,
+      "ii": [],
+      "it": [],
+      "optid": "a68",
+      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_cmrg_dcdn_a68_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
   "autonm": 1,
   "loc": "/Users/wienecke/scopa/",
-  "maketime": "2025030622112795",
+  "maketime": "2025031519252622",
   "prefix": "a"
 }

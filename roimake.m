@@ -1,4 +1,4 @@
-function roi = roimake(stack, opt, pthstack, sper, widyxz, t, pthpy, opt2)
+function roi = roimake(stack, opt, pthstack, md, sper, widyxz, t, pthpy, opt2)
 
 % see docs_roimake.m
 
@@ -6,6 +6,7 @@ arguments
     stack
     opt = []
     pthstack = []
+    md = []
     sper = [] %only required nonempty for normalizing by moving window in tsnorm
     widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
     t = [] %only required nonempty if channorm~=0 in roits
@@ -18,7 +19,12 @@ roimask = opt2.roimask;
 
 [opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
 
-md = glb('md');
+if isempty(md)
+    md = glb('md');
+    if isempty(md)
+        md = mdsild(pthstack);
+    end
+end
 if isempty(sper)
     sper = md.sper;
 end
@@ -30,8 +36,6 @@ if isempty(t)
 end
 
 pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];
-pthpre = erase(pthroi, '.mat');
-
 
 if ndims(stack)<4
     error("stack must be 4d or 5d")
@@ -39,10 +43,9 @@ end
 
 numchan = size(stack,5);
 
-
 if isempty(roimask)
     maskin = 0;
-    roimask = cell(numchan,1);
+    roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
     if opt.domm
         maskname = opt.mm.maskname;
     else
@@ -51,10 +54,12 @@ if isempty(roimask)
 else
     maskin = 1;
     if ~iscell(roimask)
-        roimask = {roimask};
+        roimask = {roimask};  %needs to be cell in case 2-channel with different number rois
+    end
+    if ~isequal(numel(roimask), numchan)
+        error("roimask must be cell, length numchan")
     end
 end
-
 
 
 try
@@ -62,15 +67,15 @@ try
 
     roi = load(pthroi);
 
-    if any(~isfield(roi, {'ts', 'dat', 'maketime_optfile_roi'}))
-        error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
+    if any(~isfield(roi, {'dat', 'maketime_optfile_roi'})) || isfield(roi, 'ts')
+        error("roi struct, at highest level, must contain field and 'dat' (and not field ts); you may have loaded an old roi struct")
     end
     if ~isequal(roi.maketime_optfile_roi, glb('maketime_roi'))
         error("roi id is derived from an optid file different from original")
     end
     [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg
-    mm = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack herem, just loading mm
-    if ~isequal(roi.dat{1}.rg, rg) || ~isequal(roi.dat{1}.mm, mm{1}) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat{2}.rg, rg) || ~isequal(roi.dat{2}.mm, mm{2}) ) )
+    [~, mm] = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
+    if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
     end
 
@@ -100,10 +105,7 @@ catch ME
         else
             oneroidraw = 0;
         end
-        mm = roidraw(stack, pthstack, rg=rg, maskname=maskname, methodmm=opt.mm.methodmm, oneroi=oneroidraw);
-        for k = 1:numel(mm)
-            roimask{k} = mm{k}.mask; 
-        end
+        [roimask, mm] = roidraw(stack, pthstack, roimaskin=roimask, rg=rg, maskname=maskname, methodmm=opt.mm.methodmm, oneroi=oneroidraw);
     end
 
 
@@ -111,7 +113,7 @@ catch ME
     %%%% AUTOMATED MORPHOLOGICAL SEGMENTATION %%%%
 
     if opt.doma && ~maskin
-        roimask = roimauto(stackmnt, roimask, widyxz, opt.ma, pthstack=pthstack, rg=rg, maskname=maskname); 
+        roimask = roimauto(stackmnt, opt.ma, roimaskin=roimask, widyxz=widyxz, pthstack=pthstack, rg=rg, maskname=maskname); 
     end
 
 
@@ -132,26 +134,29 @@ catch ME
 
 
 
-    %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
-
-    roi.dat = roidatmake(stackmnt, roimask, rg, mm, pthstack);
-
-
-
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
     if ~exist('respcm', 'var')
-        roi.ts = roits(stack, roimask, stackmnt, pthpre, sper, t, opt.nrm);
+        ts = roits(stack, roimask, stackmnt, sper, t, opt.nrm);
     else
-        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sper, t, opt.nrm);
+        ts = roits(respcm, roimask, stackmnt, sper, t, opt.nrm);
     end
+
+
+
+    %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
+
+    roi.dat = roidatmake(stackmnt, roimask, ts, rg, mm, pthstack);
+    % roi.dat = roidatmake(repmat(stackmnt, [1 1 1 1 2]), {roimask{1}, []}, repelem({ts}, 2), rg, repelem(mm,2), pthstack);
+
 
 
     %%%% SAVE %%%%
 
-
     roi.maketime_optfile_roi = glb('maketime_roi');
     save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
+
+
 
 end
 
@@ -161,7 +166,9 @@ end
 
 if doplt && ~maskin
 
-    stackplt(roi.dat{1}.stackmnt, roipx=roi.dat{1}.roipx)
+    pthpre = erase(pthroi, '.mat');
+
+    stackplt(roi.dat(1).stackmnt, roipx=roi.dat(1).roipx)
     
     chanplt = 1;
 

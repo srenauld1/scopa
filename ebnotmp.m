@@ -112,17 +112,7 @@ if ~isempty(szthrxy) && ~isempty(szthrres)
     error("can only use szthrres or szthrxy")
 end
 
-if isempty(epoch)
-    kp1 = ones(size(epochts), 'logical');
-else
-    if isempty(epochts)
-        error("must supply name-value argument epochts if epoch is not empty")
-    end
-    kp1 = zeros(size(epochts), 'logical');
-    for k = 1:numel(epoch)
-        kp1 = kp1 | ismember(epochts, epoch(k));
-    end
-end
+kp1 = sampepoch(epochts, epoch);
 
 if ~isscalar(lagsampxy) || ~isscalar(lagsampz)
     error("make lagsec scalar for now")
@@ -222,7 +212,7 @@ if ~isempty(plt) && plt(1)
     slopelensec_alt = sper*3;
     slopeord_alt = 2;
 
-    dodv = 0;
+    dodv = 1;
     if dodv %all derivatives
         ballplot = tsdv('circular', ballinv, slopelensec_alt, slopeord_alt, sper);
         cueplot = tsdv('circular', cue, slopelensec_alt, slopeord_alt, sper);
@@ -248,10 +238,10 @@ if ~isempty(plt) && plt(1)
     hax = axes(parent=hfg);
     hold(hax, 'on')
     plot(hax, t, zscore(nor), color=cmap(1,:));
-    plot(hax, t, zscore(nol), color=cmap(2,:));
+    % plot(hax, t, zscore(nol), color=cmap(2,:));
     plot(hax, t, cueplot, color=cmap(3,:));
     plot(hax, t, ballplot, color=cmap(4,:));
-    plot(hax, t, bumpplot, color=cmap(5,:));
+    % plot(hax, t, bumpplot, color=cmap(5,:));
     % plot(hax, t, bump2plot, color=cmap(5,:), linestyle='--');
     xlim(hax, limt)
     ylim(hax, limpad)
@@ -266,18 +256,19 @@ if ~isempty(plt) && plt(1)
     %% bump as heatmap
 
 
-    ax = axarr([4,1]);
+    ax = axarr([1,1]);
     h = initfig(szf=2);
 
-    subplot_ind = 4;
-    htfac = 2;
+    subplot_ind = 1;
+    htfac = 1;
     h.st = initaxim(h.hfg, ax, eb, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
 
     hold(h.st.hax{1}, "on")
     h.st.hpl{1}.XData = t;
-    plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
+    % plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
+    plot(h.st.hax{1}, t, rescale(ballinvnan, 1, size(eb,1)), color=cmap(3,:))
     % plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), color='g')
-    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
+    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(2,:))
     xlim(limt)
     title('eb original')
     numxtick = 20;
@@ -285,21 +276,21 @@ if ~isempty(plt) && plt(1)
     h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
     hold(h.st.hax{1}, "on")
 
-    subplot_ind = 2;
-    htfac = 2;
-    h.st = initaxim(h.hfg, ax, eb2, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
-
-    hold(h.st.hax{1}, "on")
-    h.st.hpl{1}.XData = t;
-    plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
-    plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), color=[0.1, 0.8, 0.8])
-    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
-    xlim(limt)
-    title('eb2')
-    numxtick = 20;
-    h.st.hax{1}.XTick = linspace(limt(1), limt(2), numxtick);
-    h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
-    hold(h.st.hax{1}, "on")
+    % subplot_ind = 2;
+    % htfac = 2;
+    % h.st = initaxim(h.hfg, ax, eb2, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    % 
+    % hold(h.st.hax{1}, "on")
+    % h.st.hpl{1}.XData = t;
+    % plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
+    % plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), color=[0.1, 0.8, 0.8])
+    % plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
+    % xlim(limt)
+    % title('eb2')
+    % numxtick = 20;
+    % h.st.hax{1}.XTick = linspace(limt(1), limt(2), numxtick);
+    % h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
+    % hold(h.st.hax{1}, "on")
 
 
 
@@ -310,7 +301,40 @@ if ~isempty(plt) && plt(1)
 
     pthsv = [pthpre 'bump_.fig'];
     saveas(gcf, pthsv)
-
+    % 
+    %%
+    % 
+    % glom = 20;
+    % epochx = [2:5];
+    % figure
+    % for k = 1:numel(epochx)
+    %     kp11 = zeros(size(epochts), 'logical');
+    %     kp11 = kp11 | ismember(epochts, epochx(k));
+    %     kp11 = kp11(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
+    %     cuedv = tsdv('circular', cue, slopelensec_alt, slopeord_alt, sper);
+    %     subplot(2,2,k)
+    %     scatter(eb(glom,kp11), cuedv(kp11), 'filled')
+    %     ylim([-3.4,3.4])
+    %     xlim([20,150])
+    %     title(k)
+    % end
+    % sgtitle("down roi")
+    % 
+    % glom = 25;
+    % epochx = [2:5];
+    % figure;
+    % for k = 1:numel(epochx)
+    %     kp11 = zeros(size(epochts), 'logical');
+    %     kp11 = kp11 | ismember(epochts, epochx(k));
+    %     kp11 = kp11(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
+    %     cuedv = tsdv('circular', cue, slopelensec_alt, slopeord_alt, sper);
+    %     subplot(2,2,k)
+    %     scatter(eb(glom,kp11), cuedv(kp11), 'filled')
+    %     ylim([-3.4,3.4])
+    %     xlim([20,150])
+    %     title(k)
+    % end
+    % sgtitle("up roi")
 
     %% bump as curve over time
 
@@ -333,17 +357,8 @@ if ~isempty(plt) && plt(1)
 
     stackeb = stackeb(:,:,:,tsubsamp);
 
-    widmin = min(widyxz);
-    upfac = widyxz / widmin;
-    sz = size(stackeb, [1,2,3]);
-    szup = round(sz.*upfac);
-
-    stackebup = zeros([szup, size(stackeb,4)], class(stackeb));
-    for k = 1:size(stackeb,4)
-        stackebup(:,:,:,k) = imresize3(stackeb(:,:,:,k), szup, 'linear');
-    end
-    stackeb = stackebup;
-    stackebup = [];
+    stackeb = stackiso(stackeb, widyxz);
+    
     stackeb_mnt = mean(stackeb,4);
 
     if isempty(drawrot)
@@ -443,7 +458,8 @@ if ~isempty(plt) && plt(1)
     % hax.YLim = [-4 4];
     % hax.YLim = [0 1];
     hax.XLim = [-pi pi]*1.2;
-    for k = 1:numel(tsubsamp) %for each timepoint, show bump
+    incc = 1;
+    for k = 1:incc:numel(tsubsamp) %for each timepoint, show bump
         hpl.YData = eb(:,tsubsamp(k));
         % hpl.YData = eb2(:,limtsamp(k));
         % hln1.Value = bump(tsubsamp(k));
@@ -488,9 +504,9 @@ if ~isempty(plt) && plt(2)
     hold on;
     plot(hax, cuenan, 'g-')
     plot(hax, ballinvnan, 'y-')
-    plot(hax, ballinvdvrs, 'm-')
-    plot(hax, bumpnan, 'c-')
-    plot(hax, bumpdvrs, 'w-')
+    % plot(hax, ballinvdvrs, 'm-')
+    % plot(hax, bumpnan, 'c-')
+    % plot(hax, bumpdvrs, 'w-')
     title("bump cyan, ball yellow, cue green, " + side + " GLNO derivative background")
 
     pthsv = [pthpre side '_glno_.fig'];

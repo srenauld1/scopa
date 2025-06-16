@@ -116,7 +116,7 @@ d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist, before sav
 d.sld.trm = []; %how many samples to remove from [start, end] of stack, before saving to mat; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.iy = []; %y indices to keep and save to mat
 d.sld.ix = []; %x indices to keep and save to mat
-d.sld.ic = []; %c indices to keep and save to mat; this is channel index in the stack to keep (not pmt index); for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1; empty to keep all; will error if you request channel that doens't exist
+d.sld.ic = []; %c indices to keep and save to mat; this is stack channel index (5th dimension in the stack); this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1; empty to keep all; will error if you request channel that doens't exist
 d.sld.iz = []; %z indices to keep and save to mat
 d.sld.it = []; %t indices to keep and save to mat 
 d.sld.zerostack = 1; %subtract min to make min zero
@@ -145,13 +145,13 @@ d.roi.doqc = 0; %do quality control (remove bad rois)
 %% mm (roidraw: mm = "morphological manual")
 
 d.mm.maskname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
-d.mm.methodmm = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels, '1cp' copies what is drawn on 1 onto 2; '2cp' copies what is drawn on 2 onto 1 
+d.mm.methodmm = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels (whether 1 or 2 channel), '1cp' copies what is drawn on channel 1 onto channel 2; '2cp' copies what is drawn on channel 2 onto channel 1 
 
 %% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))
 
-d.ma.chan = 1; %which channel for auto roi extraction (for now all options below are same for each) option where auto rois interact has not been written yet);
+d.ma.chan = 1; %1, 2, or [1 2], which channel gets auto roi extraction; this is stack index, not pmt index; (for now all options below are same for each) option where auto rois interact has not been written yet);
 d.ma.numroi = 128; %partition rgname into num_roim_auto morphological rois; a drawn roi, if it exists, masks the rgname prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single rgname)
-d.ma.maskmake = 'none'; %'nonzero'; 'none' to skip %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+d.ma.maskmake = 'nonzero'; % %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
 d.ma.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
 d.ma.roirad = []; %radius of roi (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance; units are length of pixel in x (if z length is double x and y length, roirad 6 is 2 pixels in x and y, and 1 in z)
 d.ma.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
@@ -287,7 +287,6 @@ d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
 d.bmp.indv = struct('tg', []);
 d.bmp.depv = struct('tg', []);
-d.bmp.chan = 1; %channel of imaging data
 d.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
 d.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
 d.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample

@@ -4,8 +4,8 @@
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
-do_denoise=0 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
+do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
+do_denoise=1 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
 do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_a2p)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
@@ -29,7 +29,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a pre
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20250329')
+RECDATE=('*')
 FLY=('3')
 TRIAL=('*')
 FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
@@ -48,7 +48,7 @@ SMLENPX_MCP=(0 0 0) #gaussian xyz smoothing window length (pixels) in register (
 CLIPINTERP=(1) #clip intensity to remain in original data range (interpolation can smear the histogram, sometimes significantly, which can reduce data contrast, ie dff); applied per frame; this happens by default in the original normcorre for matlab, but not in caiman version
 REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-DNRAW=(1) #denoise raw (unregistered) stacl
+DNRAW=(0) #denoise raw (unregistered) stack
 CHAN_DN=('all') #'all', '1', or '2'; refers to the index in the output stack from registration (suffix *cmrg_.tif), so if you discarded channel 1 in registration the output cmrg will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_cmrg*.tif exists)
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset

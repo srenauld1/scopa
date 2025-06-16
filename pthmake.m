@@ -1,7 +1,7 @@
 function pth = pthmake(pthstack)
 
 
-%%paths for a2p; several a2p filenames are set here for convenience (should they all be? or none of them?, some are not passed into their functions and instead set inside functions, making this function pointless for those)
+%%paths for a2p; several a2p filenames are set here for convenience (should they all be? or none of them? some are not passed into their functions and instead set inside functions)
 
 id = idmake(pthstack);
 

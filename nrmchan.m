@@ -64,7 +64,10 @@ end
 numsamp = numel(resp1);
 lev = floor(log2(numsamp));
 
-fngif = [pthpre(1:end-4) 'resp_mra_.gif'];
+if isempty(pthpre)
+    pthpre = pthauto();
+end
+fngif = [pthpre 'resp_mra_.gif'];
 
 %% set up wavelet filters using the default used in wsst, but not wcoherence
 

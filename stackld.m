@@ -50,8 +50,6 @@ sz = [];
 chantif = [];
 overflow = [];
 
-id = idmake(pthstack);
-
 try
     md = mdsild(pthstack);
 catch
@@ -107,9 +105,9 @@ if doconvert
         error("pthstack must end with tif or mat")
     end
 
-    [~, fn, ~] = fileparts(pthstack);
     pthmat = regexprep(pthstack, '.tif', '.mat');
 
+    [~, fn, ~] = fileparts(pthstack);
     if contains(fn, 'trial_') && contains(fn, '-') || contains(fn, 'raw_.')
         rawstack = 1;
     else
@@ -119,7 +117,7 @@ if doconvert
     %%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
 
     if ~isempty(md)
-        [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack);
+        [sz, chantif] = stacksize(md, ic, rawstack, pthstack);
     end
 
     %%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
@@ -149,7 +147,7 @@ if doconvert
         try
             fprintf("savemem is true, trying to read stack with TIFFStack first to save memory (since you are reading a subset of the stack)" + newline)
             stack = TIFFStack(pthstack); %stack is memmapped tif stack, this doesn't read the stack into memory yet
-            [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
+            [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, ic, rawstack);
         catch
             tiffstack_already_failed = 1;
             fprintf("savemem tiffstack failed, using tifreadfast" + newline)
@@ -167,7 +165,7 @@ if doconvert
             fprintf("trying to read stack with tifreadfast" + newline)
             stack = tifreadfast(pthstack); %here, stack is read into memory (is not memmapped)
             [~, mdtif] = tifreadfast(pthstack, []);
-            [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
+            [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, ic, rawstack);
         catch
             if tiffstack_already_failed
                 error("tifreadfast failed and tiffreadstack also failed previously; cannot read stack" + newline)
@@ -176,7 +174,7 @@ if doconvert
                     fprintf("tifreadfast failed, using tiffstack as backup; it is slower and only works on some platforms but does not read extra blank frames in tifs not written by scanimage" + newline)
                     stack = []; %clear a potentially large variable, in case stack got read by tifreadfast but something caused error afterwards
                     stack = TIFFStack(pthstack); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
-                    [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack);
+                    [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, ic, rawstack);
                 else
                     error("tifreadfast failed, and try_tiffstack_backup is set to 0; you could set it to 1 and try again" + newline)
                 end
@@ -249,7 +247,7 @@ if doconvert
             inds_c_read_from_all = repmat(1:sz(3), [1 sz(4)*sz(5)]); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
             inds_czt_read_from_all = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
 
-            overflowinds = setxor(inds_czt_read_from_all, 1:size(stack,3)); %overflowstack = stack(:, :, overflowinds); 
+            overflowinds = setdiff(1:size(stack,3), inds_czt_read_from_all); %overflowstack = stack(:, :, overflowinds); 
             overflow_meanframe = sum(stack(:,:,overflowinds),3)/numel(overflowinds);
             overflow_firstframe = stack(:,:,overflowinds(1));
             overflow_remainder = overflow_meanframe-double(overflow_firstframe);
@@ -312,22 +310,10 @@ end
 end
 
 
-function [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack)
+function [sz, chantif] = stacksize(md, ic, rawstack, pthstack)
 
-if isfield(md, ['chanrm_' id.suffix])
-    chanrm = md.(['chanrm_' id.suffix]);
-else
-    if rawstack
-        chanrm = [];
-    else
-        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; it is required to track discarded channels; you may be using an old mdsi file; rerun the code that created this tif: " + pthstack + " and chanrm_" + id.suffix + " will be added to mdsi" + newline + "you cabn also add the field to mdsi manually, the syntax is: " + sprintf('"chanrm: 1," or "chanrm: 2," or "chanrm: null,"') + newline)
-    end
-end
-if isempty(chanrm)
-    chantif = 1:numel(md.channel_save);
-else
-    chantif = setxor(chanrm, 1:numel(md.channel_save));
-end
+chantif = stackchan(pthstack, md);
+
 if ~isempty(ic) && ~all(ismember(ic, chantif))
     error("ic is not a subset of channels in this stack (after accounting for possible chanrm)")
 end
@@ -340,7 +326,7 @@ end
 end
 
 
-function [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, id, ic, rawstack)
+function [md, sz, chantif, overflow] = stackcheck(md, sz, chantif, stack, pthstack, ic, rawstack)
 
 errmsg = [];
 overflow = [];
@@ -361,7 +347,7 @@ if ~isempty(md) %if you have metadata already
 else %if you don't have metadata, get it here
     md = mdsild(pthstack);
     if ~isempty(md)
-        [sz, chantif] = stacksize(md, id, ic, rawstack, pthstack);
+        [sz, chantif] = stacksize(md, ic, rawstack, pthstack);
     else
         errmsg = "did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
     end

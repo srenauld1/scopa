@@ -11,7 +11,7 @@ arguments
 end
 
 chan = opt.chan;
-numroi_init = opt.numroi;
+numroi = opt.numroi;
 maskmake = opt.maskmake;
 maskseg = opt.maskseg;
 roirad = opt.roirad;
@@ -35,51 +35,48 @@ else
     stackmnt = stack;
 end
 
+numchan = size(stackmnt,5);
+
 id = idmake(pthstack);
 fnsuffix = ['_' rgname '_' maskname '_ma'];
 pthma = [id.pthrec, fnsuffix, '_.mat'];
 
-
-numchan = size(stackmnt,5);
+roimaskout = roimaskin;
 
 try
 
     load(pthma, 'ma');
 
-    for c = 1:numchan
-        if ismember(c,chan)
-            if ~isequal(numroi_init, 0)
-                roimaskout{c} = ma{c}.mask;
-            end
-        end
+    for c = chan
+        roimaskout{c} = ma(c).mask;
     end
 
-    if any(~isfield(ma{1}, {'mask', 'mask_in', 'rg', 'maskname', 'opt'})) || numel(ma)==2 && any(~isfield(ma{2}, {'mask', 'mask_in', 'rg', 'maskname', 'opt'}))
+    if any(~isfield(ma(1), {'mask', 'mask_in', 'rg', 'maskname', 'opt'})) || numel(ma)==2 && any(~isfield(ma(2), {'mask', 'mask_in', 'rg', 'maskname', 'opt'}))
         error("ma struct must contain fields 'mask', 'mask_in', 'rg', 'maskname', 'opt'; you may have loaded an old ma struct")
     end
-    if ~isequal(ma{1}.rg, rg) || numel(ma)==2 && ~isequal(ma{2}.rg, rg)
+    if ~isequal(ma(1).rg, rg) || numel(ma)==2 && ~isequal(ma(2).rg, rg)
         error("ma file exists but for at least one channel rg in ma file does not match current rg with same name; did you delete the rg you used to draw this ma?")
     end
-    if ~isequal(ma{1}.maskname, maskname) || numel(ma)==2 && ~isequal(ma{2}.maskname, maskname)
+    if ~isequal(ma(1).maskname, maskname) || numel(ma)==2 && ~isequal(ma(2).maskname, maskname)
         error("ma file exists but input roimask maskname does not match for at least one channel")
     end
-    if ~isequal(ma{1}.opt, opt) || numel(ma)==2 && ~isequal(ma{2}.opt, opt)
+    if ~isequal(ma(1).opt, opt) || numel(ma)==2 && ~isequal(ma(2).opt, opt)
         error("ma file exists but input roimask maskname does not match for at least one channel")
     end
 
 catch ME
 
-    for c = 1:numchan
-        if ismember(c,chan)
-            if ~isequal(numroi_init, 0)
-                roimaskout{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimaskin{c}, numroi_init, widyxz, rgname, maskmake, maskseg, roirad, edgethr, edgesig, celsz, do3d);
-                ma{c}.mask = roimaskout{c};
-                ma{c}.mask_in = roimaskin{c};
-                ma{c}.rg = rg;
-                ma{c}.maskname = maskname;
-                ma{c}.opt = opt;
-            end
-        end
+    for c = chan
+        roimaskout{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimaskin{c}, numroi, widyxz, rgname, maskmake, maskseg, roirad, edgethr, edgesig, celsz, do3d);
+        ma(c).mask = roimaskout{c};
+        ma(c).mask_in = roimaskin{c};
+        ma(c).rg = rg;
+        ma(c).maskname = maskname;
+        ma(c).opt = opt;
+    end
+
+    if chan==1 && numchan==2 %do this so that 2-channel data gets empty 2nd element if channel 2 has no auto rois, otherwise 2nd element wouldn't exist, which would mislead user into thinking it's single-channel data
+
     end
 
     save(pthma, 'ma', '-v7.3') %save each channel's mask separately (could do it together instead, either way is fine right?)
@@ -89,7 +86,7 @@ end
 
 end
 
-function roimaskout = roimauto_onechan(stackmnt, roimaskin, numroi_init, widyxz, rgname, maskmake, maskseg, roirad, edgethr, edgesig, celsz, do3d)
+function roimaskout = roimauto_onechan(stackmnt, roimaskin, numroi, widyxz, rgname, maskmake, maskseg, roirad, edgethr, edgesig, celsz, do3d)
 
 %this function has several partially overlapping control features,
 %organization is meant to make it easy to add new methods (e.g. by
@@ -113,8 +110,8 @@ end
 
 num_roim_manual = size(roimaskin, 4);
 
-if strcmp(maskseg, 'torus') && ~strcmp(maskmake, 'none')
-    error("for maskseg torus maskmake should be none, otherwise your ellipse might fall outside the mask (ellipse should determine the mask itself)")
+if strcmp(maskseg, 'torus') && ~strcmp(maskmake, 'nonzero')
+    error("for maskseg torus maskmake should be nonzero (everything but any manually drawn mask), otherwise your ellipse might fall outside the mask (still could happen with method 'nonzero'")
 end
 
 if num_roim_manual>1
@@ -184,10 +181,6 @@ switch maskmake
 
         mask_allroi_approx = logical(premask);
 
-    case 'none' %all nonzero elements
-
-        mask_allroi_approx = ones(size(premask), 'logical');
-
 end
 
 mask_allroi_approx = logical(mask_allroi_approx);
@@ -197,9 +190,7 @@ mask_allroi_approx = logical(mask_allroi_approx);
 
 %% find 3d mask centroids
 
-numroi_final = numroi_init; %as of 240605 these will match for all cases except 'uniform' or 'uniformp' where do3d~=0
-
-if numroi_init == 1 %for finding a single centroid
+if numroi == 1 %for finding a single centroid
 
     roicen = find_roi_centroids(mask_allroi_approx);
 
@@ -207,23 +198,87 @@ else
 
     switch maskseg
 
-        case 'torus' % create multiple roughly equal-volume roi along skeleton of mask
 
-            if ndims(stackmnt)<3
+        case 'e3d'
+
+
+            if ndims(premask)<3
                 error("stackseg 'torus' requires nonsingleton yxz dimensions (can't be planar right now)")
             end
 
-            widmin = min(widyxz);
-            upfac = widyxz / widmin;
-            sz = size(stackmnt);
-            szup = round(sz.*upfac);
+            [premaskup, upfac] = stackiso(premask, widyxz);
 
-            stackup = imresize3(stackmnt, szup, 'linear');
+            premaskup = stackthr(premaskup);
+
+            [maskyup, maskxup, maskzup] = ind2sub(size(premaskup), find(premaskup)); %find the cartesian coordinates of points in the mask
+
+            XYZ0 = [maskxup, maskyup, maskzup]';
+
+            eFit3d=ellipsoidalFit(XYZ0);
+            pFit=planarFit(XYZ0);%Preliminary plane fit
+            xy0=pFit.project2D(XYZ0); %Map measured 3D samples to 2D
+            eFit=ellipticalFit(xy0); %Perform ellipse fit in 2D
+            smp0 = linspace(1,360,numroi+1);
+            xyz = pFit.unproject3D(  cell2mat(eFit.sample(smp0(1:end-1)))  ); %Post-sample the ellipse fit and map back to 3D
+
+            roicentmp = xyz([2 1 3],:)';
+            roirad = [];
+            %
+            % [ ecnt, erad, evecs, ~, ~, ~, erts] = ellipsoid_fit_new( [maskxup, maskyup, maskzup] );
+            %
+            % % ertstmp = [eFit3d.roll, eFit3d.pitch, eFit3d.yaw];
+            % % erts = ertstmp([3 1 2]);
+            % [X,Y,Z] = ellipsoid2(erad(1), erad(2), erad(3), ecnt(1), ecnt(2), ecnt(3), erts(1), erts(3), erts(2), nface=round(sqrt(numel(premaskup))), plt=0);
+            %
+            % eft = zeros(size(premaskup));
+            % [YY,XX,ZZ] = ind2sub(size(premaskup), 1:numel(premaskup)); %find the cartesian coordinates of points in the mask
+            % fk = [YY', XX', ZZ'];
+            % qp = [Y(:), X(:), Z(:)]; %[maskyup(:), maskxup(:), maskzup(:)];
+            % idx = knnsearch(fk, qp);
+            % eft(idx) = 1;
+            % stackplt3(cat(5, premaskup, eft));
+            % eft = logical(imfill(single(eft))); %imfill works for 3d if it's not logical (seems like a bug); if you don't like converting, just imfill each z slice in loop
+            % stackplt(eft)
+            %
+            % [YY,XX,ZZ] = ind2sub(size(eft), find(eft)); %find the cartesian coordinates of points in the mask
+            %
+            % XYZ0 = [XX,YY,ZZ]';
+            %
+            % eFit3d =ellipsoidalFit(XYZ0);
+            % pFit=planarFit(XYZ0);%Preliminary plane fit
+            % xy0=pFit.project2D(XYZ0); %Map measured 3D samples to 2D
+            % eFit=ellipticalFit(xy0); %Perform ellipse fit in 2D
+            % smp0 = linspace(1,360,numroi+1);
+            % xyz = pFit.unproject3D(  cell2mat(eFit.sample(smp0(1:end-1)))  ); %Post-sample the ellipse fit and map back to 3D
+            %
+            % roicentmp = xyz([2 1 3],:)';
+            % roirad = [];
+            %
+            figure; hold on;
+            scatter3(XYZ0(1,:), XYZ0(2,:), XYZ0(3,:),'b','filled','MarkerFaceAlpha',0.05,'MarkerEdgeColor','none') ;  %Given points
+            scatter3(xyz(1,:), xyz(2,:), xyz(3,:),'r','filled') ;  %Fitted points
+            xlabel X; ylabel Y; zlabel Z
+            view(170,-25)
+
+            roicentmp = roicentmp ./ upfac;
+
+        case 'torus' % create multiple roughly equal-volume roi along skeleton of mask
+
+            if ndims(premask)<3
+                error("stackseg 'torus' requires nonsingleton yxz dimensions (can't be planar right now)")
+            end
+
+            [premaskup, upfac] = stackiso(premask, widyxz);
+
+            premaskup = stackthr(premaskup);
+
+            [maskyup, maskxup, maskzup] = ind2sub(size(premaskup), find(premaskup)); %find the cartesian coordinates of points in the mask
+
             rots = -1*[0:5:180];
             stackmnzrot = {};
             for k = 1:numel(rots)
                 tform = rigidtform3d([rots(k),0,0], [0,0,0]);
-                [tmp, ov2] = imwarp(stackup, imref3d(size(stackup)), tform); %default output view is centeroutput
+                [tmp, ov2] = imwarp(premaskup, imref3d(size(premaskup)), tform); %default output view is centeroutput
                 tmp = mean(tmp, 3);
                 stackmnzrot{k} = tmp;
             end
@@ -241,24 +296,25 @@ else
             drawrot = drawrot * -1;
             if drawrot
                 tform = rigidtform3d([drawrot,0,0], [0,0,0]);
-                [stackrot, ov2] = imwarp(stackup, imref3d(size(stackup)), tform); %default output view is centeroutput
+                [stackrot, ov2] = imwarp(premaskup, imref3d(size(premaskup)), tform); %default output view is centeroutput
             else
-                stackrot = stackup;
+                stackrot = premaskup;
             end
 
             stackplt(stackrot, dmplt='yx(z)')
+
             prompt = sprintf("ENTER Z-INDICES YOU WANT TO SUM TO CREATE BACKGROUND FOR MANUALLY POSITIONING ROI CENTROIDS (MEAN OF CHOSEN Z INDICES WILL BE Z COORDINATE FOR ROI CENTROIDS), OR ENTER NOTHING TO POSITION CENTROIDS ON ALL Z SLICES SEPARATELY: ");
             commandwindow();
             drawslice = input(prompt);
 
-            [roicentmp, midx, midy] = drawcent(stackrot, drawslice, numroi_init);
+            [roicentmp, midx, midy] = drawcent(stackrot, drawslice, numroi);
 
             roicentmp = roicentmp + fix([ov2.YWorldLimits(1), ov2.XWorldLimits(1), ov2.ZWorldLimits(1)]);
             [roicentmp(:,2), roicentmp(:,1), roicentmp(:,3)] = transformPointsInverse(tform, roicentmp(:,2), roicentmp(:,1), roicentmp(:,3));
 
             roicentmp = roicentmp ./ upfac;
 
-            roicentmp(:,widyxz>roirad) = round(roicentmp(:,widyxz>roirad)); %round dimension with resolution lower than roi radius to prevent empty rois
+            roicentmp(:,widyxz>roirad*2) = round(roicentmp(:,widyxz>roirad*2)); %round dimension with resolution lower than roi radius to prevent empty rois
 
             style = "MaximumIntensityProjection"; %"GradientOpacity"
             vwr = viewer3d();
@@ -269,12 +325,12 @@ else
             vwr.BackgroundGradient='off';
             vwr.GradientColor=[0 0 0.2];
             vwr.BackgroundColor=[1 1 1];
-            vsh(1) = volshow(stackmnt, Parent=vwr);
+            vsh(1) = volshow(premask, Parent=vwr);
             vsh(1).RenderingStyle=style;
             % vsh(1).GradientOpacityValue=0.1;
             % vsh(1).Colormap=cmap;
             % vsh(2).Alphamap=0.1;
-            tmp = volmaskmake(roirad, xwid, ywid, zwid, stackmnt, mask_allroi_approx, roicentmp);
+            tmp = volmaskmake(roirad, xwid, ywid, zwid, premask, mask_allroi_approx, roicentmp);
             tmp = logical(sum(tmp,4));
             vsh(2) = volshow(tmp, Parent=vwr);
             % vsh(2).RenderingStyle=style;
@@ -314,7 +370,7 @@ else
                 midy = midy(idxmidkeep);
                 midz = midz(idxmidkeep);
 
-                xq = linspace(1, length(midy), 2*(numroi_init) + 1)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that rois on the edges arent clipped
+                xq = linspace(1, length(midy), 2*(numroi) + 1)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that rois on the edges arent clipped
                 roicentmp = [interp1(midy,xq), interp1(midx,xq), interp1(midz,xq)]; %interpolate x and y coordinates, now that they are ordered, into evenly spaced centroids (this allows one to oversample if desired)
                 roicentmp = roicentmp(2:2:end-1,:); %take every other so that we dont start at the edges, and all are same size
 
@@ -324,7 +380,7 @@ else
 
             end
 
-        case {'uniform'} % create multiple roughly equal-volume roi by partitioning rgname into numroi_init groups
+        case {'uniform'} % create multiple roughly equal-volume roi by partitioning rgname into numroi groups
 
             if isempty(widyxz)
                 error("you did not pass argument widyxz, or you passed empty widyxz, but you also requested maskseg 'uniform', which requires nonempty argument widyxz")
@@ -333,7 +389,7 @@ else
 
             if do3d
 
-                [tmp, roicentmp, bin_prctiles] = probability_bin([masky, maskx, maskz], numroi_init, 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
+                [tmp, roicentmp, bin_prctiles] = probability_bin([masky, maskx, maskz], numroi, 1, 0); %iteratively median split along dimension of greatest variance, ties are randomly assigned, so as of 240509, results are not reproducible, although differences are typically not major; so for reproducibility, pipeline loads saves/loads previous results
 
             else %else split into roughly equal area rois on each slice in mask, rounding number rois for each slice to nearest power of 2 proportional to number of voxels relative to total (typically lots of inaccuracy there)
 
@@ -342,13 +398,14 @@ else
                     zinds_each{uzi} = find(maskz==uz(uzi));
                     num_vox_each_slice(uzi) = numel(zinds_each{uzi});
                     frac_vox_each_slice(uzi) = num_vox_each_slice(uzi) / numel(maskz);
-                    ideal_roim_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * numroi_init;
+                    ideal_roim_auto_each_slice(uzi) = frac_vox_each_slice(uzi) * numroi;
                 end
                 rnds = pow2(round(log2(ideal_roim_auto_each_slice))); %rnds = round(frac_roim_auto_each_slice);
 
-                numroi_final = sum(rnds);
-                if numroi_init~=numroi_final
-                    sprintf("warning, changing numroi_init is " + num2str(numroi_init) + " while numroi_final is " + num2str(numroi_final))
+                numroi_new = sum(rnds);
+                if numroi~=numroi_new
+                    sprintf("warning, changing numroi from " + num2str(numroi) + " to " + num2str(numroi_new))
+                    numroi = numroi_new;
                     pause(2)
                 end
 
@@ -394,32 +451,62 @@ if roirad %if roirad is not empty, make little spheres (or circles, if 2d) aroun
 
 else %otherwise each centroid gets nearest voxels
 
+    % if strcmp(maskseg, 'e3d')
+    %     premask = stackthr(premask);
+    %     [masky,maskx,maskz] = ind2sub(size(premask), find(premask)); %find the cartesian coordinates of points in the mask
+    % end
+
     roicenvec = cell2mat(roicen(:));
     flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(roicen{idx},1),1), (1:size(roicen{idx},1)).'], (1:numel(roicen)).', 'uniform', 0));
     [~, maptmp] = pdist2(roicenvec, [masky, maskx, maskz], 'euclidean', 'smallest', 1); %find the index of the centroid that is closest to each voxel in the mask. using euclidean, but maybe chebychev (chessboard)
     idx_vox2roi = uint16(flatten_key(maptmp, 1)); %this records which cell the nearest morph centroid is from
 
-    roiwt = zeros(numroi_final, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
-    for i = 1:numroi_final
+    roiwt = zeros(numroi, numel_stackmnt, 'single'); %size [rois, voxels], describes how each voxel contirbutes to roi response, since roi can occupy less than entire voxel (in z dimension especially)
+    for i = 1:numroi
         roiwt(i, sub2ind(size(mask_allroi_approx), masky(idx_vox2roi==i), maskx(idx_vox2roi==i), maskz(idx_vox2roi==i))) = 1; %indices of each roi
     end
 
     roiwt = roiwt';
     if ndims(stackmnt)==2
-        roimaskout = reshape(roiwt, [size(stackmnt), 1, numroi_final] );
+        roimaskout = reshape(roiwt, [size(stackmnt), 1, numroi] );
     elseif ndims(stackmnt)==3
-        roimaskout = reshape(roiwt, [size(stackmnt), numroi_final] );
+        roimaskout = reshape(roiwt, [size(stackmnt), numroi] );
     end
 
 end
 
+%%
+
+% cmap = distinguishable_colors(numroi);
+%
+% %3d scatter, each roi a different hue
+% hfg = figure; hold on
+% for k = 1:numroi %overlay each pixel in its indexed color onto the pb image
+%     scatter3( maskx(idx_vox2roi == k), masky(idx_vox2roi == k), maskz(idx_vox2roi == k), 'filled', 'MarkerFaceColor', cmap(k,:), 'MarkerFaceAlpha', 0.2 )
+% end
+% %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
+% %scatter3(roicen(:,2 ), roicen(:,1), roicen(:,3), 80, 'k', 'filled') %show the centroids in each of their colors
+% colormap(bone);
+% axis image; axis off
+% set(gca,'Visible','off')
+% set(gca,'CameraViewAngle',8)
+% rotinc = 30;
+% views = -180:rotinc:180;
+% if ~exist('erts', 'var')
+%     erts = 70;
+% end
+% for k = 1:length(views) - 1
+%     view(views(k)+2, erts(1))
+%     fig2gif(hfg, k)
+% end
+% %%
 
 
 end
 
 
 
-function [roicen_nonuniform, midx, midy] = drawcent(stack, drawslice, numroi_init)
+function [roicen_nonuniform, midx, midy] = drawcent(stack, drawslice, numroi)
 
 
 if isempty(drawslice)
@@ -464,7 +551,7 @@ if isempty(drawslice)
 
 else
 
-    doellipse = 1;
+    doellipse = 0;
 
     stack = mean(stack(:,:,drawslice),3);
     hfg = figure;
@@ -481,7 +568,7 @@ else
     mid = bwmorph(mask, 'remove');
     [midy,midx] = find(mid); %by definition, the skeleton has to be at least as long as the min width of the roi, so shave out subbranches that are shorter than that.
     [midx,midy] = graph_sort(midx,midy); %align the points of the midline starting at the first pointpoint and going around in a circle. this requires that the midline be continuous!
-    xq = linspace(1,length(midy),numroi_init)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that clusters on the edges arent clipped
+    xq = linspace(1,length(midy),numroi)'; %set query points for interpolation (the number of centroids we want). we'll create twice as many points and take every other so that clusters on the edges arent clipped
     roicen_nonuniform = [interp1(1:length(midy),midy,xq),interp1(1:length(midx),midx,xq)]; %interpolate x and y coordinates, now that they are ordered, into evenly spaced centroids (this allows one to oversample the number of pixels, if desired)
     if roicen_nonuniform(1,1) < roicen_nonuniform(end,1)
         % error("should this happen ever?")
@@ -491,7 +578,7 @@ else
 
     if doellipse
         doplt = 1;
-        roicen_xy = e2c([midx, midy], numroi_init, doplt);
+        roicen_xy = e2c([midx, midy], numroi, doplt);
         roicen(:,1:2) = [roicen_xy(:,2) roicen_xy(:,1)];
     else
         roicen(:,1:2) = roicen_nonuniform(:,1:2);
@@ -503,7 +590,7 @@ else
     colormap(bone)
     hold on
     plot(midx, midy, 'w')
-    cmap = distinguishable_colors(numroi_init);
+    cmap = distinguishable_colors(numroi);
     scatter(roicen(:,2), roicen(:,1), [], cmap, 'filled')
     axis image tight
     fig2gif(hfg)

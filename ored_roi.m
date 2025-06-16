@@ -25,11 +25,18 @@ if o.nrm.channorm==0
     o.nrm.mincoh = []; %rmfield(o.nrm, 'mincoh');
 end
 
-if o.docm==1 %unfortunately complex reduction scheme for caiman options, since there are many interactions
+if o.doma==1
+    if o.ma.numroi<1
+        error("o.mm.numroi must be greater than 0")
+    end
+end
+
+if o.docm==1 %unfortunately, complex reduction scheme is required for caiman options, since there are many interactions
 
     if any(structfun(@(x) any(strcmp(x, '*')),o.cm))
         error("need to fix caiman ored for wild")
     end
+
     %%assemble reduced cmex struct (gets special attention because it's relatively more complicated)
 
     cmred.gSig = o.cm.gSig;

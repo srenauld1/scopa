@@ -9,7 +9,7 @@ end
 vecdim = opt.vecdim;
 paddim = opt.paddim;
 if isempty(paddim)
-    paddim = setxor(vecdim, [1 2]);
+    paddim = setdiff([1 2], vecdim);
 end
 
 if ndims(inp)>3

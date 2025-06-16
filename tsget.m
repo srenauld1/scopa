@@ -30,6 +30,23 @@ tsout = cell(1, numvarin);
 persistent dattmp
 persistent tsouttmp
 
+
+if isempty(dm)
+    dm = 'it';
+end
+if isempty(user)
+    user = glb('user');
+    if isempty(user)
+        error("you must pass in user or set glb('user')")
+    end
+end
+if isempty(pthparent)
+    pthparent = glb('pthparent');
+    if isempty(pthparent)
+        error("you must pass in pthparent or set glb('pthparent')")
+    end
+end
+
 pthscopa = getpathscopa();
 pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
 
@@ -37,22 +54,6 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
 
     dattmp_hold = cell(numvarin,1); %use hold tmp variable, don't assign variable until end of this if clause 
     tsouttmp_hold = cell(numvarin,1);  %use hold tmp variable, don't assign variable until end of this if clause 
-
-    if isempty(dm)
-        dm = 'it';
-    end
-    if isempty(user)
-        user = glb('user');
-        if isempty(user)
-            error("you must pass in user or set glb('user')")
-        end
-    end
-    if isempty(pthparent)
-        pthparent = glb('pthparent');
-        if isempty(pthparent)
-            error("you must pass in pthparent or set glb('pthparent')")
-        end
-    end
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})

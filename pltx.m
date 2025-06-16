@@ -117,7 +117,7 @@ end
 [it, itstr] = indsmake(it, indsall=size(stack, 4), label_prefix='t');
 
 % stack = stack(:,:,iz,it,:);
-kpepidx = setxor(1:numel(epochts), it);
+kpepidx = setdiff(1:numel(epochts), it);
 epochts(kpepidx) = 0;
 
 if ~isempty(stimvid)

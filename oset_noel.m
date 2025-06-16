@@ -14,7 +14,7 @@ bmpindv.tg.vnm = 'vy';
 o.bmp.indv = bmpindv;
 
 bmpdepv.tg.roi.rgname = 'el';
-bmpdepv.tg.roi.mm.maskname = 'el2';
+bmpdepv.tg.roi.mm.maskname = 'el3';
 bmpdepv.tg.roi.domm = 1;
 bmpdepv.tg.vnm = 'ts';
 bmpdepv.tg.group = '1';
@@ -42,8 +42,8 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'el')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
-        o.roi.mm.maskname = 'el2';
-        o.roi.ma.maskmake = 'none';
+        o.roi.mm.maskname = 'el3';
+        o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, 'no'))
