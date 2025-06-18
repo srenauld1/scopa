@@ -10,6 +10,7 @@ arguments
     resp1
     resp2
     opt.t = []
+    opt.sper = [] %sample period, inverse sample rate
     opt.srate = [] %sample rate
     opt.it = 1:size(resp1,2)
     opt.roiind = 1:size(resp1,1)
@@ -20,11 +21,20 @@ end
 error("make channorm=0 to not enter this function because nrmchan is a work in progress")
 
 srate = opt.srate;
+sper = opt.sper;
 t = opt.t;
 it = opt.it;
 roiind = opt.roiind;
 pthpre = opt.pthpre;
 mincoh = opt.mincoh;
+
+if (isempty(sper) && isempty(srate)) || (~isempty(sper) && ~isempty(srate))
+    error("sper and srate cannot both be empty or nonempty")
+end
+
+if isempty(srate)
+    srate = 1/sper;
+end
 
 if isempty(t)
     error("i think you might actually need t for this function, cannot replace with srate, right?? need to check")

@@ -98,6 +98,8 @@ try
 
 catch ME
 
+    clear ma %in case old ma was loaded and errored, remove this soon
+
     for c = chan
         roimaskout{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimaskin{c}, numroi, widyxz, rgname, maskmake, maskseg, roirad, edgethr, edgesig, celsz, do3d);
         ma(c).mask = roimaskout{c};
@@ -141,6 +143,9 @@ numel_stackmnt = numel(stackmnt);
 ywid = widyxz(1);
 xwid = widyxz(2);
 zwid = widyxz(3);
+
+roirad = roirad*xwid; %roirad units are xwid (microns in x dimension)
+
 
 if isempty(roimaskin)
     roimaskin = 1;
@@ -239,7 +244,6 @@ else
 
         case 'e3d'
 
-
             if ndims(premask)<3
                 error("stackseg 'torus' requires nonsingleton yxz dimensions (can't be planar right now)")
             end
@@ -260,8 +264,8 @@ else
             xyz = pFit.unproject3D(  cell2mat(eFit.sample(smp0(1:end-1)))  ); %Post-sample the ellipse fit and map back to 3D
 
             roicentmp = xyz([2 1 3],:)';
-            roirad = [];
-            %
+
+            
             % [ ecnt, erad, evecs, ~, ~, ~, erts] = ellipsoid_fit_new( [maskxup, maskyup, maskzup] );
             %
             % % ertstmp = [eFit3d.roll, eFit3d.pitch, eFit3d.yaw];
@@ -589,7 +593,9 @@ if isempty(drawslice)
 
 else
 
-    doellipse = 0;
+    prompt = sprintf("ENTER 1 TO DRAW AN ELLIPSE, 0 TO DRAW A POLYGON: ");
+    commandwindow();
+    doellipse = input(prompt);
 
     stack = mean(stack(:,:,drawslice),3);
     hfg = figure;
@@ -651,7 +657,6 @@ if ~iscell(roicen)
     end
     roicen = roicentmp;
 end
-roirad = roirad*xwid; %roirad units are xwid (microns in x dimension)
 
 if zwid==0
     [umx, umy] = meshgrid(0:xwid:xwid*(size(stackmnt,2)-1), 0:ywid:ywid*(size(stackmnt,1)-1)); %microns

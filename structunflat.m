@@ -1,10 +1,12 @@
-function sout = structunflat(s, delim, nonest)
+function sout = structunflat(s, opt)
 
 arguments
     s
-    delim = []
-    nonest = 0 %1 does not allow nested input structs, 0 does
+    opt.delim = []
+    opt.nonest = 0 %1 does not allow nested input structs, 0 does
 end
+delim = opt.delim;
+nonest = opt.nonest;
 
 if isempty(delim)
     % fprintf("USING DEFAULT DELIMITER DOUBLE UNDERSCORE IN structunflat" + newline)

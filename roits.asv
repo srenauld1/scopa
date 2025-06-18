@@ -66,12 +66,10 @@ else
     numchan = size(tsin,3);
 end
 
-if iscell(roimaskin) %awkward to do this before iscell(roimask) below, but we need chanuse up here
+if iscell(roimaskin)
     chanuse = ~cellfun(@isempty, roimaskin);
 else
-    if isempty(roimaskin)
-        chanuse = 0;
-    else
+    if ~isempty(roimaskin)
         chanuse = 1;
     end
 end

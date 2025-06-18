@@ -60,7 +60,7 @@ for k = 1:numel(oa) % loop over recordings
     %% flymax
 
     if o.mn.dofmf
-        for m = transpose(fieldnames(o.fmf))
+        for m = transpose(fieldnames(o.fmf))d 
             [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(pth.stack, o.fmf.(m{1})); %extract flymax visual features
         end
     end
@@ -91,13 +91,18 @@ for k = 1:numel(oa) % loop over recordings
 
     %% specific
 
-    di = cell2mat(fieldnames(o.daq));
-    bi = cell2mat(fieldnames(o.bmp));
-    nri = 'a65';
-    nli = 'a66';
-    nri = 'a52';
-    nli = 'a53';
-    ebnotmp(stack, {'r'}, daq.(di).vy, daq.(di).by, bmp.(bi).mu, bmp.(bi).respcl, roi.(nri).ts{1}, roi.(nli).ts{1}, glb('t'), md.sper, pth.pre, plt=[1 1 0 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.(di).epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[0.4], bmpdomain=bmp.(bi).domain, widyxz=md.widyxz, drawrot=[], sliceeb=[])
+
+    
+    inl = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'left'}, lev=1);
+    inr = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'right'}, lev=1);
+    igld = fieldmatch(roi, {'rg.name', 'gal'}, {'mm.maskname', 'dorsal'}, lev=1);
+    iglv = fieldmatch(roi, {'rg.name', 'gal'}, {'mm.maskname', 'ventral'}, lev=1);
+    igrd = fieldmatch(roi, {'rg.name', 'gar'}, {'mm.maskname', 'dorsal'}, lev=1);
+    igrv = fieldmatch(roi, {'rg.name', 'gar'}, {'mm.maskname', 'ventral'}, lev=1);
+    ieb = fieldmatch(roi, {'rg.name', 'eb'}, {'mm.maskname', 'eb'}, lev=1);
+    idaq = fieldmatch(daq, lev=1);
+    ibmp = fieldmatch(bmp, lev=1);
+    ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, pth.pre, plt=[1 1 0 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.(idaq).epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[0.4], bmpdomain=bmp.(ibmp).domain, widyxz=md.widyxz, drawrot=[], sliceeb=[])
 
     % t5tmp
     % ebtmp
@@ -105,7 +110,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %%
 
-    ebnotmp(stack, {'r'}, daq.(di).vy, daq.(di).by, bmp.(bi).mu, bmp.(bi).respcl, roi.(nri).ts{1}, roi.(nli).ts{1}, glb('t'), md.sper, pth.pre, ...
+    ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, pth.pre, ...
         plt=[1 0 0 0], ...
         facealpha=1, ...
         szthrres=[], ...
@@ -115,31 +120,31 @@ for k = 1:numel(oa) % loop over recordings
         colsep=0, ...
         xyrng=[], ...
         epoch={[1,2], [4:5]}, ...{[1], [2], [3], [4], [5], [6]}, ...
-        epochts=daq.(di).epochts, ...
+        epochts=daq.(idaq).epochts, ...
         lagsampxy=-1, ...
         lagsampz=0, ...
         yconst=1, ...
         slopelensec=[0.3], ...
-        bmpdomain=bmp.(bi).domain, ...
+        bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=405:.01:430, ... 50:.01:200, ...
+        tsub=1:.01:200, ... 50:.01:200, ...
         dozscore=1, ...
-        drawrot=90, ...
-        sliceeb=8)
+        drawrot=68, ...
+        sliceeb=19)
 
 
     %%
 
-    % el2 = mean(roi.a64.ts{1}(20:25,:));
+    % el2 = mean(roi.a64.dat(1).ts(20:25,:));
     hfg = figure;
     ax = axes('Parent', hfg);
     pax = polaraxes('Units', ax.Units, 'Position', ax.Position);
-    tdat = daq.(di).vy;
+    tdat = daq.(idaq).vy;
     hpl = polarscatter(pax, tdat, nan(size(tdat)), '.'); %plot
     hpl = scatter(pax, tdat, nan(size(tdat)), '.'); %plot
     % scatter(el2, daq.(di).vy)
-    rdatall = roi.a67.ts{1};
-    % rdatall = roi.a66.ts{1};
+    rdatall = roi.a67.dat(1).ts;
+    % rdatall = roi.a66.dat(1).ts;
     limr = axlim(rdatall);
     pax.RLim = limr.allpad;
 
@@ -152,11 +157,11 @@ for k = 1:numel(oa) % loop over recordings
 
     hfg = figure;
     ax = axes('Parent', hfg);
-    xdat = roi.a65.ts{1};
-    norz = zscore(roi.(nri).ts{1});
-    nolz = zscore(roi.(nli).ts{1});
+    xdat = roi.a65.dat(1).ts;
+    norz = zscore(roi.(inr).dat(1).ts);
+    nolz = zscore(roi.(inl).dat(1).ts);
     xdat = norz-nolz;
-    ydatall = mean(roi.a67.ts{1});
+    ydatall = mean(roi.a67.dat(1).ts);
     hpl = scatter(ax, xdat, nan(size(xdat)), '.'); %plot
     limy = axlim(ydatall);
     ax.YLim = limy.allpad;
@@ -169,16 +174,19 @@ for k = 1:numel(oa) % loop over recordings
 
     %%
 
-    gld = roi.a60.ts{1};
-    glv = roi.a61.ts{1};
-    grd = roi.a62.ts{1};
-    grv = roi.a63.ts{1};
+
+    gld = roi.(igld).dat(1).ts;
+    glv = roi.(iglv).dat(1).ts;
+    grd = roi.(igrd).dat(1).ts;
+    grv = roi.(igrv).dat(1).ts;
+
+    % [~, igld, iglv, igrd, igrv] = sampepoch(daq.(idaq).epochts, [2], igld, iglv, igrd, igrv); 
 
     hfg = figure;
     hax = axes(parent=hfg);
     hold on;
-    % scatter(gld, grd)
-    % scatter(glv, grv)
+    % scatter(igld, igrd)
+    % scatter(iglv, igrv)
     scatter(hax, gld, glv)
     scatter(hax, grd, grv)
 
@@ -198,8 +206,10 @@ for k = 1:numel(oa) % loop over recordings
     plot(t, grv, color=cmap(2,:), linestyle=':', linewidth=2);
     ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;
-    hpl21 = plot(t, daq.a7.vy, color=cmap(3,:), linestyle='-');
-    hpl22 = plot(t, -daq.a7.by, color=cmap(end,:), linestyle='-');
+    bff = rescale(daq.(idaq).bfv, -pi, pi);
+    hpl21 = plot(t, daq.(idaq).vy, color=cmap(3,:), linestyle='-');
+    hpl23 = plot(t, bff, color=cmap(4,:), linestyle='-'); 
+    hpl22 = plot(t, -daq.(idaq).by, color=cmap(end,:), linestyle='-');
     hpl21.Parent.YAxis(2).Color = [0 0 0];
     pthsv = ['~/stacks/gall.fig'];
     saveas(gcf, pthsv)
@@ -209,24 +219,24 @@ for k = 1:numel(oa) % loop over recordings
     dvlen = md.sper*6;
     dvord = 3;
 
-    gld_dv = tsdv('normal', gld, md.sper*6, dvord, md.sper);
-    glv_dv = tsdv('normal', glv, md.sper*6, dvord, md.sper);
-    grd_dv = tsdv('normal', grd, md.sper*6, dvord, md.sper);
-    grv_dv = tsdv('normal', grv, md.sper*6, dvord, md.sper);
+    igld_dv = tsdv('normal', gld, md.sper*6, dvord, md.sper);
+    iglv_dv = tsdv('normal', glv, md.sper*6, dvord, md.sper);
+    igrd_dv = tsdv('normal', grd, md.sper*6, dvord, md.sper);
+    igrv_dv = tsdv('normal', grv, md.sper*6, dvord, md.sper);
 
     t = glb('t');
 
     hfg = figure;
     hax = axes(parent=hfg);
     hold on;
-    plot(t, gld_dv, color=cmap(1,:), linestyle='-');
-    plot(t, glv_dv, color=cmap(1,:), linestyle=':', linewidth=2);
-    plot(t, grd_dv, color=cmap(2,:), linestyle='-');
-    plot(t, grv_dv, color=cmap(2,:), linestyle=':', linewidth=2);
+    plot(t, igld_dv, color=cmap(1,:), linestyle='-');
+    plot(t, iglv_dv, color=cmap(1,:), linestyle=':', linewidth=2);
+    plot(t, igrd_dv, color=cmap(2,:), linestyle='-');
+    plot(t, igrv_dv, color=cmap(2,:), linestyle=':', linewidth=2);
     ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;
-    hpl21 = plot(t, daq.a7.vy, color=cmap(3,:), linestyle='-');
-    hpl22 = plot(t, -daq.a7.by, color=cmap(end,:), linestyle='-');
+    hpl21 = plot(t, daq.(idaq).vy, color=cmap(3,:), linestyle='-');
+    hpl22 = plot(t, -daq.(idaq).by, color=cmap(end,:), linestyle='-');
     hpl21.Parent.YAxis(2).Color = [0 0 0];
 
     %% 
@@ -236,8 +246,8 @@ for k = 1:numel(oa) % loop over recordings
     cmap = cat(1, cmap, [0 0 0]); %add black
     close all
     figure; hold on;
-    norz = zscore(roi.(nri).ts{1});
-    nolz = zscore(roi.(nli).ts{1});
+    norz = zscore(roi.(inr).dat(1).ts);
+    nolz = zscore(roi.(inl).dat(1).ts);
     limy = axlim(cat(1, norz, nolz));
     el2rs = rescale(el2, limy.all(1), limy.all(2));
     plot(glb('t'), norz, color=cmap(1,:));
@@ -247,8 +257,8 @@ for k = 1:numel(oa) % loop over recordings
     yline(0);
     ylim(limy.allpad)
     yyaxis right; hold on;
-    plot(glb('t'), daq.(di).by, color=cmap(3,:));
-    plot(glb('t'), daq.(di).vy, color=cmap(9,:), linestyle='-');
+    plot(glb('t'), daq.(idaq).by, color=cmap(3,:));
+    plot(glb('t'), daq.(idaq).vy, color=cmap(9,:), linestyle='-');
 
 
 end

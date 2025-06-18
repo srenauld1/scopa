@@ -1,6 +1,6 @@
 function o = oset_noeb(o)
 
-rgname = {'eb4', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.mn.doroi = 1; 
 o.mn.dobmp = 1; 
@@ -13,7 +13,7 @@ o.daq.slopelensec = 0.4;
 
 
 o.bmp.slopelensec = 0.4;
-o.bmp.domtype = 'm';
+o.bmp.domtype = 'f';
 
 bmpindv.tg.daq = ['*'];
 bmpindv.tg.vnm = 'by';
@@ -23,6 +23,7 @@ o.bmp.indv = bmpindv;
 bmpdepv.tg.roi.rgname = 'eb';
 bmpdepv.tg.roi.domm = 1;
 bmpdepv.tg.roi.ma.maskseg = 'torus';
+bmpdepv.tg.roi.ma.numroi = 16;
 bmpdepv.tg.roi.nrm.post = 'f';
 bmpdepv.tg.vnm = 'ts';
 bmpdepv.tg.group = '1';
@@ -66,10 +67,10 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     % o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = [];
 
-    if strcmp(rgname{m}, 'eb4')
+    if strcmp(rgname{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
-        o.roi.ma.numroi = 32;
-        o.roi.mm.maskname = 'eb4';
+        o.roi.ma.numroi = 16;
+        o.roi.mm.maskname = 'eb';
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;

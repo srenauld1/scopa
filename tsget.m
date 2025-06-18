@@ -446,7 +446,11 @@ for w = 1:numel(varid)
             end
 
             for f = vnm
-                saved_var = saved_struct.(f{1});
+                try
+                    saved_var = saved_struct.(f{1});
+                catch
+                    saved_var = saved_struct.dat.(f{1});
+                end
                 if isempty(saved_var)
                     error("you are trying to load an empty variable; if this is domain 'roi', you may intend these to be pixel rois, which are not created separately from the stack; need to write this option here, where if domain is roi, we load or point to a spacetime reshaped stack")
                 end

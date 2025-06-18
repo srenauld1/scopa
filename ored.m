@@ -55,7 +55,7 @@ o(mtch_is_struct) = {struct('tg', [])}; %insert empty tg field for json to write
 o(dupes) = [];
 fnoflat(dupes) = [];
 o = cell2struct(o, fnoflat);
-o = structunflat(o, delim);
+o = structunflat(o, delim=delim);
 % structsv(o, '~/scopa/fool.txt', overwrite=1);
 % o = structld('~/scopa/fool.txt');
 % o3 = structflat(o);

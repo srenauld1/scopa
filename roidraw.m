@@ -92,6 +92,8 @@ try
 
 catch ME
 
+    clear mm %in case old mm was loaded and errored, remove this soon
+
     if isempty(stackmnt)
         error("input stack is empty, so if mm file doens't exist, you cannot create one; you got this message when you tried to load mm: " + ME.message + newline)
     end
@@ -136,7 +138,7 @@ end
 end
 
 
-function roimaskman_all_roi_all_z = roidraw_onechan(stackmnt, rgname, maskname, c, flag_oneroi, flag_rg, roialpha, cmap, fontsize, remove_overlap)
+function roimask_all_roi_all_z = roidraw_onechan(stackmnt, rgname, maskname, c, flag_oneroi, flag_rg, roialpha, cmap, fontsize, remove_overlap)
 
 
 title_prefix = ['RGNAME: "' rgname '", MASKNAME: "' maskname  '", channel: ' num2str(c)];
@@ -205,40 +207,40 @@ if draw_manual
     end
 
     numroiest = 200; %just to preallocate, a big number
-    roimaskman_all_roi_all_z = zeros(size(stackdraw, 1), size(stackdraw, 2), size(stackdraw, 3), numroiest, 'logical');
+    roimask_all_roi_all_z = zeros(size(stackdraw, 1), size(stackdraw, 2), size(stackdraw, 3), numroiest, 'logical');
 
     ir = 1;
     flag_quit_all_rois = 0; %quit flag will stop drawing rois altogether
     while ~flag_quit_all_rois
 
-        roimaskman_tmp2 = zeros(size(stackdraw, 1), size(stackdraw, 2), size(stackdraw, 3), 'logical');
+        roimask_tmp2 = zeros(size(stackdraw, 1), size(stackdraw, 2), size(stackdraw, 3), 'logical');
         szi = 1;
         while szi <= numfig_per_loop
 
-            [roimaskman_tmp, flag_quit_one_roi, flag_quit_all_rois, ir] = ...
+            [roimask_tmp, flag_quit_one_roi, flag_quit_all_rois, ir] = ...
                 roidraw_onefig(stackdraw, flag_oneim, flag_oneroi, flag_allz, flag_rg, draw_on_meanzt, ir, szi, title_prefix=title_prefix, roialpha=roialpha, cmap=cmap, fontsize=fontsize, remove_overlap=remove_overlap);
 
             if flag_oneim || flag_allz
-                roimaskman_tmp2 = roimaskman_tmp;
+                roimask_tmp2 = roimask_tmp;
             else
-                roimaskman_tmp2(:,:,szi) = roimaskman_tmp;
+                roimask_tmp2(:,:,szi) = roimask_tmp;
             end
 
             if szi == numfig_per_loop || flag_quit_one_roi || flag_quit_all_rois
 
                 if flag_oneim
-                    for ir = 1:size(roimaskman_tmp, 3)
-                        roimaskman_all_roi_all_z(:,:,:,ir) = roimaskman_tmp2(:,:,ir);
+                    for ir = 1:size(roimask_tmp, 3)
+                        roimask_all_roi_all_z(:,:,:,ir) = roimask_tmp2(:,:,ir);
                     end
                 else
                     if flag_allz
-                        roimaskman_all_roi_all_z = roimaskman_tmp2;
+                        roimask_all_roi_all_z = roimask_tmp2;
                     else
-                        roimaskman_all_roi_all_z(:,:,:,ir) = roimaskman_tmp2;
+                        roimask_all_roi_all_z(:,:,:,ir) = roimask_tmp2;
                     end
                     ir = ir + 1;
                 end
-                roimaskman_tmp2(:) = 0;
+                roimask_tmp2(:) = 0;
 
                 if flag_oneroi || flag_oneim %limited to one figure drawing session
                     flag_quit_all_rois = 1;
@@ -256,36 +258,38 @@ if draw_manual
 else
 
     draw_on_meanzt = 0;
-    roimaskman_all_roi_all_z = ones(szo(1), szo(2), 'logical'); %otherwise just ones
+    roimask_all_roi_all_z = ones(szo(1), szo(2), 'logical'); %otherwise just ones
 
 end
 
-if ~any(roimaskman_all_roi_all_z(:))
-    roimaskman_all_roi_all_z = ones(szo(1), szo(2), 'logical'); %otherwise just ones
+if ~any(roimask_all_roi_all_z(:))
+    roimask_all_roi_all_z = ones(szo(1), szo(2), 'logical'); %otherwise just ones
 end
 
 
 %% remove empty rois and save
 
-keepinds = find(any(reshape(roimaskman_all_roi_all_z, [], size(roimaskman_all_roi_all_z, 4))));%find nonempty rois, this works for 2d, 3d, 4d
-roimaskman_all_roi_all_z = roimaskman_all_roi_all_z(:,:,:,keepinds); %remove empty "rois", this works for 2d, 3d, 4d
+keepinds = find(any(reshape(roimask_all_roi_all_z, [], size(roimask_all_roi_all_z, 4))));%find nonempty rois, this works for 2d, 3d, 4d
+roimask_all_roi_all_z = roimask_all_roi_all_z(:,:,:,keepinds); %remove empty "rois", this works for 2d, 3d, 4d
 
 if draw_on_meanzt
-    roimaskman_all_roi_all_z = repmat(roimaskman_all_roi_all_z, [1 1 szo(3) 1]); %this projects the 2d mask across all z
+    roimask_all_roi_all_z = repmat(roimask_all_roi_all_z, [1 1 szo(3) 1]); %this projects the 2d mask across all z
 end
 
 
-if all(roimaskman_all_roi_all_z(:)==1) && ndims(roimaskman_all_roi_all_z)==2 && numel(szo)>2
-    roimaskman_all_roi_all_z = ones(szo(1), szo(2), szo(3), 'logical'); %insertiung this because i don't remember why the above creates 2d rather than 3d ones
+if all(roimask_all_roi_all_z(:)==1) && ndims(roimask_all_roi_all_z)==2 && numel(szo)>2
+    roimask_all_roi_all_z = ones(szo(1), szo(2), szo(3), 'logical'); %insertiung this because i don't remember why the above creates 2d rather than 3d ones
 end
 
 
 if remove_overlap %remove overlapping pixels
-    [rw,cl,zs]=ind2sub([size(roimaskman_all_roi_all_z, 1), size(roimaskman_all_roi_all_z, 2), size(roimaskman_all_roi_all_z, 3)], find(sum(roimaskman_all_roi_all_z, 4)>1));
+    [rw,cl,zs]=ind2sub([size(roimask_all_roi_all_z, 1), size(roimask_all_roi_all_z, 2), size(roimask_all_roi_all_z, 3)], find(sum(roimask_all_roi_all_z, 4)>1));
     for cli = 1:length(cl)
-        roimaskman_all_roi_all_z(rw(cli), cl(cli), zs(cli), :) = 0; %why do it this way?
+        roimask_all_roi_all_z(rw(cli), cl(cli), zs(cli), :) = 0; %why do it this way?
     end
 end
+
+
 
 
 end

@@ -1,10 +1,11 @@
-function roimaskout = roimauto(stack, roimaskin, widyxz, opt, opt2)
+function roimaskout = roimauto(stack, opt, opt2)
 
 arguments
     stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
-    roimaskin
-    widyxz
     opt
+    opt2.md = []
+    opt2.widyxz = []
+    opt2.roimaskin = []
     opt2.pthstack = []
     opt2.rg = []
     opt2.maskname = []
@@ -20,14 +21,12 @@ edgesig = opt.edgesig;
 celsz = opt.celsz;
 do3d = opt.do3d;
 
+md = opt2.md;
+widyxz = opt2.widyxz;
+roimaskin = opt2.roimaskin;
 pthstack = opt2.pthstack;
 rg = opt2.rg;
 maskname = opt2.maskname;
-
-if isempty(rg)
-    [~, rg] = stackcrop(stack, pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
-end
-rgname = rg.name;
 
 if size(stack,4)>1
     stackmnt = mean(stack,4);
@@ -36,6 +35,39 @@ else
 end
 
 numchan = size(stackmnt,5);
+
+if isempty(md)
+    md = glb('md');
+    if isempty(md)
+        md = mdsild(pthstack);
+    end
+end
+if isempty(widyxz)
+    widyxz = md.widyxz;
+end
+if isempty(roimaskin)
+    roimaskin = cell(numchan,1);
+end
+if isempty(rg)
+    [~, rg] = stackcrop(stack, pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
+end
+rgname = rg.name;
+
+
+cellout = 0;
+if iscell(roimaskin)
+    if numel(roimaskin)>1
+        cellout = 1;
+        if numchan==1
+            error("if numchan==1, roimask must be cell with numchan elements")
+        end
+    end
+else
+    if numchan>1
+        error("if numchan>1, roimask must be cell with numchan elements")
+    end
+    roimaskin = {roimaskin};
+end
 
 id = idmake(pthstack);
 fnsuffix = ['_' rgname '_' maskname '_ma'];
@@ -66,6 +98,8 @@ try
 
 catch ME
 
+    clear ma %in case old ma was loaded and errored, remove this soon
+
     for c = chan
         roimaskout{c} = roimauto_onechan(stackmnt(:,:,:,:,c), roimaskin{c}, numroi, widyxz, rgname, maskmake, maskseg, roirad, edgethr, edgesig, celsz, do3d);
         ma(c).mask = roimaskout{c};
@@ -76,13 +110,19 @@ catch ME
     end
 
     if chan==1 && numchan==2 %do this so that 2-channel data gets empty 2nd element if channel 2 has no auto rois, otherwise 2nd element wouldn't exist, which would mislead user into thinking it's single-channel data
-
+        ma(2) = structfun(@(x) [], ma, 'UniformOutput', false);
+    end
+    if ~exist('ma', 'var')
+        ma = [];
     end
 
     save(pthma, 'ma', '-v7.3') %save each channel's mask separately (could do it together instead, either way is fine right?)
 
 end
 
+if ~cellout
+    roimaskout = cell2mat(roimaskout);
+end
 
 end
 
@@ -201,7 +241,6 @@ else
 
         case 'e3d'
 
-
             if ndims(premask)<3
                 error("stackseg 'torus' requires nonsingleton yxz dimensions (can't be planar right now)")
             end
@@ -222,8 +261,8 @@ else
             xyz = pFit.unproject3D(  cell2mat(eFit.sample(smp0(1:end-1)))  ); %Post-sample the ellipse fit and map back to 3D
 
             roicentmp = xyz([2 1 3],:)';
-            roirad = [];
-            %
+
+            
             % [ ecnt, erad, evecs, ~, ~, ~, erts] = ellipsoid_fit_new( [maskxup, maskyup, maskzup] );
             %
             % % ertstmp = [eFit3d.roll, eFit3d.pitch, eFit3d.yaw];
@@ -551,7 +590,9 @@ if isempty(drawslice)
 
 else
 
-    doellipse = 0;
+    prompt = sprintf("ENTER 1 TO DRAW AN ELLIPSE, 0 TO DRAW A POLYGON: ");
+    commandwindow();
+    doellipse = input(prompt);
 
     stack = mean(stack(:,:,drawslice),3);
     hfg = figure;
@@ -613,7 +654,6 @@ if ~iscell(roicen)
     end
     roicen = roicentmp;
 end
-roirad = roirad*xwid; %roirad units are xwid (microns in x dimension)
 
 if zwid==0
     [umx, umy] = meshgrid(0:xwid:xwid*(size(stackmnt,2)-1), 0:ywid:ywid*(size(stackmnt,1)-1)); %microns

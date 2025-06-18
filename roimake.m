@@ -43,6 +43,9 @@ end
 
 numchan = size(stack,5);
 
+rg = [];
+mm = [];
+respcm = [];
 if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
@@ -60,6 +63,7 @@ else
         error("roimask must be cell, length numchan")
     end
 end
+
 
 
 try
@@ -121,6 +125,7 @@ catch ME
     %%%% AUTOMATED FUNCTIONAL SEGMENTATION (CAIMAN) %%%%
 
     if opt.docm && ~maskin
+        stack = [];
         [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, maskname=maskname);
     end
 
@@ -129,25 +134,20 @@ catch ME
     %%%% QUALITY CONTROL %%%%
 
     if opt.doqc && ~maskin
-        roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm = trm, roicen = roidat.roicen, mask_allroi = roidat.mask_allroi);
+        roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm=trm, roicen=roidat.roicen, mask_allroi=roidat.mask_allroi);
     end
 
 
 
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
-    if ~exist('respcm', 'var')
-        ts = roits(stack, roimask, stackmnt, sper, t, opt.nrm);
-    else
-        ts = roits(respcm, roimask, stackmnt, sper, t, opt.nrm);
-    end
+    [ts, roimask] = roits(opt.nrm, stack=stack, respcm=respcm, roimaskin=roimask, sper=sper, t=t);
 
 
 
     %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
 
     roi.dat = roidatmake(stackmnt, roimask, ts, rg, mm, pthstack);
-    % roi.dat = roidatmake(repmat(stackmnt, [1 1 1 1 2]), {roimask{1}, []}, repelem({ts}, 2), rg, repelem(mm,2), pthstack);
 
 
 

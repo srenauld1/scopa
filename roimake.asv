@@ -43,6 +43,9 @@ end
 
 numchan = size(stack,5);
 
+rg = [];
+mm = [];
+respcm = [];
 if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
@@ -62,6 +65,7 @@ else
 end
 
 
+
 try
 
 
@@ -74,7 +78,7 @@ try
         error("roi id is derived from an optid file different from original")
     end
     [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg
-    mm = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
+    [~, mm] = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
     end
@@ -136,17 +140,14 @@ catch ME
 
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
-    if ~exist('respcm', 'var')
-        ts = roits(stack, roimask, stackmnt, sper, t, opt.nrm);
-    else
-        ts = roits(respcm, roimask, stackmnt, sper, t, opt.nrm);
-    end
+    stack = repmat(stack, [1 1 1 10 1]);
+    ts = roits(opt.nrm, stack=stack, respcm=respcm, roimask=roimask, sper=sper, t=t);
 
 
 
     %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
 
-    roi.dat = roidatmake(repmat(stackmnt, [1 1 1 1 2]), {roimask{1}, []}, repelem({ts}, 2), rg, repelem(mm,2), pthstack);
+    roi.dat = roidatmake(stackmnt, roimask, ts, rg, mm, pthstack);
 
 
 

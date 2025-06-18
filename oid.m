@@ -109,7 +109,7 @@ for k = 1:numel(vbin)
                             for q = 1:numel(fnr)
                                 opttmp{k2}.(fnr{q}) = optinert.(fnr{q});
                             end
-                            opttmp{k2} = structunflat(opttmp{k2}, delim);
+                            opttmp{k2} = structunflat(opttmp{k2}, delim=delim);
                             optout.(optid{k2}) = opttmp{k2};
                         end
                     end
@@ -121,7 +121,7 @@ for k = 1:numel(vbin)
                     for q = 1:numel(fnr)
                         opttmp.(fnr{q}) = optinert.(fnr{q});
                     end
-                    opttmp = structunflat(opttmp, delim);
+                    opttmp = structunflat(opttmp, delim=delim);
                     if ~isfield(opttmp, 'optid') %if optid itself is not field (shouldn't ever be right?) add it here 
                         opttmp.optid = optid;
                     end

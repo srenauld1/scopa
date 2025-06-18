@@ -11,7 +11,7 @@ o.bmp.domtype = 'm';
 
 bmpindv.tg.daq = ['*'];
 bmpindv.tg.vnm = 'vy';
-% bmpindv.tg.optid = 'a8';
+bmpdepv.tg.optid = 'a76';
 
 o.bmp.indv = bmpindv;
 
@@ -19,8 +19,8 @@ bmpdepv.tg.roi.rgname = 'eb';
 bmpdepv.tg.roi.domm = 1;
 bmpdepv.tg.roi.ma.maskseg = 'torus';
 bmpdepv.tg.roi.nrm.post = 'f';
+bmpdepv.tg.optid = 'a76';
 bmpdepv.tg.vnm = 'ts';
-% bmpdepv.tg.optid = 'a76';
 bmpdepv.tg.group = '1';
 
 o.bmp.depv = bmpdepv;

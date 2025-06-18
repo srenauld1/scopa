@@ -1,0 +1,83 @@
+function [common, outall] = fieldmatch(s, varargin, opt)
+
+arguments (Input)
+    s
+end
+arguments (Input,Repeating)
+    varargin
+end
+arguments (Input)
+    opt.lev = [];
+    opt.delim = [];
+end
+arguments (Output)
+    common
+    outall
+end
+lev = opt.lev;
+delim = opt.delim;
+
+if isempty(delim)
+    delim = '__';
+end
+
+sf = structflat(s, delim=delim);
+fna = fieldnames(sf);
+vala = struct2cell(sf);
+
+outall = cell(numel(varargin),1);
+for k = 1:numel(varargin)
+    if numel(varargin{k})>2
+        error("each criterion must be length 2 cell")
+    end
+    cr = strrep(varargin{k}{1}, '.', delim);
+    val = varargin{k}{end};
+    idxfn = contains(fna, cr);
+    idxval = cellfun(@(x) isequal(x,val), vala);
+    idx = idxfn & idxval;
+    if isempty(idx)
+        error(sprintf("no matches found for cr input number: " + num2str(k)))
+    end
+    fncr = fna(idx);
+    fncr = strrep(fncr, delim, '.');
+    for q = 1:numel(fncr)
+        chk = getfieldns(s, fncr{q});
+        if ~isequal(cell2mat(chk), val)
+            error("check failed")
+        end
+    end
+
+    outall{k} = fncr;
+end
+
+
+for k = 1:numel(outall)
+    if ~isempty(lev)
+        for q = 1:numel(outall{k})
+            tmp = strsplit(outall{k}{q}, '.');
+            outall{k} = strjoin(tmp, '.');
+        end
+    end
+    if k>1
+        for q = 1:numel(outall{k})
+            common = intersectchar(outall{k}{q});
+        end
+    end
+end
+
+if endsWith(outall{k}, '.')
+    outall{k} = outall{k}(1:end-1);
+end
+outall{k} = strsplit(outall{k}, '.');
+
+if ~isempty(lev)
+    outall{k} = outall{k}(lev);
+end
+
+if isscalar(common)
+    common = cell2mat(common);
+end
+
+
+
+end

@@ -59,6 +59,8 @@ end
 
 if isempty(indv) && isempty(depv)
     dotsget = 1;
+else
+    dotsget = 0;
 end
 
 its = 0;
