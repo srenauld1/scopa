@@ -238,11 +238,11 @@ catch ME
     rho = rho';
 
     if smlensec
-        mu = tssm('circular', mu, smlensec, sper);
+        mu = tssm('radians', mu, smlensec, sper);
         rho = tssm('normal', rho, smlensec, sper);
     end
 
-    bumpvel = tsdv('circular', mu, slopelensec, slopeord, sper);
+    bumpvel = tsdv('radians', mu, slopelensec, slopeord, sper);
     offset = circ_dist_nan(indv.', mu);
 
     [~, k] = mink(abs(domain'-mu), numcirc, 2); %find indexes corresponding to bump position in each time point

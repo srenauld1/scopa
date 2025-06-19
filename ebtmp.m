@@ -34,11 +34,11 @@ stackplt3(stack, it=te2, style='MaximumIntensityProjection')
             o.mdl.(m{1}).depv.tg=[];
 
             bmpmu = bmp.a1.mu;
-            bmpvel = tsdv('circular', bmpmu, 0.2, 2, md.sper);
+            bmpvel = tsdv('radians', bmpmu, 0.2, 2, md.sper);
             ballyaw = daq.a1.by;
-            ballvel = tsdv('circular', -ballyaw, 0.2, 2, md.sper);
+            ballvel = tsdv('radians', -ballyaw, 0.2, 2, md.sper);
             cueyaw = daq.a1.vy;
-            cuevel = tsdv('circular', cueyaw, 0.2, 2, md.sper);
+            cuevel = tsdv('radians', cueyaw, 0.2, 2, md.sper);
 
             indv = [ballvel; bmpvel];
             indv = [ballvel; cuevel];

@@ -81,7 +81,7 @@ halfboutlensec = boutlensec/2;
 
 tol_dv = 1;
 dv = rad2deg(tsdv('radians', visyaw, dvlensec, dvord, sper)); %derivative
-dvdv = rad2deg(tsdv('normal', dvdv, dvlensec, dvord, sper)); %derivative
+dvdv = rad2deg(tsdv('normal', visyaw, dvlensec, dvord, sper)); %derivative
 
 fuk = movmedian(dv, 1/sper);
 halfwin = 3;

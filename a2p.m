@@ -60,7 +60,7 @@ for k = 1:numel(oa) % loop over recordings
     %% flymax
 
     if o.mn.dofmf
-        for m = transpose(fieldnames(o.fmf))d 
+        for m = transpose(fieldnames(o.fmf))d
             [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(pth.stack, o.fmf.(m{1})); %extract flymax visual features
         end
     end
@@ -92,7 +92,7 @@ for k = 1:numel(oa) % loop over recordings
     %% specific
 
 
-    
+
     inl = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'left'}, lev=1);
     inr = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'right'}, lev=1);
     igld = fieldmatch(roi, {'rg.name', 'gal'}, {'mm.maskname', 'dorsal'}, lev=1);
@@ -102,7 +102,6 @@ for k = 1:numel(oa) % loop over recordings
     ieb = fieldmatch(roi, {'rg.name', 'eb'}, {'mm.maskname', 'eb'}, lev=1);
     idaq = fieldmatch(daq, lev=1);
     ibmp = fieldmatch(bmp, lev=1);
-    ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, pth.pre, plt=[1 1 0 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.(idaq).epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[0.4], bmpdomain=bmp.(ibmp).domain, widyxz=md.widyxz, drawrot=[], sliceeb=[])
 
     % t5tmp
     % ebtmp
@@ -127,8 +126,8 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=1:.01:200, ... 50:.01:200, ...
-        dozscore=1, ...
+        tsub=660:.01:760, ... 50:.01:200, ...
+        dozscore=0, ...
         drawrot=68, ...
         sliceeb=19)
 
@@ -174,41 +173,62 @@ for k = 1:numel(oa) % loop over recordings
 
     %%
 
+    t = glb('t');
 
     gld = roi.(igld).dat(1).ts;
     glv = roi.(iglv).dat(1).ts;
     grd = roi.(igrd).dat(1).ts;
     grv = roi.(igrv).dat(1).ts;
 
-    % [~, igld, iglv, igrd, igrv] = sampepoch(daq.(idaq).epochts, [2], igld, iglv, igrd, igrv); 
+    dvlen = md.sper*6;
+    dvord = 3;
+    glddv = tsdv('normal', gld, dvlen, dvord, md.sper);
+    glvdv = tsdv('normal', glv, dvlen, dvord, md.sper);
+    grddv = tsdv('normal', grd, dvlen, dvord, md.sper);
+    grvdv = tsdv('normal', grv, dvlen, dvord, md.sper);
+
+
+    % [~, igld, iglv, igrd, igrv] = sampepoch(daq.(idaq).epochts, [2], igld, iglv, igrd, igrv);
 
     hfg = figure;
     hax = axes(parent=hfg);
     hold on;
-    % scatter(igld, igrd)
-    % scatter(iglv, igrv)
-    scatter(hax, gld, glv)
-    scatter(hax, grd, grv)
+
+    if dodv
+        scatter(hax, glddv, glvdv)
+        scatter(hax, grddv, grvdv)
+    else
+        scatter(hax, gld, glv)
+        scatter(hax, grd, grv)
+    end
 
     %%
+
+    dodv = 1
 
     cmap = lines(8); %'lines' predefined colormap is the default for function 'plot'
     cmap = cat(1, cmap, [0 0 0]); %add black
 
-    t = glb('t');
 
     hfg = figure;
     hax = axes(parent=hfg);
     hold on;
-    plot(t, gld, color=cmap(1,:), linestyle='-');
-    plot(t, glv, color=cmap(1,:), linestyle=':', linewidth=2);
-    plot(t, grd, color=cmap(2,:), linestyle='-');
-    plot(t, grv, color=cmap(2,:), linestyle=':', linewidth=2);
+    if dodv
+        plot(t, glddv, color=cmap(1,:), linestyle='-');
+        plot(t, glvdv, color=cmap(1,:), linestyle=':', linewidth=2);
+        plot(t, grddv, color=cmap(2,:), linestyle='-');
+        plot(t, grvdv, color=cmap(2,:), linestyle=':', linewidth=2);
+    else
+        plot(t, gld, color=cmap(1,:), linestyle='-');
+        plot(t, glv, color=cmap(1,:), linestyle=':', linewidth=2);
+        plot(t, grd, color=cmap(2,:), linestyle='-');
+        plot(t, grv, color=cmap(2,:), linestyle=':', linewidth=2);
+    end
     ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;
     bff = rescale(daq.(idaq).bfv, -pi, pi);
     hpl21 = plot(t, daq.(idaq).vy, color=cmap(3,:), linestyle='-');
-    hpl23 = plot(t, bff, color=cmap(4,:), linestyle='-'); 
+    hpl23 = plot(t, bff, color=cmap(4,:), linestyle='-');
     hpl22 = plot(t, -daq.(idaq).by, color=cmap(end,:), linestyle='-');
     hpl21.Parent.YAxis(2).Color = [0 0 0];
     pthsv = ['~/stacks/gall.fig'];
@@ -216,30 +236,21 @@ for k = 1:numel(oa) % loop over recordings
 
     %%
 
-    dvlen = md.sper*6;
-    dvord = 3;
-
-    igld_dv = tsdv('normal', gld, md.sper*6, dvord, md.sper);
-    iglv_dv = tsdv('normal', glv, md.sper*6, dvord, md.sper);
-    igrd_dv = tsdv('normal', grd, md.sper*6, dvord, md.sper);
-    igrv_dv = tsdv('normal', grv, md.sper*6, dvord, md.sper);
-
-    t = glb('t');
 
     hfg = figure;
     hax = axes(parent=hfg);
     hold on;
-    plot(t, igld_dv, color=cmap(1,:), linestyle='-');
-    plot(t, iglv_dv, color=cmap(1,:), linestyle=':', linewidth=2);
-    plot(t, igrd_dv, color=cmap(2,:), linestyle='-');
-    plot(t, igrv_dv, color=cmap(2,:), linestyle=':', linewidth=2);
+    plot(t, glddv, color=cmap(1,:), linestyle='-');
+    plot(t, glvdv, color=cmap(1,:), linestyle=':', linewidth=2);
+    plot(t, grddv, color=cmap(2,:), linestyle='-');
+    plot(t, grvdv, color=cmap(2,:), linestyle=':', linewidth=2);
     ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;
     hpl21 = plot(t, daq.(idaq).vy, color=cmap(3,:), linestyle='-');
     hpl22 = plot(t, -daq.(idaq).by, color=cmap(end,:), linestyle='-');
     hpl21.Parent.YAxis(2).Color = [0 0 0];
 
-    %% 
+    %%
 
 
     cmap = lines(8);

@@ -447,15 +447,15 @@ end
 
 yfeat = [];
 for k = 1:num_xy_pairs
-    if ~isempty(cell2mat(cellflat(xfeat{k}))) && ~isempty(xfeat{k})
+    if ~isempty(xfeat{k}) && ~isempty(cell2mat(cellflat(xfeat{k}))) 
         if isscalar(xfeat{k})
             if ~tsp
                 xfeat{k} = repelem(xfeat{k}, size(y{k},1));
             end
         else
-            if ~isequal(numel(xfeat{k}), size(y{k},1))
-                error("xmark must have same number of outer cells as xy pairs")
-            end
+            % if ~isequal(numel(xfeat{k}), size(y{k},1))
+            %     error("xmark must have same number of outer cells as xy pairs")
+            % end
         end
         for m = 1:numel(xfeat{k})
             if tsp
@@ -463,11 +463,13 @@ for k = 1:num_xy_pairs
                 xref = xref(1:end-1);
                 tmp = interp1(xref, x{k}, xfeat{k}{m}(idx), 'linear', 'extrap'); %match mark to input x
                 xfeat{k} = num2cell(tmp);
-                yfeat{k}{m} = interp1(x{k}, y{k}(:,m), xfeat{k}{m}, 'nearest'); %then find corresponding y
+                % why did we use m to index into y ever, like this: yfeat{k}{m} = interp1(x{k}, y{k}(:,m), xfeat{k}{m}, 'nearest'); %then find corresponding y
+                yfeat{k}{m} = interp1(x{k}, y{k}, xfeat{k}{m}, 'nearest'); %then find corresponding y
             else
                 tmp = interp1(x{k}, x{k}, xfeat{k}{m}, 'nearest'); %match mark to input x
                 xfeat{k}{m} = tmp(~isnan(tmp));
-                yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}(m,:)), xfeat{k}{m}, 'nearest')); %then find corresponding y
+                % why did we use m to index into y ever, like this: yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}(m,:)), xfeat{k}{m}, 'nearest')); %then find corresponding y
+                yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}), xfeat{k}{m}, 'nearest')); %then find corresponding y
             end
         end
     end

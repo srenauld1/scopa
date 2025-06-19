@@ -21,9 +21,11 @@ if slopelen<slopeord+1
     error("movingslope will error because slopelen is less than slopeord+1; your value of slopelensec, given value of sper (sample period), gives slopelen less than slopeord+1; use a different slopelen and/or slopeord (likely just slopelen should be changed)")
 end
 
-if strcmp(vtype, 'circular') % differentiate circular variable 
+if strcmp(vtype, 'radians') || strcmp(vtype, 'degrees') % differentiate circular variable 
 
-    fprintf("USER REQUESTED 'circular' vtype, input must be in radians; assuming that it is and proceeding" + newline)
+    if strcmp(vtype, 'degrees')
+        tsin = deg2rad(tsin);
+    end
 
     inpx = cos(tsin);
     inpy = sin(tsin);
@@ -49,4 +51,9 @@ else
 
     error("vtype must be circular, normal, or categorical")
 
+end
+
+
+if strcmp(vtype, 'degrees')
+    dv = rad2deg(dv);
 end

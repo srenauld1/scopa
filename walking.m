@@ -92,7 +92,7 @@ for j = 1:numel(allposx)
         % allintxgood{count} = allintx{j}*ball_radius;
         % allintygood{count} = allinty{j}*ball_radius;
 
-        allvelx{count} = tsdv('circular', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
+        allvelx{count} = tsdv('radians', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
         cumvelxtmp = cumsum(allvelx{count});
         cumvelx(count) = cumvelxtmp(end);
 
@@ -104,7 +104,7 @@ for j = 1:numel(allposx)
         cumvelxthreshtmp = cumsum(allvelxthresh{count});
         cumvelxthresh2(count) = cumvelxthreshtmp(end);
 
-        allvely{count} = tsdv('circular', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
+        allvely{count} = tsdv('radians', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
         cumvelytmp = cumsum(allvely{count});
         cumvely(count) = cumvelytmp(end);
 

@@ -132,13 +132,13 @@ end
 
 
 noz = zscore(no);
-nodv = tsdv('circular', no, slopelensec, slopeord, sper);
+nodv = tsdv('radians', no, slopelensec, slopeord, sper);
 
-bumpdv = tsdv('circular', bump, slopelensec, slopeord, sper);
+bumpdv = tsdv('radians', bump, slopelensec, slopeord, sper);
 bumpdvrs = bumpdv*pi/max(abs(bumpdv));
 
 ballinv = -ball;
-ballinvdv = tsdv('circular', ballinv, slopelensec, slopeord, sper);
+ballinvdv = tsdv('radians', ballinv, slopelensec, slopeord, sper);
 ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
 
 if yconst
@@ -214,10 +214,10 @@ if ~isempty(plt) && plt(1)
 
     dodv = 1;
     if dodv %all derivatives
-        ballplot = tsdv('circular', ballinv, slopelensec_alt, slopeord_alt, sper);
-        cueplot = tsdv('circular', cue, slopelensec_alt, slopeord_alt, sper);
-        bumpplot = tsdv('circular', bump, slopelensec_alt, slopeord_alt, sper);
-        bump2plot = tsdv('circular', bump2, slopelensec_alt, slopeord_alt, sper);
+        ballplot = tsdv('radians', ballinv, slopelensec_alt, slopeord_alt, sper);
+        cueplot = tsdv('radians', cue, slopelensec_alt, slopeord_alt, sper);
+        bumpplot = tsdv('radians', bump, slopelensec_alt, slopeord_alt, sper);
+        bump2plot = tsdv('radians', bump2, slopelensec_alt, slopeord_alt, sper);
     else
         ballplot = ballinvnan;
         cueplot = cuenan;
@@ -311,7 +311,7 @@ if ~isempty(plt) && plt(1)
     %     kp11 = zeros(size(epochts), 'logical');
     %     kp11 = kp11 | ismember(epochts, epochx(k));
     %     kp11 = kp11(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
-    %     cuedv = tsdv('circular', cue, slopelensec_alt, slopeord_alt, sper);
+    %     cuedv = tsdv('radians', cue, slopelensec_alt, slopeord_alt, sper);
     %     subplot(2,2,k)
     %     scatter(eb(glom,kp11), cuedv(kp11), 'filled')
     %     ylim([-3.4,3.4])
@@ -327,7 +327,7 @@ if ~isempty(plt) && plt(1)
     %     kp11 = zeros(size(epochts), 'logical');
     %     kp11 = kp11 | ismember(epochts, epochx(k));
     %     kp11 = kp11(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
-    %     cuedv = tsdv('circular', cue, slopelensec_alt, slopeord_alt, sper);
+    %     cuedv = tsdv('radians', cue, slopelensec_alt, slopeord_alt, sper);
     %     subplot(2,2,k)
     %     scatter(eb(glom,kp11), cuedv(kp11), 'filled')
     %     ylim([-3.4,3.4])
@@ -598,7 +598,7 @@ if ~isempty(plt) && plt(3)
 
     %%%%% EXCLUDE BY GLNO RESPONSE AMPLITUDE %%%%%
 
-    % nodvtmp = tsdv('circular', nodv, 0.3, 2, sper);
+    % nodvtmp = tsdv('radians', nodv, 0.3, 2, sper);
     % kp33 = nodvtmp<0;
     % % kp33 = nodvtmp>0;
     % [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp33, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);

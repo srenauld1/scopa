@@ -75,7 +75,11 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
             end
         end
 
-    elseif strcmp(vtype, 'circular')
+    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees') 
+
+        if strcmp(vtype, 'degrees')
+            tsin = deg2rad(tsin);
+        end
 
         inpx = cos(tsin);
         inpy = sin(tsin);
@@ -183,9 +187,11 @@ else %if inds are nonempty, average tsin during each index of inds
             tsout(k) = mean(tsin(inds_tmp{k})); %this is fast and arrayfun is not faster
         end
 
-    elseif strcmp(vtype, 'circular')
+    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees') 
 
-        fprintf("USER REQUESTED 'circular' vtype, input must be in radians; assuming that it is and proceeding" + newline)
+        if strcmp(vtype, 'degrees')
+            tsin = deg2rad(tsin);
+        end
 
         tsinx = cos(tsin);
         tsiny = sin(tsin);
@@ -210,5 +216,9 @@ else %if inds are nonempty, average tsin during each index of inds
     end
 
 
+end
+
+if strcmp(vtype, 'degrees')
+    tsout = rad2deg(tsout);
 end
 
