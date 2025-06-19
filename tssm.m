@@ -9,6 +9,10 @@ arguments
     sper
 end
 
+if ~ismember(vtype, {'normal', 'radians', 'degrees', 'categorical'})
+    error("first argument must be 'normal', 'radians', 'degrees', or 'categorical'")
+end
+
 smlen = round(smlensec / sper);
 
 if size(tsin, 2)>size(tsin, 1)

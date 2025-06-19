@@ -9,6 +9,9 @@ arguments
     inds = [] %resampling indices; if empty, resample tsin using resample function, to make tsout length match newlen; if numeric, resample using these indices, if cell, resample using these indices
 end
 
+if ~ismember(vtype, {'normal', 'radians', 'degrees', 'categorical'})
+    error("first argument must be 'normal', 'radians', 'degrees', or 'categorical'")
+end
 
 if size(tsin,1) < size(tsin, 2)
     tsin = tsin';
