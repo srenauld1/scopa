@@ -555,7 +555,7 @@ if isempty(drawslice)
 
     ax = axarr(stack);
     h = initfig();
-    h.st = initaxim(h.hfg, ax, stack, doui=1);
+    h.st = initaxim(h.hfg, stack, ax=ax, doui=1);
 
     user_input = [];
     roicen_nonuniform = {};

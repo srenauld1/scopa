@@ -94,14 +94,7 @@
       "g4vel",
       "g4velnom"
     ],
-    "vcircular": [
-      "ficTracIntSide",
-      "ficTracIntForward",
-      "ficTracYaw",
-      "ficTracHeading",
-      "g4panels",
-      "g4yaw"
-    ],
+    "vdegrees": "",
     "vnormal": [
       "Time",
       "heat",
@@ -109,6 +102,14 @@
     ],
     "voltmax": 10,
     "voltmin": 0,
+    "vradians": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
+    ],
     "vrenm": [
       "t: Time, time, T, t",
       "epochts: epoch",
@@ -246,7 +247,7 @@
       "g": "",
       "h": ""
     },
-    "timestr": "2025061817444386",
+    "timestr": "2025062212272052",
     "user": "youforgottossetuser"
   },
   "nestvalid": [

@@ -1,11 +1,11 @@
-function h = initaxim(hfg, ax, im, opt)
+function h = initaxim(hfg, im, opt)
 
 %init axes for images 
 
 arguments
     hfg
-    ax struct
     im
+    opt.ax = []
     opt.ydir = 'reverse' %default reverses y for images because we typically think of them top-to-bottom 
     opt.stackp = [] %hack for rgb image for now
     opt.cmap = gray(256) %cmap or 'rgb'
@@ -23,6 +23,7 @@ arguments
     opt.notb = 0
     opt.noax = 1
 end
+ax = opt.ax;
 ydir = opt.ydir;
 stackp = opt.stackp;
 cmap = opt.cmap;
@@ -40,6 +41,9 @@ notim = opt.notim;
 notb = opt.notb;
 noax = opt.noax;
 
+if isempty(ax)
+    ax = axarr(im);
+end
 if ~isempty(stackp)
     im = stackp;
     stackp = [];

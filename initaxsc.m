@@ -2,7 +2,7 @@ function hgroup = initaxsc(hfg, ax, doui, scatter_type, mkrsz, blindspot, numsam
 
 arguments
     hfg
-    ax struct
+    ax
     doui
     scatter_type
     mkrsz
@@ -25,6 +25,10 @@ do_bar = 0;
 force_square = 0;
 numxtick = 20;
 bar_axisroomfac = 0.1;
+
+if isempty(ax)
+    ax = axarr(1);
+end
 
 numsubplot = numel(subplot_ind);
 if numel(widfac)==1 && numsubplot>1

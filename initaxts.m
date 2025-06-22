@@ -1,11 +1,11 @@
-function hgroup = initaxts(hfg, ax, ts, opt)
+function hgroup = initaxts(hfg, ts, opt)
 
 %init axis for timeseries plotting; can have multiple timeseries and right and left axes
 
 arguments
     hfg
-    ax struct
     ts
+    opt.ax = []
     opt.labs = []
     opt.cols = []
     opt.sector_ind = 1
@@ -22,6 +22,7 @@ arguments
     opt.varaxside = [] %length n vector of axis side indices for n timeseries; n=size(ts,1); axis side index is 1 for left, 2 for right, and 0 to skip plotting
     opt.notb = 0
 end
+ax = opt.ax;
 labs = opt.labs;
 cols = opt.cols;
 sector_ind = opt.sector_ind;
@@ -39,6 +40,9 @@ varaxside = opt.varaxside;
 notb = opt.notb;
 
 
+if isempty(ax)
+    ax = axarr(1);
+end
 if isempty(labs)
     labs = repelem({''}, size(ts,1));
 end

@@ -7,7 +7,7 @@ includes volume and frame flyback samples, then uses mod to convert to daqinds.s
 then, operates on daq variables according to coincident slice index, creating a different timeseries for each slice index
 this occurs differently according to daq variable type
 for 'normal' daq variables, averages daq variables during each frame,
-for 'circular' daq variables, does the same but operates on x and y components 
+for 'radians' daq variables, does the same but operates on x and y components 
 for 'categorical' daq variables (integers treated categorically), finds same but uses nearest neighbor interp
 only variables listed in daqvars will be processed; anything listed in daqvars but not found on daq is skipped
 averaging by frame allows comparisons between imaging and behavior to have greater resolution in lag
@@ -65,7 +65,8 @@ end
 
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-vcircular = opt.vcircular; %list circular daq variables you want to process
+vradians = opt.vradians; %list circular daq variables you want to process
+vdegrees = opt.vdegrees; %list circular daq variables you want to process
 vcategorical = opt.vcategorical; %list categorical daq variables you want to process
 toballscale = opt.toballscale; %define which vars to rescale from radians to mm
 tounwrap = opt.tounwrap;  %define which vars to unwrap
@@ -90,8 +91,11 @@ idxreg = 'start';  %hard coding this because its effect on our 10khz daqs minisc
 if ~isstring(vnormal)
     vnormal = string(vnormal); %could also convert to char here
 end
-if ~isstring(vcircular)
-    vcircular = string(vcircular); %could also convert to char here
+if ~isstring(vradians)
+    vradians = string(vradians); %could also convert to char here
+end
+if ~isstring(vdegrees)
+    vdegrees = string(vdegrees); %could also convert to char here
 end
 if ~isstring(vcategorical)
     vcategorical = string(vcategorical); %could also convert to char here
@@ -150,7 +154,8 @@ try
         end
 
         daqvars.normal = vnormal;
-        daqvars.circular = vcircular;
+        daqvars.radians = vradians;
+        daqvars.degrees = vdegrees;
         daqvars.categorical = vcategorical;
 
         if round(slopelensec/sper)<slopeord+1
@@ -296,7 +301,7 @@ try
                         if isduration(tmp)
                             tmp = seconds(tmp); %convert to seconds, whatever the units
                         end
-                        if strcmp(vartype, 'circular')
+                        if strcmp(vartype, 'radians')
                             tmp = tmp / (voltmax-voltmin)*2*pi - pi; %put in range -pi to pi, 0 V assigned to -pi
                         end
                         if isequal(vec(unique(tmp)), [0;1])

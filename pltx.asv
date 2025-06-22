@@ -180,7 +180,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = pltexp_uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;

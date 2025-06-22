@@ -180,7 +180,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = pltexp_uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -258,7 +258,7 @@ while plotloop %loop is turned off if no user input
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    h.st = initaxim(h.hfg, ax, stack, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
+                    h.st = initaxim(h.hfg, stack, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
 
 
                     sector_ind = 1;
@@ -276,7 +276,7 @@ while plotloop %loop is turned off if no user input
                     drvid = [0 1];
                     douivid = 1;
                     doolvid = 1;
-                    h.vid = initaxim(h.hfg, ax, vid, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
+                    h.vid = initaxim(h.hfg, vid, ax=ax, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
 
 
                 end

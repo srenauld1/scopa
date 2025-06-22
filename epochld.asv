@@ -1,4 +1,4 @@
-function [visyaw, visyawvel, epochts, vepochs] = epochld(recdate, t, visyaw, visyawvel, sper, doplt)
+function [visyaw, visyawvel, epochts, vepochs] = epochld(recdate, t, visyaw, visyawvel, sper, opt)
 
 % if it was created/saved during experiment, load 'epochs' (struct containing info about stimulus state during trial, including field epochts, a vector representing stimulus state for each sample of trial)
 % if it doesn't exist, create it here with a hack, using derivative of g4panels yaw
@@ -19,8 +19,10 @@ arguments
     visyaw
     visyawvel
     sper
-    doplt = []
+    opt.doplt = []
 end
+doplt = opt.doplt;
+
 
 
 startepoch = 1; %CAREFUL, IF THIS IS WRONG IT could ALL BE WRONG; which epoch should start the sequence; should always be 1 since closed loop (epoch 6) runs for a full minute first, to account for imaging delay, which has never been more than 50 seconds
@@ -30,8 +32,8 @@ if recdate>20250207
     closed_initial_len_sec = 300; %length of initial closed loop epoch (used for padding because of imaging delay)
     dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 elseif recdate<20240101
-    boutlensec = 8; %bout length in seconds
-    closed_initial_len_sec = 300; %length of initial closed loop epoch (used for padding because of imaging delay)
+    boutlensec = 20; %bout length in seconds
+    closed_initial_len_sec = 60; %length of initial closed loop epoch (used for padding because of imaging delay)
     dvnom = [20 80 -20 -80 0]; %nominal derivative for each epoch
 else
     boutlensec = 20; %bout length in seconds
@@ -77,29 +79,6 @@ halfboutlensec = boutlensec/2;
 
 %%% find boutlensec-second windows whose median derivative matches expected %%%
 
-%% 
-
-tol_dv = 1;
-dv = rad2deg(tsdv('radians', visyaw, dvlensec, dvord, sper)); %derivative
-dvdv = rad2deg(tsdv('normal', visyaw, dvlensec, dvord, sper)); %derivative
-
-fuk = movmedian(dv, 1/sper);
-halfwin = 3;
-kp = zeros(size(fuk), 'logical');
-for k = halfwin+1:numel(fuk)-halfwin
-    winn(k) = mean(fuk(k-halfwin:k+halfwin));
-    if any(abs(winn(k)-dvnom(1:end-1)')<=tol_dv)
-        kp(k) = 1;
-    else
-        kp(k) = 0;
-    end
-end
-dv2 = dv;
-dv2(~kp) = nan;
-tsplt(visyaw, dv2, xall=t, ylimtype='each')
-
-%% 
-
 
 visyawtmp = visyaw;
 for iter = 1:numiter
@@ -112,7 +91,7 @@ for iter = 1:numiter
         end
 
         yawdeg = rad2deg(visyawtmp); %convert to degrees because tolerance is in degrees and we like degrees more anyway
-        dv = rad2deg(tsdv('radians', deg2rad(yawdeg), dvlensec, dvord, sper)); %derivative
+        dv = tsdv('degrees', yawdeg, dvlensec, dvord, sper); %derivative
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
         lminfnd = find(lmin);
@@ -238,7 +217,7 @@ if success
     %the old way used ocld (not ocld2) IN EPOCHIDGET [epochs, epochinds_old] = epochset(t, id.recdatenum, daq_delay); %%%%%% DEFINE STIM EPOCH INFO AND EXPECTED INDS IN THIS SCRIPT, WILL BE DEPRECATED WHEN SOCKET CODE SAVES EPOCH INDICES DURING EXPERIMENT   %%%%%%%%%  %%%%%%%%%
 
     if doplt
-        tsplt(visyaw, single(epochts), xall=t, ylimtype='each', xseg=xseg);
+        tsplt(visyaw, epochts, xall=t, ylimtype='each', xseg=xseg);
     end
 
 

@@ -187,8 +187,10 @@ for k = 1:numel(oa) % loop over recordings
     grddv = tsdv('normal', grd, dvlen, dvord, md.sper);
     grvdv = tsdv('normal', grv, dvlen, dvord, md.sper);
 
+    iepoch = 1:6;
 
-    % [~, igld, iglv, igrd, igrv] = sampepoch(daq.(idaq).epochts, [2], igld, iglv, igrd, igrv);
+    [~, gld, glv, grd, grv] = sampepoch(daq.(idaq).epochts, iepoch, gld, glv, grd, grv);
+    [~, glddv, glvdv, grddv, grvdv] = sampepoch(daq.(idaq).epochts, iepoch, glddv, glvdv, grddv, grvdv);
 
     hfg = figure;
     hax = axes(parent=hfg);
@@ -210,8 +212,9 @@ for k = 1:numel(oa) % loop over recordings
     cmap = cat(1, cmap, [0 0 0]); %add black
 
 
-    hfg = figure;
-    hax = axes(parent=hfg);
+    h = initfig();
+    h.ts = initaxts(h.hfg, glddv, t=t, dool=dool, doui=1, subplot_ind=subplot_ind);
+
     hold on;
     if dodv
         plot(t, glddv, color=cmap(1,:), linestyle='-');

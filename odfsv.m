@@ -76,7 +76,8 @@ d.mn.pthpy = ''; %path to python executable
 
 d.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
 d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-d.daq.vcircular = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
+d.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
+d.daq.vdegrees = [""]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
 d.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
 d.daq.toballscale = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to rescale from radians to mm
 d.daq.tounwrap = ["ficTracIntSide", "ficTracIntForward"]; % list which vars to unwrap

@@ -1,5 +1,6 @@
 function todo()
 
+disp("flag_single_roi_per_stack does not force contiguity right? should we even have this?")
 disp("deal with stackplt looking dim")
 disp("deal with stackplt not working to show rois for non volumetric stack ")
 disp("eventually make rg and mm have check that stack input has not changed, with stack's optid from sld")

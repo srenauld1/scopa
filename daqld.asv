@@ -65,7 +65,7 @@ end
 
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-vcircular = opt.vcircular; %list circular daq variables you want to process
+vradians = opt.vradians; %list circular daq variables you want to process
 vcategorical = opt.vcategorical; %list categorical daq variables you want to process
 toballscale = opt.toballscale; %define which vars to rescale from radians to mm
 tounwrap = opt.tounwrap;  %define which vars to unwrap
@@ -90,8 +90,8 @@ idxreg = 'start';  %hard coding this because its effect on our 10khz daqs minisc
 if ~isstring(vnormal)
     vnormal = string(vnormal); %could also convert to char here
 end
-if ~isstring(vcircular)
-    vcircular = string(vcircular); %could also convert to char here
+if ~isstring(vradians)
+    vradians = string(vradians); %could also convert to char here
 end
 if ~isstring(vcategorical)
     vcategorical = string(vcategorical); %could also convert to char here
@@ -150,7 +150,7 @@ try
         end
 
         daqvars.normal = vnormal;
-        daqvars.circular = vcircular;
+        daqvars.circular = vradians;
         daqvars.categorical = vcategorical;
 
         if round(slopelensec/sper)<slopeord+1

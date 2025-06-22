@@ -104,7 +104,7 @@ catch ME
     %%%% DRAW ROIS %%%%
 
     if opt.domm && ~maskin
-        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1
+        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1 %if multiple automated morphological rois, only one drawn roi is allowed 
             oneroidraw = 1;
         else
             oneroidraw = 0;
@@ -112,6 +112,13 @@ catch ME
         [roimask, mm] = roidraw(stack, pthstack, roimaskin=roimask, rg=rg, maskname=maskname, methodmm=opt.mm.methodmm, oneroi=oneroidraw);
     end
 
+
+    sz = size(stack);
+    stack = reshape(stack, size(stack,1), size(stack,2), []);
+    for k = 1:size(stack,3)
+        stack(:,:,k) = imrotate(stack(:,:,k), 180);
+    end
+    stack = reshape(stack, sz);
 
 
     %%%% AUTOMATED MORPHOLOGICAL SEGMENTATION %%%%
@@ -125,6 +132,7 @@ catch ME
     %%%% AUTOMATED FUNCTIONAL SEGMENTATION (CAIMAN) %%%%
 
     if opt.docm && ~maskin
+        stack = [];
         [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, maskname=maskname);
     end
 
@@ -133,15 +141,14 @@ catch ME
     %%%% QUALITY CONTROL %%%%
 
     if opt.doqc && ~maskin
-        roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm = trm, roicen = roidat.roicen, mask_allroi = roidat.mask_allroi);
+        roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm=trm, roicen=roidat.roicen, mask_allroi=roidat.mask_allroi);
     end
 
 
 
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
-    stack = repmat(stack, [1 1 1 10 1]);
-    ts = roits(opt.nrm, stack=stack, respcm=respcm, roimask=roimask, sper=sper, t=t);
+    [ts, roimask] = roits(opt.nrm, stack=stack, respcm=respcm, roimaskin=roimask, sper=sper, t=t);
 
 
 

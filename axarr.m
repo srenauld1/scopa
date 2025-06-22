@@ -44,7 +44,7 @@ if ~iscell(layout)
 end
 
 if isempty(splitfrac)
-    if numel(layout)==1
+    if isscalar(layout)
         splitfrac = 1;
     else
         splitfrac = repelem(1/numel(layout), numel(layout)-1);
@@ -56,6 +56,13 @@ if numel(splitfrac)~=numel(layout) && numel(splitfrac)~=numel(layout)-1
 end
 
 num_sectors = numel(layout);
+
+for k = 1:num_sectors
+    if isscalar(layout{k})
+        layout{k} = [layout{k}, 1]; %if scalar layout, column axes are default
+    end
+end
+
 if num_sectors==1 && splitfrac~=1
     error("for single sector, don't pass splitfrac argument, or pass value of 1")
 end

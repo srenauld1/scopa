@@ -261,7 +261,7 @@ if ~isempty(plt) && plt(1)
 
     subplot_ind = 1;
     htfac = 1;
-    h.st = initaxim(h.hfg, ax, eb, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    h.st = initaxim(h.hfg, eb, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
 
     hold(h.st.hax{1}, "on")
     h.st.hpl{1}.XData = t;
@@ -278,7 +278,7 @@ if ~isempty(plt) && plt(1)
 
     % subplot_ind = 2;
     % htfac = 2;
-    % h.st = initaxim(h.hfg, ax, eb2, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    % h.st = initaxim(h.hfg, eb2, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
     % 
     % hold(h.st.hax{1}, "on")
     % h.st.hpl{1}.XData = t;
@@ -295,7 +295,7 @@ if ~isempty(plt) && plt(1)
 
 
     % subplot_ind = 1;
-    % h.ts = initaxts(h.hfg, ax, no, t=t, subplot_ind=subplot_ind);
+    % h.ts = initaxts(h.hfg, no, ax=ax, t=t, subplot_ind=subplot_ind);
 
     % title("eb pva blue, eb max(dv) red, cue yellow", Position=[0 1])
 

@@ -398,7 +398,7 @@ end
 
 ax = axarr(stack, marginax=marginax, marginfg=marginfg, stackjust=stackjust);
 h = initfig(fontsz=fontsz, szf=szf);
-h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
+h.st = initaxim(h.hfg, stack, ax=ax, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
 
 %% plot
 

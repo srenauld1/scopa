@@ -1,7 +1,7 @@
 
-function [vars, labs, lims, roipx, varcombos] = uiapply(cb, vars, labs, roipx, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = pltexp_uiapply(cb, vars, labs, roipx, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp)
 
-"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN uiapply "
+"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN pltexp_uiapply "
 
 ywid = widyxz(1);
 xwid = widyxz(2);
