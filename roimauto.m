@@ -319,8 +319,7 @@ else
             rots = -1*[0:5:180];
             stackmnzrot = {};
             for k = 1:numel(rots)
-                tform = rigidtform3d([rots(k),0,0], [0,0,0]);
-                [tmp, ov2] = imwarp(premaskup, imref3d(size(premaskup)), tform); %default output view is centeroutput
+                [tmp, ov2] = stackwarp(premaskup, rot=[rots(k),0,0]); %default output view is followoutput
                 tmp = mean(tmp, 3);
                 stackmnzrot{k} = tmp;
             end
@@ -337,8 +336,7 @@ else
             drawrot = input(prompt);
             drawrot = drawrot * -1;
             if drawrot
-                tform = rigidtform3d([drawrot,0,0], [0,0,0]);
-                [stackrot, ov2] = imwarp(premaskup, imref3d(size(premaskup)), tform); %default output view is centeroutput
+                [stackrot, ov2] = stackwarp(premaskup, rot=[drawrot,0,0]); %default output view is followoutput
             else
                 stackrot = premaskup;
             end

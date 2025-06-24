@@ -1,5 +1,6 @@
 function todo()
 
+disp("make sure all options have unique names (should not require enclosing field to be unique)")
 disp("flag_single_roi_per_stack does not force contiguity right? should we even have this?")
 disp("deal with stackplt looking dim")
 disp("deal with stackplt not working to show rois for non volumetric stack ")

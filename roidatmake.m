@@ -10,7 +10,7 @@ arguments
 end
 
 if iscell(roimask)
-    if isequal(sum(~cellfun(@isempty, roimaskin)), 0)
+    if isequal(sum(~cellfun(@isempty, roimask)), 0)
         error("roimask cannot be empty")
     end
 else

@@ -100,11 +100,10 @@ catch ME
     stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (don't use glb('stackmnt') because that is the whole fov)
 
 
-
     %%%% DRAW ROIS %%%%
 
     if opt.domm && ~maskin
-        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1
+        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1 %if multiple automated morphological rois, only one drawn roi is allowed 
             oneroidraw = 1;
         else
             oneroidraw = 0;

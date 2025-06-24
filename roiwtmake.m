@@ -8,7 +8,7 @@ if ndims(roimask)>4
     error("roimask input to roiwtmake cannot have more than 4 dimensions (yxzr)")
 end
 if ndims(roimask)==3 && ~isempty(roimask)
-    fprintf("need to disambiguate singleton z with multiple rois, vs non-singleton z with one roi, ideally without requiring another input (should just make roi first dimension of roimask, rather than last, but that will require changing several functions")
+    fprintf("need to disambiguate singleton z with multiple rois, vs non-singleton z with one roi, ideally without requiring another input (should just make roi first dimension of roimask, rather than last, but that will require changing several functions" + newline)
 end
 
 dmroi = 4;%ndims(roimask);

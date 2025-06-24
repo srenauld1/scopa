@@ -91,8 +91,6 @@ for k = 1:numel(oa) % loop over recordings
 
     %% specific
 
-
-
     inl = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'left'}, lev=1);
     inr = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'right'}, lev=1);
     igld = fieldmatch(roi, {'rg.name', 'gal'}, {'mm.maskname', 'dorsal'}, lev=1);
@@ -273,6 +271,15 @@ for k = 1:numel(oa) % loop over recordings
     yyaxis right; hold on;
     plot(glb('t'), daq.(idaq).by, color=cmap(3,:));
     plot(glb('t'), daq.(idaq).vy, color=cmap(9,:), linestyle='-');
+
+
+    %%
+
+    tic; tmp = stack(:,:,:,800:1200); [fukdb, psfe] = stackdb(tmp, doiso=1, widyxz=md.widyxz, itplt=1:4:400, dmplt='yxz(t)'); toc;
+
+
+    %%
+
 
 
 end

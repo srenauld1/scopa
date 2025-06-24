@@ -1,6 +1,6 @@
 function [common, outall] = fieldmatch(s, varargin, opt)
 
-%find fieldname in struct (can be nested)
+%find fieldname in struct (struct can be nested and nonscalar)
 
 arguments (Input)
     s
@@ -21,6 +21,11 @@ lev = opt.lev;
 multi = opt.multi;
 delim = opt.delim;
 
+if ~isempty(lev)
+    if ~isequal(lev, sort(lev), min(lev):max(lev)) || any(mod(lev,1)) || any(lev<1)
+        error("lev must be empty, or a positive integer, or contiguous increasing positive integers")
+    end
+end
 if isempty(multi)
     multi = 0;
 end
@@ -29,18 +34,12 @@ if isempty(delim)
     delim = '__';
 end
 
-fncheck = fieldnames(structflat(s, delim=delim, prefix='tmpstructblahblahblah'));
-if any(~cellfun(@isempty, regexp(fncheck, [delim '\d' delim] )))
-    error("fieldmatch currently does not support nonscalar structs")
-end
-
 sf = structflat(s, delim=delim);
 fna = fieldnames(sf);
 vala = struct2cell(sf);
 
 if isempty(varargin)
-    fncr = fna;
-    outall{1} = strrep(fncr, delim, '.');
+    [~, outall] = structunflat(cell2struct(vala, fna)); %get string
 else
     outall = cell(numel(varargin),1);
     for k = 1:numel(varargin)
@@ -55,37 +54,43 @@ else
         if isempty(idx)
             error(sprintf("no matches found for cr input number: " + num2str(k)))
         end
-        fncr = fna(idx);
-        fncr = strrep(fncr, delim, '.');
-        for q = 1:numel(fncr)
-            chk = getfieldns(s, fncr{q});
-            if ~isequal(cell2mat(chk), val)
-                error("check failed")
-            end
-        end
-
+        [~, fncr] = structunflat(cell2struct(vala(idx), fna(idx)));
         outall{k} = fncr;
     end
 end
 
 
 for k = 1:numel(outall)
-    if ~isempty(lev)
-        for q = 1:numel(outall{k})
-            tmp = strsplit(outall{k}{q}, '.');
-            outall{k}{q} = strjoin(tmp(lev), '.');
+    tmp1 = cellflat(outall{k});
+    prevn = 0;
+    tmp3 = {};
+    for q = 1:numel(tmp1)
+        tmp2 = strsplit(tmp1{q}, '.');
+        for w = 1:numel(tmp2)
+            iwq = w+prevn;
+            tmp3{iwq} = strjoin(tmp2(1:w), '.');
         end
+        prevn = prevn + numel(tmp2);
     end
     if k==1
-        common = outall{k};
+        common = tmp3;
     else
-        common = intersect(common, outall{k});
+        common = intersect(common, tmp3);
     end
 end
-
-if endsWith(outall{k}, '.')
-    outall{k} = outall{k}(1:end-1);
+if isempty(common)
+    error("there are no matches to the criteria you entered")
 end
+nm = cellfun(@(x) numel(strsplit(x, '.')), common);
+if ~isempty(lev)
+    common = common(nm>=lev(end));
+    if isempty(common)
+        error("there are no matches at the requested level (although there are matches at lower levels)")
+    end
+    common = cellfun(@(x) strsplit(x,'.'), common, 'UniformOutput', false);
+    common = cellfun(@(x) strjoin(x(lev),'.'), common, 'UniformOutput', false);
+end
+
 
 common = unique(common, 'stable');
 
