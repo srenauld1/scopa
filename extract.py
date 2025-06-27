@@ -9,7 +9,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from oex import oex
 from vis_cm import caiman_plots_all
-from crop_fov import crop_fov
+from stackcrop import stackcrop
 from stackchan import stackchan
 from helpers import stack_reshape_transpose_clip_zero_type
 import json
@@ -25,7 +25,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
     n_processes = 1 #set this in case you don't (or can't) setup cluster 
     dview = None #set this in case you don't (or can't) setup cluster
 
-    if optall: #if not running extract from matlab (if you are, you will pass in options dict optall)
+    if not optall: #if not running extract from matlab (if you are, you will pass in options dict optall)
         stack = imread(pth_tif_read)
 
     chanrm, chan_primary_when_two, morphinpy = parse_methodex(methodex)
@@ -45,10 +45,10 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
         
         print("STARTINNG ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
-        stackcrop_tmp, limits_str = crop_fov(stack, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+        stackcrop_tmp, limits_str = stackcrop(stack, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
         chanstr_ex = chanstr_secondary
         if two_channel_ex:
-            stackcrop_tmp_secondary, limits_str = crop_fov(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+            stackcrop_tmp_secondary, limits_str = stackcrop(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
             chanstr_seed = chanstr_primary
 
         print("REGION EXTRACTION (rgname) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
@@ -67,7 +67,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
             stackcrop_tmp = None
             
 
-            if optall:
+            if not optall:
                 optall = oex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, maskname)
 
             print("looping over " + str(len(optall)) + " unique options sets")

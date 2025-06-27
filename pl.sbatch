@@ -8,7 +8,8 @@ module purge
 if [ "$JOBNM" == dnp ]; then #deepcad denoising uses different python version
     module load gcc/9.2.0 python/3.9.14
 else 
-    module load python/3.10.11
+    # module load python/3.10.11
+    module load gcc/14.2.0 python/3.13.1
 fi
 
 ## LOAD VIRTUAL ENVIRONMENT ##

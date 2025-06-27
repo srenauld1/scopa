@@ -1,6 +1,7 @@
 
 
 import numpy as np
+import json
 import glob
 from im_montage import im_montage 
 import matplotlib.pyplot as plt
@@ -8,24 +9,30 @@ from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
 
 
-def crop_fov(stack, rgname, pth_prefix, dims):
+def stackcrop(stack, rgname, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
-    
+    recid = pth_prefix.split('/')[-1]
     try:
         
-        pth_croplim_pat = pth_prefix + '_' + rgname + '_*_croplim_.npy' #find file matching fov subregion with some crop lim 
+        pth_croplim_pat = pth_prefix + '_' + rgname + '_*_croplim_.txt' #find file matching fov subregion with some crop lim 
         pth_croplim = glob.glob(pth_croplim_pat)
         if len(pth_croplim) > 1:
             raise Exception("too many crop files")
-        with open(pth_croplim[0], 'rb') as fnc:
-            croplim = np.load(fnc)
+
+        with open(pth_croplim[0], 'r') as file:
+            rgall = json.loads(file.read())
+
+        for key in optdf:
+            if key==rgname:
+                rg = rgall[key]
+                break
 
     except:
         
-        if rgname == 'fullfov':
+        if rgname == 'none':
        
-            croplim = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
+            rg = np.asarray((1, dims[0], 1, dims[3], 1, dims[2], 1, dims[1])).astype(int) 
        
         else:
        
@@ -45,17 +52,43 @@ def crop_fov(stack, rgname, pth_prefix, dims):
                 stackmntz = np.mean(stackmnt[:,:,zlimits[0]-1:zlimits[1]], axis = 2)
             ylimits, xlimits = draw_rect_xy(stackmntz)
             tlimits = (1, dims[0])
-            croplim = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
+            rg = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
             
-    limits_str = str(croplim[0]) + '_' + str(croplim[1]) + '_' + str(croplim[2]) + '_' + str(croplim[3]) + '_' + str(croplim[4]) + '_' + str(croplim[5]) + '_' + str(croplim[6]) + '_' + str(croplim[7])
-    pth_croplim = pth_prefix + '_' + rgname + '_' + limits_str + '_croplim_.npy'
-    with open(pth_croplim, 'wb') as fncrop:
-        np.save(fncrop, croplim) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
+    limits_str = str(rg[0]) + '_' + str(rg[1]) + '_' + str(rg[2]) + '_' + str(rg[3]) + '_' + str(rg[4]) + '_' + str(rg[5]) + '_' + str(rg[6]) + '_' + str(rg[7])
+    pth_croplim = pth_prefix + '_' + rgname + '_' + limits_str + '_croplim_.txt'
 
-    slt = slice(croplim[0]-1, croplim[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
-    slx = slice(croplim[2]-1, croplim[3], 1) 
-    sly = slice(croplim[4]-1, croplim[5], 1) 
-    slz = slice(croplim[6]-1, croplim[7], 1) 
+    rgt = {}
+    rgt['y'] = ylimits
+    rgt['x'] = xlimits
+    rgt['z'] = zlimits
+    rgt['t'] = tlimits
+    rgt['c'] = (1,1)
+    rgt['name'] = rgname
+    rgt['id'] = [0]
+
+    rgw = {  'y': rgt['y'],
+            'x': rgt['x'],
+            'z': rgt['z'],
+            't': rgt['t'],
+            'c': rgt['c'],
+            'name': rgt['name'],
+            'id': rgt['id']}
+
+
+    with open('/Users/wienecke/scopa/opt_rg_cw_a_.txt', 'r') as file:
+        rgall = json.loads(file.read())
+    for key in rgall:
+        if rgall[key]==rgw:
+            raise Exception("rg exists already with a different name")
+
+    rgall[rgnamenew] = rgw
+    with open(pth_croplim, 'w') as file: 
+        file.write(json.dumps(rgw, sort_keys=True, indent=4, separators=(',', ':'))) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
+
+    slt = slice(rg[0]-1, rg[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 
+    slx = slice(rg[2]-1, rg[3], 1) 
+    sly = slice(rg[4]-1, rg[5], 1) 
+    slz = slice(rg[6]-1, rg[7], 1) 
     indices_crop = [slt, slx, sly, slz]
     stack = stack[tuple(indices_crop)]
 

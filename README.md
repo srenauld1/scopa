@@ -174,7 +174,7 @@ for running the pipeline in batch (non-interactive) mode . . .
         pl.sh and has a simple layout that can be extended/adpated 
         call it by typing pl.sh in the O2 command line 
 
-also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined rgname (or they're all 'fullfov') then it will run through all found files, whether in interactive mode or batch mode
+also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined rgname (or they're all 'none') then it will run through all found files, whether in interactive mode or batch mode
 
 
 ############################## INTERACTIVE ON O2 ######################################
@@ -285,9 +285,9 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 --extraction requires either the motion correction output tif (suffix cmrg_.tif), or the denoising output tif (suffix cmrg_dcdn_.tif), depending on whether use_denoised is true of false
  --extraction can operate on 4d xyzt data (planar_extraction = False), or 3d data xyt (planar_extraction = True), where extraction operates on each z plane of the 4d data independently
  --extraction requires either the motion correction output tif, or the denoising output tif (depending on whether use_denoised is true of false)
---if rgname is not ['fullfov'], interactive plots prompt user to define rgname by setting rg 
+--if rgname is not ['none'], interactive plots prompt user to define rgname by setting rg 
  rgname is a cuboid or rectangular subset of the FOV on which extraction is run (on subsequent runs, these are loaded automatically, but will error if there are multiple different rg with the same rgname name) 
- --you can specify rgname 'fullfov' to use the whole FOV and skip drawing  
+ --you can specify rgname 'none' to use the whole FOV and skip drawing  
  --user can define multiple rgname
 --so, here, rgname is meant to separately run extraction on regions requiring different extraction params, and/or to run the extraction faster (ie if all extraction_regions amount to less data than the full fov)  
 --then, analysis of more precisely defined brain regions is done in 'post', where regions can be further split into arbitrary 2d, 3d, or 4d shapes

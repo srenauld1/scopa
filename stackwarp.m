@@ -1,4 +1,4 @@
-function [stack, sr] = stackwarp(stack, opt)
+function [stack, tform, sr] = stackwarp(stack, opt)
 
 arguments
     stack

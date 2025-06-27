@@ -64,7 +64,7 @@ USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise remov
 
 METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 EXTRACT_IN_2D=(1)
-RGNAME=('fullfov')
+RGNAME=('none')
 
 USE_CLUSTER=(1) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 

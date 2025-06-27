@@ -319,7 +319,7 @@ else
             rots = -1*[0:5:180];
             stackmnzrot = {};
             for k = 1:numel(rots)
-                [tmp, ov2] = stackwarp(premaskup, rot=[rots(k),0,0]); %default output view is followoutput
+                tmp = stackwarp(premaskup, rot=[rots(k),0,0]); %default output view is followoutput
                 tmp = mean(tmp, 3);
                 stackmnzrot{k} = tmp;
             end
@@ -336,7 +336,7 @@ else
             drawrot = input(prompt);
             drawrot = drawrot * -1;
             if drawrot
-                [stackrot, ov2] = stackwarp(premaskup, rot=[drawrot,0,0]); %default output view is followoutput
+                [stackrot, tform, sr] = stackwarp(premaskup, rot=[drawrot,0,0]); %default output view is followoutput
             else
                 stackrot = premaskup;
             end
@@ -349,8 +349,10 @@ else
 
             [roicentmp, midx, midy] = drawcent(stackrot, drawslice, numroi);
 
-            roicentmp = roicentmp + fix([ov2.YWorldLimits(1), ov2.XWorldLimits(1), ov2.ZWorldLimits(1)]);
-            [roicentmp(:,2), roicentmp(:,1), roicentmp(:,3)] = transformPointsInverse(tform, roicentmp(:,2), roicentmp(:,1), roicentmp(:,3));
+            if drawrot
+                roicentmp = roicentmp + fix([sr.YWorldLimits(1), sr.XWorldLimits(1), sr.ZWorldLimits(1)]);
+                [roicentmp(:,2), roicentmp(:,1), roicentmp(:,3)] = transformPointsInverse(tform, roicentmp(:,2), roicentmp(:,1), roicentmp(:,3));
+            end
 
             roicentmp = roicentmp ./ upfac;
 

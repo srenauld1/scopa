@@ -39,7 +39,7 @@ fna = fieldnames(sf);
 vala = struct2cell(sf);
 
 if isempty(varargin)
-    [~, outall] = structunflat(cell2struct(vala, fna)); %get string
+    [~, outall{1}] = structunflat(cell2struct(vala, fna)); %get string
 else
     outall = cell(numel(varargin),1);
     for k = 1:numel(varargin)

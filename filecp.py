@@ -62,7 +62,7 @@ def filecp(do_copyfiles, do_register, do_denoise, do_stitch, do_remove, do_extra
                     print("there are no opt files to copy from storage path into compute path, \
                           \nyou will be prompted to create them in interactive mode; \
                           \nyou cannot run extract in batch mode without creating or loading a opt file, \
-                          \nunless your rgname is 'fullfov'")
+                          \nunless your rgname is 'none'")
             
             
             print("\n\n\ncopying this file: \n" + pth_read + "\ninto this directory: \n" + pth_fldr_copydest)

@@ -1,5 +1,6 @@
 function todo()
 
+disp("my only eval calls are in odf, fix those")
 disp("make sure all options have unique names (should not require enclosing field to be unique)")
 disp("flag_single_roi_per_stack does not force contiguity right? should we even have this?")
 disp("deal with stackplt looking dim")
