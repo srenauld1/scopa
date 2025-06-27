@@ -6,7 +6,8 @@ module purge
 
 ## LOAD MODULES ##
 if [ "$JOBNM" == dnp ]; then #deepcad denoising uses different python version
-    module load gcc/9.2.0 python/3.9.14
+    # module load gcc/9.2.0 python/3.9.14
+    module load gcc/14.2.0 python/3.13.1
 else 
     # module load python/3.10.11
     module load gcc/14.2.0 python/3.13.1
@@ -18,7 +19,8 @@ if [ "$DO_COPYFILES" == 0 ]; then  #load virtual env if not copying files from w
     if [ "$JOBNM" == alo ]; then
         echo "RUNNING AUTOALLOCATE JOB ON TRANSFER PARTITION"
     elif [ "$JOBNM" == dnp ]; then #deepcad denoising
-        module load cuda/11.7 #12.1
+        # module load cuda/11.7 #12.1
+        module load cuda/12.8 #12.1
         eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
         conda activate deepcad
         /n/cluster/bin/job_gpu_monitor.sh &
