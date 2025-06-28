@@ -86,7 +86,7 @@ if useprefix
         error("pth does not contain filename suffix (for prefix) in correct position")
     end
     if ~isscalar(regexp(pth, '*'))
-        error("if useprefix is true, pth must contain one and only one *, in this suffix of the the filename, like this: '_*_.txt'")
+        error("if useprefix is true, pth must contain one and only one *, in the suffix of the filename, like this: '_*_.txt'")
     end
     if isempty(pthscopas)
         pthscopas = glb('pthscopas');
@@ -132,6 +132,9 @@ if useprefix
 
 else
 
+    if contains(pth, wcpat)
+        error("pth cannot contain wildcard pattern unless useprefix is true (in which case it will be replaced by prefix)")
+    end
     prefix = ''; %empty char
     if autonm
         error("if nm isempty (using automatically generated names, ie autonm is true), useprefix must be true")
