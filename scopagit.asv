@@ -1,0 +1,35 @@
+function scopagit(operation)
+
+arguments
+    operation
+end
+
+userdat = scopauser('read');
+
+pthscopa = getpathscopa();
+cd(pthscopa)
+rp = gitrepo;
+if ~strcmp(rp.CurrentBranch.Name, userdat.gitbranch)
+    switchBranch(rp, userdat.gitbranch)
+    % error("you are on the wrong branch")
+end
+if strcmpi(operation, 'pull')
+    fprintf("pulling from remote branch" + newline)
+    pull(rp, username=userdat.gitusername, token=userdat.gittoken)
+elseif strcmpi(operation, 'push') || strcmpi(operation, 'sync')
+    fprintf("pushing to remote branch" + newline)
+    commit(rp, Message='scopagitcall')
+    push(rp, username=userdat.gitusername, token=userdat.gittoken)
+elseif strcmpi(operation, 'sync')
+    fprintf("pulling from then pushing to remote branch" + newline)
+    pull(rp, username=userdat.gitusername, token=userdat.gittoken)
+    commit(rp, username=userdat.gitusername, token=userdat.gittoken)
+    push(rp, username=userdat.gitusername, token=userdat.gittoken)
+elseif strcmpi(operation, 'discard')
+    fprintf("discarding changes" + newline)
+    discardChanges(rp, rp.ModifiedFiles);
+else
+    error("operation must be push, pull, sync, or discard")
+end
+
+end
