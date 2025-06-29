@@ -40,8 +40,15 @@ elseif strcmpi(operation, 'discard')
     if isempty(rp.ModifiedFiles) && isempty(rp.UntrackedFiles)
         fprintf("no local changes to discard" + newline)
     else
-        fprintf("discarding local changes" + newline)
-        discardChanges(rp, rp.ModifiedFiles);
+        if ~isempty(rp.UntrackedFiles)
+            fprintf("removing new files" + newline)
+            newfiles = rp.UntrackedFiles;
+            rm(rp, newfiles)
+        end
+        if ~isempty(rp.ModifiedFiles)
+            fprintf("discarding local changes" + newline)
+            discardChanges(rp, rp.ModifiedFiles);
+        end
     end
 else
     error("operation must be push, pull, sync, or discard")
