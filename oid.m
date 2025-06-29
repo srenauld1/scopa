@@ -52,6 +52,9 @@ if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'fill
     end
 end
 
+if ~tsgetcall && ~getonly
+    scopagit('pull')
+end
 
 for k = 1:numel(vbin)
 
@@ -82,7 +85,7 @@ for k = 1:numel(vbin)
                 [optred, optinert] = ored(optdist.(fntmp{p}), vbintmp, delim); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, and without non-functional vbin (plotting vbin, temporarily held in optinert); ored is written to file (if it wasn't already)
 
 
-                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) OPTID FOR REDUCED OPTIONS %%%%%%%%
+                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
 
                 [opttmp, optid] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
 
@@ -135,6 +138,14 @@ for k = 1:numel(vbin)
         end
     end
 
+end
+
+if ~tsgetcall && ~getonly
+    try
+        scopagit('push')
+    catch
+        scopagit('discard')
+    end
 end
 
 o = structsort(o, vectype='row');

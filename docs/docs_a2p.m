@@ -2,6 +2,8 @@
 
 %{
 
+force git sync with remote when running oid, so all filesystems are integrated 
+
 ap2 (analysis 2-photon)
     scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
     primarily for defining/processing rois, fitting models, and visualizing data (including interactively)

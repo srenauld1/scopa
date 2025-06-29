@@ -62,11 +62,6 @@ end
 
 if isempty(glb('dfset')) || glb('dfset')==0 %write defaults and pthscopas to file the first time odf gets called
     odfsv(pthopt);
-    fprintf("writing pthscopas to: " + pthopt + newline)
-    cd(pthscopa)
-    gtrp = gitrepo;
-    pth_pthscopas = [pthscopa 'pthscopas.txt'];
-    structsv(oin.mn.pthscopas, pth_pthscopas, overwrite=1, readonly=1)
 end
 
 if isfile(pthopt)
