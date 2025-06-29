@@ -1,6 +1,6 @@
 function scopagit(operation, opt)
 
-%basic git control for scopa ff
+%basic git control for scopa
 
 arguments
     operation
