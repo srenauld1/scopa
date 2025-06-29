@@ -1,5 +1,7 @@
 function scopagit(operation)
 
+%basic git control for scopa
+
 arguments
     operation
 end
