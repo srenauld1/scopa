@@ -46,9 +46,10 @@ elseif strcmpi(operation, 'push') || strcmpi(operation, 'sync')
             fprintf("adding new files" + newline)
             add(rp, newfiles)
         end
-        if ~isempty(modfiles)
+        comfiles = cat(1, newfiles, modfiles);
+        if ~isempty(comfiles)
             fprintf("committing local changes" + newline)
-            commit(rp, Message='scopagitcall', Files=modfiles)
+            commit(rp, Message='scopagitcall', Files=comfiles)
             fprintf("pushing to remote branch" + newline)
             push(rp, username=userdat.gitusername, token=userdat.gittoken)
         end
@@ -77,6 +78,9 @@ function gitfiles = gitfilematch(gitfiles, filepat)
 
 [~, gitfiles, ext] = fileparts(gitfiles);
 gitfiles = convertStringsToChars(strcat(gitfiles, ext));
+if ~iscell(gitfiles)
+    gitfiles = {gitfiles};
+end
 if ~all(cellfun(@isempty, filepat))
     filecat = strcat(filepat, '|'); %doesn't matter if ends with pipe, treated as "or nothing"
     gitfiles = gitfiles(~cellfun(@isempty, regexp(gitfiles, [filecat{:}], 'match')));
