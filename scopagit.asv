@@ -1,7 +1,15 @@
-function scopagit(operation)
+function scopagit(operation, opt)
+
+%basic git control for scopa ff
 
 arguments
     operation
+    opt.files = [];
+end
+files = opt.files;
+
+if ~iscell(files)
+    files = {files};
 end
 
 userdat = scopauser('read');
@@ -11,25 +19,55 @@ cd(pthscopa)
 rp = gitrepo;
 if ~strcmp(rp.CurrentBranch.Name, userdat.gitbranch)
     switchBranch(rp, userdat.gitbranch)
-    % error("you are on the wrong branch")
 end
+
 if strcmpi(operation, 'pull')
     fprintf("pulling from remote branch" + newline)
     pull(rp, username=userdat.gitusername, token=userdat.gittoken)
 elseif strcmpi(operation, 'push') || strcmpi(operation, 'sync')
-    fprintf("pushing to remote branch" + newline)
-    commit(rp, Message='scopagitcall')
-    push(rp, username=userdat.gitusername, token=userdat.gittoken)
-elseif strcmpi(operation, 'sync')
-    fprintf("pulling from then pushing to remote branch" + newline)
-    pull(rp, username=userdat.gitusername, token=userdat.gittoken)
-    commit(rp, username=userdat.gitusername, token=userdat.gittoken)
-    push(rp, username=userdat.gitusername, token=userdat.gittoken)
+    if strcmpi(operation, 'sync')
+        fprintf("pulling from remote branch" + newline)
+        pull(rp, username=userdat.gitusername, token=userdat.gittoken)
+    end
+    if isempty(rp.ModifiedFiles) && isempty(rp.UntrackedFiles)
+        fprintf("no local changes to commit/push" + newline)
+    else
+        if ~isempty(rp.UntrackedFiles)
+            files = gitfilematch(rp.UntrackedFiles, files);
+            fprintf("adding new files" + newline)
+            add(rp, files)
+        end
+        fprintf("committing local changes" + newline)
+        commit(rp, Message='scopagitcall', Files=files)
+        fprintf("pushing to remote branch" + newline)
+        push(rp, username=userdat.gitusername, token=userdat.gittoken)
+    end
 elseif strcmpi(operation, 'discard')
-    fprintf("discarding changes" + newline)
-    discardChanges(rp, rp.ModifiedFiles);
+    if isempty(rp.ModifiedFiles) && isempty(rp.UntrackedFiles)
+        fprintf("no local changes to discard" + newline)
+    else
+        if ~isempty(rp.UntrackedFiles)
+            fprintf("removing new files" + newline)
+            files = rp.UntrackedFiles;
+            rm(rp, files)
+        end
+        if ~isempty(rp.ModifiedFiles)
+            fprintf("discarding local changes" + newline)
+            discardChanges(rp, files);
+        end
+    end
 else
     error("operation must be push, pull, sync, or discard")
 end
+
+end
+
+
+function gitfiles = gitfilematch(gitfiles, filepat)
+
+[~, gitfiles, ext] = fileparts(gitfiles);
+gitfiles = convertStringsToChars(strcat(gitfiles, ext));
+filecat = strcat(filepat, '|'); %doesn't matter if ends with pipe, treated as "or nothing"
+gitfiles = gitfiles(~cellfun(@isempty, regexp(gitfiles, [filecat{:}], 'match')));
 
 end
