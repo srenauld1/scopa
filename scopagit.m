@@ -17,6 +17,7 @@ userdat = scopauser('read');
 pthscopa = getpathscopa();
 cd(pthscopa)
 rp = gitrepo;
+
 if ~strcmp(rp.CurrentBranch.Name, userdat.gitbranch)
     switchBranch(rp, userdat.gitbranch)
 end
@@ -53,7 +54,7 @@ elseif strcmpi(operation, 'push') || strcmpi(operation, 'sync')
         end
     end
 elseif strcmpi(operation, 'discard')
-    if isempty(rp.ModifiedFiles) && isempty(rp.UntrackedFiles)
+    if isempty(modfiles) && isempty(newfiles)
         fprintf("no local changes to discard" + newline)
     else
         if ~isempty(newfiles)
