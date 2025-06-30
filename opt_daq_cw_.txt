@@ -847,5 +847,5 @@
   },
   "autonm": 1,
   "maketime": "2025030622044516",
-  "prefix": "a"
+  "autonm_prefix": "a"
 }

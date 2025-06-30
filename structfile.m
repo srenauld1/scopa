@@ -34,6 +34,10 @@ wcpat = '*';
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
 
+% if isstruct(s) && isempty(fieldnames(s))
+%     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
+% end
+
 if startsWith(pth, ['~' filesep])
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
 end
@@ -61,6 +65,10 @@ if isempty(nm)
 else
     autonm = 0;
     autonm_prefix = '';
+    nm = convertStringsToChars(nm);  %just in case . . . if already char, this doesn't do anything
+    if ~isletter(nm(1))
+        error("you passed in nm that does not begin with a letter; must begin with letter because it is saved as structy fieldname")
+    end
 end
 
 if ~isempty(autonm_prefix) && ~isletter(autonm_prefix)
@@ -77,7 +85,7 @@ end
 
 
 if usegit
-    scopagit('pull') %make sure 
+    scopagit('pull') %make sure matches remote 
 end
 
 [~, flnm, ~] = fileparts(pth);
@@ -108,15 +116,15 @@ if isfile(pth)
         else
             error("nm is automatically derived because it is empty, but existing file did not have nm automatically derived (does not contain field autonm)")
         end
-        nmfile = fieldnames(sfile);
+        nm_infile = fieldnames(sfile);
         nmpat = ['^' autonm_prefix '[1-9]+[0-9]*$']; %previously was '^[a-z]{1}[1-9]+[0-9]*$' single lowercase letter followed by 1 or more consecutive integers, not starting with 0, but got rid of autonm_prefix being inseparable from default nm
-        fnmatches = cellflat(regexp(nmfile,nmpat,'match'));
-        if numel(fnmatches)==numel(nmfile) %if all vars in file follow default naming pattern (autonm_prefix with consecutive numbers)
-            nmnumstr = cellflat(regexp(nmfile,'\d+','match'));
+        fnmatches = cellflat(regexp(nm_infile,nmpat,'match'));
+        if numel(fnmatches)==numel(nm_infile) %if all vars in file follow default naming pattern (autonm_prefix with consecutive numbers)
+            nmnumstr = cellflat(regexp(nm_infile,'\d+','match'));
             nmnums = cellfun(@str2double, nmnumstr);
             prefix_derived = [];
-            for k = 1:numel(nmfile)
-                prefix_derived = [prefix_derived erase(nmfile(k), nmnumstr(k))];
+            for k = 1:numel(nm_infile)
+                prefix_derived = [prefix_derived erase(nm_infile(k), nmnumstr(k))];
             end
             prefix_derived = unique(prefix_derived);
             if ~isscalar(prefix_derived)
@@ -126,7 +134,7 @@ if isfile(pth)
             if ~isequal(autonm_prefix, prefix_derived, prefix_field) %make sure input autonm_prefix matches sfile.autonm_prefix and prefixes in each variable name in file
                 error("input autonm_prefix must match autonm_prefix in variable names in file, autonm_prefix in autonm_prefix field in file")
             end
-            if numel(nmnums)~=numel(nmfile) || ~isequal(nmnums, 1:numel(nmnums))
+            if numel(nmnums)~=numel(nm_infile) || ~isequal(nmnums, 1:numel(nmnums))
                 error("default name is autonm_prefix followed by an integer; integers in names should increase sequentially from 1 to numel(variables); you may have used an invalid name")
             end
         else
@@ -147,7 +155,7 @@ if isfile(pth)
                 fprintf("s and nm are nonempty, so if variable is not in file, writing it to file pth with name nm" + newline)
             end
         end
-        nmfile = fieldnames(sfile);
+        nm_infile = fieldnames(sfile);
     end
 
 
@@ -156,19 +164,19 @@ if isfile(pth)
 
     dotranspose = 0;
     matchind = [];
-    for k = 1:numel(nmfile)
+    for k = 1:numel(nm_infile)
         if isempty(s)
             if autonm %if no variable or name was provided
                 error("s and nm cannot both be empty")
             else
-                if isequal(nm, nmfile{k}) %if name matches when no variable was provided
+                if isequal(nm, nm_infile{k}) %if name matches when no variable was provided
                     matchind = [matchind k];
                 end
             end
         else
             smatched = 0;
             if part
-                [spart, sfilepart] = partmake(s, sfile.(nmfile{k}), wcpat);
+                [spart, sfilepart] = partmake(s, sfile.(nm_infile{k}), wcpat);
                 if isequal(spart, sfilepart) || ~isscalar(spart) && isequal(transpose(spart), sfilepart)
                     smatched = 1;
                     if ~isscalar(spart) && isequal(transpose(spart), sfilepart)
@@ -176,9 +184,9 @@ if isfile(pth)
                     end
                 end
             else
-                if isequal(s, sfile.(nmfile{k})) || ~isscalar(s) && isequal(transpose(s), sfile.(nmfile{k}))
+                if isequal(s, sfile.(nm_infile{k})) || ~isscalar(s) && isequal(transpose(s), sfile.(nm_infile{k}))
                     smatched = 1;
-                    if ~isscalar(s) && isequal(transpose(s), sfile.(nmfile{k}))
+                    if ~isscalar(s) && isequal(transpose(s), sfile.(nm_infile{k}))
                         dotranspose = 1;
                     end
                 end
@@ -189,11 +197,11 @@ if isfile(pth)
                 end
             else
                 if smatched
-                    if strcmp(nm, nmfile{k}) %if variable and name match
+                    if strcmp(nm, nm_infile{k}) %if variable and name match
                         matchind = [matchind k];
                     else %if variable matches but name doesn't
                         if ~dupe %if duplicates are not allowed, error
-                            error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmfile{k})
+                            error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nm_infile{k})
                         end
                     end
                 end
@@ -224,8 +232,8 @@ if isfile(pth)
             nmout = cell(numel(matchind), 1);
             sout = cell(numel(matchind), 1);
             for k = 1:numel(matchind)
-                nmout{k} = nmfile{matchind(k)};
-                sout{k} = sfile.(nmfile{matchind(k)}); %if input variable matches a variable in file, give variable the name it has in file
+                nmout{k} = nm_infile{matchind(k)};
+                sout{k} = sfile.(nm_infile{matchind(k)}); %if input variable matches a variable in file, give variable the name it has in file
                 if dotranspose %isequal(size(spart), flip(size(sout{k})))
                     sout{k} = transpose(sout{k});
                 end
@@ -233,8 +241,8 @@ if isfile(pth)
             end
         else
             if isscalar(matchind)
-                nmout = nmfile{matchind};
-                sout = sfile.(nmfile{matchind}); %if input variable matches a variable in file, give variable the name it has in file
+                nmout = nm_infile{matchind};
+                sout = sfile.(nm_infile{matchind}); %if input variable matches a variable in file, give variable the name it has in file
                 if dotranspose %isequal(size(s), flip(size(sout)))
                     sout = transpose(sout);
                 end
