@@ -413,7 +413,6 @@
     "y": [2,6],
     "z": [17,20]
   },
-  "loc": "/Users/wienecke/scopa/",
   "maketime": "2025030622092400",
   "prefix": "a"
 }

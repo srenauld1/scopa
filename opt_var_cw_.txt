@@ -1712,7 +1712,6 @@
     }
   ],
   "autonm": 1,
-  "loc": "/Users/wienecke/scopa/",
   "maketime": "2025031519252622",
   "prefix": "a"
 }

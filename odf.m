@@ -447,9 +447,9 @@ if fill
     end
 
     %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%
-    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('pthscopas')) && isempty(glb('user'))
+    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('pthscopas')) && isempty(glb('scopauserid'))
         if ( isfield(o, 'mn') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, pthscopas=o.mn.pthscopas, user=o.mn.user)
+            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, pthscopas=o.mn.pthscopas, scopauserid=o.mn.scopauserid)
         end
     end
 
@@ -468,14 +468,14 @@ if fill
 
     if isempty(vbin) || isempty(setxor(vbin, vbin_top))
 
-        if isempty(o.mn.user)
-            error('o.mn.user cannot be empty')
+        if isempty(o.mn.scopauserid)
+            error('o.mn.scopauserid cannot be empty')
         end
-        if isempty(regexp(o.mn.user, '^[a-zA-Z]+$'))
-            if strcmp(o.mn.user, '*')
-                error('o.mn.user is an asterisk, you may have called odf with wild=1 and fill=1 and empty or absent vbin, so the entire options struct was filled with asterisks')
+        if isempty(regexp(o.mn.scopauserid, '^[a-zA-Z]+$'))
+            if strcmp(o.mn.scopauserid, '*')
+                error('o.mn.scopauserid is an asterisk, you may have called odf with wild=1 and fill=1 and empty or absent vbin, so the entire options struct was filled with asterisks')
             end
-            error('o.mn.user can only contain alphabetic characters')
+            error('o.mn.scopauserid can only contain alphabetic characters')
         end
 
         fn = fieldnames(o.mn.pthscopas);

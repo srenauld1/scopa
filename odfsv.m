@@ -59,7 +59,7 @@ d.mn.optiddf = 'z0'; %if user doesn't use oid to map options sets and variables 
 d.mn.ided_vbin = ["sld", "daq", "roi", "bmp", "mdl", "fmf"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
 d.mn.inert_vbin = ["sp", "tp", "imhsv", "tg", "savemem", "optid"]; %vbin or options that have no functional effect (set to empty in txt files recording options, and not considered when deriving optid)
 
-d.mn.user = 'youforgottossetuser';
+d.mn.scopauserid = 'youforgottossetuser';
 
 d.mn.pthscopas.a = fullfile(filesep, 'youforgottossetpthscopas', filesep); %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
 d.mn.pthscopas.b = ''; %path to scopa in filesystem b (used to prevent conflicting edits to "same" lookup file in different filesystems) 

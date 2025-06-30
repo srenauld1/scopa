@@ -77,7 +77,7 @@ end
 
 
 if usegit
-    scopagit('pull')
+    scopagit('pull') %make sure 
 end
 
 [~, flnm, ~] = fileparts(pth);

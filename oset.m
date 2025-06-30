@@ -21,11 +21,11 @@ end
 otmp.spec.pth = specin;
 files = opt.files;
 
-%%%% user, path to your scopa in different filesystems, and python path %%%%
+%%%% scopauserid, path to your scopa in different filesystems, and python path %%%%
 
 dodf = 0; %set to 1 use all defaults (do not enter any oset_* file)
 
-otmp.mn.user = 'cw'; %cw, wz, jf, yz, sr; (to route to different oset_* files below)
+otmp.mn.scopauserid = 'cw'; %cw, wz, jf, yz, sr; (to route to different oset_* files below)
 otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to your scopa in filesystem a, for example, for carl fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep)
 otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to your scopa in filesystem b, for example, for carl fullfile(filesep, 'home', 'caw846', 'scopa', filesep)
 otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py)
@@ -47,7 +47,7 @@ end
 otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
 
 
-%%%% loop over found files in otmp, setting options depending on recording (and user) %%%%
+%%%% loop over found files in otmp, setting options depending on recording (and scopauserid) %%%%
 
 for k = 1:numel(otmp)
 
@@ -58,7 +58,7 @@ for k = 1:numel(otmp)
 
     else
 
-        switch otmp(1).mn.user
+        switch otmp(1).mn.scopauserid
 
             case 'wz'
 

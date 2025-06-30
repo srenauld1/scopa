@@ -36,9 +36,9 @@ else
 
     inf = "option";
     pthscopa = glb('pthscopa');
-    user = glb('user');
-    if isempty(user)
-        error("you have not set glb('user')")
+    scopauserid = glb('scopauserid');
+    if isempty(scopauserid)
+        error("you have not set glb('scopauserid')")
     end
     ided_vbin = glb('ided_vbin');
     if isempty(ided_vbin)
@@ -53,7 +53,7 @@ else
 
     tmp2 = [];
     for k = 1:numel(allvbin)
-        tmp = [pthscopa 'opt_' allvbin{k} '_' user '_*_.txt'];
+        tmp = [pthscopa 'opt_' allvbin{k} '_' scopauserid '_*_.txt'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
         tmp = [pthparent '**' filesep '*_' allvbin{k} '_.mat'];

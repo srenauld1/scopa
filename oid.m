@@ -13,9 +13,9 @@ getonly = opt.getonly;
 
 delim = '__';
 
-user = glb('user');
-if isempty(user)
-    error("you have not set glb('user')")
+scopauserid = glb('scopauserid');
+if isempty(scopauserid)
+    error("you have not set glb('scopauserid')")
 end
 
 ided_vbin = glb('ided_vbin');
@@ -62,7 +62,7 @@ for k = 1:numel(vbin)
 
     %%%%%%%% FIND OPTIONS FILE (FOR THIS FILESYSTEM) FOR A SINGLE vbin %%%%%%%%
 
-    pthoptpat = [pthscopa 'opt_' vbintmp '_' user '_*_.txt'];
+    pthoptpat = [pthscopa 'opt_' vbintmp '_' scopauserid '_.txt'];
 
     for m = 1:numel(o)
 

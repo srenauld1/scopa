@@ -248,7 +248,7 @@
       "h": ""
     },
     "timestr": "2025062920515873",
-    "user": "youforgottossetuser"
+    "scopauserid": "youforgottossetuser"
   },
   "nestvalid": [
     "spec",

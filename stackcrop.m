@@ -31,11 +31,11 @@ if isempty(rgname)
 end
 
 pthscopa = getpathscopa();
-user = glb('user');
-if isempty(user)
-    error("you have not set glb('user')")
+scopauserid = glb('scopauserid');
+if isempty(scopauserid)
+    error("you have not set glb('scopauserid')")
 end
-pthrg = [pthscopa 'opt_rg_' user '_*_.txt'];
+pthrg = [pthscopa 'opt_rg_' scopauserid '_.txt'];
 
 id = idmake(pthstack);
 rgid = [id.recid '_' rgname];

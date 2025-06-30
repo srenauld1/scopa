@@ -30,7 +30,6 @@
     "vistype": "plane"
   },
   "autonm": 1,
-  "loc": "/Users/wienecke/scopa/",
   "maketime": "2025031917252584",
   "prefix": "a"
 }
