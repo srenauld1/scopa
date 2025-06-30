@@ -3,11 +3,12 @@ function scopagit(operation, opt)
 %basic git control for scopa
 
 arguments
-    operation
-    opt.files = [];
+    operation %'push', 'pull', 'sync', or 'discard'; automatically operates on untracked files and modified files together; uses information from userdat.txt, created by running function scopauser
+    opt.files = []; %full filenames (path, filename, and extension) to operate on with git; string or char vector if single filename, or cell array of char vectors if multiple filenames; filenames can be regexp expressions for matching/filtering
 end
 files = opt.files;
 
+files = convertStringsToChars(files);
 if ~iscell(files)
     files = {files};
 end

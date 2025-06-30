@@ -23,7 +23,11 @@ if strcmpi(permission, 'read')
     if ~isempty(userdat.scopauserid) || ~isempty(userdat.gittoken) || ~isempty(userdat.gitbranch) || ~isempty(userdat.gitusername)
         error("for first argument 'read', cannot pass in any following name-value arguments")
     end
-    userdat = structld(pthuserdat);
+    if isfile(pthuserdat)
+        userdat = structld(pthuserdat);
+    else
+        error(sprintf(pthuserdat + " does not exist, in the command line, run scopauser with first argument 'write' and all required name-value arguments"))
+    end
 
 elseif strcmpi(permission, 'write')
 
