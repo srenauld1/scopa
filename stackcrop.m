@@ -40,7 +40,7 @@ pthrg = [pthscopa 'opt_rg_' user '_*_.txt'];
 id = idmake(pthstack);
 rgid = [id.recid '_' rgname];
 
-rg = structfile(pthrg, s=[], nm=rgid, useprefix=1);
+rg = structfile(pthrg, s=[], nm=rgid, usegit=0);
 
 if ~isempty(stack) %if input stack is empty, user is just checking if rg exists using structfile; if it doesn't, this prevents entering code to make rg, or apply rg, or both
 
@@ -62,7 +62,7 @@ if ~isempty(stack) %if input stack is empty, user is just checking if rg exists 
 
         end
 
-        rg = structfile(pthrg, s=rg, nm=rgid, useprefix=1);
+        rg = structfile(pthrg, s=rg, nm=rgid, usegit=1);
 
     end
 

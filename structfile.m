@@ -9,29 +9,25 @@ write variable to and/or read variable from txt file (pth), depending on input
     s=nonempty, nm=[], not in file: sout=s given name of default pattern, and write s to file
     s=nonempty, nm=nonempty, in file: sout=s unchanged, with warning if flagmatch 0, error if flagmatch 1
     s=nonempty, nm=nonempty, not in file: sout=UNCHANGED s, write s to file with name nm (error if flagpattern 1 and if nm does not follow default pattern but file variables do)
-default nm pattern, for autonm, is ['^' prefix '[1-9]+[0-9]*$'] (prefix followed by 1 or more consecutive integers, not starting with 0)
-if useprefix is true, file will get loc and prefix fields, 
-if file has loc and prefix fields, it can only be used in the filesystem matching loc (to prevent merge conflicts across filesystems), 
-if file was created using prefix, user must always useprefix for that file
+default nm pattern, for autonm, is ['^' autonm_prefix '[1-9]+[0-9]*$'] (autonm_prefix followed by 1 or more consecutive integers, not starting with 0)
+if file was created using autonm_prefix, user must always use same autonm_prefix for that file
 nm empty means you are using default naming (nm is automatically derived, ie autonm is true)
 if file was created using default variable names, autonm is true, and user must always use default names for that file
-if using autonm, useprefix must be true (since digits are not valid variable names)
+if using autonm, usegit must be true (since digits are not valid variable names)
 %}
 
 arguments
-    pth %path to file containing variables; can contain wildcard *; if prefix is not empty (including if prefix='*'), prefix must be suffix of pth (e.g., nameOfFile_prefix_.txt); if prefix is empty or not passed as argument, wildcard * is treated like a normal wildcard;
+    pth %path to file containing variables;
     opt.s = [] %variable to write to file, or get from file
     opt.nm = [] %empty chooses name for variable automatically, otherwise nm is the name of the variable
-    opt.useprefix = 0 %by default, does not use prefix (ie does not use filesystem protection); if prefix is not empty
+    opt.usegit = 1 %use git to sync scopa across filesystems (to prevent conflicting changes to same file)
     opt.dupe = 0 %allow duplicate s with different names
-    opt.pthscopas = [] %by default, looks for pthscopas in glb('pthscopas')
     opt.getonly = 0; %get variable or name from file only, not allowed to write or create new
 end
 s = opt.s;
 nm = opt.nm;
-useprefix = opt.useprefix;
+usegit = opt.usegit;
 dupe = opt.dupe;
-pthscopas = opt.pthscopas;
 getonly = opt.getonly;
 
 wcpat = '*';
@@ -41,9 +37,6 @@ wcpat = '*';
 if startsWith(pth, ['~' filesep])
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
 end
-pthscopa = getpathscopa();
-pthall = rdir(pth);
-
 if isempty(s) && isempty(nm)
     error("s and nm cannot both be empty")
 end
@@ -64,99 +57,34 @@ autonm_write = 0;
 if isempty(nm)
     autonm = 1;
     autonm_write = 1;
+    autonm_prefix = 'a'; %default auto-name prefix
 else
     autonm = 0;
+    autonm_prefix = '';
 end
 
+if ~isempty(autonm_prefix) && ~isletter(autonm_prefix)
+    error("autonm_prefix must be letter (since it can become first character of struct fieldname")
+end
 
 part = 0; %don't allow partial matches
 if ~isempty(s)
-    sflat = structflat(s, Prefix='s');  %use prefix in case nonscalar, it won't affect anything here
+    sflat = structflat(s, Prefix='s');  %use Prefix in case struct s is nonscalar, it won't affect anything here
     if any(structfun(@(x) any(strcmp(x, wcpat)),sflat))
-        part = 1;
+        part = 1; %do allow partial matches
     end
 end
 
 
-%%%%% SET OR DERIVE PREFIX AND FILE PATH %%%%%
-
-if useprefix
-
-    if ~isscalar(regexp(pth, '_*_.txt'))
-        error("pth does not contain filename suffix (for prefix) in correct position")
-    end
-    if ~isscalar(regexp(pth, '*'))
-        error("if useprefix is true, pth must contain one and only one *, in the suffix of the filename, like this: '_*_.txt'")
-    end
-    if isempty(pthscopas)
-        pthscopas = glb('pthscopas');
-        if isempty(pthscopas)
-            error("to use structfile with useprefix=1, you must have passed in name-value argument pthscopas, or set glb('pthscopas')")
-        end
-    end
-
-    filesystem_matched = 0;
-    if ~isempty(pthall)
-        for k = 1:numel(pthall) %if pth contains wildcard, it's because it's filesystem protected, so find the file for this filesystem
-            sfile = structld(pthall(k).name, nocells=1);
-
-            if ~isfield(sfile, 'loc') || ~isfield(sfile, 'prefix')
-                error("useprefix is true but pth is a file that previously did not use prefix")
-            end
-            if strcmp(sfile.loc, pthscopa)
-                if filesystem_matched==1
-                    error("there can only be one options file for each filesystem")
-                end
-                filesystem_matched = 1;
-                prefix = sfile.prefix;
-                pth = pthall(k).name;
-            end
-        end
-    end
-    if filesystem_matched==0
-        fprintf("no file on current filesystem found; will create one if sfilenew is nonempty" + newline)
-        pftmp = struct2cell(pthscopas);
-        for k = 1:numel(pftmp)
-            if ~isempty(pftmp{k}) && ~endsWith(pftmp{k}, filesep)
-                pftmp{k} = [pftmp{k} filesep];
-            end
-        end
-        fnpf = fieldnames(pthscopas);
-        prefix = fnpf(strcmp(pthscopa,pftmp));
-        if numel(prefix)~=1
-            error("there must be only one match to prefix")
-        end
-        prefix = cell2mat(prefix);
-        pth = strrep(pth, '*', prefix);
-    end
-
-else
-
-    if contains(pth, wcpat)
-        error("pth cannot contain wildcard pattern unless useprefix is true (in which case it will be replaced by prefix)")
-    end
-    prefix = ''; %empty char
-    if autonm
-        error("if nm isempty (using automatically generated names, ie autonm is true), useprefix must be true")
-    end
-    if isscalar(pthall)
-        pth = pthall.name;
-    elseif isempty(pthall)
-        fprintf("pth does not exist, will create it" + newline)
-    else
-        error("pth has multiple matches")
-    end
-
+if usegit
+    scopagit('pull')
 end
 
-
-%%%%% INSPECT FILE %%%%%
-
-[pthdir, flnm, ~] = fileparts(pth);
-flnmsplit = strsplit(flnm, '_');
-loc = [pthdir filesep];
+[~, flnm, ~] = fileparts(pth);
 
 if isfile(pth)
+
+    %%%%% SET UP VARIABLE NAME %%%%%
 
     sfile = structld(pth, nocells=1); %load from file
     if isfield(sfile, 'maketime')
@@ -165,21 +93,9 @@ if isfile(pth)
     else
         error("file must have maketime recording when it was first created (to reliably map to other files with ids contained in this file); you may have an old file")
     end
-    if isfield(sfile, 'loc')
-        if ~useprefix
-            error("useprefix must be true since pth exists and previously used prefix")
-        end
-        loc_field = sfile.loc;
-        sfile = rmfield(sfile, 'loc');
-        if ~strcmp(loc, loc_field)
-            error("if loc is a field in file, it must match location of file")
-        end
-        if isfield(sfile, 'prefix')
-            prefix_field = sfile.prefix;
-            sfile = rmfield(sfile, 'prefix');
-        else
-            error("if loc is a field in file, prefix must also be a field in file (prefix is a shorthand for loc)")
-        end
+    if isfield(sfile, 'autonm_prefix')
+        prefix_field = sfile.autonm_prefix;
+        sfile = rmfield(sfile, 'autonm_prefix');
     end
     if autonm
         if isfield(sfile, 'autonm') && sfile.autonm==1
@@ -193,9 +109,9 @@ if isfile(pth)
             error("nm is automatically derived because it is empty, but existing file did not have nm automatically derived (does not contain field autonm)")
         end
         nmfile = fieldnames(sfile);
-        nmpat = ['^' prefix '[1-9]+[0-9]*$']; %previously was '^[a-z]{1}[1-9]+[0-9]*$' single lowercase letter followed by 1 or more consecutive integers, not starting with 0, but got rid of prefix being inseparable from default nm
+        nmpat = ['^' autonm_prefix '[1-9]+[0-9]*$']; %previously was '^[a-z]{1}[1-9]+[0-9]*$' single lowercase letter followed by 1 or more consecutive integers, not starting with 0, but got rid of autonm_prefix being inseparable from default nm
         fnmatches = cellflat(regexp(nmfile,nmpat,'match'));
-        if numel(fnmatches)==numel(nmfile) %if all vars in file follow default naming pattern (prefix with consecutive numbers)
+        if numel(fnmatches)==numel(nmfile) %if all vars in file follow default naming pattern (autonm_prefix with consecutive numbers)
             nmnumstr = cellflat(regexp(nmfile,'\d+','match'));
             nmnums = cellfun(@str2double, nmnumstr);
             prefix_derived = [];
@@ -204,15 +120,14 @@ if isfile(pth)
             end
             prefix_derived = unique(prefix_derived);
             if ~isscalar(prefix_derived)
-                error("default pattern can only use one prefix")
+                error("default pattern can only use one autonm_prefix")
             end
             prefix_derived = cell2mat(prefix_derived);
-            prefix_in_filename = flnmsplit{end-1};
-            if ~isequal(prefix, prefix_derived, prefix_field, prefix_in_filename) %make sure input prefix matches sfile.prefix and prefixes in each variable name in file
-                error("input prefix must match prefix in variable names in file, prefix in prefix field in file, and prefix in filename")
+            if ~isequal(autonm_prefix, prefix_derived, prefix_field) %make sure input autonm_prefix matches sfile.autonm_prefix and prefixes in each variable name in file
+                error("input autonm_prefix must match autonm_prefix in variable names in file, autonm_prefix in autonm_prefix field in file")
             end
             if numel(nmnums)~=numel(nmfile) || ~isequal(nmnums, 1:numel(nmnums))
-                error("default name is prefix followed by an integer; integers in names should increase sequentially from 1 to numel(variables); you may have used an invalid name")
+                error("default name is autonm_prefix followed by an integer; integers in names should increase sequentially from 1 to numel(variables); you may have used an invalid name")
             end
         else
             error("all vars in file must follow default naming pattern since autonm=1")
@@ -235,37 +150,9 @@ if isfile(pth)
         nmfile = fieldnames(sfile);
     end
 
-else
-
-    sfile = struct;
-    nmfile = fieldnames(sfile);
-    maketime = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-
-end
 
 
-%%%%% GET MATCHED VARIABLE FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
-
-if ~isempty(nm) && startsWith(nm, prefix)
-    fprintf("warning, nm starts with prefix, you may be intending to find variable [prefix nm]; if you do not get the results you want, try not including prefix in nm" + newline)
-end
-
-if ~isfile(pth)
-    if getonly
-        fprintf("pth des not exist, but getonly is true, so will not create file or output new name" + newline)
-        nmout = [];
-        sout = [];
-        sfilenew = [];
-    else
-        if autonm
-            nmout = [prefix '1'];
-        else
-            nmout = [prefix nm];
-        end
-        sout = s;
-        sfilenew = s;
-    end
-else
+    %%%%% GET MATCHED VARIABLE FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
 
     dotranspose = 0;
     matchind = [];
@@ -274,7 +161,7 @@ else
             if autonm %if no variable or name was provided
                 error("s and nm cannot both be empty")
             else
-                if isequal([prefix nm], nmfile{k}) %if name matches when no variable was provided
+                if isequal(nm, nmfile{k}) %if name matches when no variable was provided
                     matchind = [matchind k];
                 end
             end
@@ -302,11 +189,11 @@ else
                 end
             else
                 if smatched
-                    if strcmp([prefix nm], nmfile{k}) %if variable and name match
+                    if strcmp(nm, nmfile{k}) %if variable and name match
                         matchind = [matchind k];
                     else %if variable matches but name doesn't
                         if ~dupe %if duplicates are not allowed, error
-                            error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmout)
+                            error("s and nm are nonempty, so you are trying to write s to file with name nm, but s already exists in pth and has name " + nmfile{k})
                         end
                     end
                 end
@@ -314,7 +201,7 @@ else
         end
     end
 
-    if isempty(matchind) %after looping through all vars in file, if current variable doesn't match any vars in file, append to variables in file
+    if isempty(matchind) %after looping through all variables in file, if input variable doens't match any in file, append to variables in file
         if getonly
             fprintf("no matches to input s were found, but getonly is true, so will not create file or new name" + newline)
             nmout = [];
@@ -322,25 +209,23 @@ else
             sfilenew = [];
         else
             if autonm
-                nmout = [prefix num2str(max(nmnums)+1)];
+                nmout = [autonm_prefix num2str(max(nmnums)+1)];
             else
-                nmout = [prefix nm];
+                nmout = nm;
                 if isempty(s)
-                    fprintf("no variable in pth matching nm " + [prefix nm] + newline)
-                else
-                    nmout = [prefix nm];
+                    fprintf("no variable in pth matching nm " + nmout + newline)
                 end
             end
             sout = s;
             sfilenew = s;
-        end
-    else
+        end 
+    else % if input variable does match a variable in file . . . 
         if part
             nmout = cell(numel(matchind), 1);
             sout = cell(numel(matchind), 1);
             for k = 1:numel(matchind)
                 nmout{k} = nmfile{matchind(k)};
-                sout{k} = sfile.(nmfile{matchind(k)}); %if variable matches a variable in file, give variable the name it has in file
+                sout{k} = sfile.(nmfile{matchind(k)}); %if input variable matches a variable in file, give variable the name it has in file
                 if dotranspose %isequal(size(spart), flip(size(sout{k})))
                     sout{k} = transpose(sout{k});
                 end
@@ -349,7 +234,7 @@ else
         else
             if isscalar(matchind)
                 nmout = nmfile{matchind};
-                sout = sfile.(nmfile{matchind}); %if variable matches a variable in file, give variable the name it has in file
+                sout = sfile.(nmfile{matchind}); %if input variable matches a variable in file, give variable the name it has in file
                 if dotranspose %isequal(size(s), flip(size(sout)))
                     sout = transpose(sout);
                 end
@@ -360,7 +245,44 @@ else
         end
     end
 
+else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
+
+    fprintf("the following file will be created because it does not exist: " + pth + newline)
+
+    sfile = struct;
+    maketime = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
+
+    if getonly
+        fprintf("pth des not exist, but getonly is true, so will not create file or output new name" + newline)
+        nmout = [];
+        sout = [];
+        sfilenew = [];
+    else
+        if autonm
+            nmout = [autonm_prefix '1'];
+        else
+            nmout = nm;
+        end
+        sout = s;
+        sfilenew = s;
+    end
+
 end
+
+
+
+%%%%% SET GLOBALS %%%%%
+
+flnmsplit = strsplit(flnm, '_');
+if numel(flnmsplit)>1
+    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'daq', 'rg', 'var'}) %glb('ided_vbin') and rg and var
+        vbin = flnmsplit{2};
+        if isempty(glb(['maketime_' vbin]))
+            glb(['maketime_' vbin], maketime); % previously tried to set globals as struct, but currently won't allow updating fields within maketime struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(vbin) = maketime; glb(maketime=maketime_glb)
+        end
+    end
+end
+
 
 %%%%% WRITE TO FILE %%%%%
 
@@ -370,9 +292,8 @@ else
     if getonly
         error("should not be here if getonly is true")
     end
-    if useprefix
-        sfile.loc = loc;
-        sfile.prefix = prefix;
+    if usegit
+        sfile.autonm_prefix = autonm_prefix;
     end
     if autonm_write
         sfile.autonm = 1;
@@ -382,55 +303,14 @@ else
     structsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 end
 
-%%%%% SET GLOBALS %%%%%
-
-if ~strcmp(flnmsplit{1}, 'opt')
-    error("filename should be opt then vbin then user then prefix then .txt")
+if usegit
+    try
+        scopagit('push', files=pth) %previously files={'^opt_.*_.txt$'}
+    catch
+        scopagit('discard', files=pth) %previously files={'^opt_.*_.txt$'}
+    end
 end
 
-% previously tried to set globals as struct, but currently won't allow updating fields within maketime struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(vbin) = maketime; glb(maketime=maketime_glb)
-
-vbin = flnmsplit{2};
-switch vbin
-    case 'roi'
-        if isempty(glb('maketime_roi'))
-            glb(maketime_roi=maketime);
-        end
-    case 'mdl'
-        if isempty(glb('maketime_mdl'))
-            glb(maketime_mdl=maketime);
-        end
-    case 'bmp'
-        if isempty(glb('maketime_bmp'))
-            glb(maketime_bmp=maketime);
-        end
-    case 'daq'
-        if isempty(glb('maketime_daq'))
-            glb(maketime_daq=maketime);
-        end
-    case 'rg'
-        if isempty(glb('maketime_rg'))
-            glb(maketime_rg=maketime);
-        end
-    case 'sld'
-        if isempty(glb('maketime_sld'))
-            glb(maketime_sld=maketime);
-        end
-    case 'var'
-        if isempty(glb('maketime_var'))
-            glb(maketime_var=maketime);
-        end
-    case 'fmf'
-        if isempty(glb('maketime_fmf'))
-            glb(maketime_fmf=maketime);
-        end
-    case 'pth'
-        if isempty(glb('maketime_pth'))
-            glb(maketime_pth=maketime);
-        end
-    otherwise
-        error("vbin must be roi, mdl, bmp, rg, var, sld, pth, fmf, or daq")
-end
 
 end
 
@@ -439,8 +319,8 @@ end
 function [s, sfile] = partmake(s, sfile, wcpat)
 
 sfile_save = sfile; %in case s is all wild and becomes all empty
-s = structflat(s, Prefix='s'); %use prefix in case nonscalar, it won't affect this function 
-sfile = structflat(sfile, Prefix='s');  %use prefix in case nonscalar, it won't affect this function 
+s = structflat(s, Prefix='s'); %use Prefix in case nonscalar, it won't affect this function 
+sfile = structflat(sfile, Prefix='s');  %use Prefix in case nonscalar, it won't affect this function 
 fnf = fieldnames(s);
 for k = 1:numel(fnf)
     if isequal(s.(fnf{k}), wcpat)
@@ -463,9 +343,9 @@ if isempty(fieldnames(s))
     sfile = sfile_save;
 else
     s = structunflat(s);
-    s = s.s; %get rid of the prefix assigned above in call to structfile
+    s = s.s; %get rid of the Prefix assigned above in call to structflat
     sfile = structunflat(sfile);
-    sfile = sfile.s; %get rid of the prefix assigned above in call to structfile
+    sfile = sfile.s; %get rid of the Prefix assigned above in call to structflat
 end
 
 end

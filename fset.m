@@ -24,7 +24,7 @@ if isfield(opt, 'optid') && ~isempty(opt.optid)
         end
         pthopt = [pthscopa 'opt_' vbin '_' user '_*_.txt'];
         optid_noprefix = optidtmp(2:end);
-        opt = structfile(pthopt, s=[], nm=optid_noprefix, useprefix=1);
+        opt = structfile(pthopt, s=[], nm=optid_noprefix, usegit=0);
         opt.optid = optidtmp; %put it back in
     end
 else

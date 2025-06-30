@@ -2,7 +2,8 @@
 
 %{
 
-force git sync with remote when running oid, so all filesystems are integrated 
+strucfile gets called by: oid, tsget, stackcrop, and fset; can read and/or
+write in all cases except fset (fset just reads); uses scopagit to ensure integration across filesystems 
 
 ap2 (analysis 2-photon)
     scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline

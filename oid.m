@@ -52,10 +52,6 @@ if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'fill
     end
 end
 
-if ~tsgetcall && ~getonly
-    scopagit('pull')
-end
-
 for k = 1:numel(vbin)
 
     vbintmp = vbin{k};
@@ -87,7 +83,7 @@ for k = 1:numel(vbin)
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
 
-                [opttmp, optid] = structfile(pthoptpat, s=optred, useprefix=1, getonly=getonly);
+                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=1, getonly=getonly);
 
 
                 %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
@@ -140,13 +136,6 @@ for k = 1:numel(vbin)
 
 end
 
-if ~tsgetcall && ~getonly
-    try
-        scopagit('push', files={'^opt_.*_.txt$'})
-    catch
-        scopagit('discard', files={'^opt_.*_.txt$'})
-    end
-end
 
 o = structsort(o, vectype='row');
 
