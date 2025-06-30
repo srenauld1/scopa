@@ -144,7 +144,7 @@ if ~tsgetcall && ~getonly
     try
         scopagit('push', files={'^opt_.*.txt$'})
     catch
-        scopagit('discard', files={'^opt_.*.txt$'})
+        scopagit('push', files={'^opt_.*.txt$'})
     end
 end
 
