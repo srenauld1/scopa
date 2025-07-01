@@ -47,6 +47,22 @@
     "trm": [],
     "zerostack": 0
   },
+  "a4": {
+    "clip": [0,1],
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "savemem": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": -1
+  },
   "autonm": 1,
   "autonm_prefix": "a",
   "maketime": "2025030622044502"
