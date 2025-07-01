@@ -93,7 +93,7 @@
     "smmthd": "gaussian",
     "stackdtype": "uint16",
     "trm": [],
-    "zerostack": -100
+    "zerostack": -1000
   },
   "a7": {
     "clip": [0,1],
@@ -109,7 +109,7 @@
     "smmthd": "gaussian",
     "stackdtype": "uint16",
     "trm": [],
-    "zerostack": -1000
+    "zerostack": -10001
   },
   "autonm": 1,
   "autonm_prefix": "a",
