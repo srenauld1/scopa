@@ -1,3 +1,9 @@
 {
-  "me": 3
+  "a1": {
+    "de": 22,
+    "me": 3
+  },
+  "autonm": 1,
+  "autonm_prefix": "a",
+  "maketime": "2025070118185737"
 }
