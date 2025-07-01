@@ -31,7 +31,23 @@
     "trm": [4,2],
     "zerostack": 1
   },
+  "a3": {
+    "clip": [0,1],
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "savemem": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 0
+  },
   "autonm": 1,
-  "maketime": "2025030622044502",
-  "autonm_prefix": "a"
+  "autonm_prefix": "a",
+  "maketime": "2025030622044502"
 }
