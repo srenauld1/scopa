@@ -95,6 +95,22 @@
     "trm": [],
     "zerostack": -100
   },
+  "a7": {
+    "clip": [0,1],
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "savemem": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": -1000
+  },
   "autonm": 1,
   "autonm_prefix": "a",
   "maketime": "2025030622044502"
