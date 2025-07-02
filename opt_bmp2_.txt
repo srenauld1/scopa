@@ -10,6 +10,7 @@
     "me": 2,
     "mee": 2,
     "meed": 2,
+    "mibedhk": 2,
     "mibewdhk": 2,
     "mibewdhlk": 2,
     "mlcbewdhjlk": 2,
@@ -18,5 +19,5 @@
   },
   "autonm": 1,
   "autonm_prefix": "a",
-  "maketime": "2025070217452474"
+  "maketime": "2025070217470230"
 }
