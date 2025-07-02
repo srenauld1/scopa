@@ -1733,6 +1733,28 @@
       "vnm": "ts"
     }
   ],
+  "a70": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a12",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250322-1_d05_s8m_016_s8m/20250322_1_2_a12_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": [],
+      "ii": [],
+      "it": [],
+      "optid": "a76",
+      "pth": "/Users/wienecke/stacks/ganoeb/20250322-1_d05_s8m_016_s8m/20250322_1_2_cmrg_dcdn_a76_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
   "autonm": 1,
   "autonm_prefix": "a",
   "maketime": "2025031519252622"
