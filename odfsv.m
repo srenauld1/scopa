@@ -49,6 +49,7 @@ d.mn.dofmf = 0; %model fitting (o.mdl below)
 d.mn.dofit = 0; %model fitting (o.mdl below)
 d.mn.dopltx = 0; %plot experiment (o.pltx below)
 
+d.mn.usegit = 0;  %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
 d.mn.dirtmp = 'scopatmp'; %will be created in same dir as stacks, stores small tmp files used in interactive figures; getActiveFilename is problematic on O2 so using this approach instead
 d.mn.timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mdl"]
@@ -59,16 +60,7 @@ d.mn.optiddf = 'z0'; %if user doesn't use oid to map options sets and variables 
 d.mn.ided_vbin = ["sld", "daq", "roi", "bmp", "mdl", "fmf"]; %vbin that can be mapped to ids; only these vbin can be distributed (odist) and mapped to id (since they are the most option-dependent, user-may want to explore options easily, and also their options can be set simply without requiring complex encoding/decoding between matlab/python, or into and out of txt file; 
 d.mn.inert_vbin = ["sp", "tp", "imhsv", "tg", "savemem", "optid"]; %vbin or options that have no functional effect (set to empty in txt files recording options, and not considered when deriving optid)
 
-d.mn.scopauserid = 'youforgottossetuser';
-
-d.mn.pthscopas.a = fullfile(filesep, 'youforgottossetpthscopas', filesep); %path to scopa in filesystem a (used to prevent conflicting edits to "same" lookup file in different filesystems)   
-d.mn.pthscopas.b = ''; %path to scopa in filesystem b (used to prevent conflicting edits to "same" lookup file in different filesystems) 
-d.mn.pthscopas.c = ''; %path to scopa in filesystem c (used to prevent conflicting edits to "same" lookup file in different filesystems) 
-d.mn.pthscopas.d = ''; %path to scopa in filesystem d (used to prevent conflicting edits to "same" lookup file in different filesystems) 
-d.mn.pthscopas.e = ''; %path to scopa in filesystem e (used to prevent conflicting edits to "same" lookup file in different filesystems) 
-d.mn.pthscopas.f = ''; %path to scopa in filesystem f (used to prevent conflicting edits to "same" lookup file in different filesystems) 
-d.mn.pthscopas.g = ''; %path to scopa in filesystem g (used to prevent conflicting edits to "same" lookup file in different filesystems) 
-d.mn.pthscopas.h = ''; %path to scopa in filesystem h (used to prevent conflicting edits to "same" lookup file in different filesystems) 
+d.mn.scopausername = 'youforgottossetuser';
 
 d.mn.pthpy = ''; %path to python executable  
 
@@ -480,9 +472,6 @@ if ~strcmp(tmp(:,1)', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs",
 end
 if ~isequal(d, structunflat(structflat(d)))
     error("at least one of the default values above must be an empty struct; empty structs are not allowed to be default values (although empty vector, cell, char, and string are allowed); empty structs are used in oid to eliminate options structs that depend on other options, before writing to the options file ")
-end
-if ~strcmp(cell2mat(vec(fieldnames(d.mn.pthscopas))'), 'abcdefgh')
-    error("d.mn.pthscopas fields (ids for each filesystem containing scopa) must be consecutive lowercase alphabetical characters")
 end
 
 fprintf("writing default options to: " + pthopt + newline)

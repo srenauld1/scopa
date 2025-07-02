@@ -4,7 +4,7 @@ function scopagit(operation, opt)
 
 arguments
     operation %'push', 'pull', 'sync', or 'discard'; automatically operates on untracked files and modified files together; uses information from userdat.txt, created by running function userdatsv
-    opt.files = []; %filenames (or full file paths) to operate on with git; string or char vector if single filename, or string array or cell array of char vectors if multiple filenames; filenames can be regexp expressions for matching/filtering
+    opt.files = []; %filename to operate on with git; string or char vector if single filename, or cell array of char vectors if multiple filenames; filenames can be regexp expressions for matching/filtering
 end
 files = opt.files;
 

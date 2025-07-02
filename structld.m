@@ -1,5 +1,8 @@
 function s = structld(pth, opt)
 
+% load json-encoded struct from file 
+% warning: when reading struct from file, jsencode (called below) will insert an 'x' at the beginning of any fieldname that doesn't begin with a letter (an invalid fieldname); if a file was written with structsv, it will not contain invalid fieldnames because structsv only writes valid structs) 
+
 arguments
     pth %path to txt file containing struct
     opt.sort = 1; %alphabetically sort struct (natural sort)

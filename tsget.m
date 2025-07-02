@@ -11,7 +11,7 @@ end
 arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
-    opt.scopauserid = []
+    opt.scopausername = []
     opt.pthparent = []
 end
 arguments (Output)
@@ -22,7 +22,7 @@ arguments (Repeating, Output)
 end
 
 dm = opt.dm;
-scopauserid = opt.scopauserid;
+scopausername = opt.scopausername;
 pthparent = opt.pthparent;
 
 numvarin = numel(tg); %number of independent output variables (number of nonempty input arguments to tsget)
@@ -34,10 +34,10 @@ persistent tsouttmp
 if isempty(dm)
     dm = 'it';
 end
-if isempty(scopauserid)
-    scopauserid = glb('scopauserid');
-    if isempty(scopauserid)
-        error("you must pass in scopauserid or set glb('scopauserid')")
+if isempty(scopausername)
+    scopausername = glb('scopausername');
+    if isempty(scopausername)
+        error("you must pass in scopausername or set glb('scopausername')")
     end
 end
 if isempty(pthparent)
@@ -48,7 +48,7 @@ if isempty(pthparent)
 end
 
 pthscopa = getpathscopa();
-pthvar = [pthscopa 'opt_var_' scopauserid '_.txt'];
+pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
 
@@ -57,7 +57,7 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})
-            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopauserid, pthscopa);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopausername, pthscopa);
         end
     end
 
@@ -169,7 +169,7 @@ end
 
 end
 
-function [tsout, dat] = tsget2(tg, dm, pthparent, scopauserid, pthscopa)
+function [tsout, dat] = tsget2(tg, dm, pthparent, scopausername, pthscopa)
 
 if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
     tg = tg.tg; %since the input to this function is also named tg
@@ -182,7 +182,7 @@ tsout = cell(numtg,1);
 dattmp = cell(numtg,1);
 group = cell(numtg,1);
 for m = 1:numtg %loop over tg elements
-    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopauserid, pthscopa);
+    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopausername, pthscopa);
 end
 
 
@@ -246,7 +246,7 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopauserid, pthscopa)
+function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -399,7 +399,7 @@ end
 
 if isfield(tg, 'var')
     if isempty(cell2mat(varid))
-        pthvarpat = [pthscopa 'opt_var_' scopauserid '_.txt'];
+        pthvarpat = [pthscopa 'opt_var_' scopausername '_.txt'];
         [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=1);
     else
         error("var substruct and varid cannot both exist in tg")

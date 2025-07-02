@@ -60,7 +60,7 @@ if isempty(pthopt)
 end
 
 
-if isempty(glb('dfset')) || glb('dfset')==0 %write defaults and pthscopas to file the first time odf gets called
+if isempty(glb('dfset')) || glb('dfset')==0 %write defaults to file the first time odf gets called
     odfsv(pthopt);
 end
 
@@ -447,9 +447,9 @@ if fill
     end
 
     %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%
-    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('pthscopas')) && isempty(glb('scopauserid'))
+    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('scopausername'))
         if ( isfield(o, 'mn') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, pthscopas=o.mn.pthscopas, scopauserid=o.mn.scopauserid)
+            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, scopausername=o.mn.scopausername)
         end
     end
 
@@ -468,29 +468,14 @@ if fill
 
     if isempty(vbin) || isempty(setxor(vbin, vbin_top))
 
-        if isempty(o.mn.scopauserid)
-            error('o.mn.scopauserid cannot be empty')
+        if isempty(o.mn.scopausername)
+            error('o.mn.scopausername cannot be empty')
         end
-        if isempty(regexp(o.mn.scopauserid, '^[a-zA-Z]+$'))
-            if strcmp(o.mn.scopauserid, '*')
-                error('o.mn.scopauserid is an asterisk, you may have called odf with wild=1 and fill=1 and empty or absent vbin, so the entire options struct was filled with asterisks')
+        if isempty(regexp(o.mn.scopausername, '^[a-zA-Z]+$'))
+            if strcmp(o.mn.scopausername, '*')
+                error('o.mn.scopausername is an asterisk, you may have called odf with wild=1 and fill=1 and empty or absent vbin, so the entire options struct was filled with asterisks')
             end
-            error('o.mn.scopauserid can only contain alphabetic characters')
-        end
-
-        fn = fieldnames(o.mn.pthscopas);
-        cnt = 0;
-        for k = 1:numel(fn)
-            if isempty(o.mn.pthscopas.(fn{k}))
-                cnt = cnt+1;
-            else
-                if ~endsWith(o.mn.pthscopas.(fn{k}), filesep)
-                    error("all pthscopas must end with filesep; add filesep")
-                end
-            end
-        end
-        if cnt==numel(fn)
-            error("at least one pthscopas must be nonempty")
+            error('o.mn.scopausername can only contain alphabetic characters')
         end
 
         o.filled = 1;

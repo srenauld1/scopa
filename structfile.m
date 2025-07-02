@@ -8,12 +8,11 @@ write variable to and/or read variable from txt file (pth), depending on input
     s=nonempty, nm=[], in file: sout=s given name of found match in file
     s=nonempty, nm=[], not in file: sout=s given name of default pattern, and write s to file
     s=nonempty, nm=nonempty, in file: sout=s unchanged, with warning if flagmatch 0, error if flagmatch 1
-    s=nonempty, nm=nonempty, not in file: sout=UNCHANGED s, write s to file with name nm (error if flagpattern 1 and if nm does not follow default pattern but file variables do)
+    s=nonempty, nm=nonempty, not in file: sout=UNCHANGED s, write s to file with name nm (error if autonm=1 and if nm does not follow default pattern but file variables do)
 default nm pattern, for autonm, is ['^' autonm_prefix '[1-9]+[0-9]*$'] (autonm_prefix followed by 1 or more consecutive integers, not starting with 0)
 if file was created using autonm_prefix, user must always use same autonm_prefix for that file
 nm empty means you are using default naming (nm is automatically derived, ie autonm is true)
 if file was created using default variable names, autonm is true, and user must always use default names for that file
-if using autonm, usegit must be true (since digits are not valid variable names)
 %}
 
 arguments
@@ -34,9 +33,12 @@ wcpat = '*';
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
 
-% if isstruct(s) && isempty(fieldnames(s))
-%     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
-% end
+if isstruct(s) && isempty(fieldnames(s))
+    s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
+end
+if isempty(s) || getonly
+    usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
+end
 
 if startsWith(pth, ['~' filesep])
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
@@ -85,7 +87,7 @@ end
 
 
 if usegit
-    scopagit('pull') %make sure matches remote 
+    scopagit('pull') %make sure matches remote
 end
 
 [~, flnm, ~] = fileparts(pth);
@@ -255,7 +257,7 @@ if isfile(pth)
 
 else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
 
-    fprintf("the following file will be created because it does not exist: " + pth + newline)
+    fprintf("the following file does not exist: " + pth + newline)
 
     sfile = struct;
     maketime = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
@@ -292,32 +294,37 @@ if numel(flnmsplit)>1
 end
 
 
-%%%%% WRITE TO FILE %%%%%
+%%%%% WRITE TO FILE (IF ANYTHING NEW) %%%%%
 
 if isempty(sfilenew)
-    fprintf("sfilenew is empty, not writing anything to file pth" + newline)
+
+    fprintf("sfilenew is empty, not writing anything to the following file: " + pth + newline)
+
 else
+
+    fprintf("creating and writing input struct to the following file: " + pth + newline)
+
     if getonly
         error("should not be here if getonly is true")
     end
-    if usegit
-        sfile.autonm_prefix = autonm_prefix;
-    end
+    sfile.autonm_prefix = autonm_prefix;
     if autonm_write
         sfile.autonm = 1;
     end
     sfile.maketime = maketime;
     sfile.(nmout) = sfilenew;
     structsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
+
+    if usegit
+        try
+            scopagit('push', files=pth)
+        catch
+            scopagit('discard', files=pth)
+        end
+    end
+
 end
 
-if usegit
-    try
-        scopagit('push', files=pth) %previously files={'^opt_.*_.txt$'}
-    catch
-        scopagit('discard', files=pth) %previously files={'^opt_.*_.txt$'}
-    end
-end
 
 
 end

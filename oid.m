@@ -8,14 +8,16 @@ arguments
     o %options struct
     vbin = [] %vbin to recover id (and expand)
     opt.getonly = 0 %get ids only (cannot write to file or create new id)
+    opt.usegit = 1 %get ids only (cannot write to file or create new id)
 end
 getonly = opt.getonly;
+usegit = opt.usegit;
 
 delim = '__';
 
-scopauserid = glb('scopauserid');
-if isempty(scopauserid)
-    error("you have not set glb('scopauserid')")
+scopausername = glb('scopausername');
+if isempty(scopausername)
+    error("you have not set glb('scopausername')")
 end
 
 ided_vbin = glb('ided_vbin');
@@ -31,6 +33,9 @@ if isempty(vbin)
 end
 if ~iscell(vbin)
     vbin = {vbin};
+end
+if getonly
+    usegit = 0; %just to be clear, although this is not necessary because usegit only has effect if getonly is false
 end
 
 pthscopa = getpathscopa();
@@ -52,6 +57,10 @@ if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'fill
     end
 end
 
+if usegit && ~getonly
+    scopagit('pull') %make sure matches remote
+end
+
 for k = 1:numel(vbin)
 
     vbintmp = vbin{k};
@@ -62,7 +71,7 @@ for k = 1:numel(vbin)
 
     %%%%%%%% FIND OPTIONS FILE (FOR THIS FILESYSTEM) FOR A SINGLE vbin %%%%%%%%
 
-    pthoptpat = [pthscopa 'opt_' vbintmp '_' scopauserid '_.txt'];
+    pthoptpat = [pthscopa 'opt_' vbintmp '_' scopausername '_.txt'];
 
     for m = 1:numel(o)
 
@@ -83,7 +92,7 @@ for k = 1:numel(vbin)
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
 
-                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=1, getonly=getonly);
+                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=0, getonly=getonly); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
 
 
                 %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
@@ -136,8 +145,17 @@ for k = 1:numel(vbin)
 
 end
 
+fuk=uk
 
 o = structsort(o, vectype='row');
+
+if usegit && ~getonly 
+    try
+        scopagit('push', files={'^opt_.*_.txt$'})
+    catch
+        scopagit('discard', files={'^opt_.*_.txt$'}) %if push fails, make sure you discard changes to opt files 
+    end
+end
 
 
 

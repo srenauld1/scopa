@@ -237,18 +237,8 @@
     "plt": "",
     "pltvis": 1,
     "pthpy": "",
-    "pthscopas": {
-      "a": "/youforgottossetpthscopas/",
-      "b": "",
-      "c": "",
-      "d": "",
-      "e": "",
-      "f": "",
-      "g": "",
-      "h": ""
-    },
-    "timestr": "2025062920515873",
-    "scopauserid": "youforgottossetuser"
+    "scopausername": "youforgottossetuser",
+    "timestr": "2025063021541316"
   },
   "nestvalid": [
     "spec",

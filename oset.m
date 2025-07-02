@@ -21,13 +21,12 @@ end
 otmp.spec.pth = specin;
 files = opt.files;
 
-%%%% scopauserid, path to your scopa in different filesystems, and python path %%%%
+%%%% scopausername, path to your scopa in different filesystems, and python path %%%%
 
 dodf = 0; %set to 1 use all defaults (do not enter any oset_* file)
 
-otmp.mn.scopauserid = 'cw'; %cw, wz, jf, yz, sr; (to route to different oset_* files below)
-otmp.mn.pthscopas.a = fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep); %path to your scopa in filesystem a, for example, for carl fullfile(filesep, 'Users', 'wienecke', 'scopa', filesep)
-otmp.mn.pthscopas.b = fullfile(filesep, 'home', 'caw846', 'scopa', filesep); %path to your scopa in filesystem b, for example, for carl fullfile(filesep, 'home', 'caw846', 'scopa', filesep)
+otmp.mn.usegit = 1; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
+otmp.mn.scopausername = userdatsv('read', field='scopausername'); %cw, wz, jf, yz, sr; (to route to different oset_* files below)
 otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py)
 
 %%%% recording specifiers (used to find recordings if there is no input to a2p) %%%%
@@ -47,7 +46,7 @@ end
 otmp = odf(otmp, files=files); %find files (if files=1), add them to struct otmp
 
 
-%%%% loop over found files in otmp, setting options depending on recording (and scopauserid) %%%%
+%%%% loop over found files in otmp, setting options depending on recording (and scopausername) %%%%
 
 for k = 1:numel(otmp)
 
@@ -58,7 +57,7 @@ for k = 1:numel(otmp)
 
     else
 
-        switch otmp(1).mn.scopauserid
+        switch otmp(1).mn.scopausername
 
             case 'wz'
 
@@ -157,7 +156,14 @@ end
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
-o = oid(o); %assign id to options sets, if multiple requested with cell array options
+try
+    o = oid(o, usegit=usegit); %assign id to options sets, if multiple requested with cell array options
+catch ME
+    if usegit
+        scopagit('discard', files={'^opt_.*_.txt$'})
+    end
+    error("oid failed with the following error: " + ME.message)
+end
 
 oflat = structflat(o, prefix='o'); %get flattened struct for user to see options struct organization more easily (oflat does not get used); need prefix to make valid fieldnames in case nonscalar
 

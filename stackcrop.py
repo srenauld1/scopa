@@ -7,23 +7,25 @@ from im_montage import im_montage
 import matplotlib.pyplot as plt
 from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
+from pthmakepy import getpathscopa
 
 
 def stackcrop(stack, rgname, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
-    recid = pth_prefix.split('/')[-1]
-    try:
-        
-        pth_croplim_pat = pth_prefix + '_' + rgname + '_*_croplim_.txt' #find file matching fov subregion with some crop lim 
-        pth_croplim = glob.glob(pth_croplim_pat)
-        if len(pth_croplim) > 1:
-            raise Exception("too many crop files")
+    pth_scopa = getpathscopa()
+    with open('/Users/wienecke/scopa/userdat.txt', 'r') as file:
+        userdat = json.loads(file.read())
+    pthsv = pth_scopa + 'opt_rg_' + userdat['scopausername'] + '_.txt'
 
-        with open(pth_croplim[0], 'r') as file:
+    recid = pth_prefix.split('/')[-1]
+
+    try:
+
+        with open(pthrg[0], 'r') as file:
             rgall = json.loads(file.read())
 
-        for key in optdf:
+        for key in rgall:
             if key==rgname:
                 rg = rgall[key]
                 break
@@ -55,7 +57,7 @@ def stackcrop(stack, rgname, pth_prefix, dims):
             rg = np.asarray((tlimits + xlimits + ylimits + zlimits)).astype(int) 
             
     limits_str = str(rg[0]) + '_' + str(rg[1]) + '_' + str(rg[2]) + '_' + str(rg[3]) + '_' + str(rg[4]) + '_' + str(rg[5]) + '_' + str(rg[6]) + '_' + str(rg[7])
-    pth_croplim = pth_prefix + '_' + rgname + '_' + limits_str + '_croplim_.txt'
+    pthrg = pth_prefix + '_' + rgname + '_' + limits_str + '_croplim_.txt'
 
     rgt = {}
     rgt['y'] = ylimits
@@ -82,7 +84,7 @@ def stackcrop(stack, rgname, pth_prefix, dims):
             raise Exception("rg exists already with a different name")
 
     rgall[rgnamenew] = rgw
-    with open(pth_croplim, 'w') as file: 
+    with open(pthrg, 'w') as file: 
         file.write(json.dumps(rgw, sort_keys=True, indent=4, separators=(',', ':'))) #if this file already existed/was loaded above, this will just save it again, if file didn't exist, this will create it
 
     slt = slice(rg[0]-1, rg[1], 1) # convert to zero-indexing, but slice does not include second index so do not subtract one on the 2nd index 

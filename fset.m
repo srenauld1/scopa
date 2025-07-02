@@ -18,11 +18,11 @@ if isfield(opt, 'optid') && ~isempty(opt.optid)
     optidtmp = opt.optid; %set it aside in case it's the only field, and you have to load opt (which will remove optid)
     if all(strcmp(fieldnames(opt), 'optid')) %if optid is the only option, create the corresponding options
         pthscopa = getpathscopa();
-        scopauserid = glb('scopauserid');
-        if isempty(scopauserid)
-            error("you have not set glb('scopauserid')")
+        scopausername = glb('scopausername');
+        if isempty(scopausername)
+            error("you have not set glb('scopausername')")
         end
-        pthopt = [pthscopa 'opt_' vbin '_' scopauserid '_.txt'];
+        pthopt = [pthscopa 'opt_' vbin '_' scopausername '_.txt'];
         optid_noprefix = optidtmp(2:end);
         opt = structfile(pthopt, s=[], nm=optid_noprefix, usegit=0);
         opt.optid = optidtmp; %put it back in

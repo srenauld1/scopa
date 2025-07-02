@@ -31,11 +31,11 @@ if isempty(rgname)
 end
 
 pthscopa = getpathscopa();
-scopauserid = glb('scopauserid');
-if isempty(scopauserid)
-    error("you have not set glb('scopauserid')")
+scopausername = glb('scopausername');
+if isempty(scopausername)
+    error("you have not set glb('scopausername')")
 end
-pthrg = [pthscopa 'opt_rg_' scopauserid '_.txt'];
+pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
 id = idmake(pthstack);
 rgid = ['a' id.recid '_' rgname]; %start with a to make valid fieldname
