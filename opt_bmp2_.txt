@@ -1,0 +1,15 @@
+{
+  "a1": {
+    "d": 292,
+    "de": 292,
+    "dje": 292,
+    "djue": 292,
+    "djuhe": 292,
+    "me": 2,
+    "mee": 2,
+    "meed": 2
+  },
+  "autonm": 1,
+  "autonm_prefix": "a",
+  "maketime": "2025070213285400"
+}
