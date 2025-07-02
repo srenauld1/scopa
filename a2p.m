@@ -115,8 +115,8 @@ for k = 1:numel(oa) % loop over recordings
     grd = roi.(igrd).dat(1).ts;
     grv = roi.(igrv).dat(1).ts;
 
-    dvlen = md.sper*6;
-    dvord = 3;
+    dvlen = md.sper*3;
+    dvord = 2;
     glddv = tsdv('normal', gld, dvlen, dvord, md.sper);
     glvdv = tsdv('normal', glv, dvlen, dvord, md.sper);
     grddv = tsdv('normal', grd, dvlen, dvord, md.sper);
@@ -168,6 +168,7 @@ for k = 1:numel(oa) % loop over recordings
     %%
 
     ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, pth.pre, ...
+        glddv, glvdv, grddv, grvdv, ...
         plt=[1 0 0 0], ...
         facealpha=1, ...
         szthrres=[], ...
@@ -185,9 +186,9 @@ for k = 1:numel(oa) % loop over recordings
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
         tsub=660:.01:760, ... 50:.01:200, ...
-        dozscore=0, ...
+        dozscore=1, ...
         drawrot=90, ...
-        sliceeb=8)
+        sliceeb=[6:11])
 
 
     %%
@@ -237,21 +238,22 @@ for k = 1:numel(oa) % loop over recordings
     cmap = lines(8); %'lines' predefined colormap is the default for function 'plot'
     cmap = cat(1, cmap, [0 0 0]); %add black
 
+    % 
+    % h = initfig();
+    % h.ts = initaxts(h.hfg, glddvtmp, t=t, subplot_ind=1);
 
-    h = initfig();
-    h.ts = initaxts(h.hfg, glddvtmp, t=t, dool=dool, doui=1, subplot_ind=subplot_ind);
-
+    figure;
     hold on;
     if dodv
-        plot(t, glddvtmp, color=cmap(1,:), linestyle='-');
-        plot(t, glvdvtmp, color=cmap(1,:), linestyle=':', linewidth=2);
-        plot(t, grddvtmp, color=cmap(2,:), linestyle='-');
-        plot(t, grvdvtmp, color=cmap(2,:), linestyle=':', linewidth=2);
+        plot(t, glddv, color=cmap(1,:), linestyle='-');
+        plot(t, glvdv, color=cmap(1,:), linestyle=':', linewidth=2);
+        plot(t, grddv, color=cmap(2,:), linestyle='-');
+        plot(t, grvdv, color=cmap(2,:), linestyle=':', linewidth=2);
     else
-        plot(t, gldtmp, color=cmap(1,:), linestyle='-');
-        plot(t, glvtmp, color=cmap(1,:), linestyle=':', linewidth=2);
-        plot(t, grdtmp, color=cmap(2,:), linestyle='-');
-        plot(t, grvtmp, color=cmap(2,:), linestyle=':', linewidth=2);
+        plot(t, gld, color=cmap(1,:), linestyle='-');
+        plot(t, glv, color=cmap(1,:), linestyle=':', linewidth=2);
+        plot(t, grd, color=cmap(2,:), linestyle='-');
+        plot(t, grv, color=cmap(2,:), linestyle=':', linewidth=2);
     end
     ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;

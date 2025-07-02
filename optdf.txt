@@ -238,7 +238,8 @@
     "pltvis": 1,
     "pthpy": "",
     "scopausername": "youforgottossetuser",
-    "timestr": "2025063021541316"
+    "timestr": "2025070211263634",
+    "usegit": 0
   },
   "nestvalid": [
     "spec",

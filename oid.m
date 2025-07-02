@@ -145,8 +145,6 @@ for k = 1:numel(vbin)
 
 end
 
-fuk=uk
-
 o = structsort(o, vectype='row');
 
 if usegit && ~getonly 

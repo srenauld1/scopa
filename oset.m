@@ -25,7 +25,7 @@ files = opt.files;
 
 dodf = 0; %set to 1 use all defaults (do not enter any oset_* file)
 
-otmp.mn.usegit = 1; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
+otmp.mn.usegit = 0; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
 otmp.mn.scopausername = userdatsv('read', field='scopausername'); %cw, wz, jf, yz, sr; (to route to different oset_* files below)
 otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py)
 
@@ -34,8 +34,8 @@ otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'ca
 otmp.spec.pthparent_local = fullfile(filesep, 'Users', 'wienecke', 'stacks', filesep);
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in for use on o2
 if isempty(otmp.spec.pth) %if you're running a2p without input arguments (ie if otmp.spec.pth is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not otmp.spec.pth is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    otmp.spec.recdate = {'20250316'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.fly = {'1'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.recdate = {'20231119'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'*'}; %cell ara2ray of char (or scalar char), can use wildcards
     otmp.spec.suffix = {'cmrg_dcdn'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
     otmp.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
@@ -157,9 +157,9 @@ end
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
 try
-    o = oid(o, usegit=usegit); %assign id to options sets, if multiple requested with cell array options
+    o = oid(o, usegit=o(1).mn.usegit); %assign id to options sets, if multiple requested with cell array options
 catch ME
-    if usegit
+    if o(1).mn.usegit
         scopagit('discard', files={'^opt_.*_.txt$'})
     end
     error("oid failed with the following error: " + ME.message)
