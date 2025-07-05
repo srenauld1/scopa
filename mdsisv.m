@@ -1,4 +1,4 @@
-function md = mdsisv_mat(pthraw)
+function md = mdsisv(pthraw)
 
 %matlab form of mdsisv.py; does the same thing
 
@@ -61,12 +61,12 @@ try
         md.volrate = sistrparse(sistr, 'scanVolumeRate');
         md.channel_offsets = sistrparse(sistr, 'channelOffsets');
     else
-        error("cannot read metadata using tifreadfast and mdsisv_mat" + newline)
+        error("cannot read metadata using tifreadfast and mdsisv.m" + newline)
     end
 catch
     md = [];
     trywrite = 0;
-    fprintf("cannot read metadata using tifreadfast and mdsisv_mat (your stack may have been acquired with an older version of scanimage, or with software other than scanimage; run scopa registration on the raw tif and the metadata file will be created, although in this case possibily with some, but not all, dummy values)" + newline)
+    fprintf("cannot read metadata using tifreadfast and mdsisv.m (your stack may have been acquired with an older version of scanimage, or with software other than scanimage; run scopa registration on the raw tif and the metadata file will be created, although in this case possibily with some, but not all, dummy values)" + newline)
 end
 
 if ~isempty(mdtif)
@@ -78,12 +78,12 @@ if ~isempty(mdtif)
 end
 
 if isfile(pthmd)
-    fprintf("not writing metadata derived from tifreadfast and mdsisv_mat because metadata file already exists" + newline)
+    fprintf("not writing metadata derived from tifreadfast and mdsisv.m because metadata file already exists" + newline)
 else
     if trywrite
-        fprintf("writing metadata derived from tifreadfast and mdsisv_mat because there is no metadata file yet" + newline)
+        fprintf("writing metadata derived from tifreadfast and mdsisv.m because there is no metadata file yet" + newline)
         structsv(md, pthmd)
     else
-        fprintf("not writing metadata because cannot read metadata using tifreadfast and mdsisv_mat" + newline)
+        fprintf("not writing metadata because cannot read metadata using tifreadfast and mdsisv.m" + newline)
     end
 end

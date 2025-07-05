@@ -2824,7 +2824,10 @@
       "tg": []
     }
   },
-  "autonm": 1,
-  "maketime": "2025030622044540",
-  "autonm_prefix": "a"
+  "md": {
+    "autonm": 1,
+    "maketime": "2025030622044540",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
 }

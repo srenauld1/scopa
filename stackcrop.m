@@ -38,7 +38,7 @@ end
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
 id = idmake(pthstack);
-rgid = ['a' id.recid '_' rgname]; %start with a to make valid fieldname
+rgid = ['a_' id.recid '_' rgname];
 
 rg = structfile(pthrg, s=[], nm=rgid, usegit=0);
 

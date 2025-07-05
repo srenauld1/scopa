@@ -23,9 +23,9 @@ files = opt.files;
 
 %%%% scopausername, path to your scopa in different filesystems, and python path %%%%
 
-dodf = 0; %set to 1 use all defaults (do not enter any oset_* file)
+dodf = 0; %set to 1 use all defaults in odfsv.m (skip all oset_* files)
 
-otmp.mn.usegit = 0; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
+otmp.mn.usegit = 1; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
 otmp.mn.scopausername = userdatsv('read', field='scopausername'); %cw, wz, jf, yz, sr; (to route to different oset_* files below)
 otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py)
 

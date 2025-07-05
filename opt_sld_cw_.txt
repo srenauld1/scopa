@@ -143,7 +143,10 @@
     "trm": [],
     "zerostack": -1.000198E+6
   },
-  "autonm": 1,
-  "autonm_prefix": "a",
-  "maketime": "2025030622044502"
+  "md": {
+    "autonm": 1,
+    "maketime": "2025030622044502",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
 }

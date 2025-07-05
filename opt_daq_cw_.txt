@@ -1061,7 +1061,10 @@
       "t"
     ]
   },
-  "autonm": 1,
-  "autonm_prefix": "a",
-  "maketime": "2025030622044516"
+  "md": {
+    "autonm": 1,
+    "maketime": "2025030622044516",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
 }

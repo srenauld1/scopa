@@ -1245,7 +1245,10 @@
     "valnum": 0,
     "valsplit": "boutsamples"
   },
-  "autonm": 1,
-  "maketime": "2025030622044608",
-  "autonm_prefix": "a"
+  "md": {
+    "autonm": 1,
+    "maketime": "2025030622044608",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
 }

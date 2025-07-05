@@ -449,6 +449,10 @@
     "y": [2,9],
     "z": [8,14]
   },
-  "autonm_prefix": "",
-  "maketime": "2025030622092400"
+  "md": {
+    "autonm": 0,
+    "maketime": "2025030622092400",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
 }

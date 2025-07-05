@@ -29,7 +29,10 @@
     "stimtype": "drone",
     "vistype": "plane"
   },
-  "autonm": 1,
-  "maketime": "2025031917252584",
-  "autonm_prefix": "a"
+  "md": {
+    "autonm": 1,
+    "maketime": "2025031917252584",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
 }
