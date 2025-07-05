@@ -977,7 +977,7 @@
     "slopeord": 2,
     "smlensec": 0
   },
-  "jag": {
+  "a14": {
     "one": 2.299922E+6
   },
   "md": {
@@ -985,5 +985,8 @@
     "maketime": "2025030622044584",
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "one": 2.299922E+6
   }
 }
