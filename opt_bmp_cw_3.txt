@@ -1,0 +1,11 @@
+{
+  "a1": {
+    "one": 100000
+  },
+  "md": {
+    "autonm": 0,
+    "maketime": "2025071219265770",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  }
+}
