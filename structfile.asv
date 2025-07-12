@@ -2,13 +2,56 @@ function [sout, nmout] = structfile(pth, opt)
 
 %{
 
-write variable to and/or read variable from txt file (pth), depending on input: 
-    s=[], nm=nonempty, nm in file: sout=variable in file named nm, nmout=nm, nothing written to file pth
-    s=[], nm=nonempty, nm not in file: sout=[], nmout=[], nothing written to file pth
-    s=nonempty, nm=[], s in file: sout=s, nmout=name of match in file, nothing written to file pth
-    s=nonempty, nm=[], s not in file: sout=s, nmout=default pattern name, s written with name nmout to file pth
-    s=nonempty, nm=nonempty, s in file with name nm: sout=s, nmout=nm, nothing written to file pth
-    s=nonempty, nm=nonempty, s not in file with name nm: sout=s, nmout=nm, s written with name nmout to file pth
+how to return multiple autonm matches without writing new s when nm is empty  
+
+depending on input, write struct to and/or read struct from txt file (pth): 
+
+    s=[], nm=nonempty:
+        nm in file:
+                        sout=struct in file named nm, nmout=nm, nothing written to file pth
+        nm not in file: 
+                        sout=[], nmout=[], nothing written to file pth
+
+    s=nonempty, nm=[]: 
+        s in file: 
+            autonm=0
+                        sout=s, nmout=name of match in file, nothing written to file pth
+            autonm=1
+                dupe=0: 
+                        sout=s, nmout=name of match in file, nothing written to file pth
+                dupe=1: 
+                        sout=s and matches, nmout=default pattern name and nm matches, s written with name nmout to file pth (this is the only case where matches and input are combined into output and written to file
+        s not in file: 
+            autonm=0
+                        sout=[], nmout=[], nothing written to file pth
+            autonm=1
+                        sout=s, nmout=default pattern name, s written with name nmout to file pth
+    
+    s=nonempty, nm=nonempty:
+        s in file:
+            nm matches name of matching struct in file: 
+                        sout=s, nmout=nm, nothing written to file pth
+            nm does not match name of matching struct in file: 
+                dupe=0: 
+                        sout=[], nmout=[], nothing written to file pth
+                dupe=1: 
+                        sout=s, nmout=nm, s written to file pth
+        s not in file:
+            nm matches name of struct in file: 
+                update=0:
+                    sout=[], nmout=[], nothing written to file pth
+                update=1: 
+                    sout=s, nmout=nm, struct with name nm is updated to match s and changes are written to file pth
+            nm does not match any struct names in file:
+                autonm=0:
+                    sout=[], nmout=[], s written with name nmout to file pth
+                autonm=1:
+                    error: cannot input nonempty nm that doesn't match any name in file if autonm is true
+
+
+if a single match is found, output sout is a struct, and nmout is a char vector 
+if multiple matches are found, and dupe=0, error
+if multiple matches are found, and dupe=1, output sout and nmout are each a (n,1) cell, where n is number of matches
 
 when pth is first created, metadata is written to struct 'md' with the following fields:
     autonm: 1 if default name was assigned when writing input to file; this only occurs if input nm is empty 
@@ -21,29 +64,31 @@ if s=nonempty and nm=[] and s is not in file, s is written to file with default 
     if default name is used when pth is created, it must always be used 
     nmprefix must be the same for all variables written to file
 
+getonly will skip writing anything to file 
+
 %}
 
 arguments
-    pth %path to file containing variables;
-    opt.s = [] %variable to write to file, or get from file
-    opt.nm = [] %empty chooses name for variable automatically, otherwise nm is the name of the variable
-    opt.usegit = 1 %use git to sync scopa across filesystems (to prevent conflicting changes to same file)
-    opt.dupe = 0 %allow duplicate s with different names
-    opt.getonly = 0; %get variable or name from file only, not allowed to write or create new
-    opt.update = 0; %update the variable if nm matches but s does not
+    pth % path to file containing variables;
+    opt.s = [] %s truct to write to file, or get from file
+    opt.nm = [] % empty chooses name for struct automatically, otherwise nm is the name of the struct
+    opt.dupe = 0 % allow writing same s with different names 
+    opt.update = 0; % update the struct if nm matches but s does not
+    opt.getonly = 0; % read from file only, skip writing
+    opt.usegit = 1 % use git to sync file pth across filesystems (to prevent conflicting changes)
 end
 s = opt.s;
 nm = opt.nm;
-usegit = opt.usegit;
 dupe = opt.dupe;
-getonly = opt.getonly;
 update = opt.update;
+getonly = opt.getonly;
+usegit = opt.usegit;
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
 
-wcpat = '*';
-nmprefix_withgit = 'a';
-nmprefix_withoutgit = 'z';
+wcpat = '*'; % wildcard character; when searching for structs in file matching s, fields with value wcpat are skipped
+nmprefix_withgit = 'a'; % prefix used when assigning default name to struct if usegit=1
+nmprefix_withoutgit = 'z'; % prefix used when assigning default name to struct if usegit=0
 
 if isstruct(s) && isempty(fieldnames(s))
     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
@@ -52,6 +97,15 @@ if isempty(s) || getonly
     usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
 end
 
+if dupe && update
+    warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
+end
+if getonly && dupe
+    warning("NOTE: you have set 'getonly' and 'dupe' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
+end
+if getonly && update
+    warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
+end
 if startsWith(pth, ['~' filesep])
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
 end
@@ -86,6 +140,9 @@ else
     if ~isletter(nm(1))
         error("first character of nm must be letter (to be valid fieldname)");
     end
+    if strcmp(nm, 'md')
+        error("cannot name input struct 'md' because that name is reserved for file metedata")
+    end
 end
 
 
@@ -113,59 +170,71 @@ end
 
 if isfile(pth)
 
-    %%%%% SET VARIABLE NAME %%%%%
+    %%%%% SET struct NAME %%%%%
 
     sfile = structld(pth, nocells=1); %load from file
 
     autonm_infile = sfile.md.autonm;
-    if usegit
-        nmprefix_infile = sfile.md.nmprefix_withgit;
-    else
-        nmprefix_infile = sfile.md.nmprefix_withoutgit;
-    end
+    nmprefix_withgit_infile = sfile.md.nmprefix_withgit;
+    nmprefix_withoutgit_infile = sfile.md.nmprefix_withoutgit;
     maketime_infile = sfile.md.maketime;
     sfile = rmfield(sfile, 'md');
 
     nm_infile = fieldnames(sfile);
 
     if autonm_infile==1
-        autonm = 1;
-        nmnumstr = cellflat(regexp(nm_infile,'\d+','match'));
-        nmnums = cellfun(@str2double, nmnumstr);
-        prefix_derived = erase(nm_infile, nmnumstr);
-        if usegit
-            kp = cellfun(@(x) isequal(x, nmprefix_withgit), prefix_derived);
+        if isempty(nm)
+            autonm = 1;
+            nmnumstr = cellflat(regexp(nm_infile,'\d+','match'));
+            nmnums = cellfun(@str2double, nmnumstr);
+            prefix_derived = nm_infile;
+            for k = 1:numel(nmnumstr)
+                prefix_derived{k} = erase(nm_infile{k}, nmnumstr{k}); %doesn't work like this (without loop) --> erase(nm_infile, nmnumstr)
+            end
+            if usegit
+                rm = cellfun(@(x) isequal(x, nmprefix_withoutgit), prefix_derived);
+                nmprefix_infile_current = nmprefix_withgit_infile;
+            else
+                rm = cellfun(@(x) isequal(x, nmprefix_withgit), prefix_derived);
+                nmprefix_infile_current = nmprefix_withoutgit_infile;
+            end
+            prefix_derived(rm) = [];
+            nmnums(rm) = [];
+            nm_infile(rm) = [];
+            prefix_derived = unique(prefix_derived);
+            if isscalar(prefix_derived) || isempty(prefix_derived)
+                prefix_derived = cell2mat(prefix_derived);
+            else
+                error("default pattern can only use two nmprefix (one when usegit=1 and one when usegit=0")
+            end
+            if (~isempty(prefix_derived) && ~isequal(nmprefix, prefix_derived, nmprefix_infile_current) ) || (isempty(prefix_derived) && ~isequal(nmprefix, nmprefix_infile_current) ) %make sure input nmprefix matches sfile.md.nmprefix and prefixes in each struct name in file
+                error("nmprefix must match prefix found in struct names in file, and the nmprefix field saved to file")
+            end
+            if ~isempty(nm_infile) && (numel(nmnums)~=numel(nm_infile) || ~isequal(nmnums, 1:numel(nmnums)))
+                error("default name is nmprefix followed by an integer; integers in names should increase sequentially from 1 to numel(variables); you may have used an invalid name")
+            end
+            nmpat = ['^' nmprefix '[1-9]+[0-9]*$']; %previously was '^[a-z]{1}[1-9]+[0-9]*$' single lowercase letter followed by 1 or more consecutive integers, not starting with 0, but got rid of nmprefix being inseparable from default nm
+            fnmatches = cellflat(regexp(nm_infile, nmpat, 'match'));
+            if numel(fnmatches)~=numel(nm_infile) %if all vars in file follow default naming pattern (nmprefix with consecutive numbers)
+                error("all vars in file must follow default naming pattern since autonm=1")
+            end
         else
-            kp = cellfun(@(x) isequal(x, nmprefix_withoutgit), prefix_derived);
-        end
-        prefix_derived = prefix_derived(kp);
-        nmnums = nmnums(kp);
-        nm_infile = nm_infile(kp);
-        prefix_derived = cell2mat(unique(prefix_derived));
-        if ~isempty(prefix_derived) && ~isscalar(prefix_derived)
-            error("default pattern can only use one nmprefix")
-        end
-        if (~isempty(prefix_derived) && ~isequal(nmprefix, prefix_derived, nmprefix_infile) ) || (isempty(prefix_derived) && ~isequal(nmprefix, nmprefix_infile) ) %make sure input nmprefix matches sfile.md.nmprefix and prefixes in each variable name in file
-            error("nmprefix must match prefix found in variable names in file, and the nmprefix field saved to file")
-        end
-        if ~isempty(nm_infile) && (numel(nmnums)~=numel(nm_infile) || ~isequal(nmnums, 1:numel(nmnums)))
-            error("default name is nmprefix followed by an integer; integers in names should increase sequentially from 1 to numel(variables); you may have used an invalid name")
-        end
-        nmpat = ['^' nmprefix '[1-9]+[0-9]*$']; %previously was '^[a-z]{1}[1-9]+[0-9]*$' single lowercase letter followed by 1 or more consecutive integers, not starting with 0, but got rid of nmprefix being inseparable from default nm
-        fnmatches = cellflat(regexp(nm_infile, nmpat, 'match'));
-        if numel(fnmatches)~=numel(nm_infile) %if all vars in file follow default naming pattern (nmprefix with consecutive numbers)
-            error("all vars in file must follow default naming pattern since autonm=1")
+            if ~isempty(s)
+                if ~any(strcmp(nm, nm_infile))
+                    error("you input nonempty s and nm, but autonm=1 in file and nm doens't match any struct names in file " + pth + newline + "so for this file you can only make s and nm nonempty for struct s that is already in file (to confirm it exists in file)" + newline + "or for struct s that is not in file but name nm that is in file (to update struct contents for name nm, in which case name-value argument 'update' must be true)" + newline + "if you wish to add struct s with a name that is not in file, you must must make nm empty, and if s is already in file, you must allow writing of duplicate structs with dupe=1")
+                end
+            end
         end
     end
 
 
-    %%%%% GET MATCHED VARIABLE FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
+    %%%%% GET MATCHED STRUCT FROM FILE, OR WRITE UNMATCHED VARIABLE TO FILE %%%%%
 
     dotranspose = 0;
     matchind = zeros(1, numel(nm_infile), 'logical');
     for k = 1:numel(nm_infile)
         if isempty(s)
-            if isequal(nm, nm_infile{k}) %if name matches when no variable was provided
+            if isequal(nm, nm_infile{k}) %if name matches when no struct was provided
                 matchind(k) = 1;
             end
         else
@@ -187,18 +256,25 @@ if isfile(pth)
                 end
             end
 
-            if smatched %if variable matches . . .
-                if isempty(nm) || strcmp(nm, nm_infile{k}) %and nm is empty (whether autonm is true or not) or nm matches nm in file
-                    matchind(k) = 1;
-                else %if variable matches but name doesn't
-                    if ~dupe %if duplicates are not allowed, error
-                        error("s and nm are nonempty, so you are trying to write s with name '" + nm + "' to file " + pth + newline + "but s already exists in that file with name " + nm_infile{k} + newline + "set dupe=1 if you want to allow same s with different nm")
+            if smatched %if struct matches . . .
+                if isempty(nm) % and nm is empty (whether autonm is true or not) . . .
+                    if dupe && autonm && ~getonly  %and duplicates can be written, and autonm is true
+                        doaddon = 1;
+                    end
+                    matchind(k) = 1; %return the s in file that matches input s, and return its name
+                else
+                    if strcmp(nm, nm_infile{k}) % and nm matches nm in file
+                        matchind(k) = 1; %return the s in file that matches input s, and return its name
+                    else % and name doesn't match any nm in file
+                        if ~dupe %if duplicates are not allowed, error, otherwise proceed
+                            error("s and nm are nonempty, so you are trying to write (or, less likely, read) s with name '" + nm + "' to (or from) file " + pth + newline + "but s already exists in that file with name " + nm_infile{k} + newline + "set dupe=1 if you want to write same s with different nm")
+                        end
                     end
                 end
             else
-                if strcmp(nm, nm_infile{k}) %if variable doesn't match but name does
+                if strcmp(nm, nm_infile{k}) %if struct doesn't match but name does
                     if ~update %error if update is false
-                        error("s and nm are nonempty, and variable with name '" + nm + "' already exists in file " + pth + newline + "but it does not match your input s, and argument update=0; make update=1 to change the value of variable " + nm)
+                        error("s and nm are nonempty, and struct with name '" + nm + "' already exists in file " + pth + newline + "but it does not match your input s, and argument update=0; make update=1 to change the value of struct " + nm)
                     end
                 end
             end
@@ -206,59 +282,67 @@ if isfile(pth)
     end
     matchind = find(matchind);
 
-    if isempty(matchind) %after looping through all variables in file, if input variable doens't match any in file, append to variables in file
+    if isempty(matchind) || doaddon %after looping through all variables in file, if input struct doens't match any in file, append to variables in file
         if getonly
             fprintf("no matches to input s were found, but getonly is true, so will not create file or new name" + newline + newline)
-            nmout = [];
-            sout = [];
-            sfilenew = [];
+            nmout2 = [];
+            sout2 = [];
+            sfilenew2 = [];
         else
             if autonm
-                if isempty(nmnums) %if nmnums is empty it means the file exists, but only has without git prefix, until now,
-                    nmout = [nmprefix '1'];
+                if isempty(nmnums) %if nmnums is empty it means the file exists, but only has with or without git prefix, until now, where reverse is true
+                    nmout2 = [nmprefix '1'];
                 else
-                    nmout = [nmprefix num2str(max(nmnums)+1)];
+                    nmout2 = [nmprefix num2str(max(nmnums)+1)];
                 end
-                sout = s;
-                sfilenew = s;
+                sout2 = s;
+                sfilenew2 = s;
             else
                 if isempty(s)
-                    fprintf("no variable with name '" + nm + "' in file " + pth + newline + newline)
-                    nmout = []; %you must have passed in nm if autonm is false and s is empty, and if nm does not match any variables in file, and s is empty, nmout is empty
-                    sout = [];
-                    sfilenew = [];
+                    fprintf("no struct with name '" + nm + "' in file " + pth + newline + newline)
+                    nmout2 = []; %you must have passed in nm if autonm is false and s is empty, and if nm does not match any variables in file, and s is empty, nmout is empty
+                    sout2 = [];
+                    sfilenew2 = [];
                 else
                     if isempty(nm)
-                        fprintf("nm is empty, autonm=0, and no variable matching s found in file " + pth + newline + newline)
-                        nmout = []; %if nm is empty and s is nonempty but doesn't match anything, and autonm false, nothing output or written
-                        sout = [];
-                        sfilenew = [];
+                        fprintf("nm is empty, autonm=0, and no struct matching s found in file " + pth + newline + newline)
+                        nmout2 = []; %if nm is empty and s is nonempty but doesn't match anything, and autonm false, nothing output or written
+                        sout2 = [];
+                        sfilenew2 = [];
                     else
-                        nmout = nm; %if nm does not match any variables in file, and s is nonempty, nmout=nm because nm will be written to file
-                        sout = s;
-                        sfilenew = s;
+                        nmout2 = nm; %if nm does not match any variables in file, and s is nonempty, nmout=nm because nm will be written to file
+                        sout2 = s;
+                        sfilenew2 = s;
                     end
                 end
             end
         end
-    else % if input variable does match a variable in file . . .
+    end
+
+    if isempty(matchind) % if input struct does not match a struct in file . . . (separate from if isempty(matchind) above because of || doaddon
+        nmout = nmout2;  
+        sout = sout2; 
+        sfilenew = sfilenew2;
+    else %if input struct does match a struct in file . . . (separate from if isempty(matchind) above because of || doaddon
         nmout = cell(numel(matchind), 1);
         sout = cell(numel(matchind), 1);
         for k = 1:numel(matchind)
             nmout{k} = nm_infile{matchind(k)};
-            sout{k} = sfile.(nm_infile{matchind(k)}); %if input variable matches a variable in file, give variable the name it has in file
+            sout{k} = sfile.(nm_infile{matchind(k)}); %if input struct matches a struct in file, give struct the name it has in file
             if dotranspose %isequal(size(spart), flip(size(sout{k})))
                 sout{k} = transpose(sout{k});
             end
         end
-        sfilenew = [];
+        if doaddon %append new to end of matches
+            nmout = cat(1, nmout, {nmout2});
+            sout = cat(1, sout, {sout2});
+            sfilenew = sfilenew2;
+        else
+            sfilenew = [];
+        end
         if isscalar(matchind)
             nmout = cell2mat(nmout);
             sout = cell2mat(sout);
-        else
-            if ~dupe && ~part
-                error("found multiple matches in file, but dupe is false, and there are no wildcard fields in input s" + newline + "name-value argument dupe=1 allows duplicate variables" + newline + "wildcard fields in input s allow duplicate variables because only partial matches are required")
-            end
         end
     end
 
@@ -267,6 +351,9 @@ else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
     fprintf("the following file does not exist: " + pth + newline + newline)
 
     sfile = struct;
+    nmprefix_withgit_infile = nmprefix_withgit;
+    nmprefix_withoutgit_infile = nmprefix_withoutgit;
+    autonm_infile = autonm;
     maketime_infile = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
     if getonly
@@ -308,18 +395,22 @@ if isempty(sfilenew)
 
 else
 
-    fprintf("writing input variable to file " + pth + newline + newline)
+    fprintf("writing input struct to file " + pth + newline + newline)
 
     if getonly
         error("should not be here if getonly is true")
     end
 
-    sfile.md.nmprefix_withgit = nmprefix_withgit; %written prefix remains prefix with git
-    sfile.md.nmprefix_withoutgit = nmprefix_withoutgit; %written prefix remains prefix with git
-    sfile.md.autonm = autonm;
+    sfile.md.nmprefix_withgit = nmprefix_withgit_infile;
+    sfile.md.nmprefix_withoutgit = nmprefix_withoutgit_infile;
+    sfile.md.autonm = autonm_infile;
     sfile.md.maketime = maketime_infile;
 
-    sfile.(nmout) = sfilenew;
+    if doaddon
+        sfile.(nmout2) = sfilenew;
+    else
+        sfile.(nmout) = sfilenew;
+    end
 
     structsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
 
