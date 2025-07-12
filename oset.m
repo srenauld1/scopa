@@ -10,7 +10,7 @@ options can be structs themselves, but defaults for all fields have to be define
 the only time a struct can appear within an option is struct tg, which
 has special handling in odf
 
-**** NB: DO NOT USE CELLS UNLESS YOU INTEND THEM FOR DISTRIBUTION****
+**** NB: DO NOT USE CELLS UNLESS YOU INTEND THEM FOR DISTRIBUTION ****
 
 %}
 

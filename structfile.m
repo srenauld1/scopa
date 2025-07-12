@@ -341,7 +341,7 @@ if isfile(pth)
         else
             sfilenew = [];
         end
-        if isscalar(matchind)
+        if isscalar(nmout)
             nmout = cell2mat(nmout);
             sout = cell2mat(sout);
         end
