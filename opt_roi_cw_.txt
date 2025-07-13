@@ -2824,163 +2824,7 @@
       "tg": []
     }
   },
-  "md": {
-    "autonm": 1,
-    "maketime": "2025030622044540",
-    "nmprefix_withgit": "a",
-    "nmprefix_withoutgit": "z"
-  },
-  "z1": {
-    "cm": {},
-    "docm": 0,
-    "doma": 1,
-    "domm": 1,
-    "doqc": 0,
-    "imhsv": {
-      "tg": []
-    },
-    "ma": {
-      "celsz": 8,
-      "chan": 1,
-      "do3d": 1,
-      "edgesig": [3,3,3],
-      "edgethr": [0.1,0.7],
-      "maskmake": "nonzero",
-      "maskseg": "torus",
-      "numroi": 32,
-      "roirad": 1.5
-    },
-    "mm": {
-      "maskname": "eb",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "eb",
-    "sp": {
-      "tg": []
-    }
-  },
-  "z2": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "imhsv": {
-      "tg": []
-    },
-    "ma": {},
-    "mm": {
-      "maskname": "dorsal",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "gal",
-    "sp": {
-      "tg": []
-    }
-  },
-  "z3": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "imhsv": {
-      "tg": []
-    },
-    "ma": {},
-    "mm": {
-      "maskname": "ventral",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "gal",
-    "sp": {
-      "tg": []
-    }
-  },
-  "z4": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "imhsv": {
-      "tg": []
-    },
-    "ma": {},
-    "mm": {
-      "maskname": "dorsal",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "gar",
-    "sp": {
-      "tg": []
-    }
-  },
-  "z5": {
-    "cm": {},
-    "docm": 0,
-    "doma": 0,
-    "domm": 1,
-    "doqc": 0,
-    "imhsv": {
-      "tg": []
-    },
-    "ma": {},
-    "mm": {
-      "maskname": "ventral",
-      "methodmm": "all"
-    },
-    "nrm": {
-      "channorm": 0,
-      "degdtr": 0,
-      "mincoh": [],
-      "post": "f",
-      "pre": "f",
-      "wavp": []
-    },
-    "qc": {},
-    "rgname": "gar",
-    "sp": {
-      "tg": []
-    }
-  },
-  "z6": {
+  "a89": {
     "cm": {},
     "docm": 0,
     "doma": 0,
@@ -3007,5 +2851,11 @@
     "sp": {
       "tg": []
     }
+  },
+  "md": {
+    "autonm": 1,
+    "maketime": "2025030622044540",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
   }
 }
