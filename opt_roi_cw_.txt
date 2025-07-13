@@ -2824,6 +2824,34 @@
       "tg": []
     }
   },
+  "a89": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "maskname": "none",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "no44",
+    "sp": {
+      "tg": []
+    }
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044540",
