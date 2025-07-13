@@ -1,4 +1,4 @@
-function [sout, nmout] = structfile(pth, opt)
+function [sout, nmout, souts] = structfile(pth, opt)
 
 %{
 
@@ -96,8 +96,6 @@ if isempty(s) || getonly
     warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
     usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
 end
-
-
 if dupe && update
     warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
 end
@@ -376,6 +374,13 @@ else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
 
 end
 
+if iscell(sout)
+    for k = 1:numel(nmout)
+        souts.(nmout{k}) = sout{k};
+    end
+else
+    souts.(nmout) = sout;
+end
 
 %%%%% SET GLOBALS %%%%%
 
@@ -415,7 +420,7 @@ else
         sfile.(nmout) = sfilenew;
     end
 
-    structsv(sfile, pth, overwrite=1, readonly=1); %write variables to file, possibly updated with (possibly renamed) s
+    structsv(sfile, pth, overwrite=1, readonly=1, sort=1); %write variables to file, possibly updated with (possibly renamed) s
 
     if usegit
         try

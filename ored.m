@@ -46,20 +46,12 @@ for k = 1:numel(inert_vbin)
     dupes = [dupes; tmp(:)];
 end
 
-% o = o2;
 o(mtch) = {[]};
 o(mtch_is_struct) = {struct('tg', [])}; %insert empty tg field for json to write empty tg properly (hack needs top be fixed)
-% for kjkj = 1:numel(mtch_is_struct)
-%     o(mtch_is_struct{kjkj}) = struct('tg', []);
-% end
 o(dupes) = [];
 fnoflat(dupes) = [];
 o = cell2struct(o, fnoflat);
 o = structunflat(o, delim=delim);
-% structsv(o, '~/scopa/fool.txt', overwrite=1);
-% o = structld('~/scopa/fool.txt');
-% o3 = structflat(o);
-% o3.depv
 
 switch vbin %further specialized reduction by vbin
     case 'roi'

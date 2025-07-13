@@ -35,6 +35,7 @@ if ~iscell(vbin)
     vbin = {vbin};
 end
 if getonly
+    warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
     usegit = 0; %just to be clear, although this is not necessary because usegit only has effect if getonly is false
 end
 
@@ -57,9 +58,9 @@ if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'fill
     end
 end
 
-if usegit && ~getonly
-    scopagit('pull') %make sure matches remote
-end
+% if usegit && ~getonly
+%     scopagit('pull') %make sure matches remote
+% end
 
 for k = 1:numel(vbin)
 
@@ -92,7 +93,7 @@ for k = 1:numel(vbin)
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
 
-                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=0, getonly=getonly, dupe=0); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
 
 
                 %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
@@ -147,13 +148,13 @@ end
 
 o = structsort(o, vectype='row');
 
-if usegit && ~getonly 
-    try
-        scopagit('push', files={'^opt_.*_.txt$'})
-    catch
-        scopagit('discard', files={'^opt_.*_.txt$'}) %if push fails, make sure you discard changes to opt files 
-    end
-end
+% if usegit && ~getonly 
+%     try
+%         scopagit('push', files={'^opt_.*_.txt$'})
+%     catch
+%         scopagit('discard', files={'^opt_.*_.txt$'}) %if push fails, make sure you discard changes to opt files 
+%     end
+% end
 
 
 

@@ -475,7 +475,7 @@ if ~isequal(d, structunflat(structflat(d)))
 end
 
 fprintf("writing default options to: " + pthopt + newline)
-structsv(d, pthopt, overwrite=1, readonly=1)
+structsv(d, pthopt, overwrite=1, readonly=1, sort=1)
 
 glb(dfset=1); %mark defaults have been set in globals
 

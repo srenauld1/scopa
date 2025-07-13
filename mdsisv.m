@@ -82,7 +82,7 @@ if isfile(pthmd)
 else
     if trywrite
         fprintf("writing metadata derived from tifreadfast and mdsisv.m because there is no metadata file yet" + newline)
-        structsv(md, pthmd)
+        structsv(md, pthmd, sort=1)
     else
         fprintf("not writing metadata because cannot read metadata using tifreadfast and mdsisv.m" + newline)
     end

@@ -4,7 +4,7 @@ function structsv(s, pth, opt)
 arguments
     s %struct to save
     pth %save path
-    opt.sort = 1; %alphabetically sort struct (natural sort)
+    opt.sort = 0; %alphabetically sort struct (natural sort)
     opt.vectype = 'row'; %empty, row, or column; transpose any vector in read struct that is not vectype; skip if empty; default is row to ensure consistency across read/write
     opt.nocells = 0; %convert char in cell to singleton char, convert char cell array to string array (to dismbiguate cell (which designates options for expansion) and string arrays, which get mixed up in jsonencode and jsondecode)
     opt.flat = 0; %flatten struct
