@@ -136,7 +136,7 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
                 end
             end
 
-            [~, varid] = structfile(pthvar, s=datcombo, usegit=1);
+            [~, varid] = structfile(pthvar, s=datcombo, usegit=1, dupe=0);
             if size(iv,2)==1
                 pthc = datcombo.pth;
             else
@@ -400,7 +400,7 @@ end
 if isfield(tg, 'var')
     if isempty(cell2mat(varid))
         pthvarpat = [pthscopa 'opt_var_' scopausername '_.txt'];
-        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=1);
+        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=1, dupe=0);
     else
         error("var substruct and varid cannot both exist in tg")
     end

@@ -2,8 +2,6 @@ function [sout, nmout] = structfile(pth, opt)
 
 %{
 
-how to return multiple autonm matches without writing new s when nm is empty  
-
 depending on input, write struct to and/or read struct from txt file (pth): 
 
     s=[], nm=nonempty:
@@ -49,31 +47,30 @@ depending on input, write struct to and/or read struct from txt file (pth):
                     error: cannot input nonempty nm that doesn't match any name in file if autonm is true
 
 
-if a single match is found, output sout is a struct, and nmout is a char vector 
-if multiple matches are found, and dupe=0, error
-if multiple matches are found, and dupe=1, output sout and nmout are each a (n,1) cell, where n is number of matches
+if one match is found, output sout is a struct, and nmout is a char vector 
+if multiple matches are found, output sout and nmout are each a (n,1) cell, where n is number of matches
 
 when pth is first created, metadata is written to struct 'md' with the following fields:
-    autonm: 1 if default name was assigned when writing input to file; this only occurs if input nm is empty 
-    nmprefix: the letter used as the first character in default naming pattern; must be the same for all variables written to file (except in 'withoutgit' mode) 
+    autonm: 1 if default name was assigned when writing input to file; this only occurs if input nm is empty; 0 otherwise 
     maketime: time file was created
+    nmprefix_withgit: the letter used as the first character in default naming pattern when usegit=1; must be the same for all variables written to file when usegit=1; default is 'a'
+    nmprefix_withoutgit: the letter used as the first character in default naming pattern when usegit=0; must be the same for all variables written to file when usegit=0; default is 'z'
 
 if s=nonempty and nm=[] and s is not in file, s is written to file with default name
-    pattern for default name is ['^' nmprefix '[1-9]+[0-9]*$']
-    that is, nmprefix followed by 1 or more consecutive integers, starting with 1 (not 0)
+    default name pattern is ['^' nmprefix_withgit '[1-9]+[0-9]*$'] or ['^' nmprefix_withoutgit '[1-9]+[0-9]*$']
+    that is, nmprefix_withgit or nmprefix_withoutgit, followed by 1 or more consecutive integers, starting with 1 (not 0)
     if default name is used when pth is created, it must always be used 
-    nmprefix must be the same for all variables written to file
 
-getonly will skip writing anything to file 
+for clarity, all arguments except file path (pth) are name-value arguments 
 
 %}
 
 arguments
-    pth % path to file containing variables;
-    opt.s = [] %s truct to write to file, or get from file
-    opt.nm = [] % empty chooses name for struct automatically, otherwise nm is the name of the struct
-    opt.dupe = 0 % allow writing same s with different names 
-    opt.update = 0; % update the struct if nm matches but s does not
+    pth % path to file containing structs
+    opt.s = [] % struct to write to file, or get from file
+    opt.nm = [] % name of struct to write to file, or get from file; empty chooses name for writing struct automatically (or finds name if s already exists in file); if nonempty, nm is the name of the struct to be written to file or retrieved from file
+    opt.dupe = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
+    opt.update = 0; % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
     opt.getonly = 0; % read from file only, skip writing
     opt.usegit = 1 % use git to sync file pth across filesystems (to prevent conflicting changes)
 end
@@ -94,8 +91,10 @@ if isstruct(s) && isempty(fieldnames(s))
     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
 end
 if isempty(s) || getonly
+    warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
     usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
 end
+
 
 if dupe && update
     warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
@@ -108,9 +107,6 @@ if getonly && update
 end
 if startsWith(pth, ['~' filesep])
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
-end
-if isempty(s) && isempty(nm)
-    error("s and nm cannot both be empty")
 end
 if ~isempty(s) && ~isstruct(s)
     error("s must be struct if it is nonempty (for now)")
@@ -167,7 +163,8 @@ if usegit
 end
 
 [~, flnm, ~] = fileparts(pth);
-
+    
+doaddon = 0;
 if isfile(pth)
 
     %%%%% SET struct NAME %%%%%
@@ -182,8 +179,12 @@ if isfile(pth)
 
     nm_infile = fieldnames(sfile);
 
+    if isempty(nm) && isempty(s)
+        fprintf("s and nm are empty, so returning everything in file " + pth + newline + newline)
+    end
+
     if autonm_infile==1
-        if isempty(nm)
+        if isempty(nm) && ~isempty(s)
             autonm = 1;
             nmnumstr = cellflat(regexp(nm_infile,'\d+','match'));
             nmnums = cellfun(@str2double, nmnumstr);
@@ -234,7 +235,7 @@ if isfile(pth)
     matchind = zeros(1, numel(nm_infile), 'logical');
     for k = 1:numel(nm_infile)
         if isempty(s)
-            if isequal(nm, nm_infile{k}) %if name matches when no struct was provided
+            if isempty(nm) || isequal(nm, nm_infile{k}) %if name matches when no struct was provided
                 matchind(k) = 1;
             end
         else
@@ -340,7 +341,7 @@ if isfile(pth)
         else
             sfilenew = [];
         end
-        if isscalar(matchind)
+        if isscalar(nmout)
             nmout = cell2mat(nmout);
             sout = cell2mat(sout);
         end
@@ -422,6 +423,17 @@ else
         end
     end
 
+end
+
+fn = fieldnames(sfile);
+
+for k = 1:numel(fn)
+    fnnew = ['a' num2str(k)];
+    sfile.(fnnew) = sfile.(fn{k});
+    if isequal(sfile.(fnnew).id(1), 'a')
+        sfile.(fnnew).id = sfile.(fnnew).id(2:end);
+    end
+    sfile = rmfield(sfile, fn{k});
 end
 
 end

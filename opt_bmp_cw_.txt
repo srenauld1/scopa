@@ -977,9 +977,6 @@
     "slopeord": 2,
     "smlensec": 0
   },
-  "a14": {
-    "one": 100000
-  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044584",

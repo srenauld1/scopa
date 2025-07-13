@@ -1,17 +1,24 @@
 function [common, outall] = fieldmatch(s, varargin, opt)
 
-%find fieldname in struct (struct can be nested and nonscalar)
+%{
+
+find fieldname in struct (struct can be nested and nonscalar)
+
+example:
+    fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'left'}, lev=1);
+
+%}
 
 arguments (Input)
     s
 end
 arguments (Input,Repeating)
-    varargin
+    varargin %cell arrays {field name, value}
 end
 arguments (Input)
-    opt.lev = [];
-    opt.multi = [];
-    opt.delim = [];
+    opt.lev = []; % level of nesting for output 
+    opt.multi = []; % 1 to allow output multiple matches
+    opt.delim = []; % delimiter in flattened struct
 end
 arguments (Output)
     common
