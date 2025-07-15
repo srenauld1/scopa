@@ -1141,23 +1141,14 @@
       "smlenpx": 2,
       "smlensec": 1
     },
-    "slopelensec": 0.4134,
+    "slopelensec": 0.4,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
     "slopeord_supp": 2,
     "supprate": [],
-    "toballscale": [
+    "tomm": [
       "ficTracIntSide",
       "ficTracIntForward"
-    ],
-    "tounwrap": [
-      "ficTracIntSide",
-      "ficTracIntForward"
-    ],
-    "tozero": [
-      "ficTracIntSide",
-      "ficTracIntForward",
-      "ficTracYaw"
     ],
     "usefbf": 1,
     "usefbl": 1,
