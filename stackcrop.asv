@@ -43,7 +43,7 @@ rgid = [id.recid '_' rgname];
 rg = [];
 [~, ~, rgall] = structfile('/Users/wienecke/scopa/opt_rg_cw_.txt', s=[], nm=[], usegit=1);
 if ~isempty(rgall)
-    fn = fieldmatch(rgall, {'id', rgid}, lev=1, multi=0);
+    fn = fieldmatch(rgall, {'id', 'f'}, lev=1, multi=0);
     if ~isempty(fn)
         rg = rgall.(fn);
     end

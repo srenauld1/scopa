@@ -1,24 +1,26 @@
 function s = structsort(s, opt)
 
 arguments
-    s %struct to be ordered 
-    opt.vectype = []; %empty, row, or column; transpose any vector in s that is not vectype; skip if empty
-    opt.nocells = 0; %convert char in cell to singleton char, convert char cell array to string array (to dismbiguate cell (which designates options for expansion) and string arrays, which get mixed up in jsonencode and jsondecode) 
+    s %struct to be ordered
+    opt.vectype = []; % empty, 'row', or 'column'; transpose any vector in s that is not vectype; skip if empty
+    opt.nocells = 0; % convert char in cell to singleton char, convert char cell array to string array (to dismbiguate cell (which designates options for expansion) and string arrays, which get mixed up in jsonencode and jsondecode)
+    opt.skipsort = 0; % 1 to omit the actual sorting (to use vectype and/order nocells without sorting); default is to sort since this function is called structsort
 end
 vectype = opt.vectype;
 nocells = opt.nocells;
+skipsort = opt.skipsort;
 
 if numel(s)>1
     for k = numel(s): -1 : 1 %for each element in nonscalar struct, backwards to preallocate
         [rind, cind] = ind2sub(size(s), k);
-        tmp(rind, cind) = structsort(s(rind, cind), vectype=vectype, nocells=nocells);
+        tmp(rind, cind) = structsort(s(rind, cind), vectype=vectype, nocells=nocells, skipsort=skipsort);
     end
     s = tmp;
 else
     fn = fieldnames(s);
     for k = 1:numel(fn)
         if isstruct(s.(fn{k}))
-            s.(fn{k}) = structsort(s.(fn{k}), vectype=vectype, nocells=nocells);
+            s.(fn{k}) = structsort(s.(fn{k}), vectype=vectype, nocells=nocells, skipsort=skipsort);
         else
             if isscalar(s.(fn{k}))
                 if nocells && iscell(s.(fn{k}))
@@ -44,7 +46,9 @@ else
             end
         end
     end
-    s = orderfields(s, natsortrows(fieldnames(s))); %natural sorting; not the same as orderfields(structin);
+    if ~skipsort
+        s = orderfields(s, natsortrows(fieldnames(s))); %natural sorting; not the same as orderfields(structin);
+    end
 end
 
 

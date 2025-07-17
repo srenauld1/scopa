@@ -73,7 +73,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
 
 end
 
-md = structld(pthmd);
+md = structld(pthmd, dosort=0);
 
 md.sz = [md.ypix md.xpix md.numslice md.numvol];
 

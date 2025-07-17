@@ -1,5 +1,6 @@
 function todo()
 
+disp("roi.dat channels are roi.dat(chan) but they contain mm which is mm(chan) so you might have roi.dat(chan2).mm(chan1) right???")
 disp("run pl.sh multiple times at once")
 disp("my only eval calls are in odf, fix those")
 disp("make sure all options have unique names (should not require enclosing field to be unique)")

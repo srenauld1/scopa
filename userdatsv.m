@@ -54,7 +54,7 @@ elseif strcmpi(permission, 'write')
         if isfile(pthuserdat)
             error(sprintf(pthuserdat + " already exists, delete it and run userdatsv again"))
         else
-            structsv(userdat, pthuserdat, readonly=1, sort=1);
+            structsv(userdat, pthuserdat, readonly=1, dosort=1);
         end
     else
         error("for security, you must run userdatsv with first argument 'write' from command line")

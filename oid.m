@@ -93,7 +93,7 @@ for k = 1:numel(vbin)
 
                 %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
 
-                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+                [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
 
 
                 %%%%%%%% PUT NON FUNCTIONAL VBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (vbin) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%

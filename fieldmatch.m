@@ -16,9 +16,10 @@ arguments (Input,Repeating)
     varargin %cell arrays {field name, value}
 end
 arguments (Input)
-    opt.lev = []; % level of nesting for output 
+    opt.lev = []; % level of nesting for output
     opt.multi = []; % 1 to allow output multiple matches
     opt.delim = []; % delimiter in flattened struct
+    opt.noerror = 1; % 1 will not stop execution if error just results in empty output (does not apply to syntax errors)
 end
 arguments (Output)
     common
@@ -27,6 +28,7 @@ end
 lev = opt.lev;
 multi = opt.multi;
 delim = opt.delim;
+noerror = opt.noerror;
 
 if ~isempty(lev)
     if ~isequal(lev, sort(lev), min(lev):max(lev)) || any(mod(lev,1)) || any(lev<1)
@@ -59,7 +61,11 @@ else
         idxval = cellfun(@(x) isequal(x,val), vala);
         idx = idxfn & idxval;
         if isempty(idx)
-            error(sprintf("no matches found for cr input number: " + num2str(k)))
+            if noerror
+                fprintf("no matches found for cr input number: " + num2str(k) + newline)
+            else
+                error(sprintf("no matches found for cr input number: " + num2str(k)))
+            end
         end
         [~, fncr] = structunflat(cell2struct(vala(idx), fna(idx)));
         outall{k} = fncr;
@@ -86,13 +92,21 @@ for k = 1:numel(outall)
     end
 end
 if isempty(common)
-    error("there are no matches to the criteria you entered")
+    if noerror
+        fprintf("there are no matches to the criteria you entered" + newline)
+    else
+        error("there are no matches to the criteria you entered")
+    end
 end
 nm = cellfun(@(x) numel(strsplit(x, '.')), common);
 if ~isempty(lev)
     common = common(nm>=lev(end));
     if isempty(common)
-        error("there are no matches at the requested level (although there are matches at lower levels)")
+        if noerror
+            fprintf("there are no matches at the requested level (although there are matches at lower levels)" + newline)
+        else
+            error("there are no matches at the requested level (although there are matches at lower levels)")
+        end
     end
     common = cellfun(@(x) strsplit(x,'.'), common, 'UniformOutput', false);
     common = cellfun(@(x) strjoin(x(lev),'.'), common, 'UniformOutput', false);
@@ -101,7 +115,7 @@ end
 
 common = unique(common, 'stable');
 
-if isscalar(common)
+if isscalar(common) || isempty(common)
     common = cell2mat(common);
 else
     if ~multi

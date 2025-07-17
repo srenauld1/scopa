@@ -72,15 +72,7 @@
     "slopeord": 2,
     "slopeord_supp": 2,
     "supprate": [],
-    "toballscale": [
-      "ficTracIntSide",
-      "ficTracIntForward"
-    ],
-    "tounwrap": [
-      "ficTracIntSide",
-      "ficTracIntForward"
-    ],
-    "tozero": [
+    "tomm": [
       "ficTracIntSide",
       "ficTracIntForward"
     ],
@@ -102,6 +94,7 @@
     ],
     "voltmax": 10,
     "voltmin": 0,
+    "voltminyaw": 0.52359877559829882,
     "vradians": [
       "ficTracIntSide",
       "ficTracIntForward",
@@ -238,7 +231,7 @@
     "pltvis": 1,
     "pthpy": "",
     "scopausername": "youforgottossetuser",
-    "timestr": "2025071319413410",
+    "timestr": "2025071713480674",
     "usegit": 0
   },
   "nestvalid": [

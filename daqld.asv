@@ -68,7 +68,9 @@ vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variable
 vradians = opt.vradians; %list circular daq variables you want to process
 vdegrees = opt.vdegrees; %list circular daq variables you want to process
 vcategorical = opt.vcategorical; %list categorical daq variables you want to process
-tomm = opt.tomm; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
+toballscale = opt.toballscale; %define which vars to rescale from radians to mm
+tounwrap = opt.tounwrap;  %define which vars to unwrap
+tozero = opt.tozero; %%define which vars to zero (force to start at 0)
 useinds = opt.useinds; %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
 supprate = opt.supprate; %supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip
 slopelensec = opt.slopelensec; %slope length (seconds) for computing derivative of each daq variable
@@ -327,19 +329,23 @@ try
                             tsplt([], tmpdv_supp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_dv_supp_.gif'])
                         end
 
-                        if any(strcmp(daqvars.(vartype){ii}, tomm))
+                        if any(strcmp(daqvars.(vartype){ii}, tounwrap))
                             tmp = unwrap(tmp);  %unwrap circular
                             tmp_supp = unwrap(tmp_supp);  %unwrap circular
+                        end
+                        if any(strcmp(daqvars.(vartype){ii}, tozero))
                             tmp = tmp - tmp(1); %zero
                             if ~isempty(tmp_supp)
                                 tmp_supp = tmp_supp - tmp_supp(1); %zero
                             end
+                        end
+                        if any(strcmp(daqvars.(vartype){ii}, toballscale))
                             tmp = tmp*balldia/2; %convert from radians to mm
                             tmpdv = tmpdv*balldia/2; %convert to mm
                             tmp_supp = tmp_supp*balldia/2; %convert from radians to mm
                             tmpdv_supp = tmpdv_supp*balldia/2; %convert to mm
                         end
-
+                        
                         if strcmp(varname, vtime) && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
                             tmp(1) = 0;
                         end

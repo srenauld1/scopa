@@ -65,7 +65,7 @@ if isempty(glb('dfset')) || glb('dfset')==0 %write defaults to file the first ti
 end
 
 if isfile(pthopt)
-    d = structld(pthopt, nocells=1);
+    d = structld(pthopt, nocells=1, dosort=0);
 else
     error(sprintf("cannot find default options file, '" + pthopt + "', run odfsv.m to create the default options file"))
 end

@@ -2,14 +2,19 @@
 
 everything is fly perspective unless noted 
 
-"yaw" is same as "heading"
+"yaw" = "heading"
 
-CCW = decreasing yaw 
-CW = increasing yaw
+yaw range: -pi to pi, with 0 in front of fly 
+
+CCW (left) = decreasing yaw (left = decreasing the number line)
+CW (right) = increasing yaw (left = increasing the number line)
+we prioritize the number line rather than the xy plane (from above), which would make CCW = positive, because conceptualizing left/right presumably evolved before conceptualizing position on an xy plane
 
 CW turn (CCW cue & ball) = fly yaw increasing (cue yaw decreasing)
 
-yaw position: 0 = 1 o'clock (fly facing out of box on Berg1) 
+fictrac yaw = 0-2pi rad = 0-10 mV
+g4 yaw = 0-2pi rad = 0-10 mV (actually just under 10 mV because scaled to be at each frame's lowest value)
+
 
 Berg1 stack images: 
     --rostral = bottom of image in stacks (increasing Y) 
