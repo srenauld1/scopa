@@ -598,7 +598,7 @@
     "z": [8,14],
     "t": [1,25463],
     "c": [1,1]
-  }
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
