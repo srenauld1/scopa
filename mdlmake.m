@@ -23,8 +23,8 @@ arguments
     indv = [] %independent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
     depv = [] %dependent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
     pthstack = [] %path to stack
-    imrate = [] %imaging rate
-    epochts = []
+    opt2.imrate = [] %imaging rate
+    opt2.epochts = []
     opt2.doplt = []
     opt2.ldval = 0 %load saved model if it exists
     opt2.numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip

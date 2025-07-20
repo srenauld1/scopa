@@ -1,29 +1,33 @@
-function roi = roimake(stack, opt, pthstack, md, sper, widyxz, t, pthpy, opt2)
+function roi = roimake(stack, opt, opt2)
 
 % see docs_roimake.m
 
 arguments
     stack
     opt = []
-    pthstack = []
-    md = []
-    sper = [] %only required nonempty for normalizing by moving window in tsnorm
-    widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
-    t = [] %only required nonempty if channorm~=0 in roits
-    pthpy = [] %only required to run caiman from matlab (roi.docm=1)
+    opt2.pthstack = []
+    opt2.md = []
+    opt2.sper = [] %only required nonempty for normalizing by moving window in tsnorm
+    opt2.widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
+    opt2.t = [] %only required nonempty if channorm~=0 in roits
+    opt2.pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     opt2.doplt = []
     opt2.roimask = []
 end
+opt2 = glboropt(opt2);
+pthstack = opt2.pthstack;
+md = opt2.md;
+sper = opt2.sper;
+widyxz = opt2.widyxz;
+t = opt2.t;
+pthpy = opt2.pthpy;
 doplt = opt2.doplt;
 roimask = opt2.roimask;
 
 [opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
 
 if isempty(md)
-    md = glb('md');
-    if isempty(md)
-        md = mdsild(pthstack);
-    end
+    md = mdsild(pthstack);
 end
 if isempty(sper)
     sper = md.sper;
@@ -32,7 +36,7 @@ if isempty(widyxz)
     widyxz = md.widyxz;
 end
 if isempty(t)
-    t = glb('t');
+    t = md.sper:md.sper:md.numvol*md.sper;
 end
 
 pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];

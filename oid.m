@@ -8,22 +8,18 @@ arguments
     o %options struct
     vbin = [] %vbin to recover id (and expand)
     opt.getonly = 0 %get ids only (cannot write to file or create new id)
-    opt.usegit = 1 %get ids only (cannot write to file or create new id)
+    opt.scopausername = []
+    opt.usegit = []
+    opt.ided_vbin = []
 end
+opt = glboropt(opt); %get some arguments from glb or name-value
 getonly = opt.getonly;
+scopausername = opt.scopausername;
 usegit = opt.usegit;
+ided_vbin = opt.ided_vbin;
 
 delim = '__';
 
-scopausername = glb('scopausername');
-if isempty(scopausername)
-    error("you have not set glb('scopausername')")
-end
-
-ided_vbin = glb('ided_vbin');
-if isempty(ided_vbin)
-    error("ided_vbin must be defined in glb")
-end
 if isstring(ided_vbin)
     ided_vbin = convertStringsToChars(ided_vbin);
 end
@@ -52,15 +48,12 @@ if tsgetcall && ~getonly
     error("tsget should call oid with getonly=1")
 end
 
-if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o, 'filled'))~=1)
+if isempty(structfield(o, 'filled')) || any(cellfun(@isempty, structfield(o, 'filled'))) || any(cell2mat(structfield(o, 'filled'))~=1)
     if ~tsgetcall %input struct does not require true 'filled' field if oid is called from tsget
         error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
     end
 end
 
-% if usegit && ~getonly
-%     scopagit('pull') %make sure matches remote
-% end
 
 for k = 1:numel(vbin)
 
@@ -148,13 +141,7 @@ end
 
 o = structsort(o, vectype='row');
 
-% if usegit && ~getonly 
-%     try
-%         scopagit('push', files={'^opt_.*_.txt$'})
-%     catch
-%         scopagit('discard', files={'^opt_.*_.txt$'}) %if push fails, make sure you discard changes to opt files 
-%     end
-% end
+
 
 
 

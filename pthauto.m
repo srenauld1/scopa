@@ -1,11 +1,13 @@
 function pthsv = pthauto(opt)
 
 arguments
-    opt.glbvar = 'pthstackdir'
-    opt.suffix = ''
+    opt.pthstackdir = []
+    opt.suffix = '' %includes extension
     opt.usetime = 1
     opt.usefun = 1
 end
+
+opt = glboropt(opt);
 
 fndefault = '00000000';
 
@@ -15,10 +17,9 @@ if numel(callstack) >= 2
 else
     fcnnm = 'unknownfunction';
 end
-pthstackdir = glb(opt.glbvar);
-if isempty(pthstackdir)
-    vnm = inputname(1);
-    error(sprintf("glbvaral variable " + opt.glbvar + " has not been set" + newline + "and a save path was not passed as argument into function " + fcnnm + newline + "do one or the other"))
+
+if isempty(opt.pthstackdir)
+    error(sprintf("glb('pthstackdir') has not been set, and name-value argument pthstackdir has not been set; you must do one or the other"))
 end
 infix = '';
 if opt.usefun
@@ -34,6 +35,7 @@ infix = [fndefault infix];
 if ~startsWith(opt.suffix, '_')
     opt.suffix = ['_' opt.suffix];
 end
-pthsv = [pthstackdir infix opt.suffix];
+
+pthsv = [opt.pthstackdir infix opt.suffix];
 
 end

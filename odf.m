@@ -447,9 +447,9 @@ if fill
     end
 
     %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%
-    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('scopausername'))
+    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('scopausername')) && isempty(glb('usegit'))
         if ( isfield(o, 'mn') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, scopausername=o.mn.scopausername)
+            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, scopausername=o.mn.scopausername, usegit=o.mn.usegit)
         end
     end
 

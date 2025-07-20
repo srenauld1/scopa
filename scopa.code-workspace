@@ -4,7 +4,7 @@
 			"path": "."
 		},
 		{
-			"name": "DeepCAD-RT",
+			"rgname": "DeepCAD-RT",
 			"path": "../DeepCAD-RT"
 		}
 	],

@@ -193,9 +193,6 @@ else
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to " + strtmp + newline)
                     end
                     sind = structind(inp{k});
-                    if isempty(inp{k+1})
-                        gset = setfield(gset, sind{:}, 1); %if setting to empty, must create field with nonempty dummy value first 
-                    end
                     gset = setfield(gset, sind{:}, inp{k+1});
                 end
             else
@@ -246,9 +243,6 @@ if 1%contains(char(inp), '.')
         idx{q} = idxtmp;
     end
     out = vec(cat(1, fld, idx))';
-    if isequal(out{end}, {':'})
-        out(end) = [];
-    end
 else
 
 end

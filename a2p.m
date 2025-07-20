@@ -32,7 +32,7 @@ for k = 1:numel(oa) % loop over recordings
     %% metadata
 
     md = mdsild(pth.stack);
-    glb(1, md=md, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
+    glb(1, md=md, imrate=md.imrate, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
 
     %% daq
 
@@ -91,13 +91,13 @@ for k = 1:numel(oa) % loop over recordings
 
     %% specific
 
-    inl = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'left'}, lev=1);
-    inr = fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'right'}, lev=1);
-    igld = fieldmatch(roi, {'rg.name', 'gal'}, {'mm.maskname', 'dorsal'}, lev=1);
-    iglv = fieldmatch(roi, {'rg.name', 'gal'}, {'mm.maskname', 'ventral'}, lev=1);
-    igrd = fieldmatch(roi, {'rg.name', 'gar'}, {'mm.maskname', 'dorsal'}, lev=1);
-    igrv = fieldmatch(roi, {'rg.name', 'gar'}, {'mm.maskname', 'ventral'}, lev=1);
-    ieb = fieldmatch(roi, {'rg.name', 'eb'}, {'mm.maskname', 'eb'}, lev=1);
+    inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.maskname', 'left'}, lev=1);
+    inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.maskname', 'right'}, lev=1);
+    igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.maskname', 'dorsal'}, lev=1);
+    iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.maskname', 'ventral'}, lev=1);
+    igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.maskname', 'dorsal'}, lev=1);
+    igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.maskname', 'ventral'}, lev=1);
+    ieb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'mm.maskname', 'eb'}, lev=1);
     idaq = fieldmatch(daq, lev=1);
     ibmp = fieldmatch(bmp, lev=1);
 

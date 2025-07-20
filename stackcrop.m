@@ -1,4 +1,4 @@
-function [stack, rg] = stackcrop(stack, pthstack, rgname)
+function [stack, rg] = stackcrop(stack, pthstack, rgname, opt)
 
 % crop stack using user-defined cuboid (struct rg, abbreviation for region); rg saved to txt file
 
@@ -6,6 +6,7 @@ arguments (Input)
     stack %stack, dim order yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid));
     pthstack %path to stack
     rgname = [] %short name for region (rg, the stack after cropping)
+    opt.scopausername = []
 end
 
 arguments (Output)
@@ -31,10 +32,8 @@ if isempty(rgname)
 end
 
 pthscopa = getpathscopa();
-scopausername = glb('scopausername');
-if isempty(scopausername)
-    error("you have not set glb('scopausername')")
-end
+
+scopausername = glboropt('scopausername', opt);
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
 id = idmake(pthstack);
@@ -56,7 +55,11 @@ if ~isempty(stack) %if input stack is empty, user is just checking if rg exists 
         if strcmp(rgname, rgnamedf)
 
             rg.id = rgid;
-            rg.name = rgname;
+            spl = strsplit(rgid, '_');
+            rg.recdatenum = str2double(spl{1});
+            rg.flynum = str2double(spl{2});
+            rg.trialnum = str2double(spl{3});
+            rg.rgname = rgname;
             rg.y = [1, size(stack, 1)];
             rg.x = [1, size(stack, 2)];
             rg.z = [1, size(stack, 3)];
@@ -175,7 +178,11 @@ end
 %% put in struct
 
 rg.id = rgid;
-rg.name = rgname;
+spl = strsplit(rgid, '_');
+rg.recdatenum = str2double(spl{1});
+rg.flynum = str2double(spl{2});
+rg.trialnum = str2double(spl{3});
+rg.rgname = rgname;
 rg.y = [iy(1), iy(2)];
 rg.x = [ix(1), ix(2)];
 rg.z = [iz(1), iz(2)];

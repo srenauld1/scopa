@@ -1,4 +1,4 @@
-function bmp = bmpmake(opt, depv, indv, pthstack, imrate, epochts, opt2)
+function bmp = bmpmake(opt, depv, indv, pthstack, opt2)
 
 %depv (roi,time), or empty if using opt to define depv via tsget 
 %indv (roi,time), or empty if using opt to define indv via tsget 
@@ -8,26 +8,23 @@ arguments
     depv = []
     indv = []
     pthstack = []
-    imrate = []
-    epochts = []
+    opt2.imrate = []
+    opt2.epochts = []
     opt2.doplt = []
 end
+optdf.epochts
+opt2 = glboropt(opt2);
+imrate = opt2.imrate;
+epochts = opt2.epochts;
 doplt = opt2.doplt;
 
 [opt, pthstack, doplt] = fset('bmp', opt, pthstack, doplt);
 
 if isempty(imrate)
-    md = glb('md');
-    imrate = md.volrate;
-    if isempty(imrate)
-        error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
-    end
+    error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
 end
 if isempty(epochts)
-    epochts = glb('epochts');
-    if isempty(epochts)
-        error("must pass in epochts or set glb('epochts')")
-    end
+    error("must pass in epochts or set glb('epochts')")
 end
 
 %% set up indv/depv

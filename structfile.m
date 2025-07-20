@@ -160,7 +160,11 @@ if ~isempty(s)
 end
 
 if usegit && ~isfile(pth)
-    scopagit('pull') %you have to pull if the file doesn't exist, in case it exists elsewhere
+    try
+        scopagit('pull') %you have to pull if the file doesn't exist, in case it exists elsewhere
+    catch
+        error("attempt to git sync with remote repository failed")
+    end
 end
 
 doaddon = 0;
@@ -382,6 +386,7 @@ else
             scopagit('push', files=pth)
         catch
             scopagit('discard', files=pth)
+            error("attempt to git sync with remote repository failed")
         end
     end
 

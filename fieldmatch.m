@@ -5,7 +5,7 @@ function [common, outall] = fieldmatch(s, varargin, opt)
 find fieldname in struct (struct can be nested and nonscalar)
 
 example:
-    fieldmatch(roi, {'rg.name', 'no'}, {'mm.maskname', 'left'}, lev=1);
+    fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.maskname', 'left'}, lev=1);
 
 %}
 

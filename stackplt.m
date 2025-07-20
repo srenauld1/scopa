@@ -31,7 +31,9 @@ arguments
     opt.marginax = 0.01;
     opt.fontsz = 10;
     opt.dosave = 1 %whether to write to gif
+    opt.dmstackdf = [] 
 end
+opt = glboropt(opt);
 pthgif = opt.pthgif;
 gifvis = opt.gifvis;
 roipx = opt.roipx;
@@ -59,19 +61,16 @@ marginfg = opt.marginfg;
 marginax = opt.marginax;
 fontsz = opt.fontsz;
 dosave = opt.dosave;
+dmstackdf = opt.dmstackdf;
 
 clear roiolmake %to clear the persistent variable within
 
 if isempty(pthgif)
     pthgif = pthauto(suffix='.gif', usetime=1);
 end
-
-if ~exist('dmstackdf', 'var') || isempty(dmstackdf)
-    dmstackdf = glb('dmstackdf');
-    if isempty(dmstackdf)
-        fprintf("using dmstackdf yxztck" + newline)
-        dmstackdf = 'yxztck';
-    end
+if isempty(dmstackdf)
+    fprintf("using dmstackdf yxztck" + newline)
+    dmstackdf = 'yxztck';
 end
 
 
