@@ -13,7 +13,7 @@ arguments (Input)
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.scopausername = []
     opt.pthparent = []
-    opt.ided_vbin
+    opt.ided_vbin = []
 end
 arguments (Output)
     datout

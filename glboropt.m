@@ -12,7 +12,7 @@ for k = 1:numel(fn)
         end
     else
         if ~isempty(fn_glb)
-            if ~isequal(fntmp, fn_glb)
+            if ~isequal(opt.(fntmp), fn_glb)
                 error("cannot pass in name-value argument " + fntmp + " if you have already set glb('" + fntmp  + "') to a different value; do one or the other, or make them equal; if you want to remove glb('" + fntmp  + "'), do this: glb(-1, '" + fntmp + "')")
             end
         end
