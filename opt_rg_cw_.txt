@@ -683,6 +683,18 @@
     "t": [1,20667],
     "c": [1,1]
   },
+  "a58": {
+    "id": "20250713_2_2_eb",
+    "recdatenum": 2.0250713E+7,
+    "flynum": 2,
+    "trialnum": 2,
+    "rgname": "eb",
+    "y": [8,24],
+    "x": [46,80],
+    "z": [1,21],
+    "t": [1,20667],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
