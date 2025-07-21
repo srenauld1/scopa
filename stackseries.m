@@ -1,6 +1,6 @@
 
 
-function stack = stackseries(pthstack, opt, doplt)
+function stack = stackseries(opt, opt2)
 
 %{
 
@@ -22,17 +22,14 @@ if suffixplt or doplt is empty, nothing will be plotted, but pthstack will be lo
 %}
 
 arguments
-    pthstack = []
     opt = []
-    doplt = []
+    opt2.pthstack = []
+    opt2.doplt = []
 end
+opt2 = glboropt(opt2);
+pthstack = opt2.pthstack;
+doplt = opt2.doplt;
 
-if isempty(pthstack)
-    pthstack = glb('pthstack');
-    if isempty(pthstack)
-        error("you must either pass argument pthstack or set glb('pthstack')")
-    end
-end
 if isempty(opt)
     fprintf("user did not pass options as argument, using all defaults")
     opt = odf('spr', fill=1, unpack=1);
@@ -55,12 +52,14 @@ dr = optsp.dr;
 
 suffixplt = opt.suffixplt;
 
-
 suffixplt = convertStringsToChars(suffixplt);
 if ~isempty(suffixplt) && ~iscell(suffixplt)
     suffixplt = {suffixplt};
 end
 
+if isempty(pthstack)
+    error("you must either pass argument pthstack or set glb('pthstack')")
+end
 if isempty(doplt)
     doplt = any(strcmp('spr', glb('plt')));
 end

@@ -13,6 +13,7 @@ arguments (Input)
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.scopausername = []
     opt.pthparent = []
+    opt.ided_vbin
 end
 arguments (Output)
     datout
@@ -21,9 +22,11 @@ arguments (Repeating, Output)
     tsout
 end
 
+opt = glboropt(opt);
 dm = opt.dm;
 scopausername = opt.scopausername;
 pthparent = opt.pthparent;
+ided_vbin = opt.ided_vbin;
 
 numvarin = numel(tg); %number of independent output variables (number of nonempty input arguments to tsget)
 tsout = cell(1, numvarin);
@@ -35,16 +38,16 @@ if isempty(dm)
     dm = 'it';
 end
 if isempty(scopausername)
-    scopausername = glb('scopausername');
-    if isempty(scopausername)
-        error("you must pass in scopausername or set glb('scopausername')")
-    end
+    error("you must pass in scopausername or set glb('scopausername')")
 end
 if isempty(pthparent)
-    pthparent = glb('pthparent');
-    if isempty(pthparent)
-        error("you must pass in pthparent or set glb('pthparent')")
-    end
+    error("you must pass in pthparent or set glb('pthparent')")
+end
+if isempty(ided_vbin)
+    error("ided_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
+end
+if isstring(ided_vbin)
+    ided_vbin = convertStringsToChars(ided_vbin);
 end
 
 pthscopa = getpathscopa();
@@ -57,7 +60,7 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})
-            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopausername, pthscopa);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopausername, pthscopa, ided_vbin);
         end
     end
 
@@ -169,7 +172,7 @@ end
 
 end
 
-function [tsout, dat] = tsget2(tg, dm, pthparent, scopausername, pthscopa)
+function [tsout, dat] = tsget2(tg, dm, pthparent, scopausername, pthscopa, ided_vbin)
 
 if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
     tg = tg.tg; %since the input to this function is also named tg
@@ -182,7 +185,7 @@ tsout = cell(numtg,1);
 dattmp = cell(numtg,1);
 group = cell(numtg,1);
 for m = 1:numtg %loop over tg elements
-    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopausername, pthscopa);
+    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopausername, pthscopa, ided_vbin);
 end
 
 
@@ -246,7 +249,7 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa)
+function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa, ided_vbin)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -330,15 +333,6 @@ if isfield(tg, 'group2') && ~isempty(tg.group2)
 else
     fprintf("group2 is empty, leaving empty for now, to be set in tsget, outside tsget3" + newline)
     group2 = [];
-end
-
-
-ided_vbin = glb('ided_vbin');
-if isempty(ided_vbin)
-    error("ided_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
-end
-if isstring(ided_vbin)
-    ided_vbin = convertStringsToChars(ided_vbin);
 end
 
 if ~isscalar(tg)

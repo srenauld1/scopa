@@ -1,19 +1,18 @@
-function [stack, dmstackdf, sznew] = stackperm(stack, dmstack, dmstackdf)
+function [stack, dmstackdf, sznew] = stackperm(stack, dmstack, opt)
 
 % put stack into default dimension order, given current order dmstack, and default order dmstackdf; inserts singleton dims if necessary
 
 arguments
     stack
     dmstack %char array, current stack dim order
-    dmstackdf = [] %char array, default stack dim order (yxztck if empty)
+    opt.dmstackdf = [] %char array, default stack dim order (yxztck if empty)
 end
+opt = glboropt(opt);
+dmstackdf = opt.dmstackdf;
 
 if isempty(dmstackdf)
-    dmstackdf = glb('dmstackdf');
-    if isempty(dmstackdf)
-        fprintf("using dmdf yxztck" + newline)
-        dmstackdf = 'yxztck';
-    end
+    fprintf("using dmdf yxztck" + newline)
+    dmstackdf = 'yxztck';
 end
 
 if ~isempty(dmstack) && ~isequal(dmstack, dmstackdf)

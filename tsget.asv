@@ -21,6 +21,7 @@ arguments (Repeating, Output)
     tsout
 end
 
+opt = glboropt(opt);
 dm = opt.dm;
 scopausername = opt.scopausername;
 pthparent = opt.pthparent;
@@ -35,16 +36,10 @@ if isempty(dm)
     dm = 'it';
 end
 if isempty(scopausername)
-    scopausername = glb('scopausername');
-    if isempty(scopausername)
-        error("you must pass in scopausername or set glb('scopausername')")
-    end
+    error("you must pass in scopausername or set glb('scopausername')")
 end
 if isempty(pthparent)
-    pthparent = glb('pthparent');
-    if isempty(pthparent)
-        error("you must pass in pthparent or set glb('pthparent')")
-    end
+    error("you must pass in pthparent or set glb('pthparent')")
 end
 
 pthscopa = getpathscopa();
@@ -246,7 +241,7 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa)
+function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa, ided_vbin)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -333,7 +328,6 @@ else
 end
 
 
-ided_vbin = glb('ided_vbin');
 if isempty(ided_vbin)
     error("ided_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
 end

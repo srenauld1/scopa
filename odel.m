@@ -1,12 +1,11 @@
 function odel(opt)
 
 arguments
+    opt.pthparent
     opt.fig = 0
 end
-
-pthparent = glb('pthparent');
-
-
+opt = glboropt(opt);
+pthparent = opt.pthparent;
 
 if opt.fig
 

@@ -1,4 +1,4 @@
-function mdl = mdlmake(opt, indv, depv, pthstack, imrate, epochts, opt2)
+function mdl = mdlmake(opt, indv, depv, pthstack, opt2)
 
 
 %{
@@ -30,6 +30,9 @@ arguments
     opt2.numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
     opt2.histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
+opt2 = glboropt(opt2);
+imrate = opt2.imrate;
+epochts = opt2.epochts;
 doplt = opt2.doplt;
 ldval = opt2.ldval;
 numsyn = opt2.numsyn;
@@ -38,17 +41,10 @@ histinc = opt2.histinc;
 [opt, pthstack, doplt] = fset('mdl', opt, pthstack, doplt);
 
 if isempty(imrate)
-    md = glb('md');
-    imrate = md.volrate;
-    if isempty(imrate)
-        error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
-    end
+    error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
 end
 if isempty(epochts)
-    epochts = glb('epochts');
-    if isempty(epochts)
-        error("must pass in epochts or set glb('epochts')")
-    end
+    error("must pass in epochts or set glb('epochts')")
 end
 
 %% set up indv/depv

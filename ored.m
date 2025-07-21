@@ -1,4 +1,4 @@
-function [o, optinert] = ored(o, vbin, delim)
+function [o, optinert] = ored(o, vbin, delim, opt)
 
 % ored ("options reduce") removes options that have no effect on the data (like plotting options),
 % and also removes redundancy (since options can depend on each other)
@@ -8,13 +8,14 @@ arguments
     o
     vbin
     delim
+    opt.inert_vbin = []
 end
+opt = glboropt(opt);
+inert_vbin = opt.inert_vbin;
 
-inert_vbin = glb('inert_vbin');
 if isempty(inert_vbin)
     error("inert_vbin must be defined in glb")
 end
-
 if isfield(o, vbin)
     error("you passed o with substruct " + vbin + " but should pass that substruct itself")
 end

@@ -47,10 +47,6 @@ elseif strcmpi(permission, 'write')
 
     tmp = dbstack;
     if isscalar(tmp) && strcmp(tmp.file, 'userdatsv.m')
-        % glb(1, scopausername = userdat.scopausername);
-        % glb(1, gittoken = userdat.gittoken);
-        % glb(1, gitbranch = userdat.gitbranch);
-        % glb(1, gitusername = userdat.gitusername);
         if isfile(pthuserdat)
             error(sprintf(pthuserdat + " already exists, delete it and run userdatsv again"))
         else

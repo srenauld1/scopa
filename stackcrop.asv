@@ -7,6 +7,7 @@ arguments (Input)
     pthstack %path to stack
     rgname = [] %short name for region (rg, the stack after cropping)
     opt.scopausername = []
+    opt.rgnamedf = []
 end
 
 arguments (Output)
@@ -28,12 +29,12 @@ if isempty(rgnamedf)
     rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
 end
 if isempty(rgname)
-    rgname = rgnamedf; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
+    rgname = rgnamedf; 
 end
 
 pthscopa = getpathscopa();
 
-scopausername = glbvnv('scopausername');
+
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
 id = idmake(pthstack);
@@ -55,6 +56,10 @@ if ~isempty(stack) %if input stack is empty, user is just checking if rg exists 
         if strcmp(rgname, rgnamedf)
 
             rg.id = rgid;
+            spl = strsplit(rgid, '_');
+            rg.recdatenum = str2double(spl{1});
+            rg.flynum = str2double(spl{2});
+            rg.trialnum = str2double(spl{3});
             rg.rgname = rgname;
             rg.y = [1, size(stack, 1)];
             rg.x = [1, size(stack, 2)];
@@ -100,10 +105,7 @@ if numchan==2
     fprintf("averaging both channels to create the images for defining rg" + newline)
 end
 
-stackmnt = glb('stackmnt');
-if isempty(stackmnt)
-    stackmnt = single(mean(stack, [4 5])); %option 'native' is slow, uses more memory, and not necessary for mean t anyway
-end
+stackmnt = single(mean(stack, [4 5])); %option 'native' is slow, uses more memory, and not necessary for mean t anyway
 
 %% first define z limits
 
@@ -174,6 +176,10 @@ end
 %% put in struct
 
 rg.id = rgid;
+spl = strsplit(rgid, '_');
+rg.recdatenum = str2double(spl{1});
+rg.flynum = str2double(spl{2});
+rg.trialnum = str2double(spl{3});
 rg.rgname = rgname;
 rg.y = [iy(1), iy(2)];
 rg.x = [ix(1), ix(2)];

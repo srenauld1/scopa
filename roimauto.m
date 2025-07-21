@@ -21,12 +21,13 @@ edgesig = opt.edgesig;
 celsz = opt.celsz;
 do3d = opt.do3d;
 
+opt2 = glboropt(opt2);
 md = opt2.md;
 widyxz = opt2.widyxz;
 roimaskin = opt2.roimaskin;
 pthstack = opt2.pthstack;
-rg = opt2.rg;
 maskname = opt2.maskname;
+rg = opt2.rg;
 
 if size(stack,4)>1
     stackmnt = mean(stack,4);
@@ -37,16 +38,19 @@ end
 numchan = size(stackmnt,5);
 
 if isempty(md)
-    md = glb('md');
-    if isempty(md)
-        md = mdsild(pthstack);
-    end
+    md = mdsild(pthstack);
 end
 if isempty(widyxz)
     widyxz = md.widyxz;
 end
 if isempty(roimaskin)
     roimaskin = cell(numchan,1);
+end
+if isempty(pthstack)
+   error("must set pthstack or glb('pthstack')")
+end
+if isempty(maskname)
+   maskname = 'none';
 end
 if isempty(rg)
     [~, rg] = stackcrop(stack, pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack

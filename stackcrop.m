@@ -7,11 +7,23 @@ arguments (Input)
     pthstack %path to stack
     rgname = [] %short name for region (rg, the stack after cropping)
     opt.scopausername = []
+    opt.rgnamedf = []
 end
 
 arguments (Output)
     stack %after cropping with rg
     rg %rg means region; struct containing indices for cropping stack, region short name (rgname) and region full name (rgid)
+end
+
+opt = glboropt(opt);
+scopausername = opt.scopausername;
+rgnamedf = opt.rgnamedf;
+
+if isempty(rgnamedf)
+    rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
+end
+if isempty(rgname)
+    rgname = rgnamedf; 
 end
 
 try
@@ -23,24 +35,16 @@ if isempty(stack) && ~isTilde(1)
     error("if input stack is empty, output stack should be suppressed with tilde")
 end
 
-rgnamedf = glb('rgnamedf');
-if isempty(rgnamedf)
-    rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
-end
-if isempty(rgname)
-    rgname = rgnamedf; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
-end
 
 pthscopa = getpathscopa();
 
-scopausername = glboropt('scopausername', opt);
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
 id = idmake(pthstack);
 rgid = [id.recid '_' rgname];
 
 rg = [];
-[~, ~, rgall] = structfile('/Users/wienecke/scopa/opt_rg_cw_.txt', s=[], nm=[], usegit=1);
+[~, ~, rgall] = structfile(pthrg, s=[], nm=[], usegit=1);
 if ~isempty(rgall)
     fn = fieldmatch(rgall, {'id', rgid}, lev=1, multi=0);
     if ~isempty(fn)
@@ -104,10 +108,7 @@ if numchan==2
     fprintf("averaging both channels to create the images for defining rg" + newline)
 end
 
-stackmnt = glb('stackmnt');
-if isempty(stackmnt)
-    stackmnt = single(mean(stack, [4 5])); %option 'native' is slow, uses more memory, and not necessary for mean t anyway
-end
+stackmnt = single(mean(stack, [4 5])); %option 'native' is slow, uses more memory, and not necessary for mean t anyway
 
 %% first define z limits
 

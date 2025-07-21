@@ -106,7 +106,7 @@ end
 
 %% put stack into default order and apply any input indexing
 
-stack = stackperm(stack, dmstack, dmstackdf);
+stack = stackperm(stack, dmstack, dmstackdf=dmstackdf);
 
 if iscell(stack)
     stack_oneframe = stack{1}(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown

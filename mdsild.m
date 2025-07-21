@@ -5,12 +5,19 @@ arguments
     pthpy = []
 end
 
+pthstack_glb = glb('pthstack');
 if isempty(pthstack)
-    pthstack = glb('pthstack');
-    if isempty(pthstack)
-        error("you must either pass argument pthstack or set glb('pthstack')")
+    if isempty(pthstack_glb)
+        error("you must pass pthstack or set glb('pthstack')")
+    else
+        pthstack = pthstack_glb;
+    end
+else
+    if ~isempty(pthstack_glb)
+        error("you cannot set both pthstack and glb('pthstack')")
     end
 end
+
 
 id = idmake(pthstack); %just in case id info gets used below
 pthmd = [id.pthrec '_mdsi_.txt'];
@@ -36,10 +43,16 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
     
     catch
 
+        pthpy_glb = glb('pthpy');
         if isempty(pthpy)
-            pthpy = glb('pthpy');
-            if isempty(pthpy)
+            if isempty(pthpy_glb)
                 error("metadata file doesn't exist, and parsing with tifreadfast failed, and you have not set glb('pthpy'), and you didn't pass in argument pthpy, so you cannot try mdsisv.py" + newline)
+            else
+                pthpy = pthpy_glb;
+            end
+        else
+            if ~isempty(pthpy_glb)
+                error("you cannot set both pthpy and glb('pthpy')")
             end
         end
 

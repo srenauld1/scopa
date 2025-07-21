@@ -15,8 +15,7 @@ arguments
     opt.substr = []
     opt.match = 'each'
 end
-
-
+opt = glboropt(opt);
 pth = opt.pth;
 pthsib = opt.pthsib;
 pthparent_local = opt.pthparent_local;
@@ -76,10 +75,7 @@ if isempty(substr)
     substr = '*';
 end
 if isempty(suffixvalid) || sum(strlength(suffixvalid))==0 %sum(strlength(suffixvalid))==0 will test for empty char or string
-    suffixvalid = glb('suffixvalid');
-    if isempty(suffixvalid)
-        error("no variable set for suffixvalid, returned files may include more than you want if specifiers include wildcard, so you must set suffixvalid" + newline)
-    end
+    error("no variable set for suffixvalid, returned files may include more than you want if specifiers include wildcard, so you must set suffixvalid" + newline)
 end
 
 

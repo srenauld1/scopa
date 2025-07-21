@@ -5,10 +5,16 @@ arguments
     t = []
 end
 
+t_glb = glb('t');
 if isempty(t)
-    t = glb('t');
-    if isempty(t)
-        error("must pass in t or set glb('t')")
+    if isempty(t_glb)
+        error("you must pass t or set glb('t')")
+    else
+        t = t_glb;
+    end
+else
+    if ~isempty(t_glb)
+        error("you cannot set both t and glb('t')")
     end
 end
 

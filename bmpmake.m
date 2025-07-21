@@ -12,7 +12,6 @@ arguments
     opt2.epochts = []
     opt2.doplt = []
 end
-optdf.epochts
 opt2 = glboropt(opt2);
 imrate = opt2.imrate;
 epochts = opt2.epochts;
