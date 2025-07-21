@@ -14,7 +14,9 @@ if isempty(t)
     end
 else
     if ~isempty(t_glb)
-        error("you cannot set both t and glb('t')")
+        if ~isequal(t, t_glb)
+            error("you have set both name-value argument t and glb('t'), but they are not equal")
+        end
     end
 end
 

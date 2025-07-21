@@ -14,7 +14,9 @@ if isempty(pthstack)
     end
 else
     if ~isempty(pthstack_glb)
-        error("you cannot set both pthstack and glb('pthstack')")
+        if ~isequal(pthstack, pthstack_glb)
+            error("you have set both name-value argument pthstack and glb('pthstack_glb'), but they are not equal")
+        end
     end
 end
 
@@ -52,7 +54,9 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
             end
         else
             if ~isempty(pthpy_glb)
-                error("you cannot set both pthpy and glb('pthpy')")
+                if ~isequal(pthpy, pthpy_glb)
+                    error("you have set both name-value argument pthpy and glb('pthpy_glb'), but they are not equal")
+                end
             end
         end
 

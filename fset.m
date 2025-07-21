@@ -15,8 +15,10 @@ if isempty(pthdat)
         pthdat = pthdat_glb;
     end
 else
-    if ~isempty(pthdat)
-        error("cannot pass in name-value argument " + vnm + " if you have already set glb('" + vnm  + "'); do one or the other; if you want to remove glb('" + vnm  + "'), do this: glb(-1, '" + vnm + "')")
+    if ~isempty(pthdat_glb)
+        if ~isequal(pthdat, pthdat_glb)
+            error("cannot pass in name-value argument " + vnm + " if you have already set glb('" + vnm  + "') to a different value; do one or the other, or make them equal; if you want to remove glb('" + vnm  + "'), do this: glb(-1, '" + vnm + "')")
+        end
     end
 end
 

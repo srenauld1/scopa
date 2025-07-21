@@ -104,7 +104,9 @@ if isempty(copybin)
     end
 else
     if ~isempty(copybin_glb)
-        error("you cannot set both copybin and glb('copybindf')")
+        if ~isequal(copybin, copybin_glb)
+            error("you have set both name-value argument copybin and glb('copybindf'), but they are not equal")
+        end
     end
 end
 

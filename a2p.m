@@ -7,7 +7,6 @@ arguments
     specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
 end
 
-
 %%
 
 clear glb tsget %clear global/persistent vars
@@ -31,7 +30,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% metadata
 
-    md = mdsild();
+    md = mdsild(pth.stack);
     glb(1, md=md, srate=md.volrate, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
 
     %% daq
