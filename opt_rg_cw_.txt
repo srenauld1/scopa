@@ -671,6 +671,18 @@
     "t": [1,20667],
     "c": [1,1]
   },
+  "a57": {
+    "id": "20250713_2_2_gar",
+    "recdatenum": 2.0250713E+7,
+    "flynum": 2,
+    "trialnum": 2,
+    "rgname": "gar",
+    "y": [20,28],
+    "x": [7,18],
+    "z": [16,24],
+    "t": [1,20667],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
