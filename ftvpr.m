@@ -40,7 +40,7 @@ arguments
     smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
     smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    pth_dat char = '' %fictrac .dat file; used to derive ftrate; can pass ftrate instead 
+    pth_dat char = '' %fictrac .dat file; used to derive ftrate; can pass in ftrate instead 
     ftrate = [] %fictrac sample rate; if empty, derived from sample times in pth_dat
     pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime

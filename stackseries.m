@@ -31,19 +31,19 @@ pthstack = opt2.pthstack;
 doplt = opt2.doplt;
 
 if isempty(opt)
-    fprintf("user did not pass options as argument, using all defaults")
+    fprintf("user did not pass in options as argument, using all defaults")
     opt = odf('spr', fill=1, unpack=1);
 end
 if isfield(opt, 'sld')
     optsld = opt.sld;
 else
-    fprintf("user did not pass substruct sld within spr, using all defaults for sld")
+    fprintf("user did not pass in substruct sld within spr, using all defaults for sld")
     optsld = odf('sld', unpack=1);
 end
 if isfield(opt, 'sp')
     optsp = opt.sp;
 else
-    fprintf("user did not pass substruct sld within spr, using all defaults for sld")
+    fprintf("user did not pass in substruct sld within spr, using all defaults for sld")
     optsp = odf('sp', unpack=1);
 end
 it = optsp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
@@ -58,7 +58,7 @@ if ~isempty(suffixplt) && ~iscell(suffixplt)
 end
 
 if isempty(pthstack)
-    error("you must either pass argument pthstack or set glb('pthstack')")
+    error("you must either pass in argument pthstack or set glb('pthstack')")
 end
 if isempty(doplt)
     doplt = any(strcmp('spr', glb('plt')));

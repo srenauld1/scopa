@@ -2,7 +2,7 @@ function [hfg, hax] = tsplt(ts, opt)
 
 % plot one or more timeseries on one figure; if 2 or more timeseries, first goes onto one axis, the rest go onto the other (allowing them to have different length x)
 % option to sequentially display over one or more segments of x (if xseg>1), optionally saving each segment as frame of gif
-% option to pass existing figure handle and add axes to that, in which case figure will not save within this function
+% option to pass in existing figure handle and add axes to that, in which case figure will not save within this function
 
 arguments (Repeating)
     ts
@@ -27,7 +27,7 @@ arguments
     opt.titlein {mustBeText} = '' %title
     opt.pthgif {mustBeText} = '' %figure save path
     opt.gifvis {mustBeText} = 'on'
-    opt.hfg = [] %can pass figure handle to add to existing figure
+    opt.hfg = [] %can pass in figure handle to add to existing figure
     opt.axpos = []; %axis position
 end
 xall = opt.xall;
@@ -151,13 +151,13 @@ if isempty(pthgif)
     pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
 end
 if ~isempty(axpos) && isempty(hfg)
-    error("must not pass axpos without hfg")
+    error("must not pass in axpos without hfg")
 end
 if isempty(axpos)
     if isempty(hfg)
         axpos = [0.1300 0.1100 0.7750 0.8150];
     else
-        error("must pass axpos if you pass hfg")
+        error("must pass in axpos if you pass in hfg")
     end
 end
 

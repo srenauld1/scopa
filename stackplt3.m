@@ -44,7 +44,7 @@ widyxz = opt.widyxz;
 maxnumframes = 500;
 
 if iso && isempty(widyxz)
-    error("must pass widyxz if iso is true")
+    error("must pass in widyxz if iso is true")
 end
 
 if isempty(pthstack)

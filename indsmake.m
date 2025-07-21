@@ -25,7 +25,7 @@ if any(indsin<0) & numel(indsin)>1
     error("negative inds must be scalar")
 end
 if isempty(indsall) && ( isempty(indsin) || indsin<0 || mod(indsin, 1)~=0 )
-    error("for empty, negative, or fractional inds, you must pass indsall (inds' superset) as a reference")
+    error("for empty, negative, or fractional inds, you must pass in indsall (inds' superset) as a reference")
 end
 
 fractional_indsin = 0;

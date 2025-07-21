@@ -232,7 +232,7 @@ if doconvert
         end
     else
         if ~isempty(ic) || ~isempty(iz) || ~isempty(it)
-            error("you must know stack size to pass nonempty iz or it or ic")
+            error("you must know stack size to pass in nonempty iz or it or ic")
         end
     end
 
@@ -349,7 +349,7 @@ else %if you don't have metadata, get it here
     if ~isempty(md)
         [sz, chantif] = stacksize(md, ic, rawstack, pthstack);
     else
-        errmsg = "did not pass metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
+        errmsg = "did not pass in metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
     end
 end
 

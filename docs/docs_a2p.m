@@ -2,6 +2,7 @@
 
 %{
 
+glb is required in only a couple places within function tsget
 strucfile gets called by: oid, tsget, stackcrop, and fset; can read and/or
 write in all cases except fset (fset just reads); uses scopagit to ensure integration across filesystems 
 warning: when reading struct from file, jsencode (called from structld) will insert an 'x' at the beginning of any fieldname that doesn't begin with a letter (an invalid fieldname); if a file was written with structsv, it will not contain invalid fieldnames because structsv only writes valid structs) 

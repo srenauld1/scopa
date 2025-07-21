@@ -986,7 +986,7 @@ classdef TIFFStack < handle
          sSubs.type = '()';
          sSubs.subs = repmat({':'}, 1, ndims(oStack));
          
-         % - Just load stack and pass parameters to sort
+         % - Just load stack and pass in parameters to sort
          tfSorted = sort(subsref(oStack, sSubs), varargin{:});
       end
       
@@ -999,7 +999,7 @@ classdef TIFFStack < handle
          sSubs.type = '()';
          sSubs.subs = repmat({':'}, 1, ndims(oStack));
          
-         % - Just load stack and pass parameters to sort
+         % - Just load stack and pass in parameters to sort
          tfPrctile = prctile(subsref(oStack, sSubs), varargin{:});         
       end
 

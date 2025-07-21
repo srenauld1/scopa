@@ -3,7 +3,7 @@ function scopagit(operation, opt)
 %basic git control for scopa
 
 arguments
-    operation %'push', 'pull', 'sync', or 'discard'; automatically operates on untracked files and modified files together; uses information from userdat.txt, created by running function userdatsv
+    operation %'push', 'pull', 'sync', or 'discard'; automatically operates on untracked files and modified files together; uses information from userdat.txt, created by running function userdatfile with all nonempty name-value arguments
     opt.files = []; %filenames (or full file paths) to operate on with git; string or char vector if single filename, or string array or cell array of char vectors if multiple filenames; filenames can be regexp expressions for matching/filtering
 end
 files = opt.files;
@@ -18,7 +18,7 @@ if ~isempty(cell2mat(files))
     files = erase(files, pthscopa);
 end
 
-userdat = userdatsv('read');
+userdat = userdatfile();
 
 cd(pthscopa)
 rp = gitrepo;

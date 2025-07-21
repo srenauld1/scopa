@@ -98,7 +98,7 @@ end
 copybin_glb = glb('copybindf');
 if isempty(copybin)
     if isempty(copybin_glb)
-        error("you must pass copybin or set glb('copybindf')")
+        error("you must pass in copybin or set glb('copybindf')")
     else
         copybin = copybin_glb;
     end

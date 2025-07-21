@@ -50,7 +50,7 @@ if isempty(evecs)
         sin(theta)*sin(gamma),                                -sin(theta)*cos(gamma),                               cos(theta)     ];
 else
     if ~isempty(theta) || ~isempty(gamma) || ~isempty(phi)
-        error("cannot pass evecs and also any of theta gamma phi")
+        error("cannot pass in evecs and also any of theta gamma phi")
     end
 end
 

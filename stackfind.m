@@ -1,6 +1,6 @@
 function pth_all = stackfind(opt)
 
-% error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass prioritize_mat as different files, and are found to have the same specifier by check_for_duplicate_specifiers
+% error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass in prioritize_mat as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
 arguments
     opt.pth = [] %full path pattern (can have wildcards)

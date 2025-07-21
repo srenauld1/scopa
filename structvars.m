@@ -23,7 +23,7 @@ function varargout=structvars(varargin)
 %         myStruct.a = a;    myStruct.c = c;    myStruct.d = d;
 %         myStruct.b = b;
 %
-%The routine is useful when you want to pass many arguments to a function
+%The routine is useful when you want to pass in many arguments to a function
 %by packing them in a structure. The commands produced by structvars(...)
 %can be conveniently copy/pasted into the file editor at the location in the file
 %where the variables need to be unpacked.

@@ -8,19 +8,19 @@ arguments
     depv = []
     indv = []
     pthstack = []
-    opt2.imrate = []
+    opt2.srate = []
     opt2.epochts = []
     opt2.doplt = []
 end
 opt2 = glboropt(opt2);
-imrate = opt2.imrate;
+srate = opt2.srate;
 epochts = opt2.epochts;
 doplt = opt2.doplt;
 
 [opt, pthstack, doplt] = fset('bmp', opt, pthstack, doplt);
 
-if isempty(imrate)
-    error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
+if isempty(srate)
+    error("must pass in name-value argument srate or set glb('srate')")
 end
 if isempty(epochts)
     error("must pass in epochts or set glb('epochts')")
@@ -58,7 +58,7 @@ while true
         pthbmp = [erase(pthstack, '.mat') varid opt.optid '_bmp_.mat'];
     end
 
-    bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt);
+    bmp = bmpmake2(depv, indv, opt, varid, pthbmp, srate, epochts, doplt);
 
     if last
         break
@@ -67,7 +67,7 @@ end
 
 end
 
-function bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt)
+function bmp = bmpmake2(depv, indv, opt, varid, pthbmp, srate, epochts, doplt)
 
 mthd = opt.mthd;
 omitnan = opt.omitnan;
@@ -112,7 +112,7 @@ catch ME
 
     halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
 
-    sper = 1/imrate;
+    sper = 1/srate;
 
     %% define domain (functionally or morphologically)
 
@@ -125,7 +125,7 @@ catch ME
 
     if strcmp(domtype, 'f') %functional domain (each roi's preferred angle derived from fit) 
 
-        bmp = mdlmake(opt.mdl, indv, depv, pthbmp, imrate, epochts, doplt=doplt, ld=1, numsyn=0, histinc=0);
+        bmp = mdlmake(opt.mdl, indv, depv, pthbmp, srate, epochts, doplt=doplt, ld=1, numsyn=0, histinc=0);
 
         angpref = bmp.ft.indvpf_mean_allval(:)'; %row vector of preferred angle;
 

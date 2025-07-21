@@ -60,7 +60,7 @@ else:
      raise Exception ("currently can only have one jobind per parallel run")
   if do_denoise:
     if denoise_volume==0 and len(denoise_slice_index)>1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
-        raise Exception ("if denoise_volume==0, must either pass single denoise_slice_index (not multiple), or denoise_slice_index must be all. . . IS THIS STILL TRUE?")
+        raise Exception ("if denoise_volume==0, must either pass in single denoise_slice_index (not multiple), or denoise_slice_index must be all. . . IS THIS STILL TRUE?")
     if denoise_volume==1 and denoise_slice_index != ['all'] and denoise_slice_index!='all':
         raise Exception ("if denoise volume == 1, denoise slice index must be 'all' (for now, although code can be adapted to accept z subset range) . . . IS THIS STILL TRUE?")
 

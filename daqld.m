@@ -55,10 +55,10 @@ arguments
     opt = []
     pthstack = []
     doplt = []
-    pth_daq = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack/pthrec)
-    pth_daqrs = [] %can optionally pass path to original daq file (if you don't it will be derived from pthstack/pthrec)
-    pth_ftvid = []%can optionally pass path to downsampled (in scopa/register.py) fictrac video (if you don't it will be derived from pthstack/pthrec)
-    pth_ftvidrs = []%can optionally pass save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack/pthrec)
+    pth_daq = [] %can optionally pass in path to original daq file (if you don't it will be derived from pthstack/pthrec)
+    pth_daqrs = [] %can optionally pass in path to original daq file (if you don't it will be derived from pthstack/pthrec)
+    pth_ftvid = []%can optionally pass in path to downsampled (in scopa/register.py) fictrac video (if you don't it will be derived from pthstack/pthrec)
+    pth_ftvidrs = []%can optionally pass in save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack/pthrec)
 end
 
 [opt, pthstack, doplt] = fset('daq', opt, pthstack, doplt);

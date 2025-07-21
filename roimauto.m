@@ -429,7 +429,7 @@ else
         case {'uniform'} % create multiple roughly equal-volume roi by partitioning rgname into numroi groups
 
             if isempty(widyxz)
-                error("you did not pass argument widyxz, or you passed empty widyxz, but you also requested maskseg 'uniform', which requires nonempty argument widyxz")
+                error("you did not pass in argument widyxz, or you passed empty widyxz, but you also requested maskseg 'uniform', which requires nonempty argument widyxz")
             end
 
 

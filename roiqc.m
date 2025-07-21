@@ -210,7 +210,7 @@ for ci = 1:numrois
             roi_is_discontiguous(ci) || ...
             roi_fails_corr_threshold(ci))
 
-        good_roi_indices(ci) = 1; %pass all morphological tests
+        good_roi_indices(ci) = 1; %pass in all morphological tests
 
     end
 

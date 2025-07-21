@@ -43,7 +43,7 @@ def stackcrop(stack, rgname, pth_prefix, dims):
                 zlimits = (1,1)
                 stackmntz = np.mean(stackmnt, axis = 2)
             else:
-                im_montage(stackmnt) #pass whole stackmnt min and max as vmin and vmax if you don't want each slice normalized
+                im_montage(stackmnt) #pass in whole stackmnt min and max as vmin and vmax if you don't want each slice normalized
                 print("WHAT Z SLICES DO YOU WANT TO KEEP FOR RGNAME '" + rgname + "' \n" + \
                     "EACH SLICE NORMALIZED TO RAISE CONTRAST FOR THIS PLOT \n" \
                     "WARNING, EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION, \n" \

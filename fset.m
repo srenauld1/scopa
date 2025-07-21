@@ -2,15 +2,21 @@ function [opt, pthdat, doplt] = fset(vbin, opt, pthdat, doplt)
 
 
 if isempty(opt)
-    fprintf("user did not pass options as argument, using all defaults")
+    fprintf("user did not pass in options as argument, using all defaults for vbin '" + vbin + "'")
     opt = odf(vbin, fill=1, unpack=1);
 end
 
 vnm = inputname(3);
+pthdat_glb = glb(vnm);
 if isempty(pthdat)
-    pthdat = glb(vnm);
-    if isempty(pthdat)
-        error("you must either pass argument " + vnm + " or set glb('" + vnm + "')")
+    if isempty(pthdat_glb)
+        error("you must either pass in argument " + vnm + " or set glb('" + vnm + "')")
+    else
+        pthdat = pthdat_glb;
+    end
+else
+    if ~isempty(pthdat)
+        error("cannot pass in name-value argument " + vnm + " if you have already set glb('" + vnm  + "'); do one or the other; if you want to remove glb('" + vnm  + "'), do this: glb(-1, '" + vnm + "')")
     end
 end
 
@@ -20,11 +26,11 @@ if isfield(opt, 'optid') && ~isempty(opt.optid)
         pthscopa = getpathscopa();
         scopausername = glb('scopausername');
         if isempty(scopausername)
-            error("you have not set glb('scopausername')")
+            scopausername = userdatfile('scopausername');
         end
         usegit = glb('usegit');
         if isempty(usegit)
-            error("you have not set glb('usegit')")
+            usegit = 0;
         end
         pthopt = [pthscopa 'opt_' vbin '_' scopausername '_.txt'];
         optid_noprefix = optidtmp(2:end);
@@ -39,5 +45,5 @@ else
 end
 
 if isempty(doplt)
-    doplt = any(strcmp(vbin, glb('plt')));
+    doplt = any(strcmp(vbin, glb('plt'))); %false if glb('plt') has not been set
 end

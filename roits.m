@@ -34,7 +34,7 @@ memthr = opt2.memthr;
 doplt = opt2.doplt;
 
 if isempty(t) && channorm~=0
-    error("must pass t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
+    error("must pass in t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
 end
 
 if (isempty(stack) && isempty(respcm)) || (~isempty(stack) && ~isempty(respcm))

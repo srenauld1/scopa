@@ -64,7 +64,7 @@ for k = 1:num_sectors
 end
 
 if num_sectors==1 && splitfrac~=1
-    error("for single sector, don't pass splitfrac argument, or pass value of 1")
+    error("for single sector, don't pass in splitfrac argument, or pass in value of 1")
 end
 if isempty(marginfg) %handle empty argument for marginfg (not handled in arguments block above)
     marginfg = 0.03;

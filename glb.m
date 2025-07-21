@@ -20,7 +20,7 @@ remove specific globals using -1 as first argument, followed by variables to rem
     1) glb(-1, 'v', 'w')
     2) glb(-1, {'v', 'w'})
 
-you cannot set a global after it's already been set, unless you pass 1 as first argument (or clear that global variable)
+you cannot set a global after it's already been set, unless you pass in 1 as first argument (or clear that global variable)
     glb(1, v=99) will set global variable v to 99 (so will k.v=99; glb(1,k), for any struct k)
 
 in general, if you prefer to use string, rather than char, you can, as long as you don't mix them for the same purpose in a single command 
@@ -135,7 +135,7 @@ else
             end
         end
     elseif mod(numel(inp), 2)==1
-        error("all arguments must be name-value pairs, except optional numeric first argument, and option to pass all arguments as a single struct")
+        error("all arguments must be name-value pairs, except optional numeric first argument, and option to pass in all arguments as a single struct")
     end
 end
 
@@ -144,7 +144,7 @@ end
 %%%%%% SET OR GET GLOBALS %%%%%%
 
 if isempty(inp)
-    fprintf("you did not pass any input to glb, returning all variables in glb" + newline)
+    fprintf("you did not pass in any input to glb, returning all variables in glb" + newline)
     out = gset;
 else
     if iscell(inp) %setting globals

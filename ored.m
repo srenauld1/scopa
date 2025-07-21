@@ -17,7 +17,7 @@ if isempty(inert_vbin)
     error("inert_vbin must be defined in glb")
 end
 if isfield(o, vbin)
-    error("you passed o with substruct " + vbin + " but should pass that substruct itself")
+    error("you passed o with substruct " + vbin + " but should pass in that substruct itself")
 end
 
 o = structflat(o, delim=delim);

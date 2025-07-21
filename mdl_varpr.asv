@@ -35,7 +35,7 @@ depv = mdl_nrmvar(depv, 'forward', opt.nrmd, depvp_mean_eachdim, depvp_std_eachd
 
 num_samp_mdl = round(opt.lensec*imrate);
 if num_samp_mdl==0
-    num_samp_mdl = 1; %a convenience, so user can pass opt.lensec=0 if they don't know volume rate
+    num_samp_mdl = 1; %a convenience, so user can pass in opt.lensec=0 if they don't know volume rate
 end
 num_samp_lag = round(opt.lagsec*imrate);
 

@@ -138,7 +138,7 @@ end
 
 if files
     if ~isfield(oin, 'spec') && ~any(strcmp(vbin, 'spec'))
-        error("if files is true, you must pass input struct with spec vbin, or pass vbin argument that includes 'spec'")
+        error("if files is true, you must pass in input struct with spec vbin, or pass in vbin argument that includes 'spec'")
     end
     [~, flatfntmp, ~] = structflat(oin, 'prefix', 'o');
     if any(strcmp(flatfntmp, 'spec.pth')) && ~isempty(oin.spec.pth)

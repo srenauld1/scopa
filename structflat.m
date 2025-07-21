@@ -69,7 +69,7 @@ try
     end
     
     if numel(s)>1 && isempty(Prefix)
-        error("for nonscalar struct input to structflat, you must also pass prefix argument to make flattened fieldnames valid (this is a temporary solution)")
+        error("for nonscalar struct input to structflat, you must also pass in prefix argument to make flattened fieldnames valid (this is a temporary solution)")
     end
 
     %% Get all fieldnames

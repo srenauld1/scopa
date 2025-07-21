@@ -8,7 +8,7 @@ end
 t_glb = glb('t');
 if isempty(t)
     if isempty(t_glb)
-        error("you must pass t or set glb('t')")
+        error("you must pass in t or set glb('t')")
     else
         t = t_glb;
     end

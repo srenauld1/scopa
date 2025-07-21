@@ -338,7 +338,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                 fi
             fi
 
-            #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
+            #run the sbatch file, using export to pass in args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
             arr_id_out=$(sbatch --parsable \
             --export=DO_COPYFILES="$DO_COPYFILES",FIRST_NONCOPY_JOB="$FIRST_NONCOPY_JOB",PTH_PARSFILE="$PTH_PARSFILE",SCOPADIR="$SCOPADIR",JOBNM="$JOBNM" \
             --array=[$jobind_tmp] \

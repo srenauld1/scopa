@@ -1,13 +1,16 @@
 function odel(opt)
 
 arguments
-    opt.pthparent
+    opt.pthparent = []
+    opt.ided_vbin = []
     opt.fig = 0
 end
 opt = glboropt(opt);
 pthparent = opt.pthparent;
+ided_vbin = opt.ided_vbin;
+fig = opt.fig;
 
-if opt.fig
+if fig
 
     inf = "figure";
 
@@ -34,14 +37,13 @@ else
     % delete all options files; run this to restart optid/varid numbering
 
     inf = "option";
-    pthscopa = glb('pthscopa');
-    scopausername = glb('scopausername');
+    pthscopa = getpathscopa;
+    scopausername = userdatfile('scopausername');
     if isempty(scopausername)
         error("you have not set glb('scopausername')")
     end
-    ided_vbin = glb('ided_vbin');
     if isempty(ided_vbin)
-        error("ided_vbin must be defined in glb")
+        error("ided_vbin must be defined in glb or passed in as name-value argument")
     end
     if isstring(ided_vbin)
         ided_vbin = convertStringsToChars(ided_vbin);

@@ -52,7 +52,7 @@ all rgname are included in options_.txt
 the most recent options_.txt is searched for options matches (or rgname matches)
 
 
-user can pass rgname and opts will populate, or pass opts and rgname will populate, but not both
+user can pass in rgname and opts will populate, or pass in opts and rgname will populate, but not both
 there is no reason to make separate map2opt for roim and roif, because user will not want to loop through each separately 
 if user has duplicate rgname (say, some run in python, some from a2p), the most recent param file is used as lookup
 set includes roim and roif opt, since roim seeds roif

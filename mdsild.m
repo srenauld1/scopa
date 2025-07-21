@@ -8,7 +8,7 @@ end
 pthstack_glb = glb('pthstack');
 if isempty(pthstack)
     if isempty(pthstack_glb)
-        error("you must pass pthstack or set glb('pthstack')")
+        error("you must pass in pthstack or set glb('pthstack')")
     else
         pthstack = pthstack_glb;
     end

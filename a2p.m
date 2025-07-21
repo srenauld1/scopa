@@ -31,8 +31,8 @@ for k = 1:numel(oa) % loop over recordings
 
     %% metadata
 
-    md = mdsild(pth.stack);
-    glb(1, md=md, imrate=md.imrate, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
+    md = mdsild();
+    glb(1, md=md, srate=md.volrate, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
 
     %% daq
 

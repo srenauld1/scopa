@@ -106,7 +106,7 @@ end
 
 %% put stack into default order and apply any input indexing
 
-stack = stackperm(stack, dmstack, dmstackdf=dmstackdf);
+stack = stackperm(stack, dmstack, dmstackdf);
 
 if iscell(stack)
     stack_oneframe = stack{1}(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
@@ -268,7 +268,7 @@ else
         end
     end
     if ~isempty([ix iy iz])
-        error("cannot pass ix, iy, or it with roipx since stackplt assumes roipx refers to indices into the entire xyz")
+        error("cannot pass in ix, iy, or it with roipx since stackplt assumes roipx refers to indices into the entire xyz")
     end
     if ~iscell(roipx)
         if isvector(roipx)
@@ -319,7 +319,7 @@ end
 %% prep titles
 
 if ~isempty(intersect(find(~cellfun(@isempty, index_labels)), find(~cellfun(@isempty, index_labels_opt)))) % any(~cellfun(@isempty, index_labels_opt))
-    error("for at least one stack dimension you defined index_labels and passed a stack index name-value argument (iy,ix,iz,it,ic, or ik); if you pass an index name-value argument, do not pass index_labels for that same dimension")
+    error("for at least one stack dimension you defined index_labels and passed a stack index name-value argument (iy,ix,iz,it,ic, or ik); if you pass in an index name-value argument, do not pass in index_labels for that same dimension")
 else
     index_labels_default = arrayfun(@(x) 1:x(end), szdfo, 'UniformOutput', false);
     missing_dims = numel(index_labels_default)+1:numel(index_labels_opt);

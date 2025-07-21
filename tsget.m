@@ -551,7 +551,7 @@ tsget recovers timeseries from saved files, using the options used to create the
         optused is a struct containing a subset of the options used to create timeseries, or just the optid assigned to an options set
         since all unique options sets have an optid, optused.optid is sufficient to recover timeseries 
         optused.optid is a char array, which can contain asterisk as wildcard
-        for more control, or if you don't know the optid, pass individual options in optused (in this case you cannot pass optid)
+        for more control, or if you don't know the optid, pass in individual options in optused (in this case you cannot pass in optid)
         optused must be valid given the domain argument
         if any optused are cell arrays, they are expanded and all results are found 
         empty returns all for the given domain

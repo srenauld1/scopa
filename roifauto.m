@@ -6,6 +6,7 @@ arguments
     opt.rgname = 'none'
     opt.maskname = 'none'
 end
+error("need to insert glboropt")
 
 
 if isempty(pthpy)
@@ -15,7 +16,7 @@ if isempty(pthpy)
     end
 end
 if isempty(optcm)
-    fprintf("user did not pass options as argument, using all defaults")
+    fprintf("user did not pass in options as argument, using all defaults")
     tmp = odf('roi.cm', fill=1, unpack=1);
     optcm = tmp.cm;
 end

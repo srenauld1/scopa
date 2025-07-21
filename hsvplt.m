@@ -13,7 +13,7 @@ arguments
 end
 
 if strcmp(plt.fg, 'allrois') && isempty(roiwt)
-    error("for fg 'allrois' you must also pass roiwt")
+    error("for fg 'allrois' you must also pass in roiwt")
 end
 
 if isempty(pthgif)

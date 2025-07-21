@@ -24,7 +24,7 @@ if iscell(smlensec)
     smlensec = cell2mat(smlensec);
 end
 
-id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
+id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass in this input if we don't have to
 
 pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
 

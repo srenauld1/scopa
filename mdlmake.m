@@ -23,7 +23,7 @@ arguments
     indv = [] %independent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
     depv = [] %dependent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
     pthstack = [] %path to stack
-    opt2.imrate = [] %imaging rate
+    opt2.srate = [] %imaging rate
     opt2.epochts = []
     opt2.doplt = []
     opt2.ldval = 0 %load saved model if it exists
@@ -31,7 +31,7 @@ arguments
     opt2.histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
 opt2 = glboropt(opt2);
-imrate = opt2.imrate;
+srate = opt2.srate;
 epochts = opt2.epochts;
 doplt = opt2.doplt;
 ldval = opt2.ldval;
@@ -40,8 +40,8 @@ histinc = opt2.histinc;
 
 [opt, pthstack, doplt] = fset('mdl', opt, pthstack, doplt);
 
-if isempty(imrate)
-    error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
+if isempty(srate)
+    error("must pass in srate or set glb('srate'), or set name-value argument srate")
 end
 if isempty(epochts)
     error("must pass in epochts or set glb('epochts')")
@@ -75,7 +75,7 @@ while true
         last = 1;
     end
 
-    mdl = mdlmake2(indv, depv, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ldval, histinc);
+    mdl = mdlmake2(indv, depv, opt, varid, pthmdl, srate, epochts, doplt, numsyn, ldval, histinc);
 
     if last
         break
@@ -87,7 +87,7 @@ end
 
 
 
-function mdl = mdlmake2(indv, depv, opt, varid, pthmdl, imrate, epochts, doplt, numsyn, ldval, histinc)
+function mdl = mdlmake2(indv, depv, opt, varid, pthmdl, srate, epochts, doplt, numsyn, ldval, histinc)
 
 
 pthpre = erase(pthmdl, '.mat');
@@ -133,11 +133,11 @@ catch ME
 
     %% prepare indv and depv
 
-    mdl = mdl_varpr(mdl, indv, depv, opt, imrate, pthpre, epochts);
+    mdl = mdl_varpr(mdl, indv, depv, opt, srate, pthpre, epochts);
 
     %% set up model params and optimization options
 
-    mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, mdl.num_samp_data_train, opt, imrate, mdl.st, pthpre);
+    mdl.op = mdl_optimpr(mdl.num_samp_mdl, mdl.num_dim_indv, mdl.num_dim_indvp, mdl.num_samp_data_train, opt, srate, mdl.st, pthpre);
 
     %% fit model to requested subset of indv/depv
 
