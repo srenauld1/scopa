@@ -59,6 +59,7 @@ else
     dotsget = 0;
 end
 
+clear tsget %clear persistent variables within tsget (just in case)
 its = 0;
 while true
     its = its+1;

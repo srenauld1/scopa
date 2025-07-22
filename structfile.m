@@ -94,8 +94,8 @@ nmprefix_withoutgit = 'z'; % prefix used when assigning default name to struct i
 if isstruct(s) && isempty(fieldnames(s))
     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
 end
-if isempty(s) || getonly
-    warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
+if isempty(s)
+    warning("NOTE: setting usegit to false because s is empty (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
     usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
 end
 if dupe && update
@@ -362,11 +362,11 @@ if isempty(sfilenew)
 
 else
 
-    fprintf("writing input struct to file " + pth + newline + newline)
-
     if getonly
         error("should not be here if getonly is true")
     end
+    
+    fprintf("writing input struct to file " + pth + newline + newline)
 
     if doaddon
         sfile.(nmout2) = sfilenew;

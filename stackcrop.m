@@ -8,6 +8,7 @@ arguments (Input)
     rgname = [] %short name for region (rg, the stack after cropping)
     opt.scopausername = []
     opt.rgnamedf = []
+    opt.usegit = []
 end
 
 arguments (Output)
@@ -18,6 +19,7 @@ end
 opt = glboropt(opt);
 scopausername = opt.scopausername;
 rgnamedf = opt.rgnamedf;
+usegit = opt.usegit;
 
 if isempty(rgnamedf)
     rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
@@ -44,7 +46,7 @@ id = idmake(pthstack);
 rgid = [id.recid '_' rgname];
 
 rg = [];
-[~, ~, rgall] = structfile(pthrg, s=[], nm=[], usegit=1);
+[~, ~, rgall] = structfile(pthrg, s=[], nm=[], usegit=usegit);
 if ~isempty(rgall)
     fn = fieldmatch(rgall, {'id', rgid}, lev=1, multi=0);
     if ~isempty(fn)
@@ -76,7 +78,7 @@ if ~isempty(stack) %if input stack is empty, user is just checking if rg exists 
 
         end
 
-        rg = structfile(pthrg, s=rg, nm=[], usegit=1);
+        rg = structfile(pthrg, s=rg, nm=[], usegit=usegit);
 
     end
 

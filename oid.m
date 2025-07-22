@@ -23,7 +23,9 @@ delim = '__';
 if isstring(ided_vbin)
     ided_vbin = convertStringsToChars(ided_vbin);
 end
-
+if isempty(usegit)
+    error("must set name-value argument usegit or glb('usegit')")
+end
 if isempty(vbin)
     vbin = ided_vbin;
 end
@@ -32,7 +34,6 @@ if ~iscell(vbin)
 end
 if getonly
     warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
-    usegit = 0; %just to be clear, although this is not necessary because usegit only has effect if getonly is false
 end
 
 pthscopa = getpathscopa();

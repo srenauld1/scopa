@@ -12,6 +12,7 @@ arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.scopausername = []
+    opt.usegit = []
     opt.pthparent = []
     opt.ided_vbin = []
 end
@@ -25,6 +26,7 @@ end
 opt = glboropt(opt);
 dm = opt.dm;
 scopausername = opt.scopausername;
+usegit = opt.usegit;
 pthparent = opt.pthparent;
 ided_vbin = opt.ided_vbin;
 
@@ -60,7 +62,7 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})
-            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopausername, pthscopa, ided_vbin);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopausername, pthscopa, ided_vbin, usegit);
         end
     end
 
@@ -139,7 +141,7 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
                 end
             end
 
-            [~, varid] = structfile(pthvar, s=datcombo, usegit=1, dupe=0, dosort=1);
+            [~, varid] = structfile(pthvar, s=datcombo, usegit=usegit, dupe=0, dosort=1);
             if size(iv,2)==1
                 pthc = datcombo.pth;
             else
@@ -172,7 +174,7 @@ end
 
 end
 
-function [tsout, dat] = tsget2(tg, dm, pthparent, scopausername, pthscopa, ided_vbin)
+function [tsout, dat] = tsget2(tg, dm, pthparent, scopausername, pthscopa, ided_vbin, usegit)
 
 if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
     tg = tg.tg; %since the input to this function is also named tg
@@ -185,7 +187,7 @@ tsout = cell(numtg,1);
 dattmp = cell(numtg,1);
 group = cell(numtg,1);
 for m = 1:numtg %loop over tg elements
-    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopausername, pthscopa, ided_vbin);
+    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopausername, pthscopa, ided_vbin, usegit);
 end
 
 
@@ -249,7 +251,7 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa, ided_vbin)
+function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa, ided_vbin, usegit)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -394,7 +396,7 @@ end
 if isfield(tg, 'var')
     if isempty(cell2mat(varid))
         pthvarpat = [pthscopa 'opt_var_' scopausername '_.txt'];
-        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=1, dupe=0, dosort=1);
+        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=usegit, dupe=0, dosort=1);
     else
         error("var substruct and varid cannot both exist in tg")
     end

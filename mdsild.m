@@ -1,29 +1,14 @@
-function md = mdsild(pthstack, pthpy)
+function md = mdsild(pthstack, opt)
 
 arguments
-    pthstack = []
-    pthpy = []
+    pthstack
+    opt.pthpy = []
 end
-
-pthstack_glb = glb('pthstack');
-if isempty(pthstack)
-    if isempty(pthstack_glb)
-        error("you must pass in pthstack or set glb('pthstack')")
-    else
-        pthstack = pthstack_glb;
-    end
-else
-    if ~isempty(pthstack_glb)
-        if ~isequal(pthstack, pthstack_glb)
-            error("you have set both name-value argument pthstack and glb('pthstack_glb'), but they are not equal")
-        end
-    end
-end
-
+opt = glboropt(opt);
+pthpy = opt.pthpy;
 
 id = idmake(pthstack); %just in case id info gets used below
 pthmd = [id.pthrec '_mdsi_.txt'];
-
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
@@ -44,21 +29,6 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
         mdsisv(pthraw)
     
     catch
-
-        pthpy_glb = glb('pthpy');
-        if isempty(pthpy)
-            if isempty(pthpy_glb)
-                error("metadata file doesn't exist, and parsing with tifreadfast failed, and you have not set glb('pthpy'), and you didn't pass in argument pthpy, so you cannot try mdsisv.py" + newline)
-            else
-                pthpy = pthpy_glb;
-            end
-        else
-            if ~isempty(pthpy_glb)
-                if ~isequal(pthpy, pthpy_glb)
-                    error("you have set both name-value argument pthpy and glb('pthpy_glb'), but they are not equal")
-                end
-            end
-        end
 
         pthscopa = getpathscopa();
 
