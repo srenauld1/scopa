@@ -1,0 +1,14 @@
+{
+  "joom": {
+    "me": 2
+  },
+  "boom": {
+    "me": 2
+  },
+  "md": {
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z",
+    "autonm": 0,
+    "maketime": "2025072212291150"
+  }
+}
