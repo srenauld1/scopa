@@ -2,6 +2,8 @@
 
 %{
 
+for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
+
 glb is required in only a couple places within function tsget
 strucfile gets called by: oid, tsget, stackcrop, and fset; can read and/or
 write in all cases except fset (fset just reads); uses scopagit to ensure integration across filesystems 

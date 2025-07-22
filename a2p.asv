@@ -7,14 +7,13 @@ arguments
     specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
 end
 
-[~, ~, fuk] = structfile('/Users/wienecke/scopa/opt_rg_cw_.txt', s=[], nm=[], usegit=0, dosort=0);
-tmp = rdir('/Users/wienecke/stacks/**/*mm_.mat');
-for k = 1:numel(tmp)
-    load(tmp(k).name)
-    inl = fieldmatch(fuk, {'id', rg.id}, lev=1, multi=0);
-    rfuk.(inl);
-
+sz = size(stack);
+stack = reshape(stack, sz(1), sz(2), []);
+for k = 1:size(stack,3)
+    stack(:,:,k) = flip(stack(:,:,k),1);
+    stack(:,:,k) = flip(stack(:,:,k),2);
 end
+stack = reshape(stack, sz);
 
 %%
 
@@ -40,7 +39,7 @@ for k = 1:numel(oa) % loop over recordings
     %% metadata
 
     md = mdsild(pth.stack);
-    glb(1, md=md, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
+    glb(1, md=md, srate=md.volrate, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
 
     %% daq
 
@@ -193,10 +192,10 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=660:.01:760, ... 50:.01:200, ...
-        dozscore=1, ...
+        tsub=1050:.2:1100, ... 50:.01:200, ...
+        dozscore=0, ...
         drawrot=90, ...
-        sliceeb=[6:11])
+        sliceeb=[13])
 
 
     %%
