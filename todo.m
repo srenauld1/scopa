@@ -1,5 +1,6 @@
 function todo()
 
+disp("need to catch duplicate fieldnames in structfile, in case edited file directly, jsonencode will insewrt underscore and we dopn't want that")
 disp("consider what to do when glb and name value are empty, invoke default or sometimes error?")
 disp("roi.dat channels are roi.dat(chan) but they contain mm which is mm(chan) so you might have roi.dat(chan2).mm(chan1) right???")
 disp("run pl.sh multiple times at once")

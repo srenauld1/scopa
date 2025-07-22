@@ -302,9 +302,14 @@ else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
     fprintf("the following file does not exist: " + pth + newline + newline)
 
     sfile = struct;
-    nmprefix_withgit_infile = nmprefix_withgit;
-    nmprefix_withoutgit_infile = nmprefix_withoutgit;
     autonm_infile = autonm;
+    if autonm
+        nmprefix_withgit_infile = nmprefix_withgit;
+        nmprefix_withoutgit_infile = nmprefix_withoutgit;
+    else
+        nmprefix_withgit_infile = '';
+        nmprefix_withoutgit_infile = '';
+    end
     maketime_infile = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
     if getonly
@@ -339,6 +344,12 @@ else
         souts.(nmout) = sout;
     end
 end
+
+% fn = fieldnames(souts);
+% for k = 1:numel(fn)
+%     rm = cellfun(@(x) isequal(x, nmprefix_withgit), prefix_derived);
+% 
+% end
 
 %%%%% SET GLOBALS %%%%%
 
@@ -413,6 +424,8 @@ if isempty(nm) && isempty(s)
     fprintf("s and nm are empty, so returning everything in file " + pth + newline + newline)
 end
 
+autonm = 0;
+nmnums = [];
 if autonm_infile==1
     if isempty(nm) && ~isempty(s)
         autonm = 1;
@@ -450,8 +463,6 @@ if autonm_infile==1
             error("all vars in file must follow default naming pattern since autonm=1")
         end
     else
-        autonm = 0;
-        nmnums = [];
         if ~isempty(s)
             if ~any(strcmp(nm, nm_infile))
                 error("you input nonempty s and nm, but autonm=1 in file and nm doens't match any struct names in file " + pth + newline + "so for this file you can only make s and nm nonempty for struct s that is already in file (to confirm it exists in file)" + newline + "or for struct s that is not in file but name nm that is in file (to update struct contents for name nm, in which case name-value argument 'update' must be true)" + newline + "if you wish to add struct s with a name that is not in file, you must must make nm empty, and if s is already in file, you must allow writing of duplicate structs with dupe=1")
