@@ -18,7 +18,7 @@ def stackchan(stack, md, pthmd, chanrm, chan_primary):
 
         stack = stack.reshape(tzcyx)
 
-        if isinstance(md['channel_save'], list) and len(md['channel_save'])==2: #if two channels were saved to the raw scanimage output
+        if isinstance(md['channel_save'], list) and len(md['channel_save'])==2: #if two channels were saved to the original scanimage output
 
             if isinstance(md['channel_active'], list) and len(md['channel_active'])==2:
                 

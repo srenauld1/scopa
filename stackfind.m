@@ -4,7 +4,7 @@ function pth_all = stackfind(opt)
 
 arguments
     opt.pth = [] %full path pattern (can have wildcards)
-    opt.suffixvalid = {'raw', 'or', 'od', 'ord', 'obr', 'obrd', 'obrds'};
+    opt.suffixvalid = {'o', 'or', 'od', 'ord', 'obr', 'obrd', 'obrds'};
     opt.pthsib = []  %full path to a file, returned files will include all matching files in same folder, along with pthsib
     opt.pthparent_local = []
     opt.pthparent_o2 = []
@@ -218,7 +218,7 @@ pth_all_mat = pth_all_mat(contains({pth_all_mat.name}, valid_mat_fns)); %in case
 pth_all_mat = pth_all_mat(~cellfun(@isempty, regexp({pth_all_mat.name}, regexptranslate('wildcard', substr))));
 
 %%FLYG RAW PATTERN, TIF AND MAT
-if strcmp(suffix, 'raw') || strcmp(suffix, '*')
+if strcmp(suffix, 'o') || strcmp(suffix, '*')
     if strcmp(trial, '*')
         fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_*_*.tif']; %double asterisk is 0 or more directories
     else
@@ -280,7 +280,7 @@ for k = 1:numel(pth_all)
     tmp{k} = [id.recdate '_' id.fly '_' id.trial '_' id.suffix];
 end
 if numel(tmp)~=numel(unique(tmp))
-    fprintf([sprintf('there are at least two found files with the same extension and same specifiers: date, fly, trial, and suffix (note suffix is "raw" for raw stack, whether named with flyg or scopa format); be sure duplicate specifiers belong to different recordings (e.g. in different locations, which can be distinguished with specifier "substr"); here are all found stacks: '), newline, sprintf('%s \n', pth_all{:})])
+    fprintf([sprintf('there are at least two found files with the same extension and same specifiers: date, fly, trial, and suffix (note suffix is "o" for original stack, whether named with flyg or scopa format); be sure duplicate specifiers belong to different recordings (e.g. in different locations, which can be distinguished with specifier "substr"); here are all found stacks: '), newline, sprintf('%s \n', pth_all{:})])
 end
 
 end

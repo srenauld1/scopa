@@ -37,7 +37,7 @@ if isempty(otmp.spec.pth) %if you're running a2p without input arguments (ie if 
     otmp.spec.recdate = {'20250716'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.fly = {'3'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'1'}; %cell ara2ray of char (or scalar char), can use wildcards
-    otmp.spec.suffix = {'ord'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'raw' for raw tif output by scanimage/flyg, which does not necessarily have filename suffix 'raw'); valid suffixes are defined in suffixvalid
+    otmp.spec.suffix = {'ord'}; %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'o' for original tif output by scanimage/flyg, which does not necessarily have filename suffix 'o'); valid suffixes are defined in suffixvalid
     otmp.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 end

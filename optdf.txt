@@ -378,7 +378,7 @@
     "substr": "",
     "suffix": "",
     "suffixvalid": [
-      "raw",
+      "o",
       "or",
       "od",
       "ord",

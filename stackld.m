@@ -27,7 +27,7 @@ end
 
 [opt, pthstack, doplt] = fset('sld', opt, pthstack, doplt);
 
-fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in raw scanimage stack)
+fbrm = opt.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in original scanimage stack)
 trm = opt.trm; %num frames to crop from [start, end]; [] to skip
 iy = opt.iy; %y indices to keep and save to mat
 ix = opt.ix; %x indices to keep and save to mat
@@ -212,7 +212,7 @@ if doconvert
         end
         if isempty(iz)
             if rawstack && fbrm
-                iz = 1:md.numslice; %numslice is different from sz(4) for raw; if you're removing flyback, use numslice; if you're not, use sz(4)
+                iz = 1:md.numslice; %numslice is different from sz(4) for original; if you're removing flyback, use numslice; if you're not, use sz(4)
             else
                 iz = 1:sz(4);
             end

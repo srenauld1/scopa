@@ -102,7 +102,7 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
     if makeplots:
         #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack))
-        plot_gif(stack, pth_tif_read[:-4] + 'raw.gif', indsz = slice(4,5,1), indst = slice(0, 100, 1))  #view stack before registration, can pass in xyzt indices, otherwise will do all indices for each 
+        plot_gif(stack, pth_tif_read[:-4] + 'o.gif', indsz = slice(4,5,1), indst = slice(0, 100, 1))  #view stack before registration, can pass in xyzt indices, otherwise will do all indices for each 
         if two_channel_reg:
             #im_montage(stack_secondary[10,:,:,:], vmin=mnmv, vmax=np.max(stack)) #view montage to check registration
             plot_gif(stack_secondary, pth_tif_read[:-4] + chanstr_secondary + '.gif', indsz = slice(3,4,1), indst = slice(0, 100, 1))  #view stack before registration, can pass in xyzt indices, otherwise will do all indices for each 
@@ -198,7 +198,7 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
 
         os.remove(pth_tif_write_tmp)   
-        if register_presmoothed: #apply shifts learned from smoothed movie to the raw movie (if you don't want smoothed movie ultimately)
+        if register_presmoothed: #apply shifts learned from smoothed movie to the original movie (if you don't want smoothed movie ultimately)
             tmp = mc.apply_shifts_movie(pth_tif_write_presmothed_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass in nd array to save_memmap below
             input_for_save_memmap_primary = [tmp] #update name so presmoothed gets saved but not presmoothed 
         else:

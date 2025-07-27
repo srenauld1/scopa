@@ -23,7 +23,7 @@ for k = 1:numel(pthstacks)
 
     if contains(fnin, 'trial_') && contains(fnin, '-') %if it's a flyg-pattern raw file, trialnum and suffix need to be read differently
         trial = num2str(str2double(spl{find(strcmp(spl, 'trial'))+1}));
-        suffix = 'raw';
+        suffix = 'o';
     else
         trial = spl{3};
         if numel(spl)>3

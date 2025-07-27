@@ -1,6 +1,8 @@
 
 % see docs_a2p
 
+fixdnraw 
+
 function a2p(specin)
 
 arguments

@@ -124,7 +124,7 @@ do_copyfiles occurs inside pl.py for two reasons:
 
 ############################## INPUT ######################################
 
-input to whole pipeline (ie input to register.py) is raw tif output by scan image, saved with flyg formatting, or scopa formatting
+input to whole pipeline (ie input to register.py) is original tif output by scan image, saved with flyg formatting, or scopa formatting
 
 this is flyg formatting
         20230627-3_D05_syt7f_018_syt7f_194418_trial_001_00001.tif
@@ -149,10 +149,10 @@ and for example, the following is valid input file on O2 (if you're not using do
 ############################## INTERACTIVE VS BATCH MODE ######################################
 
 for running the pipeline in interactive mode . . . 
-        entry point is pl.py for 'pre' pipeline (input raw imaging tif)
+        entry point is pl.py for 'pre' pipeline (input original imaging tif)
                 you can run on your local machine (e.g. in vscode), or on O2Portal (e.g., in vscode)
                 adjust input params in file oset.py
-        entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
+        entry point is a2p.m for 'post' pipeline (input original imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
         if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 
                 install, you can still step through the code during debugging in vscode if you add this line to file 
@@ -225,7 +225,7 @@ there are two main sub-pipelines:
 
 'pre': 
 
-in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS code on O2 portal), or pl.sh in batch mode (run ./pl.sh on O2 command line . . . pl.sh calls pl.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
+in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS code on O2 portal), or pl.sh in batch mode (run ./pl.sh on O2 command line . . . pl.sh calls pl.py), 'pre' preprocesses imaging data, takes original imaging data as only input, has the following modules:
                 --registration (caiman Normcorre), with line-by-line background subtraction and temporal 
                         smoothing submodules to deal with noisy recordings, prior to registration 
                 --denoising (deepcadrt), with "best model" selection
@@ -233,8 +233,8 @@ in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS co
                 --source extraction (caiman cnmf)
 'post': 
 
-in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data and/or on output of 'pre', and also optional stimulus and behavior data, has the following modules:
-                --plotting output from 'pre' pipeline as gif (compare raw, registered, denoised in one figure)
+in folder post, mostly matlab, entrypoint is a2p.m, operates on original imaging data and/or on output of 'pre', and also optional stimulus and behavior data, has the following modules:
+                --plotting output from 'pre' pipeline as gif (compare original, registered, denoised in one figure)
                 --basic statistical metrics for output from 'pre' pipeline 
                 --morphological roi extraction (manual drawing or automated, or an interaction)
                 --caiman functioal roi loading and selection, and optional clustering according to morphological rois 
@@ -264,7 +264,7 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 --input to register (and, thus, whole pipeline) are the tif files output by ScanImage (precision is int16, not uint16), dimensions are tzyx
 --input filename must be the following format:
 
- metadata is read from these raw tif files in mdsisv.py
+ metadata is read from these original tif files in mdsisv.py
 https://github.com/flatironinstitute/CaImAn/blob/main
 
 

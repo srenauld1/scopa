@@ -58,7 +58,7 @@ def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage
         Path(pth_fldr_fnind).mkdir(parents=True, exist_ok=True)
 
     if do_autoallocate==1: 
-        if do_copyfiles==0: #do_autoallocate uses transfer partition to look into server and find size of raw scanimage tif, but doesn't copy anything 
+        if do_copyfiles==0: #do_autoallocate uses transfer partition to look into server and find size of original scanimage tif, but doesn't copy anything 
             pth_allrec = pth_storage
             pth_fldr_copydest_prefix = pth_compute
         else:
