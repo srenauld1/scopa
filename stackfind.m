@@ -4,7 +4,7 @@ function pth_all = stackfind(opt)
 
 arguments
     opt.pth = [] %full path pattern (can have wildcards)
-    opt.suffixvalid = {'raw', 'cmrg', 'raw_dcdn', 'cmrg_dcdn', 'bksb_cmrg', 'bksb_cmrg_dcdn', 'bksb_cmrg_dcdn_nosn'};
+    opt.suffixvalid = {'raw', 'or', 'od', 'ord', 'obr', 'obrd', 'obrds'};
     opt.pthsib = []  %full path to a file, returned files will include all matching files in same folder, along with pthsib
     opt.pthparent_local = []
     opt.pthparent_o2 = []
@@ -82,7 +82,7 @@ end
 if isempty(pth)
 
     if isempty(pthsib)
-        pthparent = pthparentfind(pthparent_local, pthparent_o2);
+        pthparent = pathparentfind(pthparent_local, pthparent_o2);
     else
         if isfile(pthsib)
             pthparent = fileparts(pthsib);

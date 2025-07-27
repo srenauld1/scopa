@@ -1,4 +1,4 @@
-function [stack, chantif] = stackld(opt, pthstack, doplt)
+function [stack, pthstackout, chantif] = stackld(opt, pthstack, doplt)
 
 %{
 
@@ -44,7 +44,7 @@ savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if y
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
-
+pthstackout = pthstack;
 md = [];
 sz = [];
 chantif = [];
@@ -289,6 +289,7 @@ if doconvert
         fprintf("saving stack as mat file, after permuting, and optional indexing" + newline)
         save(pthmat, 'stack', 'chantif_save', 'sz_save', 'opt_save', '-v7.3', '-mat')
         fprintf("stack saved as mat" + newline)
+        pthstackout = pthmat; %output pth mat if it was saved 
 
     else
 

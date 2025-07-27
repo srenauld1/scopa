@@ -52,7 +52,7 @@ if isstring(ided_vbin)
     ided_vbin = convertStringsToChars(ided_vbin);
 end
 
-pthscopa = getpathscopa();
+pthscopa = pathscopafind();
 pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
@@ -428,7 +428,7 @@ for w = 1:numel(varid)
             fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + vbin + "'; you may have created it and then deleted it; skipping this optid" + newline)
         else
             if numel(pthtmp)>1
-                error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (cmrg, dcdn, etc); need to make this fixible; for now just rename one" + newline)
+                error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one" + newline)
             end
             pth = pthtmp{1}; %there should only be one here
             fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)

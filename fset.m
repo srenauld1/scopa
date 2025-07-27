@@ -1,5 +1,6 @@
 function [opt, pthdat, doplt] = fset(vbin, opt, pthdat, doplt)
 
+% set some required arguments for high level functions in a2p 
 
 if isempty(opt)
     fprintf("user did not pass in options as argument, using all defaults for vbin '" + vbin + "'")
@@ -25,7 +26,7 @@ end
 if isfield(opt, 'optid') && ~isempty(opt.optid)
     optidtmp = opt.optid; %set it aside in case it's the only field, and you have to load opt (which will remove optid)
     if all(strcmp(fieldnames(opt), 'optid')) %if optid is the only option, create the corresponding options
-        pthscopa = getpathscopa();
+        pthscopa = pathscopafind();
         scopausername = glb('scopausername');
         if isempty(scopausername)
             scopausername = userdatfile('scopausername');

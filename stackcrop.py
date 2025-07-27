@@ -7,13 +7,13 @@ from im_montage import im_montage
 import matplotlib.pyplot as plt
 from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
-from pthmakepy import getpathscopa
+from pthmakepy import pathscopafind
 
 
 def stackcrop(stack, rgname, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
-    pth_scopa = getpathscopa()
+    pth_scopa = pathscopafind()
     with open('/Users/wienecke/scopa/userdat.txt', 'r') as file:
         userdat = json.loads(file.read())
     pthsv = pth_scopa + 'opt_rg_' + userdat['scopausername'] + '_.txt'

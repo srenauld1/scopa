@@ -9,7 +9,7 @@ from itertools import product
 import collections
 from pathlib import Path
 import ast
-from pthmakepy import getpathscopa
+from pthmakepy import pathscopafind
 
 
 def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
@@ -50,15 +50,15 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
-        fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
+        fn_suffix_scopa = '_o' #find files matching scopa output pattern (do_register scopa suffix is 'o', below is flyg suffix for do_register)
         if do_denoise and not dnraw or do_stitch and not dnraw or do_extract or do_crop_only or do_remove or do_a2p:
-            fn_suffix_scopa = '_cmrg' 
+            fn_suffix_scopa = '_or' 
             if use_background_subtracted:
-                fn_suffix_scopa = '_bksb' + fn_suffix_scopa
-            if use_denoised and (do_extract or do_crop_only or do_remove or do_a2p): #don't let this affect do_stitch since it must have dcdn if it's run
-                fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
+                fn_suffix_scopa = '_obr'
+            if use_denoised and (do_extract or do_crop_only or do_remove or do_a2p): #don't let this affect do_stitch since it must have 'd' if it's run
+                fn_suffix_scopa = fn_suffix_scopa + 'd'
             if use_scannoise_removed and (do_extract or do_crop_only or do_a2p):
-                fn_suffix_scopa = fn_suffix_scopa + '_nosn'
+                fn_suffix_scopa = fn_suffix_scopa + 's'
         if use_scannoise_removed and do_extract:
             fn_suffix_scopa = fn_suffix_scopa + '_.mat'  #this is the only time only a mat is available when a tif is required (besides carls_old_project)
         else:
@@ -194,7 +194,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             if pth_daq:
                 pth_daq = pth_daq[0]
 
-            pthscopa = getpathscopa()
+            pthscopa = pathscopafind()
             pth_opt_pattern = pthscopa + 'opt_*_*_*_.txt' # copy all opt files from server to O2 
             pth_opt = glob.glob(pth_opt_pattern)
                 

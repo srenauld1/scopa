@@ -17,17 +17,18 @@ oa = oset(specin); % set options; oa stands for "o all" (ie options for all reco
 for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
+
+    %% stack
+
+    for m = transpose(fieldnames(o.sld))
+        [stack, pthstack_mat] = stackld(o.sld.(m{1})); %load/process stack
+    end
+    o.id.pthstack = pthstack_mat; oa(k).id.pthstack = pthstack_mat; %update with .mat extension, in case it was tif going in to stackld
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals for this element of o
 
     %% paths
 
     pth = pthmake(o.id.pthstack);
-
-    %% stack
-
-    for m = transpose(fieldnames(o.sld))
-        stack = stackld(o.sld.(m{1})); %load/process stack
-    end
 
     %% metadata
 
@@ -165,6 +166,12 @@ for k = 1:numel(oa) % loop over recordings
         fig2gif(hfg, q)
     end
 
+
+    %% 
+
+
+    stackplt({stackgrrot_rs, stackebrot, stackglrot_rs}, dmplt='yx(t)', it=1:600)
+   
     %%
 
     ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, pth.pre, ...
@@ -233,7 +240,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %%
 
-    dodv = 1
+    dodv = 0;
 
     cmap = lines(8); %'lines' predefined colormap is the default for function 'plot'
     cmap = cat(1, cmap, [0 0 0]); %add black
@@ -257,9 +264,9 @@ for k = 1:numel(oa) % loop over recordings
     end
     ylim([hax.YLim(1)-hax.YLim(1)*0.05, hax.YLim(2)+hax.YLim(2)*0.05]);
     yyaxis right;
-    bff = rescale(daq.(idaq).bfv, -pi, pi);
+    bfv_rs = rescale(daq.(idaq).bfv, -pi, pi);
     hpl21 = plot(t, daq.(idaq).vy, color=cmap(3,:), linestyle='-');
-    hpl23 = plot(t, bff, color=cmap(4,:), linestyle='-');
+    hpl23 = plot(t, bfv_rs, color=cmap(4,:), linestyle='-');
     hpl22 = plot(t, -daq.(idaq).by, color=cmap(end,:), linestyle='-');
     hpl21.Parent.YAxis(2).Color = [0 0 0];
     pthsv = ['~/stacks/gall.fig'];

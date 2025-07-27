@@ -50,7 +50,7 @@ o.sld.smlensec = smlensec;
 o.sld.zerostack = zerostack; 
 o = odf(o, 'sld');
 
-stack = stackld(pthstack, o.sld);
+stack = stackld(o.sld, pthstack);
 
 
 %% index into frameinds, if nonempty

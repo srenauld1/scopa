@@ -1,4 +1,4 @@
-function pthscopa = getpathscopa()
+function pthscopa = pathscopafind()
 
 stk = dbstack('-completenames');
 [pthenv, ~, ~] = fileparts(stk(1).file);

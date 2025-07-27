@@ -61,9 +61,9 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
     stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
 
     if bglenpx:
-        pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in filefind (make this more reliable)
+        pth_tif_write = pth_prefix + chanstr_primary + '_obr_.tif' #match pattern in filefind (make this more reliable)
     else:
-        pth_tif_write = pth_prefix + chanstr_primary + '_cmrg_.tif'#match pattern in filefind (make this more reliable)
+        pth_tif_write = pth_prefix + chanstr_primary + '_or_.tif' #match pattern in filefind (make this more reliable)
     pth_tif_write_allchan = pth_tif_write.replace(chanstr_primary, '') #this is same as pth_tif_write if two_channel_reg==0
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'

@@ -55,7 +55,7 @@ def stitchdn_carls_old_project(pth_denoising, fn_prefix, pth_tif_read, md, denoi
 
   #stitch together denoised slices (tyx) into original size (tzyx, with singleton z)
 
-    pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif'
+    pth_tif_write = pth_tif_read[:-4] + 'd_.tif'
     
     if os.path.isfile(pth_tif_write):
     

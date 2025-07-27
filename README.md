@@ -272,7 +272,7 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 
 --denoise.py, called from pipeline init when do_denoise==1
 --deepcad denoising requires a gpu; you can run denoising jobs on O2 to use O2 GPUs
---the denoising requires input tif stack; should be run on motion corrected stack (suffix cmrg_.tif)
+--the denoising requires input tif stack; should be run on motion corrected stack (suffix or_.tif)
 --denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
 --see additional documentation in denoise.py
 https://github.com/cabooster/DeepCAD-RT
@@ -282,7 +282,7 @@ https://github.com/cabooster/DeepCAD-RT
 
 --extract.py, called from pipeline init when do_extract==1
 https://github.com/flatironinstitute/CaImAn/blob/main
---extraction requires either the motion correction output tif (suffix cmrg_.tif), or the denoising output tif (suffix cmrg_dcdn_.tif), depending on whether use_denoised is true of false
+--extraction requires either the motion correction output tif (suffix or_.tif), or the denoising output tif (suffix rd_.tif), depending on whether use_denoised is true of false
  --extraction can operate on 4d xyzt data (planar_extraction = False), or 3d data xyt (planar_extraction = True), where extraction operates on each z plane of the 4d data independently
  --extraction requires either the motion correction output tif, or the denoising output tif (depending on whether use_denoised is true of false)
 --if rgname is not ['none'], interactive plots prompt user to define rgname by setting rg 
@@ -301,8 +301,8 @@ https://github.com/flatironinstitute/CaImAn/blob/main
  some output files of this pipeline are saved as uint16 (not int16), since the data is nonnegative after processing
  in all stages of the pipeline. int16 or uint16 data is converted to float32 when read in, then operated on
 
- register outputs registered tif, suffix cmrg_.tif (if background subtraction is used, suffix bksb_cmrg_.tif)
- denoise outputs denoised tif, suffix cmrg_dcdn_.tif (if background subtraction is used, suffix bksb_cmrg_dcdn_.tif)
+ register outputs registered tif, suffix or_.tif (if background subtraction is used, suffix br_.tif)
+ denoise outputs denoised tif, suffix rd_.tif (if background subtraction is used, suffix obrd_.tif)
  extract outputs mat files, suffix rois_.mat (different mat file for each extraction param set)
 
 ############################## CROPPING SESSION ######################################
@@ -348,7 +348,7 @@ entrypoint is a2p.m
 
 #note scannoiserm should ideally only occur prior to
 #caiman roi extraction, but this pipeline allows the user to run scannoiserm afterwards 
-#(need to fix this so the user has the option to use nosn suffix stack for roi extraction)
+#(need to fix this so the user has the option to use s suffix stack for roi extraction)
 
 #rval documentation The algorithm also measures the reliability of the spatial mask by comparing the filters in A
 #with the average of the movies over samples where exceptional events happen, after  removing (if possible)

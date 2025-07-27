@@ -2,6 +2,16 @@
 
 %{
 
+
+%{
+suffix:
+    'o': original
+    'm': motion corrected
+    'd': denoised
+    'b': background subtracted
+    's': scan noise removed 
+%}
+
 for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
 
 glb is required in only a couple places within function tsget

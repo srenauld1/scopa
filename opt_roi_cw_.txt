@@ -296,7 +296,7 @@
     },
     "ma": {},
     "mm": {
-      "maskname": "rd",
+      "maskname": "ord",
       "methodmm": "all"
     },
     "nrm": {

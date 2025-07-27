@@ -37,7 +37,7 @@ else
     % delete all options files; run this to restart optid/varid numbering
 
     inf = "option";
-    pthscopa = getpathscopa;
+    pthscopa = pathscopafind;
     scopausername = userdatfile('scopausername');
     if isempty(scopausername)
         error("you have not set glb('scopausername')")

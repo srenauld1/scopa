@@ -30,7 +30,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
     
     catch
 
-        pthscopa = getpathscopa();
+        pthscopa = pathscopafind();
 
         try %run python directly from matlab (ie not using system command to control a shell)
             petmp = pyenv;

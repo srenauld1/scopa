@@ -12,7 +12,7 @@ def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage
 
     print("sys.path[0] returns: \n" + sys.path[0])
 
-    pth_scopa = getpathscopa()
+    pth_scopa = pathscopafind()
 
     if scopatmpdir:
         pth_scopatmpdir = scopatmpdir
@@ -86,7 +86,7 @@ def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage
 
 
 
-def getpathscopa():
+def pathscopafind():
     
     # Get the frame of the current function
     frame = inspect.currentframe()

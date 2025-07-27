@@ -8,7 +8,7 @@ arguments
 end
 files = opt.files;
 
-pthscopa = getpathscopa();
+pthscopa = pathscopafind();
 
 files = convertStringsToChars(files);
 if ~iscell(files)

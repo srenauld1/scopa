@@ -38,7 +38,7 @@ if isempty(stack) && ~isTilde(1)
 end
 
 
-pthscopa = getpathscopa();
+pthscopa = pathscopafind();
 
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 

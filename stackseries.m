@@ -151,7 +151,7 @@ cnt = 0;
 chantif = cell(numel(pthstackall),1);
 for spi = 1:numel(pthstackall)
 
-    [stack, chantif{spi}] = stackld(pthstackall{spi}, optsld);
+    [stack, ~, chantif{spi}] = stackld(pthstackall{spi}, optsld);
 
     glb(1, stackmnt=stacktype(mean(stack, 4), class(stack))); %set mean t stack as global since it's used repeatedly, and can be a little slow to compute
 

@@ -28,7 +28,7 @@ else
     end
 end
 
-pthscopa = getpathscopa();
+pthscopa = pathscopafind();
 pthuserdat = [pthscopa 'userdat.txt'];
 
 if strcmpi(permission, 'read')

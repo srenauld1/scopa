@@ -231,7 +231,7 @@
     "pltvis": 1,
     "pthpy": "",
     "scopausername": "youforgottossetuser",
-    "timestr": "2025072215321581",
+    "timestr": "2025072419574810",
     "usegit": 0
   },
   "nestvalid": [
@@ -379,24 +379,24 @@
     "suffix": "",
     "suffixvalid": [
       "raw",
-      "cmrg",
-      "raw_dcdn",
-      "cmrg_dcdn",
-      "bksb_cmrg",
-      "bksb_cmrg_dcdn",
-      "bksb_cmrg_dcdn_nosn"
+      "or",
+      "od",
+      "ord",
+      "obr",
+      "obrd",
+      "obrds"
     ],
     "trial": ""
   },
   "spr": {
     "suffixplt": [
-      "raw",
-      "cmrg",
-      "raw_dcdn",
-      "cmrg_dcdn",
-      "bksb_cmrg",
-      "bksb_cmrg_dcdn",
-      "bksb_cmrg_dcdn_nosn"
+      "o",
+      "or",
+      "od",
+      "ord",
+      "obr",
+      "obrd",
+      "obrds"
     ]
   },
   "tg": {
