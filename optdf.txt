@@ -377,7 +377,7 @@
     "recdate": "",
     "substr": "",
     "suffix": "",
-    "suffixvalid": [
+    "suffixchars": [
       "o",
       "or",
       "od",

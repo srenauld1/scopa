@@ -6,10 +6,10 @@
 %{
 suffix:
     'o': original
-    'm': motion corrected
+    'r': motion corrected
     'd': denoised
-    'b': background subtracted
-    's': scan noise removed 
+    'b': background-subtracted
+    's': scannoise-removed 
 %}
 
 for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin

@@ -11,7 +11,7 @@ classdef stackfindo
             arguments (Input)
                 obj
                 opt.pth = [] %full path pattern (can have wildcards)
-                opt.suffixvalid = {'o', 'or', 'od', 'ord', 'obr', 'obrd', 'obrds'};
+                opt.suffixchars = {'o', 'or', 'od', 'ord', 'obr', 'obrd', 'obrds'};
                 opt.pthsib = []  %full path to a file, returned files will include all matching files in same folder, along with pthsib
                 opt.pthparent_local = []
                 opt.pthparent_o2 = []
@@ -27,7 +27,7 @@ classdef stackfindo
             pthsib = opt.pthsib;
             pthparent_local = opt.pthparent_local;
             pthparent_o2 = opt.pthparent_o2;
-            suffixvalid = opt.suffixvalid;
+            suffixchars = opt.suffixchars;
             recdate = opt.recdate;
             fly = opt.fly;
             trial = opt.trial;
@@ -35,9 +35,9 @@ classdef stackfindo
             substr = opt.substr;
             match = opt.match;
 
-            suffixvalid = convertStringsToChars(suffixvalid);
-            if ~isempty(suffixvalid) && ~iscell(suffixvalid)
-                suffixvalid = {suffixvalid};
+            suffixchars = convertStringsToChars(suffixchars);
+            if ~isempty(suffixchars) && ~iscell(suffixchars)
+                suffixchars = {suffixchars};
             end
 
             if ~isempty(pth) && ~isempty(pthsib)
@@ -80,8 +80,8 @@ classdef stackfindo
             if isempty(substr)
                 substr = '*';
             end
-            if isempty(suffixvalid) || sum(strlength(suffixvalid))==0 %sum(strlength(suffixvalid))==0 will test for empty char or string
-                error("no variable set for suffixvalid, returned files may include more than you want if specifiers include wildcard, so you must set suffixvalid" + newline)
+            if isempty(suffixchars) || sum(strlength(suffixchars))==0 %sum(strlength(suffixchars))==0 will test for empty char or string
+                error("no variable set for suffixchars, returned files may include more than you want if specifiers include wildcard, so you must set suffixchars" + newline)
             end
 
 
@@ -109,7 +109,7 @@ classdef stackfindo
 
                 pth_prefix_all = [];
                 for j = 1:numel(fspc.recdate)
-                    pth_prefix_all_onespec = obj.stackfind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, fspc.substr{j}, pthparent, suffixvalid);
+                    pth_prefix_all_onespec = obj.stackfind_onespec(fspc.recdate{j}, fspc.fly{j}, fspc.trial{j}, fspc.suffix{j}, fspc.substr{j}, pthparent, suffixchars);
                     pth_prefix_all = cat(1, pth_prefix_all, vec(pth_prefix_all_onespec));
                 end
 
@@ -119,8 +119,8 @@ classdef stackfindo
                 for k = 1:numel(pth)
                     pthtmp = rdir(pth{k});
                     pthtmp = {pthtmp.name};
-                    pthtmptif = erase(pthtmp(contains(pthtmp, strcat(suffixvalid ,'_.tif'))), '.tif');
-                    pthtmpmat = erase(pthtmp(contains(pthtmp, strcat(suffixvalid ,'_.mat'))), '.mat');
+                    pthtmptif = erase(pthtmp(contains(pthtmp, strcat(suffixchars ,'_.tif'))), '.tif');
+                    pthtmpmat = erase(pthtmp(contains(pthtmp, strcat(suffixchars ,'_.mat'))), '.mat');
                     pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat]);
                 end
 
@@ -202,7 +202,7 @@ classdef stackfindo
         end
 
 
-        function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixvalid)
+        function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixchars)
 
 
             recdate = num2str(recdate); %just in case
@@ -212,12 +212,12 @@ classdef stackfindo
 
             %%SCOPA PATTERN, TIF AND MAT
             fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
-            valid_tif_fns = strcat(suffixvalid, '_.tif');
+            valid_tif_fns = strcat(suffixchars, '_.tif');
             pth_all_tif = rdir(fn_pattern_tif);
             pth_all_tif = pth_all_tif(contains({pth_all_tif.name}, valid_tif_fns)); %in case wildcard suffix returns unwanted files
             pth_all_tif = pth_all_tif(~cellfun(@isempty, regexp({pth_all_tif.name}, regexptranslate('wildcard', substr))));
 
-            valid_mat_fns = strcat(suffixvalid, '_.mat');
+            valid_mat_fns = strcat(suffixchars, '_.mat');
             fn_pattern_mat = [fn_pattern_tif(1:end-4) '.mat'];
             pth_all_mat = rdir(fn_pattern_mat);
             pth_all_mat = pth_all_mat(contains({pth_all_mat.name}, valid_mat_fns)); %in case wildcard suffix returns unwanted files
@@ -234,7 +234,7 @@ classdef stackfindo
                 pth_all_flyg_raw_tif = pth_all_flyg_raw_tif(~cellfun(@isempty, regexp({pth_all_flyg_raw_tif.name}, regexptranslate('wildcard', substr))));
 
                 fn_pattern_flyg_raw_mat = [fn_pattern_flyg_raw_tif(1:end-4) '.mat'];
-                pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by suffixvalid since flygraw pattern doesn't include suffix
+                pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by suffixchars since flygraw pattern doesn't include suffix
                 pth_all_flyg_raw_mat = pth_all_flyg_raw_mat(~cellfun(@isempty, regexp({pth_all_flyg_raw_mat.name}, regexptranslate('wildcard', substr))));
 
                 for k = flip(1:numel(pth_all_flyg_raw_mat)) %in case any files were created that are found by above pattern (since flyg has a variable number suffix after trial, before extension, above that gets wildcard, here files that have anything but 5 digits get removed); go backwards to remove;

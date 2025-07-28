@@ -343,9 +343,9 @@ if files
     % fprintf("RUNNING odf with files true, SEARCHING FOR FILES" + newline)
 
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
-        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixvalid=o.spec.suffixvalid, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, substr=o.spec.substr, match=o.spec.match); %find files matching spec
+        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixchars=o.spec.suffixchars, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, substr=o.spec.substr, match=o.spec.match); %find files matching spec
     else
-        rectmp = stackfind(pth=o.spec.pth, suffixvalid=o.spec.suffixvalid); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
+        rectmp = stackfind(pth=o.spec.pth, suffixchars=o.spec.suffixchars); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
         if isempty(rectmp)
             fprintf("NONE OF THE FULL PATH INPUT (OR WILDCARD PATTERNS) TO a2p EXIST" + newline)
         end
@@ -441,9 +441,9 @@ if fill
     % now set some globals, as the final step in creating options struct (we know it's final because filled=1 now)
 
     %%%% these globals should not be edited by the user in general, so they take values from d (output from odfsv) %%%%
-    if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('ided_vbin')) && isempty(glb('inert_vbin')) && isempty(glb('timestr')) && isempty(glb('suffixvalid')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
+    if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('ided_vbin')) && isempty(glb('inert_vbin')) && isempty(glb('timestr')) && isempty(glb('suffixchars')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
         xyscreen = pxscreenget;
-        glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, ided_vbin=d.mn.ided_vbin, inert_vbin=d.mn.inert_vbin, timestr=d.mn.timestr, suffixvalid=d.spec.suffixvalid, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
+        glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, ided_vbin=d.mn.ided_vbin, inert_vbin=d.mn.inert_vbin, timestr=d.mn.timestr, suffixchars=d.spec.suffixchars, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
     end
 
     %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%

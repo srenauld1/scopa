@@ -1,5 +1,7 @@
 function todo()
 
+disp("change all dos to char vector, with hyphen separating what has been done and what is requested, like or-d for do denoise after do register has been done - but what about stitch, or a2p?")
+disp("make dnraw use registered")
 disp("get rid of pth local and o2 by putting stacks inside scopa and gitignore it")
 disp("need to catch duplicate fieldnames in structfile, in case edited file directly, jsonencode will insewrt underscore and we dopn't want that")
 disp("consider what to do when glb and name value are empty, invoke default or sometimes error?")

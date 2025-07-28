@@ -33,12 +33,13 @@ d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, orga
 
 d.spec.pthparent_local = '/Users/wienecke/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-d.spec.suffixvalid = ["o", "or", "od", "ord", "obr", "obrd", "obrds"]; %all valid suffixes on files (all tifs, except for '*s', output by 'pre' part of scopa pipeline (pl.py, pl.sh); 'o' is original tif file output by scanimage (not scopa 'pre'), which will not actually have suffix 'o' (unless you're carl, who renames the flyg/scanimage original files with suffix 'o')
+d.spec.suffixchar_original = ["o"]; %stack suffix character for original/raw scanimage output files, also first character on processed stacks; for flyg users, except carl, original scanimage output files will not actually have suffix 'o' (they are named with flyg convention); carl renames the flyg/scanimage original files with suffix 'o'; used in stackfind.m to locate stacks  
+d.spec.suffixchars = ["r", "d", "b", "s"]; %all valid stack suffix characters output by scopa preprocessing pipeline (pl.py, pl.sh); r=registered, d=denoised, b=background-subtracted, s=scannoise-removed; can appear in any order, multiple times; suffix denotes preprocessing steps applied to stack; suffixchar_original (defined above) can only appear once, at the beginning of the suffix (e.g., ord means registered then denoised, o alone means original/unprocessed); used in stackfind.m to locate stacks    
 d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
 d.spec.recdate = ''; %cell array of char, can use wildcards
 d.spec.fly = ''; %cell array of char, can use wildcards
 d.spec.trial = ''; %cell array of char, can use wildcards
-d.spec.suffix = '';  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'o' for original tif output by scanimage/flyg, which does not necessarily have filename suffix 'o'); valid suffixes are defined in suffixvalid
+d.spec.suffix = '';  %cell array of char (or scalar char), can use wildcards, scopa 'pre' pipeline output filename suffix to use in this 'post' pipeline (or 'o' for original tif output by scanimage/flyg, which does not necessarily have filename suffix 'o'); valid suffixes are defined in suffixchars
 d.spec.substr = ''; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
 d.spec.match = 'each'; %'any' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 
@@ -101,7 +102,7 @@ d.daq.vrenm = [  %string array; each element is "newname: oldnames", where newna
 
 %% spr (stackseries: plot stacks from different stages of preprocessing)
 
-d.spr.suffixplt = [ d.spec.suffixvalid ]; %stack suffixes to plot together in a gif; default tries to plot all d.spec.suffixvalid; nonexistent or invalid suffixes are ignored; these stacks are also converted from tif to mat (along with d.spec.suffix, in case user doesn't list it here)
+d.spr.suffixplt = [ d.spec.suffixchars ]; %stack suffixes to plot together in a gif; default tries to plot all d.spec.suffixchars; nonexistent or invalid suffixes are ignored; these stacks are also converted from tif to mat (along with d.spec.suffix, in case user doesn't list it here)
 
 %% sld (stackld: load/process stack from tif / save to mat )
 
