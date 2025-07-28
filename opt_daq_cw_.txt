@@ -7,6 +7,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopeord": 3,
     "toballscale": [
@@ -46,20 +60,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -75,6 +75,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopeord": 2,
     "toballscale": [
@@ -114,20 +128,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -143,6 +143,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopeord": 2,
     "supprate": 60,
@@ -183,20 +197,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -212,6 +212,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.1,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -254,20 +268,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -283,6 +283,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopelensec_supp": 0.1,
     "slopeord": 2,
@@ -325,20 +339,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -354,6 +354,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopelensec_supp": 0.1,
     "slopeord": 2,
@@ -396,20 +410,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -425,6 +425,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -467,20 +481,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -496,6 +496,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.5185,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -538,20 +552,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -567,6 +567,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.41,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -609,20 +623,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -638,6 +638,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4456,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -680,20 +694,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -709,6 +709,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4456,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -752,20 +766,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -781,6 +781,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -824,20 +838,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -853,6 +853,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.445333,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -896,20 +910,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -925,6 +925,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4453338,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -968,20 +982,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -997,6 +997,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.2121,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -1040,20 +1054,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -1069,6 +1069,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4134,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -1112,20 +1126,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -1141,6 +1141,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.4,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -1177,20 +1191,6 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
-    ],
     "vtime": [
       "Time",
       "time",
@@ -1206,6 +1206,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
     "slopelensec": 0.49,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -1241,20 +1255,6 @@
       "ficTracHeading",
       "g4panels",
       "g4yaw"
-    ],
-    "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
     ],
     "vtime": [
       "Time",
@@ -1271,6 +1271,20 @@
       "smlenpx": 2,
       "smlensec": 1
     },
+    "renm": [
+      "Time, time, T, t = t",
+      "epoch = epochts",
+      "g4vel, g4velnom = vyvnom",
+      "g4panels, g4yaw = vy",
+      "g4panels_dv, g4yaw_dv = vyv",
+      "ficTracIntForward = bf",
+      "ficTracIntForward_dv = bfv",
+      "ficTracIntSide = bs",
+      "ficTracIntSide_dv = bsv",
+      "ficTracYaw, ficTracHeading = by",
+      "ficTracYaw_dv, ficTracHeading_dv = byv",
+      "ftcam = ftcam"
+    ],
     "slopelensec": 0.49,
     "slopelensec_supp": 0.4,
     "slopeord": 2,
@@ -1307,8 +1321,23 @@
       "g4panels",
       "g4yaw"
     ],
-    "vrenm": [
-      "Time, time, T, t = t",
+    "vtime": [
+      "Time",
+      "time",
+      "T",
+      "t"
+    ]
+  },
+  "a20": {
+    "balldia": 9,
+    "ftv": {
+      "numpkthr": 10,
+      "numpx": 10,
+      "smlenpx": 2,
+      "smlensec": 1
+    },
+    "renm": [
+      "Time, time, T = t",
       "epoch = epochts",
       "g4vel, g4velnom = vyvnom",
       "g4panels, g4yaw = vy",
@@ -1320,6 +1349,42 @@
       "ficTracYaw, ficTracHeading = by",
       "ficTracYaw_dv, ficTracHeading_dv = byv",
       "ftcam = ftcam"
+    ],
+    "slopelensec": 0.49,
+    "slopelensec_supp": 0.4,
+    "slopeord": 2,
+    "slopeord_supp": 2,
+    "supprate": [],
+    "tomm": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
+    ],
+    "vdegrees": "",
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0,
+    "voltminyaw": 0.52359877559829882,
+    "vradians": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
     ],
     "vtime": [
       "Time",
