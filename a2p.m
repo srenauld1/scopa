@@ -21,7 +21,7 @@ for k = 1:numel(oa) % loop over recordings
     %% stack
 
     for m = transpose(fieldnames(o.sld))
-        [stack, pthstack_mat] = stackld(o.sld.(m{1})); %load/process stack
+        [stack, pthstack_mat] = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack
     end
     o.id.pthstack = pthstack_mat; oa(k).id.pthstack = pthstack_mat; %update with .mat extension, in case it was tif going in to stackld
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals for this element of o

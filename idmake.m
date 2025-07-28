@@ -61,7 +61,6 @@ for k = 1:numel(pthstacks)
     id(k).trialnum = trialnum;
     id(k).recid = recid;
     id(k).stackid = stackid;
-    id(k).datefly_hyphen = datefly_hyphen; %for some flyg files
 
     id(k).pthstackdir = pthstackdir;
     id(k).pthstack = pthstacktmp;

@@ -14,7 +14,7 @@ fnroi = fullfile(expDir, 'roidefs.mat');
 blfrac = 0.05; %roi baseline
 
 fnregscopa = fullfile(expDir, '20241008_3_1_or_.mat');
-fndn = fullfile(expDir, '20241008_3_1_rd_.mat');
+fndn = fullfile(expDir, '20241008_3_1_ord_.mat');
 
 expID = cfn(1:10);
 trialNum = get_trialNum(fnraw);

@@ -104,18 +104,18 @@
       "g4yaw"
     ],
     "vrenm": [
-      "t: Time, time, T, t",
-      "epochts: epoch",
-      "vyvnom: g4vel, g4velnom",
-      "vy: g4panels, g4yaw",
-      "vyv: g4panels_dv, g4yaw_dv",
-      "bf: ficTracIntForward",
-      "bfv: ficTracIntForward_dv",
-      "bs: ficTracIntSide",
-      "bsv: ficTracIntSide_dv",
-      "by: ficTracYaw, ficTracHeading",
-      "byv: ficTracYaw_dv, ficTracHeading_dv",
-      "ftcam: ftcam"
+      "t = Time, time, T",
+      "epochts = epoch",
+      "vyvnom = g4vel, g4velnom",
+      "vy = g4panels, g4yaw",
+      "vyv = g4panels_dv, g4yaw_dv",
+      "bf = ficTracIntForward",
+      "bfv = ficTracIntForward_dv",
+      "bs = ficTracIntSide",
+      "bsv = ficTracIntSide_dv",
+      "by = ficTracYaw, ficTracHeading",
+      "byv = ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam = ftcam"
     ],
     "vtime": [
       "Time",
@@ -231,7 +231,7 @@
     "pltvis": 1,
     "pthpy": "",
     "scopausername": "youforgottossetuser",
-    "timestr": "2025072419574810",
+    "timestr": "2025072818543256",
     "usegit": 0
   },
   "nestvalid": [
@@ -377,26 +377,21 @@
     "recdate": "",
     "substr": "",
     "suffix": "",
+    "suffixchar_original": "o",
     "suffixchars": [
-      "o",
-      "or",
-      "od",
-      "ord",
-      "obr",
-      "obrd",
-      "obrds"
+      "r",
+      "d",
+      "b",
+      "s"
     ],
     "trial": ""
   },
   "spr": {
     "suffixplt": [
-      "o",
-      "or",
-      "od",
-      "ord",
-      "obr",
-      "obrd",
-      "obrds"
+      "r",
+      "d",
+      "b",
+      "s"
     ]
   },
   "tg": {

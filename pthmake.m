@@ -15,7 +15,7 @@ pth_recid = [pthstackdir id.recid '_'];
 
 
 pthmd = [pthstackdir id.recid '_mdsi_.txt'];
-pthmd_flyg_pat = [pthstackdir id.datefly_hyphen '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+pthmd_flyg_pat = [pthstackdir id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
 pthmd_flyg = rdir(pthmd_flyg_pat);
 if isempty(pthmd_flyg)
     pthmd_flyg = [];
@@ -23,7 +23,7 @@ else
     pthmd_flyg = pthmd_flyg.name;
 end
 
-pth_daq_pat = [pthstackdir id.datefly_hyphen '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+pth_daq_pat = [pthstackdir id.recdate '-' id.fly  '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
 pth_daq = rdir(pth_daq_pat);
 if isempty(pth_daq)
     pth_daq = [];

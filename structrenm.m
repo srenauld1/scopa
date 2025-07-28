@@ -1,0 +1,79 @@
+
+function s = structrenm(s, renm, opt)
+
+arguments
+    s %struct for renaming fields
+    renm %renaming pattern
+    opt.allfields = 0 %1 to error if not all fields of input s appear in renm oldnames
+    opt.allnew = 0 %1 to allnew all newnames to exist, even if no corresponding old names are found in s
+    opt.delim_oldnew = '=' %separating oldnames from newname
+    opt.delim_old = ',' %separating oldnames from each other
+end
+allfields = opt.allfields;
+allnew = opt.allnew;
+delim_oldnew = opt.delim_oldnew;
+delim_old = opt.delim_old;
+
+
+%%%% CHECK NAME FORMATTING AND ORGANIZE %%%%
+
+nmold = cell(1, numel(renm));
+nmnew = cell(1, numel(renm));
+for k = 1:numel(renm)
+    renmtmp = strsplit(renm{k}, delim_oldnew);
+    nmnew{k} = strsplit(renmtmp{1}, ','); %make sure no commas in new name
+    if ~isscalar(nmnew{k})
+        error("nmnew must not have commas")
+    end
+    nmnew{k} = strtrim(nmnew{k});
+    nmnew{k} = nmnew{k}{1};
+    if isscalar(renmtmp) || isempty(renmtmp{2})
+        nmold{k} = nmnew{k}; %include the new name
+    else
+        nmold{k} = strsplit(renmtmp{2}, delim_old);
+        nmold{k} = strtrim(nmold{k});
+        if ~ismember(nmnew{k}, nmold{k})
+            nmold{k}{end+1} = nmnew{k}; %include the new name
+        end
+    end
+end
+if numel(unique(cellflat(nmold)))~=numel(cellflat(nmold))
+    error("there are duplicate names in the union of renm oldnames and renm newnames")
+end
+if numel(unique(cellflat(nmnew)))~=numel(cellflat(nmnew))
+    error("there are duplicate names in renm newnames")
+end
+
+fnold = fieldnames(s);
+
+if allfields && any(~ismember(fnold, cellflat(nmold)))
+    error("name-value argument 'allfields' is true, but not all fields of input s appear in renm oldnames")
+end
+
+
+%%%% NOW RENAME %%%%
+
+for k = 1:numel(nmnew)
+    fnoldtmp = fnold(ismember(fnold, nmold{k}));
+    if isempty(fnoldtmp)
+        if allnew
+            s(m).(nmnew{k}) = [];
+        end
+    else
+        if isscalar(fnoldtmp)
+            fnoldtmp = fnoldtmp{1};
+        else
+            error("there are multiple oldname matches in struct s corresponding to newname " + nmnew{k})
+        end
+        if ~isequal(fnoldtmp, nmnew{k})
+            for m = 1:numel(s)
+                s(m).(nmnew{k}) = s(m).(fnoldtmp);
+            end
+            s = rmfield(s, fnoldtmp);
+        end
+    end
+end
+
+
+end
+

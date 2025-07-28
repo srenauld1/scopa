@@ -1,5 +1,6 @@
 function todo()
 
+disp("flip (rotate) all stacks for berg1, then make it an option in pl.sh")
 disp("change all dos to char vector, with hyphen separating what has been done and what is requested, like or-d for do denoise after do register has been done - but what about stitch, or a2p?")
 disp("make dnraw use registered")
 disp("get rid of pth local and o2 by putting stacks inside scopa and gitignore it")

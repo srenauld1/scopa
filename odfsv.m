@@ -86,19 +86,19 @@ d.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 d.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.voltminyaw = 1/12 * 2*pi; %yaw position assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
-d.daq.vrenm = [  %string array; each element is "newname: oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames
-    "t: Time, time, T, t";
-    "epochts: epoch";
-    "vyvnom: g4vel, g4velnom";
-    "vy: g4panels, g4yaw";
-    "vyv: g4panels_dv, g4yaw_dv";
-    "bf: ficTracIntForward";
-    "bfv: ficTracIntForward_dv";
-    "bs: ficTracIntSide";
-    "bsv: ficTracIntSide_dv";
-    "by: ficTracYaw, ficTracHeading";
-    "byv: ficTracYaw_dv, ficTracHeading_dv";
-    "ftcam: ftcam"]; 
+d.daq.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign (or do newname=newname) to search for newname in input; if struct has newname already, nothing changes
+    "t = Time, time, T";
+    "epochts = epoch";
+    "vyvnom = g4vel, g4velnom";
+    "vy = g4panels, g4yaw";
+    "vyv = g4panels_dv, g4yaw_dv";
+    "bf = ficTracIntForward";
+    "bfv = ficTracIntForward_dv";
+    "bs = ficTracIntSide";
+    "bsv = ficTracIntSide_dv";
+    "by = ficTracYaw, ficTracHeading";
+    "byv = ficTracYaw_dv, ficTracHeading_dv";
+    "ftcam = ftcam"]; 
 
 %% spr (stackseries: plot stacks from different stages of preprocessing)
 
@@ -467,8 +467,8 @@ d.fmf.crop_edges = 1;
 
 %% write options to file
 
-tmp = split(d.daq.vrenm, ':');
-if ~strcmp(tmp(:,1)', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
+tmp = split(d.daq.vrenm, '=');
+if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
     error("you cannot change new names for the daq in d.daq.vrenm if you're running a2p")
 end
 if ~isequal(d, structunflat(structflat(d)))

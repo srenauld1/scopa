@@ -33,8 +33,8 @@ d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, orga
 
 d.spec.pthparent_local = '/Users/wienecke/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
-d.spec.suffixchar_original = ["o"]; %stack suffix character for original/raw scanimage output files, also first character on processed stacks; for flyg users, except carl, original scanimage output files will not actually have suffix 'o' (they are named with flyg convention); carl renames the flyg/scanimage original files with suffix 'o'
-d.spec.suffixchars = ["r", "d", "b", "s"]; %all valid stack suffix characters output by scopa preprocessing pipeline (pl.py, pl.sh); r=registered, d=denoised, b=background-subtracted, s=scannoise-removed; can appear in any order, multiple times;  
+d.spec.suffixchar_original = ["o"]; %stack suffix character for original/raw scanimage output files, also first character on processed stacks; for flyg users, except carl, original scanimage output files will not actually have suffix 'o' (they are named with flyg convention); carl renames the flyg/scanimage original files with suffix 'o'; used in stackfind.m to locate stacks  
+d.spec.suffixchars = ["r", "d", "b", "s"]; %all valid stack suffix characters output by scopa preprocessing pipeline (pl.py, pl.sh); r=registered, d=denoised, b=background-subtracted, s=scannoise-removed; can appear in any order, multiple times; suffix denotes preprocessing steps applied to stack; suffixchar_original (defined above) can only appear once, at the beginning of the suffix (e.g., ord means registered then denoised, o alone means original/unprocessed); used in stackfind.m to locate stacks    
 d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
 d.spec.recdate = ''; %cell array of char, can use wildcards
 d.spec.fly = ''; %cell array of char, can use wildcards
@@ -86,19 +86,19 @@ d.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 d.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
 d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 d.daq.voltminyaw = 1/12 * 2*pi; %yaw position assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
-d.daq.vrenm = [  %string array; each element is "newname: oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames
-    "t: Time, time, T, t";
-    "epochts: epoch";
-    "vyvnom: g4vel, g4velnom";
-    "vy: g4panels, g4yaw";
-    "vyv: g4panels_dv, g4yaw_dv";
-    "bf: ficTracIntForward";
-    "bfv: ficTracIntForward_dv";
-    "bs: ficTracIntSide";
-    "bsv: ficTracIntSide_dv";
-    "by: ficTracYaw, ficTracHeading";
-    "byv: ficTracYaw_dv, ficTracHeading_dv";
-    "ftcam: ftcam"]; 
+d.daq.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign to only allow newname; if struct has newname already, nothing changes
+    "t = Time, time, T";
+    "epochts = epoch";
+    "vyvnom = g4vel, g4velnom";
+    "vy = g4panels, g4yaw";
+    "vyv = g4panels_dv, g4yaw_dv";
+    "bf = ficTracIntForward";
+    "bfv = ficTracIntForward_dv";
+    "bs = ficTracIntSide";
+    "bsv = ficTracIntSide_dv";
+    "by = ficTracYaw, ficTracHeading";
+    "byv = ficTracYaw_dv, ficTracHeading_dv";
+    "ftcam"]; 
 
 %% spr (stackseries: plot stacks from different stages of preprocessing)
 
@@ -467,8 +467,8 @@ d.fmf.crop_edges = 1;
 
 %% write options to file
 
-tmp = split(d.daq.vrenm, ':');
-if ~strcmp(tmp(:,1)', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
+tmp = split(d.daq.vrenm, '=');
+if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
     error("you cannot change new names for the daq in d.daq.vrenm if you're running a2p")
 end
 if ~isequal(d, structunflat(structflat(d)))

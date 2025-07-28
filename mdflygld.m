@@ -1,12 +1,19 @@
-function [md, expMetadata, trialMetadata, patternMetadata, fictracMetadata] = mdflygld(ids, pthmd_flyg, pthstackdir, md)
+function [expMetadata, trialMetadata, patternMetadata, fictracMetadata, md] = mdflygld(pthmd, pthstack)
 
-% optionally output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata
-% also add scopa md to consolidate metadata fields relevant to scopa pipeline
+% output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata, and also struct md with a few fields used in scopa pipeline
+
+arguments
+    pthmd
+    pthstack
+end
+
+id = idmake(pthstack); %just in case id info gets used below
+pthstackdir = id.pthstackdir;
 
 %% pattern metadata
 
 try
-    load(pthmd_flyg,'mD');
+    load(pthmd,'mD');
 
     if ~mD.trialSettings.usingPanels
         error("no panels data")
@@ -35,7 +42,7 @@ end
 
 %% experiment metadata
 
-expMdFile = fullfile(pthstackdir,'csv', 'expMd.csv');
+expMdFile = fullfile(pthstackdir, 'csv', 'expMd.csv');
 
 try
     expMetadata = readtable(expMdFile, 'delimiter', ',');
@@ -46,11 +53,11 @@ end
 
 %% trial metadata
 
-trialMdFile = fullfile(pthstackdir, [ids.datefly_hyphen, '_trialMetadata.mat']);
+trialMdFile = fullfile(pthstackdir, [id.recdate '-' id.fly '_trialMetadata.mat']);
 trialMetadata = [];
 if exist(trialMdFile,'file')
     load(trialMdFile, 'trialMetadata');
-    trialMetadata.daqSampRate = trialMetadata.daqSampRate(trialMetadata.trialNum == ids.trialnum);
+    trialMetadata.daqSampRate = trialMetadata.daqSampRate(trialMetadata.trialNum == id.trialnum);
     if ~ismember(fieldnames(trialMetadata), 'optoStimTiming')
         trialMetadata.optoStimTiming = repmat({[]}, size(trialMetadata, 1), 1);
     end

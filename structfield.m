@@ -14,6 +14,9 @@ arguments
     inp
 end
 
+% use structind from glb to format field and index then getfield like this
+%         sind = structind(inp);
+%         out = getfield(gset, sind{:});
 
 tmp = strsplit(inp, '.');
 fld = tmp{1};
@@ -41,6 +44,8 @@ if numel(tmp)>1
 else
     if isfield(s, fld)
         out = {s.(fld)(idx)};
+        % sind = structind(inp);
+        % out = getfield(gset, sind{:});
     else
         fprintf(tmp + " IS NOT A FIELD IN INPUT STRUCT; OUTPUT AT THIS INDEX (AND ANY NESTED INDEX) WILL BE AN EMPTY CELL" + newline)
         out = {};

@@ -5,7 +5,7 @@ rgname = {'eb', 'gal', 'gar', 'no'}; %use 'none' to skip prompt to define substa
 o.mn.doroi = 1; 
 o.mn.dobmp = 1; 
 
-o.daq.slopelensec = .4;
+o.daq.slopelensec = .49;
 
 %%%% BMP %%%%
 
