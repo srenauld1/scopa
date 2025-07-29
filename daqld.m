@@ -380,7 +380,7 @@ try
 
         %%%% RENAME %%%%
 
-        if supprate %if supprate, include supp renaming
+        if supprate %if supprate, include supp in renaming string
             nrs = numel(vrenm);
             for k = 1:numel(vrenm)
                 renmtmp = strtrim(strsplit(vrenm{k}, '='));
@@ -391,7 +391,7 @@ try
                 vrenm(nrs+k) = strcat(convertCharsToStrings(strjoin(nmold, ', ')), " = ", nmnew);
             end
         end
-        daq = structrenm(daq, vrenm, allfields=1, allnew=1);
+        daq = structrenm(daq, vrenm, allnew=1, onlynew=1); %rename daq fields according to renm, remove fields not listed in renm
 
 
         for m = 1:numel(daq) %in case you used multiple registers with daqinds, daq struct will be nonscalar
