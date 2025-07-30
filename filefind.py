@@ -2,7 +2,7 @@ import os
 import glob
 import numpy as np
 from mdsisv import mdsisv, convert_md_file
-from helpers import rename_files, mat2tif, ordinal
+from helpers import rename_raw_scanimage_files, mat2tif, ordinal
 from natsort import natsorted
 import re
 from itertools import product
@@ -212,7 +212,8 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
-                    [pth_readfile, fname] = rename_files(pth_readfile, fname, fn_prefix, fldr)
+                    suffixchar_original = 'o'
+                    [pth_readfile, fname] = rename_raw_scanimage_files(pth_readfile, fname, fn_prefix, fldr, suffixchar_original)
             
             mat_file_shape = None
             if int(datestr_found)>20230101:
