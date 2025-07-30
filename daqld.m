@@ -391,17 +391,21 @@ try
                 vrenm(nrs+k) = strcat(convertCharsToStrings(strjoin(nmold, ', ')), " = ", nmnew);
             end
         end
-        daq = structrenm(daq, vrenm, allnew=1, onlynew=1); %rename daq fields according to renm, remove fields not listed in renm
+        daq = structrenm(daq, vrenm, onlynew=1, forcenew=1); %rename daq fields according to renm, remove fields not listed in renm (onlynew=1), include all newnames in renm (forcenew=1)
 
 
         for m = 1:numel(daq) %in case you used multiple registers with daqinds, daq struct will be nonscalar
 
             %%%% FLY PATH %%%%
 
-            [daq(m).px, daq(m).py] = ficpath(daq(m).bfv, daq(m).bsv, daq(m).vy, daq(m).t, balldia);
+            vfang = daq(m).bfv/(balldia/2); %above these were scaled to mm, so revert
+            vsang = daq(m).bsv/(balldia/2); %above these were scaled to mm, so revert
+            [daq(m).px, daq(m).py] = ficpath(vfang, 'radians/second', vsang, 'radians/second', daq(m).vy, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
 
             if supprate
-                [daq(m).px_supp, daq(m).py_supp] = ficpath(daq(m).bfv_supp, daq(m).bsv_supp, daq(m).vy_supp, daq(m).t_supp, balldia);
+                vfang_supp = daq(m).bfv_supp/(balldia/2); %above these were scaled to mm, so revert
+                vsang_supp = daq(m).bsv_supp/(balldia/2); %above these were scaled to mm, so revert
+                [daq(m).px_supp, daq(m).py_supp] = ficpath(vfang_supp, 'radians/second', vsang_supp, 'radians/second', daq(m).vy_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
             end
 
 

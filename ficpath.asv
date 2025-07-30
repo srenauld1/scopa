@@ -7,7 +7,6 @@ input units designated after each input
 currently only one option for each unit, to help prevent unit mistakes, and also allow unit flexibility in future
 
 %}
-
 arguments
     vf % angular forward velocity, units vfu
     vfu %vf units 
