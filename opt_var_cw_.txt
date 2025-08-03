@@ -1865,6 +1865,28 @@
       "vnm": "ts"
     }
   ],
+  "a76": [
+    {
+      "group": "1",
+      "group2": [],
+      "ic": [],
+      "ii": [],
+      "it": [],
+      "optid": "a22",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_ord_a22_roi_.mat",
+      "vnm": "ts"
+    },
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a21",
+      "pth": "/Users/wienecke/stacks/t5/221120_0_f91g_syt/221120_0_1_ord_a21_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
   "md": {
     "autonm": 1,
     "maketime": "2025031519252622",
