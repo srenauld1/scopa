@@ -1,22 +1,22 @@
-function out = structfield(s,inp)
+function out = getfieldns(s,inp)
 
 %{
 
+this function needs work
 get field values in nonscalar struct
 all indices of s must have same fields
 inputs s and field can be nested (for struct a.b.c.d, field might be b.c.d . . . any and all levels can be nonscalar)
 out is equivalent to the requested fields if s were flattened
 structure of nonscalar structs is lost in the output, except their order
+
+can't use simpler approach (structind to format field and index for getfield, like in glb) because it won't return cell array of output from nonscalar struct, so this function does it an uglier way
+
 %}
 
 arguments
     s
     inp
 end
-
-% use structind from glb to format field and index then getfield like this
-%         sind = structind(inp);
-%         out = getfield(gset, sind{:});
 
 tmp = strsplit(inp, '.');
 fld = tmp{1};
@@ -28,7 +28,7 @@ if numel(tmp)>1
     suffix = strjoin(tmp(2:end), '.');
     if isfield(s, fld)
         try
-            out = structfield([s.(fld)(idx)],suffix);
+            out = getfieldns([s.(fld)(idx)],suffix);
         catch ME
             if contains(ME.message, 'Concatenation of structure arrays requires that these arrays have the same set of fields')
                 fprintf("YOU GOT THIS ERROR: " + newline + ME.message + newline + "ALL INDICES OF INPUT STRUCT MUST HAVE SAME FIELDS")
@@ -43,9 +43,7 @@ if numel(tmp)>1
     end
 else
     if isfield(s, fld)
-        out = {s.(fld)(idx)};
-        % sind = structind(inp);
-        % out = getfield(gset, sind{:});
+        out = {s(idx).(fld)};
     else
         fprintf(tmp + " IS NOT A FIELD IN INPUT STRUCT; OUTPUT AT THIS INDEX (AND ANY NESTED INDEX) WILL BE AN EMPTY CELL" + newline)
         out = {};
@@ -53,6 +51,7 @@ else
 end
 
 end
+
 
 
 

@@ -11,13 +11,13 @@ arguments
     opt.trans = [] %translation in pixels; size(rot,1)>1 for multiple translations (just for plotting, will only output last rotated stack)
     opt.method = []
     opt.bb = []
-    opt.doplt = []
     opt.rotx = []
     opt.roty = []
     opt.rotz = []
     opt.transx = []
     opt.transy = []
     opt.transz = []
+    opt.doplt = 0
 end
 rot = opt.rot;
 rotx = opt.rotx;

@@ -194,7 +194,7 @@ end
 if all(cellfun(@isempty, cellflat(tsout))) %isempty(cell2mat(vec(cellflat(tsout))))
     group2 = '1';
 else
-    if isempty(structfield(tg, 'group2'))
+    if isempty(getfieldns(tg, 'group2'))
         tmp = group;
         if ~isempty(tmp)
             tmp = unique(tmp(~cellfun(@isempty, tmp)));
@@ -207,7 +207,7 @@ else
             fprintf("group2 is empty, and not all elements use the same value for groupsetting default group2 '3', nothing will be grouped at the outer level" + newline)
         end
     else
-        tmp = structfield(tg, 'group2');
+        tmp = getfieldns(tg, 'group2');
         tmp = unique(tmp(~cellfun(@isempty, tmp)));
         if isscalar(tmp)
             group2 = tmp{1};

@@ -49,7 +49,7 @@ if tsgetcall && ~getonly
     error("tsget should call oid with getonly=1")
 end
 
-if isempty(structfield(o, 'filled')) || any(cellfun(@isempty, structfield(o, 'filled'))) || any(cell2mat(structfield(o, 'filled'))~=1)
+if isempty(getfieldns(o, 'filled')) || any(cellfun(@isempty, getfieldns(o, 'filled'))) || any(cell2mat(getfieldns(o, 'filled'))~=1)
     if ~tsgetcall %input struct does not require true 'filled' field if oid is called from tsget
         error("options struct must be 'filled'; you may have removed final call to odf in oset with argument fill=1")
     end

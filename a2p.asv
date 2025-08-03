@@ -40,7 +40,9 @@ for k = 1:numel(oa) % loop over recordings
     for m = transpose(fieldnames(o.daq))
         daq.(m{1}) = daqld(o.daq.(m{1})); %process daq
     end
-    glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
+    if ~isempty(daq.(m{1}))
+        glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
+    end
 
     %% rois
 
@@ -61,7 +63,7 @@ for k = 1:numel(oa) % loop over recordings
     %% flymax
 
     if o.mn.dofmf
-        for m = transpose(fieldnames(o.fmf))d
+        for m = transpose(fieldnames(o.fmf))
             [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(pth.stack, o.fmf.(m{1})); %extract flymax visual features
         end
     end
@@ -77,16 +79,7 @@ for k = 1:numel(oa) % loop over recordings
     %% plots
 
     if o.mn.dopltx
-        fn = fieldnames(o.pltx);
-        for m = 1:numel(fn)
-            pltx(stack(:,:,:,fk,:), mdl.vars, o.pltx.doui,  ...
-                mdl.vnm, o.pltx.vpmap, o.pltx.epochnum, ...
-                o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
-                o.pltx.plot_z_as_color, roidat.a1{1}, t, md.sper, zstartsub, ...
-                vis.epochts, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
-                o.pltx.dr, mdl.fn_save_prefix_short, mdl.pthpre, ...
-                pthroiint, nrm, md.widyxz, vid=ftv, stim=stimvid)
-        end
+        pltx(stack, o.pltx, t=glb('t'), stimvid=fmfvid)
     end
 
 
@@ -170,7 +163,8 @@ for k = 1:numel(oa) % loop over recordings
     %% 
 
 
-    stackplt({stackgrrot_rs, stackebrot, stackglrot_rs}, dmplt='yx(t)', it=1:600)
+    stacknew = stackmix(stack, {'gar', 'eb', 'gal'}, rot=[-90,0,0]);
+    stackplt(stacknew, dmplt='yx(t)', it=1:3:600)
    
     %%
 

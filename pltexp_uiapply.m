@@ -74,7 +74,7 @@ for j = 1:numel(vars)
     lims{j} = axlim(vars{j}, roomfac=yaxisroomfac);
 end
 
-varcombos = make_varcombos(vars);
+varcombos = combomake(vars);
 
 end
 

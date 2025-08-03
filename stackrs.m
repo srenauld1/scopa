@@ -31,13 +31,17 @@ if numel(yxznew)==2
     yxznew = [yxznew 1];
 end
 
-stackout = zeros([yxznew, size(stack,4), size(stack,5), size(stack,6)], class(stack));
-for c = 1:size(stackout,5)
-    for t = 1:size(stackout,4)
-        if size(stack,3)>1
-            stackout(:,:,:,t,c) = imresize3(stack(:,:,:,t,c), yxznew, method);
-        else
-            stackout(:,:,:,t,c) = imresize(stack(:,:,:,t,c), yxznew, method);
+if isequal(yxznew, size(stack, [1 2 3]))
+    stackout = stack;
+else
+    stackout = zeros([yxznew, size(stack,4), size(stack,5), size(stack,6)], class(stack));
+    for c = 1:size(stackout,5)
+        for t = 1:size(stackout,4)
+            if size(stack,3)>1
+                stackout(:,:,:,t,c) = imresize3(stack(:,:,:,t,c), yxznew, method);
+            else
+                stackout(:,:,:,t,c) = imresize(stack(:,:,:,t,c), yxznew, method);
+            end
         end
     end
 end

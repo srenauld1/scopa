@@ -29,9 +29,8 @@ if numdim>numel(dmstackdf)
     error("length of dmstack cannot exceed length of dmstackdf")
 end
 
-dmstackdf = dmstackdf(1:numdim);
+if ~isempty(dmstack) && ~isequal(dmstack, dmstackdf(1:numdim))
 
-if ~isempty(dmstack) && ~isequal(dmstack, dmstackdf)
 
     loc = zeros(1,numdim);
     for k = 1:numdim

@@ -29,22 +29,22 @@ numpths = numel(pthstacks);
 if isscalar(rgnames) && isscalar(pthstacks)
     error("stackmix must work with multiple regions (taken from multiple pthstacks or multiple rgnames or both)")
 end
-
-if isempty(rgnames)
-    rgnames = '';
-end
-if ~iscell(rgnames)
-    rgnames = {rgnames};
-end
-if numel(cellflat(rgnames))==numel(rgnames)
-    rgnames = repmat(rgnames, numpths, 1);
-end
-rgnames_all = cell(1, numpths);
-for k = 1:numpths
-    rgnames_all{k} = rgnames{k};
-    rgnames_all{k} = convertStringsToChars(rgnames_all{k});
-end
-rgnames = rgnames_all;
+% 
+% if isempty(rgnames)
+%     rgnames = '';
+% end
+% if ~iscell(rgnames)
+%     rgnames = {rgnames};
+% end
+% if numel(cellflat(rgnames))==numel(rgnames)
+%     rgnames = repmat(rgnames, numpths, 1);
+% end
+% rgnames_all = cell(1, numpths);
+% for k = 1:numpths
+%     rgnames_all{k} = rgnames{k};
+%     rgnames_all{k} = convertStringsToChars(rgnames_all{k});
+% end
+% rgnames = rgnames_all;
 
 pthscopa = pathscopafind();
 scopausername = userdatfile('scopausername');
@@ -92,12 +92,20 @@ if size(rot,1)~=numrg
     error("rot must be empty or (numrg,3)")
 end
 
+sdf = structfun(@diff, rg{1}{1}, 'UniformOutput', false);
+sdf.y = sdf.y+1;
+sdf.x = sdf.x+1;
+sdf.z = sdf.z+1;
 
+
+stacknew = [];
 for k = 1:numpths
-    for q = 1:numel(pthstacks{k})
-        stacktmp = stackcrop(stack, pthstacks{k}, rg{k}{q}.rgname);
-        stacktmp = stackwarp(stacktmp, rot=rot{k}{q}, doplt=1);
-        stacktmp = stackrs(stacktmp, like=stackebrot);
+    for q = 1:3%numel(pthstacks{k})
+        stacktmp = stackcrop(stack, '/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_.mat', rgnames{q});
+        stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);
+        % stacktmp = stackrs(stacktmp, like=stackebrot);
+        stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);
+        stacknew = cat(2, stacknew, stacktmp);
     end
 end
 

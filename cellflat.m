@@ -1,4 +1,4 @@
-function out = cellflat(celllist,level)
+function [out, level] = cellflat(celllist,level)
 % Flatten nested cell arrays. 
 % 
 % out = CELLFLAT(celllist) searches every cell element in cellist and put them on

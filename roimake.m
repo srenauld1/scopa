@@ -86,6 +86,14 @@ try
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
     end
+    if ~isfield(roi, 'opt') %doing this check separately from above because added opt to saved variables later than others
+        roi.opt = opt;
+        save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
+    else
+        if ~isequal(roi.opt, opt)
+            error("opt saved/loaded from roi file does not match input opt")
+        end
+    end
 
 
 catch ME
@@ -93,7 +101,7 @@ catch ME
 
     fprintf("" + ME.message + newline + "creating roi struct now" + newline)
 
-    
+
 
     %%%% CROP stack TO rg CUBOID %%%%
 
@@ -157,8 +165,8 @@ catch ME
     %%%% SAVE %%%%
 
     roi.maketime_optfile_roi = glb('maketime_roi');
+    roi.opt = opt;
     save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
-
 
 
 end

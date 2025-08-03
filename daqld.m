@@ -145,7 +145,7 @@ try
             save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
         else
             if ~isequal(daq.opt, opt)
-                error("opt saved/loaded daq file does not match input opt")
+                error("opt saved/loaded from daq file does not match input opt")
             end
         end
 
